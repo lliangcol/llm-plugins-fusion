@@ -32,13 +32,13 @@
 在 Claude Code 中执行：
 
 ```bash
-/plugin marketplace add <github-username>/claude-plugins-fusion
+/plugin marketplace add lliangcol/claude-plugins-fusion
 ```
 
 ### 第二步：安装插件
 
 ```bash
-claude plugin install nova-plugin@claude-plugins-fusion
+/plugin install nova-plugin@claude-plugins-fusion
 ```
 
 ### 第三步：开始使用

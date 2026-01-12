@@ -32,13 +32,13 @@ English | [中文](../../README.md)
 Run in Claude Code:
 
 ```bash
-/plugin marketplace add <github-username>/claude-plugins-fusion
+/plugin marketplace add lliangcol/claude-plugins-fusion
 ```
 
 ### Step 2: Install the plugin
 
 ```bash
-claude plugin install nova-plugin@claude-plugins-fusion
+/plugin install nova-plugin@claude-plugins-fusion
 ```
 
 ### Step 3: Start using it
