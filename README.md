@@ -2,13 +2,12 @@
 
 <div align="center">
 
-# Claude Plugins Fusion
+# LLM Plugins Fusion
 
-**Claude Code 插件市场与插件集合**
+**第三方 LLM 插件市场与插件集合**
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-Compatible-purple.svg)](https://claude.ai)
 
 </div>
 
@@ -16,7 +15,7 @@
 
 ## 📖 项目简介
 
-**Claude Plugins Fusion** 是一个用于管理 Claude Code 插件市场与插件集合的仓库。通过本仓库，你可以：
+**LLM Plugins Fusion** 是一个面向 LLM 编码助手（如 Claude Code）的第三方插件市场与插件集合仓库。通过本仓库，你可以：
 
 - 🎯 **一键安装** — 快速将插件集成到 Claude Code
 - 🔧 **工程化开发** — 提供完整的开发工作流命令
@@ -32,13 +31,13 @@
 在 Claude Code 中执行：
 
 ```bash
-/plugin marketplace add lliangcol/claude-plugins-fusion
+/plugin marketplace add lliangcol/llm-plugins-fusion
 ```
 
 ### 第二步：安装插件
 
 ```bash
-/plugin install nova-plugin@claude-plugins-fusion
+/plugin install nova-plugin@llm-plugins-fusion
 ```
 
 ### 第三步：开始使用
@@ -58,7 +57,7 @@
 ## 📁 仓库结构
 
 ```
-claude-plugins-fusion/
+llm-plugins-fusion/
 │
 ├── 📄 .claude-plugin/
 │   └── marketplace.json              ← 市场入口配置
@@ -123,7 +122,7 @@ claude-plugins-fusion/
 
 ### 🎯 核心能力
 
-专为 Claude Code 设计的开发效率增强插件，覆盖完整开发工作流：
+面向 LLM 编码助手（兼容 Claude Code）的开发效率增强插件，覆盖完整开发工作流：
 
 ### 开发工作流
 
@@ -297,12 +296,12 @@ DEPTH: deep
 
 ```json
 {
-    "name": "claude-plugins-fusion",
+    "name": "llm-plugins-fusion",
     "owner": {
         "name": "liu liang"
     },
     "metadata": {
-        "description": "A curated marketplace of Claude Code plugins"
+        "description": "A curated marketplace of third-party LLM assistant plugins"
     },
     "plugins": [
         {
@@ -342,8 +341,8 @@ DEPTH: deep
 
 <div align="center">
 
-**Made with ❤️ for Claude Code**
+**Made with ❤️ for LLM coding assistants**
 
-[🔝 回到顶部](#claude-plugins-fusion)
+[🔝 回到顶部](#llm-plugins-fusion)
 
 </div>

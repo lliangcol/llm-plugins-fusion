@@ -2,13 +2,12 @@ English | [中文](../../README.md)
 
 <div align="center">
 
-# Claude Plugins Fusion
+# LLM Plugins Fusion
 
-**A Claude Code plugin marketplace + plugin collection**
+**A third-party LLM plugin marketplace + plugin collection**
 
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-Compatible-purple.svg)](https://claude.ai)
 
 </div>
 
@@ -16,11 +15,11 @@ English | [中文](../../README.md)
 
 ## 📖 Overview
 
-**Claude Plugins Fusion** is a repo for managing a Claude Code plugin marketplace and curated plugin collection. With this repo you can:
+**LLM Plugins Fusion** is a third-party marketplace and curated plugin collection for LLM coding assistants (e.g., Claude Code). With this repo you can:
 
 - 🎯 **One-command install** — quickly integrate plugins into Claude Code
 - 🔧 **Workflow-first** — command presets that cover a full engineering workflow
-- 📚 **Good documentation** — practical handbooks and copy-paste templates
+- 📚 **Good documentation** — practical handbooks and copy‑paste templates
 - 🔄 **Easy to extend** — add new plugins and capabilities over time
 
 ---
@@ -32,13 +31,13 @@ English | [中文](../../README.md)
 Run in Claude Code:
 
 ```bash
-/plugin marketplace add lliangcol/claude-plugins-fusion
+/plugin marketplace add lliangcol/llm-plugins-fusion
 ```
 
 ### Step 2: Install the plugin
 
 ```bash
-/plugin install nova-plugin@claude-plugins-fusion
+/plugin install nova-plugin@llm-plugins-fusion
 ```
 
 ### Step 3: Start using it
@@ -58,7 +57,7 @@ Run in Claude Code:
 ## 📁 Repository structure
 
 ```
-claude-plugins-fusion/
+llm-plugins-fusion/
 │
 ├── 📄 .claude-plugin/
 │   └── marketplace.json              ← marketplace entry
@@ -85,11 +84,8 @@ claude-plugins-fusion/
 │   │   └── finalize-lite.md
 │   │
 │   ├── 📂 docs/                       ← docs
-│   │   ├── README.en.md
 │   │   ├── commands-reference-guide.md
-│   │   ├── claude-code-commands-handbook.md
-│   │   ├── commands-reference-guide.en.md
-│   │   └── claude-code-commands-handbook.en.md
+│   │   └── claude-code-commands-handbook.md
 │   │
 │   ├── 📂 hooks/                      ← hooks config
 │   ├── 📂 agents/                     ← agent templates (planned)
@@ -126,7 +122,7 @@ claude-plugins-fusion/
 
 ### 🎯 Core capabilities
 
-Designed for Claude Code to enhance engineering productivity across the full workflow.
+A developer productivity plugin for LLM coding assistants (compatible with Claude Code), covering a complete engineering workflow.
 
 ### Workflow phases
 
@@ -137,11 +133,11 @@ Designed for Claude Code to enhance engineering productivity across the full wor
 
 ---
 
-### 📚 Docs navigation (English)
+### 📚 Docs navigation
 
 | 📄 Doc | 📝 What it’s for | 🎯 Best used when |
 |--------|--------|-----------|
-| [📘 Full command reference](./commands-reference-guide.en.md) | Parameters, scenario templates, workflow templates | **Daily lookup, copy/paste templates** |
+| [📘 Full command reference](./commands-reference-guide.en.md) | Parameters, 35+ scenario examples, workflow templates | **Daily lookup, copy/paste templates** |
 | [📗 Command handbook](./claude-code-commands-handbook.en.md) | Organized by category, comparison tables | **Getting started, choosing the right command** |
 
 ---
@@ -153,7 +149,7 @@ Designed for Claude Code to enhance engineering productivity across the full wor
 | Command | Constraint | Description | Definition |
 |------|:----:|------|---------|
 | `/senior-explore` | 🔴 Strong | Deep analysis; facts/questions/risks | [📄](../commands/senior-explore.md) |
-| `/explore-lite` | 🟢 Weak | Quick understanding alignment | [📄](../commands/explore-lite.md) |
+| `/explore-lite` | 🟡 Medium | Quick understanding alignment | [📄](../commands/explore-lite.md) |
 | `/explore-review` | 🟡 Medium | Reviewer-style questioning | [📄](../commands/explore-review.md) |
 
 #### 📐 Plan — decide and plan (no code)
@@ -281,12 +277,12 @@ Follow these steps: ...
 
 ```json
 {
-  "name": "claude-plugins-fusion",
+  "name": "llm-plugins-fusion",
   "owner": {
     "name": "liu liang"
   },
   "metadata": {
-    "description": "A curated marketplace of Claude Code plugins"
+    "description": "A curated marketplace of third-party LLM assistant plugins"
   },
   "plugins": [
     {
@@ -326,9 +322,8 @@ Command files are **Markdown** under `commands/`:
 
 <div align="center">
 
-**Made with ❤️ for Claude Code**
+**Made with ❤️ for LLM coding assistants**
 
-[🔝 Back to top](#claude-plugins-fusion)
+[🔝 Back to top](#llm-plugins-fusion)
 
 </div>
-
