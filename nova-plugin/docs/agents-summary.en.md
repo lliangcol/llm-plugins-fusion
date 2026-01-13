@@ -2,33 +2,6 @@
 
 Total agents: 69
 
-## Charts
-
-```mermaid
-pie title Agent Category Distribution
-  Quality & Performance : 8
-  Data & Analytics : 8
-  Design & Product : 8
-  Operations & Infrastructure : 5
-  Security & Compliance : 6
-  Multi-Agent & Workflow : 9
-  Documentation & Comms : 2
-  Development & Architecture : 13
-  Platform & DevOps : 10
-```
-
-```mermaid
-pie title Declared Tool Usage
-  Bash : 46
-  Edit : 58
-  Glob : 69
-  Grep : 69
-  Read : 69
-  WebFetch : 13
-  WebSearch : 13
-  Write : 58
-```
-
 ## Legend
 
 - ✅ Quality & Performance
