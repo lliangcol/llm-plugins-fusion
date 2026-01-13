@@ -1,4 +1,4 @@
-English | [中文](../../README.md)
+﻿English | [中文](../../README.md)
 
 <div align="center">
 
@@ -17,10 +17,10 @@ English | [中文](../../README.md)
 
 **LLM Plugins Fusion** is a third-party marketplace and curated plugin collection for LLM coding assistants (e.g., Claude Code). With this repo you can:
 
-- 🎯 **One-command install** — quickly integrate plugins into Claude Code
-- 🔧 **Workflow-first** — command presets that cover a full engineering workflow
-- 📚 **Good documentation** — practical handbooks and copy‑paste templates
-- 🔄 **Easy to extend** — add new plugins and capabilities over time
+- 🎯 **One-command install**: quickly integrate plugins into Claude Code
+- 🔧 **Workflow-first**: command presets covering a full engineering workflow
+- 📚 **Solid docs**: practical handbooks and examples
+- 🔄 **Easy to extend**: add new plugins and capabilities over time
 
 ---
 
@@ -50,23 +50,18 @@ Run in Claude Code:
 /senior-explore analyze the current project
 ```
 
-> 💡 Tip: once installed, you can use all 15 workflow commands.
-
 ---
 
 ## 📁 Repository structure
 
 ```
 llm-plugins-fusion/
-│
 ├── 📄 .claude-plugin/
-│   └── marketplace.json              ← marketplace entry
-│
-├── 📦 nova-plugin/                    ← plugin
+│   └── marketplace.json              # marketplace entry
+├── 📦 nova-plugin/                    # plugin
 │   ├── 📄 .claude-plugin/
-│   │   └── plugin.json               ← plugin metadata
-│   │
-│   ├── 📂 commands/                   ← 15 command presets
+│   │   └── plugin.json               # plugin metadata
+│   ├── 📂 commands/                   # 15 command presets
 │   │   ├── senior-explore.md
 │   │   ├── explore-lite.md
 │   │   ├── explore-review.md
@@ -82,19 +77,18 @@ llm-plugins-fusion/
 │   │   ├── implement-lite.md
 │   │   ├── finalize-work.md
 │   │   └── finalize-lite.md
-│   │
-│   ├── 📂 docs/                       ← docs
+│   ├── 📂 docs/                       # docs
 │   │   ├── commands-reference-guide.md
-│   │   └── claude-code-commands-handbook.md
-│   │
-│   ├── 📂 hooks/                      ← hooks config
-│   ├── 📂 agents/                     ← agent templates (planned)
-│   ├── 📂 config/                     ← config files (planned)
-│   ├── 📂 output-styles/              ← output styles (planned)
-│   ├── 📂 scripts/                    ← scripts (planned)
-│   └── 📂 skills/                     ← skills (planned)
-│
-└── 📄 README.md                       ← Chinese README
+│   │   ├── claude-code-commands-handbook.md
+│   │   ├── agents-summary.md
+│   │   └── agents-summary.en.md
+│   ├── 📂 hooks/                      # hooks config
+│   ├── 📂 agents/                     # sub-agent definitions
+│   ├── 📂 config/                     # config files
+│   ├── 📂 output-styles/              # output styles
+│   ├── 📂 scripts/                    # scripts
+│   └── 📂 skills/                     # skills
+└── 📄 README.md                       # Chinese README
 ```
 
 ---
@@ -122,208 +116,32 @@ llm-plugins-fusion/
 
 ### 🎯 Core capabilities
 
-A developer productivity plugin for LLM coding assistants (compatible with Claude Code), covering a complete engineering workflow.
+A developer-productivity plugin for LLM coding assistants (Claude Code compatible), covering an end-to-end engineering workflow.
 
-### Workflow phases
+### Workflow stages
 
-| Phase | Explore 🔍 | Plan 📐 | Review 🔎 | Implement ⚙️ | Finalize 📦 |
+| Stage | Explore 🔍 | Plan 📝 | Review 🔎 | Implement ⚙️ | Finalize 📦 |
 |------|--------|--------|--------|--------|--------|
-| Goal | Understand | Decide | Verify quality | Write code | Deliver |
-| Commands | 3 | 4 | 3 | 3 | 2 |
+| Goal | Understand the problem | Draft the plan | Review quality | Write code | Deliver outcomes |
+| Commands | 3 commands | 4 commands | 3 commands | 3 commands | 2 commands |
 
 ---
 
-### 📚 Docs navigation
+## 🧠 Agents
 
-| 📄 Doc | 📝 What it’s for | 🎯 Best used when |
+The repo includes 69 sub-agent definitions across engineering, data, architecture, security, and ops domains under `nova-plugin/agents/`. Each agent includes role positioning, tools, and usage scenarios.
+
+- Chinese summary: `nova-plugin/docs/agents-summary.md`
+- English summary: `nova-plugin/docs/agents-summary.en.md`
+
+---
+
+## 📚 Documentation
+
+| 📄 Document | 📝 Description | 🎯 Use cases |
 |--------|--------|-----------|
-| [📘 Full command reference](./commands-reference-guide.en.md) | Parameters, 35+ scenario examples, workflow templates | **Daily lookup, copy/paste templates** |
-| [📗 Command handbook](./claude-code-commands-handbook.en.md) | Organized by category, comparison tables | **Getting started, choosing the right command** |
+| [📘 Command Reference Guide](nova-plugin/docs/commands-reference-guide.md) | Full parameters, 5+ scenarios, workflow templates | **Daily lookup, copy templates** |
+| [📗 Command Handbook](nova-plugin/docs/claude-code-commands-handbook.md) | Grouped by type, command comparison | **Quick start, pick a command** |
+| [🧠 Agents Summary](nova-plugin/docs/agents-summary.en.md) | Agent roles, tools, and scenarios | **Understand and pick agents** |
 
----
-
-### 📋 Command cheat sheet
-
-#### 🔍 Explore — understand only (no solutions)
-
-| Command | Constraint | Description | Definition |
-|------|:----:|------|---------|
-| `/senior-explore` | 🔴 Strong | Deep analysis; facts/questions/risks | [📄](../commands/senior-explore.md) |
-| `/explore-lite` | 🟡 Medium | Quick understanding alignment | [📄](../commands/explore-lite.md) |
-| `/explore-review` | 🟡 Medium | Reviewer-style questioning | [📄](../commands/explore-review.md) |
-
-#### 📐 Plan — decide and plan (no code)
-
-| Command | Constraint | Description | Definition |
-|------|:----:|------|---------|
-| `/plan-lite` | 🟡 Medium | Lightweight execution plan | [📄](../commands/plan-lite.md) |
-| `/produce-plan` | 🔴 Strong | Formal design doc (writes file) | [📄](../commands/produce-plan.md) |
-| `/backend-plan` | 🔴 Strong | Java/Spring backend design (writes file) | [📄](../commands/backend-plan.md) |
-| `/plan-review` | 🟡 Medium | Plan quality review | [📄](../commands/plan-review.md) |
-
-#### 🔎 Review — review only (no code)
-
-| Command | Constraint | Description | Definition |
-|------|:----:|------|---------|
-| `/review-lite` | 🟢 Weak | Lightweight review for daily PRs | [📄](../commands/review-lite.md) |
-| `/review-only` | 🟡 Medium | Standard strict review (by severity) | [📄](../commands/review-only.md) |
-| `/review-strict` | 🔴 Strong | Exhaustive audit for high-risk code | [📄](../commands/review-strict.md) |
-
-#### ⚙️ Implement — write code
-
-| Command | Constraint | Description | Definition |
-|------|:----:|------|---------|
-| `/implement-plan` | 🔴 Strong | Implement strictly by approved plan | [📄](../commands/implement-plan.md) |
-| `/implement-standard` | 🟡 Medium | Controlled implementation (small corrections allowed) | [📄](../commands/implement-standard.md) |
-| `/implement-lite` | 🟢 Weak | Fast implementation (small refactors allowed) | [📄](../commands/implement-lite.md) |
-
-#### 📦 Finalize — deliver artifacts (no code changes)
-
-| Command | Constraint | Description | Definition |
-|------|:----:|------|---------|
-| `/finalize-work` | 🔴 Strong | Full delivery output (commit + PR) | [📄](../commands/finalize-work.md) |
-| `/finalize-lite` | 🟢 Weak | Minimal summary (3 key points) | [📄](../commands/finalize-lite.md) |
-
-> Legend: 🔴 strong constraints | 🟡 medium | 🟢 weak
-
----
-
-### 💡 Examples
-
-#### Example 1: New feature development
-
-```bash
-# 1️⃣ Explore
-/senior-explore
-INTENT: Analyze a new feature requirement
-CONTEXT: implement user points transfer feature
-DEPTH: normal
-
-# 2️⃣ Plan
-/produce-plan
-PLAN_OUTPUT_PATH: docs/plans/points-transfer.md
-PLAN_INTENT: implement points transfer
-
-# 3️⃣ Implement
-/implement-plan
-PLAN_INPUT_PATH: docs/plans/points-transfer.md
-PLAN_APPROVED: true
-
-# 4️⃣ Finalize
-/finalize-work
-```
-
-#### Example 2: Production issue fix
-
-```bash
-# 1️⃣ Investigate
-/senior-explore
-INTENT: Investigate a production issue
-CONTEXT: payment callback duplicated processing
-DEPTH: deep
-
-# 2️⃣ Implement a controlled fix
-/implement-standard
-Follow these steps: ...
-
-# 3️⃣ Strict review (if needed)
-/review-strict
-
-# 4️⃣ Finalize
-/finalize-work
-```
-
-#### Example 3: Daily PR review
-
-```bash
-/review-lite    # small changes
-/review-only    # core logic
-/review-strict  # high-risk code
-```
-
----
-
-## 🛠️ Development guide
-
-### Add a new plugin
-
-```
-1. Create a folder       →  <plugin-name>/
-2. Add metadata          →  <plugin-name>/.claude-plugin/plugin.json
-3. Add content           →  commands/, agents/, skills/, ...
-4. Register the plugin   →  add an entry in marketplace.json
-```
-
-### Config examples
-
-<details>
-<summary>📄 <strong>plugin.json</strong> (click to expand)</summary>
-
-```json
-{
-  "name": "my-plugin",
-  "description": "plugin description",
-  "version": "1.0.0",
-  "author": {
-    "name": "author name"
-  }
-}
-```
-
-</details>
-
-<details>
-<summary>📄 <strong>marketplace.json</strong> (click to expand)</summary>
-
-```json
-{
-  "name": "llm-plugins-fusion",
-  "owner": {
-    "name": "liu liang"
-  },
-  "metadata": {
-    "description": "A curated marketplace of third-party LLM assistant plugins"
-  },
-  "plugins": [
-    {
-      "name": "nova-plugin",
-      "source": "./nova-plugin",
-      "version": "1.0.0",
-      "author": {
-        "name": "liu liang"
-      },
-      "description": "Developer productivity workflow plugin"
-    }
-  ]
-}
-```
-
-</details>
-
-### Command file format
-
-Command files are **Markdown** under `commands/`:
-
-- Filename is the command name: `review-lite.md` → `/review-lite`
-- Supports placeholders: `$ARGUMENTS`, `$PLAN_OUTPUT_PATH`, etc.
-- Supports structured input/output definitions
-
----
-
-## 📖 References
-
-| Resource | Notes |
-|-----|------|
-| [Claude Code plugin docs](https://code.claude.com/docs/en/discover-plugins) | Official plugin docs |
-| [Full command reference](./commands-reference-guide.en.md) | Detailed usage guide |
-| [Command handbook](./claude-code-commands-handbook.en.md) | Quick start and comparisons |
-
----
-
-<div align="center">
-
-**Made with ❤️ for LLM coding assistants**
-
-[🔝 Back to top](#llm-plugins-fusion)
-
-</div>
+For the Chinese version, see `README.md` and `nova-plugin/docs/agents-summary.md`.
