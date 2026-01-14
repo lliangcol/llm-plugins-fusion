@@ -11,6 +11,11 @@ __pycache__/
 
 # Node
 node_modules/
+dist/
+*.tsbuildinfo
+
+# Vite
+.vite/
 
 # IDE
 .vscode/
