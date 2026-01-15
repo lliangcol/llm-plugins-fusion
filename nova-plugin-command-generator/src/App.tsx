@@ -17,6 +17,7 @@ import { addHistory, loadHistory, saveHistory } from './store/history';
 import { loadGuidanceState, recordGuidanceSuccess } from './store/guidance';
 import { loadDraft, saveDraft } from './store/draft';
 import { renderTemplate, stageOrder, constraintLabel, constraintOrder } from './utils/render';
+import { readAttachments } from './utils/attachments';
 import { evaluateConstraints, evaluateContext, evaluateIntent, QualityFeedback } from './utils/promptQuality';
 import { buildCommandStageMap, recommendNext, stageFlow } from './utils/guidance';
 
@@ -31,6 +32,8 @@ const stageLabels: Record<string, string> = {
   implement: '实施',
   finalize: '交付',
 };
+
+const MAX_ATTACHMENT_BYTES = 200 * 1024;
 
 const icons = {
   scenes: (
@@ -321,17 +324,28 @@ export default function App() {
     setFormState((prev) => ({ ...prev, [fieldId]: list }));
   };
 
-  const computedPreview = selectedCommand ? renderTemplate(selectedCommand, formState, variables) : '';
+  const computedPreview = useMemo(
+    () => (selectedCommand ? renderTemplate(selectedCommand, formState, variables) : ''),
+    [selectedCommand, formState, variables],
+  );
   const previewText = previewOverride ?? computedPreview;
-  const missingVars = getMissingVariables(computedPreview);
+  const missingVars = useMemo(() => getMissingVariables(computedPreview), [computedPreview]);
 
-  const canGenerate = selectedCommand
-    ? selectedCommand.fields.every((f) => !f.required || isFieldFilled(f.id, selectedCommand, formState[f.id]))
-    : false;
+  const canGenerate = useMemo(
+    () =>
+      selectedCommand
+        ? selectedCommand.fields.every((f) => !f.required || isFieldFilled(f.id, selectedCommand, formState[f.id]))
+        : false,
+    [selectedCommand, formState],
+  );
 
-  const missingRequired = selectedCommand
-    ? selectedCommand.fields.filter((f) => f.required && !isFieldFilled(f.id, selectedCommand, formState[f.id]))
-    : [];
+  const missingRequired = useMemo(
+    () =>
+      selectedCommand
+        ? selectedCommand.fields.filter((f) => f.required && !isFieldFilled(f.id, selectedCommand, formState[f.id]))
+        : [],
+    [selectedCommand, formState],
+  );
 
   const showFeedback = (message: string) => {
     setFeedbackMessage(message);
@@ -343,6 +357,14 @@ export default function App() {
       feedbackTimerRef.current = null;
     }, 3200);
   };
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current) {
+        window.clearTimeout(feedbackTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleAddHistory = () => {
     if (!selectedCommand) return;
@@ -371,20 +393,13 @@ export default function App() {
     showFeedback('已生成并保存到历史记录。');
   };
 
-  const MAX_ATTACHMENT_BYTES = 200 * 1024;
-
   const handleFileUpload = async (files: FileList | null) => {
-    if (!files) return;
-    const next: Attachment[] = [];
-    for (const file of Array.from(files)) {
-      try {
-        const text = await file.slice(0, MAX_ATTACHMENT_BYTES).text();
-        const snippet = text.slice(0, 2000);
-        next.push({ name: file.name, content: snippet });
-      } catch {
-        showFeedback(`附件读取失败：${file.name}`);
-      }
-    }
+    const next = await readAttachments(files, {
+      maxBytes: MAX_ATTACHMENT_BYTES,
+      snippetLimit: 2000,
+      onError: (filename) => showFeedback(`附件读取失败：${filename}`),
+    });
+    if (next.length === 0) return;
     setAttachments((prev) => [...prev, ...next]);
   };
 
@@ -983,16 +998,13 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
   };
 
   const handleWorkflowFileUpload = async (files: FileList | null) => {
-    if (!files || !currentStep) return;
-    const next: Attachment[] = [];
-    for (const file of Array.from(files)) {
-      try {
-        const text = await file.slice(0, MAX_ATTACHMENT_BYTES).text();
-        next.push({ name: file.name, content: text.slice(0, 2000) });
-      } catch {
-        showFeedback(`附件读取失败：${file.name}`);
-      }
-    }
+    if (!currentStep) return;
+    const next = await readAttachments(files, {
+      maxBytes: MAX_ATTACHMENT_BYTES,
+      snippetLimit: 2000,
+      onError: (filename) => showFeedback(`附件读取失败：${filename}`),
+    });
+    if (next.length === 0) return;
     setWorkflowAttachments((prev) => ({
       ...prev,
       [currentStep.stepId]: [...(prev[currentStep.stepId] ?? []), ...next],
@@ -1528,7 +1540,11 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
           </div>
           <section className="generator-inputs">
             <div className="panel-stack">
-              {feedbackMessage && <div className="success-notice">{feedbackMessage}</div>}
+              {feedbackMessage && (
+                <div className="success-notice" role="status" aria-live="polite">
+                  {feedbackMessage}
+                </div>
+              )}
               {draftRestored && <div className="draft-notice">已恢复上次草稿</div>}
               {workflowSuggestion && <div className="suggestion-notice">{workflowSuggestion}</div>}
               <div className="panel-card">
@@ -1876,7 +1892,11 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
             </div>
           </div>
 
-          {feedbackMessage && <div className="success-notice workflow-feedback">{feedbackMessage}</div>}
+          {feedbackMessage && (
+            <div className="success-notice workflow-feedback" role="status" aria-live="polite">
+              {feedbackMessage}
+            </div>
+          )}
 
           <div className="workflow-columns">
             <section className="workflow-rail">
@@ -2222,6 +2242,3 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
     </div>
   );
 }
-
-
-

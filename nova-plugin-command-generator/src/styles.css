@@ -1,5 +1,4 @@
 @import "./styles/theme.css";
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;700&family=Spline+Sans:wght@400;500;600&display=swap");
 
 :root {
   color-scheme: light;
@@ -1499,3 +1498,47 @@ pre.code {
 
 
 
+
+.error-boundary {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px;
+  background: var(--bg-gradient);
+  color: var(--text);
+}
+
+.error-boundary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.error-boundary-card h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+.error-boundary-detail {
+  display: block;
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--text-muted);
+  overflow-wrap: anywhere;
+}
+
+.error-boundary-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
