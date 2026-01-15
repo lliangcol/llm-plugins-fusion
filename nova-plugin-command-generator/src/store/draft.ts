@@ -1,4 +1,5 @@
 import { Attachment, FormState } from '../types';
+import { loadFromStorage, saveToStorage } from '../utils/storage';
 
 export interface GeneratorDraft {
   selectedCommandId: string;
@@ -14,21 +15,11 @@ export interface GeneratorDraft {
 const KEY = 'command-generator-draft';
 
 export const loadDraft = (): GeneratorDraft | null => {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as GeneratorDraft;
-    if (!parsed || typeof parsed !== 'object') return null;
-    return parsed;
-  } catch {
-    return null;
-  }
+  const parsed = loadFromStorage<GeneratorDraft | null>(KEY, null);
+  if (!parsed || typeof parsed !== 'object') return null;
+  return parsed;
 };
 
 export const saveDraft = (draft: GeneratorDraft) => {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(draft));
-  } catch {
-    // ignore
-  }
+  saveToStorage(KEY, draft);
 };
