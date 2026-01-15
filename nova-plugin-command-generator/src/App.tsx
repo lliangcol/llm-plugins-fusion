@@ -17,6 +17,7 @@ import { addHistory, loadHistory, saveHistory } from './store/history';
 import { loadGuidanceState, recordGuidanceSuccess } from './store/guidance';
 import { loadDraft, saveDraft } from './store/draft';
 import { renderTemplate, stageOrder, constraintLabel, constraintOrder } from './utils/render';
+import { readAttachments } from './utils/attachments';
 import { evaluateConstraints, evaluateContext, evaluateIntent, QualityFeedback } from './utils/promptQuality';
 import { buildCommandStageMap, recommendNext, stageFlow } from './utils/guidance';
 
@@ -393,17 +394,12 @@ export default function App() {
   };
 
   const handleFileUpload = async (files: FileList | null) => {
-    if (!files) return;
-    const next: Attachment[] = [];
-    for (const file of Array.from(files)) {
-      try {
-        const text = await file.slice(0, MAX_ATTACHMENT_BYTES).text();
-        const snippet = text.slice(0, 2000);
-        next.push({ name: file.name, content: snippet });
-      } catch {
-        showFeedback(`附件读取失败：${file.name}`);
-      }
-    }
+    const next = await readAttachments(files, {
+      maxBytes: MAX_ATTACHMENT_BYTES,
+      snippetLimit: 2000,
+      onError: (filename) => showFeedback(`附件读取失败：${filename}`),
+    });
+    if (next.length === 0) return;
     setAttachments((prev) => [...prev, ...next]);
   };
 
@@ -1002,16 +998,13 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
   };
 
   const handleWorkflowFileUpload = async (files: FileList | null) => {
-    if (!files || !currentStep) return;
-    const next: Attachment[] = [];
-    for (const file of Array.from(files)) {
-      try {
-        const text = await file.slice(0, MAX_ATTACHMENT_BYTES).text();
-        next.push({ name: file.name, content: text.slice(0, 2000) });
-      } catch {
-        showFeedback(`附件读取失败：${file.name}`);
-      }
-    }
+    if (!currentStep) return;
+    const next = await readAttachments(files, {
+      maxBytes: MAX_ATTACHMENT_BYTES,
+      snippetLimit: 2000,
+      onError: (filename) => showFeedback(`附件读取失败：${filename}`),
+    });
+    if (next.length === 0) return;
     setWorkflowAttachments((prev) => ({
       ...prev,
       [currentStep.stepId]: [...(prev[currentStep.stepId] ?? []), ...next],
