@@ -1,24 +1,15 @@
 import { HistoryEntry } from '../types';
+import { loadFromStorage, saveToStorage } from '../utils/storage';
 
 const KEY = 'command-generator-history';
 
 export const loadHistory = (): HistoryEntry[] => {
-  try {
-    const raw = localStorage.getItem(KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as HistoryEntry[];
-    return parsed;
-  } catch {
-    return [];
-  }
+  const parsed = loadFromStorage<HistoryEntry[]>(KEY, []);
+  return Array.isArray(parsed) ? parsed : [];
 };
 
 export const saveHistory = (entries: HistoryEntry[]) => {
-  try {
-    localStorage.setItem(KEY, JSON.stringify(entries.slice(0, 100)));
-  } catch {
-    // ignore
-  }
+  saveToStorage(KEY, entries.slice(0, 100));
 };
 
 export const addHistory = (entry: HistoryEntry) => {

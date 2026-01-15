@@ -32,6 +32,8 @@ const stageLabels: Record<string, string> = {
   finalize: '交付',
 };
 
+const MAX_ATTACHMENT_BYTES = 200 * 1024;
+
 const icons = {
   scenes: (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -321,17 +323,28 @@ export default function App() {
     setFormState((prev) => ({ ...prev, [fieldId]: list }));
   };
 
-  const computedPreview = selectedCommand ? renderTemplate(selectedCommand, formState, variables) : '';
+  const computedPreview = useMemo(
+    () => (selectedCommand ? renderTemplate(selectedCommand, formState, variables) : ''),
+    [selectedCommand, formState, variables],
+  );
   const previewText = previewOverride ?? computedPreview;
-  const missingVars = getMissingVariables(computedPreview);
+  const missingVars = useMemo(() => getMissingVariables(computedPreview), [computedPreview]);
 
-  const canGenerate = selectedCommand
-    ? selectedCommand.fields.every((f) => !f.required || isFieldFilled(f.id, selectedCommand, formState[f.id]))
-    : false;
+  const canGenerate = useMemo(
+    () =>
+      selectedCommand
+        ? selectedCommand.fields.every((f) => !f.required || isFieldFilled(f.id, selectedCommand, formState[f.id]))
+        : false,
+    [selectedCommand, formState],
+  );
 
-  const missingRequired = selectedCommand
-    ? selectedCommand.fields.filter((f) => f.required && !isFieldFilled(f.id, selectedCommand, formState[f.id]))
-    : [];
+  const missingRequired = useMemo(
+    () =>
+      selectedCommand
+        ? selectedCommand.fields.filter((f) => f.required && !isFieldFilled(f.id, selectedCommand, formState[f.id]))
+        : [],
+    [selectedCommand, formState],
+  );
 
   const showFeedback = (message: string) => {
     setFeedbackMessage(message);
@@ -343,6 +356,14 @@ export default function App() {
       feedbackTimerRef.current = null;
     }, 3200);
   };
+
+  useEffect(() => {
+    return () => {
+      if (feedbackTimerRef.current) {
+        window.clearTimeout(feedbackTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleAddHistory = () => {
     if (!selectedCommand) return;
@@ -370,8 +391,6 @@ export default function App() {
     setShowNextCard(true);
     showFeedback('已生成并保存到历史记录。');
   };
-
-  const MAX_ATTACHMENT_BYTES = 200 * 1024;
 
   const handleFileUpload = async (files: FileList | null) => {
     if (!files) return;
@@ -1528,7 +1547,11 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
           </div>
           <section className="generator-inputs">
             <div className="panel-stack">
-              {feedbackMessage && <div className="success-notice">{feedbackMessage}</div>}
+              {feedbackMessage && (
+                <div className="success-notice" role="status" aria-live="polite">
+                  {feedbackMessage}
+                </div>
+              )}
               {draftRestored && <div className="draft-notice">已恢复上次草稿</div>}
               {workflowSuggestion && <div className="suggestion-notice">{workflowSuggestion}</div>}
               <div className="panel-card">
@@ -1876,7 +1899,11 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
             </div>
           </div>
 
-          {feedbackMessage && <div className="success-notice workflow-feedback">{feedbackMessage}</div>}
+          {feedbackMessage && (
+            <div className="success-notice workflow-feedback" role="status" aria-live="polite">
+              {feedbackMessage}
+            </div>
+          )}
 
           <div className="workflow-columns">
             <section className="workflow-rail">
@@ -2222,6 +2249,3 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
     </div>
   );
 }
-
-
-
