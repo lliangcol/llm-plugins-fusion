@@ -4,14 +4,11 @@ import {
   CommandDefinition,
   FieldDefinition,
   GuidanceRecommendation,
-  StageKey,
-  StageStatus,
 } from '../../types';
 import { QualityFeedback } from '../../utils/promptQuality';
 import { GuardrailBanner } from '../../components/GuardrailBanner';
 import { Icon } from '../../components/Icon';
 import { NextStepCard } from '../../components/NextStepCard';
-import { StageProgressBar } from '../../components/StageProgressBar';
 
 interface ChecklistItem {
   id: string;
@@ -27,8 +24,6 @@ interface SectionDefinition {
 }
 
 interface GeneratorPanelProps {
-  guidanceStatus: Record<StageKey, StageStatus>;
-  stageLabels: Record<string, string>;
   guardrailVisible: boolean;
   onGuardrailContinue: () => void;
   onGuardrailSwitch: () => void;
@@ -68,8 +63,6 @@ interface GeneratorPanelProps {
   setNewVarValue: (value: string) => void;
   addVariable: () => void;
   variables: Record<string, string>;
-  canGenerate: boolean;
-  handleAddHistory: () => void;
   copyText: (text: string) => void;
   previewText: string;
   handleSingleExport: (kind: 'md' | 'txt' | 'json', mode: 'save' | 'download' | 'share') => void;
@@ -79,15 +72,12 @@ interface GeneratorPanelProps {
   missingVars: string[];
   draftSavedAt: number | null;
   formatDate: (ts: number) => string;
-  hasUndoSnapshot: boolean;
-  restoreUndoSnapshot: () => void;
   previewOverride: string | null;
   setPreviewOverride: (value: string | null) => void;
+  onResetCommand: () => void;
 }
 
 export const GeneratorPanel = ({
-  guidanceStatus,
-  stageLabels,
   guardrailVisible,
   onGuardrailContinue,
   onGuardrailSwitch,
@@ -127,8 +117,6 @@ export const GeneratorPanel = ({
   setNewVarValue,
   addVariable,
   variables,
-  canGenerate,
-  handleAddHistory,
   copyText,
   previewText,
   handleSingleExport,
@@ -138,16 +126,16 @@ export const GeneratorPanel = ({
   missingVars,
   draftSavedAt,
   formatDate,
-  hasUndoSnapshot,
-  restoreUndoSnapshot,
   previewOverride,
   setPreviewOverride,
+  onResetCommand,
 }: GeneratorPanelProps) => (
   <div className="layout generator-layout">
-    <div className="generator-guidance">
-      <StageProgressBar status={guidanceStatus} labels={stageLabels} />
-      <GuardrailBanner visible={guardrailVisible} onContinue={onGuardrailContinue} onSwitch={onGuardrailSwitch} />
-    </div>
+    {guardrailVisible && (
+      <div className="generator-guidance">
+        <GuardrailBanner visible={guardrailVisible} onContinue={onGuardrailContinue} onSwitch={onGuardrailSwitch} />
+      </div>
+    )}
     <section className="generator-inputs">
       <div className="panel-stack">
         {feedbackMessage && (
@@ -312,23 +300,20 @@ export const GeneratorPanel = ({
         </div>
       </div>
       <div className="panel-card actions-panel">
-        <div className="panel-title actions-kicker">下一步</div>
-        <div className="actions-title">生成并保存</div>
-        <div className="actions-subtitle">生成最终命令文本，可复制或导出。</div>
+        <div className="panel-title actions-kicker">操作</div>
+        <div className="actions-title">导出命令</div>
+        <div className="actions-subtitle">复制或导出生成的命令文本。</div>
         <div className="inline-actions">
-          <button className="btn primary" disabled={!canGenerate} onClick={handleAddHistory}>
-            生成并保存
-          </button>
-          <button className="btn secondary" disabled={!canGenerate} onClick={() => copyText(previewText)}>
+          <button className="btn primary" disabled={!previewText} onClick={() => copyText(previewText)}>
             复制命令
           </button>
-          <button className="btn secondary" onClick={() => handleSingleExport('md', supportsSave ? 'save' : 'download')}>
-            <Icon name="export" /> 保存 .md
+          <button className="btn secondary" disabled={!previewText} onClick={() => handleSingleExport('md', supportsSave ? 'save' : 'download')}>
+            <Icon name="download" /> 保存 .md
           </button>
-          <button className="btn ghost" onClick={() => handleSingleExport('txt', 'download')}>
+          <button className="btn ghost" disabled={!previewText} onClick={() => handleSingleExport('txt', 'download')}>
             <Icon name="download" /> 下载 .txt
           </button>
-          <button className="btn ghost" onClick={() => handleSingleExport('json', 'download')}>
+          <button className="btn ghost" disabled={!previewText} onClick={() => handleSingleExport('json', 'download')}>
             <Icon name="download" /> 下载 .json
           </button>
           {supportsShare && (
@@ -354,14 +339,9 @@ export const GeneratorPanel = ({
         <div className="preview-header">
           <h3>预览</h3>
           <div className="preview-toolbar">
-            <button className="btn ghost" onClick={restoreUndoSnapshot} disabled={!hasUndoSnapshot}>
-              撤销
+            <button className="btn ghost" onClick={onResetCommand}>
+              初始化命令
             </button>
-            {previewOverride !== null && (
-              <button className="btn ghost" onClick={() => setPreviewOverride(null)}>
-                重置预览
-              </button>
-            )}
           </div>
         </div>
         <div className="preview-surface">

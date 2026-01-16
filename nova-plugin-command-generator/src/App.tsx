@@ -144,9 +144,14 @@ export default function App() {
 
   useEffect(() => {
     if (!selectedCommand) return;
+
+    // 如果有 formDraft，使用它来恢复表单状态
+    const shouldRestore = draftRestoreRef.current || formDraft !== null;
+
     setFormState(formDraft ?? initForm(selectedCommand));
     setFormDraft(null);
-    if (draftRestoreRef.current) {
+
+    if (shouldRestore) {
       draftRestoreRef.current = false;
       if (!draftAttachmentTargetRef.current) {
         setAttachmentTarget(getDefaultAttachmentTarget(selectedCommand));
@@ -154,6 +159,8 @@ export default function App() {
       draftAttachmentTargetRef.current = null;
       return;
     }
+
+    // 只有在非恢复模式下才重置其他状态
     setVariables({});
     setAttachments([]);
     setPreviewOverride(null);
@@ -260,13 +267,27 @@ export default function App() {
     setAttachments((prev) => [...prev, ...next]);
   };
 
+  /**
+   * 将附件内容插入到指定字段
+   *
+   * 【问题(3)说明 - 浏览器安全限制】
+   * "仅路径"模式下，由于 Web File API 安全限制，无法获取文件的绝对路径。
+   * File 对象仅提供 name（文件名）、size、type、lastModified 等属性，
+   * 不暴露文件的完整路径（出于隐私和安全考虑）。
+   *
+   * 可行替代方案：
+   * 1. 当前方案：显示文件名称（受限但可用），格式为 `[本地文件] 文件名`
+   * 2. Electron/Tauri 桥接：桌面应用可通过 Node.js path API 获取绝对路径
+   * 3. 用户手动补充：用户可在字段中手动追加完整路径
+   */
   const insertAttachmentsToField = (fieldId: string, mode: 'path' | 'snippet' | 'full') => {
     if (!selectedCommand) return;
     const fieldDef = selectedCommand.fields.find((f) => f.id === fieldId);
     if (!fieldDef) return;
     if (fieldDef.type === 'list') {
       const existing = Array.isArray(formState[fieldId]) ? (formState[fieldId] as string[]) : [];
-      const items = attachments.map((a) => `文件：${a.name}`);
+      // 添加标识前缀，明确这是受限的路径信息
+      const items = attachments.map((a) => `[本地文件] ${a.name}`);
       setFormState((prev) => ({ ...prev, [fieldId]: [...existing, ...items] }));
       return;
     }
@@ -274,7 +295,8 @@ export default function App() {
     const existing = typeof field === 'string' ? field : '';
     const joined = attachments
       .map((a) => {
-        if (mode === 'path') return `- 文件：${a.name}`;
+        // "仅路径"模式：添加标识前缀，明确浏览器限制
+        if (mode === 'path') return `- [本地文件] ${a.name}`;
         if (mode === 'snippet') return `- 文件：${a.name}\n  ---\n  ${a.content}\n  ---`;
         return `- 文件：${a.name}\n  ---\n  ${a.content}\n  ---`;
       })
@@ -373,12 +395,51 @@ export default function App() {
     return stageFlow.slice(0, stageIndex).some((key) => guidanceState.stageStatus[key] === 'todo');
   };
 
+  /**
+   * 同步阶段状态到指定命令所属阶段
+   * 修复问题(9)(10): 确保选择命令后顶部阶段显示与命令类型一致
+   *
+   * 策略（修复问题4）：
+   * - 目标阶段及之前的阶段设为 'done'（表示逻辑上已到达该阶段）
+   * - 目标阶段设为 'active'
+   * - 目标阶段之后的阶段设为 'todo'
+   * 这样阶段显示会清晰反映当前工作位置
+   */
+  const syncStageToCommand = (targetStage: StageKey) => {
+    setGuidanceState((prev) => {
+      const targetIndex = stageFlow.indexOf(targetStage);
+      const newStatus: Record<StageKey, StageStatus> = {} as Record<StageKey, StageStatus>;
+
+      stageFlow.forEach((stage, index) => {
+        if (index < targetIndex) {
+          // 目标阶段之前的阶段：保持原状态（如果是 done 保持 done，否则设为 todo）
+          // 这样历史完成记录会保留
+          newStatus[stage] = prev.stageStatus[stage] === 'done' ? 'done' : 'todo';
+        } else if (index === targetIndex) {
+          // 目标阶段：设为 active
+          newStatus[stage] = 'active';
+        } else {
+          // 目标阶段之后的阶段：设为 todo
+          newStatus[stage] = 'todo';
+        }
+      });
+
+      return { ...prev, stageStatus: newStatus };
+    });
+  };
+
   const selectCommandWithGuardrail = (id: string, switchTab = false) => {
     if (switchTab) setTab('generator');
     setSelectedCommandId(id);
     const stage = commandStageMap[id];
-    if (stage && isOutOfOrder(stage)) {
-      setGuardrailVisible(true);
+    if (stage) {
+      // 修复问题(9)(10): 选择命令时同步阶段状态
+      syncStageToCommand(stage);
+      if (isOutOfOrder(stage)) {
+        setGuardrailVisible(true);
+      } else {
+        setGuardrailVisible(false);
+      }
     } else {
       setGuardrailVisible(false);
     }
@@ -1051,11 +1112,33 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
   const supportsSave = Boolean((window as unknown as { showSaveFilePicker?: unknown }).showSaveFilePicker);
   const supportsShare = Boolean(navigator.share);
 
+  /**
+   * 选择文件夹并获取路径信息
+   *
+   * 【问题(2)说明 - 浏览器安全限制】
+   * 由于 Web 浏览器安全策略（File System Access API 限制），
+   * 无法获取用户选择的文件夹的绝对路径。
+   * API 仅提供 FileSystemDirectoryHandle.name（文件夹名称），不暴露完整路径。
+   *
+   * 可行替代方案：
+   * 1. 当前方案：显示文件夹名称（受限但可用）
+   * 2. Electron/Tauri 桥接：如果项目迁移到桌面应用框架，可通过 Node.js API 获取绝对路径
+   * 3. 用户手动输入：允许用户直接输入绝对路径（已支持）
+   *
+   * 返回值格式：`[浏览器选择] 文件夹名称`，明确标识这是受限的路径信息
+   */
   const pickDirectory = async (onPick: (value: string) => void) => {
     const showDirectoryPicker = (window as unknown as { showDirectoryPicker?: DirectoryPicker }).showDirectoryPicker;
     if (!showDirectoryPicker) return;
-    const handle = await showDirectoryPicker();
-    onPick(handle?.name ?? '');
+    try {
+      const handle = await showDirectoryPicker();
+      // 浏览器限制：只能获取文件夹名称，无法获取绝对路径
+      // 添加前缀标识，提示用户这是受限信息
+      const displayPath = handle?.name ? `[浏览器选择] ${handle.name}` : '';
+      onPick(displayPath);
+    } catch {
+      // 用户取消选择
+    }
   };
 
   const addVariable = () => {
@@ -1291,7 +1374,6 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
 
       {tab === 'commands' && (
         <div className="layout">
-          <StageProgressBar status={guidanceState.stageStatus} labels={stageLabels} />
           <div className="filter-bar">
             <div className="filter-group">
               <span className="filter-label">阶段</span>
@@ -1382,8 +1464,6 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
 
       {tab === 'generator' && selectedCommand && (
         <GeneratorPanel
-          guidanceStatus={guidanceState.stageStatus}
-          stageLabels={stageLabels}
           guardrailVisible={guardrailVisible}
           onGuardrailContinue={() => setGuardrailVisible(false)}
           onGuardrailSwitch={() => {
@@ -1422,6 +1502,9 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
           nextRecommendation={nextRecommendation}
           onUseNextRecommendation={() => {
             setShowNextCard(false);
+            // 清空表单草稿，确保切换到新命令时重置表单
+            setFormDraft(null);
+            setUndoSnapshot(null);
             if (nextRecommendation) {
               selectCommandWithGuardrail(nextRecommendation.command, true);
             }
@@ -1436,8 +1519,6 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
           setNewVarValue={setNewVarValue}
           addVariable={addVariable}
           variables={variables}
-          canGenerate={canGenerate}
-          handleAddHistory={handleAddHistory}
           copyText={copyText}
           previewText={previewText}
           handleSingleExport={handleSingleExport}
@@ -1447,15 +1528,24 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
           missingVars={missingVars}
           draftSavedAt={draftSavedAt}
           formatDate={formatDate}
-          hasUndoSnapshot={Boolean(undoSnapshot)}
-          restoreUndoSnapshot={restoreUndoSnapshot}
           previewOverride={previewOverride}
           setPreviewOverride={setPreviewOverride}
+          onResetCommand={() => {
+            // 初始化命令：重置表单为默认值
+            if (selectedCommand) {
+              setFormState(initForm(selectedCommand));
+              setVariables({});
+              setAttachments([]);
+              setPreviewOverride(null);
+              setAttachmentMode('snippet');
+              setAttachmentTarget(getDefaultAttachmentTarget(selectedCommand));
+              setUndoSnapshot(null);
+            }
+          }}
         />
       )}
       {tab === 'workflows' && (
         <div className="layout">
-          <StageProgressBar status={guidanceState.stageStatus} labels={stageLabels} />
           <section>
             <h3>工作流模板</h3>
             <div className="card-grid">
@@ -1566,10 +1656,21 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
         <HistoryPanel
           history={history}
           getCommandLabel={(commandId) => commandLookup.get(commandId)?.displayName ?? commandId}
+          getCommandStage={(commandId) => commandStageMap[commandId]}
           formatDate={formatDate}
           copyText={copyText}
           onReuse={(entry) => {
-            setFormDraft(entry.fields);
+            // 复用历史记录：直接设置表单状态
+            const isSameCommand = entry.commandId === selectedCommandId;
+            if (isSameCommand) {
+              // 同一命令：直接设置表单状态
+              setFormState(entry.fields);
+            } else {
+              // 不同命令：通过 formDraft 传递，并设置 ref 防止被重置
+              draftRestoreRef.current = true;
+              setFormDraft(entry.fields);
+            }
+            setPreviewOverride(null);
             selectCommandWithGuardrail(entry.commandId, true);
           }}
           onRemove={removeHistoryItem}

@@ -455,7 +455,7 @@ export const WorkflowRunPanel = ({
             <h3>预览与输出</h3>
             <div className="preview-toolbar">
               <button className="btn secondary" onClick={() => handleWorkflowExport('md', supportsSave ? 'save' : 'download')}>
-                <Icon name="export" /> 保存 .md
+                <Icon name="download" /> 保存 .md
               </button>
               <button className="btn ghost" onClick={() => handleWorkflowExport('txt', 'download')}>
                 <Icon name="download" /> 下载 .txt
