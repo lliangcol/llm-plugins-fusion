@@ -24,3 +24,6 @@ dist/
 # Env
 .env
 .envrc
+
+# Claude
+.claude/
