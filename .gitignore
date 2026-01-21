@@ -27,3 +27,4 @@ dist/
 
 # Claude
 .claude/
+**/.claude/
