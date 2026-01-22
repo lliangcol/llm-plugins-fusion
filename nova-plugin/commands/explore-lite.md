@@ -1,4 +1,4 @@
-# explore-lite — QUICK UNDERSTANDING
+# QUICK UNDERSTANDING
 
 You are Claude Code acting as a senior engineer.
 

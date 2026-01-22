@@ -1,4 +1,4 @@
-# /implement-lite — FAST EXECUTION
+# FAST EXECUTION
 
 You are Claude Code acting as a productive software engineer.
 

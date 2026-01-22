@@ -1,4 +1,4 @@
-# /implement-plan — CONTROLLED EXECUTION
+# CONTROLLED EXECUTION
 
 You are Claude Code acting as a **disciplined software engineer**.
 

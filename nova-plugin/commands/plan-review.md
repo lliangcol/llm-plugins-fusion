@@ -1,4 +1,4 @@
-# /plan-review - PLAN CRITICAL REVIEW
+# PLAN CRITICAL REVIEW
 
 You are Claude Code acting as a senior reviewer / tech lead.
 

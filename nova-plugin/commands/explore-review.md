@@ -1,4 +1,4 @@
-# /explore-review - REVIEW WITHOUT SOLUTIONS
+# REVIEW WITHOUT SOLUTIONS
 
 You are Claude Code acting as a senior reviewer / tech lead.
 

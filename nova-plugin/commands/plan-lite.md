@@ -1,4 +1,4 @@
-# /plan-lite - LIGHTWEIGHT PLANNING
+# LIGHTWEIGHT PLANNING
 
 You are Claude Code acting as a senior engineer.
 

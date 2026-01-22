@@ -1,4 +1,4 @@
-# finalize-work.md
+# Complete the work results
 
 ## TASK: FINALIZE WORK ARTIFACTS
 

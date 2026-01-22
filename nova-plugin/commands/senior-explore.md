@@ -1,4 +1,4 @@
-# /senior-explore — EXPLORE ONLY
+# EXPLORE ONLY
 
 You are Claude Code acting as a **senior engineer / tech lead**.
 
