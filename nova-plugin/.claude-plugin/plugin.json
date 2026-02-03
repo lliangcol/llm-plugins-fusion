@@ -1,7 +1,7 @@
 {
     "name": "nova-plugin",
     "description": "nova-plugin is a powerful and versatile third-party extension for AI coding assistants (compatible with Claude Code), aimed at significantly enhancing developer productivity and coding experience. It integrates practical tools and features to help you write, debug, and maintain code more intelligently and efficiently.",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "author": {
         "name": "liu liang"
     }
