@@ -1,6 +1,10 @@
 ﻿# Agents 子代理说明汇总
 
-总计代理数量: 69
+Active agents: 14（默认扫描：`nova-plugin/agents/`）
+
+Legacy agents: 69（已归档：`.claude/agents/archive/nova-plugin/agents/`，迁移清单见 `docs/agents/MIGRATION_MANIFEST.md`）
+
+路由与使用：`docs/agents/ROUTING.md`
 
 ## 图标说明
 

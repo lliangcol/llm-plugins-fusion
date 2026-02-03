@@ -26,5 +26,8 @@ dist/
 .envrc
 
 # Claude
-.claude/
 **/.claude/
+!.claude/
+!.claude/agents/
+!.claude/agents/**
+.claude/settings*.json

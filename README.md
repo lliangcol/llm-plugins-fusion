@@ -129,10 +129,10 @@ llm-plugins-fusion/
 
 ## 🧠 Agents 子代理
 
-仓库内置 69 个子代理定义，覆盖研发、数据、架构、安全、运维等领域，位于 `nova-plugin/agents/`。每个子代理包含角色定位、可用工具、使用场景等说明。
+Active agents: 14（默认扫描：`nova-plugin/agents/`）。Legacy agents: 69（已归档：`.claude/agents/archive/nova-plugin/agents/`，迁移清单见 `docs/agents/MIGRATION_MANIFEST.md`）。
 
-- 中文说明：`nova-plugin/docs/agents-summary.md`
-- English: `nova-plugin/docs/agents-summary.en.md`
+- 路由与使用：`docs/agents/ROUTING.md`
+- Legacy 汇总（保留作参考）：`nova-plugin/docs/agents-summary.md` / `nova-plugin/docs/agents-summary.en.md`
 
 ---
 
@@ -142,6 +142,7 @@ llm-plugins-fusion/
 |--------|--------|-----------|
 | [📘 命令完全参考手册](nova-plugin/docs/commands-reference-guide.md) | 详细参数、5+ 场景示例、工作流模板 | **日常查询、复制模板** |
 | [📗 命令使用手册](nova-plugin/docs/claude-code-commands-handbook.md) | 按类型组织、命令对比表 | **快速入门、命令选择** |
+| [🧭 Agents 路由指南](docs/agents/ROUTING.md) | Active agents 列表、关键词路由、示例 | **自动路由、选 agent** |
 | [🧠 Agents 子代理说明](nova-plugin/docs/agents-summary.md) | 子代理角色、工具、场景汇总 | **了解与选择子代理** |
 
 如需英文文档，请见 `nova-plugin/docs/README.en.md` 与 `nova-plugin/docs/agents-summary.en.md`。

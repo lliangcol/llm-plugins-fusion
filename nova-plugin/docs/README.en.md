@@ -129,10 +129,10 @@ A developer-productivity plugin for LLM coding assistants (Claude Code compatibl
 
 ## 🧠 Agents
 
-The repo includes 69 sub-agent definitions across engineering, data, architecture, security, and ops domains under `nova-plugin/agents/`. Each agent includes role positioning, tools, and usage scenarios.
+Active agents: 14 (default-scanned: `nova-plugin/agents/`). Legacy agents: 69 (archived: `.claude/agents/archive/nova-plugin/agents/`; manifest: `docs/agents/MIGRATION_MANIFEST.md`).
 
-- Chinese summary: `nova-plugin/docs/agents-summary.md`
-- English summary: `nova-plugin/docs/agents-summary.en.md`
+- Routing & usage: `docs/agents/ROUTING.md`
+- Legacy summaries (kept for reference): `nova-plugin/docs/agents-summary.md` / `nova-plugin/docs/agents-summary.en.md`
 
 ---
 
@@ -142,6 +142,7 @@ The repo includes 69 sub-agent definitions across engineering, data, architectur
 |--------|--------|-----------|
 | [📘 Command Reference Guide](nova-plugin/docs/commands-reference-guide.md) | Full parameters, 5+ scenarios, workflow templates | **Daily lookup, copy templates** |
 | [📗 Command Handbook](nova-plugin/docs/claude-code-commands-handbook.md) | Grouped by type, command comparison | **Quick start, pick a command** |
+| [🧭 Agents Routing](docs/agents/ROUTING.md) | Active agents, keyword routing, examples | **Auto routing, pick agents** |
 | [🧠 Agents Summary](nova-plugin/docs/agents-summary.en.md) | Agent roles, tools, and scenarios | **Understand and pick agents** |
 
 For the Chinese version, see `README.md` and `nova-plugin/docs/agents-summary.md`.

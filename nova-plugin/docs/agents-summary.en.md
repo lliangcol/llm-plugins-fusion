@@ -1,6 +1,10 @@
 ﻿# Agents Summary
 
-Total agents: 69
+Active agents: 14 (default-scanned: `nova-plugin/agents/`)
+
+Legacy agents: 69 (archived: `.claude/agents/archive/nova-plugin/agents/`; manifest: `docs/agents/MIGRATION_MANIFEST.md`)
+
+Routing & usage: `docs/agents/ROUTING.md`
 
 ## Legend
 
@@ -521,4 +525,3 @@ configuration, remoting, credentials, logs, and automation infrastructure.
 - Model: Not specified (not declared in file)
 - Tools: Read, Write, Edit, Bash, Glob, Grep
 - Use Cases: Query context manager for code quality issues and refactoring needs；Review code structure, complexity metrics, and test coverage；Analyze code smells, design issues, and improvement opportunities；Implement systematic refactoring with safety guarantees
-
