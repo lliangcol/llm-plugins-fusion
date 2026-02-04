@@ -7,19 +7,22 @@ based on prior understanding or exploration.
 
 This is NOT a formal design document.
 
-Rules:
+---
+
+## EXECUTION RULES
 
 - Do NOT write production code
 - Do NOT over-design or expand scope
 - Do NOT assume unstated requirements
 
 Focus on:
-
 - Clarifying goals and boundaries
 - Making key decisions explicit
 - Aligning on a practical execution path
 
-Output format (strict):
+---
+
+## OUTPUT FORMAT (STRICT)
 
 ### Goal
 
@@ -49,4 +52,8 @@ Output format (strict):
 
 - The most important risks to be aware of
 - No detailed mitigation required
+
+---
+
+## END OF COMMAND
 

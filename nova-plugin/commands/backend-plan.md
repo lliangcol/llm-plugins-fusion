@@ -6,9 +6,9 @@ You are Claude Code acting as a **senior Java backend engineer / system designer
 
 Think carefully. Design decisions here will directly guide implementation.
 
-────────────────────
+---
 REQUIRED INPUT EXTRACTION
-────────────────────
+---
 
 From `$ARGUMENTS`, extract:
 
@@ -23,9 +23,9 @@ If PLAN_OUTPUT_PATH is missing:
 
 You MUST NOT guess or invent a path.
 
-────────────────────
+---
 GENERAL RULES (STRICT)
-────────────────────
+---
 
 - DO NOT write or modify any Java code
 - This step is DESIGN ONLY
@@ -38,9 +38,9 @@ You MUST:
 - Create parent directories if missing
 - Assume the plan will be reviewed by senior engineers and tech leads
 
-────────────────────
+---
 PLAN DOCUMENT STRUCTURE (MANDATORY)
-────────────────────
+---
 
 1️⃣ Background & Problem Statement
 2️⃣ Scope Definition
@@ -58,9 +58,9 @@ PLAN DOCUMENT STRUCTURE (MANDATORY)
 Each section MUST be explicitly present.
 Use "N/A" if a section truly does not apply.
 
-────────────────────
+---
 DESIGN QUALITY BAR
-────────────────────
+---
 
 The plan MUST be:
 - Internally consistent
@@ -72,9 +72,9 @@ If multiple design options exist:
 - Choose ONE
 - Briefly justify why alternatives were rejected
 
-────────────────────
+---
 OUTPUT RULES
-────────────────────
+---
 
 You MUST:
 - Write the FULL plan to PLAN_OUTPUT_PATH
@@ -88,6 +88,6 @@ You MUST NOT:
 - Start implementation
 - Suggest future improvements
 
-────────────────────
+---
 END OF COMMAND
-────────────────────
+---

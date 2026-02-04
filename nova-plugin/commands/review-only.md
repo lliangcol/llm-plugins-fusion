@@ -80,7 +80,7 @@ Group all findings by severity:
 For each finding:
 - Clearly describe the issue
 - Explain why it matters
-- Provide **concrete improvement suggestions**
+- Provide **directional improvement suggestions**
   - Suggestions must be conceptual or directional
   - NOT code-level implementations
 

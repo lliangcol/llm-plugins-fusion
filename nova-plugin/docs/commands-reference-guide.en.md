@@ -71,33 +71,42 @@
 │  │ senior  │   │  lite   │   │  lite   │   │  plan   │   │  work   │   │
 │  │ explore │   │         │   │         │   │         │   │         │   │
 │  ├─────────┤   ├─────────┤   ├─────────┤   ├─────────┤   ├─────────┤   │
-│  │ explore │   │ produce │   │  only   │   │standard │   │  lite   │   │
-│  │  lite   │   │  plan   │   │         │   │         │   │         │   │
+│  │⭐explore│   │ produce │   │⭐review │   │standard │   │  lite   │   │
+│  │         │   │  plan   │   │         │   │         │   │         │   │
 │  ├─────────┤   ├─────────┤   ├─────────┤   ├─────────┤   └─────────┘   │
-│  │ explore │   │ backend │   │ strict  │   │  lite   │                 │
-│  │ review  │   │  plan   │   │         │   │         │                 │
+│  │ explore │   │ backend │   │  only   │   │  lite   │                 │
+│  │  lite   │   │  plan   │   │         │   │         │                 │
+│  ├─────────┤   ├─────────┤   ├─────────┤   ├─────────┤                 │
+│  │ explore │   │  plan   │   │ strict  │   │         │                 │
+│  │ review  │   │ review  │   │         │   │         │                 │
 │  └─────────┘   └─────────┘   └─────────┘   └─────────┘                 │
 │                                                                        │
+│  ⭐ = Recommended unified commands                                      │
 └────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Constraint strength comparison
 
-| Stage | Command | Constraint | Output | Writes code? |
-|------|---------|:---------:|--------|:-----------:|
-| Explore | `/senior-explore`     | 🔴 Strong | Analysis output | ❌ |
-| Explore | `/explore-lite`       | 🟢 Weak   | Short analysis  | ❌ |
-| Explore | `/explore-review`     | 🟡 Medium | Reviewer-style analysis | ❌ |
-| Plan    | `/plan-lite`          | 🟡 Medium | Plan summary    | ❌ |
-| Plan    | `/produce-plan`       | 🔴 Strong | Plan doc (file) | ❌ |
-| Plan    | `/backend-plan`       | 🔴 Strong | Backend design (file) | ❌ |
-| Plan    | `/plan-review`        | 🟡 Medium | Review output   | ❌ |
-| Review  | `/review-lite`        | 🟢 Weak   | Findings bullets | ❌ |
-| Review  | `/review-only`        | 🟡 Medium | Critical/Major/Minor | ❌ |
-| Review  | `/review-strict`      | 🔴 Strong | Exhaustive review | ❌ |
-| Implement | `/implement-plan`     | 🔴 Strong | Implementation output | ✅ |
-| Implement | `/implement-standard` | 🟡 Medium | Implementation output | ✅ |
-| Implement | `/implement-lite`     | 🟢 Weak   | Implementation output | ✅ |
+| Stage | Command | Constraint | Output | Writes code? | Notes |
+|------|---------|:---------:|--------|:-----------:|-------|
+| Explore | `/senior-explore`     | 🔴 Strong | Analysis output | ❌ | Deep analysis |
+| Explore | ⭐`/explore`          | 🟡 Medium | Perspective-based | ❌ | **Unified command, recommended** |
+| Explore | `/explore-lite`       | 🟢 Weak   | Short analysis  | ❌ | = `/explore PERSPECTIVE=observer` |
+| Explore | `/explore-review`     | 🟡 Medium | Reviewer-style | ❌ | = `/explore PERSPECTIVE=reviewer` |
+| Plan    | `/plan-lite`          | 🟡 Medium | Plan summary    | ❌ | - |
+| Plan    | `/produce-plan`       | 🔴 Strong | Plan doc (file) | ❌ | Supports profile param |
+| Plan    | `/backend-plan`       | 🔴 Strong | Backend design (file) | ❌ | = `/produce-plan PLAN_PROFILE=java-backend` |
+| Plan    | `/plan-review`        | 🟡 Medium | Review output   | ❌ | - |
+| Review  | `/review-lite`        | 🟢 Weak   | Findings bullets | ❌ | Quick review |
+| Review  | ⭐`/review`           | 🟡-🔴 | Critical/Major/Minor | ❌ | **Unified command, recommended** |
+| Review  | `/review-only`        | 🟡 Medium | Critical/Major/Minor | ❌ | = `/review LEVEL=standard` |
+| Review  | `/review-strict`      | 🔴 Strong | Exhaustive review | ❌ | = `/review LEVEL=strict` |
+| Implement | `/implement-plan`     | 🔴 Strong | Implementation output | ✅ | - |
+| Implement | `/implement-standard` | 🟡 Medium | Implementation output | ✅ | - |
+| Implement | `/implement-lite`     | 🟢 Weak   | Implementation output | ✅ | - |
+
+**Total commands**: 17 (15 original + 2 unified)
+**Recommended**: Use ⭐ marked unified commands for simplified workflow
 | Finalize | `/finalize-work`      | 🔴 Strong | Delivery artifacts | ❌ |
 | Finalize | `/finalize-lite`      | 🟢 Weak   | Minimal summary | ❌ |
 

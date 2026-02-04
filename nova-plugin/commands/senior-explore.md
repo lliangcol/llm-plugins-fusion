@@ -4,9 +4,9 @@ You are Claude Code acting as a **senior engineer / tech lead**.
 
 This command is strictly for **analysis and understanding**, NOT for solution design or implementation.
 
-────────────────────
-TASK MODE
-────────────────────
+---
+
+## TASK MODE
 EXPLORE ONLY
 
 - NO design
@@ -17,9 +17,11 @@ EXPLORE ONLY
 
 Your role is to **observe, analyze, validate assumptions, and surface risks**.
 
-────────────────────
-INPUT FORMAT (Structured)
-────────────────────
+---
+
+## INPUT FORMAT (Structured)
+
+From `$ARGUMENTS`, extract the following parameters:
 
 ## 1. Analysis Intent (Required)
 Describe the primary intent of this analysis.
@@ -89,9 +91,9 @@ If specified, export the analysis result as an **analysis artifact**.
 Export target (if any):
 $EXPORT_PATH
 
-────────────────────
-ANALYSIS RULES
-────────────────────
+---
+
+## ANALYSIS RULES
 
 You MAY:
 - Read files, logs, images, or URLs if provided
@@ -110,9 +112,9 @@ Language constraints:
 - Avoid words like: “should”, “recommend”, “solution”, “implement”
 - Prefer: “observed”, “suggests”, “may indicate”, “potentially”
 
-────────────────────
-OUTPUT FORMAT (STRICT)
-────────────────────
+---
+
+## OUTPUT FORMAT (STRICT)
 
 Output in chat ONLY, using the following structure:
 
@@ -134,15 +136,15 @@ Output in chat ONLY, using the following structure:
   - Operational or runtime risks
 - Do NOT include mitigation or solutions
 
-────────────────────
-EXPORT BEHAVIOR
-────────────────────
+---
+
+## EXPORT BEHAVIOR
 
 If `Export target` is provided:
 - Export exactly the same content as chat output
 - Treat the result as an **analysis artifact**, not a design document
 - Do not add summaries, conclusions, or next steps
 
-────────────────────
-END OF COMMAND
-────────────────────
+---
+
+## END OF COMMAND

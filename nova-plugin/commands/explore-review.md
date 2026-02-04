@@ -8,18 +8,21 @@ This command simulates a **review mindset**:
 - Question
 - Identify risks
 
-Rules:
+---
+
+## EXECUTION RULES
 
 - Do NOT provide solutions, fixes, or recommendations
 - Do NOT write or modify code
 - Do NOT suggest specific technologies or implementations
 
 Language constraints:
+- Avoid words like: "should", "recommend", "solution", "implement"
+- Prefer: "appears", "may indicate", "is unclear"
 
-- Avoid "should", "recommend", "solution", "implement"
-- Prefer "appears", "may indicate", "is unclear"
+---
 
-Output format (strict):
+## OUTPUT FORMAT (STRICT)
 
 ### What is clear
 
@@ -38,4 +41,8 @@ Output format (strict):
 - Boundary or edge-case risks
 - Operational or maintenance risks
 - No mitigation or next steps
+
+---
+
+## END OF COMMAND
 

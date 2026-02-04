@@ -27,14 +27,14 @@
 | 你现在要做什么？ | 推荐命令 | 关键理由 |
 |---|---|---|
 | 先把问题/需求/现状搞清楚，不要任何方案 | `/senior-explore` | 明确禁止"建议/实现/设计"，只输出事实、问题、风险 |
-| 快速对齐理解（轻量版探索）            | `/explore-lite`   | 输出更短：Observations / Uncertainties / Risks |
-| 用"评审者心态"梳理问题，但仍不许给方案 | `/explore-review` | 只输出：clear / questions / risk signals |
+| 快速对齐理解（轻量版探索）            | ⭐`/explore` 或 `/explore-lite`   | **统一命令**：默认观察者视角，输出更短 |
+| 用"评审者心态"梳理问题，但仍不许给方案 | ⭐`/explore PERSPECTIVE=reviewer` 或 `/explore-review` | **统一命令**：评审者视角，只输出 clear / questions / risk signals |
 | 需要一份**轻量执行计划**（不写代码）         | `/plan-lite` | 目标、非目标、选型、权衡、执行大纲、关键风险 |
 | 需要一份**正式可评审的设计/计划文档**写入文件 | `/produce-plan` 或 `/backend-plan` | 强制写文件 + 固定章节结构；前者更通用，后者偏 Java/Spring |
 | 对"计划文档"做决策质量评审（不改计划）        | `/plan-review` | 只看决策清晰度、隐含假设、风险信号、必须回答的问题 |
 | 对现有代码/描述做快速 PR 反馈                | `/review-lite` | 快、只抓明显问题，高信噪比 |
-| 对现有代码做常规严格评审（不给实现）          | `/review-only` | 分严重级别 + 给方向性改进建议（不写代码） |
-| 高风险/核心模块/金融并发场景做"严苛审计式评审" | `/review-strict` | 穷尽维度、按 Critical/Major/Minor 输出 |
+| 对现有代码做常规严格评审（不给实现）          | ⭐`/review` 或 `/review-only` | **统一命令**：标准级别，分严重级别 + 给方向性改进建议 |
+| 高风险/核心模块/金融并发场景做"严苛审计式评审" | ⭐`/review LEVEL=strict` 或 `/review-strict` | **统一命令**：严格级别，穷尽维度输出 |
 | 已有**批准的 plan 文件**，要严格按计划实现    | `/implement-plan` | 必须提供 `PLAN_APPROVED=true`，偏差要解释 |
 | 有计划或明确步骤，但允许少量纠错              | `/implement-standard` | 计划为主，允许小调整，遇阻停下提问 |
 | 追求速度、允许小重构与必要的微调              | `/implement-lite` | "快实现"，避免过度设计 |
@@ -111,6 +111,57 @@ DEPTH: normal
 这里是现有逻辑说明 + 两段关键代码 + 我遇到的疑问
 （要求：只指出哪里不清楚、有哪些风险，不要给解决方案）
 ```
+
+---
+
+### 2.2.5 ⭐ `/explore` — UNIFIED EXPLORATION（统一探索命令，推荐）
+
+**定位**
+- **统一命令**：通过 `PERSPECTIVE` 参数选择视角，减少命令选择成本
+- 支持两种视角：`observer`（观察者，默认）/ `reviewer`（评审者）
+- 禁止写代码、禁止给方案/设计/重构建议
+
+**参数**
+```text
+PERSPECTIVE=observer (默认) 或 reviewer
+```
+
+**等价关系**
+| PERSPECTIVE | 等价命令 | 输出格式 |
+|-------------|---------|---------|
+| `observer` | `/explore-lite` | Observations / Uncertainties / Potential risks |
+| `reviewer` | `/explore-review` | What is clear / Review questions / Risk signals |
+
+**适用**
+- 需要快速理解/对齐，但不想记忆多个命令
+- 想根据场景灵活切换视角
+
+**示例**
+
+1) 默认观察者视角（省略参数）
+```text
+/explore
+线上告警: "Connection pool exhausted"
+- 服务: user-service
+- 时间: 每天 10:00-11:00
+快速梳理可能原因，不需要解决方案
+```
+
+2) 评审者视角
+```text
+/explore PERSPECTIVE=reviewer
+【需求文档】会员等级自动升降级
+- 消费满1000元升级为银卡
+- 消费满5000元升级为金卡
+- 连续6个月无消费降一级
+
+用 reviewer 视角输出评审问题和风险信号
+```
+
+**优势**
+- 统一入口，减少记忆负担
+- 保留灵活性，支持未来扩展新视角
+- 原有命令仍然可用，向后兼容
 
 ---
 
@@ -249,6 +300,83 @@ PLAN_OUTPUT_PATH: docs/plans/ads-callback-reporting.md
 这是 PR diff（粘贴关键段）+ 变更目的
 请只输出 bullet findings，不要写代码
 ```
+
+---
+
+### 4.1.5 ⭐ `/review` — UNIFIED CODE REVIEW（统一代码评审命令，推荐）
+
+**定位**
+- **统一命令**：通过 `LEVEL` 参数选择评审严格程度
+- 支持两种级别：`standard`（标准，默认）/ `strict`（严格）
+- 禁止写代码、禁止提供完整实现示例
+- 统一输出格式：Critical / Major / Minor 分级
+
+**参数**
+```text
+LEVEL=standard (默认) 或 strict
+```
+
+**等价关系**
+| LEVEL | 等价命令 | 评审维度 | 语气 |
+|-------|---------|---------|------|
+| `standard` | `/review-only` | 7 项标准维度 | 中立、精确 |
+| `strict` | `/review-strict` | 9 项维度（+API边界、演进风险等） | 批判但建设性 |
+
+**评审维度**
+
+**standard 级别**：
+- 正确性
+- 过度工程或不必要的复杂性
+- 性能问题
+- 并发/线程安全风险
+- 错误处理和失败模式
+- 测试覆盖率和测试质量
+- 可维护性和长期可读性
+
+**strict 级别（额外）**：
+- API 或模块边界清晰度
+- 长期演进风险
+- 安全漏洞
+- 数据完整性风险
+- 运维弹性
+
+**适用**
+- 标准级别：日常代码评审、PR 审查
+- 严格级别：生产关键代码、资金结算、并发高风险场景
+
+**示例**
+
+1) 标准评审（默认）
+```text
+/review
+这是支付回调处理的核心代码，请评审:
+
+@Transactional
+public void handlePaymentCallback(PaymentCallback callback) {
+    Order order = orderRepository.findByOrderNo(callback.getOrderNo());
+    order.setStatus(OrderStatus.PAID);
+    orderRepository.save(order);
+    messageQueue.send("order-paid", order.getId());
+}
+
+请按 Critical/Major/Minor 分级给出评审意见
+```
+
+2) 严格审计
+```text
+/review LEVEL=strict
+这是核心的资金结算逻辑，需要严格审计:
+(粘贴代码)
+这是高风险代码，请用 strict 级别全面审计
+```
+
+**优势**
+- 统一命令，只需决定严格程度
+- 输出格式完全一致，便于对比和追踪
+- 减少命令选择成本
+- 原有命令仍然可用，向后兼容
+
+**注意**：`/review-lite` 是更轻量的快速评审，不在统一命令范围内。
 
 ---
 

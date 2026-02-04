@@ -61,8 +61,9 @@ llm-plugins-fusion/
 ├── 📦 nova-plugin/                    # plugin
 │   ├── 📄 .claude-plugin/
 │   │   └── plugin.json               # plugin metadata
-│   ├── 📂 commands/                   # 15 command presets
+│   ├── 📂 commands/                   # 17 command presets (15 original + 2 unified)
 │   │   ├── senior-explore.md
+│   │   ├── ⭐ explore.md          # Unified exploration command (new)
 │   │   ├── explore-lite.md
 │   │   ├── explore-review.md
 │   │   ├── plan-lite.md
@@ -70,6 +71,7 @@ llm-plugins-fusion/
 │   │   ├── backend-plan.md
 │   │   ├── plan-review.md
 │   │   ├── review-lite.md
+│   │   ├── ⭐ review.md           # Unified review command (new)
 │   │   ├── review-only.md
 │   │   ├── review-strict.md
 │   │   ├── implement-plan.md
@@ -106,7 +108,7 @@ llm-plugins-fusion/
 </tr>
 <tr>
 <td><strong>Commands</strong></td>
-<td>15</td>
+<td>17 (15 original + 2 unified)</td>
 </tr>
 <tr>
 <td><strong>Positioning</strong></td>
@@ -123,7 +125,8 @@ A developer-productivity plugin for LLM coding assistants (Claude Code compatibl
 | Stage | Explore 🔍 | Plan 📝 | Review 🔎 | Implement ⚙️ | Finalize 📦 |
 |------|--------|--------|--------|--------|--------|
 | Goal | Understand the problem | Draft the plan | Review quality | Write code | Deliver outcomes |
-| Commands | 3 commands | 4 commands | 3 commands | 3 commands | 2 commands |
+| Commands | 4 commands | 4 commands | 4 commands | 3 commands | 2 commands |
+| Unified | ⭐ `/explore` | - | ⭐ `/review` | - | - |
 
 ---
 

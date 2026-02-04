@@ -122,3 +122,14 @@ It only **packages the outcome** of prior steps.
 
 ## POSITION IN THE OVERALL FLOW
 
+This command is the **final step** after implementation is complete:
+
+1. **Explore** → Understand the problem
+2. **Plan** → Design the solution
+3. **Review** → Validate the approach
+4. **Implement** → Execute the changes
+5. **Finalize** ← **(YOU ARE HERE)** → Package and document the completed work
+
+---
+
+## END OF COMMAND

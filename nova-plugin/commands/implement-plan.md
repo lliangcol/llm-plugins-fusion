@@ -9,18 +9,18 @@ No exploration.
 No redesign.
 No scope expansion.
 
-────────────────────
+---
 TASK MODE
-────────────────────
+---
 IMPLEMENT CODE STRICTLY BASED ON AN APPROVED PLAN
 
 - The plan is the decision authority
 - This step is execution-focused
 - Deviations are exceptional and must be justified
 
-────────────────────
+---
 REQUIRED INPUT EXTRACTION
-────────────────────
+---
 
 From `$ARGUMENTS`, extract:
 
@@ -49,9 +49,9 @@ If `PLAN_APPROVED` is missing or not exactly `true`:
 - State clearly that implementation is blocked
 - Explain that `PLAN_APPROVED=true` is required to proceed
 
-────────────────────
+---
 EXECUTION RULES (STRICT)
-────────────────────
+---
 
 You MUST:
 1. Read the plan file at `PLAN_INPUT_PATH` before any implementation
@@ -65,9 +65,9 @@ You MUST NOT:
 - Optimize beyond what the plan specifies
 - Resolve unplanned issues by inventing solutions
 
-────────────────────
+---
 DEVIATION POLICY (EXCEPTION-BASED)
-────────────────────
+---
 
 Deviation is allowed ONLY if:
 - A clear **correctness**, **feasibility**, or **safety** issue is discovered
@@ -84,9 +84,9 @@ If deviation is non-trivial:
 - Prefer stopping execution
 - Request plan revision instead of silently proceeding
 
-────────────────────
+---
 IMPLEMENTATION GUIDELINES
-────────────────────
+---
 
 While implementing, you MUST:
 - Follow existing project conventions and style
@@ -102,17 +102,17 @@ You MUST NOT:
 - Refactor unrelated code
 - Change behavior not covered by the plan
 
-────────────────────
+---
 TRACEABILITY REQUIREMENTS
-────────────────────
+---
 
 Implementation should maintain clear traceability:
 - Each significant change should map to a specific step or section in the plan
 - If helpful, reference plan section numbers in commit messages or comments
 
-────────────────────
+---
 OUTPUT RULES
-────────────────────
+---
 
 Provide the following in chat output:
 
@@ -132,6 +132,6 @@ Do NOT:
 - Re-justify design decisions
 - Introduce new analysis or recommendations
 
-────────────────────
+---
 END OF COMMAND
-────────────────────
+---
