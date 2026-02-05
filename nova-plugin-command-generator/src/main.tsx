@@ -1,5 +1,5 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
+import { StrictMode } from 'react';
+import { createRoot } from 'react-dom/client';
 import App from './App';
 import './styles.css';
 import { ErrorBoundary } from './components/ErrorBoundary';
@@ -7,12 +7,12 @@ import { attachGlobalErrorListeners, logError } from './utils/telemetry';
 
 attachGlobalErrorListeners();
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
+createRoot(document.getElementById('root') as HTMLElement).render(
+  <StrictMode>
     <ErrorBoundary>
       <App />
     </ErrorBoundary>
-  </React.StrictMode>,
+  </StrictMode>,
 );
 
 // Service Worker 注册：仅在生产环境启用

@@ -1,4 +1,4 @@
-import type React from 'react';
+import type { Dispatch, SetStateAction } from 'react';
 import {
   Attachment,
   CommandDefinition,
@@ -63,7 +63,7 @@ interface WorkflowRunPanelProps {
   supportsShare: boolean;
   handleWorkflowExport: (kind: 'md' | 'txt', mode: 'save' | 'download' | 'share') => void;
   workflowPreviewText: string;
-  setWorkflowPreviewOverrides: React.Dispatch<React.SetStateAction<Record<string, string>>>;
+  setWorkflowPreviewOverrides: Dispatch<SetStateAction<Record<string, string>>>;
 }
 
 export const WorkflowRunPanel = ({

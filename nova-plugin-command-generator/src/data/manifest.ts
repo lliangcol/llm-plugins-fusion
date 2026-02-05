@@ -1,34 +1,34 @@
 import { Manifest } from '../types';
 
-// 简化版 manifest，覆盖 15 个命令的基础字段与模板（可继续细化）。
 export const manifest: Manifest = {
-  version: '0.1.0',
+  version: '0.2.0',
   commands: [
     {
       id: 'senior-explore',
       displayName: '/senior-explore',
       stage: 'explore',
       constraintLevel: 'strong',
-      description: '深度探索与分析（禁止方案/实现）',
+      description: 'Deep analysis only, no design or implementation.',
       fields: [
-        { id: 'INTENT', label: '意图', type: 'multiline', required: true },
-        { id: 'CONTEXT', label: '上下文', type: 'multiline' },
-        { id: 'CONSTRAINTS', label: '约束', type: 'multiline' },
+        { id: 'INTENT', label: 'Intent', type: 'multiline', required: true },
+        { id: 'CONTEXT', label: 'Context', type: 'multiline' },
+        { id: 'CONSTRAINTS', label: 'Constraints', type: 'multiline' },
         {
           id: 'DEPTH',
-          label: '深度',
+          label: 'Depth',
           type: 'select',
           options: [
-            { value: 'quick', label: '快速' },
-            { value: 'normal', label: '标准' },
-            { value: 'deep', label: '深入' },
+            { value: 'quick', label: 'quick' },
+            { value: 'normal', label: 'normal' },
+            { value: 'deep', label: 'deep' },
           ],
           defaultValue: 'normal',
         },
-        { id: 'EXPORT_PATH', label: '导出路径', type: 'path' },
+        { id: 'EXPORT_PATH', label: 'Export path', type: 'path' },
       ],
       template: `/senior-explore
-INTENT: {{INTENT}}
+INTENT:
+{{INTENT}}
 CONTEXT:
 {{CONTEXT}}
 CONSTRAINTS:
@@ -38,23 +38,46 @@ EXPORT_PATH: {{EXPORT_PATH}}`,
       outputs: [{ id: 'analysis_export_path', sourceFieldId: 'EXPORT_PATH', type: 'path' }],
     },
     {
+      id: 'explore',
+      displayName: '/explore',
+      stage: 'explore',
+      constraintLevel: 'medium',
+      description: 'Quick exploration with optional perspective.',
+      fields: [
+        {
+          id: 'PERSPECTIVE',
+          label: 'Perspective',
+          type: 'select',
+          options: [
+            { value: 'observer', label: 'observer' },
+            { value: 'reviewer', label: 'reviewer' },
+          ],
+          defaultValue: 'observer',
+        },
+        { id: 'INPUT', label: 'Input', type: 'multiline', required: true },
+      ],
+      template: `/explore
+PERSPECTIVE: {{PERSPECTIVE}}
+INPUT:
+{{INPUT}}`,
+    },
+    {
       id: 'explore-lite',
       displayName: '/explore-lite',
       stage: 'explore',
       constraintLevel: 'weak',
-      description: '快速理解与对齐',
-      fields: [{ id: 'CONTEXT', label: '上下文', type: 'multiline', required: true }],
+      description: 'Quick understanding and alignment.',
+      fields: [{ id: 'INPUT', label: 'Input', type: 'multiline', required: true }],
       template: `/explore-lite
-CONTEXT:
-{{CONTEXT}}`,
+{{INPUT}}`,
     },
     {
       id: 'explore-review',
       displayName: '/explore-review',
       stage: 'explore',
       constraintLevel: 'medium',
-      description: '评审视角梳理问题，不给方案',
-      fields: [{ id: 'INPUT', label: '输入', type: 'multiline', required: true }],
+      description: 'Review mindset without proposing solutions.',
+      fields: [{ id: 'INPUT', label: 'Input', type: 'multiline', required: true }],
       template: `/explore-review
 {{INPUT}}`,
     },
@@ -63,14 +86,14 @@ CONTEXT:
       displayName: '/plan-lite',
       stage: 'plan',
       constraintLevel: 'medium',
-      description: '轻量计划，明确目标与风险',
+      description: 'Lightweight execution planning.',
       fields: [
-        { id: 'GOAL', label: '目标', type: 'multiline', required: true },
-        { id: 'NON_GOALS', label: '非目标', type: 'multiline' },
-        { id: 'APPROACH', label: '方案选择', type: 'multiline' },
-        { id: 'TRADEOFFS', label: '关键权衡', type: 'multiline' },
-        { id: 'EXECUTION', label: '执行大纲', type: 'multiline' },
-        { id: 'RISKS', label: '关键风险', type: 'multiline' },
+        { id: 'GOAL', label: 'Goal', type: 'multiline', required: true },
+        { id: 'NON_GOALS', label: 'Non-goals', type: 'multiline' },
+        { id: 'APPROACH', label: 'Chosen approach', type: 'multiline' },
+        { id: 'TRADEOFFS', label: 'Key trade-offs', type: 'multiline' },
+        { id: 'EXECUTION', label: 'Execution outline', type: 'multiline' },
+        { id: 'RISKS', label: 'Key risks', type: 'multiline' },
       ],
       template: `/plan-lite
 GOAL:
@@ -91,16 +114,28 @@ KEY RISKS:
       displayName: '/produce-plan',
       stage: 'plan',
       constraintLevel: 'strong',
-      description: '正式设计/计划文档，写入文件',
+      description: 'Write a formal plan/design document.',
       fields: [
-        { id: 'PLAN_OUTPUT_PATH', label: '计划输出路径', type: 'path', required: true },
-        { id: 'PLAN_INTENT', label: '计划目标', type: 'multiline', required: true },
-        { id: 'ANALYSIS_INPUTS', label: '分析输入', type: 'list' },
-        { id: 'CONSTRAINTS', label: '约束', type: 'multiline' },
+        { id: 'PLAN_OUTPUT_PATH', label: 'Plan output path', type: 'path', required: true },
+        {
+          id: 'PLAN_PROFILE',
+          label: 'Plan profile',
+          type: 'select',
+          options: [
+            { value: 'general', label: 'general' },
+            { value: 'java-backend', label: 'java-backend' },
+          ],
+          defaultValue: 'general',
+        },
+        { id: 'PLAN_INTENT', label: 'Plan intent', type: 'multiline', required: true },
+        { id: 'ANALYSIS_INPUTS', label: 'Analysis inputs', type: 'list' },
+        { id: 'CONSTRAINTS', label: 'Constraints', type: 'multiline' },
       ],
       template: `/produce-plan
 PLAN_OUTPUT_PATH: {{PLAN_OUTPUT_PATH}}
-PLAN_INTENT: {{PLAN_INTENT}}
+PLAN_PROFILE: {{PLAN_PROFILE}}
+PLAN_INTENT:
+{{PLAN_INTENT}}
 ANALYSIS_INPUTS:
 {{ANALYSIS_INPUTS}}
 CONSTRAINTS:
@@ -112,16 +147,17 @@ CONSTRAINTS:
       displayName: '/backend-plan',
       stage: 'plan',
       constraintLevel: 'strong',
-      description: '后端设计计划（写文件）',
+      description: 'Java/Spring backend design plan.',
       fields: [
-        { id: 'PLAN_OUTPUT_PATH', label: '计划输出路径', type: 'path', required: true },
-        { id: 'PLAN_INTENT', label: '计划目标', type: 'multiline', required: true },
-        { id: 'CONTEXT', label: '上下文', type: 'multiline' },
-        { id: 'CONSTRAINTS', label: '约束', type: 'multiline' },
+        { id: 'PLAN_OUTPUT_PATH', label: 'Plan output path', type: 'path', required: true },
+        { id: 'PLAN_INTENT', label: 'Plan intent', type: 'multiline', required: true },
+        { id: 'CONTEXT', label: 'Context', type: 'multiline' },
+        { id: 'CONSTRAINTS', label: 'Constraints', type: 'multiline' },
       ],
       template: `/backend-plan
 PLAN_OUTPUT_PATH: {{PLAN_OUTPUT_PATH}}
-PLAN_INTENT: {{PLAN_INTENT}}
+PLAN_INTENT:
+{{PLAN_INTENT}}
 CONTEXT:
 {{CONTEXT}}
 CONSTRAINTS:
@@ -133,18 +169,42 @@ CONSTRAINTS:
       displayName: '/plan-review',
       stage: 'plan',
       constraintLevel: 'medium',
-      description: '对计划文档做决策质量评审',
-      fields: [{ id: 'PLAN_TEXT', label: '计划文本或摘要', type: 'multiline', required: true }],
+      description: 'Critical review for plan quality and execution risk.',
+      fields: [{ id: 'PLAN_TEXT', label: 'Plan text', type: 'multiline', required: true }],
       template: `/plan-review
 {{PLAN_TEXT}}`,
+    },
+    {
+      id: 'review',
+      displayName: '/review',
+      stage: 'review',
+      constraintLevel: 'medium',
+      description: 'Code/content review with configurable depth.',
+      fields: [
+        {
+          id: 'LEVEL',
+          label: 'Level',
+          type: 'select',
+          options: [
+            { value: 'standard', label: 'standard' },
+            { value: 'strict', label: 'strict' },
+          ],
+          defaultValue: 'standard',
+        },
+        { id: 'INPUT', label: 'Input', type: 'multiline', required: true },
+      ],
+      template: `/review
+LEVEL: {{LEVEL}}
+INPUT:
+{{INPUT}}`,
     },
     {
       id: 'review-lite',
       displayName: '/review-lite',
       stage: 'review',
       constraintLevel: 'weak',
-      description: '轻量代码评审，抓明显问题',
-      fields: [{ id: 'ARGUMENTS', label: '输入（代码差异/代码/说明）', type: 'multiline', required: true }],
+      description: 'Lightweight review for obvious issues.',
+      fields: [{ id: 'ARGUMENTS', label: 'Input', type: 'multiline', required: true }],
       template: `/review-lite
 {{ARGUMENTS}}`,
     },
@@ -153,8 +213,8 @@ CONSTRAINTS:
       displayName: '/review-only',
       stage: 'review',
       constraintLevel: 'medium',
-      description: '常规严格评审，分级输出',
-      fields: [{ id: 'ARGUMENTS', label: '输入', type: 'multiline', required: true }],
+      description: 'Review-only mode without implementation.',
+      fields: [{ id: 'ARGUMENTS', label: 'Input', type: 'multiline', required: true }],
       template: `/review-only
 {{ARGUMENTS}}`,
     },
@@ -163,8 +223,8 @@ CONSTRAINTS:
       displayName: '/review-strict',
       stage: 'review',
       constraintLevel: 'strong',
-      description: '高风险审计式评审',
-      fields: [{ id: 'ARGUMENTS', label: '输入', type: 'multiline', required: true }],
+      description: 'Strict and exhaustive review.',
+      fields: [{ id: 'ARGUMENTS', label: 'Input', type: 'multiline', required: true }],
       template: `/review-strict
 {{ARGUMENTS}}`,
     },
@@ -173,11 +233,11 @@ CONSTRAINTS:
       displayName: '/implement-plan',
       stage: 'implement',
       constraintLevel: 'strong',
-      description: '按批准计划严格实施',
+      description: 'Implement strictly from an approved plan.',
       fields: [
-        { id: 'PLAN_INPUT_PATH', label: '计划输入路径', type: 'path', required: true },
-        { id: 'PLAN_APPROVED', label: '计划已批准', type: 'text', required: true, defaultValue: '是' },
-        { id: 'NOTES', label: '备注', type: 'multiline' },
+        { id: 'PLAN_INPUT_PATH', label: 'Plan input path', type: 'path', required: true },
+        { id: 'PLAN_APPROVED', label: 'Plan approved', type: 'text', required: true, defaultValue: 'true' },
+        { id: 'NOTES', label: 'Notes', type: 'multiline' },
       ],
       template: `/implement-plan
 PLAN_INPUT_PATH: {{PLAN_INPUT_PATH}}
@@ -190,10 +250,10 @@ NOTES:
       displayName: '/implement-standard',
       stage: 'implement',
       constraintLevel: 'medium',
-      description: '标准受控实施，允许小纠偏',
+      description: 'Controlled implementation with minor adjustments allowed.',
       fields: [
-        { id: 'INSTRUCTIONS', label: '指令与步骤', type: 'multiline', required: true },
-        { id: 'NOTES', label: '备注', type: 'multiline' },
+        { id: 'INSTRUCTIONS', label: 'Instructions', type: 'multiline', required: true },
+        { id: 'NOTES', label: 'Notes', type: 'multiline' },
       ],
       template: `/implement-standard
 INSTRUCTIONS:
@@ -206,10 +266,10 @@ NOTES:
       displayName: '/implement-lite',
       stage: 'implement',
       constraintLevel: 'weak',
-      description: '快速实施，允许小重构',
+      description: 'Fast, pragmatic implementation.',
       fields: [
-        { id: 'INSTRUCTIONS', label: '指令与上下文', type: 'multiline', required: true },
-        { id: 'NOTES', label: '备注', type: 'multiline' },
+        { id: 'INSTRUCTIONS', label: 'Instructions', type: 'multiline', required: true },
+        { id: 'NOTES', label: 'Notes', type: 'multiline' },
       ],
       template: `/implement-lite
 INSTRUCTIONS:
@@ -222,12 +282,12 @@ NOTES:
       displayName: '/finalize-work',
       stage: 'finalize',
       constraintLevel: 'strong',
-      description: '完整交付物总结（提交/合并请求/变更）',
+      description: 'Package final changes for review and handoff.',
       fields: [
-        { id: 'CHANGES', label: '变更内容', type: 'multiline', required: true },
-        { id: 'WHY', label: '原因', type: 'multiline', required: true },
-        { id: 'LIMITATIONS', label: '已知限制', type: 'multiline' },
-        { id: 'FOLLOW_UP', label: '后续工作', type: 'multiline' },
+        { id: 'CHANGES', label: 'What changed', type: 'multiline', required: true },
+        { id: 'WHY', label: 'Why', type: 'multiline', required: true },
+        { id: 'LIMITATIONS', label: 'Known limitations', type: 'multiline' },
+        { id: 'FOLLOW_UP', label: 'Follow-up work', type: 'multiline' },
       ],
       template: `/finalize-work
 WHAT WAS CHANGED:
@@ -244,11 +304,11 @@ FOLLOW-UP WORK:
       displayName: '/finalize-lite',
       stage: 'finalize',
       constraintLevel: 'weak',
-      description: '极简总结（3 要素）',
+      description: 'Minimal close-out summary.',
       fields: [
-        { id: 'CHANGES', label: '变更内容', type: 'multiline', required: true },
-        { id: 'WHY', label: '原因', type: 'multiline', required: true },
-        { id: 'LIMITATIONS', label: '限制', type: 'multiline' },
+        { id: 'CHANGES', label: 'What changed', type: 'multiline', required: true },
+        { id: 'WHY', label: 'Why', type: 'multiline', required: true },
+        { id: 'LIMITATIONS', label: 'Known limitations', type: 'multiline' },
       ],
       template: `/finalize-lite
 WHAT:
@@ -262,9 +322,9 @@ LIMITATIONS:
   workflows: [
     {
       id: 'workflow-a',
-      intendedScenario: '需求不清晰的新功能交付',
+      title: 'New feature path',
+      intendedScenario: 'New feature with unclear requirements',
       audience: 'new user',
-      title: '新需求开发（需求不清晰）',
       steps: [
         { stepId: 'wfa1', commandId: 'senior-explore' },
         { stepId: 'wfa2', commandId: 'plan-lite' },
@@ -281,9 +341,9 @@ LIMITATIONS:
     },
     {
       id: 'workflow-b',
-      intendedScenario: '生产故障诊断与修复',
+      title: 'Production incident path',
+      intendedScenario: 'Incident analysis and fix',
       audience: 'power user',
-      title: '生产问题修复',
       steps: [
         { stepId: 'wfb1', commandId: 'senior-explore' },
         { stepId: 'wfb2', commandId: 'plan-lite', optional: true },
@@ -294,20 +354,20 @@ LIMITATIONS:
     },
     {
       id: 'workflow-c',
-      intendedScenario: '合并请求评审（逐步提升严格度）',
+      title: 'PR review path',
+      intendedScenario: 'Progressive review depth for pull requests',
       audience: 'new user',
-      title: '合并请求评审',
       steps: [
         { stepId: 'wfc1', commandId: 'review-lite', optional: true },
-        { stepId: 'wfc2', commandId: 'review-only', optional: true },
+        { stepId: 'wfc2', commandId: 'review', optional: true },
         { stepId: 'wfc3', commandId: 'review-strict', optional: true },
       ],
     },
     {
       id: 'workflow-d',
-      intendedScenario: '后端规划到交付',
+      title: 'Java backend end-to-end path',
+      intendedScenario: 'Backend planning through delivery',
       audience: 'power user',
-      title: '后端端到端',
       steps: [
         { stepId: 'wfd1', commandId: 'senior-explore' },
         { stepId: 'wfd2', commandId: 'backend-plan' },
@@ -319,15 +379,15 @@ LIMITATIONS:
     },
   ],
   scenarios: [
-    { id: 'req-new-feature', category: '需求分析', title: '新功能需求分析', recommendCommandId: 'senior-explore' },
-    { id: 'req-quick-align', category: '需求分析', title: '快速对齐认知', recommendCommandId: 'explore-lite' },
-    { id: 'doc-review', category: '需求分析', title: '需求文档评审', recommendCommandId: 'explore-review' },
-    { id: 'incident-deep', category: '故障排查', title: '生产问题深挖', recommendWorkflowId: 'workflow-b' },
-    { id: 'design-formal', category: '方案规划', title: '正式设计文档', recommendCommandId: 'produce-plan' },
-    { id: 'java-backend', category: '方案规划', title: '后端设计', recommendWorkflowId: 'workflow-d' },
-    { id: 'plan-review', category: '计划评审', title: '计划文档评审', recommendCommandId: 'plan-review' },
-    { id: 'pr-review', category: '代码评审', title: '合并请求评审', recommendWorkflowId: 'workflow-c' },
-    { id: 'implement', category: '实施', title: '按计划实施', recommendCommandId: 'implement-plan' },
-    { id: 'handoff', category: '交付', title: '完整交付', recommendCommandId: 'finalize-work' },
+    { id: 'req-new-feature', category: 'Analysis', title: 'Analyze new feature requirements', recommendCommandId: 'senior-explore' },
+    { id: 'req-quick-align', category: 'Analysis', title: 'Quick alignment', recommendCommandId: 'explore' },
+    { id: 'doc-review', category: 'Analysis', title: 'Review requirement documents', recommendCommandId: 'explore-review' },
+    { id: 'incident-deep', category: 'Incident', title: 'Production issue triage', recommendWorkflowId: 'workflow-b' },
+    { id: 'design-formal', category: 'Planning', title: 'Formal technical design', recommendCommandId: 'produce-plan' },
+    { id: 'java-backend', category: 'Planning', title: 'Java backend design and delivery', recommendWorkflowId: 'workflow-d' },
+    { id: 'plan-review-scene', category: 'Planning', title: 'Plan quality review', recommendCommandId: 'plan-review' },
+    { id: 'pr-review', category: 'Code review', title: 'Pull request review', recommendWorkflowId: 'workflow-c' },
+    { id: 'implement', category: 'Implementation', title: 'Implement with approved plan', recommendCommandId: 'implement-plan' },
+    { id: 'handoff', category: 'Delivery', title: 'Finalize and handoff', recommendCommandId: 'finalize-work' },
   ],
 };

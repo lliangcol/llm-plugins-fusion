@@ -1,4 +1,4 @@
-import type React from 'react';
+import type { ReactNode } from 'react';
 import {
   Attachment,
   CommandDefinition,
@@ -36,7 +36,7 @@ interface GeneratorPanelProps {
   onSelectCommand: (commandId: string, bypassGuardrail?: boolean) => void;
   basicSections: SectionDefinition[];
   advancedSections: SectionDefinition[];
-  renderField: (field: FieldDefinition, options: { hideLabel?: boolean }) => React.ReactNode;
+  renderField: (field: FieldDefinition, options: { hideLabel?: boolean }) => ReactNode;
   intentFeedback: QualityFeedback | null;
   contextFeedback: QualityFeedback | null;
   constraintsFeedback: QualityFeedback | null;

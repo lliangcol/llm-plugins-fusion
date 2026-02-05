@@ -1,4 +1,4 @@
-import React from 'react';
+import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { logError } from '../utils/telemetry';
 
 interface ErrorBoundaryState {
@@ -6,17 +6,14 @@ interface ErrorBoundaryState {
   error?: Error;
 }
 
-export class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  ErrorBoundaryState
-> {
+export class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryState> {
   state: ErrorBoundaryState = { hasError: false };
 
   static getDerivedStateFromError(error: Error) {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, info: React.ErrorInfo) {
+  componentDidCatch(error: Error, info: ErrorInfo) {
     logError(error, { source: 'ErrorBoundary', componentStack: info.componentStack });
   }
 

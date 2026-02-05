@@ -31,3 +31,6 @@ dist/
 !.claude/agents/
 !.claude/agents/**
 .claude/settings*.json
+
+# Codex
+.codex/

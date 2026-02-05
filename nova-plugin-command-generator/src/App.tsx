@@ -28,6 +28,14 @@ import { evaluateConstraints, evaluateContext, evaluateIntent, QualityFeedback }
 import { buildCommandStageMap, recommendNext, stageFlow } from './utils/guidance';
 
 type Tab = 'scenes' | 'commands' | 'generator' | 'workflows' | 'workflow-run' | 'history';
+interface SaveFilePickerTypeOption {
+  description?: string;
+  accept: Record<string, string[]>;
+}
+interface SaveFilePickerOptions {
+  suggestedName?: string;
+  types?: SaveFilePickerTypeOption[];
+}
 type SaveFilePicker = (options?: SaveFilePickerOptions) => Promise<FileSystemFileHandle>;
 type DirectoryPicker = () => Promise<FileSystemDirectoryHandle>;
 
@@ -534,11 +542,11 @@ export default function App() {
           </div>
           <div className="card-actions">
             {recommendation.type === 'workflow' && s.recommendWorkflowId ? (
-              <button className="btn primary" onClick={() => startWorkflow(s.recommendWorkflowId)}>
+              <button className="btn primary" onClick={() => startWorkflow(s.recommendWorkflowId!)}>
                 {primaryCta}
               </button>
             ) : s.recommendCommandId ? (
-              <button className="btn primary" onClick={() => setCommandAndSwitch(s.recommendCommandId)}>
+              <button className="btn primary" onClick={() => setCommandAndSwitch(s.recommendCommandId!)}>
                 {primaryCta}
               </button>
             ) : (
@@ -803,7 +811,7 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
       .map((section) => {
         const fields = selectedCommand.fields.filter((f) => section.match(f));
         fields.forEach((f) => used.add(f.id));
-        return { ...section, fields };
+        return { key: section.key, title: section.title, fields };
       })
       .filter((section) => section.fields.length > 0);
     const otherFields = selectedCommand.fields.filter((f) => !used.has(f.id));
@@ -953,14 +961,15 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
   useEffect(() => {
     if (!currentStep || !workflowCommand) return;
     if (workflowBindingsApplied[currentStep.stepId]) return;
-    if (!currentStep.autoBindings || currentStep.autoBindings.length === 0) {
+    const autoBindings = currentStep.autoBindings ?? [];
+    if (autoBindings.length === 0) {
       setWorkflowBindingsApplied((prev) => ({ ...prev, [currentStep.stepId]: true }));
       return;
     }
     updateWorkflowForm((current) => {
       const next = { ...current };
       let changed = false;
-      currentStep.autoBindings.forEach((binding) => {
+      autoBindings.forEach((binding) => {
         const value = workflowVariables[binding.fromVar];
         if (!value) return;
         const fieldDef = workflowCommand.fields.find((f) => f.id === binding.toFieldId);
