@@ -28,25 +28,25 @@
 
 ### 📊 场景-命令速查表
 
-| 场景类别 | 具体场景 | 推荐命令 | 跳转 |
-|---------|---------|---------|------|
-| **需求分析** | 新功能需求理解 | `/senior-explore` | [示例](#场景-新功能需求分析) |
-| **需求分析** | 快速对齐认知 | ⭐`/explore` 或 `/explore-lite` | [示例](#场景-快速认知对齐) |
-| **需求分析** | 需求文档评审 | ⭐`/explore PERSPECTIVE=reviewer` 或 `/explore-review` | [示例](#场景-需求文档评审) |
-| **故障排查** | 生产问题调查 | `/senior-explore` | [示例](#场景-生产问题深度排查) |
-| **故障排查** | 快速问题定位 | ⭐`/explore` 或 `/explore-lite` | [示例](#场景-快速问题定位) |
-| **方案设计** | 轻量任务计划 | `/plan-lite` | [示例](#场景-小型任务规划) |
-| **方案设计** | 正式设计文档 | `/produce-plan` | [示例](#场景-正式设计文档) |
-| **方案设计** | Java后端设计 | `/backend-plan` | [示例](#场景-java后端设计) |
-| **方案评审** | 计划文档评审 | `/plan-review` | [示例](#场景-计划文档评审) |
-| **代码评审** | 日常PR评审 | `/review-lite` | [示例](#场景-日常pr评审) |
-| **代码评审** | 核心逻辑评审 | ⭐`/review` 或 `/review-only` | [示例](#场景-核心逻辑评审) |
-| **代码评审** | 高风险代码审计 | ⭐`/review LEVEL=strict` 或 `/review-strict` | [示例](#场景-高风险代码审计) |
-| **代码实现** | 严格按计划执行 | `/implement-plan` | [示例](#场景-按计划实现) |
-| **代码实现** | 标准开发任务 | `/implement-standard` | [示例](#场景-标准开发任务) |
-| **代码实现** | 快速小修复 | `/implement-lite` | [示例](#场景-快速修复) |
-| **工作收尾** | 完整交付物 | `/finalize-work` | [示例](#场景-完整工作交付) |
-| **工作收尾** | 快速总结 | `/finalize-lite` | [示例](#场景-快速工作总结) |
+| 场景类别     | 具体场景       | 推荐命令                                               | 跳转                           |
+| ------------ | -------------- | ------------------------------------------------------ | ------------------------------ |
+| **需求分析** | 新功能需求理解 | `/senior-explore`                                      | [示例](#场景-新功能需求分析)   |
+| **需求分析** | 快速对齐认知   | ⭐`/explore` 或 `/explore-lite`                        | [示例](#场景-快速认知对齐)     |
+| **需求分析** | 需求文档评审   | ⭐`/explore PERSPECTIVE=reviewer` 或 `/explore-review` | [示例](#场景-需求文档评审)     |
+| **故障排查** | 生产问题调查   | `/senior-explore`                                      | [示例](#场景-生产问题深度排查) |
+| **故障排查** | 快速问题定位   | ⭐`/explore` 或 `/explore-lite`                        | [示例](#场景-快速问题定位)     |
+| **方案设计** | 轻量任务计划   | `/plan-lite`                                           | [示例](#场景-小型任务规划)     |
+| **方案设计** | 正式设计文档   | `/produce-plan`                                        | [示例](#场景-正式设计文档)     |
+| **方案设计** | Java后端设计   | `/backend-plan`                                        | [示例](#场景-java后端设计)     |
+| **方案评审** | 计划文档评审   | `/plan-review`                                         | [示例](#场景-计划文档评审)     |
+| **代码评审** | 日常PR评审     | `/review-lite`                                         | [示例](#场景-日常pr评审)       |
+| **代码评审** | 核心逻辑评审   | ⭐`/review` 或 `/review-only`                          | [示例](#场景-核心逻辑评审)     |
+| **代码评审** | 高风险代码审计 | ⭐`/review LEVEL=strict` 或 `/review-strict`           | [示例](#场景-高风险代码审计)   |
+| **代码实现** | 严格按计划执行 | `/implement-plan`                                      | [示例](#场景-按计划实现)       |
+| **代码实现** | 标准开发任务   | `/implement-standard`                                  | [示例](#场景-标准开发任务)     |
+| **代码实现** | 快速小修复     | `/implement-lite`                                      | [示例](#场景-快速修复)         |
+| **工作收尾** | 完整交付物     | `/finalize-work`                                       | [示例](#场景-完整工作交付)     |
+| **工作收尾** | 快速总结       | `/finalize-lite`                                       | [示例](#场景-快速工作总结)     |
 
 ---
 
@@ -83,25 +83,25 @@
 
 ### 命令约束强度对比
 
-| 类别 | 命令 | 约束强度 | 输出类型 | 是否写代码 | 备注 |
-|------|-----------------------|-------|---------|----------|------|
-| 探索 | `/senior-explore`     | 🔴 强 | 分析报告 | ❌ 禁止 | 深度分析 |
-| 探索 | ⭐`/explore`          | 🟡 中 | 视角化分析 | ❌ 禁止 | **统一命令，推荐** |
-| 探索 | `/explore-lite`       | 🟡 中 | 简要分析 | ❌ 禁止 | 等价于 `/explore PERSPECTIVE=observer` |
-| 探索 | `/explore-review`     | 🟡 中 | 评审问题 | ❌ 禁止 | 等价于 `/explore PERSPECTIVE=reviewer` |
-| 规划 | `/plan-lite`          | 🟡 中 | 轻量计划 | ❌ 禁止 | - |
-| 规划 | `/produce-plan`       | 🔴 强 | 正式文档 | ❌ 禁止 | 支持 profile 参数 |
-| 规划 | `/backend-plan`       | 🔴 强 | 设计文档 | ❌ 禁止 | 等价于 `/produce-plan PLAN_PROFILE=java-backend` |
-| 规划 | `/plan-review`        | 🟡 中 | 评审意见 | ❌ 禁止 | - |
-| 评审 | `/review-lite`        | 🟢 弱 | 反馈列表 | ❌ 禁止 | 快速评审 |
-| 评审 | ⭐`/review`           | 🟡-🔴 | 分级问题 | ❌ 禁止 | **统一命令，推荐** |
-| 评审 | `/review-only`        | 🟡 中 | 分级问题 | ❌ 禁止 | 等价于 `/review LEVEL=standard` |
-| 评审 | `/review-strict`      | 🔴 强 | 全面审计 | ❌ 禁止 | 等价于 `/review LEVEL=strict` |
-| 实现 | `/implement-plan`     | 🔴 强 | 代码变更 | ✅ 必须 | - |
-| 实现 | `/implement-standard` | 🟡 中 | 代码变更 | ✅ 必须 | - |
-| 实现 | `/implement-lite`     | 🟢 弱 | 代码变更 | ✅ 必须 | - |
-| 收尾 | `/finalize-work`      | 🔴 强 | 交付文档 | ❌ 禁止 | - |
-| 收尾 | `/finalize-lite`      | 🟢 弱 | 简要总结 | ❌ 禁止 | - |
+| 类别 | 命令                  | 约束强度 | 输出类型   | 是否写代码 | 备注                                             |
+| ---- | --------------------- | -------- | ---------- | ---------- | ------------------------------------------------ |
+| 探索 | `/senior-explore`     | 🔴 强    | 分析报告   | ❌ 禁止    | 深度分析                                         |
+| 探索 | ⭐`/explore`          | 🟡 中    | 视角化分析 | ❌ 禁止    | **统一命令，推荐**                               |
+| 探索 | `/explore-lite`       | 🟡 中    | 简要分析   | ❌ 禁止    | 等价于 `/explore PERSPECTIVE=observer`           |
+| 探索 | `/explore-review`     | 🟡 中    | 评审问题   | ❌ 禁止    | 等价于 `/explore PERSPECTIVE=reviewer`           |
+| 规划 | `/plan-lite`          | 🟡 中    | 轻量计划   | ❌ 禁止    | -                                                |
+| 规划 | `/produce-plan`       | 🔴 强    | 正式文档   | ❌ 禁止    | 支持 profile 参数                                |
+| 规划 | `/backend-plan`       | 🔴 强    | 设计文档   | ❌ 禁止    | 等价于 `/produce-plan PLAN_PROFILE=java-backend` |
+| 规划 | `/plan-review`        | 🟡 中    | 评审意见   | ❌ 禁止    | -                                                |
+| 评审 | `/review-lite`        | 🟢 弱    | 反馈列表   | ❌ 禁止    | 快速评审                                         |
+| 评审 | ⭐`/review`           | 🟡-🔴    | 分级问题   | ❌ 禁止    | **统一命令，推荐**                               |
+| 评审 | `/review-only`        | 🟡 中    | 分级问题   | ❌ 禁止    | 等价于 `/review LEVEL=standard`                  |
+| 评审 | `/review-strict`      | 🔴 强    | 全面审计   | ❌ 禁止    | 等价于 `/review LEVEL=strict`                    |
+| 实现 | `/implement-plan`     | 🔴 强    | 代码变更   | ✅ 必须    | -                                                |
+| 实现 | `/implement-standard` | 🟡 中    | 代码变更   | ✅ 必须    | -                                                |
+| 实现 | `/implement-lite`     | 🟢 弱    | 代码变更   | ✅ 必须    | -                                                |
+| 收尾 | `/finalize-work`      | 🔴 强    | 交付文档   | ❌ 禁止    | -                                                |
+| 收尾 | `/finalize-lite`      | 🟢 弱    | 简要总结   | ❌ 禁止    | -                                                |
 
 **命令数量**: 17 个（15 个原有 + 2 个新增统一命令）
 **推荐路径**: 优先使用 ⭐ 标记的统一命令
@@ -122,27 +122,30 @@
 
 #### 📝 参数详解
 
-| 参数 | 必填 | 说明 | 示例值 |
-|---------------|---------|------------|-------------------------------------|
-| `INTENT`      | ✅ 是   | 分析意图    | `Analyze a new feature requirement` |
-| `CONTEXT`     | 🔶 建议 | 上下文材料   | 需求文档、代码路径、日志等 |
+| 参数          | 必填    | 说明         | 示例值                                |
+| ------------- | ------- | ------------ | ------------------------------------- |
+| `INTENT`      | ✅ 是   | 分析意图     | `Analyze a new feature requirement`   |
+| `CONTEXT`     | 🔶 建议 | 上下文材料   | 需求文档、代码路径、日志等            |
 | `CONSTRAINTS` | ⚪ 可选 | 分析边界约束 | `Only analyze current implementation` |
-| `DEPTH`       | ⚪ 可选 | 分析深度     | `quick` / `normal` / `deep` |
-| `EXPORT_PATH` | ⚪ 可选 | 导出路径     | `docs/analysis/xxx.md` |
+| `DEPTH`       | ⚪ 可选 | 分析深度     | `quick` / `normal` / `deep`           |
+| `EXPORT_PATH` | ⚪ 可选 | 导出路径     | `docs/analysis/xxx.md`                |
 
 #### 🎯 输出格式
 
 ```markdown
 ### Key findings
+
 - [事实] 从输入验证的事实
 - [推断] 合理推断（与事实明确区分）
 - [假设] 信息缺失时的显式假设
 
 ### Open questions
+
 - 阻塞理解的关键问题
 - 明确说明缺失什么信息
 
 ### Potential risks
+
 - 认知/理解风险
 - 系统/架构风险
 - 运维/运行时风险
@@ -252,38 +255,46 @@ DEPTH: deep
 
 #### 📝 参数详解
 
-| 参数 | 必填 | 说明 | 可选值 | 默认值 |
-|---------------|---------|------------|-------------------------------------|---------|
+| 参数          | 必填    | 说明     | 可选值                                    | 默认值     |
+| ------------- | ------- | -------- | ----------------------------------------- | ---------- |
 | `PERSPECTIVE` | ⚪ 可选 | 探索视角 | `observer` (观察者) / `reviewer` (评审者) | `observer` |
 
 #### 🎯 输出格式
 
 **当 PERSPECTIVE = observer (默认)**
+
 ```markdown
 ### Observations
+
 - 从输入得到的事实
 - 直接明显的推断（明确标注）
 
 ### Uncertainties
+
 - 缺失的信息
 - 模糊的行为或意图
 
 ### Potential risks
+
 - 由于误解或未知导致的风险
 - 不含缓解措施
 ```
 
 **当 PERSPECTIVE = reviewer**
+
 ```markdown
 ### What is clear
+
 - 基于输入确认的理解
 - 明确区分事实与解读
 
 ### Review questions
+
 - Reviewer 会提出的问题
 - 聚焦正确性、清晰度、假设
 
 ### Risk signals
+
 - 正确性风险
 - 边界/边缘案例风险
 - 运维/维护风险
@@ -326,10 +337,10 @@ DEPTH: deep
 
 #### 💡 与原有命令的关系
 
-| PERSPECTIVE | 等价命令 | 说明 |
-|-------------|---------|------|
-| `observer` | `/explore-lite` | 观察者视角，快速认知对齐 |
-| `reviewer` | `/explore-review` | 评审者视角，质询式探索 |
+| PERSPECTIVE | 等价命令          | 说明                     |
+| ----------- | ----------------- | ------------------------ |
+| `observer`  | `/explore-lite`   | 观察者视角，快速认知对齐 |
+| `reviewer`  | `/explore-review` | 评审者视角，质询式探索   |
 
 **推荐使用**：优先使用 `/explore`，原有命令保留向后兼容。
 
@@ -350,15 +361,18 @@ DEPTH: deep
 
 ```markdown
 ### Observations
+
 - 从输入得到的事实
 - 直接明显的推断（明确标注）
 
 ### Uncertainties
+
 - 缺失的信息
 - 模糊的行为或意图
 - 正在做出的假设
 
 ### Potential risks
+
 - 由于误解或未知导致的风险
 - 不含解决方案
 ```
@@ -430,15 +444,18 @@ DEPTH: deep
 
 ```markdown
 ### What is clear
+
 - 基于输入确认的理解
 - 明确区分事实与解读
 
 ### Review questions
+
 - Reviewer 会提出的问题
 - 聚焦正确性、清晰度、假设
 - 避免假设性重设计问题
 
 ### Risk signals
+
 - 正确性风险
 - 边界/边缘案例风险
 - 运维/维护风险
@@ -505,25 +522,31 @@ DEPTH: deep
 
 ```markdown
 ### Goal
+
 - 计划要达成什么
 - 明确的成功标准
 
 ### Non-Goals
+
 - 明确不在范围内的内容
 
 ### Chosen Approach
+
 - 高层方法
 - 关键决策（显式说明）
 
 ### Key Trade-offs
+
 - 优先什么
 - 有意识地放弃什么
 
 ### Execution Outline
+
 - 高层步骤或阶段
 - 不含底层实现细节
 
 ### Key Risks
+
 - 最重要的风险
 - 不需要详细缓解方案
 ```
@@ -595,12 +618,12 @@ DEPTH: deep
 
 #### 📝 参数详解
 
-| 参数 | 必填 | 说明 |
-|-----|-----|------|
-| `PLAN_OUTPUT_PATH` | ✅ 是       | 计划文档输出路径，缺失则停止 |
-| `PLAN_INTENT`      | ✅ 是       | 计划目的描述 |
-| `ANALYSIS_INPUTS`  | 🔶 强烈建议  | 引用的分析产物（如 /senior-explore 的结果） |
-| `CONSTRAINTS`      | ⚪ 可选      | 约束条件列表 |
+| 参数               | 必填        | 说明                                        |
+| ------------------ | ----------- | ------------------------------------------- |
+| `PLAN_OUTPUT_PATH` | ✅ 是       | 计划文档输出路径，缺失则停止                |
+| `PLAN_INTENT`      | ✅ 是       | 计划目的描述                                |
+| `ANALYSIS_INPUTS`  | 🔶 强烈建议 | 引用的分析产物（如 /senior-explore 的结果） |
+| `CONSTRAINTS`      | ⚪ 可选     | 约束条件列表                                |
 
 #### 🎯 必须包含的章节
 
@@ -777,19 +800,23 @@ PLAN_OUTPUT_PATH: docs/plans/inventory-deduction-design.md
 
 ```markdown
 ### Decision clarity check
+
 - 目标、范围、选择是否明确？
 - 是否有隐含或不清楚的决策？
 
 ### Assumptions & gaps
+
 - 计划依赖的假设
 - 可能影响执行的缺失信息
 
 ### Risk signals
+
 - 技术风险
 - 运维/发布风险
 - 维护/未来变更风险
 
 ### Review questions
+
 - 执行前必须回答的问题
 - 不含建议或替代方案
 ```
@@ -850,8 +877,8 @@ PLAN_OUTPUT_PATH: docs/plans/inventory-deduction-design.md
 
 #### 📝 参数详解
 
-| 参数 | 必填 | 说明 | 可选值 | 默认值 |
-|---------------|---------|------------|-------------------------------------|---------|
+| 参数    | 必填    | 说明         | 可选值                              | 默认值     |
+| ------- | ------- | ------------ | ----------------------------------- | ---------- |
 | `LEVEL` | ⚪ 可选 | 评审严格程度 | `standard` (标准) / `strict` (严格) | `standard` |
 
 #### 🎯 输出格式
@@ -860,15 +887,18 @@ PLAN_OUTPUT_PATH: docs/plans/inventory-deduction-design.md
 
 ```markdown
 ### Critical
+
 - 可能导致数据损坏、安全/财务风险、生产不稳定、业务行为错误的问题
 
 ### Major
+
 - 显著影响可维护性、可扩展性、正确性的问题
 - 现实条件下可能导致 bug 的问题
 - 增加长期成本的问题
 - (strict 级别) 限制可扩展性或可测试性的问题
 
 ### Minor
+
 - 影响可读性或一致性的问题
 - 未遵循最佳实践的问题
 - 低风险但值得解决的问题
@@ -877,6 +907,7 @@ PLAN_OUTPUT_PATH: docs/plans/inventory-deduction-design.md
 #### 🎯 评审维度
 
 **standard 级别（7 项维度）**：
+
 - 正确性
 - 过度工程或不必要的复杂性
 - 性能问题
@@ -886,6 +917,7 @@ PLAN_OUTPUT_PATH: docs/plans/inventory-deduction-design.md
 - 可维护性和长期可读性
 
 **strict 级别（额外 2 项维度）**：
+
 - API 或模块边界清晰度
 - 长期演进风险
 - 安全漏洞
@@ -894,10 +926,10 @@ PLAN_OUTPUT_PATH: docs/plans/inventory-deduction-design.md
 
 #### 💡 语气差异
 
-| LEVEL | 语气 | 说明 |
-|-------------|---------|------|
-| `standard` | 中立、精确、评审导向 | 适合日常代码评审 |
-| `strict` | 批判但建设性、更详细的论证 | 适合生产关键代码审计 |
+| LEVEL      | 语气                       | 说明                 |
+| ---------- | -------------------------- | -------------------- |
+| `standard` | 中立、精确、评审导向       | 适合日常代码评审     |
+| `strict`   | 批判但建设性、更详细的论证 | 适合生产关键代码审计 |
 
 #### 📚 场景示例库
 
@@ -966,10 +998,10 @@ Response:
 
 #### 💡 与原有命令的关系
 
-| LEVEL | 等价命令 | 说明 |
-|-------------|---------|------|
-| `standard` | `/review-only` | 标准代码评审（7 项维度） |
-| `strict` | `/review-strict` | 严格代码审计（9 项维度） |
+| LEVEL      | 等价命令         | 说明                     |
+| ---------- | ---------------- | ------------------------ |
+| `standard` | `/review-only`   | 标准代码评审（7 项维度） |
+| `strict`   | `/review-strict` | 严格代码审计（9 项维度） |
 
 **推荐使用**：优先使用 `/review`，原有命令保留向后兼容。
 
@@ -1095,19 +1127,23 @@ LIMIT 20;
 
 ```markdown
 ### Critical
+
 - 可能导致: 数据损坏、安全/财务风险、生产不稳定、业务行为错误
 
 ### Major
+
 - 显著影响可维护性、可扩展性、正确性
 - 可能在现实条件下导致 bug
 - 增加长期成本
 
 ### Minor
+
 - 影响可读性或一致性
 - 最佳实践遗漏
 - 低风险但值得处理
 
 每个发现包含:
+
 - 问题描述
 - 为什么重要
 - 方向性改进建议（不含代码）
@@ -1197,9 +1233,9 @@ LIMIT 20;
 
 #### 📝 参数详解
 
-| 参数 | 必填 | 说明 |
-|-----|-----|------|
-| `PLAN_INPUT_PATH` | ✅ 是 | 计划文档路径，缺失则停止 |
+| 参数              | 必填  | 说明                          |
+| ----------------- | ----- | ----------------------------- |
+| `PLAN_INPUT_PATH` | ✅ 是 | 计划文档路径，缺失则停止      |
 | `PLAN_APPROVED`   | ✅ 是 | 必须严格等于 `true`，否则阻塞 |
 
 #### 🎯 偏差政策
@@ -1358,6 +1394,7 @@ PLAN_APPROVED: true
 #### 🎯 输出模式
 
 **Case A: 有 Git 仓库**
+
 ```markdown
 1. 规范的 commit message
    - 格式: type(scope): summary
@@ -1372,6 +1409,7 @@ PLAN_APPROVED: true
 ```
 
 **Case B: 无 Git 仓库**
+
 ```markdown
 1. 本地变更总结
    - 适合手动评审
@@ -1623,43 +1661,43 @@ EXPORT_PATH: docs/analysis/payment-status-issue.md
 
 ### Explore 命令速查
 
-| 命令 | 一句话描述 | 输出结构 |
-|-----|----------|---------|
-| `/senior-explore` | 深度分析，暴露风险 | Findings / Questions / Risks |
-| `/explore-lite`   | 快速对齐理解 | Observations / Uncertainties / Risks |
-| `/explore-review` | Reviewer 视角质询 | Clear / Questions / Risk signals |
+| 命令              | 一句话描述         | 输出结构                             |
+| ----------------- | ------------------ | ------------------------------------ |
+| `/senior-explore` | 深度分析，暴露风险 | Findings / Questions / Risks         |
+| `/explore-lite`   | 快速对齐理解       | Observations / Uncertainties / Risks |
+| `/explore-review` | Reviewer 视角质询  | Clear / Questions / Risk signals     |
 
 ### Plan 命令速查
 
-| 命令 | 一句话描述 | 输出位置 |
-|-----|----------|---------|
-| `/plan-lite`    | 轻量执行计划   | 聊天输出 |
-| `/produce-plan` | 正式设计文档   | 写入文件 |
+| 命令            | 一句话描述    | 输出位置 |
+| --------------- | ------------- | -------- |
+| `/plan-lite`    | 轻量执行计划  | 聊天输出 |
+| `/produce-plan` | 正式设计文档  | 写入文件 |
 | `/backend-plan` | Java 后端设计 | 写入文件 |
-| `/plan-review`  | 计划质量评审   | 聊天输出 |
+| `/plan-review`  | 计划质量评审  | 聊天输出 |
 
 ### Review 命令速查
 
-| 命令 | 适用场景 | 深度 |
-|-----|---------|-----|
+| 命令             | 适用场景   | 深度  |
+| ---------------- | ---------- | ----- |
 | `/review-lite`   | 日常 PR    | 🟢 轻 |
 | `/review-only`   | 核心链路   | 🟡 中 |
 | `/review-strict` | 高风险审计 | 🔴 深 |
 
 ### Implement 命令速查
 
-| 命令 | 适用场景 | 约束强度 |
-|-----|---------|---------|
-| `/implement-plan`     | 有批准的计划 | 🔴 强 |
-| `/implement-standard` | 明确步骤     | 🟡 中 |
-| `/implement-lite`     | 快速小任务   | 🟢 弱 |
+| 命令                  | 适用场景     | 约束强度 |
+| --------------------- | ------------ | -------- |
+| `/implement-plan`     | 有批准的计划 | 🔴 强    |
+| `/implement-standard` | 明确步骤     | 🟡 中    |
+| `/implement-lite`     | 快速小任务   | 🟢 弱    |
 
 ### Finalize 命令速查
 
-| 命令 | 适用场景 | 输出内容 |
-|-----|---------|---------|
+| 命令             | 适用场景 | 输出内容    |
+| ---------------- | -------- | ----------- |
 | `/finalize-work` | 完整交付 | commit + PR |
-| `/finalize-lite` | 快速总结 | 三要素 |
+| `/finalize-lite` | 快速总结 | 三要素      |
 
 ---
 
@@ -1669,20 +1707,20 @@ EXPORT_PATH: docs/analysis/payment-status-issue.md
 
 以下词汇在探索/评审类命令中应避免:
 
-| 类别 | 禁用 | 替代 |
-|-----|-----|-----|
-| 建议类 | should, recommend, suggest | may, could, appears |
-| 方案类 | solution, fix, implement   | observation, finding |
+| 类别   | 禁用                       | 替代                  |
+| ------ | -------------------------- | --------------------- |
+| 建议类 | should, recommend, suggest | may, could, appears   |
+| 方案类 | solution, fix, implement   | observation, finding  |
 | 确定类 | will, must, definitely     | potentially, possibly |
 
 ### 常见错误用法
 
-| 错误用法 | 问题 | 正确用法 |
-|---------|-----|---------|
-| 用 `/senior-explore` 后直接给方案       | 违反"只分析不设计"原则 | 分析完用 `/plan-lite` |
-| `/implement-plan` 不提供 PLAN_APPROVED | 会被阻塞              | 必须显式 `PLAN_APPROVED: true` |
-| 用 `/review-lite` 审核支付代码          | 深度不够              | 应使用 `/review-strict` |
-| `/finalize-work` 时还在改代码           | 违反"冻结现状"原则     | 先完成变更再收尾 |
+| 错误用法                               | 问题                   | 正确用法                       |
+| -------------------------------------- | ---------------------- | ------------------------------ |
+| 用 `/senior-explore` 后直接给方案      | 违反"只分析不设计"原则 | 分析完用 `/plan-lite`          |
+| `/implement-plan` 不提供 PLAN_APPROVED | 会被阻塞               | 必须显式 `PLAN_APPROVED: true` |
+| 用 `/review-lite` 审核支付代码         | 深度不够               | 应使用 `/review-strict`        |
+| `/finalize-work` 时还在改代码          | 违反"冻结现状"原则     | 先完成变更再收尾               |
 
 ---
 

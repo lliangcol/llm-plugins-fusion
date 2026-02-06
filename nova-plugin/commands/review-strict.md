@@ -18,6 +18,7 @@ Analyze the following thoroughly:
 $ARGUMENTS
 
 Input may include:
+
 - Core business logic
 - Infrastructure or framework code
 - Concurrency-sensitive components
@@ -25,6 +26,7 @@ Input may include:
 - Large or risky refactors
 
 Assume:
+
 - This code may run in production
 - Failures are costly
 
@@ -49,11 +51,13 @@ Review comprehensively for:
 ## STRICT RULES
 
 You MUST:
+
 - Be explicit about assumptions
 - Distinguish facts vs speculation
 - Justify why each issue matters
 
 You MUST NOT:
+
 - Write code
 - Provide implementation-level fixes
 - Redesign the system end-to-end
@@ -65,25 +69,32 @@ You MUST NOT:
 Group findings by severity:
 
 ### Critical
+
 Issues that may cause:
+
 - Data corruption
 - Financial or security risk
 - Production incidents
 - Incorrect core behavior
 
 ### Major
+
 Issues that:
+
 - Significantly increase maintenance cost
 - Are likely to cause bugs under realistic scenarios
 - Limit scalability or testability
 
 ### Minor
+
 Issues that:
+
 - Affect clarity or consistency
 - Represent best-practice gaps
 - Are low risk but worth improving
 
 For EACH finding:
+
 - Describe the issue clearly
 - Explain why it is risky or costly
 - Provide **directional improvement suggestions**
@@ -107,6 +118,7 @@ For EACH finding:
 ## NON-GOALS
 
 This command does NOT:
+
 - Approve the change
 - Decide readiness for release
 - Replace human ownership

@@ -16,6 +16,7 @@ This is NOT a formal design document.
 - Do NOT assume unstated requirements
 
 Focus on:
+
 - Clarifying goals and boundaries
 - Making key decisions explicit
 - Aligning on a practical execution path
@@ -56,4 +57,3 @@ Focus on:
 ---
 
 ## END OF COMMAND
-

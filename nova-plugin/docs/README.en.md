@@ -122,11 +122,11 @@ A developer-productivity plugin for LLM coding assistants (Claude Code compatibl
 
 ### Workflow stages
 
-| Stage | Explore 🔍 | Plan 📝 | Review 🔎 | Implement ⚙️ | Finalize 📦 |
-|------|--------|--------|--------|--------|--------|
-| Goal | Understand the problem | Draft the plan | Review quality | Write code | Deliver outcomes |
-| Commands | 4 commands | 4 commands | 4 commands | 3 commands | 2 commands |
-| Unified | ⭐ `/explore` | - | ⭐ `/review` | - | - |
+| Stage    | Explore 🔍             | Plan 📝        | Review 🔎      | Implement ⚙️ | Finalize 📦      |
+| -------- | ---------------------- | -------------- | -------------- | ------------ | ---------------- |
+| Goal     | Understand the problem | Draft the plan | Review quality | Write code   | Deliver outcomes |
+| Commands | 4 commands             | 4 commands     | 4 commands     | 3 commands   | 2 commands       |
+| Unified  | ⭐ `/explore`          | -              | ⭐ `/review`   | -            | -                |
 
 ---
 
@@ -141,11 +141,11 @@ Active agents: 14 (default-scanned: `nova-plugin/agents/`). Legacy agents: 69 (a
 
 ## 📚 Documentation
 
-| 📄 Document | 📝 Description | 🎯 Use cases |
-|--------|--------|-----------|
+| 📄 Document                                                                | 📝 Description                                    | 🎯 Use cases                     |
+| -------------------------------------------------------------------------- | ------------------------------------------------- | -------------------------------- |
 | [📘 Command Reference Guide](nova-plugin/docs/commands-reference-guide.md) | Full parameters, 5+ scenarios, workflow templates | **Daily lookup, copy templates** |
-| [📗 Command Handbook](nova-plugin/docs/claude-code-commands-handbook.md) | Grouped by type, command comparison | **Quick start, pick a command** |
-| [🧭 Agents Routing](docs/agents/ROUTING.md) | Active agents, keyword routing, examples | **Auto routing, pick agents** |
-| [🧠 Agents Summary](nova-plugin/docs/agents-summary.en.md) | Agent roles, tools, and scenarios | **Understand and pick agents** |
+| [📗 Command Handbook](nova-plugin/docs/claude-code-commands-handbook.md)   | Grouped by type, command comparison               | **Quick start, pick a command**  |
+| [🧭 Agents Routing](docs/agents/ROUTING.md)                                | Active agents, keyword routing, examples          | **Auto routing, pick agents**    |
+| [🧠 Agents Summary](nova-plugin/docs/agents-summary.en.md)                 | Agent roles, tools, and scenarios                 | **Understand and pick agents**   |
 
 For the Chinese version, see `README.md` and `nova-plugin/docs/agents-summary.md`.

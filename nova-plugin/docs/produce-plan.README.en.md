@@ -1,22 +1,27 @@
 ﻿# /produce-plan
+
 - Source: `nova-plugin/commands/produce-plan.md`
 
 ## Command Positioning
+
 - Produce a formal, review-ready planning and design document written to a specified path.
 - Use when: formal plan for design review; explicit trade-offs and alternatives.
 - Not for: lightweight planning or immediate implementation.
 
 ## Parameters
-| Parameter | Required | Description | Example |
-| --- | --- | --- | --- |
-| `PLAN_OUTPUT_PATH` | Yes | Plan document output path. | `docs/plans/feature.md` |
-| `PLAN_INTENT` | Yes | Plan intent and goal description. | `Implement a specific feature` |
-| `ANALYSIS_INPUTS` | No | Referenced analysis artifacts (recommended). | `docs/analysis/feature.md` |
-| `CONSTRAINTS` | No | Constraints and decision boundaries. | `Backward compatibility required` |
+
+| Parameter          | Required | Description                                  | Example                           |
+| ------------------ | -------- | -------------------------------------------- | --------------------------------- |
+| `PLAN_OUTPUT_PATH` | Yes      | Plan document output path.                   | `docs/plans/feature.md`           |
+| `PLAN_INTENT`      | Yes      | Plan intent and goal description.            | `Implement a specific feature`    |
+| `ANALYSIS_INPUTS`  | No       | Referenced analysis artifacts (recommended). | `docs/analysis/feature.md`        |
+| `CONSTRAINTS`      | No       | Constraints and decision boundaries.         | `Backward compatibility required` |
 
 ## Output
+
 - Write full plan to PLAN_OUTPUT_PATH; chat output includes only the path and a 3-bullet executive summary.
 - Example output structure:
+
 ```text
 Plan document structure:
 1. Background & Problem Statement
@@ -37,6 +42,7 @@ Chat output:
 ```
 
 ## Full Examples
+
 ```text
 /produce-plan
 PLAN_OUTPUT_PATH: docs/plans/points-transfer.md
@@ -57,9 +63,11 @@ PLAN_INTENT: Missing PLAN_OUTPUT_PATH
 ```
 
 ## Incorrect Usage / Anti-patterns
+
 - Proceeding without PLAN_OUTPUT_PATH.
 - Pasting the full plan content into chat output.
 
 ## Comparison with Similar Commands
+
 - `/plan-lite` outputs a lightweight plan without writing a file.
 - `/backend-plan` targets Java/Spring backend design.

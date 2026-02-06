@@ -13,7 +13,7 @@ No new decisions, no new changes.
 
 From `$ARGUMENTS`, infer:
 
-- `WORK_SCOPE` (implicit)  
+- `WORK_SCOPE` (implicit)
   - The set of changes produced in the immediately preceding step
 - Whether a **Git repository** is present
 
@@ -72,21 +72,25 @@ You MUST generate:
 Regardless of Git availability, the output MUST explicitly include:
 
 ### 1. What was changed
+
 - High-level, factual description
 - No implementation speculation
 
 ### 2. Why it was changed
+
 - Business, technical, or operational motivation
 - Should trace back to:
   - The original problem
   - Or an approved plan
 
 ### 3. Known limitations
+
 - Edge cases
 - Trade-offs
 - Intentional exclusions
 
 ### 4. Follow-up work (if any)
+
 - Clearly labeled as **NOT part of this change**
 - Suitable for future tickets or plans
 
@@ -101,6 +105,7 @@ Regardless of Git availability, the output MUST explicitly include:
 - No defensive explanations
 
 Assume the reader is:
+
 - A reviewer
 - A tech lead
 - Or a future maintainer

@@ -9,6 +9,7 @@
 ---
 
 <a id="-目录"></a>
+
 ## 📋 Table of Contents
 
 - [Quick Scenario Index](#-快速场景索引)
@@ -25,35 +26,37 @@
 ---
 
 <a id="-快速场景索引"></a>
+
 ## 🔍 Quick Scenario Index
 
 > 💡 Use this to quickly pick a command for a situation. Click “Example” to jump to a ready-to-copy template.
 
 ### 📊 Scenario → Command Cheat Sheet
 
-| Category | Scenario | Recommended command | Jump |
-|---------|---------|---------|------|
-| **Requirement analysis** | Understand a new feature request | `/senior-explore` | [Example](#场景-新功能需求分析) |
-| **Requirement analysis** | Quick alignment / shared understanding | `/explore-lite` | [Example](#场景-快速认知对齐) |
-| **Requirement analysis** | Review a requirements doc | `/explore-review` | [Example](#场景-需求文档评审) |
-| **Incident / debugging** | Investigate a production issue | `/senior-explore` | [Example](#场景-生产问题深度排查) |
-| **Incident / debugging** | Quick issue triage | `/explore-lite` | [Example](#场景-快速问题定位) |
-| **Design / planning** | Small task planning | `/plan-lite` | [Example](#场景-小型任务规划) |
-| **Design / planning** | Formal design doc | `/produce-plan` | [Example](#场景-正式设计文档) |
-| **Design / planning** | Java backend design (Spring) | `/backend-plan` | [Example](#场景-java后端设计) |
-| **Plan review** | Review a plan document | `/plan-review` | [Example](#场景-计划文档评审) |
-| **Code review** | Day-to-day PR review | `/review-lite` | [Example](#场景-日常pr评审) |
-| **Code review** | Core logic review | `/review-only` | [Example](#场景-核心逻辑评审) |
-| **Code review** | High-risk audit-style review | `/review-strict` | [Example](#场景-高风险代码审计) |
-| **Implementation** | Implement strictly by an approved plan | `/implement-plan` | [Example](#场景-按计划实现) |
-| **Implementation** | Standard, controlled implementation | `/implement-standard` | [Example](#场景-标准开发任务) |
-| **Implementation** | Fast, low-risk implementation | `/implement-lite` | [Example](#场景-快速修复) |
-| **Delivery** | Full delivery output (commit/PR) | `/finalize-work` | [Example](#场景-完整工作交付) |
-| **Delivery** | Minimal summary | `/finalize-lite` | [Example](#场景-快速工作总结) |
+| Category                 | Scenario                               | Recommended command   | Jump                              |
+| ------------------------ | -------------------------------------- | --------------------- | --------------------------------- |
+| **Requirement analysis** | Understand a new feature request       | `/senior-explore`     | [Example](#场景-新功能需求分析)   |
+| **Requirement analysis** | Quick alignment / shared understanding | `/explore-lite`       | [Example](#场景-快速认知对齐)     |
+| **Requirement analysis** | Review a requirements doc              | `/explore-review`     | [Example](#场景-需求文档评审)     |
+| **Incident / debugging** | Investigate a production issue         | `/senior-explore`     | [Example](#场景-生产问题深度排查) |
+| **Incident / debugging** | Quick issue triage                     | `/explore-lite`       | [Example](#场景-快速问题定位)     |
+| **Design / planning**    | Small task planning                    | `/plan-lite`          | [Example](#场景-小型任务规划)     |
+| **Design / planning**    | Formal design doc                      | `/produce-plan`       | [Example](#场景-正式设计文档)     |
+| **Design / planning**    | Java backend design (Spring)           | `/backend-plan`       | [Example](#场景-java后端设计)     |
+| **Plan review**          | Review a plan document                 | `/plan-review`        | [Example](#场景-计划文档评审)     |
+| **Code review**          | Day-to-day PR review                   | `/review-lite`        | [Example](#场景-日常pr评审)       |
+| **Code review**          | Core logic review                      | `/review-only`        | [Example](#场景-核心逻辑评审)     |
+| **Code review**          | High-risk audit-style review           | `/review-strict`      | [Example](#场景-高风险代码审计)   |
+| **Implementation**       | Implement strictly by an approved plan | `/implement-plan`     | [Example](#场景-按计划实现)       |
+| **Implementation**       | Standard, controlled implementation    | `/implement-standard` | [Example](#场景-标准开发任务)     |
+| **Implementation**       | Fast, low-risk implementation          | `/implement-lite`     | [Example](#场景-快速修复)         |
+| **Delivery**             | Full delivery output (commit/PR)       | `/finalize-work`      | [Example](#场景-完整工作交付)     |
+| **Delivery**             | Minimal summary                        | `/finalize-lite`      | [Example](#场景-快速工作总结)     |
 
 ---
 
 <a id="-命令总览"></a>
+
 ## 📦 Command Overview
 
 ### Command taxonomy diagram
@@ -87,32 +90,33 @@
 
 ### Constraint strength comparison
 
-| Stage | Command | Constraint | Output | Writes code? | Notes |
-|------|---------|:---------:|--------|:-----------:|-------|
-| Explore | `/senior-explore`     | 🔴 Strong | Analysis output | ❌ | Deep analysis |
-| Explore | ⭐`/explore`          | 🟡 Medium | Perspective-based | ❌ | **Unified command, recommended** |
-| Explore | `/explore-lite`       | 🟢 Weak   | Short analysis  | ❌ | = `/explore PERSPECTIVE=observer` |
-| Explore | `/explore-review`     | 🟡 Medium | Reviewer-style | ❌ | = `/explore PERSPECTIVE=reviewer` |
-| Plan    | `/plan-lite`          | 🟡 Medium | Plan summary    | ❌ | - |
-| Plan    | `/produce-plan`       | 🔴 Strong | Plan doc (file) | ❌ | Supports profile param |
-| Plan    | `/backend-plan`       | 🔴 Strong | Backend design (file) | ❌ | = `/produce-plan PLAN_PROFILE=java-backend` |
-| Plan    | `/plan-review`        | 🟡 Medium | Review output   | ❌ | - |
-| Review  | `/review-lite`        | 🟢 Weak   | Findings bullets | ❌ | Quick review |
-| Review  | ⭐`/review`           | 🟡-🔴 | Critical/Major/Minor | ❌ | **Unified command, recommended** |
-| Review  | `/review-only`        | 🟡 Medium | Critical/Major/Minor | ❌ | = `/review LEVEL=standard` |
-| Review  | `/review-strict`      | 🔴 Strong | Exhaustive review | ❌ | = `/review LEVEL=strict` |
-| Implement | `/implement-plan`     | 🔴 Strong | Implementation output | ✅ | - |
-| Implement | `/implement-standard` | 🟡 Medium | Implementation output | ✅ | - |
-| Implement | `/implement-lite`     | 🟢 Weak   | Implementation output | ✅ | - |
+| Stage     | Command               | Constraint | Output                | Writes code? | Notes                                       |
+| --------- | --------------------- | :--------: | --------------------- | :----------: | ------------------------------------------- |
+| Explore   | `/senior-explore`     | 🔴 Strong  | Analysis output       |      ❌      | Deep analysis                               |
+| Explore   | ⭐`/explore`          | 🟡 Medium  | Perspective-based     |      ❌      | **Unified command, recommended**            |
+| Explore   | `/explore-lite`       |  🟢 Weak   | Short analysis        |      ❌      | = `/explore PERSPECTIVE=observer`           |
+| Explore   | `/explore-review`     | 🟡 Medium  | Reviewer-style        |      ❌      | = `/explore PERSPECTIVE=reviewer`           |
+| Plan      | `/plan-lite`          | 🟡 Medium  | Plan summary          |      ❌      | -                                           |
+| Plan      | `/produce-plan`       | 🔴 Strong  | Plan doc (file)       |      ❌      | Supports profile param                      |
+| Plan      | `/backend-plan`       | 🔴 Strong  | Backend design (file) |      ❌      | = `/produce-plan PLAN_PROFILE=java-backend` |
+| Plan      | `/plan-review`        | 🟡 Medium  | Review output         |      ❌      | -                                           |
+| Review    | `/review-lite`        |  🟢 Weak   | Findings bullets      |      ❌      | Quick review                                |
+| Review    | ⭐`/review`           |   🟡-🔴    | Critical/Major/Minor  |      ❌      | **Unified command, recommended**            |
+| Review    | `/review-only`        | 🟡 Medium  | Critical/Major/Minor  |      ❌      | = `/review LEVEL=standard`                  |
+| Review    | `/review-strict`      | 🔴 Strong  | Exhaustive review     |      ❌      | = `/review LEVEL=strict`                    |
+| Implement | `/implement-plan`     | 🔴 Strong  | Implementation output |      ✅      | -                                           |
+| Implement | `/implement-standard` | 🟡 Medium  | Implementation output |      ✅      | -                                           |
+| Implement | `/implement-lite`     |  🟢 Weak   | Implementation output |      ✅      | -                                           |
 
 **Total commands**: 17 (15 original + 2 unified)
 **Recommended**: Use ⭐ marked unified commands for simplified workflow
-| Finalize | `/finalize-work`      | 🔴 Strong | Delivery artifacts | ❌ |
-| Finalize | `/finalize-lite`      | 🟢 Weak   | Minimal summary | ❌ |
+| Finalize | `/finalize-work` | 🔴 Strong | Delivery artifacts | ❌ |
+| Finalize | `/finalize-lite` | 🟢 Weak | Minimal summary | ❌ |
 
 ---
 
 <a id="-探索类命令详解"></a>
+
 ## 🧭 Explore Commands (Deep understanding, no solutions)
 
 ### `/senior-explore` — Deep exploration & analysis
@@ -127,27 +131,30 @@ Forbidden: design proposals, refactors, implementation details, code, architectu
 
 #### 🧾 Parameters
 
-| Field | Required | Description | Example |
-|---------------|:------:|------------|-------------------------------------|
-| `INTENT`      | ✅ | What you want to analyze | `Analyze a new feature requirement` |
-| `CONTEXT`     | ⚪ | Relevant inputs | requirements, API drafts, logs, links |
-| `CONSTRAINTS` | ⚪ | Boundaries | `Only analyze current behavior` |
-| `DEPTH`       | ⚪ | `quick` / `normal` / `deep` | `deep` |
-| `EXPORT_PATH` | ⚪ | Optional export file path | `docs/analysis/xxx.md` |
+| Field         | Required | Description                 | Example                               |
+| ------------- | :------: | --------------------------- | ------------------------------------- |
+| `INTENT`      |    ✅    | What you want to analyze    | `Analyze a new feature requirement`   |
+| `CONTEXT`     |    ⚪    | Relevant inputs             | requirements, API drafts, logs, links |
+| `CONSTRAINTS` |    ⚪    | Boundaries                  | `Only analyze current behavior`       |
+| `DEPTH`       |    ⚪    | `quick` / `normal` / `deep` | `deep`                                |
+| `EXPORT_PATH` |    ⚪    | Optional export file path   | `docs/analysis/xxx.md`                |
 
 #### 🧩 Output format
 
 ```markdown
 ### Key findings
+
 - [Fact] Evidence-backed observations
 - [Inference] Clearly labeled hypotheses
 - [Missing] Explicitly list what information is missing
 
 ### Open questions
+
 - The questions that must be answered to proceed
 - What information is needed to answer them
 
 ### Potential risks
+
 - Unknowns and edge cases
 - System/architecture risks
 - Operability/maintenance risks
@@ -156,6 +163,7 @@ Forbidden: design proposals, refactors, implementation details, code, architectu
 #### 🧪 Scenario examples
 
 <a id="场景-新功能需求分析"></a>
+
 ##### Scenario: New feature requirement analysis
 
 ```text
@@ -173,6 +181,7 @@ DEPTH: normal
 ```
 
 <a id="场景-生产问题深度排查"></a>
+
 ##### Scenario: Production issue deep investigation
 
 ```text
@@ -196,6 +205,7 @@ EXPORT_PATH: docs/analysis/2026-01-10-payment-duplicate.md
 ### `/explore-lite` — Quick understanding
 
 #### 🎯 Positioning
+
 - Faster, shorter exploration to align understanding
 - Still **no solutions** and **no code**
 
@@ -203,13 +213,16 @@ EXPORT_PATH: docs/analysis/2026-01-10-payment-duplicate.md
 
 ```markdown
 ### Observations
+
 ### Uncertainties
+
 ### Potential risks
 ```
 
 #### 🧪 Scenario examples
 
 <a id="场景-快速认知对齐"></a>
+
 ##### Scenario: Quick alignment
 
 ```text
@@ -222,6 +235,7 @@ Constraints:
 ```
 
 <a id="场景-快速问题定位"></a>
+
 ##### Scenario: Quick issue triage
 
 ```text
@@ -237,6 +251,7 @@ Constraints:
 ### `/explore-review` — Reviewer mindset exploration
 
 #### 🎯 Positioning
+
 - Use a reviewer mindset to generate a question list
 - Still **no solution**, **no code**
 
@@ -244,13 +259,16 @@ Constraints:
 
 ```markdown
 ### What is clear
+
 ### Review questions
+
 ### Risk signals
 ```
 
 #### 🧪 Scenario examples
 
 <a id="场景-需求文档评审"></a>
+
 ##### Scenario: Requirements doc review
 
 ```text
@@ -264,11 +282,13 @@ Constraints:
 ---
 
 <a id="-规划类命令详解"></a>
+
 ## 🗺️ Plan Commands (Define boundaries, no code)
 
 ### `/plan-lite` — Lightweight execution plan
 
 #### 🎯 Positioning
+
 - Produce a lightweight plan in chat output
 - Focus on goals, boundaries, approach, and risks
 
@@ -276,16 +296,22 @@ Constraints:
 
 ```markdown
 ### Goal
+
 ### Non-Goals
+
 ### Chosen Approach
+
 ### Key Trade-offs
+
 ### Execution Outline
+
 ### Key Risks
 ```
 
 #### 🧪 Scenario examples
 
 <a id="场景-小型任务规划"></a>
+
 ##### Scenario: Small task planning
 
 ```text
@@ -300,19 +326,21 @@ Constraints:
 ### `/produce-plan` — Formal design document (write to file)
 
 #### 🎯 Positioning
+
 - Generates a formal plan/design doc and writes it to a file
 - Suitable for medium/large changes that need review and traceability
 
 #### 🧾 Parameters
 
-| Field | Required | Description | Example |
-|---|:---:|---|---|
-| `PLAN_OUTPUT_PATH` | ✅ | Output file path | `docs/plans/<topic>.md` |
-| `PLAN_INTENT` | ✅ | What you plan to achieve | `Implement points transfer` |
-| `ANALYSIS_INPUTS` | ⚪ | Inputs/links used | `docs/analysis/xxx.md` |
-| `CONSTRAINTS` | ⚪ | Boundaries | `No downtime` |
+| Field              | Required | Description              | Example                     |
+| ------------------ | :------: | ------------------------ | --------------------------- |
+| `PLAN_OUTPUT_PATH` |    ✅    | Output file path         | `docs/plans/<topic>.md`     |
+| `PLAN_INTENT`      |    ✅    | What you plan to achieve | `Implement points transfer` |
+| `ANALYSIS_INPUTS`  |    ⚪    | Inputs/links used        | `docs/analysis/xxx.md`      |
+| `CONSTRAINTS`      |    ⚪    | Boundaries               | `No downtime`               |
 
 #### 🧩 Must-have sections (typical)
+
 - Background / Problem statement
 - Goals / Non-goals
 - Options considered
@@ -325,6 +353,7 @@ Constraints:
 #### 🧪 Scenario examples
 
 <a id="场景-正式设计文档"></a>
+
 ##### Scenario: Formal design doc
 
 ```text
@@ -341,10 +370,12 @@ CONSTRAINTS:
 ### `/backend-plan` — Java/Spring backend design (write to file)
 
 #### 🎯 Positioning
+
 - Similar to `/produce-plan`, but optimized for Java/Spring backend concerns
 - Typically emphasizes transactions, idempotency, observability, and consistency
 
 #### 🧩 Must-have sections (typical)
+
 - Domain model & invariants
 - Transaction boundaries
 - Idempotency strategy
@@ -355,6 +386,7 @@ CONSTRAINTS:
 #### 🧪 Scenario examples
 
 <a id="场景-java后端设计"></a>
+
 ##### Scenario: Java backend design
 
 ```text
@@ -369,6 +401,7 @@ CONSTRAINTS:
 ### `/plan-review` — Plan review (decision quality)
 
 #### 🎯 Positioning
+
 - Review the decision quality of an existing plan doc
 - Do not modify the plan; output review questions and risks
 
@@ -376,14 +409,18 @@ CONSTRAINTS:
 
 ```markdown
 ### Decision clarity check
+
 ### Assumptions & gaps
+
 ### Risk signals
+
 ### Review questions
 ```
 
 #### 🧪 Scenario examples
 
 <a id="场景-计划文档评审"></a>
+
 ##### Scenario: Plan document review
 
 ```text
@@ -395,11 +432,13 @@ Only output: Decision clarity / Assumptions & gaps / Risk signals / Review quest
 ---
 
 <a id="-评审类命令详解"></a>
+
 ## 🔎 Review Commands (No coding)
 
 ### `/review-lite` — Lightweight PR review
 
 #### 🎯 Positioning
+
 - Quick feedback with high signal-to-noise
 - Good for small changes, configuration, docs, or low-risk PRs
 
@@ -407,12 +446,14 @@ Only output: Decision clarity / Assumptions & gaps / Risk signals / Review quest
 
 ```markdown
 ### Findings
+
 - ...
 ```
 
 #### 🧪 Scenario examples
 
 <a id="场景-日常pr评审"></a>
+
 ##### Scenario: Day-to-day PR review
 
 ```text
@@ -426,6 +467,7 @@ Constraints:
 ### `/review-only` — Standard strict review (Critical/Major/Minor)
 
 #### 🎯 Positioning
+
 - Systematic review with severity levels
 - Still no implementation; point out issues and directions only
 
@@ -433,13 +475,16 @@ Constraints:
 
 ```markdown
 ### Critical
+
 ### Major
+
 ### Minor
 ```
 
 #### 🧪 Scenario examples
 
 <a id="场景-核心逻辑评审"></a>
+
 ##### Scenario: Core logic review
 
 ```text
@@ -453,12 +498,14 @@ Diff:
 ### `/review-strict` — Exhaustive high-risk audit review
 
 #### 🎯 Positioning
+
 - Use for high-risk modules: concurrency, finance, critical state machines, large refactors
 - Be exhaustive; use clear severity and risk framing
 
 #### 🧪 Scenario examples
 
 <a id="场景-高风险代码审计"></a>
+
 ##### Scenario: High-risk code audit
 
 ```text
@@ -474,24 +521,27 @@ Constraints:
 ---
 
 <a id="-实现类命令详解"></a>
+
 ## ⚙️ Implement Commands (Write code)
 
 ### `/implement-plan` — Implement strictly by an approved plan
 
 #### 🎯 Positioning
+
 - Requires a plan file and explicit approval
 - Deviations must be explained; large deviations should stop for re-approval
 
 #### 🧾 Parameters
 
-| Field | Required | Description | Example |
-|---|:---:|---|---|
-| `PLAN_INPUT_PATH` | ✅ | Plan file to follow | `docs/plans/<topic>.md` |
-| `PLAN_APPROVED` | ✅ | Must be `true` | `true` |
+| Field             | Required | Description         | Example                 |
+| ----------------- | :------: | ------------------- | ----------------------- |
+| `PLAN_INPUT_PATH` |    ✅    | Plan file to follow | `docs/plans/<topic>.md` |
+| `PLAN_APPROVED`   |    ✅    | Must be `true`      | `true`                  |
 
 #### 🧪 Scenario examples
 
 <a id="场景-按计划实现"></a>
+
 ##### Scenario: Implement by plan
 
 ```text
@@ -503,12 +553,14 @@ PLAN_APPROVED: true
 ### `/implement-standard` — Standard controlled implementation
 
 #### 🎯 Positioning
+
 - Use when you have steps or a plan outline, but allow small corrections
 - If blocked, stop and ask clarifying questions
 
 #### 🧪 Scenario examples
 
 <a id="场景-标准开发任务"></a>
+
 ##### Scenario: Standard development task
 
 ```text
@@ -523,12 +575,14 @@ If blocked, stop and explain what’s missing.
 ### `/implement-lite` — Fast implementation
 
 #### 🎯 Positioning
+
 - Prioritize speed for low-risk tasks
 - Small refactors allowed; avoid over-engineering
 
 #### 🧪 Scenario examples
 
 <a id="场景-快速修复"></a>
+
 ##### Scenario: Quick fix
 
 ```text
@@ -542,17 +596,20 @@ Constraints:
 ---
 
 <a id="-收尾类命令详解"></a>
+
 ## 📦 Finalize Commands (Deliverables, no code changes)
 
 ### `/finalize-work` — Full delivery output (commit + PR)
 
 #### 🎯 Positioning
+
 - Freeze the current state and generate delivery artifacts
 - Typically includes: summary, commit message(s), PR description, and next steps
 
 #### 🧪 Scenario examples
 
 <a id="场景-完整工作交付"></a>
+
 ##### Scenario: Full work delivery
 
 ```text
@@ -562,11 +619,13 @@ Constraints:
 ### `/finalize-lite` — Minimal summary
 
 #### 🎯 Positioning
+
 - Very short wrap-up: 3 key points
 
 #### 🧪 Scenario examples
 
 <a id="场景-快速工作总结"></a>
+
 ##### Scenario: Quick work summary
 
 ```text
@@ -576,6 +635,7 @@ Constraints:
 ---
 
 <a id="-工作流模板库"></a>
+
 ## 🔁 Workflow Templates
 
 ### Workflow A: New feature development (unclear requirements)
@@ -621,71 +681,72 @@ High risk      → /review-strict
 ---
 
 <a id="-快速参考卡片"></a>
+
 ## 🎯 Quick Reference Cards
 
 ### Explore commands
 
-| Command | One-liner | Output |
-|-----|----------|---------|
-| `/senior-explore` | Deep analysis, expose risks | Findings / Questions / Risks |
-| `/explore-lite`   | Quick alignment | Observations / Uncertainties / Risks |
-| `/explore-review` | Reviewer-style questioning | Clear / Questions / Risk signals |
+| Command           | One-liner                   | Output                               |
+| ----------------- | --------------------------- | ------------------------------------ |
+| `/senior-explore` | Deep analysis, expose risks | Findings / Questions / Risks         |
+| `/explore-lite`   | Quick alignment             | Observations / Uncertainties / Risks |
+| `/explore-review` | Reviewer-style questioning  | Clear / Questions / Risk signals     |
 
 ### Plan commands
 
-| Command | One-liner | Output location |
-|-----|----------|---------|
-| `/plan-lite`    | Lightweight plan | Chat output |
-| `/produce-plan` | Formal plan doc | Writes a file |
-| `/backend-plan` | Java backend design | Writes a file |
-| `/plan-review`  | Plan quality review | Chat output |
+| Command         | One-liner           | Output location |
+| --------------- | ------------------- | --------------- |
+| `/plan-lite`    | Lightweight plan    | Chat output     |
+| `/produce-plan` | Formal plan doc     | Writes a file   |
+| `/backend-plan` | Java backend design | Writes a file   |
+| `/plan-review`  | Plan quality review | Chat output     |
 
 ### Review commands
 
-| Command | Use case | Depth |
-|-----|---------|-----|
-| `/review-lite`   | Day-to-day PRs | 🟢 Light |
-| `/review-only`   | Core paths | 🟡 Medium |
-| `/review-strict` | High-risk audits | 🔴 Deep |
+| Command          | Use case         | Depth     |
+| ---------------- | ---------------- | --------- |
+| `/review-lite`   | Day-to-day PRs   | 🟢 Light  |
+| `/review-only`   | Core paths       | 🟡 Medium |
+| `/review-strict` | High-risk audits | 🔴 Deep   |
 
 ### Implement commands
 
-| Command | Use case | Constraint |
-|-----|---------|---------|
-| `/implement-plan`     | Approved plan exists | 🔴 Strong |
-| `/implement-standard` | Clear steps, small corrections allowed | 🟡 Medium |
-| `/implement-lite`     | Fast low-risk tasks | 🟢 Weak |
+| Command               | Use case                               | Constraint |
+| --------------------- | -------------------------------------- | ---------- |
+| `/implement-plan`     | Approved plan exists                   | 🔴 Strong  |
+| `/implement-standard` | Clear steps, small corrections allowed | 🟡 Medium  |
+| `/implement-lite`     | Fast low-risk tasks                    | 🟢 Weak    |
 
 ### Finalize commands
 
-| Command | Use case | Output |
-|-----|---------|---------|
-| `/finalize-work` | Full delivery | commit + PR |
+| Command          | Use case        | Output       |
+| ---------------- | --------------- | ------------ |
+| `/finalize-work` | Full delivery   | commit + PR  |
 | `/finalize-lite` | Minimal summary | 3 key points |
 
 ---
 
 <a id="-附录"></a>
+
 ## 🧾 Appendix
 
 ### Banned wording (for explore/review)
 
 Avoid these in explore/review outputs:
 
-| Category | Avoid | Prefer |
-|-----|-----|-----|
-| Recommendation tone | should, recommend, suggest | may, could, appears |
-| Solution framing | solution, fix, implement | observation, finding |
-| Over-certainty | will, must, definitely | potentially, possibly |
+| Category            | Avoid                      | Prefer                |
+| ------------------- | -------------------------- | --------------------- |
+| Recommendation tone | should, recommend, suggest | may, could, appears   |
+| Solution framing    | solution, fix, implement   | observation, finding  |
+| Over-certainty      | will, must, definitely     | potentially, possibly |
 
 ### Common mistakes
 
-| Mistake | Why it’s a problem | Correct usage |
-|---------|-----|---------|
+| Mistake                                              | Why it’s a problem                  | Correct usage                        |
+| ---------------------------------------------------- | ----------------------------------- | ------------------------------------ |
 | Using `/senior-explore` and then proposing solutions | Breaks the “explore only” principle | Explore first, then use `/plan-lite` |
-| Running `/implement-plan` without `PLAN_APPROVED` | The command will be blocked | Always set `PLAN_APPROVED: true` |
-| Using `/review-lite` for payment/finance code | Not enough depth | Use `/review-strict` |
-| Editing code while using `/finalize-work` | Breaks the “freeze state” principle | Finish changes first, then finalize |
+| Running `/implement-plan` without `PLAN_APPROVED`    | The command will be blocked         | Always set `PLAN_APPROVED: true`     |
+| Using `/review-lite` for payment/finance code        | Not enough depth                    | Use `/review-strict`                 |
+| Editing code while using `/finalize-work`            | Breaks the “freeze state” principle | Finish changes first, then finalize  |
 
 > 📌 Maintenance note: keep this document updated as commands evolve.
-

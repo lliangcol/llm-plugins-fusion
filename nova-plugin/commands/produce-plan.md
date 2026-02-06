@@ -8,6 +8,7 @@ based on prior analysis and explicit intent.
 ---
 
 ## TASK MODE
+
 PRODUCE A WRITTEN PLAN DOCUMENT
 
 This is a **DESIGN CHECKPOINT**, not an exploration step.
@@ -38,6 +39,7 @@ If `PLAN_OUTPUT_PATH` is missing:
 ## 2. Plan Profile (Optional)
 
 Choose the plan document profile/template:
+
 - `general` (default) → Standard 9-section design document
 - `java-backend` → Java/Spring backend with 12 sections (transactions, concurrency, idempotency, observability)
 
@@ -53,6 +55,7 @@ $PLAN_PROFILE
 Describe what this plan is intended to achieve.
 
 Examples:
+
 - Implement a specific feature
 - Fix a production issue
 - Refactor or restructure part of the system
@@ -72,6 +75,7 @@ ANALYSIS_INPUTS:
 $ANALYSIS_INPUTS
 
 If no analysis is provided:
+
 - Proceed cautiously
 - Explicitly call out missing analysis as a risk
 
@@ -82,6 +86,7 @@ If no analysis is provided:
 Explicitly list constraints that shape this plan.
 
 Examples:
+
 - Timeline or release constraints
 - Technology stack constraints
 - Backward compatibility requirements
@@ -95,18 +100,21 @@ $CONSTRAINTS
 ## PLAN AUTHORING RULES
 
 You MUST:
+
 - Write a complete plan document to `PLAN_OUTPUT_PATH`
 - Overwrite the file if it already exists
 - Create parent directories if missing
 - Base decisions on provided analysis and constraints
 
 You MUST NOT:
+
 - Write or modify production code
 - Leave major decisions implicit
 - Assume unstated requirements or goals
 - Skip alternatives or trade-off discussion
 
 Tone & style:
+
 - Precise, explicit, and review-friendly
 - Prefer clear reasoning over persuasion
 - Avoid vague language such as “simple”, “obvious”, “straightforward”
@@ -197,6 +205,7 @@ Chat output MUST include ONLY:
    - Major risks or trade-offs
 
 Do NOT:
+
 - Paste the plan content into chat
 - Add commentary outside the required output
 

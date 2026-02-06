@@ -1,19 +1,24 @@
 ﻿# /backend-plan
+
 - Source: `nova-plugin/commands/backend-plan.md`
 
 ## Command Positioning
+
 - Produce a Java/Spring backend design plan written to a specified path.
 - Use when: backend design documentation with consistency/concurrency focus.
 - Not for: general/light plans or implementation.
 
 ## Parameters
-| Parameter | Required | Description | Example |
-| --- | --- | --- | --- |
-| `PLAN_OUTPUT_PATH` | Yes | Plan document output path. | `docs/plans/backend.md` |
+
+| Parameter          | Required | Description                | Example                 |
+| ------------------ | -------- | -------------------------- | ----------------------- |
+| `PLAN_OUTPUT_PATH` | Yes      | Plan document output path. | `docs/plans/backend.md` |
 
 ## Output
+
 - Write full plan to PLAN_OUTPUT_PATH; chat output only path and 3-bullet summary.
 - Example output structure:
+
 ```text
 Plan document structure:
 1. Background & Problem Statement
@@ -31,6 +36,7 @@ Plan document structure:
 ```
 
 ## Full Examples
+
 ```text
 /backend-plan
 PLAN_OUTPUT_PATH: docs/plans/order-backend.md
@@ -47,9 +53,11 @@ Missing PLAN_OUTPUT_PATH
 ```
 
 ## Incorrect Usage / Anti-patterns
+
 - Writing or modifying Java code.
 - Skipping mandatory sections.
 
 ## Comparison with Similar Commands
+
 - `/produce-plan` is a general design document without Java/Spring-specific sections.
 - `/plan-lite` outputs only a lightweight plan.

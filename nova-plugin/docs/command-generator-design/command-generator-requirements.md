@@ -80,8 +80,8 @@
 ### 6.1 命令浏览与选择
 
 - 提供两种入口：
-  1) 按场景入口（推荐）：场景卡片/列表 → 推荐命令或推荐工作流
-  2) 按命令入口：按阶段（Explore/Plan/Review/Implement/Finalize）分组，支持搜索
+  1. 按场景入口（推荐）：场景卡片/列表 → 推荐命令或推荐工作流
+  2. 按命令入口：按阶段（Explore/Plan/Review/Implement/Finalize）分组，支持搜索
 - 命令列表默认排序规则：
   - 先按阶段顺序：Explore → Plan → Review → Implement → Finalize
   - 同阶段内按“约束强度”从强到弱（参考手册中的强/中/弱标记）
@@ -101,9 +101,9 @@
 - 文件上传（多文件）：
   - 支持将文件内容以“可折叠/可截断”的方式插入到指定字段（常见为 `CONTEXT`）
   - 每个文件提供三种插入策略：
-    1) 仅插入文件路径（推荐给代码文件/大文件）
-    2) 插入前 N 行/前 N 字符（默认）
-    3) 完整插入（需大小限制与风险提示）
+    1. 仅插入文件路径（推荐给代码文件/大文件）
+    2. 插入前 N 行/前 N 字符（默认）
+    3. 完整插入（需大小限制与风险提示）
 - 预览区：实时生成最终命令文本（可编辑，编辑后不反向覆盖表单，避免误丢）
 - 输出“命令详情”：
   - 命令名 + 阶段 + 约束强度
@@ -169,12 +169,12 @@
 
 ### 工作流 A：新需求开发（需求不清晰）
 
-1) `/senior-explore`（澄清事实、未知与风险，可选导出 `EXPORT_PATH`）
-2) `/plan-lite`（轻量计划对齐，可粘贴上一步输出摘要）
-3) `/produce-plan`（需要正式文档时，写入 `PLAN_OUTPUT_PATH`）
-4) `/plan-review`（对计划做决策质量评审）
-5) `/implement-plan`（已批准则严格执行）或 `/implement-standard`
-6) `/finalize-work`
+1. `/senior-explore`（澄清事实、未知与风险，可选导出 `EXPORT_PATH`）
+2. `/plan-lite`（轻量计划对齐，可粘贴上一步输出摘要）
+3. `/produce-plan`（需要正式文档时，写入 `PLAN_OUTPUT_PATH`）
+4. `/plan-review`（对计划做决策质量评审）
+5. `/implement-plan`（已批准则严格执行）或 `/implement-standard`
+6. `/finalize-work`
 
 推荐变量映射：
 
@@ -183,11 +183,11 @@
 
 ### 工作流 B：生产问题修复
 
-1) `/senior-explore`（DEPTH=deep，必要时导出 `EXPORT_PATH`）
-2) `/plan-lite`（可选：回滚与风险记录）
-3) `/implement-standard` 或 `/implement-lite`（按风险选择）
-4) `/review-strict`（可选：风险较高时）
-5) `/finalize-work`
+1. `/senior-explore`（DEPTH=deep，必要时导出 `EXPORT_PATH`）
+2. `/plan-lite`（可选：回滚与风险记录）
+3. `/implement-standard` 或 `/implement-lite`（按风险选择）
+4. `/review-strict`（可选：风险较高时）
+5. `/finalize-work`
 
 ### 工作流 C：PR 代码评审（按风险选择）
 
@@ -197,12 +197,12 @@
 
 ### 工作流 D：Java 后端端到端
 
-1) `/senior-explore`
-2) `/backend-plan`（写入 `PLAN_OUTPUT_PATH`）
-3) `/plan-review`
-4) `/implement-plan`
-5) `/review-strict`（可选）
-6) `/finalize-work`
+1. `/senior-explore`
+2. `/backend-plan`（写入 `PLAN_OUTPUT_PATH`）
+3. `/plan-review`
+4. `/implement-plan`
+5. `/review-strict`（可选）
+6. `/finalize-work`
 
 ## 9. 命令元数据模型（驱动表单与生成）
 

@@ -45,6 +45,7 @@
 > 仅作为规划，最终以实际实现为准。
 
 实现目录约定：
+
 - 仓库相对路径：`nova-plugin-command-generator/`
 - 本机路径：`D:\Work\Projects\claude-plugins-fusion\nova-plugin-command-generator`
 

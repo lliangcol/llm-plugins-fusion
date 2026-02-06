@@ -16,6 +16,7 @@ Analyze the following:
 $ARGUMENTS
 
 Inputs may include:
+
 - Code snippets or files
 - Design or implementation descriptions
 - Test code
@@ -42,11 +43,13 @@ Review the input for:
 ## STRICT RULES
 
 You MUST:
+
 - Review only what is provided
 - Base findings on observable evidence or reasonable inference
 - Clearly distinguish facts from assumptions
 
 You MUST NOT:
+
 - Write or modify code
 - Provide full implementation examples
 - Redesign the system
@@ -59,6 +62,7 @@ You MUST NOT:
 Group all findings by severity:
 
 ### Critical
+
 - Issues that may cause:
   - Data corruption
   - Security or financial risk
@@ -66,18 +70,21 @@ Group all findings by severity:
   - Incorrect business behavior
 
 ### Major
+
 - Issues that:
   - Significantly affect maintainability, scalability, or correctness
   - May lead to bugs under realistic conditions
   - Increase long-term cost
 
 ### Minor
+
 - Issues that:
   - Affect readability or consistency
   - Represent missed best practices
   - Are low risk but worth addressing
 
 For each finding:
+
 - Clearly describe the issue
 - Explain why it matters
 - Provide **directional improvement suggestions**
@@ -94,6 +101,7 @@ For each finding:
 - No persuasive or defensive language
 
 Assume the reader is:
+
 - The original author
 - A tech lead
 - Or a future maintainer
@@ -103,6 +111,7 @@ Assume the reader is:
 ## NON-GOALS
 
 This command does NOT:
+
 - Approve or reject the change
 - Decide release readiness
 - Replace human code review

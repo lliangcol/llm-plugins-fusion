@@ -14,11 +14,13 @@ from a decision-quality and execution-risk perspective.
 - Do NOT introduce new requirements
 
 Focus on:
+
 - Decision clarity
 - Hidden assumptions
 - Execution and operational risks
 
 Language constraints:
+
 - Avoid words like: "should", "recommend", "solution"
 - Prefer: "appears", "assumes", "may lead to"
 
@@ -50,4 +52,3 @@ Language constraints:
 ---
 
 ## END OF COMMAND
-

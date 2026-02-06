@@ -20,10 +20,12 @@ This command focuses on fast, pragmatic implementation.
 Provide the following after implementation:
 
 ### Changes Summary
+
 - Brief description of what was implemented
 - Key files modified or created
 
 ### Adjustments (if any)
+
 - Any deviations from original instructions
 - Reasoning for minor design changes
 

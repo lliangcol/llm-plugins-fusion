@@ -21,15 +21,50 @@
       "description": "深度探索与分析（禁止方案/实现）",
       "inputMode": "structured",
       "fields": [
-        { "id": "INTENT", "label": "Intent", "type": "multiline", "required": true, "bindable": false },
-        { "id": "CONTEXT", "label": "Context", "type": "multiline", "required": false, "bindable": true },
-        { "id": "CONSTRAINTS", "label": "Constraints", "type": "multiline", "required": false, "bindable": true },
-        { "id": "DEPTH", "label": "Depth", "type": "select", "required": false, "options": ["quick", "normal", "deep"], "default": "normal" },
-        { "id": "EXPORT_PATH", "label": "Export path", "type": "path", "required": false, "bindable": true }
+        {
+          "id": "INTENT",
+          "label": "Intent",
+          "type": "multiline",
+          "required": true,
+          "bindable": false
+        },
+        {
+          "id": "CONTEXT",
+          "label": "Context",
+          "type": "multiline",
+          "required": false,
+          "bindable": true
+        },
+        {
+          "id": "CONSTRAINTS",
+          "label": "Constraints",
+          "type": "multiline",
+          "required": false,
+          "bindable": true
+        },
+        {
+          "id": "DEPTH",
+          "label": "Depth",
+          "type": "select",
+          "required": false,
+          "options": ["quick", "normal", "deep"],
+          "default": "normal"
+        },
+        {
+          "id": "EXPORT_PATH",
+          "label": "Export path",
+          "type": "path",
+          "required": false,
+          "bindable": true
+        }
       ],
       "template": "/senior-explore\nINTENT: {{INTENT}}\nCONTEXT:\n{{CONTEXT}}\nCONSTRAINTS:\n{{CONSTRAINTS}}\nDEPTH: {{DEPTH}}\nEXPORT_PATH: {{EXPORT_PATH}}\n",
       "outputs": [
-        { "id": "analysis_export_path", "sourceFieldId": "EXPORT_PATH", "type": "path" }
+        {
+          "id": "analysis_export_path",
+          "sourceFieldId": "EXPORT_PATH",
+          "type": "path"
+        }
       ]
     }
   ],
@@ -44,7 +79,11 @@
           "commandId": "produce-plan",
           "optional": true,
           "autoBindings": [
-            { "fromVar": "analysis_export_path", "toFieldId": "ANALYSIS_INPUTS", "mode": "appendListItemIfPresent" }
+            {
+              "fromVar": "analysis_export_path",
+              "toFieldId": "ANALYSIS_INPUTS",
+              "mode": "appendListItemIfPresent"
+            }
           ]
         }
       ]
@@ -68,7 +107,12 @@
     "PLAN_INTENT": "..."
   },
   "attachedFiles": [
-    { "name": "req.md", "pathHint": "docs/req.md", "insertMode": "snippet", "snippetLimit": 2000 }
+    {
+      "name": "req.md",
+      "pathHint": "docs/req.md",
+      "insertMode": "snippet",
+      "snippetLimit": 2000
+    }
   ],
   "resolvedVariables": {
     "plan_output_path": "docs/plans/xxx.md"
@@ -80,9 +124,9 @@
 ## 3) 变量解析与缺失策略（草图）
 
 - 解析顺序（建议）：
-  1) 工作流上下文变量（上一步产物）
-  2) 当前步骤用户自定义变量（手动注册）
-  3) 字段默认值（default）
+  1. 工作流上下文变量（上一步产物）
+  2. 当前步骤用户自定义变量（手动注册）
+  3. 字段默认值（default）
 - 缺失处理：
   - 预览中：`<<MISSING:var>>`
   - 生成按钮：默认阻断“必填字段缺失”；变量缺失可配置为“允许生成但提示”
@@ -94,4 +138,3 @@
 - 默认策略（与需求一致）：
   - 先保存到应用内（IndexedDB）
   - 导出时：优先保存到文件（若支持），否则下载；移动端优先显示“分享”
-

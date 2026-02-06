@@ -17,6 +17,7 @@ This command simulates a **review mindset**:
 - Do NOT suggest specific technologies or implementations
 
 Language constraints:
+
 - Avoid words like: "should", "recommend", "solution", "implement"
 - Prefer: "appears", "may indicate", "is unclear"
 
@@ -45,4 +46,3 @@ Language constraints:
 ---
 
 ## END OF COMMAND
-

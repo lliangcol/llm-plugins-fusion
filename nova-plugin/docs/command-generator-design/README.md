@@ -13,4 +13,3 @@
 - `nova-plugin/docs/command-generator-design/03-wireframes.md`：界面草图（桌面/移动端）
 - `nova-plugin/docs/command-generator-design/04-data-model.md`：元数据/状态/存储草图（manifest、RunSession、变量绑定）
 - `nova-plugin/docs/command-generator-design/assets/`：示意图资源（SVG）
-
