@@ -1,20 +1,20 @@
 {
-    "name": "llm-plugins-fusion",
-    "owner": {
+  "name": "llm-plugins-fusion",
+  "owner": {
+    "name": "liu liang"
+  },
+  "metadata": {
+    "description": "A curated marketplace of third-party LLM assistant plugins for productivity and development workflows."
+  },
+  "plugins": [
+    {
+      "name": "nova-plugin",
+      "source": "./nova-plugin",
+      "version": "1.0.6",
+      "author": {
         "name": "liu liang"
-    },
-    "metadata": {
-        "description": "A curated marketplace of third-party LLM assistant plugins for productivity and development workflows."
-    },
-    "plugins": [
-        {
-            "name": "nova-plugin",
-            "source": "./nova-plugin",
-            "version": "1.0.5",
-            "author": {
-                "name": "liu liang"
-            },
-            "description": "A powerful extension designed for AI coding assistants, enhancing developer productivity and workflow efficiency."
-        }
-    ]
+      },
+      "description": "A powerful extension designed for AI coding assistants, enhancing developer productivity and workflow efficiency."
+    }
+  ]
 }
