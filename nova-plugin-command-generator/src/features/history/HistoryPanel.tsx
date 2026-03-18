@@ -63,6 +63,7 @@ export const HistoryPanel = ({
               <div
                 key={entry.id}
                 className={`history-item ${isExpanded ? 'expanded' : ''}`}
+                role="button"
                 tabIndex={0}
                 onMouseEnter={() => setExpandedId(entry.id)}
                 onMouseLeave={() => setExpandedId(null)}

@@ -1,3 +1,10 @@
+---
+id: plan-lite
+stage: plan
+title: "/plan-lite"
+destructive-actions: false
+---
+
 # LIGHTWEIGHT PLANNING
 
 You are Claude Code acting as a senior engineer.

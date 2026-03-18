@@ -72,7 +72,6 @@ interface GeneratorPanelProps {
   missingVars: string[];
   draftSavedAt: number | null;
   formatDate: (ts: number) => string;
-  previewOverride: string | null;
   setPreviewOverride: (value: string | null) => void;
   onResetCommand: () => void;
 }
@@ -126,7 +125,6 @@ export const GeneratorPanel = ({
   missingVars,
   draftSavedAt,
   formatDate,
-  previewOverride,
   setPreviewOverride,
   onResetCommand,
 }: GeneratorPanelProps) => (

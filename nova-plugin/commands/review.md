@@ -1,3 +1,10 @@
+---
+id: review
+stage: review
+title: "/review"
+destructive-actions: false
+---
+
 # CODE REVIEW (NO IMPLEMENTATION)
 
 You are Claude Code acting as a **senior engineer / tech lead reviewer**.

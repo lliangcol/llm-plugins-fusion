@@ -1,3 +1,10 @@
+---
+id: review-lite
+stage: review
+title: "/review-lite"
+destructive-actions: false
+---
+
 # LIGHTWEIGHT REVIEW
 
 TASK: LIGHT REVIEW - NO IMPLEMENTATION

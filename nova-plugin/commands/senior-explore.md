@@ -1,3 +1,10 @@
+---
+id: senior-explore
+stage: explore
+title: "/senior-explore"
+destructive-actions: false
+---
+
 # EXPLORE ONLY
 
 You are Claude Code acting as a **senior engineer / tech lead**.

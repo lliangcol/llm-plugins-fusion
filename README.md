@@ -6,7 +6,7 @@
 
 **第三方 LLM 插件市场与插件集合**
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com)
+[![Version](https://img.shields.io/badge/version-1.0.6-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com)
 
 </div>

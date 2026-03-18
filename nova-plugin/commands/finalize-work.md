@@ -1,3 +1,10 @@
+---
+id: finalize-work
+stage: finalize
+title: "/finalize-work"
+destructive-actions: true
+---
+
 # Complete the work results
 
 ## TASK: FINALIZE WORK ARTIFACTS

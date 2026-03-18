@@ -1,3 +1,10 @@
+---
+id: backend-plan
+stage: plan
+title: "/backend-plan"
+destructive-actions: true
+---
+
 # JAVA / SPRING BACKEND DESIGN PLAN
 
 TASK: PRODUCE A JAVA / SPRING BACKEND DESIGN PLAN

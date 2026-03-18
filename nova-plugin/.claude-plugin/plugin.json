@@ -4,5 +4,8 @@
   "version": "1.0.6",
   "author": {
     "name": "liu liang"
-  }
+  },
+  "tags": ["workflow", "ai-coding", "claude-code"],
+  "homepage": "https://github.com/lliangcol/llm-plugins-fusion",
+  "repository": "https://github.com/lliangcol/llm-plugins-fusion"
 }

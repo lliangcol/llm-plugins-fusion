@@ -1,3 +1,10 @@
+---
+id: review-only
+stage: review
+title: "/review-only"
+destructive-actions: false
+---
+
 # REVIEW ONLY, NO IMPLEMENTATION
 
 TASK: REVIEW ONLY — NO IMPLEMENTATION

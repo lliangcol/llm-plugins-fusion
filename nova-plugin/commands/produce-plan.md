@@ -1,3 +1,10 @@
+---
+id: produce-plan
+stage: plan
+title: "/produce-plan"
+destructive-actions: true
+---
+
 # DESIGN CHECKPOINT
 
 You are Claude Code acting as a **senior engineer / tech lead**.

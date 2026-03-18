@@ -1,3 +1,10 @@
+---
+id: explore
+stage: explore
+title: "/explore"
+destructive-actions: false
+---
+
 # QUICK EXPLORATION
 
 You are Claude Code acting as a senior engineer / tech lead.

@@ -1,3 +1,10 @@
+---
+id: review-strict
+stage: review
+title: "/review-strict"
+destructive-actions: false
+---
+
 # STRICT & EXHAUSTIVE REVIEW
 
 TASK: STRICT REVIEW — NO IMPLEMENTATION

@@ -9,21 +9,21 @@ import {
   GuidanceRecommendation,
   GuidanceState,
   HistoryEntry,
-  ScenarioDefinition,
   StageKey,
   StageStatus,
 } from './types';
 import { addHistory, loadHistory, saveHistory } from './store/history';
 import { loadGuidanceState, recordGuidanceSuccess } from './store/guidance';
 import { loadDraft, saveDraft } from './store/draft';
-import { renderTemplate, stageOrder, constraintLabel, constraintOrder } from './utils/render';
+import { renderTemplate, stageOrder, constraintOrder } from './utils/render';
 import { readAttachments } from './utils/attachments';
 import { normalizeOption } from './utils/options';
 import { Icon } from './components/Icon';
-import { StageProgressBar } from './components/StageProgressBar';
 import { GeneratorPanel } from './features/generator/GeneratorPanel';
 import { WorkflowRunPanel } from './features/workflow/WorkflowRunPanel';
 import { HistoryPanel } from './features/history/HistoryPanel';
+import { ScenesPanel } from './features/scenes/ScenesPanel';
+import { CommandsPanel } from './features/commands/CommandsPanel';
 import { evaluateConstraints, evaluateContext, evaluateIntent, QualityFeedback } from './utils/promptQuality';
 import { buildCommandStageMap, recommendNext, stageFlow } from './utils/guidance';
 
@@ -102,7 +102,7 @@ export default function App() {
   const [previewOverride, setPreviewOverride] = useState<string | null>(null);
   const [newVarKey, setNewVarKey] = useState('');
   const [newVarValue, setNewVarValue] = useState('');
-  const [undoSnapshot, setUndoSnapshot] = useState<{
+  const [, setUndoSnapshot] = useState<{
     selectedCommandId: string;
     formState: FormState;
     variables: Record<string, string>;
@@ -128,10 +128,6 @@ export default function App() {
   const [workflowVarValue, setWorkflowVarValue] = useState('');
   const [workflowAttachmentTarget, setWorkflowAttachmentTarget] = useState('');
   const [workflowAttachmentMode, setWorkflowAttachmentMode] = useState<'path' | 'snippet' | 'full'>('snippet');
-  const [commandStageFilter, setCommandStageFilter] = useState<'all' | StageKey>('all');
-  const [commandRigorFilter, setCommandRigorFilter] = useState<'all' | 'weak' | 'medium' | 'strong'>('all');
-  const [commandDomainFilter, setCommandDomainFilter] = useState<'all' | 'general' | 'specialized'>('all');
-  const [showSpecializedCommands, setShowSpecializedCommands] = useState(false);
 
   const selectedCommand = useMemo(
     () => (selectedCommandId ? manifest.commands.find((c) => c.id === selectedCommandId) ?? null : null),
@@ -203,14 +199,6 @@ export default function App() {
   const previewText = previewOverride ?? computedPreview;
   const missingVars = useMemo(() => getMissingVariables(computedPreview), [computedPreview]);
 
-  const canGenerate = useMemo(
-    () =>
-      selectedCommand
-        ? selectedCommand.fields.every((f) => !f.required || isFieldFilled(f.id, selectedCommand, formState[f.id]))
-        : false,
-    [selectedCommand, formState],
-  );
-
   const missingRequired = useMemo(
     () =>
       selectedCommand
@@ -237,33 +225,6 @@ export default function App() {
       }
     };
   }, []);
-
-  const handleAddHistory = () => {
-    if (!selectedCommand) return;
-    setUndoSnapshot({
-      selectedCommandId,
-      formState: { ...formState },
-      variables: { ...variables },
-      attachments: attachments.map((attachment) => ({ ...attachment })),
-      attachmentTarget,
-      attachmentMode,
-      previewOverride,
-    });
-    const entry: HistoryEntry = {
-      id: `${selectedCommand.id}-${Date.now()}`,
-      commandId: selectedCommand.id,
-      createdAt: Date.now(),
-      fields: formState,
-      commandText: previewText,
-    };
-    const list = addHistory(entry);
-    setHistory(list);
-    const nextGuidance = recordGuidanceSuccess(selectedCommand.id, selectedCommand.stage, entry.createdAt);
-    setGuidanceState(nextGuidance);
-    setNextRecommendation(recommendNext(nextGuidance, guidanceContext));
-    setShowNextCard(true);
-    showFeedback('已生成并保存到历史记录。');
-  };
 
   const handleFileUpload = async (files: FileList | null) => {
     const next = await readAttachments(files, {
@@ -457,192 +418,6 @@ export default function App() {
     selectCommandWithGuardrail(id, true);
   };
 
-  const restoreUndoSnapshot = () => {
-    if (!undoSnapshot) return;
-    const isSameCommand = undoSnapshot.selectedCommandId === selectedCommandId;
-    draftRestoreRef.current = true;
-    if (isSameCommand) {
-      setFormState(undoSnapshot.formState);
-      setFormDraft(null);
-    } else {
-      setFormDraft(undoSnapshot.formState);
-    }
-    setSelectedCommandId(undoSnapshot.selectedCommandId);
-    setVariables(undoSnapshot.variables);
-    setAttachments(undoSnapshot.attachments);
-    setAttachmentTarget(undoSnapshot.attachmentTarget);
-    setAttachmentMode(undoSnapshot.attachmentMode);
-    setPreviewOverride(undoSnapshot.previewOverride);
-    setUndoSnapshot(null);
-  };
-
-  const getSceneRecommendation = (scenario: ScenarioDefinition) => {
-    if (scenario.recommendWorkflowId) {
-      return {
-        type: 'workflow' as const,
-        label: '工作流',
-        cta: '开始引导',
-        note: '该场景包含多步骤，建议用工作流保持节奏一致。',
-      };
-    }
-    return {
-      type: 'command' as const,
-      label: '单命令',
-      cta: '直接开始',
-      note: '该场景只需单条命令即可完成。',
-    };
-  };
-
-  const sceneCards = (scenarios: ScenarioDefinition[]) =>
-    scenarios.map((s) => {
-      const recommendation = getSceneRecommendation(s);
-      const hasWorkflow = Boolean(s.recommendWorkflowId);
-      const hasCommand = Boolean(s.recommendCommandId);
-      const primaryCta = recommendation.cta;
-      const categoryTags = Array.from(
-        new Set(
-          s.category
-            .split(/[,/|·]/)
-            .map((tag) => tag.trim())
-            .filter(Boolean),
-        ),
-      ).slice(0, 2);
-      const secondaryLabel =
-        recommendation.type === 'workflow'
-          ? hasCommand
-            ? '转为单命令'
-            : '查看命令'
-          : hasWorkflow
-            ? '进入工作流'
-            : '查看工作流';
-      return (
-        <div
-          key={s.id}
-          className={`card scene-card ${s.recommendCommandId || s.recommendWorkflowId ? 'recommended' : ''}`.trim()}
-        >
-          <div className="scene-card-header">
-            <div className="card-title">{s.title}</div>
-            <div className="scene-tags">
-              {categoryTags.map((tag) => (
-                <span key={tag} className="scene-tag">
-                  {tag}
-                </span>
-              ))}
-            </div>
-            <div className="scene-problem-label">问题类型</div>
-            <div className="scene-problem">{s.category}</div>
-          </div>
-          <div className={`scene-path scene-path-${recommendation.type}`}>
-            <div className="scene-path-label">
-              <Icon name={recommendation.type === 'workflow' ? 'workflows' : 'commands'} />
-              推荐路径
-            </div>
-            <div className="scene-path-value">{recommendation.label}</div>
-            <div className="scene-path-why">{recommendation.note}</div>
-          </div>
-          <div className="card-actions">
-            {recommendation.type === 'workflow' && s.recommendWorkflowId ? (
-              <button className="btn primary" onClick={() => startWorkflow(s.recommendWorkflowId!)}>
-                {primaryCta}
-              </button>
-            ) : s.recommendCommandId ? (
-              <button className="btn primary" onClick={() => setCommandAndSwitch(s.recommendCommandId!)}>
-                {primaryCta}
-              </button>
-            ) : (
-              <button className="btn primary" onClick={() => setTab('commands')}>
-                {primaryCta}
-              </button>
-            )}
-            <button
-              className="btn ghost"
-              onClick={() => {
-                if (recommendation.type === 'workflow') {
-                  if (s.recommendCommandId) {
-                    setCommandAndSwitch(s.recommendCommandId);
-                    return;
-                  }
-                  setTab('commands');
-                  return;
-                }
-                if (s.recommendWorkflowId) {
-                  startWorkflow(s.recommendWorkflowId);
-                  return;
-                }
-                setTab('workflows');
-              }}
-            >
-              {secondaryLabel}
-            </button>
-          </div>
-        </div>
-      );
-    });
-
-  const getCommandPrerequisites = (command: CommandDefinition) => {
-    const requiredFields = command.fields.filter((field) => field.required);
-    const prereqLabels = requiredFields.map((field) => field.label);
-    const hasStrongPrereq =
-      command.constraintLevel === 'strong' ||
-      requiredFields.length >= 2 ||
-      requiredFields.some((field) => /APPROV|PLAN|REVIEW|SPEC|DESIGN/i.test(`${field.id} ${field.label}`));
-    const hasArtifactHint = requiredFields.some((field) => /APPROV|PLAN|REVIEW|SPEC|DESIGN/i.test(`${field.id} ${field.label}`));
-    return {
-      requiredFields,
-      prereqLabels,
-      hasStrongPrereq,
-      hasArtifactHint,
-    };
-  };
-
-const getCommandDisplayTitle = (command: CommandDefinition) => {
-    return command.displayName;
-  };
-
-  const renderCommandCard = (command: CommandDefinition) => {
-    const prereq = getCommandPrerequisites(command);
-    return (
-      <div key={command.id} className="card">
-        <div className="card-title">{getCommandDisplayTitle(command)}</div>
-        <div className="command-id">
-          命令标识 <code>{command.id}</code>
-        </div>
-        <div className="command-meta">
-          <span className="badge">{stageLabels[command.stage]}</span>
-          <span
-            className={`badge ${
-              command.constraintLevel === 'strong'
-                ? 'rigor-strict'
-                : command.constraintLevel === 'medium'
-                  ? 'rigor-standard'
-                  : 'rigor-lite'
-            }`}
-          >
-            {constraintLabel[command.constraintLevel]}
-          </span>
-          {command.constraintLevel === 'strong' && <span className="badge severity-high">高影响</span>}
-        </div>
-        <div className="card-sub">{command.description}</div>
-        {prereq.requiredFields.length > 0 && prereq.hasStrongPrereq ? (
-          <div className="command-warning" title={prereq.prereqLabels.join(' + ')}>
-            使用前需提供：{prereq.prereqLabels.join(' + ')}
-            {prereq.hasArtifactHint && (
-              <button className="link-inline" type="button" onClick={() => setTab('history')}>
-                查看产出
-              </button>
-            )}
-          </div>
-        ) : prereq.requiredFields.length > 0 ? (
-          <div className="command-prereq">必填：{prereq.prereqLabels.join(' + ')}</div>
-        ) : null}
-        <div className="card-actions">
-          <button className="btn primary" onClick={() => setCommandAndSwitch(command.id)}>
-            进入生成器
-          </button>
-        </div>
-      </div>
-    );
-  };
 
   const sortedCommands = useMemo(
     () =>
@@ -654,52 +429,6 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
       ),
     [],
   );
-
-  const isSpecializedCommand = (command: CommandDefinition) =>
-    /backend|frontend|ios|android|java|spring|database|db|infra|security|ml|data/i.test(
-      `${command.id} ${command.displayName} ${command.description}`,
-    );
-
-  const filteredCommands = useMemo(() => {
-    return sortedCommands.filter((command) => {
-      const stageOk = commandStageFilter === 'all' || command.stage === commandStageFilter;
-      const rigorOk = commandRigorFilter === 'all' || command.constraintLevel === commandRigorFilter;
-      return stageOk && rigorOk;
-    });
-  }, [sortedCommands, commandStageFilter, commandRigorFilter]);
-
-  const filteredGeneralCommands = useMemo(
-    () => filteredCommands.filter((command) => !isSpecializedCommand(command)),
-    [filteredCommands],
-  );
-  const filteredSpecializedCommands = useMemo(
-    () => filteredCommands.filter((command) => isSpecializedCommand(command)),
-    [filteredCommands],
-  );
-
-  const groupedGeneralCommands = useMemo(() => {
-    const groups: Record<string, CommandDefinition[]> = {};
-    filteredGeneralCommands.forEach((command) => {
-      groups[command.stage] = groups[command.stage] || [];
-      groups[command.stage].push(command);
-    });
-    return groups;
-  }, [filteredGeneralCommands]);
-
-  const groupedSpecializedCommands = useMemo(() => {
-    const groups: Record<string, CommandDefinition[]> = {};
-    filteredSpecializedCommands.forEach((command) => {
-      groups[command.stage] = groups[command.stage] || [];
-      groups[command.stage].push(command);
-    });
-    return groups;
-  }, [filteredSpecializedCommands]);
-
-  useEffect(() => {
-    if (commandDomainFilter === 'specialized') {
-      setShowSpecializedCommands(true);
-    }
-  }, [commandDomainFilter]);
 
   const attachableFields = selectedCommand
     ? selectedCommand.fields.filter((f) => f.type !== 'select' && f.type !== 'boolean')
@@ -1358,117 +1087,20 @@ const getCommandDisplayTitle = (command: CommandDefinition) => {
       </header>
 
       {tab === 'scenes' && (
-        <div className="layout">
-          <div className="panel-card scene-intro">
-            <div className="panel-title">如何开始</div>
-            <div className="scene-intro-text">从场景开始，获得引导路径。</div>
-            <button className="btn ghost" onClick={() => setTab('commands')}>
-              想手动？查看命令
-            </button>
-          </div>
-          <section>
-            <h3 className="section-title">
-              <Icon name="workflows" /> 工作流场景
-            </h3>
-            <div className="card-grid">{sceneCards(manifest.scenarios.filter((s) => s.recommendWorkflowId))}</div>
-          </section>
-          <section>
-            <h3 className="section-title">
-              <Icon name="commands" /> 命令场景
-            </h3>
-            <div className="card-grid">{sceneCards(manifest.scenarios.filter((s) => s.recommendCommandId))}</div>
-          </section>
-        </div>
+        <ScenesPanel
+          scenarios={manifest.scenarios}
+          onSelectCommand={setCommandAndSwitch}
+          onStartWorkflow={startWorkflow}
+          onGoToCommands={() => setTab('commands')}
+          onGoToWorkflows={() => setTab('workflows')}
+        />
       )}
 
       {tab === 'commands' && (
-        <div className="layout">
-          <div className="filter-bar">
-            <div className="filter-group">
-              <span className="filter-label">阶段</span>
-              <select
-                className="select"
-                value={commandStageFilter}
-                onChange={(e) => setCommandStageFilter(e.target.value as 'all' | StageKey)}
-              >
-                <option value="all">全部阶段</option>
-                {stageFlow.map((stage) => (
-                  <option key={stage} value={stage}>
-                    {stageLabels[stage]}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="filter-group">
-              <span className="filter-label">严格度</span>
-              <select
-                className="select"
-                value={commandRigorFilter}
-                onChange={(e) => setCommandRigorFilter(e.target.value as 'all' | 'weak' | 'medium' | 'strong')}
-              >
-                <option value="all">全部</option>
-                <option value="weak">轻量</option>
-                <option value="medium">标准</option>
-                <option value="strong">严格</option>
-              </select>
-            </div>
-            <div className="filter-group">
-              <span className="filter-label">领域</span>
-              <select
-                className="select"
-                value={commandDomainFilter}
-                onChange={(e) => setCommandDomainFilter(e.target.value as 'all' | 'general' | 'specialized')}
-              >
-                <option value="all">通用 + 专项</option>
-                <option value="general">通用</option>
-                <option value="specialized">专项</option>
-              </select>
-            </div>
-          </div>
-
-          {commandDomainFilter !== 'specialized' &&
-            stageFlow.map((stage) => {
-              const cmds = groupedGeneralCommands[stage] ?? [];
-              if (cmds.length === 0) return null;
-              return (
-                <section key={stage} className="section-shell">
-                  <h3 className="section-title">
-                    <Icon name="commands" />
-                    {stageLabels[stage]}（{cmds.length}）
-                  </h3>
-                  <div className="card-grid">{cmds.map(renderCommandCard)}</div>
-                </section>
-              );
-            })}
-
-          {commandDomainFilter !== 'general' && (
-            <section className="section-shell specialized-shell">
-              <button
-                className={`section-toggle ${filteredSpecializedCommands.length === 0 ? 'is-muted' : ''}`}
-                onClick={() => setShowSpecializedCommands((prev) => !prev)}
-                disabled={filteredSpecializedCommands.length === 0}
-              >
-                专项命令（{filteredSpecializedCommands.length}）
-              </button>
-              {showSpecializedCommands && filteredSpecializedCommands.length > 0 && (
-                <div className="specialized-group">
-                  {stageFlow.map((stage) => {
-                    const cmds = groupedSpecializedCommands[stage] ?? [];
-                    if (cmds.length === 0) return null;
-                    return (
-                      <div key={stage} className="specialized-stage">
-                        <div className="specialized-stage-title">
-                          {stageLabels[stage]}（{cmds.length}）
-                        </div>
-                        <div className="card-grid">{cmds.map(renderCommandCard)}</div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </section>
-          )}
-        </div>
+        <CommandsPanel
+          onSelectCommand={setCommandAndSwitch}
+          onGoToHistory={() => setTab('history')}
+        />
       )}
 
       {tab === 'generator' && selectedCommand && (

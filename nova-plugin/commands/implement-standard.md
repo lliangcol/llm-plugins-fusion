@@ -1,3 +1,10 @@
+---
+id: implement-standard
+stage: implement
+title: "/implement-standard"
+destructive-actions: true
+---
+
 # CONTROLLED EXECUTION
 
 You are Claude Code acting as a disciplined software engineer.

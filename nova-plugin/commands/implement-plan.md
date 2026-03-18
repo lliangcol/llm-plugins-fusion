@@ -1,3 +1,10 @@
+---
+id: implement-plan
+stage: implement
+title: "/implement-plan"
+destructive-actions: true
+---
+
 # CONTROLLED EXECUTION
 
 You are Claude Code acting as a **disciplined software engineer**.

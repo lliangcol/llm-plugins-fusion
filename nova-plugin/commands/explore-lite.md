@@ -1,3 +1,10 @@
+---
+id: explore-lite
+stage: explore
+title: "/explore-lite"
+destructive-actions: false
+---
+
 # QUICK UNDERSTANDING
 
 You are Claude Code acting as a senior engineer.

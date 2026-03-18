@@ -1,3 +1,10 @@
+---
+id: plan-review
+stage: plan
+title: "/plan-review"
+destructive-actions: false
+---
+
 # PLAN CRITICAL REVIEW
 
 You are Claude Code acting as a senior reviewer / tech lead.

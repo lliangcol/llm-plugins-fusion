@@ -1,3 +1,10 @@
+---
+id: finalize-lite
+stage: finalize
+title: "/finalize-lite"
+destructive-actions: true
+---
+
 # Summarize the completed work
 
 No changes, no new decisions.

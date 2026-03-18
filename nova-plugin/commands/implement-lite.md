@@ -1,3 +1,10 @@
+---
+id: implement-lite
+stage: implement
+title: "/implement-lite"
+destructive-actions: true
+---
+
 # FAST EXECUTION
 
 You are Claude Code acting as a productive software engineer.

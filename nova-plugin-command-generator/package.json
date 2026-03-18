@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "build:manifest": "node scripts/build-manifest.mjs",
+    "dev": "npm run build:manifest && vite",
+    "build": "npm run build:manifest && vite build",
     "preview": "vite preview",
     "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings=0",
     "test": "vitest run"
@@ -15,15 +16,16 @@
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^7.18.0",
-    "@typescript-eslint/parser": "^7.18.0",
     "@types/react": "^18.2.45",
     "@types/react-dom": "^18.2.17",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
     "@vitejs/plugin-react": "^4.2.0",
     "eslint": "^8.57.0",
     "eslint-plugin-jsx-a11y": "^6.8.0",
     "eslint-plugin-react": "^7.34.1",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "gray-matter": "^4.0.3",
     "typescript": "^5.3.3",
     "vite": "^7.3.1",
     "vitest": "^3.2.4"
