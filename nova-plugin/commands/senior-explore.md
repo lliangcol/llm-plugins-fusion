@@ -1,8 +1,11 @@
 ---
 id: senior-explore
 stage: explore
-title: "/senior-explore"
-destructive-actions: false
+title: /senior-explore
+destructive-actions: low
+allowed-tools: Read Glob Grep LS Write
+invokes:
+  skill: nova-senior-explore
 ---
 
 # EXPLORE ONLY

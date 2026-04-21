@@ -28,27 +28,35 @@ function escapeTemplateLiteral(str) {
   return str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$\{/g, '\\${');
 }
 
+function quoteJsString(str) {
+  return `'${String(str)
+    .replace(/\\/g, '\\\\')
+    .replace(/'/g, "\\'")
+    .replace(/\r/g, '\\r')
+    .replace(/\n/g, '\\n')}'`;
+}
+
 function serializeField(field) {
   const parts = [];
-  parts.push(`id: '${field.id}'`);
-  parts.push(`label: '${field.label}'`);
-  parts.push(`type: '${field.type}'`);
+  parts.push(`id: ${quoteJsString(field.id)}`);
+  parts.push(`label: ${quoteJsString(field.label)}`);
+  parts.push(`type: ${quoteJsString(field.type)}`);
   if (field.required) parts.push(`required: true`);
   if (field.bindable) parts.push(`bindable: true`);
-  if (field.help) parts.push(`help: '${field.help}'`);
+  if (field.help) parts.push(`help: ${quoteJsString(field.help)}`);
   if (field.options) {
     const opts = field.options
       .map((o) =>
         typeof o === 'string'
-          ? `'${o}'`
-          : `{ value: '${o.value}', label: '${o.label}' }`,
+          ? quoteJsString(o)
+          : `{ value: ${quoteJsString(o.value)}, label: ${quoteJsString(o.label)} }`,
       )
       .join(', ');
     parts.push(`options: [${opts}]`);
   }
   if (field.defaultValue !== undefined) {
     if (typeof field.defaultValue === 'string') {
-      parts.push(`defaultValue: '${field.defaultValue}'`);
+      parts.push(`defaultValue: ${quoteJsString(field.defaultValue)}`);
     } else if (typeof field.defaultValue === 'boolean') {
       parts.push(`defaultValue: ${field.defaultValue}`);
     } else if (Array.isArray(field.defaultValue)) {
@@ -61,11 +69,11 @@ function serializeField(field) {
 function serializeCommand(cmd) {
   const lines = [];
   lines.push(`    {`);
-  lines.push(`      id: '${cmd.id}',`);
-  lines.push(`      displayName: '${cmd.displayName}',`);
-  lines.push(`      stage: '${cmd.stage}',`);
-  lines.push(`      constraintLevel: '${cmd.constraintLevel}',`);
-  lines.push(`      description: '${cmd.description.replace(/'/g, "\\'")}',`);
+  lines.push(`      id: ${quoteJsString(cmd.id)},`);
+  lines.push(`      displayName: ${quoteJsString(cmd.displayName)},`);
+  lines.push(`      stage: ${quoteJsString(cmd.stage)},`);
+  lines.push(`      constraintLevel: ${quoteJsString(cmd.constraintLevel)},`);
+  lines.push(`      description: ${quoteJsString(cmd.description)},`);
   lines.push(`      fields: [`);
   for (const field of cmd.fields) {
     lines.push(`        ${serializeField(field)},`);
@@ -74,7 +82,12 @@ function serializeCommand(cmd) {
   lines.push(`      template: \`${escapeTemplateLiteral(cmd.template)}\`,`);
   if (cmd.outputs && cmd.outputs.length > 0) {
     const outs = cmd.outputs
-      .map((o) => `{ id: '${o.id}', sourceFieldId: '${o.sourceFieldId}', type: '${o.type}' }`)
+      .map((o) => {
+        const parts = [`id: ${quoteJsString(o.id)}`, `type: ${quoteJsString(o.type)}`];
+        if (o.sourceFieldId) parts.push(`sourceFieldId: ${quoteJsString(o.sourceFieldId)}`);
+        if (o.valueTemplate) parts.push(`valueTemplate: ${quoteJsString(o.valueTemplate)}`);
+        return `{ ${parts.join(', ')} }`;
+      })
       .join(', ');
     lines.push(`      outputs: [${outs}],`);
   }
@@ -85,19 +98,19 @@ function serializeCommand(cmd) {
 function serializeWorkflow(wf) {
   const lines = [];
   lines.push(`    {`);
-  lines.push(`      id: '${wf.id}',`);
-  lines.push(`      title: '${wf.title}',`);
-  if (wf.intendedScenario) lines.push(`      intendedScenario: '${wf.intendedScenario}',`);
-  if (wf.audience) lines.push(`      audience: '${wf.audience}',`);
+  lines.push(`      id: ${quoteJsString(wf.id)},`);
+  lines.push(`      title: ${quoteJsString(wf.title)},`);
+  if (wf.intendedScenario) lines.push(`      intendedScenario: ${quoteJsString(wf.intendedScenario)},`);
+  if (wf.audience) lines.push(`      audience: ${quoteJsString(wf.audience)},`);
   lines.push(`      steps: [`);
   for (const step of wf.steps) {
-    const parts = [`stepId: '${step.stepId}'`, `commandId: '${step.commandId}'`];
+    const parts = [`stepId: ${quoteJsString(step.stepId)}`, `commandId: ${quoteJsString(step.commandId)}`];
     if (step.optional) parts.push(`optional: true`);
     if (step.autoBindings) {
       const bindings = step.autoBindings
         .map((b) => {
-          const bp = [`fromVar: '${b.fromVar}'`, `toFieldId: '${b.toFieldId}'`];
-          if (b.mode) bp.push(`mode: '${b.mode}'`);
+          const bp = [`fromVar: ${quoteJsString(b.fromVar)}`, `toFieldId: ${quoteJsString(b.toFieldId)}`];
+          if (b.mode) bp.push(`mode: ${quoteJsString(b.mode)}`);
           return `{ ${bp.join(', ')} }`;
         })
         .join(', ');
@@ -111,9 +124,9 @@ function serializeWorkflow(wf) {
 }
 
 function serializeScenario(sc) {
-  const parts = [`id: '${sc.id}'`, `category: '${sc.category}'`, `title: '${sc.title}'`];
-  if (sc.recommendCommandId) parts.push(`recommendCommandId: '${sc.recommendCommandId}'`);
-  if (sc.recommendWorkflowId) parts.push(`recommendWorkflowId: '${sc.recommendWorkflowId}'`);
+  const parts = [`id: ${quoteJsString(sc.id)}`, `category: ${quoteJsString(sc.category)}`, `title: ${quoteJsString(sc.title)}`];
+  if (sc.recommendCommandId) parts.push(`recommendCommandId: ${quoteJsString(sc.recommendCommandId)}`);
+  if (sc.recommendWorkflowId) parts.push(`recommendWorkflowId: ${quoteJsString(sc.recommendWorkflowId)}`);
   return `    { ${parts.join(', ')} },`;
 }
 
@@ -175,7 +188,7 @@ function main() {
 import { Manifest } from '../types';
 
 export const manifest: Manifest = {
-  version: '${richData.manifestVersion}',
+  version: ${quoteJsString(richData.manifestVersion)},
   commands: [
 ${commandsTs}
   ],

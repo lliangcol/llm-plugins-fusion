@@ -1,16 +1,15 @@
 ---
 name: nova-review-lite
 description: "Quick lightweight review for obvious, high-signal issues in day-to-day PR checks."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: none
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
+license: MIT
+allowed-tools: Read Glob Grep LS
 argument-hint: "Example: review-lite INPUT='small PR diff'"
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: none
 ---
 
 ## Purpose

@@ -1,16 +1,15 @@
 ---
 name: nova-explore
 description: "Unified exploration Hub Skill. Route by PERSPECTIVE to observer/reviewer style outputs; analysis only, no design or implementation."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: none
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
+license: MIT
+allowed-tools: Read Glob Grep LS
 argument-hint: "Example: explore PERSPECTIVE=reviewer on this requirement doc."
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: none
 ---
 
 ## Purpose

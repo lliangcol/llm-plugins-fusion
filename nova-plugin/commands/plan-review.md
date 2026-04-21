@@ -1,8 +1,11 @@
 ---
 id: plan-review
 stage: plan
-title: "/plan-review"
-destructive-actions: false
+title: /plan-review
+destructive-actions: none
+allowed-tools: Read Glob Grep LS
+invokes:
+  skill: nova-plan-review
 ---
 
 # PLAN CRITICAL REVIEW

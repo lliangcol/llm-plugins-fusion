@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderTemplate } from '../src/utils/render';
+import { computeWorkflowOutputs, renderStringTemplate, renderTemplate } from '../src/utils/render';
 import { CommandDefinition, FormState } from '../src/types';
 
 const makeCommand = (
@@ -88,5 +88,101 @@ describe('renderTemplate', () => {
     const cmd = makeCommand('Hello {{name}}!', []);
     const form: FormState = {};
     expect(renderTemplate(cmd, form, { name: 'Claude' })).toBe('Hello Claude!');
+  });
+});
+
+describe('renderStringTemplate', () => {
+  it('可渲染独立字符串模板中的字段和值变量', () => {
+    const fields: CommandDefinition['fields'] = [
+      { id: 'reviewFile', label: 'Review file', type: 'path' },
+    ];
+    const form: FormState = { reviewFile: '.codex/review.md' };
+    expect(
+      renderStringTemplate('review={{reviewFile}} checks={{checksFile}}', fields, form, {
+        checksFile: '.codex/checks.txt',
+      }),
+    ).toBe('review=.codex/review.md checks=.codex/checks.txt');
+  });
+
+  it('缺失变量时输出 <<MISSING:KEY>>', () => {
+    expect(renderStringTemplate('missing={{value}}', [], {})).toBe('missing=<<MISSING:value>>');
+  });
+});
+
+describe('computeWorkflowOutputs', () => {
+  it('无 outputs 时返回原 variables 的副本', () => {
+    const cmd = makeCommand('noop');
+    const vars = { foo: 'bar' };
+    const result = computeWorkflowOutputs(cmd, {}, vars);
+    expect(result).toEqual(vars);
+    expect(result).not.toBe(vars);
+  });
+
+  it('valueTemplate 使用静态路径时直接写入变量', () => {
+    const cmd: CommandDefinition = {
+      ...makeCommand('tpl'),
+      outputs: [
+        { id: 'latest_review_file', type: 'path', valueTemplate: '.codex/codex-review-fix/latest-artifacts/review.md' },
+      ],
+    };
+    const result = computeWorkflowOutputs(cmd, {}, {});
+    expect(result.latest_review_file).toBe('.codex/codex-review-fix/latest-artifacts/review.md');
+  });
+
+  it('valueTemplate 可以引用当前命令的字段', () => {
+    const cmd: CommandDefinition = {
+      ...makeCommand('tpl', [{ id: 'BASE', label: 'Base', type: 'text' }]),
+      outputs: [
+        { id: 'resolved_base', type: 'text', valueTemplate: 'branch={{BASE}}' },
+      ],
+    };
+    const result = computeWorkflowOutputs(cmd, { BASE: 'main' }, {});
+    expect(result.resolved_base).toBe('branch=main');
+  });
+
+  it('sourceFieldId 路径从 form 读取 trim 后的字符串', () => {
+    const cmd: CommandDefinition = {
+      ...makeCommand('tpl', [{ id: 'PLAN_OUTPUT_PATH', label: 'Plan', type: 'path' }]),
+      outputs: [
+        { id: 'plan_output_path', type: 'path', sourceFieldId: 'PLAN_OUTPUT_PATH' },
+      ],
+    };
+    const result = computeWorkflowOutputs(cmd, { PLAN_OUTPUT_PATH: '  docs/plan.md  ' }, {});
+    expect(result.plan_output_path).toBe('docs/plan.md');
+  });
+
+  it('sourceFieldId 指向空值时不写入变量', () => {
+    const cmd: CommandDefinition = {
+      ...makeCommand('tpl', [{ id: 'PLAN_OUTPUT_PATH', label: 'Plan', type: 'path' }]),
+      outputs: [
+        { id: 'plan_output_path', type: 'path', sourceFieldId: 'PLAN_OUTPUT_PATH' },
+      ],
+    };
+    const result = computeWorkflowOutputs(cmd, { PLAN_OUTPUT_PATH: '   ' }, { existing: 'keep' });
+    expect(result).toEqual({ existing: 'keep' });
+  });
+
+  it('同一命令内后续 output 可引用前序 output 的结果', () => {
+    const cmd: CommandDefinition = {
+      ...makeCommand('tpl', [{ id: 'BASE', label: 'Base', type: 'text' }]),
+      outputs: [
+        { id: 'review_file', type: 'path', valueTemplate: '.codex/{{BASE}}/review.md' },
+        { id: 'verify_prompt', type: 'text', valueTemplate: 'verify {{review_file}}' },
+      ],
+    };
+    const result = computeWorkflowOutputs(cmd, { BASE: 'main' }, {});
+    expect(result.review_file).toBe('.codex/main/review.md');
+    expect(result.verify_prompt).toBe('verify .codex/main/review.md');
+  });
+
+  it('valueTemplate 为空串时不覆盖已有变量', () => {
+    const cmd: CommandDefinition = {
+      ...makeCommand('tpl', [{ id: 'BASE', label: 'Base', type: 'text' }]),
+      outputs: [
+        { id: 'resolved_base', type: 'text', valueTemplate: '{{BASE}}' },
+      ],
+    };
+    const result = computeWorkflowOutputs(cmd, { BASE: '' }, { resolved_base: 'prev' });
+    expect(result.resolved_base).toBe('prev');
   });
 });

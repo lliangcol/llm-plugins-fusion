@@ -1,8 +1,11 @@
 ---
 id: review
 stage: review
-title: "/review"
-destructive-actions: false
+title: /review
+destructive-actions: none
+allowed-tools: Read Glob Grep LS
+invokes:
+  skill: nova-review
 ---
 
 # CODE REVIEW (NO IMPLEMENTATION)

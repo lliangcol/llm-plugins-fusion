@@ -35,6 +35,9 @@
 | 对现有代码/描述做快速 PR 反馈                  | `/review-lite`                                         | 快、只抓明显问题，高信噪比                                        |
 | 对现有代码做常规严格评审（不给实现）           | ⭐`/review` 或 `/review-only`                          | **统一命令**：标准级别，分严重级别 + 给方向性改进建议             |
 | 高风险/核心模块/金融并发场景做"严苛审计式评审" | ⭐`/review LEVEL=strict` 或 `/review-strict`           | **统一命令**：严格级别，穷尽维度输出                              |
+| 让 Codex 先 review、Claude Code 再修复并复验   | `/codex-review-fix`                                    | 当前分支闭环，产出 `review.md` 与 `verify.md`                     |
+| 只想生成 Codex review 报告                     | `/codex-review-only`                                   | 不改代码，只输出结构化 `review.md`                                |
+| 已修复完成，只想做 Codex verify                | `/codex-verify-only`                                   | 对已有 `review.md` 做定向复验                                     |
 | 已有**批准的 plan 文件**，要严格按计划实现     | `/implement-plan`                                      | 必须提供 `PLAN_APPROVED=true`，偏差要解释                         |
 | 有计划或明确步骤，但允许少量纠错               | `/implement-standard`                                  | 计划为主，允许小调整，遇阻停下提问                                |
 | 追求速度、允许小重构与必要的微调               | `/implement-lite`                                      | "快实现"，避免过度设计                                            |
@@ -684,12 +687,15 @@ PLAN_APPROVED: true
 - `/review-lite`
 - `/review-only`
 - `/review-strict`
+- `/codex-review-only`
+- `/codex-verify-only`
 
 ### Implement
 
 - `/implement-plan`
 - `/implement-standard`
 - `/implement-lite`
+- `/codex-review-fix`
 
 ### Finalize
 

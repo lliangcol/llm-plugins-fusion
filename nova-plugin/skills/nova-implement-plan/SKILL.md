@@ -1,20 +1,15 @@
 ---
 name: nova-implement-plan
-description: "Implement strictly from an approved plan. Requires PLAN_INPUT_PATH and PLAN_APPROVED=true before execution."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: medium
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
-  - Write
-  - Edit
-  - MultiEdit
-  - Bash
+description: Implement strictly from an approved plan. Requires PLAN_INPUT_PATH and PLAN_APPROVED=true before execution.
+license: MIT
+allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
 argument-hint: "Example: implement-plan PLAN_INPUT_PATH=docs/plans/refund.md PLAN_APPROVED=true"
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: medium
 ---
 
 ## Purpose

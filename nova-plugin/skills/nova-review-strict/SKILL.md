@@ -1,16 +1,15 @@
 ---
 name: nova-review-strict
-description: "Exhaustive high-stakes review for production-critical code including boundary/security/data integrity concerns."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: none
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
+description: Exhaustive high-stakes review for production-critical code including boundary/security/data integrity concerns.
+license: MIT
+allowed-tools: Read Glob Grep LS
 argument-hint: "Example: review-strict INPUT='financial settlement diff'"
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: none
 ---
 
 ## Purpose

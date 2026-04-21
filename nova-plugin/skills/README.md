@@ -6,6 +6,9 @@ This directory provides one-to-one Skill mappings for all commands in `nova-plug
 
 | Command              | Skill name                | Summary                                   | user-invocable | destructive-actions |
 | -------------------- | ------------------------- | ----------------------------------------- | -------------- | ------------------- |
+| `codex-review-fix`   | `nova-codex-review-fix`   | Codex review/fix/verify semi-auto loop    | true           | medium              |
+| `codex-review-only`  | `nova-codex-review-only`  | Codex-driven branch review only           | true           | none                |
+| `codex-verify-only`  | `nova-codex-verify-only`  | Codex verify against existing review file | true           | none                |
 | `backend-plan`       | `nova-backend-plan`       | Java/Spring 12-section design plan output | true           | low                 |
 | `explore`            | `nova-explore`            | Unified exploration Hub                   | true           | none                |
 | `explore-lite`       | `nova-explore-lite`       | Observer-mode quick exploration           | true           | none                |
@@ -26,9 +29,10 @@ This directory provides one-to-one Skill mappings for all commands in `nova-plug
 
 ## Recommended Entrypoints
 
-1. Use `nova-explore` for unified exploration routing; use `nova-senior-explore` for deep analysis.
-2. Use `nova-review` for unified severity-based routing; use `nova-review-lite` for daily quick checks.
-3. Use `nova-produce-plan` for formal docs; use `nova-backend-plan` for Java/Spring-specific design.
+1. Use `nova-codex-review-fix` when you need a review -> fix -> verify closed loop with external Codex scripts.
+2. Use `nova-explore` for unified exploration routing; use `nova-senior-explore` for deep analysis.
+3. Use `nova-review` for unified severity-based routing; use `nova-review-lite` for daily quick checks.
+4. Use `nova-produce-plan` for formal docs; use `nova-backend-plan` for Java/Spring-specific design.
 
 ## Troubleshooting
 

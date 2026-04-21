@@ -2,10 +2,10 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/lliangcol/llm-plugins-fusion/schemas/marketplace.schema.json",
   "title": "Marketplace Registry",
-  "description": "Schema for .claude-plugin/marketplace.json",
+  "description": "Schema for .claude-plugin/marketplace.json (aligned with Anthropic official marketplace format; extra fields allowed for forward compatibility).",
   "type": "object",
   "required": ["name", "owner", "plugins"],
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "name": {
       "type": "string",
@@ -14,20 +14,18 @@
     "owner": {
       "type": "object",
       "required": ["name"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1
-        }
+        "name": { "type": "string", "minLength": 1 },
+        "email": { "type": "string", "format": "email" },
+        "url": { "type": "string", "format": "uri" }
       }
     },
     "metadata": {
       "type": "object",
+      "additionalProperties": true,
       "properties": {
-        "description": {
-          "type": "string"
-        }
+        "description": { "type": "string" }
       }
     },
     "plugins": {
@@ -36,16 +34,36 @@
       "items": {
         "type": "object",
         "required": ["name", "source", "version"],
-        "additionalProperties": false,
+        "additionalProperties": true,
         "properties": {
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "pattern": "^[a-z0-9](-?[a-z0-9])*$"
           },
           "source": {
-            "type": "string",
-            "minLength": 1,
-            "description": "Relative path to plugin directory"
+            "oneOf": [
+              {
+                "type": "string",
+                "minLength": 1,
+                "description": "Relative path to plugin directory"
+              },
+              {
+                "type": "object",
+                "required": ["source"],
+                "additionalProperties": true,
+                "properties": {
+                  "source": {
+                    "type": "string",
+                    "enum": ["local", "url", "git-subdir"]
+                  },
+                  "url": { "type": "string", "format": "uri" },
+                  "path": { "type": "string" },
+                  "ref": { "type": "string" },
+                  "sha": { "type": "string" }
+                }
+              }
+            ]
           },
           "version": {
             "type": "string",
@@ -54,16 +72,60 @@
           "author": {
             "type": "object",
             "required": ["name"],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "properties": {
-              "name": {
-                "type": "string"
-              }
+              "name": { "type": "string" },
+              "email": { "type": "string", "format": "email" },
+              "url": { "type": "string", "format": "uri" }
             }
           },
-          "description": {
-            "type": "string"
-          }
+          "description": { "type": "string" },
+          "category": {
+            "type": "string",
+            "enum": [
+              "development",
+              "productivity",
+              "review",
+              "testing",
+              "documentation",
+              "devops",
+              "security",
+              "data",
+              "workflow",
+              "other"
+            ]
+          },
+          "homepage": { "type": "string", "format": "uri" },
+          "repository": { "type": "string", "format": "uri" },
+          "license": { "type": "string" },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "keywords": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "icon": { "type": "string" },
+          "screenshots": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "trust-level": {
+            "type": "string",
+            "enum": ["official", "author-verified", "community", "experimental"]
+          },
+          "risk-level": {
+            "type": "string",
+            "enum": ["low", "medium", "high"]
+          },
+          "deprecated": { "type": "boolean" },
+          "replacement": { "type": "string" },
+          "sunset-date": { "type": "string", "format": "date" },
+          "last-updated": { "type": "string", "format": "date" },
+          "checksum": { "type": "string" }
         }
       }
     }

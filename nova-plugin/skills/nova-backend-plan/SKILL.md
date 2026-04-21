@@ -1,18 +1,15 @@
 ---
 name: nova-backend-plan
-description: "Generate a Java/Spring backend design plan with mandatory 12 sections and write to PLAN_OUTPUT_PATH."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: low
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
-  - Write
-  - Edit
+description: Generate a Java/Spring backend design plan with mandatory 12 sections and write to PLAN_OUTPUT_PATH.
+license: MIT
+allowed-tools: Read Glob Grep LS Write Edit
 argument-hint: "Example: backend-plan PLAN_OUTPUT_PATH=docs/plans/order-refund.md"
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: low
 ---
 
 ## Purpose

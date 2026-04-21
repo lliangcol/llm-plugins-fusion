@@ -1,17 +1,15 @@
 ---
 name: nova-senior-explore
-description: "Deep exploration skill for complex requirements/incidents; can export analysis artifact identical to chat output."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: low
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
-  - Write
+description: Deep exploration skill for complex requirements/incidents; can export analysis artifact identical to chat output.
+license: MIT
+allowed-tools: Read Glob Grep LS Write
 argument-hint: "Example: senior-explore INTENT=incident DEPTH=deep EXPORT_PATH=docs/analysis/incident.md"
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: low
 ---
 
 ## Purpose

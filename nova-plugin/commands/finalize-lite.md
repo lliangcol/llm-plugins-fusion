@@ -1,8 +1,11 @@
 ---
 id: finalize-lite
 stage: finalize
-title: "/finalize-lite"
-destructive-actions: true
+title: /finalize-lite
+destructive-actions: none
+allowed-tools: Read Glob Grep LS
+invokes:
+  skill: nova-finalize-lite
 ---
 
 # Summarize the completed work

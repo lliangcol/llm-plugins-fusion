@@ -1,8 +1,11 @@
 ---
 id: explore
 stage: explore
-title: "/explore"
-destructive-actions: false
+title: /explore
+destructive-actions: none
+allowed-tools: Read Glob Grep LS
+invokes:
+  skill: nova-explore
 ---
 
 # QUICK EXPLORATION

@@ -19,13 +19,30 @@ function loadJson(relPath) {
   return JSON.parse(readFileSync(full, 'utf8'));
 }
 
-// Minimal JSON Schema draft-07 validator (required/type/pattern/format/minLength/additionalProperties)
+// Minimal JSON Schema draft-07 validator
+// Supports: required/type/pattern/format/minLength/additionalProperties/properties/items/minItems/uniqueItems/enum/oneOf/const
 function validate(schema, data, path = '') {
   const errors = [];
 
+  if (schema.oneOf) {
+    const matchCount = schema.oneOf.reduce((acc, sub) => acc + (validate(sub, data, path).length === 0 ? 1 : 0), 0);
+    if (matchCount !== 1) {
+      errors.push(`${path || '(root)'}: value must match exactly one of oneOf branches (matched ${matchCount})`);
+    }
+    // oneOf短路：交由上层处理，不再做 type 断言
+    return errors;
+  }
+
+  if (schema.enum && !schema.enum.includes(data)) {
+    errors.push(`${path || '(root)'}: value ${JSON.stringify(data)} not in enum ${JSON.stringify(schema.enum)}`);
+  }
+  if (schema.const !== undefined && data !== schema.const) {
+    errors.push(`${path || '(root)'}: value ${JSON.stringify(data)} does not equal const ${JSON.stringify(schema.const)}`);
+  }
+
   if (schema.type) {
     const types = Array.isArray(schema.type) ? schema.type : [schema.type];
-    const jsType = Array.isArray(data) ? 'array' : typeof data;
+    const jsType = Array.isArray(data) ? 'array' : (data === null ? 'null' : typeof data);
     if (!types.includes(jsType)) {
       errors.push(`${path || '(root)'}: expected type ${types.join('|')}, got ${jsType}`);
       return errors;
@@ -43,6 +60,12 @@ function validate(schema, data, path = '') {
       try { new URL(data); } catch {
         errors.push(`${path}: value "${data}" is not a valid URI`);
       }
+    }
+    if (schema.format === 'date' && !/^\d{4}-\d{2}-\d{2}$/.test(data)) {
+      errors.push(`${path}: value "${data}" is not a valid ISO-8601 date (YYYY-MM-DD)`);
+    }
+    if (schema.format === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data)) {
+      errors.push(`${path}: value "${data}" is not a valid email`);
     }
   }
 

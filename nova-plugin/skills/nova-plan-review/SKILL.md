@@ -1,16 +1,15 @@
 ---
 name: nova-plan-review
 description: "Critically review a plan for decision clarity, assumptions, and execution risk without rewriting it."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: none
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
+license: MIT
+allowed-tools: Read Glob Grep LS
 argument-hint: "Example: plan-review INPUT=docs/plans/order.md"
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: none
 ---
 
 ## Purpose

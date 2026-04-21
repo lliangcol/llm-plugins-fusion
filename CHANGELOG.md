@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ---
 
+## [1.0.8] - 2026-04-21
+
+### Added
+- 补齐 `nova-codex-review-only` 与 `nova-codex-verify-only` 两个 skill 的 `README.md`，完成 Codex 三件套的对外用户文档
+- Codex 双复核闭环（review / fix / verify）形成完整用户可见能力集合
+- 社区标准文档：`CONTRIBUTING.md` / `SECURITY.md` / `CODE_OF_CONDUCT.md` / `ROADMAP.md`
+- `scripts/lint-frontmatter.mjs`：校验命令与 skill 的 frontmatter 契约
+- `scripts/check-manifest-drift.mjs`：校验 `manifest-data.json` 与 `commands/*.md` / workflows / scenarios 一致
+- CI 新增 `lint-frontmatter` 与 `check-manifest-drift` 两个 job
+
+### Changed
+- 同步 `nova-plugin` 与 `marketplace.json` 插件版本至 1.0.8
+- 迁移 20 个 `SKILL.md` frontmatter 到 Agent Skills 开放标准（自定义字段收入 `metadata.novaPlugin.*`，`allowed-tools` 改空格分隔字符串，补 `license: MIT`）
+- 统一 20 个 `commands/*.md` frontmatter：补 `allowed-tools`、新增 `invokes.skill` 指针、`destructive-actions` 由布尔改枚举（`none|low|medium|high`）
+- 开放 `schemas/marketplace.schema.json` 与 `schemas/plugin.schema.json`：`additionalProperties: true`，`source` 改 `oneOf`，新增 `category` / `tags` / `keywords` / `license` / `compatibility` / `trust-level` / `risk-level` / `last-updated` 等字段
+- 根 `README.md` 新增三栏入口（用户 / 插件作者 / 维护者）
+
+---
+
+## [1.0.7] - 2026-03-26
+
+### Added
+- 新增 `nova-codex-review-fix` 技能包，提供 Codex review -> Claude Code fix -> local checks -> Codex verify 半自动闭环
+- 新增 `codex-review-fix`、`codex-review-only`、`codex-verify-only` 三个命令及对应 skills / docs
+- 新增外部 Bash 脚本与 prompt 模板，用于 review、verify 和统一项目校验
+
+### Changed
+- 更新根 README、skills 索引、命令文档导航与版本号
+- 将 command generator manifest 扩展为支持 Codex 闭环命令
+
+---
+
 ## [1.0.6] - 2026-02-12
 
 ### Added
@@ -80,6 +112,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - MIT 开源协议
 - 中英双语 README 文档
 
+[1.0.8]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.7...v1.0.8
+[1.0.7]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.6...v1.0.7
 [1.0.6]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.5...v1.0.6
 [1.0.5]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.4...v1.0.5
 [1.0.4]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.3...v1.0.4

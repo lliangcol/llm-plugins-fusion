@@ -1,8 +1,11 @@
 ---
 id: review-only
 stage: review
-title: "/review-only"
-destructive-actions: false
+title: /review-only
+destructive-actions: none
+allowed-tools: Read Glob Grep LS
+invokes:
+  skill: nova-review-only
 ---
 
 # REVIEW ONLY, NO IMPLEMENTATION

@@ -66,7 +66,7 @@ CONSTRAINTS:
 {{CONSTRAINTS}}
 DEPTH: {{DEPTH}}
 EXPORT_PATH: {{EXPORT_PATH}}`,
-      outputs: [{ id: 'analysis_export_path', sourceFieldId: 'EXPORT_PATH', type: 'path' }],
+      outputs: [{ id: 'analysis_export_path', type: 'path', sourceFieldId: 'EXPORT_PATH' }],
     },
     {
       id: 'backend-plan',
@@ -88,7 +88,7 @@ CONTEXT:
 {{CONTEXT}}
 CONSTRAINTS:
 {{CONSTRAINTS}}`,
-      outputs: [{ id: 'plan_output_path', sourceFieldId: 'PLAN_OUTPUT_PATH', type: 'path' }],
+      outputs: [{ id: 'plan_output_path', type: 'path', sourceFieldId: 'PLAN_OUTPUT_PATH' }],
     },
     {
       id: 'plan-lite',
@@ -152,7 +152,38 @@ ANALYSIS_INPUTS:
 {{ANALYSIS_INPUTS}}
 CONSTRAINTS:
 {{CONSTRAINTS}}`,
-      outputs: [{ id: 'plan_output_path', sourceFieldId: 'PLAN_OUTPUT_PATH', type: 'path' }],
+      outputs: [{ id: 'plan_output_path', type: 'path', sourceFieldId: 'PLAN_OUTPUT_PATH' }],
+    },
+    {
+      id: 'codex-review-only',
+      displayName: '/codex-review-only',
+      stage: 'review',
+      constraintLevel: 'medium',
+      description: 'Run Codex review only and write a structured review artifact.',
+      fields: [
+        { id: 'BASE', label: 'Base branch', type: 'text' },
+        { id: 'REVIEW_MODE', label: 'Review mode', type: 'select', options: [{ value: 'branch', label: 'branch' }, { value: 'staged', label: 'staged' }, { value: 'full', label: 'full' }], defaultValue: 'branch' },
+      ],
+      template: `/codex-review-only
+BASE: {{BASE}}
+REVIEW_MODE: {{REVIEW_MODE}}`,
+      outputs: [{ id: 'latest_review_file', type: 'path', valueTemplate: '.codex/codex-review-fix/latest-artifacts/review.md' }],
+    },
+    {
+      id: 'codex-verify-only',
+      displayName: '/codex-verify-only',
+      stage: 'review',
+      constraintLevel: 'medium',
+      description: 'Run Codex verify against an existing review artifact.',
+      fields: [
+        { id: 'REVIEW_FILE', label: 'Review file', type: 'path', required: true },
+        { id: 'CHECKS_FILE', label: 'Checks file', type: 'path' },
+        { id: 'BASE', label: 'Base branch', type: 'text' },
+      ],
+      template: `/codex-verify-only
+REVIEW_FILE: {{REVIEW_FILE}}
+CHECKS_FILE: {{CHECKS_FILE}}
+BASE: {{BASE}}`,
     },
     {
       id: 'review-lite',
@@ -204,6 +235,24 @@ CONSTRAINTS:
 LEVEL: {{LEVEL}}
 INPUT:
 {{INPUT}}`,
+    },
+    {
+      id: 'codex-review-fix',
+      displayName: '/codex-review-fix',
+      stage: 'implement',
+      constraintLevel: 'strong',
+      description: 'Run a Codex review/fix/verify loop for the current branch.',
+      fields: [
+        { id: 'BASE', label: 'Base branch', type: 'text' },
+        { id: 'GOAL', label: 'Goal', type: 'multiline' },
+        { id: 'REVIEW_MODE', label: 'Review mode', type: 'select', options: [{ value: 'branch', label: 'branch' }, { value: 'staged', label: 'staged' }, { value: 'full', label: 'full' }], defaultValue: 'branch' },
+      ],
+      template: `/codex-review-fix
+BASE: {{BASE}}
+GOAL:
+{{GOAL}}
+REVIEW_MODE: {{REVIEW_MODE}}`,
+      outputs: [{ id: 'latest_review_file', type: 'path', valueTemplate: '.codex/codex-review-fix/latest-artifacts/review.md' }, { id: 'latest_checks_file', type: 'path', valueTemplate: '.codex/codex-review-fix/latest-artifacts/checks.txt' }],
     },
     {
       id: 'implement-lite',
@@ -336,6 +385,17 @@ FOLLOW-UP WORK:
       ],
     },
     {
+      id: 'workflow-codex-loop',
+      title: 'Codex review fix loop',
+      intendedScenario: 'Review-driven branch fixes with verify',
+      audience: 'power user',
+      steps: [
+        { stepId: 'wfcl1', commandId: 'codex-review-only', optional: true },
+        { stepId: 'wfcl2', commandId: 'codex-review-fix' },
+        { stepId: 'wfcl3', commandId: 'codex-verify-only', optional: true, autoBindings: [{ fromVar: 'latest_review_file', toFieldId: 'REVIEW_FILE', mode: 'set' }, { fromVar: 'latest_checks_file', toFieldId: 'CHECKS_FILE', mode: 'set' }] },
+      ],
+    },
+    {
       id: 'workflow-d',
       title: 'Java backend end-to-end path',
       intendedScenario: 'Backend planning through delivery',
@@ -359,6 +419,7 @@ FOLLOW-UP WORK:
     { id: 'java-backend', category: 'Planning', title: 'Java backend design and delivery', recommendWorkflowId: 'workflow-d' },
     { id: 'plan-review-scene', category: 'Planning', title: 'Plan quality review', recommendCommandId: 'plan-review' },
     { id: 'pr-review', category: 'Code review', title: 'Pull request review', recommendWorkflowId: 'workflow-c' },
+    { id: 'codex-loop', category: 'Code review', title: 'Codex review/fix/verify loop', recommendWorkflowId: 'workflow-codex-loop' },
     { id: 'implement', category: 'Implementation', title: 'Implement with approved plan', recommendCommandId: 'implement-plan' },
     { id: 'handoff', category: 'Delivery', title: 'Finalize and handoff', recommendCommandId: 'finalize-work' },
   ],

@@ -1,8 +1,11 @@
 ---
 id: finalize-work
 stage: finalize
-title: "/finalize-work"
-destructive-actions: true
+title: /finalize-work
+destructive-actions: none
+allowed-tools: Read Glob Grep LS Bash
+invokes:
+  skill: nova-finalize-work
 ---
 
 # Complete the work results

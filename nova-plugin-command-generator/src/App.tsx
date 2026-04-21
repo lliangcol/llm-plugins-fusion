@@ -15,7 +15,7 @@ import {
 import { addHistory, loadHistory, saveHistory } from './store/history';
 import { loadGuidanceState, recordGuidanceSuccess } from './store/guidance';
 import { loadDraft, saveDraft } from './store/draft';
-import { renderTemplate, stageOrder, constraintOrder } from './utils/render';
+import { computeWorkflowOutputs, renderTemplate, stageOrder, constraintOrder } from './utils/render';
 import { readAttachments } from './utils/attachments';
 import { normalizeOption } from './utils/options';
 import { Icon } from './components/Icon';
@@ -769,12 +769,7 @@ export default function App() {
     setNextRecommendation(recommendNext(nextGuidance, guidanceContext));
     setShowNextCard(true);
     if (workflowCommand.outputs) {
-      const next = { ...workflowVariables };
-      workflowCommand.outputs.forEach((output) => {
-        const value = workflowFormState[output.sourceFieldId];
-        if (typeof value === 'string' && value.trim()) next[output.id] = value.trim();
-      });
-      setWorkflowVariables(next);
+      setWorkflowVariables(computeWorkflowOutputs(workflowCommand, workflowFormState, workflowVariables));
     }
     setWorkflowStepOutputs((prev) => ({ ...prev, [currentStep.stepId]: workflowPreviewText }));
     setWorkflowStepStatus((prev) => ({ ...prev, [currentStep.stepId]: 'done' }));

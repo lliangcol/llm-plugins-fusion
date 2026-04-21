@@ -15,7 +15,8 @@ export interface FieldDefinition {
 
 export interface OutputDefinition {
   id: string;
-  sourceFieldId: string;
+  sourceFieldId?: string;
+  valueTemplate?: string;
   type: 'path' | 'text';
 }
 

@@ -1,8 +1,11 @@
 ---
 id: review-lite
 stage: review
-title: "/review-lite"
-destructive-actions: false
+title: /review-lite
+destructive-actions: none
+allowed-tools: Read Glob Grep LS
+invokes:
+  skill: nova-review-lite
 ---
 
 # LIGHTWEIGHT REVIEW

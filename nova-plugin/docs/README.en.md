@@ -6,7 +6,7 @@
 
 **A third-party LLM plugin marketplace + plugin collection**
 
-[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com)
+[![Version](https://img.shields.io/badge/version-1.0.7-blue.svg)](https://github.com)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com)
 
 </div>
@@ -61,7 +61,7 @@ llm-plugins-fusion/
 ├── 📦 nova-plugin/                    # plugin
 │   ├── 📄 .claude-plugin/
 │   │   └── plugin.json               # plugin metadata
-│   ├── 📂 commands/                   # 17 command presets (15 original + 2 unified)
+│   ├── 📂 commands/                   # 20 command presets (17 existing + 3 Codex loop commands)
 │   │   ├── senior-explore.md
 │   │   ├── ⭐ explore.md          # Unified exploration command (new)
 │   │   ├── explore-lite.md
@@ -74,9 +74,12 @@ llm-plugins-fusion/
 │   │   ├── ⭐ review.md           # Unified review command (new)
 │   │   ├── review-only.md
 │   │   ├── review-strict.md
+│   │   ├── codex-review-only.md
+│   │   ├── codex-verify-only.md
 │   │   ├── implement-plan.md
 │   │   ├── implement-standard.md
 │   │   ├── implement-lite.md
+│   │   ├── codex-review-fix.md
 │   │   ├── finalize-work.md
 │   │   └── finalize-lite.md
 │   ├── 📂 docs/                       # docs
@@ -100,7 +103,7 @@ llm-plugins-fusion/
 <table>
 <tr>
 <td width="120"><strong>Version</strong></td>
-<td>1.0.0</td>
+<td>1.0.7</td>
 </tr>
 <tr>
 <td><strong>Author</strong></td>
@@ -108,7 +111,7 @@ llm-plugins-fusion/
 </tr>
 <tr>
 <td><strong>Commands</strong></td>
-<td>17 (15 original + 2 unified)</td>
+<td>20 (17 existing + 3 Codex loop commands)</td>
 </tr>
 <tr>
 <td><strong>Positioning</strong></td>
@@ -118,15 +121,15 @@ llm-plugins-fusion/
 
 ### 🎯 Core capabilities
 
-A developer-productivity plugin for LLM coding assistants (Claude Code compatible), covering an end-to-end engineering workflow.
+A developer-productivity plugin for LLM coding assistants (Claude Code compatible), covering an end-to-end engineering workflow plus a semi-automated Codex review/fix/verify loop.
 
 ### Workflow stages
 
-| Stage    | Explore 🔍             | Plan 📝        | Review 🔎      | Implement ⚙️ | Finalize 📦      |
-| -------- | ---------------------- | -------------- | -------------- | ------------ | ---------------- |
-| Goal     | Understand the problem | Draft the plan | Review quality | Write code   | Deliver outcomes |
-| Commands | 4 commands             | 4 commands     | 4 commands     | 3 commands   | 2 commands       |
-| Unified  | ⭐ `/explore`          | -              | ⭐ `/review`   | -            | -                |
+| Stage    | Explore 🔍             | Plan 📝        | Review 🔎                     | Implement ⚙️                | Finalize 📦      |
+| -------- | ---------------------- | -------------- | ----------------------------- | --------------------------- | ---------------- |
+| Goal     | Understand the problem | Draft the plan | Review quality / Codex verify | Write code / Codex fix loop | Deliver outcomes |
+| Commands | 4 commands             | 4 commands     | 6 commands                    | 4 commands                  | 2 commands       |
+| Unified  | ⭐ `/explore`          | -              | ⭐ `/review` + Codex variants  | `/codex-review-fix`         | -                |
 
 ---
 
@@ -145,6 +148,7 @@ Active agents: 14 (default-scanned: `nova-plugin/agents/`). Legacy agents: 69 (a
 | -------------------------------------------------------------------------- | ------------------------------------------------- | -------------------------------- |
 | [📘 Command Reference Guide](nova-plugin/docs/commands-reference-guide.md) | Full parameters, 5+ scenarios, workflow templates | **Daily lookup, copy templates** |
 | [📗 Command Handbook](nova-plugin/docs/claude-code-commands-handbook.md)   | Grouped by type, command comparison               | **Quick start, pick a command**  |
+| [🧩 Codex Loop Guide](nova-plugin/docs/codex-review-fix.README.md)         | review/fix/verify skills + scripts                | **Claude Code + Codex loop**     |
 | [🧭 Agents Routing](docs/agents/ROUTING.md)                                | Active agents, keyword routing, examples          | **Auto routing, pick agents**    |
 | [🧠 Agents Summary](nova-plugin/docs/agents-summary.en.md)                 | Agent roles, tools, and scenarios                 | **Understand and pick agents**   |
 

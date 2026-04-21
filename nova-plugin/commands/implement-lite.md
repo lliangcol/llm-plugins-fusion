@@ -1,8 +1,11 @@
 ---
 id: implement-lite
 stage: implement
-title: "/implement-lite"
-destructive-actions: true
+title: /implement-lite
+destructive-actions: medium
+allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
+invokes:
+  skill: nova-implement-lite
 ---
 
 # FAST EXECUTION

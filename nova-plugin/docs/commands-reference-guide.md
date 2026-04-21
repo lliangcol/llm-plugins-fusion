@@ -1,6 +1,6 @@
 ﻿# 📚 Nova Plugin 命令完全参考手册
 
-> **版本**: 1.0.0 | **最后更新**: 2026-01-11
+> **版本**: 1.0.7 | **最后更新**: 2026-03-26
 >
 > 本手册提供 nova-plugin 所有命令的完整技术参考，包含详细参数说明、场景示例库、工作流模板。
 
@@ -42,6 +42,9 @@
 | **代码评审** | 日常PR评审     | `/review-lite`                                         | [示例](#场景-日常pr评审)       |
 | **代码评审** | 核心逻辑评审   | ⭐`/review` 或 `/review-only`                          | [示例](#场景-核心逻辑评审)     |
 | **代码评审** | 高风险代码审计 | ⭐`/review LEVEL=strict` 或 `/review-strict`           | [示例](#场景-高风险代码审计)   |
+| **闭环修复** | 当前分支闭环修复 | `/codex-review-fix`                                 | [示例](#工作流-c2-codex-闭环修复) |
+| **闭环修复** | 只生成 Codex review | `/codex-review-only`                             | [示例](#工作流-c2-codex-闭环修复) |
+| **闭环修复** | 只做 Codex verify | `/codex-verify-only`                             | [示例](#工作流-c2-codex-闭环修复) |
 | **代码实现** | 严格按计划执行 | `/implement-plan`                                      | [示例](#场景-按计划实现)       |
 | **代码实现** | 标准开发任务   | `/implement-standard`                                  | [示例](#场景-标准开发任务)     |
 | **代码实现** | 快速小修复     | `/implement-lite`                                      | [示例](#场景-快速修复)         |
@@ -103,7 +106,7 @@
 | 收尾 | `/finalize-work`      | 🔴 强    | 交付文档   | ❌ 禁止    | -                                                |
 | 收尾 | `/finalize-lite`      | 🟢 弱    | 简要总结   | ❌ 禁止    | -                                                |
 
-**命令数量**: 17 个（15 个原有 + 2 个新增统一命令）
+**命令数量**: 20 个（17 个原有 + 3 个 Codex 闭环命令）
 **推荐路径**: 优先使用 ⭐ 标记的统一命令
 
 ---
@@ -1630,6 +1633,32 @@ EXPORT_PATH: docs/analysis/payment-status-issue.md
 
 ---
 
+### 工作流 C2: Codex 闭环修复
+
+```
+1. /codex-review-only 或直接 /codex-review-fix
+2. Claude Code 修复高置信问题
+3. 运行仓库 checks
+4. /codex-verify-only
+5. 根据 verify 结果决定是否继续修复或准备合并
+```
+
+**示例**
+
+```text
+/codex-review-fix BASE=main GOAL="修复当前分支直到可合并"
+```
+
+```text
+/codex-review-only REVIEW_MODE=full
+```
+
+```text
+/codex-verify-only REVIEW_FILE=.codex/codex-review-fix/latest-artifacts/review.md CHECKS_FILE=.codex/codex-review-fix/latest-artifacts/checks.txt BASE=main
+```
+
+---
+
 ### 工作流 D: Java 后端完整开发
 
 ```
@@ -1683,6 +1712,8 @@ EXPORT_PATH: docs/analysis/payment-status-issue.md
 | `/review-lite`   | 日常 PR    | 🟢 轻 |
 | `/review-only`   | 核心链路   | 🟡 中 |
 | `/review-strict` | 高风险审计 | 🔴 深 |
+| `/codex-review-only` | 分支 review 工件化 | 🟡 中 |
+| `/codex-verify-only` | 定向复验 | 🟡 中 |
 
 ### Implement 命令速查
 
@@ -1691,6 +1722,7 @@ EXPORT_PATH: docs/analysis/payment-status-issue.md
 | `/implement-plan`     | 有批准的计划 | 🔴 强    |
 | `/implement-standard` | 明确步骤     | 🟡 中    |
 | `/implement-lite`     | 快速小任务   | 🟢 弱    |
+| `/codex-review-fix`   | review/fix/verify 闭环 | 🔴 强 |
 
 ### Finalize 命令速查
 

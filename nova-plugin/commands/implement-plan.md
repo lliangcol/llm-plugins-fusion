@@ -1,8 +1,11 @@
 ---
 id: implement-plan
 stage: implement
-title: "/implement-plan"
-destructive-actions: true
+title: /implement-plan
+destructive-actions: medium
+allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
+invokes:
+  skill: nova-implement-plan
 ---
 
 # CONTROLLED EXECUTION

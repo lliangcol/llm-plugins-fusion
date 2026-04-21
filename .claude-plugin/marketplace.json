@@ -1,7 +1,9 @@
 {
   "name": "llm-plugins-fusion",
   "owner": {
-    "name": "liu liang"
+    "name": "liu liang",
+    "email": "lliangcoder@gmail.com",
+    "url": "https://github.com/lliangcol"
   },
   "metadata": {
     "description": "A curated marketplace of third-party LLM assistant plugins for productivity and development workflows."
@@ -10,11 +12,23 @@
     {
       "name": "nova-plugin",
       "source": "./nova-plugin",
-      "version": "1.0.6",
+      "version": "1.0.8",
       "author": {
-        "name": "liu liang"
+        "name": "liu liang",
+        "email": "lliangcoder@gmail.com",
+        "url": "https://github.com/lliangcol"
       },
-      "description": "A powerful extension designed for AI coding assistants, enhancing developer productivity and workflow efficiency."
+      "description": "A powerful extension designed for AI coding assistants, enhancing developer productivity and workflow efficiency.",
+      "category": "workflow",
+      "homepage": "https://github.com/lliangcol/llm-plugins-fusion",
+      "repository": "https://github.com/lliangcol/llm-plugins-fusion",
+      "license": "MIT",
+      "tags": ["workflow", "ai-coding", "claude-code", "codex-review"],
+      "keywords": ["explore", "plan", "review", "implement", "finalize", "codex"],
+      "trust-level": "author-verified",
+      "risk-level": "low",
+      "deprecated": false,
+      "last-updated": "2026-04-21"
     }
   ]
 }

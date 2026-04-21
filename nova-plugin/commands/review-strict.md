@@ -1,8 +1,11 @@
 ---
 id: review-strict
 stage: review
-title: "/review-strict"
-destructive-actions: false
+title: /review-strict
+destructive-actions: none
+allowed-tools: Read Glob Grep LS
+invokes:
+  skill: nova-review-strict
 ---
 
 # STRICT & EXHAUSTIVE REVIEW

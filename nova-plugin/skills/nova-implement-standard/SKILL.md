@@ -1,20 +1,15 @@
 ---
 name: nova-implement-standard
-description: "Controlled implementation from confirmed steps/plan with minor corrective adjustments only."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: medium
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
-  - Write
-  - Edit
-  - MultiEdit
-  - Bash
+description: Controlled implementation from confirmed steps/plan with minor corrective adjustments only.
+license: MIT
+allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
 argument-hint: "Example: implement-standard STEPS='A,B,C'"
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: medium
 ---
 
 ## Purpose

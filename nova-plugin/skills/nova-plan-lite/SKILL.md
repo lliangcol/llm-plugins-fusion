@@ -1,16 +1,15 @@
 ---
 name: nova-plan-lite
-description: "Lightweight planning skill for quick execution alignment; non-formal and no code writing."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: none
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
+description: Lightweight planning skill for quick execution alignment; non-formal and no code writing.
+license: MIT
+allowed-tools: Read Glob Grep LS
 argument-hint: "Example: plan-lite for this feature request."
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: none
 ---
 
 ## Purpose

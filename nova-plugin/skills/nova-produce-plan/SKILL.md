@@ -1,18 +1,15 @@
 ---
 name: nova-produce-plan
-description: "Write a formal plan document to file using general or java-backend profile; design checkpoint only."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: low
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
-  - Write
-  - Edit
+description: Write a formal plan document to file using general or java-backend profile; design checkpoint only.
+license: MIT
+allowed-tools: Read Glob Grep LS Write Edit
 argument-hint: "Example: produce-plan PLAN_OUTPUT_PATH=docs/plans/refund.md PLAN_INTENT=Fix idempotency PLAN_PROFILE=general"
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: low
 ---
 
 ## Purpose

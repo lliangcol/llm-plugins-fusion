@@ -1,8 +1,11 @@
 ---
 id: produce-plan
 stage: plan
-title: "/produce-plan"
-destructive-actions: true
+title: /produce-plan
+destructive-actions: low
+allowed-tools: Read Glob Grep LS Write Edit
+invokes:
+  skill: nova-produce-plan
 ---
 
 # DESIGN CHECKPOINT

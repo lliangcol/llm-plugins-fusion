@@ -1,16 +1,15 @@
 ---
 name: nova-finalize-lite
 description: "Minimal close-out summary: what changed, why, and known limitations."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: none
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
+license: MIT
+allowed-tools: Read Glob Grep LS
 argument-hint: "Example: finalize-lite summarize this completed patch"
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: none
 ---
 
 ## Purpose

@@ -143,6 +143,36 @@
       "fields": [{ "id": "ARGUMENTS", "label": "Input", "type": "multiline", "required": true }],
       "template": "/review-strict\n{{ARGUMENTS}}"
     },
+    "codex-review-only": {
+      "constraintLevel": "medium",
+      "description": "Run Codex review only and write a structured review artifact.",
+      "fields": [
+        { "id": "BASE", "label": "Base branch", "type": "text" },
+        {
+          "id": "REVIEW_MODE",
+          "label": "Review mode",
+          "type": "select",
+          "options": [
+            { "value": "branch", "label": "branch" },
+            { "value": "staged", "label": "staged" },
+            { "value": "full", "label": "full" }
+          ],
+          "defaultValue": "branch"
+        }
+      ],
+      "template": "/codex-review-only\nBASE: {{BASE}}\nREVIEW_MODE: {{REVIEW_MODE}}",
+      "outputs": [{ "id": "latest_review_file", "valueTemplate": ".codex/codex-review-fix/latest-artifacts/review.md", "type": "path" }]
+    },
+    "codex-verify-only": {
+      "constraintLevel": "medium",
+      "description": "Run Codex verify against an existing review artifact.",
+      "fields": [
+        { "id": "REVIEW_FILE", "label": "Review file", "type": "path", "required": true },
+        { "id": "CHECKS_FILE", "label": "Checks file", "type": "path" },
+        { "id": "BASE", "label": "Base branch", "type": "text" }
+      ],
+      "template": "/codex-verify-only\nREVIEW_FILE: {{REVIEW_FILE}}\nCHECKS_FILE: {{CHECKS_FILE}}\nBASE: {{BASE}}"
+    },
     "implement-plan": {
       "constraintLevel": "strong",
       "description": "Implement strictly from an approved plan.",
@@ -170,6 +200,30 @@
         { "id": "NOTES", "label": "Notes", "type": "multiline" }
       ],
       "template": "/implement-lite\nINSTRUCTIONS:\n{{INSTRUCTIONS}}\nNOTES:\n{{NOTES}}"
+    },
+    "codex-review-fix": {
+      "constraintLevel": "strong",
+      "description": "Run a Codex review/fix/verify loop for the current branch.",
+      "fields": [
+        { "id": "BASE", "label": "Base branch", "type": "text" },
+        { "id": "GOAL", "label": "Goal", "type": "multiline" },
+        {
+          "id": "REVIEW_MODE",
+          "label": "Review mode",
+          "type": "select",
+          "options": [
+            { "value": "branch", "label": "branch" },
+            { "value": "staged", "label": "staged" },
+            { "value": "full", "label": "full" }
+          ],
+          "defaultValue": "branch"
+        }
+      ],
+      "template": "/codex-review-fix\nBASE: {{BASE}}\nGOAL:\n{{GOAL}}\nREVIEW_MODE: {{REVIEW_MODE}}",
+      "outputs": [
+        { "id": "latest_review_file", "valueTemplate": ".codex/codex-review-fix/latest-artifacts/review.md", "type": "path" },
+        { "id": "latest_checks_file", "valueTemplate": ".codex/codex-review-fix/latest-artifacts/checks.txt", "type": "path" }
+      ]
     },
     "finalize-work": {
       "constraintLevel": "strong",
@@ -233,6 +287,25 @@
       ]
     },
     {
+      "id": "workflow-codex-loop",
+      "title": "Codex review fix loop",
+      "intendedScenario": "Review-driven branch fixes with verify",
+      "audience": "power user",
+      "steps": [
+        { "stepId": "wfcl1", "commandId": "codex-review-only", "optional": true },
+        { "stepId": "wfcl2", "commandId": "codex-review-fix" },
+        {
+          "stepId": "wfcl3",
+          "commandId": "codex-verify-only",
+          "optional": true,
+          "autoBindings": [
+            { "fromVar": "latest_review_file", "toFieldId": "REVIEW_FILE", "mode": "set" },
+            { "fromVar": "latest_checks_file", "toFieldId": "CHECKS_FILE", "mode": "set" }
+          ]
+        }
+      ]
+    },
+    {
       "id": "workflow-d",
       "title": "Java backend end-to-end path",
       "intendedScenario": "Backend planning through delivery",
@@ -256,6 +329,7 @@
     { "id": "java-backend", "category": "Planning", "title": "Java backend design and delivery", "recommendWorkflowId": "workflow-d" },
     { "id": "plan-review-scene", "category": "Planning", "title": "Plan quality review", "recommendCommandId": "plan-review" },
     { "id": "pr-review", "category": "Code review", "title": "Pull request review", "recommendWorkflowId": "workflow-c" },
+    { "id": "codex-loop", "category": "Code review", "title": "Codex review/fix/verify loop", "recommendWorkflowId": "workflow-codex-loop" },
     { "id": "implement", "category": "Implementation", "title": "Implement with approved plan", "recommendCommandId": "implement-plan" },
     { "id": "handoff", "category": "Delivery", "title": "Finalize and handoff", "recommendCommandId": "finalize-work" }
   ]

@@ -2,14 +2,15 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/lliangcol/llm-plugins-fusion/schemas/plugin.schema.json",
   "title": "Nova Plugin Metadata",
-  "description": "Schema for nova-plugin/.claude-plugin/plugin.json",
+  "description": "Schema for nova-plugin/.claude-plugin/plugin.json (extra fields allowed for forward compatibility).",
   "type": "object",
   "required": ["name", "description", "version", "author"],
-  "additionalProperties": false,
+  "additionalProperties": true,
   "properties": {
     "name": {
       "type": "string",
       "minLength": 1,
+      "pattern": "^[a-z0-9](-?[a-z0-9])*$",
       "description": "Plugin identifier, lowercase with hyphens"
     },
     "description": {
@@ -25,32 +26,55 @@
     "author": {
       "type": "object",
       "required": ["name"],
-      "additionalProperties": false,
+      "additionalProperties": true,
       "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1
-        }
+        "name": { "type": "string", "minLength": 1 },
+        "email": { "type": "string", "format": "email" },
+        "url": { "type": "string", "format": "uri" }
       }
+    },
+    "license": {
+      "type": "string",
+      "description": "SPDX license identifier (e.g. MIT)"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "development",
+        "productivity",
+        "review",
+        "testing",
+        "documentation",
+        "devops",
+        "security",
+        "data",
+        "workflow",
+        "other"
+      ]
     },
     "tags": {
       "type": "array",
-      "items": {
-        "type": "string",
-        "minLength": 1
-      },
+      "items": { "type": "string", "minLength": 1 },
       "uniqueItems": true,
       "description": "Marketplace display tags"
     },
-    "homepage": {
-      "type": "string",
-      "format": "uri",
-      "description": "Project homepage URL"
+    "keywords": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 },
+      "uniqueItems": true,
+      "description": "Search keywords"
     },
-    "repository": {
-      "type": "string",
-      "format": "uri",
-      "description": "Source repository URL"
+    "homepage": { "type": "string", "format": "uri" },
+    "repository": { "type": "string", "format": "uri" },
+    "icon": { "type": "string" },
+    "compatibility": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Compatibility matrix; keys are runtimes (claude-code / codex / ...)",
+      "properties": {
+        "claude-code": { "type": "string" },
+        "codex": { "type": "string" }
+      }
     }
   }
 }

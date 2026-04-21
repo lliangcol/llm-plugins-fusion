@@ -1,17 +1,15 @@
 ---
 name: nova-finalize-work
 description: "Finalize completed work artifacts. Produce commit/PR text in Git repo, else local handoff summary and manual steps."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: none
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
-  - Bash
+license: MIT
+allowed-tools: Read Glob Grep LS Bash
 argument-hint: "Example: finalize-work for current completed changes"
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: none
 ---
 
 ## Purpose

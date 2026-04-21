@@ -1,20 +1,15 @@
 ---
 name: nova-implement-lite
-description: "Fast pragmatic implementation for small tasks; allows minor adjustments but avoids overengineering."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: medium
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
-  - Write
-  - Edit
-  - MultiEdit
-  - Bash
+description: Fast pragmatic implementation for small tasks; allows minor adjustments but avoids overengineering.
+license: MIT
+allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
 argument-hint: "Example: implement-lite TASK='fix null pointer in order handler'"
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: medium
 ---
 
 ## Purpose

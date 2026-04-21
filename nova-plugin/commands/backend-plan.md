@@ -1,8 +1,11 @@
 ---
 id: backend-plan
 stage: plan
-title: "/backend-plan"
-destructive-actions: true
+title: /backend-plan
+destructive-actions: low
+allowed-tools: Read Glob Grep LS Write Edit
+invokes:
+  skill: nova-backend-plan
 ---
 
 # JAVA / SPRING BACKEND DESIGN PLAN

@@ -20,17 +20,46 @@ const stringifyField = (field: FieldDefinition, value: unknown) => {
   return value ? String(value) : '';
 };
 
-export const renderTemplate = (command: CommandDefinition, form: FormState, variables: Record<string, string> = {}) => {
-  const filled = command.template.replace(/{{(.*?)}}/g, (_, rawKey) => {
+export const renderStringTemplate = (
+  template: string,
+  fields: FieldDefinition[],
+  form: FormState,
+  variables: Record<string, string> = {},
+) => {
+  return template.replace(/{{(.*?)}}/g, (_, rawKey) => {
     const key = String(rawKey).trim();
-    const field = command.fields.find((f) => f.id === key);
+    const field = fields.find((f) => f.id === key);
     if (field) {
       return stringifyField(field, form[key] ?? '');
     }
     if (variables[key]) return variables[key];
     return `<<MISSING:${key}>>`;
   });
-  return filled;
+};
+
+export const renderTemplate = (command: CommandDefinition, form: FormState, variables: Record<string, string> = {}) => {
+  return renderStringTemplate(command.template, command.fields, form, variables);
+};
+
+export const computeWorkflowOutputs = (
+  command: CommandDefinition,
+  form: FormState,
+  variables: Record<string, string>,
+): Record<string, string> => {
+  const next = { ...variables };
+  if (!command.outputs) return next;
+  command.outputs.forEach((output) => {
+    if (output.valueTemplate) {
+      // 使用 next 让后续 output 可以引用同一命令中前序 output 的结果
+      const value = renderStringTemplate(output.valueTemplate, command.fields, form, next).trim();
+      if (value) next[output.id] = value;
+      return;
+    }
+    if (!output.sourceFieldId) return;
+    const value = form[output.sourceFieldId];
+    if (typeof value === 'string' && value.trim()) next[output.id] = value.trim();
+  });
+  return next;
 };
 
 export const stageOrder: Record<string, number> = {

@@ -1,16 +1,15 @@
 ---
 name: nova-explore-review
 description: "Reviewer-style exploration focused on questions and risk signals, without proposing fixes."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: none
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
+license: MIT
+allowed-tools: Read Glob Grep LS
 argument-hint: "Example: explore-review this design draft."
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: none
 ---
 
 ## Purpose

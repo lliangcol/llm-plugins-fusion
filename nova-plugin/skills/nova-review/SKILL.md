@@ -1,16 +1,15 @@
 ---
 name: nova-review
-description: "Unified review Hub Skill. Route by LEVEL to standard or strict review outputs; no code modification."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: none
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
+description: Unified review Hub Skill. Route by LEVEL to standard or strict review outputs; no code modification.
+license: MIT
+allowed-tools: Read Glob Grep LS
 argument-hint: "Example: review LEVEL=strict INPUT='payment diff'"
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: none
 ---
 
 ## Purpose

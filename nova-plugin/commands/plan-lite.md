@@ -1,8 +1,11 @@
 ---
 id: plan-lite
 stage: plan
-title: "/plan-lite"
-destructive-actions: false
+title: /plan-lite
+destructive-actions: none
+allowed-tools: Read Glob Grep LS
+invokes:
+  skill: nova-plan-lite
 ---
 
 # LIGHTWEIGHT PLANNING

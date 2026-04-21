@@ -1,16 +1,15 @@
 ---
 name: nova-explore-lite
-description: "Lightweight observer-style exploration for quick understanding alignment."
-user-invocable: true
-auto-load: false
-subagent-safe: true
-destructive-actions: none
-allowed-tools:
-  - Read
-  - Glob
-  - Grep
-  - LS
+description: Lightweight observer-style exploration for quick understanding alignment.
+license: MIT
+allowed-tools: Read Glob Grep LS
 argument-hint: "Example: explore-lite on this log snippet."
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true
+    destructiveActions: none
 ---
 
 ## Purpose

@@ -49,3 +49,23 @@ jobs:
         with:
           node-version: '20'
       - run: node scripts/validate-schemas.mjs
+
+  lint-frontmatter:
+    name: Lint Frontmatter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/lint-frontmatter.mjs
+
+  check-manifest-drift:
+    name: Check Manifest Drift
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/check-manifest-drift.mjs

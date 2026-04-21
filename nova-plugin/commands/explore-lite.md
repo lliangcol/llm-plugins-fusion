@@ -1,8 +1,11 @@
 ---
 id: explore-lite
 stage: explore
-title: "/explore-lite"
-destructive-actions: false
+title: /explore-lite
+destructive-actions: none
+allowed-tools: Read Glob Grep LS
+invokes:
+  skill: nova-explore-lite
 ---
 
 # QUICK UNDERSTANDING

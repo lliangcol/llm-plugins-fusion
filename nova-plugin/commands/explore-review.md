@@ -1,8 +1,11 @@
 ---
 id: explore-review
 stage: explore
-title: "/explore-review"
-destructive-actions: false
+title: /explore-review
+destructive-actions: none
+allowed-tools: Read Glob Grep LS
+invokes:
+  skill: nova-explore-review
 ---
 
 # REVIEW WITHOUT SOLUTIONS

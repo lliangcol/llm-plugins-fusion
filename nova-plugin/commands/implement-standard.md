@@ -1,8 +1,11 @@
 ---
 id: implement-standard
 stage: implement
-title: "/implement-standard"
-destructive-actions: true
+title: /implement-standard
+destructive-actions: medium
+allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
+invokes:
+  skill: nova-implement-standard
 ---
 
 # CONTROLLED EXECUTION
