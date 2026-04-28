@@ -6,7 +6,7 @@
 
 **A third-party LLM plugin marketplace + plugin collection**
 
-[![Version](https://img.shields.io/badge/version-1.0.7-blue.svg)](https://github.com)
+[![Version](https://img.shields.io/badge/version-1.0.8-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com)
 
 </div>
@@ -103,7 +103,7 @@ llm-plugins-fusion/
 <table>
 <tr>
 <td width="120"><strong>Version</strong></td>
-<td>1.0.7</td>
+<td>1.0.8</td>
 </tr>
 <tr>
 <td><strong>Author</strong></td>
@@ -146,10 +146,10 @@ Active agents: 14 (default-scanned: `nova-plugin/agents/`). Legacy agents: 69 (a
 
 | 📄 Document                                                                | 📝 Description                                    | 🎯 Use cases                     |
 | -------------------------------------------------------------------------- | ------------------------------------------------- | -------------------------------- |
-| [📘 Command Reference Guide](nova-plugin/docs/commands-reference-guide.md) | Full parameters, 5+ scenarios, workflow templates | **Daily lookup, copy templates** |
-| [📗 Command Handbook](nova-plugin/docs/claude-code-commands-handbook.md)   | Grouped by type, command comparison               | **Quick start, pick a command**  |
-| [🧩 Codex Loop Guide](nova-plugin/docs/codex-review-fix.README.md)         | review/fix/verify skills + scripts                | **Claude Code + Codex loop**     |
-| [🧭 Agents Routing](docs/agents/ROUTING.md)                                | Active agents, keyword routing, examples          | **Auto routing, pick agents**    |
-| [🧠 Agents Summary](nova-plugin/docs/agents-summary.en.md)                 | Agent roles, tools, and scenarios                 | **Understand and pick agents**   |
+| [📘 Command Reference Guide](commands-reference-guide.md) | Full parameters, 5+ scenarios, workflow templates | **Daily lookup, copy templates** |
+| [📗 Command Handbook](claude-code-commands-handbook.md)   | Grouped by type, command comparison               | **Quick start, pick a command**  |
+| [🧩 Codex Loop Guide](codex-review-fix.README.md)         | review/fix/verify skills + scripts                | **Claude Code + Codex loop**     |
+| [🧭 Agents Routing](../../docs/agents/ROUTING.md)         | Active agents, keyword routing, examples          | **Auto routing, pick agents**    |
+| [🧠 Agents Summary](agents-summary.en.md)                 | Agent roles, tools, and scenarios                 | **Understand and pick agents**   |
 
 For the Chinese version, see `README.md` and `nova-plugin/docs/agents-summary.md`.

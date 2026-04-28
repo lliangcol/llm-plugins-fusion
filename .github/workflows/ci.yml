@@ -33,3 +33,15 @@ jobs:
         with:
           node-version: '20'
       - run: node scripts/lint-frontmatter.mjs
+
+  validate-hooks:
+    name: Validate Hooks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/validate-hooks.mjs
+      - run: bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+      - run: bash -n nova-plugin/hooks/scripts/post-audit-log.sh

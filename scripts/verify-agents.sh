@@ -6,6 +6,7 @@ cd "$repo_root"
 
 active_dir="nova-plugin/agents"
 archive_dir=".claude/agents/archive"
+legacy_agents_dir=".claude/agents/archive/nova-plugin/agents"
 
 expected=(
   api-design.md
@@ -63,6 +64,10 @@ echo "== Archive presence (should not be default-scanned) =="
 if [[ -d "$archive_dir" ]]; then
   arch_count="$(find "$archive_dir" -type f -name "*.md" 2>/dev/null | wc -l | tr -d ' ')"
   echo "Archive md files: $arch_count"
+  if [[ -d "$legacy_agents_dir" ]]; then
+    legacy_agent_count="$(find "$legacy_agents_dir" -type f -name "*.md" 2>/dev/null | wc -l | tr -d ' ')"
+    echo "Legacy agent files: $legacy_agent_count"
+  fi
   if [[ "$arch_count" != "0" ]]; then
     echo "NOTE: Archive is outside nova-plugin/agents, but if your Claude Code scans .claude/**, tokens may still be high."
     echo "Mitigation (if needed): rename \`.claude/agents/archive/\` to \`.claude/agents-archive/\` or move it outside the repo."
@@ -98,4 +103,3 @@ EOF
 
 echo
 echo "OK"
-

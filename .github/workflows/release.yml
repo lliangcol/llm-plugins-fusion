@@ -23,6 +23,12 @@ jobs:
         run: node scripts/lint-frontmatter.mjs
       - name: Agent count verification
         run: bash scripts/verify-agents.sh
+      - name: Hook config validation
+        run: node scripts/validate-hooks.mjs
+      - name: Hook script syntax
+        run: |
+          bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+          bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 
   release:
     name: Create GitHub Release

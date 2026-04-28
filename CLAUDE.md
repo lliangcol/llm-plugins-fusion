@@ -128,7 +128,7 @@ Write-capable implementation commands may also need tools such as:
 allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
 ```
 
-Use `node scripts/lint-frontmatter.mjs` to validate these contracts.
+Use `node scripts/lint-frontmatter.mjs` to validate frontmatter shape and naming. When adding, removing, or renaming commands or skills, also confirm the paired command and skill files exist on both sides of the one-to-one mapping.
 
 ### Command System
 
@@ -188,10 +188,10 @@ Legacy agents are archived under `.claude/agents/archive/nova-plugin/agents/`. T
 
 `nova-plugin/hooks/hooks.json` currently enables:
 
-- `PreToolUse`: matches `Write|Edit|MultiEdit` and runs `hooks/scripts/pre-write-check.sh`.
-- `PostToolUse`: matches `Write|Edit|MultiEdit|Bash` and asynchronously runs `hooks/scripts/post-audit-log.sh`.
+- `PreToolUse`: matches `Write|Edit|MultiEdit` and runs `hooks/scripts/pre-write-check.sh` through Bash.
+- `PostToolUse`: matches `Write|Edit|MultiEdit|Bash` and asynchronously runs `hooks/scripts/post-audit-log.sh` through Bash.
 
-These scripts rely on `CLAUDE_PLUGIN_ROOT` to locate the plugin root. When changing hook behavior, check script executability, timeout settings, and cross-platform impact.
+These scripts rely on `CLAUDE_PLUGIN_ROOT` to locate the plugin root. Hook commands should invoke `.sh` files explicitly through Bash unless the scripts are deliberately tracked with a Unix executable bit. When changing hook behavior, check timeout settings and cross-platform impact.
 
 Hook scripts are Bash scripts. On Windows, they may require Git Bash, WSL, or another Bash-compatible runtime.
 
@@ -230,6 +230,14 @@ After adding a command, run:
 node scripts/validate-schemas.mjs
 node scripts/lint-frontmatter.mjs
 bash scripts/verify-agents.sh
+```
+
+On Windows PowerShell:
+
+```powershell
+node scripts/validate-schemas.mjs
+node scripts/lint-frontmatter.mjs
+.\scripts\verify-agents.ps1
 ```
 
 ### Modify Plugin Metadata or Version
@@ -282,21 +290,38 @@ Active agent changes:
 bash scripts/verify-agents.sh
 ```
 
+On Windows PowerShell:
+
+```powershell
+.\scripts\verify-agents.ps1
+```
+
+Hook config or hook script changes:
+
+```bash
+node scripts/validate-hooks.mjs
+bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+```
+
 For a full pre-release or broad workflow change, run all repository checks:
 
 ```bash
 node scripts/validate-schemas.mjs
 node scripts/lint-frontmatter.mjs
 bash scripts/verify-agents.sh
+node scripts/validate-hooks.mjs
+bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 
 On Windows PowerShell, use the same `node` commands, and use `.\scripts\verify-agents.ps1` instead of `bash scripts/verify-agents.sh`.
 
-Current CI includes verify-agents, validate-schemas, and lint-frontmatter.
+Current CI includes verify-agents, validate-schemas, lint-frontmatter, and validate-hooks.
 
 ## Do Not Edit
 
-- Do not commit Codex runtime artifacts from `.codex/codex-review-fix/latest-artifacts/`.
+- Do not commit Codex runtime artifacts from `.codex/`, including timestamped `codex-review-fix` runs, `latest`, and `latest-artifacts/`.
 - Do not edit archived agents under `.claude/agents/archive/` as if they were active agents; active agents live in `nova-plugin/agents/`.
 
 ## Key Constraints
@@ -306,4 +331,4 @@ Current CI includes verify-agents, validate-schemas, and lint-frontmatter.
 - `destructive-actions` must be one of `none`, `low`, `medium`, or `high`.
 - `nova-plugin/agents/` must currently match the exact 14-file set expected by the verification scripts.
 - User-facing behavior changes require documentation and `CHANGELOG.md` updates.
-- Review and Explore commands should not write code by default. Implement and Codex commands are the write-capable command families.
+- Review and Explore commands should not modify project code. Non-implement commands may declare `Write` or `Edit` only for explicit artifacts such as analysis, plan, review, or verify files. Implement commands are project-code write-capable when declared with write tools. Within the Codex set, only `codex-review-fix` should modify project files; `codex-review-only` and `codex-verify-only` should only create review or verify artifacts.

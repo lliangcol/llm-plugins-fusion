@@ -14,7 +14,7 @@
  *   skills/nova-*\/SKILL.md required:
  *     - name (string, matches folder)
  *     - description (string)
- *     - license (string, default MIT)
+ *     - license (MIT)
  *     - allowed-tools (string)
  *     - metadata.novaPlugin.{userInvocable,autoLoad,subagentSafe,destructiveActions}
  *
@@ -180,9 +180,10 @@ function lintSkills() {
       recordError(rel, `description exceeds 1024 chars (${obj.description.length})`);
     }
 
-    if (!obj.license) recordWarning(rel, 'missing license (MIT recommended)');
+    if (!obj.license) recordError(rel, 'missing license');
+    else if (obj.license !== 'MIT') recordError(rel, `license must be MIT (got "${obj.license}")`);
 
-    if (!obj['allowed-tools']) recordWarning(rel, 'missing allowed-tools');
+    if (!obj['allowed-tools']) recordError(rel, 'missing allowed-tools');
     else if (typeof obj['allowed-tools'] !== 'string') recordError(rel, 'allowed-tools must be a space-separated string');
 
     const meta = obj.metadata;

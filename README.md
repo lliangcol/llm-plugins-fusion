@@ -24,7 +24,7 @@
 
 - [快速开始](#-快速开始)
 - [命令一览](#-命令一览)
-- [使用文档（中文）](./nova-plugin/docs/README.md)
+- [使用文档（中文）](./nova-plugin/docs/commands-reference-guide.md)
 - [English docs](./nova-plugin/docs/README.en.md)
 
 </td>
@@ -144,7 +144,7 @@ llm-plugins-fusion/
 <table>
 <tr>
 <td width="120"><strong>版本</strong></td>
-<td>1.0.7</td>
+<td>1.0.8</td>
 </tr>
 <tr>
 <td><strong>作者</strong></td>

@@ -6,6 +6,7 @@ Set-Location $repoRoot
 
 $activeDir = Join-Path $repoRoot 'nova-plugin/agents'
 $archiveDir = Join-Path $repoRoot '.claude/agents/archive'
+$legacyAgentsDir = Join-Path $repoRoot '.claude/agents/archive/nova-plugin/agents'
 
 $expected = @(
   'api-design.md',
@@ -52,6 +53,10 @@ Write-Host "== Archive presence (should not be default-scanned) =="
 if (Test-Path $archiveDir) {
   $archCount = (Get-ChildItem -Recurse -File $archiveDir -Filter *.md | Measure-Object).Count
   Write-Host ("Archive md files: {0}" -f $archCount)
+  if (Test-Path $legacyAgentsDir) {
+    $legacyAgentCount = (Get-ChildItem -Recurse -File $legacyAgentsDir -Filter *.md | Measure-Object).Count
+    Write-Host ("Legacy agent files: {0}" -f $legacyAgentCount)
+  }
   if ($archCount -gt 0) {
     Write-Host "NOTE: Archive is outside nova-plugin/agents, but if your Claude Code scans .claude/**, tokens may still be high."
     Write-Host "Mitigation (if needed): rename `.claude/agents/archive/` to `.claude/agents-archive/` or move it outside the repo."

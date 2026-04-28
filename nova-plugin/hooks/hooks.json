@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh\"",
             "timeout": 10,
             "statusMessage": "检查文件写入规范..."
           }
@@ -19,7 +19,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.sh",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.sh\"",
             "timeout": 5,
             "async": true
           }
