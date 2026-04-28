@@ -17,19 +17,17 @@
 ### 准备工作
 
 1. Fork 本仓库，从 `main` 切出特性分支：`git checkout -b feat/<topic>`。
-2. 本仓库的 `nova-plugin-command-generator/` 子目录需要 Node 20+ 与 npm。
-3. 首次开发前运行：
+2. 准备 Node 20+，用于运行仓库级 schema 与 frontmatter 校验脚本。
+3. 若要验证 active agents，在 macOS / Linux / Git Bash 中运行 Bash 脚本，或在 Windows PowerShell 中运行对应 `.ps1` 脚本。
    ```bash
-   cd nova-plugin-command-generator
-   npm ci
+   node scripts/validate-schemas.mjs
+   node scripts/lint-frontmatter.mjs
+   bash scripts/verify-agents.sh
    ```
 
 ### 工程约定
 
-- **ESLint 零容忍**：`npm run lint` 使用 `--max-warnings=0`，任何警告都会失败。
-- **TypeScript 严格模式**：不允许 `any`、隐式 any、未使用变量。
-- **测试**：修改逻辑需要补/更新 Vitest 测试；`npm run test` 必须通过。
-- **Agent 数量**：`nova-plugin/agents/` 目录内 agent 个数保持在 14–18；由 `scripts/verify-agents.sh` 校验。
+- **Agent 数量**：`nova-plugin/agents/` 目录内 active agent 集合由 `scripts/verify-agents.sh` / `scripts/verify-agents.ps1` 校验。
 - **Frontmatter 规范**：
   - `commands/*.md` 必需字段：`id`、`stage`、`title`、`destructive-actions`（枚举 `none|low|medium|high`）、`allowed-tools`、`invokes.skill`。
   - `skills/*/SKILL.md` 必需字段：`name`、`description`、`license`、`allowed-tools`（空格分隔字符串）、`metadata.novaPlugin.*`（`userInvocable` / `autoLoad` / `subagentSafe` / `destructiveActions`）。
@@ -66,14 +64,14 @@ chore(schemas): tighten plugin.schema.json enum
 提 PR 前请依次通过：
 
 ```bash
-# 1. lint + test + build
-cd nova-plugin-command-generator && npm run lint && npm run test && npm run build
-
-# 2. agent 计数
-bash scripts/verify-agents.sh
-
-# 3. schema 校验
+# 1. schema 校验
 node scripts/validate-schemas.mjs
+
+# 2. commands / skills frontmatter 校验
+node scripts/lint-frontmatter.mjs
+
+# 3. agent 校验
+bash scripts/verify-agents.sh
 ```
 
 ## 添加新命令 / 新 skill
@@ -88,8 +86,8 @@ node scripts/validate-schemas.mjs
 | 命令文档 | `nova-plugin/docs/<id>.md` | 命令使用说明 |
 
 添加后同步更新：
-- `nova-plugin-command-generator/scripts/manifest-data.json`（命令构建器的数据源）
 - `README.md` 中的命令总览表
+- `nova-plugin/skills/README.md` 或相关用户文档
 - `CHANGELOG.md`
 
 ## License

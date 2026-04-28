@@ -1,77 +1,309 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code when working in this repository.
 
-## 项目概述
+## Project Purpose
 
-**LLM Plugins Fusion** 是一个面向 LLM 编程助手（如 Claude Code）的第三方插件市场。核心模块 `nova-plugin` 提供一套覆盖"探索→计划→实现→评审→收尾"全流程的命令体系，并新增 Codex review/fix/verify 半自动闭环能力，辅以 `nova-plugin-command-generator` React 工具 UI。
+**LLM Plugins Fusion** is a third-party plugin marketplace and plugin collection for LLM coding assistants. The current primary plugin is `nova-plugin`, which is compatible with Claude Code and provides an engineering workflow that spans Explore -> Plan -> Review -> Implement -> Finalize.
 
-## 仓库结构
+## Quick Facts
 
-```
+- Marketplace entry: `.claude-plugin/marketplace.json`
+- Main plugin metadata: `nova-plugin/.claude-plugin/plugin.json`
+- Plugin version source of truth: `nova-plugin/.claude-plugin/plugin.json`
+- Current command snapshot: 20 files under `nova-plugin/commands/*.md`; validate frontmatter with `node scripts/lint-frontmatter.mjs`.
+- Current skill snapshot: 20 files under `nova-plugin/skills/nova-*/SKILL.md`; validate frontmatter with `node scripts/lint-frontmatter.mjs`.
+- Current active agent snapshot: 14 files under `nova-plugin/agents/*.md`; verify with `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`.
+- Repository validation scripts require Node.js 20+.
+
+## Sources of Truth
+
+- Plugin version: `nova-plugin/.claude-plugin/plugin.json`, mirrored in `.claude-plugin/marketplace.json`.
+- Command definitions: `nova-plugin/commands/*.md`.
+- Skill definitions: `nova-plugin/skills/nova-*/SKILL.md`.
+- Active agent set: `nova-plugin/agents/`, enforced by `scripts/verify-agents.sh` and `scripts/verify-agents.ps1`.
+- Marketplace and plugin schema contracts: `schemas/marketplace.schema.json` and `schemas/plugin.schema.json`.
+
+## Repository Layout
+
+```text
 claude-plugins-fusion/
-├── nova-plugin/                  # 主插件模块（版本由 .claude-plugin/plugin.json 管理）
-│   ├── .claude-plugin/           # plugin.json（插件元数据）
-│   ├── commands/                 # 20 个命令定义（含 3 个 Codex 闭环命令）
-│   ├── agents/                   # 14 个专项 agent 定义
-│   ├── skills/                   # 与命令 1:1 对应的技能文件夹（nova-*）
-│   ├── docs/                     # 完整使用文档（中英双语）
-│   └── hooks/                    # hooks.json（当前为空）
-├── nova-plugin-command-generator/ # React 命令构建 UI（Vite + TypeScript）
-├── .claude-plugin/               # marketplace.json（市场入口配置）
-└── scripts/                      # verify-agents.sh / .ps1（验证 agent 数量 14-18）
+|-- .claude-plugin/
+|   `-- marketplace.json              # Plugin marketplace entry
+|-- .github/workflows/
+|   |-- ci.yml                        # Agent, schema, and frontmatter checks
+|   `-- release.yml                   # Tag-based release and release notes
+|-- docs/
+|   `-- agents/                       # Active agent routing and migration notes
+|-- nova-plugin/
+|   |-- .claude-plugin/plugin.json    # nova-plugin metadata and version
+|   |-- commands/                     # 20 Claude Code command definitions
+|   |-- skills/                       # 20 Agent Skills mapped one-to-one with commands
+|   |-- agents/                       # 14 default active agents
+|   |-- docs/                         # Command, skill, Codex, and agent documentation
+|   `-- hooks/                        # Claude Code hook config and scripts
+|-- schemas/                          # Marketplace and plugin JSON Schemas
+|-- scripts/                          # Repository-level validation scripts
+|-- README.md                         # User-facing overview and quickstart
+|-- CONTRIBUTING.md                   # Contribution rules and metadata contracts
+|-- CHANGELOG.md                      # Version history
+|-- ROADMAP.md                        # Planned evolution
+|-- SECURITY.md                       # Vulnerability reporting and security policy
+`-- .claude/agents/archive/            # Archived legacy agents, not part of the active set
 ```
 
-## 开发命令
+## Common Commands
 
-所有 npm 命令在 `nova-plugin-command-generator/` 目录下执行：
+Repository-level checks on Bash-compatible shells:
 
 ```bash
-npm run dev        # 启动开发服务器（http://localhost:5173）
-npm run build      # 生产构建
-npm run lint       # ESLint（--max-warnings=0，零容忍）
-npm run test       # Vitest 测试
-npm run preview    # 预览生产构建
+node scripts/validate-schemas.mjs
+node scripts/lint-frontmatter.mjs
+bash scripts/verify-agents.sh
 ```
 
-验证 agent 配置：
+Repository-level checks on Windows PowerShell:
+
+```powershell
+node scripts/validate-schemas.mjs
+node scripts/lint-frontmatter.mjs
+.\scripts\verify-agents.ps1
+```
+
+## Architecture
+
+### Plugin Discovery
+
+- `.claude-plugin/marketplace.json` registers installable plugins.
+- `nova-plugin/.claude-plugin/plugin.json` declares plugin name, version, author, compatibility, tags, and related metadata.
+- `nova-plugin/commands/*.md` contains Claude Code command definitions.
+- `nova-plugin/skills/nova-*/SKILL.md` contains Agent Skill definitions discovered by directory convention.
+- `nova-plugin/hooks/hooks.json` defines safety checks and audit hooks around tool use.
+
+### Commands and Skills
+
+Commands and skills use a one-to-one mapping:
+
+```text
+nova-plugin/commands/<id>.md
+nova-plugin/skills/nova-<id>/SKILL.md
+```
+
+Command frontmatter must include:
+
+```yaml
+id: <id>
+stage: explore|plan|implement|review|finalize
+title: /<id>
+destructive-actions: none|low|medium|high
+allowed-tools: <space-separated tool list>
+invokes:
+  skill: nova-<id>
+```
+
+Skill frontmatter must include:
+
+```yaml
+name: nova-<id>
+description: "..."
+license: MIT
+allowed-tools: <space-separated tool list>
+metadata:
+  novaPlugin:
+    userInvocable: true
+    autoLoad: false
+    subagentSafe: true|false
+    destructiveActions: none|low|medium|high
+```
+
+Read-only commands normally use:
+
+```yaml
+allowed-tools: Read Glob Grep LS
+```
+
+Write-capable implementation commands may also need tools such as:
+
+```yaml
+allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
+```
+
+Use `node scripts/lint-frontmatter.mjs` to validate these contracts.
+
+### Command System
+
+| Stage | Commands | Purpose |
+| --- | --- | --- |
+| Explore | `senior-explore`, `explore`, `explore-lite`, `explore-review` | Understanding, fact gathering, and review-oriented exploration |
+| Plan | `plan-lite`, `plan-review`, `produce-plan`, `backend-plan` | Lightweight planning, formal planning, and Java/Spring backend planning |
+| Review | `review`, `review-lite`, `review-only`, `review-strict`, `codex-review-only`, `codex-verify-only` | Human review entry points and Codex-based verification |
+| Implement | `implement-plan`, `implement-standard`, `implement-lite`, `codex-review-fix` | Plan-based implementation, standard implementation, lightweight implementation, and Codex-driven fix loops |
+| Finalize | `finalize-work`, `finalize-lite` | Delivery summaries and handoff |
+
+`/explore` is the unified exploration entry point. It routes by `PERSPECTIVE=observer|reviewer`.
+
+`/review` is the unified review entry point. It adjusts review depth by `LEVEL=standard|strict`.
+
+The Codex command set:
+
+- `codex-review-only`: runs Codex review only and writes a structured review artifact.
+- `codex-review-fix`: runs review -> Claude Code fix -> local checks -> Codex verify.
+- `codex-verify-only`: verifies against existing review and checks artifacts.
+
+### Active Agents
+
+Active agents live in `nova-plugin/agents/`. The current active set is fixed at 14 agents:
+
+```text
+api-design
+build-deps
+data-analytics
+db-engineer
+devops-platform
+git-release-manager
+incident-responder
+java-backend-engineer
+orchestrator
+quality-engineer
+refactoring-specialist
+security-audit
+security-engineer
+test-automator
+```
+
+`orchestrator` only decomposes, routes, and summarizes work. It does not implement directly. See `docs/agents/ROUTING.md` for detailed routing rules.
+
+`scripts/verify-agents.sh` and `scripts/verify-agents.ps1` check both the count and the exact expected 14-file set. If an active agent is added, removed, or renamed, update:
+
+- `nova-plugin/agents/`
+- `scripts/verify-agents.sh`
+- `scripts/verify-agents.ps1`
+- `docs/agents/ROUTING.md`
+- `docs/agents/MIGRATION_MANIFEST.md`, if an archive migration is involved
+- `CLAUDE.md`
+
+Legacy agents are archived under `.claude/agents/archive/nova-plugin/agents/`. They are not part of the `nova-plugin/agents/` active set. If Claude Code scans `.claude/**` and context token usage rises, follow the mitigation note printed by the `verify-agents` scripts.
+
+### Hooks
+
+`nova-plugin/hooks/hooks.json` currently enables:
+
+- `PreToolUse`: matches `Write|Edit|MultiEdit` and runs `hooks/scripts/pre-write-check.sh`.
+- `PostToolUse`: matches `Write|Edit|MultiEdit|Bash` and asynchronously runs `hooks/scripts/post-audit-log.sh`.
+
+These scripts rely on `CLAUDE_PLUGIN_ROOT` to locate the plugin root. When changing hook behavior, check script executability, timeout settings, and cross-platform impact.
+
+Hook scripts are Bash scripts. On Windows, they may require Git Bash, WSL, or another Bash-compatible runtime.
+
+## Change Guidelines
+
+### Modify an Existing Command
+
+1. Edit `nova-plugin/commands/<id>.md`.
+2. Update `nova-plugin/skills/nova-<id>/SKILL.md`.
+3. If user-facing documentation changes, update `nova-plugin/docs/<id>.md`, the relevant README, or `nova-plugin/skills/README.md`.
+4. If behavior, parameters, outputs, tool permissions, or safety boundaries change, update `CHANGELOG.md` and decide whether a version bump is required. If a version bump is required, follow the Modify Plugin Metadata or Version workflow below.
+5. Run `node scripts/lint-frontmatter.mjs`.
+
+### Add a New Command and Skill
+
+Every new command must have a matching skill:
+
+```text
+nova-plugin/commands/<id>.md
+nova-plugin/skills/nova-<id>/SKILL.md
+```
+
+Also update:
+
+- `nova-plugin/skills/README.md`
+- the command overview or version notes in `README.md`
+- `CHANGELOG.md`
+- `nova-plugin/.claude-plugin/plugin.json` `version`
+- `.claude-plugin/marketplace.json` plugin `version` and `last-updated`
+- `CLAUDE.md`, if quick facts, command counts, workflows, or constraints changed
+- `nova-plugin/docs/<id>.md` and `<id>.README.md` when user documentation is needed
+
+After adding a command, run:
 
 ```bash
-bash scripts/verify-agents.sh    # 验证 nova-plugin/agents/ 中 agent 数量（期望 14-18）
+node scripts/validate-schemas.mjs
+node scripts/lint-frontmatter.mjs
+bash scripts/verify-agents.sh
 ```
 
-## 架构要点
+### Modify Plugin Metadata or Version
 
-### 插件发现机制
-- 根目录的 `.claude-plugin/marketplace.json` 注册所有子插件
-- `nova-plugin/.claude-plugin/plugin.json` 声明插件名称、版本、作者
-- `nova-plugin/skills/` 下每个 `nova-*` 文件夹自动被 Claude Code 发现为 skill
+Version information must stay synchronized across:
 
-### 命令体系（20 个命令）
-| 阶段 | 命令 | 说明 |
-|------|------|------|
-| Explore | `senior-explore`, `explore`, `explore-lite`, `explore-review` | 理解与信息收集 |
-| Plan | `plan-lite`, `plan-review`, `produce-plan`, `backend-plan` | 策略设计（backend-plan 专为 Java/Spring） |
-| Review | `review`, `review-lite`, `review-only`, `review-strict`, `codex-review-only`, `codex-verify-only` | 代码质量审查 / Codex 复验 |
-| Implement | `implement-plan`, `implement-standard`, `implement-lite`, `codex-review-fix` | 执行，严格程度递减 / Codex 闭环修复 |
-| Finalize | `finalize-work`, `finalize-lite` | 交付与收尾 |
+- `nova-plugin/.claude-plugin/plugin.json` `version`
+- `.claude-plugin/marketplace.json` plugin `version` and `last-updated`
+- `CHANGELOG.md`
+- `CLAUDE.md`, if quick facts, counts, constraints, or workflows changed
 
-`/explore` 和 `/review` 是统一入口 hub，通过 `PERSPECTIVE` / `LEVEL` 参数路由到子命令。
+Versioning follows SemVer:
 
-### Agent 路由模式
-`orchestrator` agent 负责将任务分发给专项 agent（api-design、java-backend-engineer、quality-engineer 等）。每个 agent 使用特定工具子集（Read/Glob/Grep/Bash 等）。
+- MAJOR: command deletion, command rename, or incompatible behavior changes.
+- MINOR: new command, skill, agent, or significant capability expansion.
+- PATCH: bug fix, documentation update, internal refactor, or metadata correction.
 
-### nova-plugin-command-generator 结构
-- `src/data/manifest.ts` — 命令定义与工作流配置的数据源
-- `src/store/` — 草稿、指导状态、历史记录（基于 localStorage）
-- `src/utils/render.ts` — 模板变量替换逻辑
-- `src/App.tsx` — 主组件（多 Tab：场景、命令、生成器、工作流、历史）
+After metadata or schema changes, run:
 
-## 版本管理
-插件版本在 `nova-plugin/.claude-plugin/plugin.json` 的 `version` 字段中维护。更新命令或 agent 后同步递增版本号。
+```bash
+node scripts/validate-schemas.mjs
+```
 
-## 关键约束
-- ESLint 配置为零警告容忍（`--max-warnings=0`），包含 a11y 无障碍规则
-- TypeScript 使用严格模式（`strict: true`，`noEmit: true`）
-- agent 数量需保持在 14-18 个范围内（由 verify-agents 脚本检验）
-- 附件大小限制：每个文件最大 200KB（command-generator 中的约束）
+### Modify Agents
+
+- Active agents belong only in `nova-plugin/agents/`.
+- Archived or legacy agents belong under `.claude/agents/archive/`.
+- If the active set changes, use the complete update list in the Active Agents section: agent files, both `verify-agents` scripts, routing docs, migration notes when relevant, and `CLAUDE.md`.
+- Agent frontmatter uses `name`, `description`, and `tools`. Keep bodies short and route-focused.
+
+## Quality Gates
+
+Run only the checks that match the area you changed. Use the full pre-release block when a change crosses multiple areas, affects release metadata, or changes workflow behavior.
+
+Metadata or marketplace changes:
+
+```bash
+node scripts/validate-schemas.mjs
+```
+
+Command or skill frontmatter changes:
+
+```bash
+node scripts/lint-frontmatter.mjs
+```
+
+Active agent changes:
+
+```bash
+bash scripts/verify-agents.sh
+```
+
+For a full pre-release or broad workflow change, run all repository checks:
+
+```bash
+node scripts/validate-schemas.mjs
+node scripts/lint-frontmatter.mjs
+bash scripts/verify-agents.sh
+```
+
+On Windows PowerShell, use the same `node` commands, and use `.\scripts\verify-agents.ps1` instead of `bash scripts/verify-agents.sh`.
+
+Current CI includes verify-agents, validate-schemas, and lint-frontmatter.
+
+## Do Not Edit
+
+- Do not commit Codex runtime artifacts from `.codex/codex-review-fix/latest-artifacts/`.
+- Do not edit archived agents under `.claude/agents/archive/` as if they were active agents; active agents live in `nova-plugin/agents/`.
+
+## Key Constraints
+
+- `commands/*.md` and `skills/nova-*/SKILL.md` must remain one-to-one.
+- `allowed-tools` must be a space-separated string, not a YAML array.
+- `destructive-actions` must be one of `none`, `low`, `medium`, or `high`.
+- `nova-plugin/agents/` must currently match the exact 14-file set expected by the verification scripts.
+- User-facing behavior changes require documentation and `CHANGELOG.md` updates.
+- Review and Explore commands should not write code by default. Implement and Codex commands are the write-capable command families.

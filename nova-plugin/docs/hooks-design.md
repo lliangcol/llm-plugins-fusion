@@ -82,7 +82,6 @@ PostToolUse 额外包含：
 
 | 检查项 | 规则 | 处理 |
 |--------|------|------|
-| 自动生成文件保护 | 写入 `src/data/manifest.ts` 且非构建脚本调用 → 警告 | exit 0 + 警告文本（不阻断） |
 | 敏感信息检测 | 内容含 `password|secret|token|api_key`（硬编码模式）| exit 2 阻断 |
 | hooks.json 结构校验 | 写入 `hooks/hooks.json` 时验证 JSON 格式 | exit 2 阻断 |
 
@@ -94,7 +93,7 @@ PostToolUse 额外包含：
 
 ```
 [2026-03-18T07:00:00Z] Write /path/to/file.ts SUCCESS
-[2026-03-18T07:00:01Z] Bash  npm run build         SUCCESS
+[2026-03-18T07:00:01Z] Bash  node scripts/validate-schemas.mjs SUCCESS
 ```
 
 日志写入：`${CLAUDE_PLUGIN_DATA}/audit.log`（本地，不提交 git）

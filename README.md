@@ -35,7 +35,6 @@
 
 - [CONTRIBUTING.md](./CONTRIBUTING.md)
 - [Frontmatter 规范](./CONTRIBUTING.md#工程约定)
-- [命令构建器（开发中）](./nova-plugin-command-generator/)
 - [ROADMAP](./ROADMAP.md)
 
 </td>

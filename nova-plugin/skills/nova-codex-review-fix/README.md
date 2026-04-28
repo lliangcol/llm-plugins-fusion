@@ -110,7 +110,7 @@ Claude Code 在使用主技能时应遵循：
 - 当前仓库会优先覆盖：
   - `scripts/verify-agents.sh`
   - `node scripts/validate-schemas.mjs`
-  - `nova-plugin-command-generator` 的 `npm run lint/test/build`
+  - `node scripts/lint-frontmatter.mjs`
 
 ## 8. 典型工作流示例
 
@@ -205,7 +205,6 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-fix/scripts/codex-verify.sh
 - 命令入口位于 `nova-plugin/commands/`
 - Skill 入口位于 `nova-plugin/skills/`
 - 用户文档位于 `nova-plugin/docs/`
-- 命令生成器通过 `nova-plugin-command-generator/scripts/manifest-data.json` + `build-manifest.mjs` 接入
 - 不新增独立 marketplace 插件，继续复用根目录 `.claude-plugin/marketplace.json` 的 `nova-plugin` 安装入口
 
 ## 13. 后续演进方向

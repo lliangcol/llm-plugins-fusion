@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ---
 
+## [Unreleased]
+
+### Removed
+- 删除已移除的辅助前端应用，并移除对应的 CI npm lint/test、同步检查脚本与 release 构建产物上传。
+
 ## [1.0.8] - 2026-04-21
 
 ### Added
@@ -14,8 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - Codex 双复核闭环（review / fix / verify）形成完整用户可见能力集合
 - 社区标准文档：`CONTRIBUTING.md` / `SECURITY.md` / `CODE_OF_CONDUCT.md` / `ROADMAP.md`
 - `scripts/lint-frontmatter.mjs`：校验命令与 skill 的 frontmatter 契约
-- `scripts/check-manifest-drift.mjs`：校验 `manifest-data.json` 与 `commands/*.md` / workflows / scenarios 一致
-- CI 新增 `lint-frontmatter` 与 `check-manifest-drift` 两个 job
+- CI 新增 `lint-frontmatter` job
 
 ### Changed
 - 同步 `nova-plugin` 与 `marketplace.json` 插件版本至 1.0.8
@@ -35,7 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ### Changed
 - 更新根 README、skills 索引、命令文档导航与版本号
-- 将 command generator manifest 扩展为支持 Codex 闭环命令
 
 ---
 
@@ -80,9 +83,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [1.0.2] - 2026-01-16
 
-### Fixed
-- 修复 nova-plugin-command-generator 中表单草稿状态异常的 bug
-
 ### Changed
 - 格式化所有命令文件（统一缩进与换行）
 - `.gitignore` 补充忽略规则
@@ -92,15 +92,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [1.0.1] - 2026-01-15
 
 ### Added
-- 新增 `nova-plugin-command-generator`：基于 React + Vite 的可视化命令构建工具
-  - 支持场景选择、命令选择、参数填写、历史记录
-  - 集成引导流程（explore → plan → review → implement → finalize）
-  - 附件上传与模板变量替换功能
 - 新增 Agent 文件（14 个专项 Agent）
 - 新增 telemetry 与 ErrorBoundary 错误处理
-
-### Changed
-- 将命令生成器 Tab 重构为独立 Feature 组件（GeneratorPanel、HistoryPanel、WorkflowRunPanel）
 
 ---
 

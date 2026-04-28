@@ -79,26 +79,30 @@ commands/*.md       skills/nova-*/SKILL.md
 ### 1. 修改 `nova-plugin/commands/<name>.md`
 
 - 更新完整 prompt 内容
-- 在文件顶部添加/更新 YAML frontmatter（项目自定义元数据，供 `build-manifest.mjs` 脚本使用）：
+- 在文件顶部添加/更新 YAML frontmatter：
 
 ```yaml
 ---
 id: <command-id>
 stage: <explore|plan|review|implement|finalize>
 title: <显示名称>
-destructive-actions: <true|false>
+destructive-actions: <none|low|medium|high>
+allowed-tools: Read Glob Grep LS
+invokes:
+  skill: nova-<command-id>
 ---
 ```
 
 ### 2. 修改 `nova-plugin/skills/nova-<name>/SKILL.md`
 
 - 保持 `name`、`description` 与命令文件语义一致
-- 根据命令特性设置 `allowed-tools` 和 `disable-model-invocation`
+- 根据命令特性设置 `allowed-tools` 与 `metadata.novaPlugin.*`
 
-### 3. 更新 `nova-plugin-command-generator/src/data/manifest.ts`
+### 3. 运行校验
 
-- 运行 `npm run build:manifest` 自动生成（完成 build-manifest.mjs 脚本后）
-- 或手动同步 `fields`、`template`、`outputs` 字段
+- `node scripts/lint-frontmatter.mjs`
+- `node scripts/validate-schemas.mjs`（如修改 marketplace 或 plugin metadata）
+- `bash scripts/verify-agents.sh` 或 `.\scripts\verify-agents.ps1`（如修改 active agents）
 
 ### 4. 更新版本号
 

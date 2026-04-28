@@ -99,6 +99,10 @@ discover_repo_tasks() {
   if [[ -f "${ROOT}/scripts/validate-schemas.mjs" ]] && command -v node >/dev/null 2>&1; then
     append_task "lint" "repo validate-schemas" "${ROOT}" "node scripts/validate-schemas.mjs"
   fi
+
+  if [[ -f "${ROOT}/scripts/lint-frontmatter.mjs" ]] && command -v node >/dev/null 2>&1; then
+    append_task "lint" "repo lint-frontmatter" "${ROOT}" "node scripts/lint-frontmatter.mjs"
+  fi
 }
 
 discover_node_tasks() {

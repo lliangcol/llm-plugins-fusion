@@ -14,7 +14,7 @@ node_modules/
 dist/
 *.tsbuildinfo
 
-# Vite
+# JS build cache
 .vite/
 
 # IDE

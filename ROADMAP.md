@@ -23,17 +23,15 @@
 | SKILL.md frontmatter 迁移到 Agent Skills 开放标准 | ✅ 完成 | 自定义字段收入 `metadata.novaPlugin.*` |
 | 命令 frontmatter 统一 | ✅ 完成 | 补 `allowed-tools`、`invokes.skill`、`destructive-actions` 枚举 |
 | 社区标准文档（本 PR） | 🚧 进行中 | `CONTRIBUTING.md` / `SECURITY.md` / `CODE_OF_CONDUCT.md` / `ROADMAP.md` |
-| `lint-frontmatter.mjs` + CI 接入 | ⏳ 计划 | 防止命令/skill 元数据漂移 |
-| `check-manifest-drift.mjs` | ⏳ 计划 | 校验 `manifest-data.json` 与 `commands/*.md` 一致 |
+| `lint-frontmatter.mjs` + CI 接入 | ✅ 完成 | 防止命令/skill 元数据漂移 |
 
 ## 中期（1–2 月）— 多插件 + 市场门面
 
 目标：**把"市场"口号落地为可公开访问的 URL**。
 
-- **仓库结构重构**：`nova-plugin/` → `plugins/nova-core/`；拆出 `plugins/nova-codex-loop/`、`plugins/nova-java-stack/`。`nova-plugin-command-generator/` → `portal/`。
+- **仓库结构重构**：`nova-plugin/` → `plugins/nova-core/`；拆出 `plugins/nova-codex-loop/`、`plugins/nova-java-stack/`。
 - **marketplace 多条目**：每个 `plugins/*/plugin.json` 自动合成 `marketplace.json`，由 `scripts/generate-registry.mjs` 消除手工双写。
-- **portal 升级**：从本地 `manifest.ts` 改为运行时 fetch `marketplace.json`；新增 Marketplace / Discover Tab；前端全文搜索。
-- **portal 部署**：`deploy-portal.yml` push-to-main 发布到 GH Pages。
+- **市场门面**：按公开 registry 数据生成轻量文档页或未来独立站点，数据源以 `marketplace.json` 为准。
 - **脚手架**：`npx create-nova-plugin` / `scripts/scaffold.mjs command /foo` / `scripts/scaffold.mjs skill nova-foo`。
 - **示例与演示**：每个命令补 `## Example` / `## Expected Output`；README 首屏录制 asciinema（senior-explore / backend-plan / codex-review-fix）。
 - **发布流水线**：release 附 SBOM（syft）+ cosign 签名；CHANGELOG 通过 changesets / release-please 生成。
@@ -52,15 +50,15 @@
 - **企业特性**：SSO、private sub-registry 模板、可审计的 trust-level 变更日志。
 - **开放标准回馈**：把 `metadata.novaPlugin.*` 扩展提案投回 agentskills 社区讨论。
 - **官方市场提交**：把 `nova-core` 提交到 `anthropics/claude-plugins-official`。
-- **国际化**：文档英文覆盖从 70% → 100%；portal 中英切换。
+- **国际化**：文档英文覆盖从 70% → 100%。
 
 ## 里程碑跟踪
 
 | 版本 | 预计时间 | 核心能力 |
 | --- | --- | --- |
 | v1.0.8 | 2026-04 | Codex 闭环三件套 + 开放 schema + SKILL 标准对齐 |
-| v1.1.0 | 2026-05 | Frontmatter lint / manifest drift 检查 / 社区文档齐备 |
-| v1.2.0 | 2026-06 | portal 公开部署 + 脚手架 + 示例录屏 |
+| v1.1.0 | 2026-05 | Frontmatter lint / 社区文档齐备 |
+| v1.2.0 | 2026-06 | Registry 自动生成 + 脚手架 + 示例录屏 |
 | v2.0.0 | 2026-Q3 | 仓库结构重构为 monorepo；多插件上线；BREAKING 迁移指南 |
 
 ## 非目标（明确不做）
