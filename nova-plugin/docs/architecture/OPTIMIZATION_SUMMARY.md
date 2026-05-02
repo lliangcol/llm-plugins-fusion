@@ -22,8 +22,8 @@
 
 | 项目                     | 问题                                                                      | 解决方案                                     | 影响文件                                                   |
 | ------------------------ | ------------------------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------------------- |
-| **finalize-work 空章节** | 末尾 "POSITION IN THE OVERALL FLOW" 章节标题存在但内容为空                | 补充了工作流位置说明和 END OF COMMAND 标记   | [finalize-work.md](../commands/finalize-work.md#L123-L132) |
-| **review-only 措辞矛盾** | 同时使用 "concrete" 和 "conceptual or directional" 描述改进建议，语义冲突 | 统一为 "directional improvement suggestions" | [review-only.md](../commands/review-only.md#L83)           |
+| **finalize-work 空章节** | 末尾 "POSITION IN THE OVERALL FLOW" 章节标题存在但内容为空                | 补充了工作流位置说明和 END OF COMMAND 标记   | [finalize-work.md](../../commands/finalize-work.md#L123-L132) |
+| **review-only 措辞矛盾** | 同时使用 "concrete" 和 "conceptual or directional" 描述改进建议，语义冲突 | 统一为 "directional improvement suggestions" | [review-only.md](../../commands/review-only.md#L83)           |
 
 ### P1: 输出格式补强
 
@@ -44,14 +44,14 @@
 - **原状态**: 混用 `────────────────────` (强结构) 和 `---` (Markdown) 及无分隔符
 - **统一为**: 全部使用 Markdown `---` 分隔符
 - **影响文件**:
-  - [senior-explore.md](../commands/senior-explore.md)
-  - [produce-plan.md](../commands/produce-plan.md)
-  - [backend-plan.md](../commands/backend-plan.md)
-  - [implement-plan.md](../commands/implement-plan.md)
-  - [explore-lite.md](../commands/explore-lite.md)
-  - [explore-review.md](../commands/explore-review.md)
-  - [plan-lite.md](../commands/plan-lite.md)
-  - [plan-review.md](../commands/plan-review.md)
+  - [senior-explore.md](../../commands/senior-explore.md)
+  - [produce-plan.md](../../commands/produce-plan.md)
+  - [backend-plan.md](../../commands/backend-plan.md)
+  - [implement-plan.md](../../commands/implement-plan.md)
+  - [explore-lite.md](../../commands/explore-lite.md)
+  - [explore-review.md](../../commands/explore-review.md)
+  - [plan-lite.md](../../commands/plan-lite.md)
+  - [plan-review.md](../../commands/plan-review.md)
 
 #### 语言约束统一
 
@@ -60,11 +60,11 @@
 - Avoid: "should", "recommend", "solution", "implement"
 - Prefer: "observed", "suggests", "may indicate", "unclear", "appears"
 
-**影响文件**: [explore-lite.md](../commands/explore-lite.md#L18-L20), [explore-review.md](../commands/explore-review.md#L13-L15)
+**影响文件**: [explore-lite.md](../../commands/explore-lite.md#L18-L20), [explore-review.md](../../commands/explore-review.md#L13-L15)
 
 #### $ARGUMENTS 提取说明
 
-为 [senior-explore.md](../commands/senior-explore.md#L23) 增加了明确的参数提取说明：
+为 [senior-explore.md](../../commands/senior-explore.md#L23) 增加了明确的参数提取说明：
 `From '$ARGUMENTS', extract the following parameters:`
 
 ---
@@ -76,7 +76,7 @@
 #### 1. `/explore` - 统一探索命令
 
 **替代**: `explore-lite` + `explore-review`
-**新文件**: [commands/explore.md](../commands/explore.md)
+**新文件**: [commands/explore.md](../../commands/explore.md)
 **参数**: `PERSPECTIVE=observer|reviewer`
 
 | PERSPECTIVE       | 输出格式                                        | 等价于            |
@@ -93,7 +93,7 @@
 #### 2. `/review` - 统一代码评审命令
 
 **替代**: `review-only` + `review-strict`
-**新文件**: [commands/review.md](../commands/review.md)
+**新文件**: [commands/review.md](../../commands/review.md)
 **参数**: `LEVEL=standard|strict`
 
 | LEVEL             | 审查维度                        | 语气                      | 等价于           |
@@ -110,7 +110,7 @@
 #### 3. `/produce-plan` - 支持 profile 模式
 
 **功能增强**: 增加 `PLAN_PROFILE` 参数
-**修改文件**: [commands/produce-plan.md](../commands/produce-plan.md#L30-L37)
+**修改文件**: [commands/produce-plan.md](../../commands/produce-plan.md#L30-L37)
 
 | PLAN_PROFILE     | 章节数                                | 适用场景             | 等价于             |
 | ---------------- | ------------------------------------- | -------------------- | ------------------ |
@@ -181,8 +181,8 @@
 
 **待更新文档**:
 
-- [ ] [commands-reference-guide.md](commands-reference-guide.md) - 需要增加 `/explore`, `/review` 和 profile 模式说明
-- [ ] [claude-code-commands-handbook.md](claude-code-commands-handbook.md) - 需要更新命令总数和决策表
+- [ ] [commands-reference-guide.md](../guides/commands-reference-guide.md) - 需要增加 `/explore`, `/review` 和 profile 模式说明
+- [ ] [claude-code-commands-handbook.md](../guides/claude-code-commands-handbook.md) - 需要更新命令总数和决策表
 - [ ] 各命令的 README.md / README.en.md - 需要增加新命令的使用说明
 
 ---
@@ -213,24 +213,24 @@
 
 ### 修改的文件（10 个）
 
-1. [commands/finalize-work.md](../commands/finalize-work.md) - 修复空章节
-2. [commands/review-only.md](../commands/review-only.md) - 修复措辞矛盾
-3. [commands/implement-lite.md](../commands/implement-lite.md) - 补强输出格式
-4. [commands/implement-standard.md](../commands/implement-standard.md) - 补强输出格式
-5. [commands/finalize-lite.md](../commands/finalize-lite.md) - 补强输出格式
-6. [commands/senior-explore.md](../commands/senior-explore.md) - 统一格式、增加 $ARGUMENTS 说明
-7. [commands/explore-lite.md](../commands/explore-lite.md) - 统一格式、增加语言约束
-8. [commands/explore-review.md](../commands/explore-review.md) - 统一格式
-9. [commands/produce-plan.md](../commands/produce-plan.md) - 统一格式、增加 profile 支持
-10. [commands/backend-plan.md](../commands/backend-plan.md) - 统一格式
-11. [commands/plan-lite.md](../commands/plan-lite.md) - 统一格式
-12. [commands/plan-review.md](../commands/plan-review.md) - 统一格式
-13. [commands/implement-plan.md](../commands/implement-plan.md) - 统一格式
+1. [commands/finalize-work.md](../../commands/finalize-work.md) - 修复空章节
+2. [commands/review-only.md](../../commands/review-only.md) - 修复措辞矛盾
+3. [commands/implement-lite.md](../../commands/implement-lite.md) - 补强输出格式
+4. [commands/implement-standard.md](../../commands/implement-standard.md) - 补强输出格式
+5. [commands/finalize-lite.md](../../commands/finalize-lite.md) - 补强输出格式
+6. [commands/senior-explore.md](../../commands/senior-explore.md) - 统一格式、增加 $ARGUMENTS 说明
+7. [commands/explore-lite.md](../../commands/explore-lite.md) - 统一格式、增加语言约束
+8. [commands/explore-review.md](../../commands/explore-review.md) - 统一格式
+9. [commands/produce-plan.md](../../commands/produce-plan.md) - 统一格式、增加 profile 支持
+10. [commands/backend-plan.md](../../commands/backend-plan.md) - 统一格式
+11. [commands/plan-lite.md](../../commands/plan-lite.md) - 统一格式
+12. [commands/plan-review.md](../../commands/plan-review.md) - 统一格式
+13. [commands/implement-plan.md](../../commands/implement-plan.md) - 统一格式
 
 ### 新增的文件（3 个）
 
-1. [commands/explore.md](../commands/explore.md) - 统一探索命令
-2. [commands/review.md](../commands/review.md) - 统一评审命令
+1. [commands/explore.md](../../commands/explore.md) - 统一探索命令
+2. [commands/review.md](../../commands/review.md) - 统一评审命令
 3. [docs/OPTIMIZATION_SUMMARY.md](OPTIMIZATION_SUMMARY.md) - 本文档
 
 ---

@@ -83,7 +83,7 @@ bash scripts/verify-agents.sh
 | 命令 | `nova-plugin/commands/<id>.md` | `<id>` |
 | skill | `nova-plugin/skills/nova-<id>/SKILL.md` | `nova-<id>` |
 | skill 文档 | `nova-plugin/skills/nova-<id>/README.md` | 可选，复杂 skill 推荐 |
-| 命令文档 | `nova-plugin/docs/<id>.md` | 命令使用说明 |
+| 命令文档 | `nova-plugin/docs/commands/<stage>/<id>.md` | 命令使用说明 |
 
 添加后同步更新：
 - `README.md` 中的命令总览表

@@ -201,7 +201,7 @@ Hook scripts are Bash scripts. On Windows, they may require Git Bash, WSL, or an
 
 1. Edit `nova-plugin/commands/<id>.md`.
 2. Update `nova-plugin/skills/nova-<id>/SKILL.md`.
-3. If user-facing documentation changes, update `nova-plugin/docs/<id>.md`, the relevant README, or `nova-plugin/skills/README.md`.
+3. If user-facing documentation changes, update `nova-plugin/docs/commands/<stage>/<id>.md`, the relevant README, or `nova-plugin/skills/README.md`.
 4. If behavior, parameters, outputs, tool permissions, or safety boundaries change, update `CHANGELOG.md` and decide whether a version bump is required. If a version bump is required, follow the Modify Plugin Metadata or Version workflow below.
 5. Run `node scripts/lint-frontmatter.mjs`.
 
@@ -222,7 +222,7 @@ Also update:
 - `nova-plugin/.claude-plugin/plugin.json` `version`
 - `.claude-plugin/marketplace.json` plugin `version` and `last-updated`
 - `CLAUDE.md`, if quick facts, command counts, workflows, or constraints changed
-- `nova-plugin/docs/<id>.md` and `<id>.README.md` when user documentation is needed
+- `nova-plugin/docs/commands/<stage>/<id>.md` and `<id>.README.md` when user documentation is needed
 
 After adding a command, run:
 

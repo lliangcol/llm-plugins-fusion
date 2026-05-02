@@ -1,4 +1,4 @@
-﻿English | [中文](../../README.md)
+English | [中文](../../../README.md)
 
 <div align="center">
 
@@ -83,15 +83,14 @@ llm-plugins-fusion/
 │   │   ├── finalize-work.md
 │   │   └── finalize-lite.md
 │   ├── 📂 docs/                       # docs
-│   │   ├── commands-reference-guide.md
-│   │   ├── claude-code-commands-handbook.md
-│   │   ├── agents-summary.md
-│   │   └── agents-summary.en.md
+│   │   ├── README.md                  # docs index
+│   │   ├── guides/                    # command references and handbooks
+│   │   ├── commands/                  # command docs by workflow stage
+│   │   ├── agents/                    # agent summaries
+│   │   ├── architecture/              # designs and optimization notes
+│   │   └── overview/                  # project overview
 │   ├── 📂 hooks/                      # hooks config
 │   ├── 📂 agents/                     # sub-agent definitions
-│   ├── 📂 config/                     # config files
-│   ├── 📂 output-styles/              # output styles
-│   ├── 📂 scripts/                    # scripts
 │   └── 📂 skills/                     # skills
 └── 📄 README.md                       # Chinese README
 ```
@@ -138,7 +137,7 @@ A developer-productivity plugin for LLM coding assistants (Claude Code compatibl
 Active agents: 14 (default-scanned: `nova-plugin/agents/`). Legacy agents: 69 (archived: `.claude/agents/archive/nova-plugin/agents/`; manifest: `docs/agents/MIGRATION_MANIFEST.md`).
 
 - Routing & usage: `docs/agents/ROUTING.md`
-- Legacy summaries (kept for reference): `nova-plugin/docs/agents-summary.md` / `nova-plugin/docs/agents-summary.en.md`
+- Legacy summaries (kept for reference): `nova-plugin/docs/agents/agents-summary.md` / `nova-plugin/docs/agents/agents-summary.en.md`
 
 ---
 
@@ -146,10 +145,10 @@ Active agents: 14 (default-scanned: `nova-plugin/agents/`). Legacy agents: 69 (a
 
 | 📄 Document                                                                | 📝 Description                                    | 🎯 Use cases                     |
 | -------------------------------------------------------------------------- | ------------------------------------------------- | -------------------------------- |
-| [📘 Command Reference Guide](commands-reference-guide.md) | Full parameters, 5+ scenarios, workflow templates | **Daily lookup, copy templates** |
-| [📗 Command Handbook](claude-code-commands-handbook.md)   | Grouped by type, command comparison               | **Quick start, pick a command**  |
-| [🧩 Codex Loop Guide](codex-review-fix.README.md)         | review/fix/verify skills + scripts                | **Claude Code + Codex loop**     |
-| [🧭 Agents Routing](../../docs/agents/ROUTING.md)         | Active agents, keyword routing, examples          | **Auto routing, pick agents**    |
-| [🧠 Agents Summary](agents-summary.en.md)                 | Agent roles, tools, and scenarios                 | **Understand and pick agents**   |
+| [📘 Command Reference Guide](../guides/commands-reference-guide.en.md) | Full parameters, 5+ scenarios, workflow templates | **Daily lookup, copy templates** |
+| [📗 Command Handbook](../guides/claude-code-commands-handbook.en.md)   | Grouped by type, command comparison               | **Quick start, pick a command**  |
+| [🧩 Codex Loop Guide](../commands/codex/codex-review-fix.README.en.md)         | review/fix/verify skills + scripts                | **Claude Code + Codex loop**     |
+| [🧭 Agents Routing](../../../docs/agents/ROUTING.md)         | Active agents, keyword routing, examples          | **Auto routing, pick agents**    |
+| [🧠 Agents Summary](../agents/agents-summary.en.md)                 | Agent roles, tools, and scenarios                 | **Understand and pick agents**   |
 
-For the Chinese version, see `README.md` and `nova-plugin/docs/agents-summary.md`.
+For the Chinese version, see `nova-plugin/docs/README.md` and `nova-plugin/docs/agents/agents-summary.md`.
