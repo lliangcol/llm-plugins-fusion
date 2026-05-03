@@ -7,6 +7,7 @@
  *     - id (string, matches folder/filename basename)
  *     - stage (enum: explore|plan|implement|review|finalize)
  *     - title (string)
+ *     - description (string, Claude command description)
  *     - destructive-actions (enum: none|low|medium|high)
  *     - allowed-tools (space-separated string)
  *     - invokes.skill (string matching nova-<id>)
@@ -24,7 +25,7 @@
  *   node scripts/lint-frontmatter.mjs
  */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -33,9 +34,20 @@ const root = resolve(__dir, '..');
 
 const STAGES = new Set(['explore', 'plan', 'implement', 'review', 'finalize']);
 const DESTRUCTIVE = new Set(['none', 'low', 'medium', 'high']);
+const STANDARD_SKILL_HEADINGS = [
+  'Inputs',
+  'Parameter Resolution',
+  'Safety Preflight',
+  'Outputs',
+  'Workflow',
+  'Failure Modes',
+  'Examples',
+];
 
 const errors = [];
 const warnings = [];
+const commandContracts = new Map();
+const skillContracts = new Map();
 
 function recordError(file, msg) {
   errors.push(`  ✗ ${file}: ${msg}`);
@@ -122,6 +134,45 @@ function parseScalar(raw) {
   return v;
 }
 
+function splitTools(value) {
+  if (typeof value !== 'string') return [];
+  return value.trim().split(/\s+/).filter(Boolean);
+}
+
+function sameToolSet(a, b) {
+  const left = new Set(splitTools(a));
+  const right = new Set(splitTools(b));
+  if (left.size !== right.size) return false;
+  for (const item of left) {
+    if (!right.has(item)) return false;
+  }
+  return true;
+}
+
+function hasHeading(src, heading) {
+  return countHeading(src, heading) > 0;
+}
+
+function countHeading(src, heading) {
+  const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return [...src.matchAll(new RegExp(`^##\\s+${escaped}\\s*$`, 'gm'))].length;
+}
+
+function hasSideEffectTool(tools) {
+  return splitTools(tools).some((tool) => ['Write', 'Edit', 'MultiEdit', 'Bash'].includes(tool));
+}
+
+function lintToolRisk(rel, toolsValue, destructiveActions) {
+  const tools = new Set(splitTools(toolsValue));
+  const level = String(destructiveActions);
+  if ((tools.has('Write') || tools.has('Edit') || tools.has('MultiEdit')) && level === 'none') {
+    recordError(rel, 'Write/Edit/MultiEdit tools require destructive-actions other than none');
+  }
+  if (tools.has('MultiEdit') && !['medium', 'high'].includes(level)) {
+    recordError(rel, 'MultiEdit requires destructive-actions medium or high');
+  }
+}
+
 function lintCommands() {
   const dir = resolve(root, 'nova-plugin/commands');
   const files = readdirSync(dir).filter((f) => f.endsWith('.md'));
@@ -142,11 +193,17 @@ function lintCommands() {
 
     if (!obj.title) recordError(rel, 'missing title');
 
+    if (!obj.description) recordError(rel, 'missing description');
+    else if (typeof obj.description !== 'string') recordError(rel, 'description must be a string');
+    else if (obj.description.trim().length < 20) recordError(rel, 'description is too short to be useful');
+
     if (obj['destructive-actions'] === undefined) recordError(rel, 'missing destructive-actions');
     else if (!DESTRUCTIVE.has(String(obj['destructive-actions']))) recordError(rel, `invalid destructive-actions "${obj['destructive-actions']}" (must be ${[...DESTRUCTIVE].join('|')})`);
 
     if (!obj['allowed-tools']) recordError(rel, 'missing allowed-tools');
     else if (typeof obj['allowed-tools'] !== 'string') recordError(rel, 'allowed-tools must be a space-separated string');
+
+    lintToolRisk(rel, obj['allowed-tools'], obj['destructive-actions']);
 
     if (!obj.invokes || typeof obj.invokes !== 'object') {
       recordError(rel, 'missing invokes.skill');
@@ -155,6 +212,14 @@ function lintCommands() {
       if (!obj.invokes.skill) recordError(rel, 'missing invokes.skill');
       else if (obj.invokes.skill !== expectSkill) recordError(rel, `invokes.skill "${obj.invokes.skill}" expected "${expectSkill}"`);
     }
+
+    commandContracts.set(expectedId, {
+      rel,
+      id: expectedId,
+      skill: obj.invokes?.skill,
+      allowedTools: obj['allowed-tools'],
+      destructiveActions: obj['destructive-actions'],
+    });
   }
 }
 
@@ -186,6 +251,22 @@ function lintSkills() {
     if (!obj['allowed-tools']) recordError(rel, 'missing allowed-tools');
     else if (typeof obj['allowed-tools'] !== 'string') recordError(rel, 'allowed-tools must be a space-separated string');
 
+    lintToolRisk(rel, obj['allowed-tools'], obj.metadata?.novaPlugin?.destructiveActions);
+
+    for (const heading of STANDARD_SKILL_HEADINGS) {
+      const count = countHeading(src, heading);
+      if (count === 0) {
+        recordError(rel, `missing required section "## ${heading}"`);
+      } else if (count > 1) {
+        recordError(rel, `duplicate required section "## ${heading}" (${count} occurrences)`);
+      }
+    }
+    if (hasSideEffectTool(obj['allowed-tools'])) {
+      if (!src.includes('nova-plugin/skills/_shared/safety-preflight.md')) {
+        recordError(rel, 'side-effect-capable skill must reference nova-plugin/skills/_shared/safety-preflight.md');
+      }
+    }
+
     const meta = obj.metadata;
     if (!meta || typeof meta !== 'object') {
       recordError(rel, 'missing metadata block');
@@ -202,11 +283,52 @@ function lintSkills() {
         }
       }
     }
+
+    skillContracts.set(entry, {
+      rel,
+      name: obj.name,
+      commandId: entry.startsWith('nova-') ? entry.slice('nova-'.length) : null,
+      allowedTools: obj['allowed-tools'],
+      destructiveActions: obj.metadata?.novaPlugin?.destructiveActions,
+    });
+  }
+}
+
+function lintCommandSkillContracts() {
+  const commandsDir = resolve(root, 'nova-plugin/commands');
+  const skillsDir = resolve(root, 'nova-plugin/skills');
+
+  for (const [commandId, command] of commandContracts.entries()) {
+    const expectedSkill = `nova-${commandId}`;
+    const skillFile = resolve(skillsDir, expectedSkill, 'SKILL.md');
+    if (!existsSync(skillFile)) {
+      recordError(command.rel, `invoked skill file missing: skills/${expectedSkill}/SKILL.md`);
+      continue;
+    }
+
+    const skill = skillContracts.get(expectedSkill);
+    if (!skill) continue;
+
+    if (!sameToolSet(command.allowedTools, skill.allowedTools)) {
+      recordError(command.rel, `allowed-tools differ from ${skill.rel}`);
+    }
+    if (String(command.destructiveActions) !== String(skill.destructiveActions)) {
+      recordError(command.rel, `destructive-actions "${command.destructiveActions}" differ from ${skill.rel} metadata.novaPlugin.destructiveActions "${skill.destructiveActions}"`);
+    }
+  }
+
+  for (const [skillName, skill] of skillContracts.entries()) {
+    if (!skill.commandId) continue;
+    const commandFile = resolve(commandsDir, `${skill.commandId}.md`);
+    if (!existsSync(commandFile)) {
+      recordError(skill.rel, `paired command missing: commands/${skill.commandId}.md`);
+    }
   }
 }
 
 lintCommands();
 lintSkills();
+lintCommandSkillContracts();
 
 if (warnings.length) {
   console.warn('Warnings:');

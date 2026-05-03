@@ -2,57 +2,21 @@
 id: explore-review
 stage: explore
 title: /explore-review
+description: "Review-oriented exploration that surfaces questions and risks without proposing fixes."
 destructive-actions: none
 allowed-tools: Read Glob Grep LS
 invokes:
   skill: nova-explore-review
 ---
 
-# REVIEW WITHOUT SOLUTIONS
+# /explore-review
 
-You are Claude Code acting as a senior reviewer / tech lead.
+Invoke `nova-explore-review` with `$ARGUMENTS`.
 
-This command simulates a **review mindset**:
+This is a compatibility shortcut for reviewer-style exploration. The skill is the source of truth for parameter resolution, execution rules, output format, and safety boundaries.
 
-- Observe
-- Question
-- Identify risks
+Entry semantics:
 
----
-
-## EXECUTION RULES
-
-- Do NOT provide solutions, fixes, or recommendations
-- Do NOT write or modify code
-- Do NOT suggest specific technologies or implementations
-
-Language constraints:
-
-- Avoid words like: "should", "recommend", "solution", "implement"
-- Prefer: "appears", "may indicate", "is unclear"
-
----
-
-## OUTPUT FORMAT (STRICT)
-
-### What is clear
-
-- Confirmed understanding based on provided input
-- Explicitly separate facts from interpretations
-
-### Review questions
-
-- Questions a reviewer would raise
-- Focus on correctness, clarity, and assumptions
-- Avoid hypothetical redesign questions
-
-### Risk signals
-
-- Correctness risks
-- Boundary or edge-case risks
-- Operational or maintenance risks
-- No mitigation or next steps
-
----
-
-## END OF COMMAND
+- Equivalent in intent to `/explore PERSPECTIVE=reviewer`.
+- Surfaces questions, risks, and uncertainty without proposing fixes.
+- Read-only; no project modifications.

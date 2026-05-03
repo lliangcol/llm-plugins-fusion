@@ -6,7 +6,7 @@ English | [中文](../../../README.md)
 
 **A third-party LLM plugin marketplace + plugin collection**
 
-[![Version](https://img.shields.io/badge/version-1.0.8-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
+[![Version](https://img.shields.io/badge/version-1.0.9-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com)
 
 </div>
@@ -91,7 +91,7 @@ llm-plugins-fusion/
 │   │   └── overview/                  # project overview
 │   ├── 📂 hooks/                      # hooks config
 │   ├── 📂 agents/                     # sub-agent definitions
-│   └── 📂 skills/                     # skills
+│   └── 📂 skills/                     # skills, including _shared policies
 └── 📄 README.md                       # Chinese README
 ```
 
@@ -102,7 +102,7 @@ llm-plugins-fusion/
 <table>
 <tr>
 <td width="120"><strong>Version</strong></td>
-<td>1.0.8</td>
+<td>1.0.9</td>
 </tr>
 <tr>
 <td><strong>Author</strong></td>

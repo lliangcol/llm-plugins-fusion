@@ -2,63 +2,20 @@
 id: plan-review
 stage: plan
 title: /plan-review
+description: "Critically review an existing plan for decision clarity, assumptions, and execution risk."
 destructive-actions: none
 allowed-tools: Read Glob Grep LS
 invokes:
   skill: nova-plan-review
 ---
 
-# PLAN CRITICAL REVIEW
+# /plan-review
 
-You are Claude Code acting as a senior reviewer / tech lead.
+Invoke `nova-plan-review` with `$ARGUMENTS`.
 
-This command reviews a proposed plan
-from a decision-quality and execution-risk perspective.
+This is the read-only plan review entry. The skill is the source of truth for parameter resolution, execution rules, output format, and safety boundaries.
 
----
+Entry semantics:
 
-## EXECUTION RULES
-
-- Do NOT rewrite the plan
-- Do NOT propose alternative solutions
-- Do NOT introduce new requirements
-
-Focus on:
-
-- Decision clarity
-- Hidden assumptions
-- Execution and operational risks
-
-Language constraints:
-
-- Avoid words like: "should", "recommend", "solution"
-- Prefer: "appears", "assumes", "may lead to"
-
----
-
-## OUTPUT FORMAT (STRICT)
-
-### Decision clarity check
-
-- Are goals, scope, and choices unambiguous?
-- Any decisions that are implicit or unclear?
-
-### Assumptions & gaps
-
-- Assumptions the plan relies on
-- Missing information that could affect execution
-
-### Risk signals
-
-- Technical risks
-- Operational or rollout risks
-- Maintenance or future-change risks
-
-### Review questions
-
-- Questions that must be answered before confident execution
-- No suggestions or alternatives
-
----
-
-## END OF COMMAND
+- Reviews an existing plan for clarity, assumptions, risks, and missing decisions.
+- Does not rewrite the plan or implement changes.

@@ -2,45 +2,21 @@
 id: implement-lite
 stage: implement
 title: /implement-lite
+description: "Make small, bounded implementation changes quickly while respecting existing project conventions."
 destructive-actions: medium
 allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
 invokes:
   skill: nova-implement-lite
 ---
 
-# FAST EXECUTION
+# /implement-lite
 
-You are Claude Code acting as a productive software engineer.
+Invoke `nova-implement-lite` with `$ARGUMENTS`.
 
-This command focuses on fast, pragmatic implementation.
+This is the small-task implementation entry. The skill is the source of truth for parameter resolution, execution rules, validation expectations, output format, and safety boundaries.
 
----
+Entry semantics:
 
-## EXECUTION RULES
-
-- Implement based on provided instructions or context
-- Minor design adjustments are allowed if necessary
-- Small refactors are acceptable if they improve correctness or clarity
-- Avoid over-engineering
-
----
-
-## OUTPUT FORMAT
-
-Provide the following after implementation:
-
-### Changes Summary
-
-- Brief description of what was implemented
-- Key files modified or created
-
-### Adjustments (if any)
-
-- Any deviations from original instructions
-- Reasoning for minor design changes
-
-If no adjustments were made, state: **"No deviations from instructions"**
-
----
-
-## END OF COMMAND
+- Uses `TASK` plus optional `CONSTRAINTS`.
+- Allows bounded code edits and checks.
+- Avoids unrelated refactors and scope expansion.

@@ -2,10 +2,10 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/lliangcol/llm-plugins-fusion/schemas/plugin.schema.json",
   "title": "Nova Plugin Metadata",
-  "description": "Schema for nova-plugin/.claude-plugin/plugin.json (extra fields allowed for forward compatibility).",
+  "description": "Schema for nova-plugin/.claude-plugin/plugin.json, aligned with Claude plugin validation. Marketplace-only fields belong in .claude-plugin/marketplace.json.",
   "type": "object",
   "required": ["name", "description", "version", "author"],
-  "additionalProperties": true,
+  "additionalProperties": false,
   "properties": {
     "name": {
       "type": "string",
@@ -37,27 +37,6 @@
       "type": "string",
       "description": "SPDX license identifier (e.g. MIT)"
     },
-    "category": {
-      "type": "string",
-      "enum": [
-        "development",
-        "productivity",
-        "review",
-        "testing",
-        "documentation",
-        "devops",
-        "security",
-        "data",
-        "workflow",
-        "other"
-      ]
-    },
-    "tags": {
-      "type": "array",
-      "items": { "type": "string", "minLength": 1 },
-      "uniqueItems": true,
-      "description": "Marketplace display tags"
-    },
     "keywords": {
       "type": "array",
       "items": { "type": "string", "minLength": 1 },
@@ -66,15 +45,6 @@
     },
     "homepage": { "type": "string", "format": "uri" },
     "repository": { "type": "string", "format": "uri" },
-    "icon": { "type": "string" },
-    "compatibility": {
-      "type": "object",
-      "additionalProperties": true,
-      "description": "Compatibility matrix; keys are runtimes (claude-code / codex / ...)",
-      "properties": {
-        "claude-code": { "type": "string" },
-        "codex": { "type": "string" }
-      }
-    }
+    "icon": { "type": "string" }
   }
 }

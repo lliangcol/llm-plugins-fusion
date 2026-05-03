@@ -2,68 +2,20 @@
 id: plan-lite
 stage: plan
 title: /plan-lite
+description: "Create a lightweight execution plan without writing code or formal artifacts."
 destructive-actions: none
 allowed-tools: Read Glob Grep LS
 invokes:
   skill: nova-plan-lite
 ---
 
-# LIGHTWEIGHT PLANNING
+# /plan-lite
 
-You are Claude Code acting as a senior engineer.
+Invoke `nova-plan-lite` with `$ARGUMENTS`.
 
-This command produces a **lightweight execution plan**
-based on prior understanding or exploration.
+This is the lightweight planning slash entry. The skill is the source of truth for parameter resolution, execution rules, output format, and safety boundaries.
 
-This is NOT a formal design document.
+Entry semantics:
 
----
-
-## EXECUTION RULES
-
-- Do NOT write production code
-- Do NOT over-design or expand scope
-- Do NOT assume unstated requirements
-
-Focus on:
-
-- Clarifying goals and boundaries
-- Making key decisions explicit
-- Aligning on a practical execution path
-
----
-
-## OUTPUT FORMAT (STRICT)
-
-### Goal
-
-- What this plan is trying to achieve
-- Clear success criteria
-
-### Non-Goals
-
-- Explicitly state what is out of scope
-
-### Chosen Approach
-
-- High-level approach
-- Key decisions being made (explicitly stated)
-
-### Key Trade-offs
-
-- What is being prioritized
-- What is being consciously deprioritized
-
-### Execution Outline
-
-- High-level steps or phases
-- No low-level implementation details
-
-### Key Risks
-
-- The most important risks to be aware of
-- No detailed mitigation required
-
----
-
-## END OF COMMAND
+- Produces quick execution alignment from `INPUT` and optional `CONSTRAINTS`.
+- Does not write formal artifacts or project code.

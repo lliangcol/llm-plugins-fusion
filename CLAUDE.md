@@ -13,6 +13,7 @@ This file provides guidance to Claude Code when working in this repository.
 - Plugin version source of truth: `nova-plugin/.claude-plugin/plugin.json`
 - Current command snapshot: 20 files under `nova-plugin/commands/*.md`; validate frontmatter with `node scripts/lint-frontmatter.mjs`.
 - Current skill snapshot: 20 files under `nova-plugin/skills/nova-*/SKILL.md`; validate frontmatter with `node scripts/lint-frontmatter.mjs`.
+- Shared skill policies: `nova-plugin/skills/_shared/*.md`.
 - Current active agent snapshot: 14 files under `nova-plugin/agents/*.md`; verify with `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`.
 - Repository validation scripts require Node.js 20+.
 
@@ -21,6 +22,7 @@ This file provides guidance to Claude Code when working in this repository.
 - Plugin version: `nova-plugin/.claude-plugin/plugin.json`, mirrored in `.claude-plugin/marketplace.json`.
 - Command definitions: `nova-plugin/commands/*.md`.
 - Skill definitions: `nova-plugin/skills/nova-*/SKILL.md`.
+- Shared command/skill policies: `nova-plugin/skills/_shared/`.
 - Active agent set: `nova-plugin/agents/`, enforced by `scripts/verify-agents.sh` and `scripts/verify-agents.ps1`.
 - Marketplace and plugin schema contracts: `schemas/marketplace.schema.json` and `schemas/plugin.schema.json`.
 
@@ -45,6 +47,8 @@ claude-plugins-fusion/
 |-- schemas/                          # Marketplace and plugin JSON Schemas
 |-- scripts/                          # Repository-level validation scripts
 |-- README.md                         # User-facing overview and quickstart
+|-- CLAUDE.md                         # Claude Code repository guidance
+|-- AGENTS.md                         # Codex and generic AI agent guidance
 |-- CONTRIBUTING.md                   # Contribution rules and metadata contracts
 |-- CHANGELOG.md                      # Version history
 |-- ROADMAP.md                        # Planned evolution
@@ -75,7 +79,7 @@ node scripts/lint-frontmatter.mjs
 ### Plugin Discovery
 
 - `.claude-plugin/marketplace.json` registers installable plugins.
-- `nova-plugin/.claude-plugin/plugin.json` declares plugin name, version, author, compatibility, tags, and related metadata.
+- `nova-plugin/.claude-plugin/plugin.json` declares plugin name, version, author, license, keywords, homepage, and repository metadata. Marketplace-only display fields such as category and tags live in `.claude-plugin/marketplace.json`.
 - `nova-plugin/commands/*.md` contains Claude Code command definitions.
 - `nova-plugin/skills/nova-*/SKILL.md` contains Agent Skill definitions discovered by directory convention.
 - `nova-plugin/hooks/hooks.json` defines safety checks and audit hooks around tool use.
@@ -95,6 +99,7 @@ Command frontmatter must include:
 id: <id>
 stage: explore|plan|implement|review|finalize
 title: /<id>
+description: "When to use this command..."
 destructive-actions: none|low|medium|high
 allowed-tools: <space-separated tool list>
 invokes:
@@ -128,7 +133,7 @@ Write-capable implementation commands may also need tools such as:
 allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
 ```
 
-Use `node scripts/lint-frontmatter.mjs` to validate frontmatter shape and naming. When adding, removing, or renaming commands or skills, also confirm the paired command and skill files exist on both sides of the one-to-one mapping.
+Use `node scripts/lint-frontmatter.mjs` to validate frontmatter shape, command descriptions, command/skill mappings, required skill sections, safety preflight references, and naming. When adding, removing, or renaming commands or skills, also confirm the paired command and skill files exist on both sides of the one-to-one mapping.
 
 ### Command System
 
@@ -181,6 +186,7 @@ test-automator
 - `docs/agents/ROUTING.md`
 - `docs/agents/MIGRATION_MANIFEST.md`, if an archive migration is involved
 - `CLAUDE.md`
+- `AGENTS.md`
 
 Legacy agents are archived under `.claude/agents/archive/nova-plugin/agents/`. They are not part of the `nova-plugin/agents/` active set. If Claude Code scans `.claude/**` and context token usage rises, follow the mitigation note printed by the `verify-agents` scripts.
 
@@ -222,6 +228,7 @@ Also update:
 - `nova-plugin/.claude-plugin/plugin.json` `version`
 - `.claude-plugin/marketplace.json` plugin `version` and `last-updated`
 - `CLAUDE.md`, if quick facts, command counts, workflows, or constraints changed
+- `AGENTS.md`, if agent-facing facts, command counts, workflows, or constraints changed
 - `nova-plugin/docs/commands/<stage>/<id>.md` and `<id>.README.md` when user documentation is needed
 
 After adding a command, run:
@@ -248,6 +255,7 @@ Version information must stay synchronized across:
 - `.claude-plugin/marketplace.json` plugin `version` and `last-updated`
 - `CHANGELOG.md`
 - `CLAUDE.md`, if quick facts, counts, constraints, or workflows changed
+- `AGENTS.md`, if agent-facing facts, counts, constraints, or workflows changed
 
 Versioning follows SemVer:
 
@@ -265,7 +273,7 @@ node scripts/validate-schemas.mjs
 
 - Active agents belong only in `nova-plugin/agents/`.
 - Archived or legacy agents belong under `.claude/agents/archive/`.
-- If the active set changes, use the complete update list in the Active Agents section: agent files, both `verify-agents` scripts, routing docs, migration notes when relevant, and `CLAUDE.md`.
+- If the active set changes, use the complete update list in the Active Agents section: agent files, both `verify-agents` scripts, routing docs, migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
 - Agent frontmatter uses `name`, `description`, and `tools`. Keep bodies short and route-focused.
 
 ## Quality Gates
@@ -278,7 +286,7 @@ Metadata or marketplace changes:
 node scripts/validate-schemas.mjs
 ```
 
-Command or skill frontmatter changes:
+Command or skill contract/frontmatter changes:
 
 ```bash
 node scripts/lint-frontmatter.mjs

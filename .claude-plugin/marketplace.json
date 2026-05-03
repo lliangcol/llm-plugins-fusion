@@ -12,7 +12,7 @@
     {
       "name": "nova-plugin",
       "source": "./nova-plugin",
-      "version": "1.0.8",
+      "version": "1.0.9",
       "author": {
         "name": "liu liang",
         "email": "lliangcoder@gmail.com",
@@ -28,7 +28,7 @@
       "trust-level": "author-verified",
       "risk-level": "low",
       "deprecated": false,
-      "last-updated": "2026-04-21"
+      "last-updated": "2026-05-04"
     }
   ]
 }

@@ -1,6 +1,6 @@
 ﻿# 📚 Nova Plugin Command Reference (Full)
 
-> **Version**: 1.0.8 | **Last updated**: 2026-04-28
+> **Version**: 1.0.9 | **Last updated**: 2026-05-04
 >
 > This guide is a complete technical reference for all `nova-plugin` commands, including parameter notes, scenario examples, and workflow templates.
 >
@@ -47,6 +47,9 @@
 | **Code review**          | Day-to-day PR review                   | `/review-lite`        | [Example](#场景-日常pr评审)       |
 | **Code review**          | Core logic review                      | `/review-only`        | [Example](#场景-核心逻辑评审)     |
 | **Code review**          | High-risk audit-style review           | `/review-strict`      | [Example](#场景-高风险代码审计)   |
+| **Codex loop**           | Review then fix current branch         | `/codex-review-fix`   | [Workflow](#workflow-c2-codex-loop) |
+| **Codex loop**           | Generate Codex review only             | `/codex-review-only`  | [Workflow](#workflow-c2-codex-loop) |
+| **Codex loop**           | Verify an existing Codex review        | `/codex-verify-only`  | [Workflow](#workflow-c2-codex-loop) |
 | **Implementation**       | Implement strictly by an approved plan | `/implement-plan`     | [Example](#场景-按计划实现)       |
 | **Implementation**       | Standard, controlled implementation    | `/implement-standard` | [Example](#场景-标准开发任务)     |
 | **Implementation**       | Fast, low-risk implementation          | `/implement-lite`     | [Example](#场景-快速修复)         |
@@ -60,6 +63,8 @@
 ## 📦 Command Overview
 
 ### Command taxonomy diagram
+
+The diagram shows the core Explore -> Plan -> Review -> Implement -> Finalize flow. The three Codex loop commands are listed in the comparison table below.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────┐
@@ -104,14 +109,17 @@
 | Review    | ⭐`/review`           |   🟡-🔴    | Critical/Major/Minor  |      ❌      | **Unified command, recommended**            |
 | Review    | `/review-only`        | 🟡 Medium  | Critical/Major/Minor  |      ❌      | = `/review LEVEL=standard`                  |
 | Review    | `/review-strict`      | 🔴 Strong  | Exhaustive review     |      ❌      | = `/review LEVEL=strict`                    |
+| Review    | `/codex-review-only`  | 🟡 Medium  | Review artifact       |      ❌      | Runs Codex review script only               |
+| Review    | `/codex-verify-only`  | 🟡 Medium  | Verify artifact       |      ❌      | Requires `REVIEW_FILE`                      |
 | Implement | `/implement-plan`     | 🔴 Strong  | Implementation output |      ✅      | -                                           |
 | Implement | `/implement-standard` | 🟡 Medium  | Implementation output |      ✅      | -                                           |
 | Implement | `/implement-lite`     |  🟢 Weak   | Implementation output |      ✅      | -                                           |
-
-**Total commands**: 17 (15 original + 2 unified)
-**Recommended**: Use ⭐ marked unified commands for simplified workflow
+| Implement | `/codex-review-fix`   | 🔴 Strong  | Review/fix/verify loop |     ✅      | Bounded high-confidence fixes only          |
 | Finalize | `/finalize-work` | 🔴 Strong | Delivery artifacts | ❌ |
 | Finalize | `/finalize-lite` | 🟢 Weak | Minimal summary | ❌ |
+
+**Total commands**: 20 (17 existing + 3 Codex loop commands)
+**Recommended**: Use ⭐ marked unified commands for simplified workflow
 
 ---
 
@@ -667,6 +675,32 @@ Core logic     → /review-only
 High risk      → /review-strict
 ```
 
+<a id="workflow-c2-codex-loop"></a>
+
+### Workflow C2: Codex review/fix/verify loop
+
+```text
+1) /codex-review-only or /codex-review-fix
+2) Claude Code fixes high-confidence findings when using the full loop
+3) Run local checks
+4) /codex-verify-only against the review artifact
+5) Continue only if verify reports unresolved high-confidence issues
+```
+
+Examples:
+
+```text
+/codex-review-fix BASE=main GOAL="fix current branch until mergeable"
+```
+
+```text
+/codex-review-only REVIEW_MODE=full
+```
+
+```text
+/codex-verify-only REVIEW_FILE=.codex/codex-review-fix/latest-artifacts/review.md CHECKS_FILE=.codex/codex-review-fix/latest-artifacts/checks.txt BASE=main
+```
+
 ### Workflow D: Java backend end-to-end
 
 ```text
@@ -708,6 +742,8 @@ High risk      → /review-strict
 | `/review-lite`   | Day-to-day PRs   | 🟢 Light  |
 | `/review-only`   | Core paths       | 🟡 Medium |
 | `/review-strict` | High-risk audits | 🔴 Deep   |
+| `/codex-review-only` | Branch review artifact | 🟡 Medium |
+| `/codex-verify-only` | Directed verification | 🟡 Medium |
 
 ### Implement commands
 
@@ -716,6 +752,7 @@ High risk      → /review-strict
 | `/implement-plan`     | Approved plan exists                   | 🔴 Strong  |
 | `/implement-standard` | Clear steps, small corrections allowed | 🟡 Medium  |
 | `/implement-lite`     | Fast low-risk tasks                    | 🟢 Weak    |
+| `/codex-review-fix`   | Review/fix/verify closure loop         | 🔴 Strong  |
 
 ### Finalize commands
 

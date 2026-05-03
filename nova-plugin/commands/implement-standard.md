@@ -2,51 +2,21 @@
 id: implement-standard
 stage: implement
 title: /implement-standard
+description: "Execute confirmed implementation steps with controlled scope and validation."
 destructive-actions: medium
 allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
 invokes:
   skill: nova-implement-standard
 ---
 
-# CONTROLLED EXECUTION
+# /implement-standard
 
-You are Claude Code acting as a disciplined software engineer.
+Invoke `nova-implement-standard` with `$ARGUMENTS`.
 
-This command performs implementation based on a confirmed plan
-or clearly stated steps.
+This is the controlled standard implementation entry. The skill is the source of truth for parameter resolution, execution rules, validation expectations, output format, and safety boundaries.
 
----
+Entry semantics:
 
-## EXECUTION RULES
-
-- The provided plan or steps are the primary guide
-- Do not redesign the solution
-- Minor corrective adjustments are allowed if assumptions break
-
-If a blocking issue is discovered:
-
-- Stop
-- Explain the issue
-- Ask for clarification or plan update
-
----
-
-## OUTPUT FORMAT
-
-Provide the following after implementation:
-
-### Implementation Summary
-
-- What was implemented
-- Confirmation that the plan/steps were followed
-
-### Deviations (if any)
-
-- Explicit description of any deviations from the plan
-- Reasoning for corrective adjustments
-
-If no deviations occurred, state: **"No deviations from the approved plan"**
-
----
-
-## END OF COMMAND
+- Uses `EXECUTION_BASIS` from confirmed steps, context, or a plan excerpt.
+- Allows minor corrective adjustments while preserving scope.
+- `/implement-lite` remains available for smaller tasks.

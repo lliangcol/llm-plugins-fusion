@@ -14,7 +14,7 @@
 
 ## 短期（1–2 周）— 标准对齐 + 止血
 
-目标：**发一个干净的 v1.0.8 → v1.1.0，能过未来官方 marketplace schema 校验**。
+目标：**从 v1.0.9 继续演进到 v1.1.0，保持 Claude plugin validate、schema、frontmatter lint 和文档契约稳定**。
 
 | 任务 | 状态 | 说明 |
 | --- | --- | --- |
@@ -22,6 +22,8 @@
 | 开放 `schemas/*.json` 封闭性 | ✅ 完成 | Draft-07 继续使用，`additionalProperties: true`；`source` 改 `oneOf` |
 | SKILL.md frontmatter 迁移到 Agent Skills 开放标准 | ✅ 完成 | 自定义字段收入 `metadata.novaPlugin.*` |
 | 命令 frontmatter 统一 | ✅ 完成 | 补 `allowed-tools`、`invokes.skill`、`destructive-actions` 枚举 |
+| skill-first / thin-command 收敛 | ✅ 完成 | command 保留 slash 入口，行为事实源迁移到 `SKILL.md` 与 `_shared` 策略 |
+| Claude CLI plugin validate 阻断修复 | ✅ 完成 | `plugin.json` 移除 CLI 不接受或 marketplace-only 字段 |
 | 社区标准文档（本 PR） | 🚧 进行中 | `CONTRIBUTING.md` / `SECURITY.md` / `CODE_OF_CONDUCT.md` / `ROADMAP.md` |
 | `lint-frontmatter.mjs` + CI 接入 | ✅ 完成 | 防止命令/skill 元数据漂移 |
 
@@ -35,7 +37,7 @@
 - **脚手架**：`npx create-nova-plugin` / `scripts/scaffold.mjs command /foo` / `scripts/scaffold.mjs skill nova-foo`。
 - **示例与演示**：每个命令补 `## Example` / `## Expected Output`；README 首屏录制 asciinema（senior-explore / backend-plan / codex-review-fix）。
 - **发布流水线**：release 附 SBOM（syft）+ cosign 签名；CHANGELOG 通过 changesets / release-please 生成。
-- **兼容矩阵**：`compatibility: { claude-code: ">=1.0.0", codex: ">=0.5.0" }`。
+- **兼容矩阵**：在 marketplace 或生成的 registry 层表达 Claude Code / Codex 兼容性，避免把当前 Claude CLI 不接受的字段写回 `plugin.json`。
 
 **迁移策略**：旧路径保留 3–6 个月软链；破坏性变更写 `docs/migration/vX-to-vY.md`；CHANGELOG 使用 `BREAKING:` / `MIGRATION:` 区块。
 
@@ -57,7 +59,8 @@
 | 版本 | 预计时间 | 核心能力 |
 | --- | --- | --- |
 | v1.0.8 | 2026-04 | Codex 闭环三件套 + 开放 schema + SKILL 标准对齐 |
-| v1.1.0 | 2026-05 | Frontmatter lint / 社区文档齐备 |
+| v1.0.9 | 2026-05 | skill-first thin commands + shared policies + Claude CLI validate 修复 |
+| v1.1.0 | 2026-05 | Frontmatter lint 扩展 / 社区文档齐备 |
 | v1.2.0 | 2026-06 | Registry 自动生成 + 脚手架 + 示例录屏 |
 | v2.0.0 | 2026-Q3 | 仓库结构重构为 monorepo；多插件上线；BREAKING 迁移指南 |
 

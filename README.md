@@ -6,7 +6,7 @@
 
 **第三方 LLM 插件市场与插件集合**
 
-[![Version](https://img.shields.io/badge/version-1.0.8-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
+[![Version](https://img.shields.io/badge/version-1.0.9-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 
 </div>
@@ -133,7 +133,7 @@ llm-plugins-fusion/
 │   │   └── overview/                  # 英文项目概览
 │   ├── 📂 hooks/                      # Hooks 配置
 │   ├── 📂 agents/                     # 子代理定义
-│   └── 📂 skills/                     # 技能包
+│   └── 📂 skills/                     # 技能包（含 _shared 通用策略）
 └── 📄 README.md
 ```
 
@@ -144,7 +144,7 @@ llm-plugins-fusion/
 <table>
 <tr>
 <td width="120"><strong>版本</strong></td>
-<td>1.0.8</td>
+<td>1.0.9</td>
 </tr>
 <tr>
 <td><strong>作者</strong></td>

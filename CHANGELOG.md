@@ -12,6 +12,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Removed
 - 删除已移除的辅助前端应用，并移除对应的 CI npm lint/test、同步检查脚本与 release 构建产物上传。
 
+## [1.0.9] - 2026-05-04
+
+### Added
+- 新增 `nova-plugin/skills/_shared/` 通用策略文档，统一参数解析、安全 preflight、输出契约、artifact 写入规则与 agent routing 边界。
+- `scripts/lint-frontmatter.mjs` 增加 command description、command/skill 一对一映射、skill 标准章节、安全 preflight 引用、`allowed-tools` 与 destructive action 一致性校验。
+
+### Changed
+- 移除 `nova-plugin/.claude-plugin/plugin.json` 中当前 Claude CLI 不接受或仅属于 marketplace 的字段，并保留 marketplace entry 中的展示元数据。
+- 20 个 command 补齐 Claude command `description`，并收敛为 thin slash wrapper；详细行为规则迁移到对应 `SKILL.md`。
+- 20 个 skill 增加标准 `Inputs`、`Parameter Resolution`、`Safety Preflight`、输出与失败模式章节，并保留原 command 行为契约作为 skill 事实源。
+- 同步 `nova-plugin` 与 marketplace 版本至 1.0.9。
+
 ## [1.0.8] - 2026-04-21
 
 ### Added
@@ -105,6 +117,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - MIT 开源协议
 - 中英双语 README 文档
 
+[1.0.9]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.8...v1.0.9
 [1.0.8]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.7...v1.0.8
 [1.0.7]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.6...v1.0.7
 [1.0.6]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.5...v1.0.6

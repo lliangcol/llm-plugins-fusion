@@ -2,38 +2,21 @@
 id: finalize-lite
 stage: finalize
 title: /finalize-lite
+description: "Produce a minimal close-out summary of completed work, rationale, and limitations."
 destructive-actions: none
 allowed-tools: Read Glob Grep LS
 invokes:
   skill: nova-finalize-lite
 ---
 
-# Summarize the completed work
+# /finalize-lite
 
-No changes, no new decisions.
+Invoke `nova-finalize-lite` with `$ARGUMENTS`.
 
----
+This is the compact finalization entry. The skill is the source of truth for parameter resolution, output format, and safety boundaries.
 
-## OUTPUT FORMAT (STRICT)
+Entry semantics:
 
-Provide exactly the following three items:
-
-### What changed
-
-- Brief, factual description of changes made
-- List key files or components modified
-
-### Why
-
-- Business, technical, or operational motivation
-- Trace back to the original problem or requirement
-
-### Limitations (if any)
-
-- Known edge cases or trade-offs
-- Intentional exclusions
-- If none, state: **"No known limitations"**
-
----
-
-## END OF COMMAND
+- Summarizes completed work, rationale, and limitations.
+- Does not run release, Git, or deployment actions.
+- `/finalize-work` remains available for full handoff packaging.

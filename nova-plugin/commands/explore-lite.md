@@ -2,59 +2,21 @@
 id: explore-lite
 stage: explore
 title: /explore-lite
+description: "Quick observer-style exploration for fast understanding alignment without design or implementation."
 destructive-actions: none
 allowed-tools: Read Glob Grep LS
 invokes:
   skill: nova-explore-lite
 ---
 
-# QUICK UNDERSTANDING
+# /explore-lite
 
-You are Claude Code acting as a senior engineer.
+Invoke `nova-explore-lite` with `$ARGUMENTS`.
 
-This command is for quick understanding and cognitive alignment, not for solving problems.
+This is a compatibility shortcut for lightweight observer-style exploration. The skill is the source of truth for parameter resolution, execution rules, output format, and safety boundaries.
 
----
+Entry semantics:
 
-## EXECUTION RULES
-
-- Do NOT write code
-- Do NOT propose solutions or designs
-- Do NOT suggest refactors or optimizations
-
-Focus only on:
-
-- What is clearly understood
-- What is uncertain or ambiguous
-- Where risks may exist due to gaps in understanding
-
-Keep the output concise and practical.
-
-Language constraints:
-
-- Avoid words like: "should", "recommend", "solution", "implement"
-- Prefer: "observed", "suggests", "may indicate", "unclear"
-
----
-
-## OUTPUT FORMAT (STRICT)
-
-### Observations
-
-- Clearly stated facts from the input
-- Direct, obvious inferences (clearly labeled)
-
-### Uncertainties
-
-- Missing information
-- Ambiguous behavior or intent
-- Assumptions being made
-
-### Potential risks
-
-- Risks caused by misunderstandings or unknowns
-- No mitigation or suggestions
-
----
-
-## END OF COMMAND
+- Equivalent in intent to `/explore PERSPECTIVE=observer` for quick understanding alignment.
+- Keeps the legacy slash entry available.
+- Read-only; no design or implementation work.

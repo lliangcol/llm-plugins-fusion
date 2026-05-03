@@ -57,13 +57,13 @@ PostToolUse 额外包含：
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh",
-            "timeout": 10,
-            "statusMessage": "检查文件写入..."
+            "matcher": "Write|Edit|MultiEdit",
+            "hooks": [
+              {
+                "type": "command",
+                "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh\"",
+                "timeout": 10,
+                "statusMessage": "检查文件写入..."
           }
         ]
       }
@@ -89,7 +89,7 @@ PostToolUse 额外包含：
 
 ### Hook 2：PostToolUse — 审计日志
 
-**目标：** 记录所有 Write / Edit / Bash 操作的审计日志，格式：
+**目标：** 记录所有 Write / Edit / MultiEdit / Bash 操作的审计日志，格式：
 
 ```
 [2026-03-18T07:00:00Z] Write /path/to/file.ts SUCCESS
@@ -123,6 +123,13 @@ nova-plugin/hooks/
 | `nova-plugin/hooks/hooks.json` | 插件启用时 | 是（随插件分发） |
 
 插件 hooks 仅在用户启用该插件后生效，不影响其他项目。
+
+## Windows 前置条件
+
+`hooks.json` 通过 `bash "<script>.sh"` 调用脚本。Windows PowerShell 默认不提供
+Bash，因此在 Windows 上需要安装 Git Bash、WSL，或其他可在 PATH 中解析为
+`bash` 的兼容运行时。缺少 Bash 时，PowerShell 下的 `bash -n` 语法检查和
+Claude Code hook 执行都会失败。
 
 ---
 

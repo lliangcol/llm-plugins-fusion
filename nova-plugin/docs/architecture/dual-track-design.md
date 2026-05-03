@@ -1,123 +1,152 @@
-# 双轨设计说明：Commands 与 Skills
+# Skill-first 设计说明：Commands 与 Skills
 
-## 为什么有两份文件？
+## 为什么还有两份文件？
 
-nova-plugin 为每个命令维护两种形式：
+`nova-plugin` 仍为每个能力维护两种入口：
 
-- `nova-plugin/commands/*.md` — **命令文件**（面向用户直接触发）
-- `nova-plugin/skills/nova-*/SKILL.md` — **技能文件**（面向 Claude Code 自动调用）
+- `nova-plugin/commands/*.md`：面向用户的 slash command 入口和兼容 API。
+- `nova-plugin/skills/nova-*/SKILL.md`：行为事实源，承载参数解析、安全边界、输出契约和工作流。
+
+本仓库当前采用 **skill-first + thin command + shared policy**。Command 不再是完整 prompt 的主要承载处；它只负责稳定的 `/command` 入口、frontmatter 元数据和指向对应 skill 的薄包装。
 
 ---
 
-## Commands：用户触发的完整 Prompt
+## Commands：稳定 slash 入口
 
 **位置：** `nova-plugin/commands/*.md`
 
-**用途：** 每个命令文件是一段完整的 prompt 指令，用户通过 Claude Code 的斜杠命令（如 `/nova-explore`）直接触发。文件内容就是发送给 Claude 的完整上下文，包含：
+Command 文件必须保留：
 
-- 命令目标与约束规则
-- 详细的执行步骤说明
-- 输出格式要求
-- 禁止行为清单
+- `id`
+- `stage`
+- `title`
+- `description`
+- `destructive-actions`
+- `allowed-tools`
+- `invokes.skill`
 
-**特点：**
-- 内容完整、可读性强，面向开发者阅读
-- 不依赖 Claude Code 的技能发现机制
-- 可独立使用（复制内容粘贴给任意 AI 也能工作）
+正文保持薄包装，例如：
+
+```md
+Invoke `nova-<id>` with `$ARGUMENTS`.
+
+The skill is the source of truth for parameter resolution, execution rules,
+output format, artifact policy, and safety boundaries.
+```
+
+Command 的职责是：
+
+- 保留用户熟悉的 slash command 名称。
+- 保持旧入口兼容，例如 `/explore-lite`、`/review-only`、`/finalize-lite`。
+- 暴露 Claude command `description`，帮助命令菜单和发现。
+- 将执行语义交给 `invokes.skill` 指向的 skill。
 
 ---
 
-## Skills：结构化技能元数据
+## Skills：行为事实源
 
 **位置：** `nova-plugin/skills/nova-*/SKILL.md`
 
-**用途：** 每个技能文件遵循 Claude Code 官方 [Agent Skills](https://agentskills.io) 标准，包含 YAML frontmatter 元数据和精简指令。Claude Code 会：
+每个 skill 必须包含标准章节：
 
-1. 在会话启动时自动发现所有 `nova-*` 技能
-2. 根据 `description` 字段判断何时自动调用
-3. 允许通过 `orchestrator` agent 路由到对应技能
-
-**官方支持的 frontmatter 字段：**
-
-| 字段 | 作用 |
-|------|------|
-| `name` | 技能名称（创建 `/name` 斜杠命令） |
-| `description` | Claude 据此决定何时激活 |
-| `allowed-tools` | 限制可用工具 |
-| `disable-model-invocation` | 阻止 Claude 自动调用 |
-| `user-invocable` | 是否出现在 `/` 菜单 |
-| `model` | 指定使用的模型 |
-| `context` | 设为 `fork` 在子 agent 中运行 |
-
----
-
-## 两者关系：互补不重复
-
-```
-用户手动触发        Claude 自动调用
-     │                    │
-     ▼                    ▼
-commands/*.md       skills/nova-*/SKILL.md
-（完整 prompt）      （结构化元数据 + 精简指令）
-     │                    │
-     └────────────────────┘
-           共同目标：
-       正确引导 Claude 完成
-       当前阶段的开发任务
+```md
+## Inputs
+## Parameter Resolution
+## Safety Preflight
+## Outputs
+## Workflow
+## Failure Modes
+## Examples
 ```
 
-- Commands 文件内容**详尽**，适合作为权威文档参考
-- Skills 文件内容**精简**，适合被 orchestrator 批量加载
-- 两者描述的是**同一套命令体系**，保持语义一致
+Skill 的职责是：
+
+- 定义输入参数、默认值、别名和 safety-boundary 参数。
+- 说明何时需要 preflight，以及哪些文件、脚本或 artifact 可能被写入。
+- 保留从旧 command 迁移来的详细行为契约。
+- 引用 `_shared` 通用策略，避免参数、安全和输出规则在 20 个 skill 中漂移。
 
 ---
 
-## 新增能力时的双轨维护规范
+## Shared policies
 
-新增或修改一个命令时，需要同步更新两处：
+通用策略位于 `nova-plugin/skills/_shared/`：
 
-### 1. 修改 `nova-plugin/commands/<name>.md`
+- `parameter-resolution.md`
+- `safety-preflight.md`
+- `output-contracts.md`
+- `artifact-policy.md`
+- `agent-routing.md`
 
-- 更新完整 prompt 内容
-- 在文件顶部添加/更新 YAML frontmatter：
+每个 skill 内联关键规则摘要，同时引用共享文件作为详细事实源。这样即使模型没有预先读取共享文件，单个 skill 仍然保留最低限度的可执行约束。
 
-```yaml
 ---
-id: <command-id>
-stage: <explore|plan|review|implement|finalize>
-title: <显示名称>
-destructive-actions: <none|low|medium|high>
-allowed-tools: Read Glob Grep LS
-invokes:
-  skill: nova-<command-id>
----
+
+## 两者关系
+
+```text
+用户触发 slash command
+        |
+        v
+commands/<id>.md
+  thin wrapper + frontmatter
+        |
+        v
+skills/nova-<id>/SKILL.md
+  behavior source of truth
+        |
+        v
+skills/_shared/*.md
+  reusable policy details
 ```
 
-### 2. 修改 `nova-plugin/skills/nova-<name>/SKILL.md`
+Commands 与 skills 必须保持一对一：
 
-- 保持 `name`、`description` 与命令文件语义一致
-- 根据命令特性设置 `allowed-tools` 与 `metadata.novaPlugin.*`
+```text
+nova-plugin/commands/<id>.md
+nova-plugin/skills/nova-<id>/SKILL.md
+```
 
-### 3. 运行校验
+---
 
-- `node scripts/lint-frontmatter.mjs`
-- `node scripts/validate-schemas.mjs`（如修改 marketplace 或 plugin metadata）
-- `bash scripts/verify-agents.sh` 或 `.\scripts\verify-agents.ps1`（如修改 active agents）
+## 维护规范
 
-### 4. 更新版本号
+修改命令或 skill 时：
 
-- 修改 `nova-plugin/.claude-plugin/plugin.json` 的 `version` 字段
+1. 更新 `nova-plugin/commands/<id>.md` 的 frontmatter 和薄包装语义。
+2. 更新 `nova-plugin/skills/nova-<id>/SKILL.md` 的输入、preflight、输出和 workflow。
+3. 若变更通用参数、安全、artifact 或 agent routing 规则，更新 `_shared`。
+4. 若用户可见行为变化，更新 README、CHANGELOG、相关 command docs 和 skills README。
+5. 运行 `node scripts/lint-frontmatter.mjs`。
+
+若修改 metadata 或 marketplace：
+
+```bash
+node scripts/validate-schemas.mjs
+claude plugin validate "D:\Projects\claude-plugins-fusion\nova-plugin"
+```
+
+若修改 hooks：
+
+```bash
+node scripts/validate-hooks.mjs
+bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+```
+
+Windows PowerShell 环境需要 Git Bash、WSL，或其他可用的 Bash 运行时才能执行 `bash -n` 和 plugin hooks。
 
 ---
 
 ## 为什么不合并为一份？
 
 | 需求 | Commands | Skills |
-|------|----------|--------|
-| 完整可读的文档 | ✅ | ❌（过于精简） |
-| Claude Code 自动发现 | ❌（不在 skills/ 下） | ✅ |
-| 支持 orchestrator 路由 | 间接（通过 Skills） | ✅ 直接 |
-| 用户可直接阅读理解 | ✅ | 需要熟悉 frontmatter |
-| 版本控制与追溯 | ✅ | ✅ |
+| --- | --- | --- |
+| 稳定 slash command UX | ✅ | 间接 |
+| 旧命令名兼容 | ✅ | 间接 |
+| Claude skill discovery | 间接 | ✅ |
+| 参数/安全/输出事实源 | 薄入口 | ✅ |
+| 共享策略复用 | 引用入口 | ✅ |
+| lint 防漂移 | ✅ | ✅ |
 
-两种形式各有所长，双轨维护是在"完整文档"与"机器可读元数据"之间的合理权衡。
+当前设计避免在 command 与 skill 中维护两份长 prompt。Command 稳定入口，skill 承载行为，`_shared` 承载跨 skill 的通用规则。

@@ -2,6 +2,10 @@
 
 This directory provides one-to-one Skill mappings for all commands in `nova-plugin/commands`.
 
+Shared policy files live in `nova-plugin/skills/_shared/` and are referenced by
+the command-specific skills for parameter resolution, safety preflight, output
+contracts, artifact policy, and agent routing boundaries.
+
 ## Commands to Skills Mapping
 
 | Command              | Skill name                | Summary                                   | user-invocable | destructive-actions |
@@ -40,6 +44,7 @@ This directory provides one-to-one Skill mappings for all commands in `nova-plug
 2. Skill not triggered: ensure prompt semantics align with `description` and `argument-hint`.
 3. Hub route mismatch: pass explicit `PERSPECTIVE` for `nova-explore` and `LEVEL` for `nova-review`.
 4. File write failures: ensure output path is valid and writable.
+5. Contract drift: run `node scripts/lint-frontmatter.mjs`; it checks command descriptions, command-to-skill mappings, required skill sections, side-effect safety references, and tool/destructive-action consistency.
 
 ## Discovery Notes
 

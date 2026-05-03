@@ -2,139 +2,21 @@
 id: review-strict
 stage: review
 title: /review-strict
+description: "Run exhaustive production-critical review without modifying code."
 destructive-actions: none
 allowed-tools: Read Glob Grep LS
 invokes:
   skill: nova-review-strict
 ---
 
-# STRICT & EXHAUSTIVE REVIEW
+# /review-strict
 
-TASK: STRICT REVIEW — NO IMPLEMENTATION
+Invoke `nova-review-strict` with `$ARGUMENTS`.
 
-You are Claude Code acting as a **senior engineer / tech lead reviewer**.
+This is a compatibility shortcut for strict production-critical review. The skill is the source of truth for parameter resolution, execution rules, output format, agent-routing policy, and safety boundaries.
 
-This command is for **high-stakes, exhaustive review**.
-Treat the input as production-critical.
+Entry semantics:
 
-You MUST NOT write or modify code.
-
----
-
-## INPUT
-
-Analyze the following thoroughly:
-
-$ARGUMENTS
-
-Input may include:
-
-- Core business logic
-- Infrastructure or framework code
-- Concurrency-sensitive components
-- Financial / payment / stateful logic
-- Large or risky refactors
-
-Assume:
-
-- This code may run in production
-- Failures are costly
-
----
-
-## REVIEW DIMENSIONS (MANDATORY)
-
-Review comprehensively for:
-
-- Functional correctness
-- Edge cases and failure modes
-- Concurrency / thread safety
-- Performance characteristics
-- Error handling and observability
-- Test coverage and test quality
-- Maintainability and readability
-- API or module boundary clarity
-- Long-term evolution risks
-
----
-
-## STRICT RULES
-
-You MUST:
-
-- Be explicit about assumptions
-- Distinguish facts vs speculation
-- Justify why each issue matters
-
-You MUST NOT:
-
-- Write code
-- Provide implementation-level fixes
-- Redesign the system end-to-end
-
----
-
-## OUTPUT FORMAT (MANDATORY)
-
-Group findings by severity:
-
-### Critical
-
-Issues that may cause:
-
-- Data corruption
-- Financial or security risk
-- Production incidents
-- Incorrect core behavior
-
-### Major
-
-Issues that:
-
-- Significantly increase maintenance cost
-- Are likely to cause bugs under realistic scenarios
-- Limit scalability or testability
-
-### Minor
-
-Issues that:
-
-- Affect clarity or consistency
-- Represent best-practice gaps
-- Are low risk but worth improving
-
-For EACH finding:
-
-- Describe the issue clearly
-- Explain why it is risky or costly
-- Provide **directional improvement suggestions**
-  - Conceptual only
-  - No code
-
----
-
-## TONE & EXPECTATION
-
-- Precise
-- Critical but constructive
-- Assumes an experienced audience
-- Suitable for:
-  - Architecture review
-  - Pre-release gate
-  - Core module audit
-
----
-
-## NON-GOALS
-
-This command does NOT:
-
-- Approve the change
-- Decide readiness for release
-- Replace human ownership
-
-It documents risks and quality concerns only.
-
----
-
-## END OF COMMAND
+- Equivalent in intent to `/review LEVEL=strict`.
+- May use strict review lanes when the invoking environment supports them.
+- Read-only; no fixes or code edits.
