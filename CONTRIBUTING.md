@@ -17,21 +17,23 @@
 ### 准备工作
 
 1. Fork 本仓库，从 `main` 切出特性分支：`git checkout -b feat/<topic>`。
-2. 准备 Node 20+，用于运行仓库级 schema 与 frontmatter 校验脚本。
+2. 准备 Node.js 20+，用于运行仓库级 schema、frontmatter、hooks 与 docs 校验脚本。
 3. 若要验证 active agents，在 macOS / Linux / Git Bash 中运行 Bash 脚本，或在 Windows PowerShell 中运行对应 `.ps1` 脚本。
+4. 若要执行 hook 脚本语法检查，需要 Bash（macOS/Linux、Git Bash、WSL 或其他 PATH 中可用的 `bash`）。Windows 本地没有 Bash 时，`node scripts/validate-all.mjs` 会 warning 跳过 `bash -n`；CI/Linux 仍必须执行并通过。
    ```bash
-   node scripts/validate-schemas.mjs
-   node scripts/lint-frontmatter.mjs
-   bash scripts/verify-agents.sh
+   node scripts/validate-all.mjs
    ```
 
 ### 工程约定
 
 - **Agent 数量**：`nova-plugin/agents/` 目录内 active agent 集合由 `scripts/verify-agents.sh` / `scripts/verify-agents.ps1` 校验。
 - **Frontmatter 规范**：
-  - `commands/*.md` 必需字段：`id`、`stage`、`title`、`destructive-actions`（枚举 `none|low|medium|high`）、`allowed-tools`、`invokes.skill`。
+  - `commands/*.md` 必需字段：`id`、`stage`、`title`、`description`、`destructive-actions`（枚举 `none|low|medium|high`）、`allowed-tools`、`invokes.skill`。
   - `skills/*/SKILL.md` 必需字段：`name`、`description`、`license`、`allowed-tools`（空格分隔字符串）、`metadata.novaPlugin.*`（`userInvocable` / `autoLoad` / `subagentSafe` / `destructiveActions`）。
 - **JSON Schema**：`marketplace.json` / `plugin.json` 改动后必须通过 `node scripts/validate-schemas.mjs`。
+- **Hook 校验**：hook 配置或脚本改动后运行 `node scripts/validate-hooks.mjs`；Bash 可用时还要运行两个 hook 脚本的 `bash -n`。
+- **文档校验**：用户文档、命令文档、版本日期或报告归档改动后运行 `node scripts/validate-docs.mjs`；它会校验 Markdown 本地链接与锚点、命令文档 stage 位置、版本日期同步和非归档报告状态。
+- **命令文档组织**：常规命令文档按工作流 stage 放在 `nova-plugin/docs/commands/<stage>/`；Codex 三个命令文档集中放在 `nova-plugin/docs/commands/codex/`，这是维护规则的明确例外。
 
 ### 变更类型与版本
 
@@ -72,6 +74,22 @@ node scripts/lint-frontmatter.mjs
 
 # 3. agent 校验
 bash scripts/verify-agents.sh
+
+# 4. hook 配置校验
+node scripts/validate-hooks.mjs
+
+# 5. hook Bash 语法校验（需要 Bash）
+bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+
+# 6. docs 校验
+node scripts/validate-docs.mjs
+```
+
+也可以运行总入口：
+
+```bash
+node scripts/validate-all.mjs
 ```
 
 ## 添加新命令 / 新 skill
@@ -83,7 +101,9 @@ bash scripts/verify-agents.sh
 | 命令 | `nova-plugin/commands/<id>.md` | `<id>` |
 | skill | `nova-plugin/skills/nova-<id>/SKILL.md` | `nova-<id>` |
 | skill 文档 | `nova-plugin/skills/nova-<id>/README.md` | 可选，复杂 skill 推荐 |
-| 命令文档 | `nova-plugin/docs/commands/<stage>/<id>.md` | 命令使用说明 |
+| 命令文档 | `nova-plugin/docs/commands/<stage>/<id>.md`、`<id>.README.md`、`<id>.README.en.md` | 命令使用说明 |
+
+Codex 命令文档使用集中目录 `nova-plugin/docs/commands/codex/`，不按 Review / Implement stage 拆分；仍需满足 `<id>.md`、`<id>.README.md`、`<id>.README.en.md` 三件套。
 
 添加后同步更新：
 - `README.md` 中的命令总览表

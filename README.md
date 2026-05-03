@@ -68,6 +68,13 @@
 
 ## 🚀 快速开始
 
+### 前置条件
+
+- 使用普通 Claude Code 命令时，需要可用的 Claude Code 插件市场与 `nova-plugin` 安装环境。
+- 使用 Codex 闭环命令（`/codex-review-fix`、`/codex-review-only`、`/codex-verify-only`）时，需要本机可调用 Codex CLI，并需要 Bash 运行随 skill 分发的脚本。
+- 维护或本地校验仓库时，需要 Node.js 20+。Windows PowerShell 可运行 Node 校验与 `scripts/verify-agents.ps1`。
+- Hook 脚本和 `bash -n` 语法检查需要 Bash（macOS/Linux、Git Bash、WSL 或其他 PATH 中可用的 `bash`）。Windows 本地没有 Bash 时，`node scripts/validate-all.mjs` 会 warning 跳过 `bash -n`；CI/Linux 仍执行并必须通过。
+
 ### 第一步：添加市场
 
 在 Claude Code 中执行：
@@ -138,6 +145,8 @@ llm-plugins-fusion/
 ```
 
 ---
+
+<a id="-命令一览"></a>
 
 ## 🔌 插件：nova-plugin
 

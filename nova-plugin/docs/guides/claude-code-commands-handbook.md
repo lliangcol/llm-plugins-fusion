@@ -672,6 +672,7 @@ PLAN_APPROVED: true
 ### Explore
 
 - `/senior-explore`
+- `/explore`
 - `/explore-lite`
 - `/explore-review`
 
@@ -684,6 +685,7 @@ PLAN_APPROVED: true
 
 ### Review
 
+- `/review`
 - `/review-lite`
 - `/review-only`
 - `/review-strict`

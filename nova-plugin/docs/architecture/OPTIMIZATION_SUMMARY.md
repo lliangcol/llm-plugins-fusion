@@ -1,13 +1,17 @@
 # Nova Plugin 命令优化总结
 
+> 历史优化记录：本文档记录 2026-02-04 当时的命令优化批次，保留用于追溯设计演进。
+> 它不是当前项目状态报告。当前事实源以 `nova-plugin/commands/`、`nova-plugin/skills/`、
+> `README.md`、`CLAUDE.md` 和 `AGENTS.md` 为准；当前仓库为 20 个命令、20 个 skills、14 个 active agents。
+
 **优化日期**: 2026-02-04
-**优化版本**: v1.1.0
+**历史目标版本**: v1.1.0（当时规划目标，不代表当前已发布版本）
 
 ---
 
 ## 优化概览
 
-本次优化针对 nova-plugin 的 15 个自定义命令进行了全面改进，主要聚焦于：
+本次历史优化针对 nova-plugin 当时的 15 个自定义命令进行了全面改进，主要聚焦于：
 
 1. 修复明显错误和歧义
 2. 提升输出质量稳定性
@@ -179,11 +183,12 @@
 
 ### 文档同步
 
-**待更新文档**:
+**当前状态（2026-05-04）**:
 
-- [ ] [commands-reference-guide.md](../guides/commands-reference-guide.md) - 需要增加 `/explore`, `/review` 和 profile 模式说明
-- [ ] [claude-code-commands-handbook.md](../guides/claude-code-commands-handbook.md) - 需要更新命令总数和决策表
-- [ ] 各命令的 README.md / README.en.md - 需要增加新命令的使用说明
+- [x] [commands-reference-guide.md](../guides/commands-reference-guide.md) 已覆盖 20 个命令和 Codex 闭环命令。
+- [x] [claude-code-commands-handbook.md](../guides/claude-code-commands-handbook.md) 已更新为统一命令和 Codex 命令入口。
+- [x] 每个 `nova-plugin/commands/*.md` 都有对应的 `<id>.md`、`<id>.README.md`、`<id>.README.en.md` 命令文档。
+- [x] Codex 命令文档集中维护在 `nova-plugin/docs/commands/codex/`，这是命令文档按阶段目录组织规则的明确例外。
 
 ---
 
@@ -258,4 +263,4 @@
 
 **优化完成时间**: 2026-02-04
 **优化执行者**: Claude Sonnet 4.5
-**审核状态**: 待人工审核
+**审核状态**: 历史记录，已归档为设计演进资料

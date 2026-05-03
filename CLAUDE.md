@@ -13,15 +13,17 @@ This file provides guidance to Claude Code when working in this repository.
 - Plugin version source of truth: `nova-plugin/.claude-plugin/plugin.json`
 - Current command snapshot: 20 files under `nova-plugin/commands/*.md`; validate frontmatter with `node scripts/lint-frontmatter.mjs`.
 - Current skill snapshot: 20 files under `nova-plugin/skills/nova-*/SKILL.md`; validate frontmatter with `node scripts/lint-frontmatter.mjs`.
+- Command docs: each command must have `<id>.md`, `<id>.README.md`, and `<id>.README.en.md` under `nova-plugin/docs/commands/**/`; validate with `node scripts/validate-docs.mjs`.
 - Shared skill policies: `nova-plugin/skills/_shared/*.md`.
 - Current active agent snapshot: 14 files under `nova-plugin/agents/*.md`; verify with `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`.
-- Repository validation scripts require Node.js 20+.
+- Repository validation scripts require Node.js 20+. Hook shell syntax checks require Bash; Windows without Bash may warning-skip local `bash -n`, while CI/Linux must run it.
 
 ## Sources of Truth
 
 - Plugin version: `nova-plugin/.claude-plugin/plugin.json`, mirrored in `.claude-plugin/marketplace.json`.
 - Command definitions: `nova-plugin/commands/*.md`.
 - Skill definitions: `nova-plugin/skills/nova-*/SKILL.md`.
+- Command documentation: `nova-plugin/docs/commands/`.
 - Shared command/skill policies: `nova-plugin/skills/_shared/`.
 - Active agent set: `nova-plugin/agents/`, enforced by `scripts/verify-agents.sh` and `scripts/verify-agents.ps1`.
 - Marketplace and plugin schema contracts: `schemas/marketplace.schema.json` and `schemas/plugin.schema.json`.
@@ -58,12 +60,22 @@ claude-plugins-fusion/
 
 ## Common Commands
 
+All repository checks from one entry point:
+
+```bash
+node scripts/validate-all.mjs
+```
+
 Repository-level checks on Bash-compatible shells:
 
 ```bash
 node scripts/validate-schemas.mjs
 node scripts/lint-frontmatter.mjs
 bash scripts/verify-agents.sh
+node scripts/validate-hooks.mjs
+bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+node scripts/validate-docs.mjs
 ```
 
 Repository-level checks on Windows PowerShell:
@@ -72,7 +84,12 @@ Repository-level checks on Windows PowerShell:
 node scripts/validate-schemas.mjs
 node scripts/lint-frontmatter.mjs
 .\scripts\verify-agents.ps1
+node scripts/validate-hooks.mjs
+node scripts/validate-docs.mjs
+node scripts/validate-all.mjs
 ```
+
+If Bash is not installed on Windows, `node scripts/validate-all.mjs` warns and skips the local `bash -n` hook syntax checks. Do not report those syntax checks as locally passed unless Bash actually ran them.
 
 ## Architecture
 
@@ -134,6 +151,8 @@ allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
 ```
 
 Use `node scripts/lint-frontmatter.mjs` to validate frontmatter shape, command descriptions, command/skill mappings, required skill sections, safety preflight references, and naming. When adding, removing, or renaming commands or skills, also confirm the paired command and skill files exist on both sides of the one-to-one mapping.
+
+Command documentation normally lives under `nova-plugin/docs/commands/<stage>/`. Codex commands are the explicit exception: `codex-review-fix`, `codex-review-only`, and `codex-verify-only` are documented together under `nova-plugin/docs/commands/codex/` because their review/fix/verify loop crosses workflow stages. Each command still needs `<id>.md`, `<id>.README.md`, and `<id>.README.en.md`.
 
 ### Command System
 
@@ -207,7 +226,7 @@ Hook scripts are Bash scripts. On Windows, they may require Git Bash, WSL, or an
 
 1. Edit `nova-plugin/commands/<id>.md`.
 2. Update `nova-plugin/skills/nova-<id>/SKILL.md`.
-3. If user-facing documentation changes, update `nova-plugin/docs/commands/<stage>/<id>.md`, the relevant README, or `nova-plugin/skills/README.md`.
+3. If user-facing documentation changes, update `nova-plugin/docs/commands/<stage>/<id>.md`, the relevant README, or `nova-plugin/skills/README.md`. For Codex commands, use `nova-plugin/docs/commands/codex/`.
 4. If behavior, parameters, outputs, tool permissions, or safety boundaries change, update `CHANGELOG.md` and decide whether a version bump is required. If a version bump is required, follow the Modify Plugin Metadata or Version workflow below.
 5. Run `node scripts/lint-frontmatter.mjs`.
 
@@ -229,22 +248,18 @@ Also update:
 - `.claude-plugin/marketplace.json` plugin `version` and `last-updated`
 - `CLAUDE.md`, if quick facts, command counts, workflows, or constraints changed
 - `AGENTS.md`, if agent-facing facts, command counts, workflows, or constraints changed
-- `nova-plugin/docs/commands/<stage>/<id>.md` and `<id>.README.md` when user documentation is needed
+- `nova-plugin/docs/commands/<stage>/<id>.md`, `<id>.README.md`, and `<id>.README.en.md`; use `nova-plugin/docs/commands/codex/` for Codex commands
 
 After adding a command, run:
 
 ```bash
-node scripts/validate-schemas.mjs
-node scripts/lint-frontmatter.mjs
-bash scripts/verify-agents.sh
+node scripts/validate-all.mjs
 ```
 
 On Windows PowerShell:
 
 ```powershell
-node scripts/validate-schemas.mjs
-node scripts/lint-frontmatter.mjs
-.\scripts\verify-agents.ps1
+node scripts/validate-all.mjs
 ```
 
 ### Modify Plugin Metadata or Version
@@ -312,20 +327,23 @@ bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 
+Documentation changes:
+
+```bash
+node scripts/validate-docs.mjs
+```
+
+This validates Markdown local links including anchors, command doc coverage and stage placement, release version/date sync, and non-archived report status.
+
 For a full pre-release or broad workflow change, run all repository checks:
 
 ```bash
-node scripts/validate-schemas.mjs
-node scripts/lint-frontmatter.mjs
-bash scripts/verify-agents.sh
-node scripts/validate-hooks.mjs
-bash -n nova-plugin/hooks/scripts/pre-write-check.sh
-bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+node scripts/validate-all.mjs
 ```
 
-On Windows PowerShell, use the same `node` commands, and use `.\scripts\verify-agents.ps1` instead of `bash scripts/verify-agents.sh`.
+On Windows PowerShell, `validate-all.mjs` uses `.\scripts\verify-agents.ps1`. If Bash is unavailable, it warning-skips only the local `bash -n` hook syntax checks; CI/Linux still runs them.
 
-Current CI includes verify-agents, validate-schemas, lint-frontmatter, and validate-hooks.
+Current CI includes verify-agents, validate-schemas, lint-frontmatter, validate-hooks, hook `bash -n`, and validate-docs.
 
 ## Do Not Edit
 
@@ -335,6 +353,7 @@ Current CI includes verify-agents, validate-schemas, lint-frontmatter, and valid
 ## Key Constraints
 
 - `commands/*.md` and `skills/nova-*/SKILL.md` must remain one-to-one.
+- Each command must have three command docs in its workflow stage directory under `nova-plugin/docs/commands/`; Codex command docs are centralized under `nova-plugin/docs/commands/codex/`.
 - `allowed-tools` must be a space-separated string, not a YAML array.
 - `destructive-actions` must be one of `none`, `low`, `medium`, or `high`.
 - `nova-plugin/agents/` must currently match the exact 14-file set expected by the verification scripts.

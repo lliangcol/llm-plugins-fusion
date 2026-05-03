@@ -14,6 +14,8 @@
 
 ## 命令文档
 
+常规命令文档按工作流 stage 组织在 `commands/<stage>/` 下。Codex 命令同时跨 Review / Implement / Finalize 语义，为避免拆散闭环说明，统一集中维护在 `commands/codex/`；这是一项明确例外。所有命令仍需提供 `<id>.md`、`<id>.README.md`、`<id>.README.en.md` 三件套，并由 `node scripts/validate-docs.mjs` 校验 stage 位置、链接和锚点。
+
 | 阶段 | 路径 | 命令 |
 | --- | --- | --- |
 | Explore | [commands/explore/](commands/explore/) | `explore`, `explore-lite`, `explore-review`, `senior-explore` |

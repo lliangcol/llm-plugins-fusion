@@ -30,14 +30,17 @@ This command set decomposes an engineering activity into five phases:
 | What you need right now                                             | Recommended command                  | Why                                                                                         |
 | ------------------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------- |
 | Understand the current problem/requirements with **no solutions**   | `/senior-explore`                    | Explicitly forbids “recommendations/implementation/design”; outputs facts, questions, risks |
-| Quickly align understanding (short exploration)                     | `/explore-lite`                      | Shorter structure: Observations / Uncertainties / Risks                                     |
-| Think like a reviewer to generate questions, still **no solutions** | `/explore-review`                    | Outputs: clear / questions / risk signals                                                   |
+| Quickly align understanding (short exploration)                     | `/explore` or `/explore-lite`        | Unified command defaults to observer perspective; shorter structure: Observations / Uncertainties / Risks |
+| Think like a reviewer to generate questions, still **no solutions** | `/explore PERSPECTIVE=reviewer` or `/explore-review` | Unified command switches to reviewer perspective; outputs: clear / questions / risk signals |
 | A **lightweight execution plan** (no code)                          | `/plan-lite`                         | Goals, non-goals, approach, trade-offs, outline, key risks                                  |
 | A **formal design/plan doc** written to a file                      | `/produce-plan` or `/backend-plan`   | Strong structure + forced file output; `/backend-plan` emphasizes Java/Spring concerns      |
 | Review decision quality of a plan (don’t change the plan)           | `/plan-review`                       | Clarity, assumptions, risk signals, review questions                                        |
 | Quick PR feedback for day-to-day changes                            | `/review-lite`                       | Fast and high signal-to-noise                                                               |
-| Standard strict review of core logic (no implementation)            | `/review-only`                       | Severity levels + directional guidance                                                      |
-| Audit-style review for high-risk modules                            | `/review-strict`                     | Exhaustive coverage; suitable for “gate” reviews                                            |
+| Standard strict review of core logic (no implementation)            | `/review` or `/review-only`          | Unified command defaults to standard review; severity levels + directional guidance          |
+| Audit-style review for high-risk modules                            | `/review LEVEL=strict` or `/review-strict` | Unified command switches to strict review; suitable for “gate” reviews                       |
+| Review then fix the current branch with Codex verification          | `/codex-review-fix`                  | Runs review -> Claude Code fix -> local checks -> Codex verify                              |
+| Generate a Codex review report only                                 | `/codex-review-only`                 | Writes a structured review artifact without modifying project code                          |
+| Verify an existing Codex review artifact                            | `/codex-verify-only`                 | Performs directed verification against a previous review artifact                            |
 | Implement strictly from an **approved plan file**                   | `/implement-plan`                    | Requires `PLAN_APPROVED=true`; deviations must be justified                                 |
 | Implement with explicit steps, allow small corrections              | `/implement-standard`                | Controlled; stop and ask if blocked                                                         |
 | Implement quickly for low-risk tasks                                | `/implement-lite`                    | Speed-first; small refactors allowed                                                        |
@@ -247,6 +250,7 @@ Only output:
 ### Explore
 
 - `/senior-explore`
+- `/explore`
 - `/explore-lite`
 - `/explore-review`
 
@@ -259,15 +263,19 @@ Only output:
 
 ### Review
 
+- `/review`
 - `/review-lite`
 - `/review-only`
 - `/review-strict`
+- `/codex-review-only`
+- `/codex-verify-only`
 
 ### Implement
 
 - `/implement-plan`
 - `/implement-standard`
 - `/implement-lite`
+- `/codex-review-fix`
 
 ### Finalize
 

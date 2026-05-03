@@ -26,6 +26,13 @@ English | [中文](../../../README.md)
 
 ## 🚀 Quick start
 
+### Prerequisites
+
+- Regular Claude Code commands require a working Claude Code plugin marketplace and an installed `nova-plugin`.
+- Codex loop commands (`/codex-review-fix`, `/codex-review-only`, `/codex-verify-only`) require a locally callable Codex CLI and Bash for the scripts shipped with the skill.
+- Repository maintenance and local validation require Node.js 20+. Windows PowerShell can run the Node validators and `scripts/verify-agents.ps1`.
+- Hook scripts and `bash -n` syntax checks require Bash (macOS/Linux, Git Bash, WSL, or another `bash` available on PATH). On Windows without Bash, `node scripts/validate-all.mjs` warns and skips local `bash -n`; CI/Linux still runs it and must pass.
+
 ### Step 1: Add the marketplace
 
 Run in Claude Code:

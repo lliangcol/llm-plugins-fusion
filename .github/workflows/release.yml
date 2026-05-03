@@ -29,6 +29,8 @@ jobs:
         run: |
           bash -n nova-plugin/hooks/scripts/pre-write-check.sh
           bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+      - name: Documentation validation
+        run: node scripts/validate-docs.mjs
 
   release:
     name: Create GitHub Release

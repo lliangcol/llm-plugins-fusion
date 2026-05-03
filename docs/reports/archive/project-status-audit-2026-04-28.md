@@ -1,5 +1,9 @@
 # Project Status Audit - 2026-04-28
 
+> Historical archived report. This file records the repository state observed on
+> 2026-04-28 and is not a current health report. Current validation state should
+> be checked with `node scripts/validate-all.mjs`.
+
 ## Scope
 
 This report records the current repository state for `D:\Projects\claude-plugins-fusion`.

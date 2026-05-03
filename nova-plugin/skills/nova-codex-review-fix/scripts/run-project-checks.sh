@@ -103,6 +103,25 @@ discover_repo_tasks() {
   if [[ -f "${ROOT}/scripts/lint-frontmatter.mjs" ]] && command -v node >/dev/null 2>&1; then
     append_task "lint" "repo lint-frontmatter" "${ROOT}" "node scripts/lint-frontmatter.mjs"
   fi
+
+  if [[ -f "${ROOT}/scripts/validate-hooks.mjs" ]] && command -v node >/dev/null 2>&1; then
+    append_task "lint" "repo validate-hooks" "${ROOT}" "node scripts/validate-hooks.mjs"
+  fi
+
+  if [[ -f "${ROOT}/scripts/validate-docs.mjs" ]] && command -v node >/dev/null 2>&1; then
+    append_task "lint" "repo validate-docs" "${ROOT}" "node scripts/validate-docs.mjs"
+  fi
+
+  if command -v bash >/dev/null 2>&1; then
+    if [[ -f "${ROOT}/nova-plugin/hooks/scripts/pre-write-check.sh" ]]; then
+      append_task "lint" "hook syntax pre-write-check" "${ROOT}" "bash -n nova-plugin/hooks/scripts/pre-write-check.sh"
+    fi
+    if [[ -f "${ROOT}/nova-plugin/hooks/scripts/post-audit-log.sh" ]]; then
+      append_task "lint" "hook syntax post-audit-log" "${ROOT}" "bash -n nova-plugin/hooks/scripts/post-audit-log.sh"
+    fi
+  else
+    warn "未找到 bash，跳过 hook 脚本语法检查。"
+  fi
 }
 
 discover_node_tasks() {
