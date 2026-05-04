@@ -16,7 +16,8 @@ This file provides guidance to Claude Code when working in this repository.
 - Current skill snapshot: 20 files under `nova-plugin/skills/nova-*/SKILL.md`; validate frontmatter with `node scripts/lint-frontmatter.mjs`.
 - Command docs: each command must have `<id>.md`, `<id>.README.md`, and `<id>.README.en.md` under `nova-plugin/docs/commands/**/`; validate with `node scripts/validate-docs.mjs`.
 - Shared skill policies: `nova-plugin/skills/_shared/*.md`.
-- Current active agent snapshot: 14 files under `nova-plugin/agents/*.md`; verify with `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`.
+- Current active agent snapshot: 6 core files under `nova-plugin/agents/*.md`; verify with `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`.
+- Capability pack snapshot: 8 documentation packs under `nova-plugin/packs/*/README.md`; validate with `node scripts/validate-packs.mjs`.
 - Repository validation scripts require Node.js 20+. Hook shell syntax checks require Bash; Windows without Bash may warning-skip local `bash -n`, while CI/Linux must run it.
 
 ## Sources of Truth
@@ -28,6 +29,7 @@ This file provides guidance to Claude Code when working in this repository.
 - Command documentation: `nova-plugin/docs/commands/`.
 - Shared command/skill policies: `nova-plugin/skills/_shared/`.
 - Active agent set: `nova-plugin/agents/`, enforced by `scripts/verify-agents.sh` and `scripts/verify-agents.ps1`.
+- Capability packs: `nova-plugin/packs/`, enforced by `scripts/validate-packs.mjs`.
 - Marketplace, marketplace metadata, and plugin schema contracts: `schemas/marketplace.schema.json`, `schemas/marketplace-metadata.schema.json`, and `schemas/plugin.schema.json`.
 
 ## Repository Layout
@@ -46,7 +48,8 @@ claude-plugins-fusion/
 |   |-- .claude-plugin/plugin.json    # nova-plugin metadata and version
 |   |-- commands/                     # 20 Claude Code command definitions
 |   |-- skills/                       # 20 Agent Skills mapped one-to-one with commands
-|   |-- agents/                       # 14 default active agents
+|   |-- agents/                       # 6 core active agents
+|   |-- packs/                        # 8 capability pack docs
 |   |-- docs/                         # Command, skill, Codex, and agent documentation
 |   `-- hooks/                        # Claude Code hook config and scripts
 |-- schemas/                          # Marketplace, metadata, and plugin JSON Schemas
@@ -76,6 +79,7 @@ node scripts/validate-schemas.mjs
 node scripts/validate-claude-compat.mjs
 node scripts/lint-frontmatter.mjs
 bash scripts/verify-agents.sh
+node scripts/validate-packs.mjs
 node scripts/validate-hooks.mjs
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
@@ -89,6 +93,7 @@ node scripts/validate-schemas.mjs
 node scripts/validate-claude-compat.mjs
 node scripts/lint-frontmatter.mjs
 .\scripts\verify-agents.ps1
+node scripts/validate-packs.mjs
 node scripts/validate-hooks.mjs
 node scripts/validate-docs.mjs
 node scripts/validate-all.mjs
@@ -104,6 +109,7 @@ If Bash is not installed on Windows, `node scripts/validate-all.mjs` warns and s
 - `nova-plugin/.claude-plugin/plugin.json` declares plugin name, version, author, license, keywords, homepage, and repository metadata. Claude-compatible marketplace display fields such as category and tags live in `.claude-plugin/marketplace.json`; repository-local trust/risk/deprecation and `last-updated` metadata lives in `.claude-plugin/marketplace.metadata.json`.
 - `nova-plugin/commands/*.md` contains Claude Code command definitions.
 - `nova-plugin/skills/nova-*/SKILL.md` contains Agent Skill definitions discovered by directory convention.
+- `nova-plugin/packs/*/README.md` documents optional capability packs used by core agents for domain-specific routing, enhanced mode, and fallback mode.
 - `nova-plugin/hooks/hooks.json` defines safety checks and audit hooks around tool use.
 
 ### Commands and Skills
@@ -179,35 +185,35 @@ The Codex command set:
 - `codex-review-fix`: runs review -> Claude Code fix -> local checks -> Codex verify.
 - `codex-verify-only`: verifies against existing review and checks artifacts.
 
-### Active Agents
+### Active Agents and Capability Packs
 
-Active agents live in `nova-plugin/agents/`. The current active set is fixed at 14 agents:
+Active agents live in `nova-plugin/agents/`. The current active set is fixed at 6 core agents:
 
 ```text
-api-design
-build-deps
-data-analytics
-db-engineer
-devops-platform
-git-release-manager
-incident-responder
-java-backend-engineer
+architect
+builder
 orchestrator
-quality-engineer
-refactoring-specialist
-security-audit
-security-engineer
-test-automator
+publisher
+reviewer
+verifier
 ```
 
-`orchestrator` only decomposes, routes, and summarizes work. It does not implement directly. See `docs/agents/ROUTING.md` for detailed routing rules.
+`orchestrator` decomposes work, chooses core agents and capability packs, and summarizes results. It does not implement directly. See `docs/agents/ROUTING.md` and `docs/agents/PLUGIN_AWARE_ROUTING.md` for routing rules.
 
-`scripts/verify-agents.sh` and `scripts/verify-agents.ps1` check both the count and the exact expected 14-file set. If an active agent is added, removed, or renamed, update:
+Capability packs live in `nova-plugin/packs/`. They are documentation-only domain packs for `java`, `security`, `dependency`, `docs`, `release`, `marketplace`, `frontend`, and `mcp`. Packs must describe enhanced mode and fallback mode because installed plugins are optional accelerators, not hard dependencies.
+
+The former active specialist set is mapped to the core model in `docs/agents/CORE_AGENTS_MIGRATION.md`.
+
+`scripts/verify-agents.sh` and `scripts/verify-agents.ps1` check both the count and the exact expected 6-file set. `scripts/validate-packs.mjs` checks the pack inventory, required sections, and plugin-aware routing references. If an active agent or pack is added, removed, or renamed, update:
 
 - `nova-plugin/agents/`
+- `nova-plugin/packs/`
 - `scripts/verify-agents.sh`
 - `scripts/verify-agents.ps1`
+- `scripts/validate-packs.mjs`
 - `docs/agents/ROUTING.md`
+- `docs/agents/PLUGIN_AWARE_ROUTING.md`
+- `docs/agents/CORE_AGENTS_MIGRATION.md`, when routing compatibility changes
 - `docs/agents/MIGRATION_MANIFEST.md`, if an archive migration is involved
 - `CLAUDE.md`
 - `AGENTS.md`
@@ -327,6 +333,12 @@ On Windows PowerShell:
 .\scripts\verify-agents.ps1
 ```
 
+Capability pack changes:
+
+```bash
+node scripts/validate-packs.mjs
+```
+
 Hook config or hook script changes:
 
 ```bash
@@ -351,7 +363,7 @@ node scripts/validate-all.mjs
 
 On Windows PowerShell, `validate-all.mjs` uses `.\scripts\verify-agents.ps1`. If Bash is unavailable, it warning-skips only the local `bash -n` hook syntax checks; CI/Linux still runs them.
 
-Current CI includes verify-agents, validate-schemas, lint-frontmatter, validate-hooks, hook `bash -n`, and validate-docs.
+Current CI includes verify-agents, validate-packs, validate-schemas, validate-claude-compat, lint-frontmatter, validate-hooks, hook `bash -n`, and validate-docs.
 
 ## Do Not Edit
 
@@ -364,6 +376,7 @@ Current CI includes verify-agents, validate-schemas, lint-frontmatter, validate-
 - Each command must have three command docs in its workflow stage directory under `nova-plugin/docs/commands/`; Codex command docs are centralized under `nova-plugin/docs/commands/codex/`.
 - `allowed-tools` must be a space-separated string, not a YAML array.
 - `destructive-actions` must be one of `none`, `low`, `medium`, or `high`.
-- `nova-plugin/agents/` must currently match the exact 14-file set expected by the verification scripts.
+- `nova-plugin/agents/` must currently match the exact 6 core-agent file set expected by the verification scripts.
+- `nova-plugin/packs/` must contain exactly the 8 documented capability packs, and each pack README must include enhanced mode and fallback mode.
 - User-facing behavior changes require documentation and `CHANGELOG.md` updates.
 - Review and Explore commands should not modify project code. Non-implement commands may declare `Write` or `Edit` only for explicit artifacts such as analysis, plan, review, or verify files. Implement commands are project-code write-capable when declared with write tools. Within the Codex set, only `codex-review-fix` should modify project files; `codex-review-only` and `codex-verify-only` should only create review or verify artifacts.

@@ -1,12 +1,31 @@
 ﻿# Agents Summary
 
-Active agents: 14 (default-scanned: `nova-plugin/agents/`)
+> This file has two parts: a quick index for the current active agents, and a historical summary of 69 legacy agents. The source of truth for current agents is `nova-plugin/agents/`; the legacy summary below is archival and does not represent the active set.
 
-Legacy agents: 69 (archived: `.claude/agents/archive/nova-plugin/agents/`; manifest: `docs/agents/MIGRATION_MANIFEST.md`)
+## Current active agents
 
-Routing & usage: `docs/agents/ROUTING.md`
+Active agents: 6 core agents (default-scanned: `nova-plugin/agents/`)
 
-## Legend
+Routing & usage: [docs/agents/ROUTING.md](../../../docs/agents/ROUTING.md); plugin-aware routing: [docs/agents/PLUGIN_AWARE_ROUTING.md](../../../docs/agents/PLUGIN_AWARE_ROUTING.md)
+
+| Agent | Responsibility |
+| --- | --- |
+| `orchestrator` | Decompose work, choose core agent + capability pack, merge results, identify missing inputs |
+| `architect` | Architecture, boundaries, risks, migration plans, technical decisions |
+| `builder` | Implementation, refactoring, integration, scoped project edits |
+| `reviewer` | Code, design, security, and quality review with prioritized findings |
+| `verifier` | Tests, static checks, dependency security, CI/local validation |
+| `publisher` | README, docs, CHANGELOG, release notes, handoff |
+
+Capability packs: [java](../../packs/java/), [security](../../packs/security/), [dependency](../../packs/dependency/), [docs](../../packs/docs/), [release](../../packs/release/), [marketplace](../../packs/marketplace/), [frontend](../../packs/frontend/), [mcp](../../packs/mcp/).
+
+## Legacy archive summary
+
+Legacy agents: 69 (archived: `.claude/agents/archive/nova-plugin/agents/`; manifest: [docs/agents/MIGRATION_MANIFEST.md](../../../docs/agents/MIGRATION_MANIFEST.md))
+
+The sections below preserve the old domain-grouped agent roles for migration and historical reference. Do not treat these entries as currently routable active agents.
+
+## Legend (Legacy Categories)
 
 - ✅ Quality & Performance
 - 📊 Data & Analytics

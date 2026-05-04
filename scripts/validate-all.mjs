@@ -98,6 +98,7 @@ runNode('validate schemas', 'scripts/validate-schemas.mjs');
 runNode('validate Claude compatibility', 'scripts/validate-claude-compat.mjs');
 runNode('lint frontmatter', 'scripts/lint-frontmatter.mjs');
 runAgentVerification();
+runNode('validate packs', 'scripts/validate-packs.mjs');
 runNode('validate hooks', 'scripts/validate-hooks.mjs');
 runHookSyntaxChecks();
 runNode('validate docs', 'scripts/validate-docs.mjs');

@@ -10,12 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Added
+- 新增 `nova-plugin/packs/` capability packs：`java`、`security`、`dependency`、`docs`、`release`、`marketplace`、`frontend`、`mcp`，所有 pack 均声明 enhanced mode 与 fallback mode。
+- 新增 `scripts/validate-packs.mjs`，校验 pack 目录、README 标准章节、pack 索引与 plugin-aware routing 引用。
+- 新增 `docs/agents/PLUGIN_AWARE_ROUTING.md` 与 `docs/agents/CORE_AGENTS_MIGRATION.md`，记录 core agent + pack 路由规则和旧 active specialist set 的替代映射。
 - 新增 `scripts/validate-all.mjs` 作为本地仓库校验总入口，并在 Windows 无 Bash 时明确 warning 跳过本地 `bash -n`。
 - 新增 `scripts/validate-docs.mjs`，校验 Markdown 本地链接与锚点、命令文档 stage 覆盖、版本日期同步和报告归档状态。
 - 新增 `.claude-plugin/marketplace.metadata.json` 与对应 schema，用于保存 marketplace 自定义 trust/risk/deprecation/date 元数据。
 - 新增 `scripts/validate-claude-compat.mjs`，静态拦截 Claude CLI 拒绝的 marketplace 插件级字段，并在 Claude CLI 可用时运行插件兼容校验。
 
 ### Changed
+- 将 active agents 从 14 个固定专家收敛为 6 个 core agents：`orchestrator`、`architect`、`builder`、`reviewer`、`verifier`、`publisher`。
+- `scripts/verify-agents.sh` 与 `scripts/verify-agents.ps1` 改为校验 6 个 core agent 文件、frontmatter 必需字段、`name` 与 basename 一致性，以及 agent 正文标准标签。
+- `scripts/validate-all.mjs` 接入 pack validation。
+- 版本策略仍需人工确认：若 active agent 名称被视为公开兼容承诺，建议 major；否则至少 minor。
+- 全面优化根 `README.md` 与英文概览，补强安装、命令选择、文档导航、维护规则和质量门说明。
+- 重整 `nova-plugin/docs/` 索引，将历史命令优化总结移入 `nova-plugin/docs/history/`，避免与当前架构文档混淆。
+- 明确 `agents-summary` 的 active agent 快速索引与 legacy archive 摘要边界，降低误读为当前 active 集合的风险。
 - CI 与 release 预检接入 docs 校验；Codex 项目检查脚本补充 hooks、docs 和 hook `bash -n` 校验任务。
 - 将 2026-04-28 项目状态审计报告移入 `docs/reports/archive/`，并在维护文档中明确历史报告状态。
 - 将 `trust-level`、`risk-level`、`deprecated`、`last-updated` 从官方 marketplace manifest 拆分到 repository-local metadata，保持 `claude plugin validate .` 兼容。

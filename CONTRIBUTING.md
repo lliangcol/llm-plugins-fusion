@@ -26,7 +26,7 @@
 
 ### 工程约定
 
-- **Agent 数量**：`nova-plugin/agents/` 目录内 active agent 集合由 `scripts/verify-agents.sh` / `scripts/verify-agents.ps1` 校验。
+- **Agent 与 pack 数量**：`nova-plugin/agents/` 目录内 6 个 core agents 由 `scripts/verify-agents.sh` / `scripts/verify-agents.ps1` 校验；`nova-plugin/packs/` 目录内 8 个 capability packs 由 `scripts/validate-packs.mjs` 校验。
 - **Frontmatter 规范**：
   - `commands/*.md` 必需字段：`id`、`stage`、`title`、`description`、`destructive-actions`（枚举 `none|low|medium|high`）、`allowed-tools`、`invokes.skill`。
   - `skills/*/SKILL.md` 必需字段：`name`、`description`、`license`、`allowed-tools`（空格分隔字符串）、`metadata.novaPlugin.*`（`userInvocable` / `autoLoad` / `subagentSafe` / `destructiveActions`）。
@@ -34,6 +34,7 @@
 - **Claude 兼容性**：官方 marketplace manifest 改动后必须通过 `node scripts/validate-claude-compat.mjs`；若本机存在 Claude CLI，该脚本会运行 `claude plugin validate .` 和 `claude plugin validate nova-plugin`。
 - **Hook 校验**：hook 配置或脚本改动后运行 `node scripts/validate-hooks.mjs`；Bash 可用时还要运行两个 hook 脚本的 `bash -n`。
 - **文档校验**：用户文档、命令文档、版本日期或报告归档改动后运行 `node scripts/validate-docs.mjs`；它会校验 Markdown 本地链接与锚点、命令文档 stage 位置、版本日期同步和非归档报告状态。
+- **Pack 校验**：capability pack 或 plugin-aware routing 改动后运行 `node scripts/validate-packs.mjs`；每个 pack 必须包含 enhanced mode 和 fallback mode。
 - **命令文档组织**：常规命令文档按工作流 stage 放在 `nova-plugin/docs/commands/<stage>/`；Codex 三个命令文档集中放在 `nova-plugin/docs/commands/codex/`，这是维护规则的明确例外。
 
 ### 变更类型与版本
@@ -43,7 +44,7 @@
 | 变更 | 版本位 | 示例 |
 | --- | --- | --- |
 | 破坏性变更（命令删除 / 重命名 / 行为回归） | MAJOR | `1.x.x → 2.0.0` |
-| 新增命令 / skill / agent，或能力显著增强 | MINOR | `1.0.x → 1.1.0` |
+| 新增命令 / skill / agent / capability pack，或能力显著增强 | MINOR | `1.0.x → 1.1.0` |
 | Bug 修复、文档更新、内部重构 | PATCH | `1.0.7 → 1.0.8` |
 
 每次版本变更需要同步：
@@ -77,14 +78,17 @@ node scripts/lint-frontmatter.mjs
 # 3. agent 校验
 bash scripts/verify-agents.sh
 
-# 4. hook 配置校验
+# 4. pack 校验
+node scripts/validate-packs.mjs
+
+# 5. hook 配置校验
 node scripts/validate-hooks.mjs
 
-# 5. hook Bash 语法校验（需要 Bash）
+# 6. hook Bash 语法校验（需要 Bash）
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 
-# 6. docs 校验
+# 7. docs 校验
 node scripts/validate-docs.mjs
 ```
 

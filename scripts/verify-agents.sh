@@ -9,29 +9,30 @@ archive_dir=".claude/agents/archive"
 legacy_agents_dir=".claude/agents/archive/nova-plugin/agents"
 
 expected=(
-  api-design.md
-  build-deps.md
-  data-analytics.md
-  db-engineer.md
-  devops-platform.md
-  git-release-manager.md
-  incident-responder.md
-  java-backend-engineer.md
+  architect.md
+  builder.md
   orchestrator.md
-  quality-engineer.md
-  refactoring-specialist.md
-  security-audit.md
-  security-engineer.md
-  test-automator.md
+  publisher.md
+  reviewer.md
+  verifier.md
+)
+
+required_sections=(
+  "Do:"
+  "Don't:"
+  "Use when:"
+  "Workflow:"
+  "Output:"
+  "Pack hints:"
 )
 
 echo "== Active agents =="
-mapfile -t actual < <(ls -1 "$active_dir"/*.md 2>/dev/null | xargs -n1 basename | sort)
+mapfile -t actual < <(find "$active_dir" -maxdepth 1 -type f -name "*.md" -exec basename {} \; 2>/dev/null | sort)
 echo "Count: ${#actual[@]}"
 printf -- "- %s\n" "${actual[@]}"
 
-if [[ ${#actual[@]} -lt 14 || ${#actual[@]} -gt 18 ]]; then
-  echo "ERROR: Active agents count must be 14..18 (got ${#actual[@]})." >&2
+if [[ ${#actual[@]} -ne 6 ]]; then
+  echo "ERROR: Active agents count must be exactly 6 (got ${#actual[@]})." >&2
   exit 1
 fi
 if ! printf "%s\n" "${actual[@]}" | grep -qx "orchestrator.md"; then
@@ -55,9 +56,41 @@ done
 if [[ ${#missing[@]} -ne 0 || ${#extra[@]} -ne 0 ]]; then
   [[ ${#missing[@]} -ne 0 ]] && { echo "Missing expected:"; printf -- "- %s\n" "${missing[@]}"; }
   [[ ${#extra[@]} -ne 0 ]] && { echo "Unexpected extra:"; printf -- "- %s\n" "${extra[@]}"; }
-  echo "ERROR: Active agent set mismatch. Expected exactly the 14-file set." >&2
+  echo "ERROR: Active agent set mismatch. Expected exactly the 6 core-agent files." >&2
   exit 1
 fi
+
+echo
+echo "== Agent contract =="
+for file_name in "${actual[@]}"; do
+  file_path="$active_dir/$file_name"
+  first_line="$(head -n 1 "$file_path" | tr -d '\r')"
+  if [[ "$first_line" != "---" ]]; then
+    echo "ERROR: $file_name is missing YAML frontmatter." >&2
+    exit 1
+  fi
+  frontmatter="$(tr -d '\r' < "$file_path" | awk 'NR==1 && $0=="---"{in_fm=1; next} in_fm && $0=="---"{exit} in_fm{print}')"
+  for field in name description tools; do
+    if ! printf "%s\n" "$frontmatter" | grep -Eq "^${field}:[[:space:]]*[^[:space:]]"; then
+      echo "ERROR: $file_name frontmatter missing required field: $field" >&2
+      exit 1
+    fi
+  done
+  name_value="$(printf "%s\n" "$frontmatter" | sed -n 's/^name:[[:space:]]*//p' | head -n 1)"
+  expected_name="${file_name%.md}"
+  if [[ "$name_value" != "$expected_name" ]]; then
+    echo "ERROR: $file_name frontmatter name must equal basename '$expected_name'." >&2
+    exit 1
+  fi
+  body="$(tr -d '\r' < "$file_path" | awk 'BEGIN{delims=0} /^---$/{delims++; next} delims>=2{print}')"
+  for section in "${required_sections[@]}"; do
+    if ! printf "%s\n" "$body" | grep -Fq "$section"; then
+      echo "ERROR: $file_name body missing required label: $section" >&2
+      exit 1
+    fi
+  done
+  echo "- $file_name: ok"
+done
 
 echo
 echo "== Archive presence (should not be default-scanned) =="
@@ -91,14 +124,12 @@ cat <<'EOF'
 - Route this task: 'Refactor a legacy module to reduce coupling; keep behavior unchanged.'
 - Route this task: 'Add integration tests and fix flaky tests in CI.'
 - Route this task: 'Design an API contract: pagination, error schema, versioning.'
-- Route this task: 'Production 5xx spike; need mitigation and rollback plan now.'
-- Route this task: 'Postgres slow query; propose indexes and explain EXPLAIN plan.'
-- Route this task: 'Define KPIs + funnel analysis; propose experiments.'
 - Route this task: 'Threat model auth flow; harden secrets/config; OWASP risks.'
-- Route this task: 'SOC2-style audit checklist + evidence collection plan.'
-- Route this task: 'Deploy pipeline + Docker/K8s config needs cleanup and rollback steps.'
 - Route this task: 'Plan release: versioning, tags, changelog, hotfix procedure.'
-- Route this task: 'Unclear owner: mixed app bug + CI + data metric mismatch; coordinate specialists.'
+- Route this task: 'Marketplace schema validation failed after metadata edits.'
+- Route this task: 'MCP server setup docs and config need review.'
+- Route this task: 'Registry portal layout has accessibility regressions.'
+- Route this task: 'Unclear owner: mixed app bug + CI + docs mismatch; coordinate core agents and packs.'
 EOF
 
 echo

@@ -9,21 +9,22 @@ $archiveDir = Join-Path $repoRoot '.claude/agents/archive'
 $legacyAgentsDir = Join-Path $repoRoot '.claude/agents/archive/nova-plugin/agents'
 
 $expected = @(
-  'api-design.md',
-  'build-deps.md',
-  'data-analytics.md',
-  'db-engineer.md',
-  'devops-platform.md',
-  'git-release-manager.md',
-  'incident-responder.md',
-  'java-backend-engineer.md',
+  'architect.md',
+  'builder.md',
   'orchestrator.md',
-  'quality-engineer.md',
-  'refactoring-specialist.md',
-  'security-audit.md',
-  'security-engineer.md',
-  'test-automator.md'
+  'publisher.md',
+  'reviewer.md',
+  'verifier.md'
 ) | Sort-Object
+
+$requiredSections = @(
+  'Do:',
+  "Don't:",
+  'Use when:',
+  'Workflow:',
+  'Output:',
+  'Pack hints:'
+)
 
 Write-Host "== Active agents =="
 $actual = @()
@@ -33,8 +34,8 @@ if (Test-Path $activeDir) {
 Write-Host ("Count: {0}" -f $actual.Count)
 $actual | ForEach-Object { Write-Host ("- {0}" -f $_) }
 
-if ($actual.Count -lt 14 -or $actual.Count -gt 18) {
-  Write-Error "Active agents count must be 14..18 (got $($actual.Count))."
+if ($actual.Count -ne 6) {
+  Write-Error "Active agents count must be exactly 6 (got $($actual.Count))."
 }
 if (-not ($actual -contains 'orchestrator.md')) {
   Write-Error "Missing required agent: orchestrator.md"
@@ -45,7 +46,36 @@ $extra = @($actual | Where-Object { $expected -notcontains $_ })
 if ($missing.Count -ne 0 -or $extra.Count -ne 0) {
   if ($missing.Count) { Write-Host "Missing expected:"; $missing | ForEach-Object { Write-Host ("- {0}" -f $_) } }
   if ($extra.Count) { Write-Host "Unexpected extra:"; $extra | ForEach-Object { Write-Host ("- {0}" -f $_) } }
-  throw "Active agent set mismatch. Expected exactly the 14-file set."
+  throw "Active agent set mismatch. Expected exactly the 6 core-agent files."
+}
+
+Write-Host ""
+Write-Host "== Agent contract =="
+foreach ($fileName in $actual) {
+  $path = Join-Path $activeDir $fileName
+  $content = Get-Content -Raw $path
+  $frontmatter = [regex]::Match($content, "(?s)^---\r?\n(.*?)\r?\n---")
+  if (-not $frontmatter.Success) {
+    throw "$fileName is missing YAML frontmatter."
+  }
+  $fm = $frontmatter.Groups[1].Value
+  foreach ($field in @('name', 'description', 'tools')) {
+    if (-not [regex]::IsMatch($fm, "(?m)^$field\s*:\s*\S")) {
+      throw "$fileName frontmatter missing required field: $field"
+    }
+  }
+  $nameMatch = [regex]::Match($fm, "(?m)^name\s*:\s*([a-z0-9-]+)\s*$")
+  $expectedName = [IO.Path]::GetFileNameWithoutExtension($fileName)
+  if (-not $nameMatch.Success -or $nameMatch.Groups[1].Value -ne $expectedName) {
+    throw "$fileName frontmatter name must equal basename '$expectedName'."
+  }
+  $body = $content.Substring($frontmatter.Index + $frontmatter.Length)
+  foreach ($section in $requiredSections) {
+    if (-not $body.Contains($section)) {
+      throw "$fileName body missing required label: $section"
+    }
+  }
+  Write-Host ("- {0}: ok" -f $fileName)
 }
 
 Write-Host ""
@@ -80,14 +110,12 @@ $prompts = @(
   "Route this task: 'Refactor a legacy module to reduce coupling; keep behavior unchanged.'",
   "Route this task: 'Add integration tests and fix flaky tests in CI.'",
   "Route this task: 'Design an API contract: pagination, error schema, versioning.'",
-  "Route this task: 'Production 5xx spike; need mitigation and rollback plan now.'",
-  "Route this task: 'Postgres slow query; propose indexes and explain EXPLAIN plan.'",
-  "Route this task: 'Define KPIs + funnel analysis; propose experiments.'",
   "Route this task: 'Threat model auth flow; harden secrets/config; OWASP risks.'",
-  "Route this task: 'SOC2-style audit checklist + evidence collection plan.'",
-  "Route this task: 'Deploy pipeline + Docker/K8s config needs cleanup and rollback steps.'",
   "Route this task: 'Plan release: versioning, tags, changelog, hotfix procedure.'",
-  "Route this task: 'Unclear owner: mixed app bug + CI + data metric mismatch; coordinate specialists.'"
+  "Route this task: 'Marketplace schema validation failed after metadata edits.'",
+  "Route this task: 'MCP server setup docs and config need review.'",
+  "Route this task: 'Registry portal layout has accessibility regressions.'",
+  "Route this task: 'Unclear owner: mixed app bug + CI + docs mismatch; coordinate core agents and packs.'"
 )
 $prompts | ForEach-Object { Write-Host ("- {0}" -f $_) }
 

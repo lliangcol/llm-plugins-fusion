@@ -1,61 +1,65 @@
-# Agent Routing (Active Set)
+# Agent Routing (Core Agents)
 
-Active agents live in `nova-plugin/agents/`. Legacy agents are archived under `.claude/agents/archive/nova-plugin/agents/` (see `docs/agents/MIGRATION_MANIFEST.md`).
+Active agents live in `nova-plugin/agents/`. The active set is six core agents plus documentation-only capability packs in `nova-plugin/packs/`.
 
-## Active agents
+Legacy agents are archived under `.claude/agents/archive/nova-plugin/agents/` (see [MIGRATION_MANIFEST.md](MIGRATION_MANIFEST.md)). The former active specialist set is mapped to core agents and packs in [CORE_AGENTS_MIGRATION.md](CORE_AGENTS_MIGRATION.md).
 
-- `orchestrator` — default entry; routes work to the right agent(s), does not implement.
-- `java-backend-engineer` — Java/Spring backend implementation.
-- `api-design` — API contracts + OpenAPI/docs.
-- `refactoring-specialist` — safe refactors, tech-debt reduction.
-- `quality-engineer` — QA + debugging + code review (keeps checklist-style output).
-- `test-automator` — automated tests and reliability.
-- `devops-platform` — CI/CD, deploy, infra/platform, tooling, DX.
-- `build-deps` — builds + dependencies + lockfiles.
-- `git-release-manager` — branching, versioning, tags, releases, changelog.
-- `incident-responder` — incident triage/mitigation/runbooks/postmortems.
-- `data-analytics` — metrics/KPIs/funnels/research insights (optional DS).
-- `db-engineer` — SQL/schema/perf/Postgres guidance.
-- `security-engineer` — practical security engineering + hardening.
-- `security-audit` — security/compliance audits + evidence + remediation tracking.
+## Active Agents
 
-## Keyword routing table
+| Agent | Responsibility |
+| --- | --- |
+| `orchestrator` | Decompose work, choose core agents and packs, merge results, and identify missing inputs. |
+| `architect` | Own architecture options, boundaries, risks, migration plans, and technical decisions. |
+| `builder` | Implement, refactor, and integrate scoped project changes. |
+| `reviewer` | Review code, design, security, and quality with prioritized findings. |
+| `verifier` | Run tests, static checks, dependency checks, and local or CI validation gates. |
+| `publisher` | Maintain README, docs, CHANGELOG, release notes, and handoff artifacts. |
 
-| keyword / smell                                | route to                 | notes                                     |
-| ---------------------------------------------- | ------------------------ | ----------------------------------------- |
-| “which agent”, “route”, ambiguous owner        | `orchestrator`           | may fan out to 1–3 agents                 |
-| java, spring, controller/service, maven/gradle | `java-backend-engineer`  | implementation                            |
-| api, openapi, swagger, contract, pagination    | `api-design`             | docs/spec; code changes may go to backend |
-| refactor, cleanup, tech debt, modularize       | `refactoring-specialist` | behavior-preserving                       |
-| bug, failing tests, review, regression, flaky  | `quality-engineer`       | triage + review + fix plan                |
-| tests, coverage, integration tests, CI tests   | `test-automator`         | add/fix tests                             |
-| ci/cd, pipeline, deploy, docker/k8s, terraform | `devops-platform`        | platform & delivery                       |
-| dependency conflict, lockfile, upgrade         | `build-deps`             | build + deps                              |
-| release, tag, version, changelog, hotfix       | `git-release-manager`    | process + commands                        |
-| outage, 5xx spike, latency, rollback now       | `incident-responder`     | stop the bleeding                         |
-| metrics, kpi, funnel, cohort, retention        | `data-analytics`         | analysis & definitions                    |
-| sql, postgres, slow query, index, migration    | `db-engineer`            | DB guidance                               |
-| security, secrets, auth, hardening, owasp      | `security-engineer`      | mitigations                               |
-| audit, compliance, SOC2/ISO/PCI/GDPR           | `security-audit`         | evidence + gaps                           |
+## Capability Packs
 
-## Common task examples (copy-friendly)
+Capability packs are optional routing context, not runtime-loaded agents. See [PLUGIN_AWARE_ROUTING.md](PLUGIN_AWARE_ROUTING.md) for enhanced and fallback behavior.
 
-1. “Spring Boot 新增接口并生成 OpenAPI 文档” → `java-backend-engineer` + `api-design`
-2. “帮我评审这次 PR：安全/性能/可维护性” → `quality-engineer`
-3. “CI 挂了：依赖冲突/lockfile 变更导致构建失败” → `build-deps`
-4. “发布流程：版本号、tag、changelog、hotfix 怎么做” → `git-release-manager`
-5. “线上 5xx 激增，需要止血/回滚/定位” → `incident-responder`（可能再分派到其它 agent）
-6. “SQL 慢查询，给索引建议并解释原因” → `db-engineer`
-7. “定义留存/转化漏斗口径并做分析建议” → `data-analytics`
-8. “做一次 secrets/auth/config 的安全加固建议” → `security-engineer`
-9. “做 SOC2/ISO 审计清单和证据收集表” → `security-audit`
-10. “大型重构：模块拆分，降低耦合” → `refactoring-specialist`
-11. “补测试：提升覆盖率并修复 flaky” → `test-automator`
-12. “部署/环境/容器/CI/CD/平台治理问题” → `devops-platform`
+| Pack | Use For |
+| --- | --- |
+| `java` | Java, Spring, Maven, Gradle. |
+| `security` | Security review, hardening, static scanning. |
+| `dependency` | Dependency upgrades, vulnerabilities, supply-chain risk. |
+| `docs` | README, CLAUDE.md, AGENTS.md, technical docs. |
+| `release` | CHANGELOG, version strategy, session reports, handoff. |
+| `marketplace` | Plugin and marketplace schemas, registry metadata. |
+| `frontend` | Portal or registry UI, accessibility, interaction quality. |
+| `mcp` | MCP config, server/client examples, tool integration. |
 
-## How `orchestrator` delegates
+## Keyword Routing Table
 
-1. Read the user request; detect smells/keywords.
-2. Split into 1–5 subtasks, each with one owning active agent.
-3. Ask for missing inputs per subtask (1–3 questions).
-4. Define deliverables and verification commands for the whole work.
+| Keyword / smell | Route to | Pack hints |
+| --- | --- | --- |
+| "which agent", "route", ambiguous owner, multi-domain | `orchestrator` | Any relevant pack |
+| architecture, API shape, migration, boundaries, tradeoffs | `architect` | `java`, `security`, `marketplace`, `frontend`, `mcp` |
+| implement, fix, refactor, integrate, update files | `builder` | `java`, `dependency`, `frontend`, `marketplace`, `mcp` |
+| review, audit, PR feedback, quality, security, maintainability | `reviewer` | `security`, `dependency`, `java`, `frontend`, `marketplace`, `mcp` |
+| tests, validation, CI, static checks, scan, verify | `verifier` | `dependency`, `security`, `java`, `frontend`, `marketplace`, `release`, `mcp` |
+| README, docs, changelog, release notes, handoff | `publisher` | `docs`, `release`, `marketplace`, `mcp` |
+
+## Common Task Examples
+
+1. "Spring Boot 新增接口并生成 OpenAPI 文档" -> `architect` then `builder`, with `java` and possibly `docs`.
+2. "帮我评审这次 PR: 安全/性能/可维护性" -> `reviewer`, with `security` and domain packs as needed.
+3. "CI 挂了: 依赖冲突/lockfile 变更导致构建失败" -> `verifier` then `builder`, with `dependency`.
+4. "发布流程: 版本号、tag、changelog、hotfix 怎么做" -> `publisher` and `verifier`, with `release`.
+5. "线上 5xx 激增，需要止血/回滚/定位" -> `orchestrator` routes triage to `reviewer` and validation to `verifier`.
+6. "SQL 慢查询，给索引建议并解释原因" -> `architect` for design and `reviewer` for risk; use project-specific docs because no dedicated DB pack exists.
+7. "定义留存/转化漏斗口径并做分析建议" -> `architect` for definitions and `publisher` for documentation; use project-specific analytics context.
+8. "做一次 secrets/auth/config 的安全加固建议" -> `reviewer` and `architect`, with `security`.
+9. "做 SOC2/ISO 审计清单和证据收集表" -> `reviewer` and `publisher`, with `security` and `docs`.
+10. "大型重构: 模块拆分，降低耦合" -> `architect` then `builder`, with relevant domain packs.
+11. "补测试: 提升覆盖率并修复 flaky" -> `verifier` then `builder`, with relevant domain packs.
+12. "部署/环境/容器/CI/CD/平台治理问题" -> `architect`, `builder`, and `verifier`; use `release`, `dependency`, or `mcp` when relevant.
+
+## How `orchestrator` Delegates
+
+1. Read the user request and detect domain smells.
+2. Split into 1-5 subtasks, each with one owning core agent.
+3. Attach one or more capability packs when domain rules apply.
+4. Ask only for missing inputs that block safe routing.
+5. Define deliverables, validation commands, enhanced mode, and fallback mode for the whole work.

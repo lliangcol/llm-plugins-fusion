@@ -4,7 +4,7 @@
 
 # LLM Plugins Fusion
 
-**第三方 LLM 插件市场与插件集合**
+**第三方 LLM 编码助手插件市场与 `nova-plugin` 工程工作流插件集合**
 
 [![Version](https://img.shields.io/badge/version-1.0.9-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
@@ -13,193 +13,252 @@
 
 ---
 
-## 🧭 快速入口
+## 项目定位
+
+`llm-plugins-fusion` 是一个面向 LLM 编码助手的第三方插件市场仓库。目前主插件是 `nova-plugin`，兼容 Claude Code 插件市场，提供从理解问题到交付总结的工程化命令体系：
+
+```text
+Explore -> Plan -> Review -> Implement -> Finalize
+```
+
+它适合三类使用者：
+
+| 使用者 | 关注点 | 推荐入口 |
+| --- | --- | --- |
+| 插件用户 | 安装插件、选择命令、复制使用模板 | [Quick Start](#quick-start)、[Command Map](#command-map)、[文档索引](./nova-plugin/docs/README.md) |
+| 插件作者 | 新增 command / skill、理解 frontmatter 契约 | [CONTRIBUTING.md](./CONTRIBUTING.md)、[Skill-first 设计](./nova-plugin/docs/architecture/dual-track-design.md) |
+| 维护者 | schema、CI、本地校验、发布与安全边界 | [Quality Gates](#quality-gates)、[SECURITY.md](./SECURITY.md)、[CHANGELOG.md](./CHANGELOG.md) |
+
+## 当前状态
 
 <table>
 <tr>
-<td width="33%" valign="top">
-
-### 👤 我是用户
-想直接安装并使用命令。
-
-- [快速开始](#-快速开始)
-- [命令一览](#-命令一览)
-- [文档索引](./nova-plugin/docs/README.md)
-- [使用文档（中文）](./nova-plugin/docs/guides/commands-reference-guide.md)
-- [English docs](./nova-plugin/docs/overview/README.en.md)
-
-</td>
-<td width="33%" valign="top">
-
-### 🧑‍💻 我是插件作者
-想添加新的命令 / skill / 插件。
-
-- [CONTRIBUTING.md](./CONTRIBUTING.md)
-- [Frontmatter 规范](./CONTRIBUTING.md#工程约定)
-- [ROADMAP](./ROADMAP.md)
-
-</td>
-<td width="33%" valign="top">
-
-### 🛠 我是维护者
-关心 schema、CI、信任分级。
-
-- [schemas/](./schemas/)
-- [SECURITY.md](./SECURITY.md)
-- [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
-- [CHANGELOG](./CHANGELOG.md)
-
-</td>
+<td><strong>插件版本</strong></td>
+<td>1.0.9</td>
+</tr>
+<tr>
+<td><strong>主插件</strong></td>
+<td><code>nova-plugin</code></td>
+</tr>
+<tr>
+<td><strong>命令 / Skills</strong></td>
+<td>20 个命令，20 个一对一 skills</td>
+</tr>
+<tr>
+<td><strong>Active agents</strong></td>
+<td>6 个 core agents，位于 <code>nova-plugin/agents/</code>；8 个 capability packs，位于 <code>nova-plugin/packs/</code></td>
+</tr>
+<tr>
+<td><strong>许可协议</strong></td>
+<td>MIT</td>
 </tr>
 </table>
 
----
+仓库当前的自动化质量门覆盖 schema、Claude 兼容性、command / skill frontmatter、core agent 集合、capability pack 结构、hooks 配置、Markdown 本地链接与命令文档覆盖。完整检查入口是：
 
-## 📖 项目简介
+```bash
+node scripts/validate-all.mjs
+```
 
-**LLM Plugins Fusion** 是面向 LLM 编码助手（如 Claude Code）的第三方插件市场与插件集合仓库。通过本仓库，你可以：
+Windows PowerShell 可以运行 Node 校验和 `scripts/verify-agents.ps1`。如果本机没有 Bash，`validate-all` 会 warning 跳过本地 `bash -n` hook 语法检查；CI/Linux 仍会执行并要求通过。
 
-- 🎯 **一键安装**：快速将插件集成到 Claude Code
-- 🔧 **工程化开发**：提供完整的开发工作流命令
-- 📚 **完善文档**：详尽的使用手册和示例
-- 🔄 **持续扩展**：支持添加新插件和功能
-
----
-
-## 🚀 快速开始
+## Quick Start
 
 ### 前置条件
 
-- 使用普通 Claude Code 命令时，需要可用的 Claude Code 插件市场与 `nova-plugin` 安装环境。
-- 使用 Codex 闭环命令（`/codex-review-fix`、`/codex-review-only`、`/codex-verify-only`）时，需要本机可调用 Codex CLI，并需要 Bash 运行随 skill 分发的脚本。
-- 维护或本地校验仓库时，需要 Node.js 20+。Windows PowerShell 可运行 Node 校验与 `scripts/verify-agents.ps1`。
-- Hook 脚本和 `bash -n` 语法检查需要 Bash（macOS/Linux、Git Bash、WSL 或其他 PATH 中可用的 `bash`）。Windows 本地没有 Bash 时，`node scripts/validate-all.mjs` 会 warning 跳过 `bash -n`；CI/Linux 仍执行并必须通过。
+- Claude Code 插件市场可用，并允许添加第三方 marketplace。
+- 使用普通 `nova-plugin` 命令时，只需要安装插件。
+- 使用 Codex 闭环命令时，需要本机可调用 Codex CLI，并需要 Bash 执行随 skill 分发的脚本。
+- 维护本仓库或运行本地校验时，需要 Node.js 20+。
 
-### 第一步：添加市场
+### 安装
 
-在 Claude Code 中执行：
+在 Claude Code 中添加 marketplace：
 
 ```bash
 /plugin marketplace add lliangcol/llm-plugins-fusion
 ```
 
-### 第二步：安装插件
+安装主插件：
 
 ```bash
 /plugin install nova-plugin@llm-plugins-fusion
 ```
 
-### 第三步：开始使用
+确认插件可用：
 
 ```bash
-# 查看已安装插件
 /plugin
-
-# 使用命令
-/senior-explore 分析当前项目
 ```
 
----
+开始使用：
 
-## 📁 仓库结构
-
+```bash
+/senior-explore 分析当前项目结构和主要风险
 ```
+
+## Command Map
+
+新用户优先使用统一入口：`/explore`、`/produce-plan`、`/review`、`/implement-plan`、`/finalize-work`。需要更强自动化复核时，再使用 Codex 三件套。
+
+| 阶段 | 目标 | 推荐命令 | 其他命令 |
+| --- | --- | --- | --- |
+| Explore | 理解问题、收集事实、暴露不确定性 | `/explore`, `/senior-explore` | `/explore-lite`, `/explore-review` |
+| Plan | 输出实现方案或设计文档 | `/produce-plan` | `/plan-lite`, `/plan-review`, `/backend-plan` |
+| Review | 审查代码、计划或分支风险 | `/review` | `/review-lite`, `/review-only`, `/review-strict`, `/codex-review-only`, `/codex-verify-only` |
+| Implement | 按计划实施或执行闭环修复 | `/implement-plan`, `/codex-review-fix` | `/implement-standard`, `/implement-lite` |
+| Finalize | 交付总结、风险、验证与后续事项 | `/finalize-work` | `/finalize-lite` |
+
+常用路径：
+
+```text
+/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+```
+
+Codex 闭环路径：
+
+```text
+/codex-review-only -> 修复 -> /codex-verify-only
+```
+
+或使用半自动闭环：
+
+```text
+/codex-review-fix
+```
+
+## Core Agents + Packs
+
+`nova-plugin` 的 agent 体系由 6 个短小、route-focused 的 core agents 承担通用职责，再通过 8 个 capability packs 补充领域规则。Packs 是第一阶段的文档化能力包，不做复杂运行时动态加载；已安装插件只作为 enhanced mode，缺失时必须可通过 fallback mode 完成任务。
+
+| Core agent | 职责 |
+| --- | --- |
+| `orchestrator` | 拆解任务、选择 agent + pack、合并结果、发现缺失输入 |
+| `architect` | 架构方案、边界、风险、迁移计划、技术决策 |
+| `builder` | 实现、重构、集成、按计划修改项目文件 |
+| `reviewer` | 代码、设计、安全、质量审查，输出优先级发现 |
+| `verifier` | 测试、静态检查、依赖安全、CI/local validation |
+| `publisher` | README、docs、CHANGELOG、release notes、handoff |
+
+Capability packs: `java`, `security`, `dependency`, `docs`, `release`, `marketplace`, `frontend`, `mcp`。
+
+## What Is Included
+
+```text
 llm-plugins-fusion/
-├── 📄 .claude-plugin/
-│   └── marketplace.json              # 市场入口配置
-├── 📦 nova-plugin/                    # 插件目录
-│   ├── 📄 .claude-plugin/
-│   │   └── plugin.json               # 插件元信息
-│   ├── 📂 commands/                   # 20 个命令预设（17 个原有 + 3 个 Codex 闭环命令）
-│   │   ├── senior-explore.md
-│   │   ├── ⭐ explore.md          # 统一探索命令（新增）
-│   │   ├── explore-lite.md
-│   │   ├── explore-review.md
-│   │   ├── plan-lite.md
-│   │   ├── produce-plan.md
-│   │   ├── backend-plan.md
-│   │   ├── plan-review.md
-│   │   ├── review-lite.md
-│   │   ├── ⭐ review.md           # 统一评审命令（新增）
-│   │   ├── review-only.md
-│   │   ├── review-strict.md
-│   │   ├── codex-review-only.md
-│   │   ├── codex-verify-only.md
-│   │   ├── implement-plan.md
-│   │   ├── implement-standard.md
-│   │   ├── implement-lite.md
-│   │   ├── codex-review-fix.md
-│   │   ├── finalize-work.md
-│   │   └── finalize-lite.md
-│   ├── 📂 docs/                       # 文档
-│   │   ├── README.md                  # 文档索引
-│   │   ├── guides/                    # 命令参考与使用手册
-│   │   ├── commands/                  # 按工作流阶段组织的命令文档
-│   │   ├── agents/                    # 子代理说明
-│   │   ├── architecture/              # 设计与优化总结
-│   │   └── overview/                  # 英文项目概览
-│   ├── 📂 hooks/                      # Hooks 配置
-│   ├── 📂 agents/                     # 子代理定义
-│   └── 📂 skills/                     # 技能包（含 _shared 通用策略）
-└── 📄 README.md
+|-- .claude-plugin/
+|   |-- marketplace.json              # Claude marketplace 入口
+|   `-- marketplace.metadata.json     # 仓库本地 trust/risk/date 元数据
+|-- nova-plugin/
+|   |-- .claude-plugin/plugin.json    # 插件元信息，版本事实源
+|   |-- commands/                     # 20 个 slash command 薄入口
+|   |-- skills/                       # 20 个 nova-* skills + _shared 策略
+|   |-- agents/                       # 6 个 core active agents
+|   |-- packs/                        # 8 个 capability pack 文档
+|   |-- docs/                         # 用户文档、命令文档、架构和历史记录
+|   `-- hooks/                        # Claude Code hook 配置和脚本
+|-- docs/
+|   |-- agents/                       # core agent 路由、plugin-aware routing 与迁移清单
+|   `-- reports/archive/              # 历史审计报告
+|-- schemas/                          # marketplace / metadata / plugin schemas
+|-- scripts/                          # 本地和 CI 校验脚本
+|-- README.md
+|-- CONTRIBUTING.md
+|-- CHANGELOG.md
+|-- ROADMAP.md
+`-- SECURITY.md
 ```
 
----
+## Documentation
 
-<a id="-命令一览"></a>
+| 文档 | 内容 | 适用场景 |
+| --- | --- | --- |
+| [nova-plugin 文档索引](./nova-plugin/docs/README.md) | 文档结构、命令文档覆盖、维护规则 | 先找入口 |
+| [命令完全参考手册](./nova-plugin/docs/guides/commands-reference-guide.md) | 参数、示例、工作流模板 | 日常查命令 |
+| [命令使用手册](./nova-plugin/docs/guides/claude-code-commands-handbook.md) | 命令选择、使用方式、复制模板 | 快速上手 |
+| [Codex 闭环说明](./nova-plugin/docs/commands/codex/codex-review-fix.README.md) | review / fix / verify 协作流程 | Claude Code + Codex |
+| [Skill-first 设计](./nova-plugin/docs/architecture/dual-track-design.md) | command 与 skill 的职责边界 | 修改命令或 skill |
+| [Hooks 设计](./nova-plugin/docs/architecture/hooks-design.md) | 写入前检查和审计日志 hook | 维护安全边界 |
+| [Core agent 路由](./docs/agents/ROUTING.md) | 6 个 core agents 与 capability packs 的路由规则 | 选择或维护 agent |
+| [Plugin-aware routing](./docs/agents/PLUGIN_AWARE_ROUTING.md) | enhanced / fallback mode 与 pack 启用规则 | 维护 pack 路由 |
+| [Capability packs](./nova-plugin/packs/README.md) | 8 个领域能力包索引 | 维护 packs |
+| [Legacy agents 汇总](./nova-plugin/docs/agents/agents-summary.md) | 已归档 legacy agents 的历史角色说明 | 查阅旧版设计 |
+| [English overview](./nova-plugin/docs/overview/README.en.md) | English project overview | English readers |
 
-## 🔌 插件：nova-plugin
+## Maintenance
 
-<table>
-<tr>
-<td width="120"><strong>版本</strong></td>
-<td>1.0.9</td>
-</tr>
-<tr>
-<td><strong>作者</strong></td>
-<td>liu liang</td>
-</tr>
-<tr>
-<td><strong>命令数</strong></td>
-<td>20（17 个原有 + 3 个 Codex 闭环命令）</td>
-</tr>
-<tr>
-<td><strong>定位</strong></td>
-<td>开发效率增强工作流插件</td>
-</tr>
-</table>
+版本事实源：
 
-### 🎯 核心能力
+- `nova-plugin/.claude-plugin/plugin.json`
+- `.claude-plugin/marketplace.json`
+- `.claude-plugin/marketplace.metadata.json`
+- `CHANGELOG.md`
 
-面向 LLM 编码助手（兼容 Claude Code）的开发效率增强插件，覆盖完整开发工作流，并提供 Codex review/fix/verify 半自动闭环能力包。
+Command 与 skill 必须一对一：
 
-### 开发工作流
+```text
+nova-plugin/commands/<id>.md
+nova-plugin/skills/nova-<id>/SKILL.md
+```
 
-| 阶段     | 探索 🔍       | 规划 📝  | 评审 🔎                   | 实现 ⚙️                   | 收尾 📦  |
-| -------- | ------------- | -------- | ------------------------- | ------------------------- | -------- |
-| 目标     | 理解问题      | 制定方案 | 审查质量 / Codex verify   | 编写代码 / Codex 闭环修复 | 交付成果 |
-| 命令数   | 4 个命令      | 4 个命令 | 6 个命令                  | 4 个命令                  | 2 个命令 |
-| 统一命令 | ⭐ `/explore` | -        | ⭐ `/review` + Codex 变体 | `/codex-review-fix`       | -        |
+每个命令必须有三份命令文档：
 
----
+```text
+nova-plugin/docs/commands/<stage>/<id>.md
+nova-plugin/docs/commands/<stage>/<id>.README.md
+nova-plugin/docs/commands/<stage>/<id>.README.en.md
+```
 
-## 🧠 Agents 子代理
+Codex 命令集中放在 `nova-plugin/docs/commands/codex/`，这是命令文档按 stage 目录组织规则的明确例外。
 
-Active agents: 14（默认扫描：`nova-plugin/agents/`）。Legacy agents: 69（已归档：`.claude/agents/archive/nova-plugin/agents/`，迁移清单见 `docs/agents/MIGRATION_MANIFEST.md`）。
+## Quality Gates
 
-- 路由与使用：`docs/agents/ROUTING.md`
-- Legacy 汇总（保留作参考）：`nova-plugin/docs/agents/agents-summary.md` / `nova-plugin/docs/agents/agents-summary.en.md`
+全量检查：
 
----
+```bash
+node scripts/validate-all.mjs
+```
 
-## 📚 文档导航
+按变更范围运行：
 
-| 📄 文档                                                              | 📝 说明                              | 🎯 适用场景            |
-| -------------------------------------------------------------------- | ------------------------------------ | ---------------------- |
-| [📘 命令完全参考手册](nova-plugin/docs/guides/commands-reference-guide.md)  | 详细参数、5+ 场景示例、工作流模板    | **日常查询、复制模板** |
-| [📗 命令使用手册](nova-plugin/docs/guides/claude-code-commands-handbook.md) | 按类型组织、命令对比表               | **快速入门、命令选择** |
-| [🧩 Codex 闭环说明](nova-plugin/docs/commands/codex/codex-review-fix.README.md)    | review/fix/verify skills + 脚本接入 | **Claude Code + Codex 协作** |
-| [🧭 Agents 路由指南](docs/agents/ROUTING.md)                         | Active agents 列表、关键词路由、示例 | **自动路由、选 agent** |
-| [🧠 Agents 子代理说明](nova-plugin/docs/agents/agents-summary.md)           | 子代理角色、工具、场景汇总           | **了解与选择子代理**   |
+```bash
+node scripts/validate-schemas.mjs
+node scripts/validate-claude-compat.mjs
+node scripts/lint-frontmatter.mjs
+node scripts/validate-packs.mjs
+node scripts/validate-hooks.mjs
+node scripts/validate-docs.mjs
+```
 
-如需英文文档，请见 `nova-plugin/docs/overview/README.en.md` 与 `nova-plugin/docs/agents/agents-summary.en.md`。
+Agent 检查：
+
+```bash
+bash scripts/verify-agents.sh
+```
+
+Windows PowerShell：
+
+```powershell
+.\scripts\verify-agents.ps1
+```
+
+Pack 检查：
+
+```bash
+node scripts/validate-packs.mjs
+```
+
+Hook shell 语法检查需要 Bash：
+
+```bash
+bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+```
+
+## Contributing
+
+提交 PR 前请阅读 [CONTRIBUTING.md](./CONTRIBUTING.md)。安全问题请按 [SECURITY.md](./SECURITY.md) 私下披露。项目路线见 [ROADMAP.md](./ROADMAP.md)。
+
+## License
+
+本项目使用 [MIT License](./LICENSE)。

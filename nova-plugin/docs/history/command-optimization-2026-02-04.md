@@ -1,8 +1,8 @@
-# Nova Plugin 命令优化总结
+# Historical Command Optimization - 2026-02-04
 
 > 历史优化记录：本文档记录 2026-02-04 当时的命令优化批次，保留用于追溯设计演进。
 > 它不是当前项目状态报告。当前事实源以 `nova-plugin/commands/`、`nova-plugin/skills/`、
-> `README.md`、`CLAUDE.md` 和 `AGENTS.md` 为准；当前仓库为 20 个命令、20 个 skills、14 个 active agents。
+> `README.md`、`CLAUDE.md` 和 `AGENTS.md` 为准；当前仓库为 20 个命令、20 个 skills、6 个 core agents 和 8 个 capability packs。
 
 **优化日期**: 2026-02-04
 **历史目标版本**: v1.1.0（当时规划目标，不代表当前已发布版本）
@@ -237,7 +237,7 @@
 
 1. [commands/explore.md](../../commands/explore.md) - 统一探索命令
 2. [commands/review.md](../../commands/review.md) - 统一评审命令
-3. [docs/architecture/OPTIMIZATION_SUMMARY.md](OPTIMIZATION_SUMMARY.md) - 本文档当前路径
+3. [docs/history/command-optimization-2026-02-04.md](command-optimization-2026-02-04.md) - 本文档当前路径
 
 ---
 

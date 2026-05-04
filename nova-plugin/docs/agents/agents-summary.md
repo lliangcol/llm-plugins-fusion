@@ -1,12 +1,31 @@
 ﻿# Agents 子代理说明汇总
 
-Active agents: 14（默认扫描：`nova-plugin/agents/`）
+> 本文件分为两部分：当前 active agents 快速索引，以及 69 个 legacy agents 的历史归档摘要。当前可用 agent 的事实源是 `nova-plugin/agents/`；下方 legacy 摘要只用于追溯旧版设计，不代表当前 active 集合。
 
-Legacy agents: 69（已归档：`.claude/agents/archive/nova-plugin/agents/`，迁移清单见 `docs/agents/MIGRATION_MANIFEST.md`）
+## 当前 active agents
 
-路由与使用：`docs/agents/ROUTING.md`
+Active agents: 6 core agents（默认扫描：`nova-plugin/agents/`）
 
-## 图标说明
+路由与使用：[docs/agents/ROUTING.md](../../../docs/agents/ROUTING.md)；plugin-aware routing：[docs/agents/PLUGIN_AWARE_ROUTING.md](../../../docs/agents/PLUGIN_AWARE_ROUTING.md)
+
+| Agent | 职责 |
+| --- | --- |
+| `orchestrator` | 拆解任务、选择 core agent + capability pack、合并结果、发现缺失输入 |
+| `architect` | 架构方案、边界、风险、迁移计划、技术决策 |
+| `builder` | 实现、重构、集成、按计划修改项目文件 |
+| `reviewer` | 代码、设计、安全、质量审查，输出优先级发现 |
+| `verifier` | 测试、静态检查、依赖安全、CI/local validation |
+| `publisher` | README、docs、CHANGELOG、release notes、handoff |
+
+Capability packs: [java](../../packs/java/), [security](../../packs/security/), [dependency](../../packs/dependency/), [docs](../../packs/docs/), [release](../../packs/release/), [marketplace](../../packs/marketplace/), [frontend](../../packs/frontend/), [mcp](../../packs/mcp/)。
+
+## Legacy archive 摘要
+
+Legacy agents: 69（已归档：`.claude/agents/archive/nova-plugin/agents/`，迁移清单见 [docs/agents/MIGRATION_MANIFEST.md](../../../docs/agents/MIGRATION_MANIFEST.md)）
+
+以下内容保留旧版按领域分组的 agent 角色，便于迁移和历史查阅。不要把这些条目当作当前可路由的 active agents。
+
+## 图标说明（Legacy 分类）
 
 - ✅ 质量与性能
 - 📝 文档与沟通

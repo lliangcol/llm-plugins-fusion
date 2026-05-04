@@ -4,158 +4,260 @@ English | [中文](../../../README.md)
 
 # LLM Plugins Fusion
 
-**A third-party LLM plugin marketplace + plugin collection**
+**A third-party LLM coding-assistant plugin marketplace and `nova-plugin` engineering workflow collection**
 
 [![Version](https://img.shields.io/badge/version-1.0.9-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](https://github.com)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](../../../LICENSE)
 
 </div>
 
 ---
 
-## 📖 Overview
+## Positioning
 
-**LLM Plugins Fusion** is a third-party marketplace and curated plugin collection for LLM coding assistants (e.g., Claude Code). With this repo you can:
+`llm-plugins-fusion` is a third-party plugin marketplace repository for LLM coding assistants. Its primary plugin is `nova-plugin`, a Claude Code-compatible workflow plugin that covers the engineering loop from discovery to handoff:
 
-- 🎯 **One-command install**: quickly integrate plugins into Claude Code
-- 🔧 **Workflow-first**: command presets covering a full engineering workflow
-- 📚 **Solid docs**: practical handbooks and examples
-- 🔄 **Easy to extend**: add new plugins and capabilities over time
+```text
+Explore -> Plan -> Review -> Implement -> Finalize
+```
 
----
+It serves three audiences:
 
-## 🚀 Quick start
+| Audience | Needs | Start here |
+| --- | --- | --- |
+| Plugin users | Install the plugin, pick commands, copy usage templates | [Quick Start](#quick-start), [Command Map](#command-map), [docs index](../README.md) |
+| Plugin authors | Add commands / skills and understand frontmatter contracts | [CONTRIBUTING.md](../../../CONTRIBUTING.md), [Skill-first design](../architecture/dual-track-design.md) |
+| Maintainers | Schema, CI, validation, release, and safety boundaries | [Quality Gates](#quality-gates), [SECURITY.md](../../../SECURITY.md), [CHANGELOG.md](../../../CHANGELOG.md) |
+
+## Current Status
+
+<table>
+<tr>
+<td><strong>Plugin version</strong></td>
+<td>1.0.9</td>
+</tr>
+<tr>
+<td><strong>Main plugin</strong></td>
+<td><code>nova-plugin</code></td>
+</tr>
+<tr>
+<td><strong>Commands / Skills</strong></td>
+<td>20 commands, 20 one-to-one skills</td>
+</tr>
+<tr>
+<td><strong>Active agents</strong></td>
+<td>6 core agents in <code>nova-plugin/agents/</code>; 8 capability packs in <code>nova-plugin/packs/</code></td>
+</tr>
+<tr>
+<td><strong>License</strong></td>
+<td>MIT</td>
+</tr>
+</table>
+
+The validation suite covers schemas, Claude compatibility, command / skill frontmatter, core agent inventory, capability pack structure, hooks, Markdown local links, and command documentation coverage.
+
+```bash
+node scripts/validate-all.mjs
+```
+
+On Windows without Bash, `validate-all` warns and skips local `bash -n` hook syntax checks. CI/Linux still runs those checks and must pass.
+
+## Quick Start
 
 ### Prerequisites
 
-- Regular Claude Code commands require a working Claude Code plugin marketplace and an installed `nova-plugin`.
-- Codex loop commands (`/codex-review-fix`, `/codex-review-only`, `/codex-verify-only`) require a locally callable Codex CLI and Bash for the scripts shipped with the skill.
-- Repository maintenance and local validation require Node.js 20+. Windows PowerShell can run the Node validators and `scripts/verify-agents.ps1`.
-- Hook scripts and `bash -n` syntax checks require Bash (macOS/Linux, Git Bash, WSL, or another `bash` available on PATH). On Windows without Bash, `node scripts/validate-all.mjs` warns and skips local `bash -n`; CI/Linux still runs it and must pass.
+- Claude Code plugin marketplace access with third-party marketplace support.
+- Regular `nova-plugin` commands require only the installed plugin.
+- Codex loop commands require a locally callable Codex CLI and Bash for the skill scripts.
+- Repository maintenance and local validation require Node.js 20+.
 
-### Step 1: Add the marketplace
+### Install
 
-Run in Claude Code:
+Add the marketplace in Claude Code:
 
 ```bash
 /plugin marketplace add lliangcol/llm-plugins-fusion
 ```
 
-### Step 2: Install the plugin
+Install the plugin:
 
 ```bash
 /plugin install nova-plugin@llm-plugins-fusion
 ```
 
-### Step 3: Start using it
+Confirm installation:
 
 ```bash
-# Show installed plugins
 /plugin
-
-# Use a command
-/senior-explore analyze the current project
 ```
 
----
+Start using it:
 
-## 📁 Repository structure
-
+```bash
+/senior-explore analyze the current project structure and main risks
 ```
+
+## Command Map
+
+New users should start with the unified commands: `/explore`, `/produce-plan`, `/review`, `/implement-plan`, and `/finalize-work`. Use the Codex trio when you need stronger external review and verification.
+
+| Stage | Goal | Recommended commands | Other commands |
+| --- | --- | --- | --- |
+| Explore | Understand the problem, gather facts, expose uncertainty | `/explore`, `/senior-explore` | `/explore-lite`, `/explore-review` |
+| Plan | Produce an implementation plan or design document | `/produce-plan` | `/plan-lite`, `/plan-review`, `/backend-plan` |
+| Review | Review code, plans, or branch risk | `/review` | `/review-lite`, `/review-only`, `/review-strict`, `/codex-review-only`, `/codex-verify-only` |
+| Implement | Execute an approved plan or run a fix loop | `/implement-plan`, `/codex-review-fix` | `/implement-standard`, `/implement-lite` |
+| Finalize | Summarize delivery, risks, verification, and follow-ups | `/finalize-work` | `/finalize-lite` |
+
+Common path:
+
+```text
+/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+```
+
+Codex loop path:
+
+```text
+/codex-review-only -> fix -> /codex-verify-only
+```
+
+Or use the semi-automated loop:
+
+```text
+/codex-review-fix
+```
+
+## Core Agents + Packs
+
+`nova-plugin` now uses 6 short, route-focused core agents for general responsibilities and 8 capability packs for domain rules. Packs are first-phase documentation-only capability bundles; they do not implement runtime dynamic loading. Installed plugins are enhanced mode only, and each pack must also define fallback mode.
+
+| Core agent | Responsibility |
+| --- | --- |
+| `orchestrator` | Decompose work, choose agent + pack, merge results, identify missing inputs |
+| `architect` | Architecture, boundaries, risks, migration plans, technical decisions |
+| `builder` | Implementation, refactoring, integration, scoped project edits |
+| `reviewer` | Code, design, security, and quality review with prioritized findings |
+| `verifier` | Tests, static checks, dependency security, CI/local validation |
+| `publisher` | README, docs, CHANGELOG, release notes, handoff |
+
+Capability packs: `java`, `security`, `dependency`, `docs`, `release`, `marketplace`, `frontend`, `mcp`.
+
+## Repository Contents
+
+```text
 llm-plugins-fusion/
-├── 📄 .claude-plugin/
-│   └── marketplace.json              # marketplace entry
-├── 📦 nova-plugin/                    # plugin
-│   ├── 📄 .claude-plugin/
-│   │   └── plugin.json               # plugin metadata
-│   ├── 📂 commands/                   # 20 command presets (17 existing + 3 Codex loop commands)
-│   │   ├── senior-explore.md
-│   │   ├── ⭐ explore.md          # Unified exploration command (new)
-│   │   ├── explore-lite.md
-│   │   ├── explore-review.md
-│   │   ├── plan-lite.md
-│   │   ├── produce-plan.md
-│   │   ├── backend-plan.md
-│   │   ├── plan-review.md
-│   │   ├── review-lite.md
-│   │   ├── ⭐ review.md           # Unified review command (new)
-│   │   ├── review-only.md
-│   │   ├── review-strict.md
-│   │   ├── codex-review-only.md
-│   │   ├── codex-verify-only.md
-│   │   ├── implement-plan.md
-│   │   ├── implement-standard.md
-│   │   ├── implement-lite.md
-│   │   ├── codex-review-fix.md
-│   │   ├── finalize-work.md
-│   │   └── finalize-lite.md
-│   ├── 📂 docs/                       # docs
-│   │   ├── README.md                  # docs index
-│   │   ├── guides/                    # command references and handbooks
-│   │   ├── commands/                  # command docs by workflow stage
-│   │   ├── agents/                    # agent summaries
-│   │   ├── architecture/              # designs and optimization notes
-│   │   └── overview/                  # project overview
-│   ├── 📂 hooks/                      # hooks config
-│   ├── 📂 agents/                     # sub-agent definitions
-│   └── 📂 skills/                     # skills, including _shared policies
-└── 📄 README.md                       # Chinese README
+|-- .claude-plugin/
+|   |-- marketplace.json              # Claude marketplace entry
+|   `-- marketplace.metadata.json     # repository-local trust/risk/date metadata
+|-- nova-plugin/
+|   |-- .claude-plugin/plugin.json    # plugin metadata and version source
+|   |-- commands/                     # 20 slash command thin wrappers
+|   |-- skills/                       # 20 nova-* skills + _shared policies
+|   |-- agents/                       # 6 core active agents
+|   |-- packs/                        # 8 capability pack docs
+|   |-- docs/                         # user docs, command docs, architecture, history
+|   `-- hooks/                        # Claude Code hook config and scripts
+|-- docs/
+|   |-- agents/                       # core agent routing, plugin-aware routing, and migration manifest
+|   `-- reports/archive/              # historical audit reports
+|-- schemas/                          # marketplace / metadata / plugin schemas
+|-- scripts/                          # local and CI validation scripts
+|-- README.md
+|-- CONTRIBUTING.md
+|-- CHANGELOG.md
+|-- ROADMAP.md
+`-- SECURITY.md
 ```
 
----
+## Documentation
 
-## 🔌 Plugin: `nova-plugin`
+| Document | Contents | Use case |
+| --- | --- | --- |
+| [nova-plugin docs index](../README.md) | Docs structure, command coverage, maintenance rules | First navigation point |
+| [Command Reference Guide](../guides/commands-reference-guide.en.md) | Parameters, examples, workflow templates | Daily command lookup |
+| [Command Handbook](../guides/claude-code-commands-handbook.en.md) | Command selection and copy-ready usage | Quick start |
+| [Codex Loop Guide](../commands/codex/codex-review-fix.README.en.md) | review / fix / verify collaboration | Claude Code + Codex |
+| [Skill-first design](../architecture/dual-track-design.md) | Command and skill responsibilities | Changing commands or skills |
+| [Hooks design](../architecture/hooks-design.md) | Pre-write checks and audit hooks | Maintaining safety boundaries |
+| [Core agent routing](../../../docs/agents/ROUTING.md) | Routing rules for 6 core agents and capability packs | Choosing or maintaining agents |
+| [Plugin-aware routing](../../../docs/agents/PLUGIN_AWARE_ROUTING.md) | Enhanced / fallback mode and pack activation rules | Maintaining pack routing |
+| [Capability packs](../../packs/README.md) | Index for 8 domain capability packs | Maintaining packs |
+| [Legacy agents summary](../agents/agents-summary.en.md) | Historical legacy agent roles | Inspecting old design |
 
-<table>
-<tr>
-<td width="120"><strong>Version</strong></td>
-<td>1.0.9</td>
-</tr>
-<tr>
-<td><strong>Author</strong></td>
-<td>liu liang</td>
-</tr>
-<tr>
-<td><strong>Commands</strong></td>
-<td>20 (17 existing + 3 Codex loop commands)</td>
-</tr>
-<tr>
-<td><strong>Positioning</strong></td>
-<td>Developer productivity workflow plugin</td>
-</tr>
-</table>
+## Maintenance
 
-### 🎯 Core capabilities
+Version sources:
 
-A developer-productivity plugin for LLM coding assistants (Claude Code compatible), covering an end-to-end engineering workflow plus a semi-automated Codex review/fix/verify loop.
+- `nova-plugin/.claude-plugin/plugin.json`
+- `.claude-plugin/marketplace.json`
+- `.claude-plugin/marketplace.metadata.json`
+- `CHANGELOG.md`
 
-### Workflow stages
+Commands and skills must stay one-to-one:
 
-| Stage    | Explore 🔍             | Plan 📝        | Review 🔎                     | Implement ⚙️                | Finalize 📦      |
-| -------- | ---------------------- | -------------- | ----------------------------- | --------------------------- | ---------------- |
-| Goal     | Understand the problem | Draft the plan | Review quality / Codex verify | Write code / Codex fix loop | Deliver outcomes |
-| Commands | 4 commands             | 4 commands     | 6 commands                    | 4 commands                  | 2 commands       |
-| Unified  | ⭐ `/explore`          | -              | ⭐ `/review` + Codex variants  | `/codex-review-fix`         | -                |
+```text
+nova-plugin/commands/<id>.md
+nova-plugin/skills/nova-<id>/SKILL.md
+```
 
----
+Each command must have three command docs:
 
-## 🧠 Agents
+```text
+nova-plugin/docs/commands/<stage>/<id>.md
+nova-plugin/docs/commands/<stage>/<id>.README.md
+nova-plugin/docs/commands/<stage>/<id>.README.en.md
+```
 
-Active agents: 14 (default-scanned: `nova-plugin/agents/`). Legacy agents: 69 (archived: `.claude/agents/archive/nova-plugin/agents/`; manifest: `docs/agents/MIGRATION_MANIFEST.md`).
+Codex command docs live in `nova-plugin/docs/commands/codex/`; this is the explicit exception to the stage-directory rule.
 
-- Routing & usage: `docs/agents/ROUTING.md`
-- Legacy summaries (kept for reference): `nova-plugin/docs/agents/agents-summary.md` / `nova-plugin/docs/agents/agents-summary.en.md`
+## Quality Gates
 
----
+Full validation:
 
-## 📚 Documentation
+```bash
+node scripts/validate-all.mjs
+```
 
-| 📄 Document                                                                | 📝 Description                                    | 🎯 Use cases                     |
-| -------------------------------------------------------------------------- | ------------------------------------------------- | -------------------------------- |
-| [📘 Command Reference Guide](../guides/commands-reference-guide.en.md) | Full parameters, 5+ scenarios, workflow templates | **Daily lookup, copy templates** |
-| [📗 Command Handbook](../guides/claude-code-commands-handbook.en.md)   | Grouped by type, command comparison               | **Quick start, pick a command**  |
-| [🧩 Codex Loop Guide](../commands/codex/codex-review-fix.README.en.md)         | review/fix/verify skills + scripts                | **Claude Code + Codex loop**     |
-| [🧭 Agents Routing](../../../docs/agents/ROUTING.md)         | Active agents, keyword routing, examples          | **Auto routing, pick agents**    |
-| [🧠 Agents Summary](../agents/agents-summary.en.md)                 | Agent roles, tools, and scenarios                 | **Understand and pick agents**   |
+Targeted checks:
 
-For the Chinese version, see `nova-plugin/docs/README.md` and `nova-plugin/docs/agents/agents-summary.md`.
+```bash
+node scripts/validate-schemas.mjs
+node scripts/validate-claude-compat.mjs
+node scripts/lint-frontmatter.mjs
+node scripts/validate-packs.mjs
+node scripts/validate-hooks.mjs
+node scripts/validate-docs.mjs
+```
+
+Agent check:
+
+```bash
+bash scripts/verify-agents.sh
+```
+
+Windows PowerShell:
+
+```powershell
+.\scripts\verify-agents.ps1
+```
+
+Pack check:
+
+```bash
+node scripts/validate-packs.mjs
+```
+
+Hook shell syntax checks require Bash:
+
+```bash
+bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+```
+
+## Contributing
+
+Read [CONTRIBUTING.md](../../../CONTRIBUTING.md) before opening a PR. Report security issues privately using [SECURITY.md](../../../SECURITY.md). See [ROADMAP.md](../../../ROADMAP.md) for planned work.
+
+## License
+
+This project is licensed under the [MIT License](../../../LICENSE).
