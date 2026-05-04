@@ -127,8 +127,10 @@ write_latest_pointer "$OUTPUT_DIR"
 LATEST_ARTIFACTS_DIR="${ROOT}/.codex/codex-review-fix/latest-artifacts"
 LATEST_REVIEW_FILE="${LATEST_ARTIFACTS_DIR}/review.md"
 LATEST_VERIFY_FILE="${LATEST_ARTIFACTS_DIR}/verify.md"
-# 新 review 产生后，上一轮 verify 作废。
-rm -f "${LATEST_VERIFY_FILE}"
+LATEST_CHECKS_FILE="${LATEST_ARTIFACTS_DIR}/checks.txt"
+CURRENT_CHECKS_FILE="${ARTIFACTS_DIR}/checks.txt"
+# 新 review 产生后，上一轮 verify/checks 作废。
+rm -f "${LATEST_VERIFY_FILE}" "${LATEST_CHECKS_FILE}" "${CURRENT_CHECKS_FILE}"
 if [[ "${REVIEW_FILE}" != "${LATEST_REVIEW_FILE}" ]]; then
   cp -f "${REVIEW_FILE}" "${LATEST_REVIEW_FILE}"
 fi

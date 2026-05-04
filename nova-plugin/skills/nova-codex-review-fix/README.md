@@ -110,7 +110,12 @@ Claude Code 在使用主技能时应遵循：
 - 当前仓库会优先覆盖：
   - `scripts/verify-agents.sh`
   - `node scripts/validate-schemas.mjs`
+  - `node scripts/validate-claude-compat.mjs`
   - `node scripts/lint-frontmatter.mjs`
+  - `node scripts/validate-packs.mjs`
+  - `node scripts/validate-hooks.mjs`
+  - `node scripts/validate-docs.mjs`
+  - hook 脚本 `bash -n` 语法检查（当 Bash 可用时）
 
 ## 8. 典型工作流示例
 
@@ -172,7 +177,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-fix/scripts/codex-verify.sh
 - `checks.txt`：本地 checks 输出，可供 verify 使用
 - `review.md`：Codex 审查结果
 - `verify.md`：Codex 复验结果
-- 新一轮 review 成功同步后会清理 `latest-artifacts` 中旧的 `verify.md`，避免误读过期结论
+- 新一轮 review 成功同步后会清理旧的 `verify.md` 和 `checks.txt`，避免 verify 误读过期结论或上一轮检查结果
 
 ## 10. 常见问题排查
 

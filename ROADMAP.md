@@ -14,12 +14,12 @@
 
 ## 短期（当前维护窗口）— 标准对齐 + 止血
 
-目标：**在 v1.0.9 基线之上保持 Claude plugin validate、schema、frontmatter lint、hooks 和文档契约稳定；v1.1.0 继续作为下一轮能力扩展目标**。
+目标：**在 v1.0.9 基线之上保持 Claude plugin validate、schema、frontmatter lint、agents/packs、hooks 和文档契约稳定；v1.1.0 继续作为下一轮能力扩展目标**。
 
 | 任务 | 状态 | 说明 |
 | --- | --- | --- |
 | 提交 Codex 三件套并 bump v1.0.8 | ✅ 完成 | `codex-review-fix` / `codex-review-only` / `codex-verify-only` |
-| 开放 `schemas/*.json` 封闭性 | ✅ 完成 | Draft-07 继续使用，`additionalProperties: true`；`source` 改 `oneOf` |
+| 调整 schema 扩展边界 | ✅ 完成 | Draft-07 继续使用；marketplace manifest 支持必要扩展，plugin 与 repository-local metadata schema 保持明确契约；`source` 改 `oneOf` |
 | SKILL.md frontmatter 迁移到 Agent Skills 开放标准 | ✅ 完成 | 自定义字段收入 `metadata.novaPlugin.*` |
 | 命令 frontmatter 统一 | ✅ 完成 | 补 `allowed-tools`、`invokes.skill`、`destructive-actions` 枚举 |
 | skill-first / thin-command 收敛 | ✅ 完成 | command 保留 slash 入口，行为事实源迁移到 `SKILL.md` 与 `_shared` 策略 |
@@ -28,7 +28,7 @@
 | `lint-frontmatter.mjs` + CI 接入 | ✅ 完成 | 防止命令/skill 元数据漂移 |
 | `validate-hooks.mjs` + CI 接入 | ✅ 完成 | 校验 hook 配置和 Bash 脚本引用；CI/Linux 执行 `bash -n` |
 | `validate-docs.mjs` + CI 接入 | ✅ 完成 | 校验 Markdown 本地链接与锚点、命令文档 stage 覆盖、版本日期同步和非归档报告状态 |
-| `validate-all.mjs` 本地总入口 | ✅ 完成 | 串联 schema、frontmatter、agent、hook、docs；Windows 无 Bash 时仅 warning 跳过 `bash -n` |
+| `validate-all.mjs` 本地总入口 | ✅ 完成 | 串联 schema、Claude 兼容性、frontmatter、agent、pack、hook、docs；Windows 无 Bash 时仅 warning 跳过 `bash -n` |
 
 ## 中期（1–2 月）— 多插件 + 市场门面
 

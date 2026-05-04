@@ -17,7 +17,7 @@
 ### 准备工作
 
 1. Fork 本仓库，从 `main` 切出特性分支：`git checkout -b feat/<topic>`。
-2. 准备 Node.js 20+，用于运行仓库级 schema、frontmatter、hooks 与 docs 校验脚本。
+2. 准备 Node.js 20+，用于运行仓库级 schema、Claude 兼容性、frontmatter、pack、hooks 与 docs 校验脚本。
 3. 若要验证 active agents，在 macOS / Linux / Git Bash 中运行 Bash 脚本，或在 Windows PowerShell 中运行对应 `.ps1` 脚本。
 4. 若要执行 hook 脚本语法检查，需要 Bash（macOS/Linux、Git Bash、WSL 或其他 PATH 中可用的 `bash`）。Windows 本地没有 Bash 时，`node scripts/validate-all.mjs` 会 warning 跳过 `bash -n`；CI/Linux 仍必须执行并通过。
    ```bash
@@ -72,23 +72,26 @@ chore(schemas): tighten plugin.schema.json enum
 # 1. schema 校验
 node scripts/validate-schemas.mjs
 
-# 2. commands / skills frontmatter 校验
+# 2. Claude 兼容性校验
+node scripts/validate-claude-compat.mjs
+
+# 3. commands / skills frontmatter 校验
 node scripts/lint-frontmatter.mjs
 
-# 3. agent 校验
+# 4. agent 校验
 bash scripts/verify-agents.sh
 
-# 4. pack 校验
+# 5. pack 校验
 node scripts/validate-packs.mjs
 
-# 5. hook 配置校验
+# 6. hook 配置校验
 node scripts/validate-hooks.mjs
 
-# 6. hook Bash 语法校验（需要 Bash）
+# 7. hook Bash 语法校验（需要 Bash）
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 
-# 7. docs 校验
+# 8. docs 校验
 node scripts/validate-docs.mjs
 ```
 

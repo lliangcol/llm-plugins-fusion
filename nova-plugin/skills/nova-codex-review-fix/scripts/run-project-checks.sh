@@ -100,8 +100,16 @@ discover_repo_tasks() {
     append_task "lint" "repo validate-schemas" "${ROOT}" "node scripts/validate-schemas.mjs"
   fi
 
+  if [[ -f "${ROOT}/scripts/validate-claude-compat.mjs" ]] && command -v node >/dev/null 2>&1; then
+    append_task "lint" "repo validate-claude-compat" "${ROOT}" "node scripts/validate-claude-compat.mjs"
+  fi
+
   if [[ -f "${ROOT}/scripts/lint-frontmatter.mjs" ]] && command -v node >/dev/null 2>&1; then
     append_task "lint" "repo lint-frontmatter" "${ROOT}" "node scripts/lint-frontmatter.mjs"
+  fi
+
+  if [[ -f "${ROOT}/scripts/validate-packs.mjs" ]] && command -v node >/dev/null 2>&1; then
+    append_task "lint" "repo validate-packs" "${ROOT}" "node scripts/validate-packs.mjs"
   fi
 
   if [[ -f "${ROOT}/scripts/validate-hooks.mjs" ]] && command -v node >/dev/null 2>&1; then
