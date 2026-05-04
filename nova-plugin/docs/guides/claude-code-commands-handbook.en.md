@@ -35,7 +35,7 @@ This command set decomposes an engineering activity into five phases:
 | A **lightweight execution plan** (no code)                          | `/plan-lite`                         | Goals, non-goals, approach, trade-offs, outline, key risks                                  |
 | A **formal design/plan doc** written to a file                      | `/produce-plan` or `/backend-plan`   | Strong structure + forced file output; `/backend-plan` emphasizes Java/Spring concerns      |
 | Review decision quality of a plan (don’t change the plan)           | `/plan-review`                       | Clarity, assumptions, risk signals, review questions                                        |
-| Quick PR feedback for day-to-day changes                            | `/review-lite`                       | Fast and high signal-to-noise                                                               |
+| Quick PR feedback for day-to-day changes                            | `/review LEVEL=lite` or `/review-lite` | Unified command lite level; fast and high signal-to-noise                                  |
 | Standard strict review of core logic (no implementation)            | `/review` or `/review-only`          | Unified command defaults to standard review; severity levels + directional guidance          |
 | Audit-style review for high-risk modules                            | `/review LEVEL=strict` or `/review-strict` | Unified command switches to strict review; suitable for “gate” reviews                       |
 | Review then fix the current branch with Codex verification          | `/codex-review-fix`                  | Runs review -> Claude Code fix -> local checks -> Codex verify                              |
@@ -173,13 +173,14 @@ Only output:
 
 ## 4. Category 3: Review (Review only, no code)
 
-### 4.1 `/review-lite` vs `/review-only` vs `/review-strict`
+### 4.1 `/review LEVEL=lite` vs `/review LEVEL=standard` vs `/review LEVEL=strict`
 
-| Dimension | `/review-lite`     | `/review-only`                         | `/review-strict`                                  |
-| --------- | ------------------ | -------------------------------------- | ------------------------------------------------- |
-| Depth     | light, high signal | systematic, severity-based             | exhaustive, harsh “audit” style                   |
-| Output    | bullet findings    | Critical/Major/Minor + why + direction | same, but covers more dimensions                  |
-| Best for  | day-to-day PRs     | core paths, mid/high risk              | finance/concurrency/large refactors/release gates |
+| Dimension | `/review LEVEL=lite` | `/review LEVEL=standard`               | `/review LEVEL=strict`                            |
+| --------- | -------------------- | -------------------------------------- | ------------------------------------------------- |
+| Shortcut  | `/review-lite`       | `/review-only`                         | `/review-strict`                                  |
+| Depth     | light, high signal   | systematic, severity-based             | exhaustive, harsh “audit” style                   |
+| Output    | bullet findings      | Critical/Major/Minor + why + direction | same, but covers more dimensions                  |
+| Best for  | day-to-day PRs       | core paths, mid/high risk              | finance/concurrency/large refactors/release gates |
 
 ---
 
@@ -239,9 +240,9 @@ Only output:
 
 ### Scenario C: PR review
 
-- Small change: `/review-lite`
-- Core path: `/review-only`
-- Concurrency/finance/large refactor: `/review-strict`
+- Small change: `/review LEVEL=lite` or `/review-lite`
+- Core path: `/review LEVEL=standard` or `/review-only`
+- Concurrency/finance/large refactor: `/review LEVEL=strict` or `/review-strict`
 
 ---
 

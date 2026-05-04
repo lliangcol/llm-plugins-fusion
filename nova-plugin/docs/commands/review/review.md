@@ -10,7 +10,7 @@
 
 | 参数 | 必填 | 说明 | 示例 |
 | --- | --- | --- | --- |
-| `LEVEL` | No | `standard` 或 `strict`，默认 `standard` | `strict` |
+| `LEVEL` | No | `lite`、`standard` 或 `strict`，默认 `standard` | `lite` |
 | `ARGUMENTS` | Yes | 待评审内容 | `代码片段或实现说明` |
 
 ## 输出
@@ -22,6 +22,8 @@
 - Minor
 
 每条发现应说明问题、影响和方向性改进建议。
+
+`LEVEL=lite` 路由到轻量快速评审，输出更短的 bullet findings。
 
 ## 示例
 
@@ -35,9 +37,13 @@
 请严格评审这段支付回调代码，关注并发、数据一致性和安全风险。
 ```
 
+```text
+/review LEVEL=lite
+请快速评审这个小型 PR diff，优先指出明显风险。
+```
+
 ## 注意事项
 
 - 不写或修改代码。
 - 不提供完整实现。
 - 不扩展到未提供的范围。
-

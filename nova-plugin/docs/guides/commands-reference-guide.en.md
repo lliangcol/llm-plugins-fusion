@@ -44,9 +44,9 @@
 | **Design / planning**    | Formal design doc                      | `/produce-plan`       | [Example](#场景-正式设计文档)     |
 | **Design / planning**    | Java backend design (Spring)           | `/backend-plan`       | [Example](#场景-java后端设计)     |
 | **Plan review**          | Review a plan document                 | `/plan-review`        | [Example](#场景-计划文档评审)     |
-| **Code review**          | Day-to-day PR review                   | `/review-lite`        | [Example](#场景-日常pr评审)       |
-| **Code review**          | Core logic review                      | `/review-only`        | [Example](#场景-核心逻辑评审)     |
-| **Code review**          | High-risk audit-style review           | `/review-strict`      | [Example](#场景-高风险代码审计)   |
+| **Code review**          | Day-to-day PR review                   | `/review LEVEL=lite` or `/review-lite` | [Example](#场景-日常pr评审)       |
+| **Code review**          | Core logic review                      | `/review LEVEL=standard` or `/review-only` | [Example](#场景-核心逻辑评审)     |
+| **Code review**          | High-risk audit-style review           | `/review LEVEL=strict` or `/review-strict` | [Example](#场景-高风险代码审计)   |
 | **Codex loop**           | Review then fix current branch         | `/codex-review-fix`   | [Workflow](#workflow-c2-codex-loop) |
 | **Codex loop**           | Generate Codex review only             | `/codex-review-only`  | [Workflow](#workflow-c2-codex-loop) |
 | **Codex loop**           | Verify an existing Codex review        | `/codex-verify-only`  | [Workflow](#workflow-c2-codex-loop) |
@@ -105,7 +105,7 @@ The diagram shows the core Explore -> Plan -> Review -> Implement -> Finalize fl
 | Plan      | `/produce-plan`       | 🔴 Strong  | Plan doc (file)       |      ❌      | Supports profile param                      |
 | Plan      | `/backend-plan`       | 🔴 Strong  | Backend design (file) |      ❌      | = `/produce-plan PLAN_PROFILE=java-backend` |
 | Plan      | `/plan-review`        | 🟡 Medium  | Review output         |      ❌      | -                                           |
-| Review    | `/review-lite`        |  🟢 Weak   | Findings bullets      |      ❌      | Quick review                                |
+| Review    | `/review-lite`        |  🟢 Weak   | Findings bullets      |      ❌      | = `/review LEVEL=lite`                     |
 | Review    | ⭐`/review`           |   🟡-🔴    | Critical/Major/Minor  |      ❌      | **Unified command, recommended**            |
 | Review    | `/review-only`        | 🟡 Medium  | Critical/Major/Minor  |      ❌      | = `/review LEVEL=standard`                  |
 | Review    | `/review-strict`      | 🔴 Strong  | Exhaustive review     |      ❌      | = `/review LEVEL=strict`                    |
@@ -443,7 +443,7 @@ Only output: Decision clarity / Assumptions & gaps / Risk signals / Review quest
 
 ## 🔎 Review Commands (No coding)
 
-### `/review-lite` — Lightweight PR review
+### `/review LEVEL=lite` / `/review-lite` — Lightweight PR review
 
 #### 🎯 Positioning
 
@@ -465,7 +465,7 @@ Only output: Decision clarity / Assumptions & gaps / Risk signals / Review quest
 ##### Scenario: Day-to-day PR review
 
 ```text
-/review-lite
+/review LEVEL=lite
 PR goal:
 Diff / key files:
 Constraints:
@@ -670,9 +670,9 @@ Constraints:
 ### Workflow C: PR code review
 
 ```text
-Small change   → /review-lite
-Core logic     → /review-only
-High risk      → /review-strict
+Small change   → /review LEVEL=lite
+Core logic     → /review LEVEL=standard
+High risk      → /review LEVEL=strict
 ```
 
 <a id="workflow-c2-codex-loop"></a>
@@ -739,9 +739,9 @@ Examples:
 
 | Command          | Use case         | Depth     |
 | ---------------- | ---------------- | --------- |
-| `/review-lite`   | Day-to-day PRs   | 🟢 Light  |
-| `/review-only`   | Core paths       | 🟡 Medium |
-| `/review-strict` | High-risk audits | 🔴 Deep   |
+| `/review LEVEL=lite` / `/review-lite` | Day-to-day PRs   | 🟢 Light  |
+| `/review LEVEL=standard` / `/review-only` | Core paths       | 🟡 Medium |
+| `/review LEVEL=strict` / `/review-strict` | High-risk audits | 🔴 Deep   |
 | `/codex-review-only` | Branch review artifact | 🟡 Medium |
 | `/codex-verify-only` | Directed verification | 🟡 Medium |
 

@@ -1,9 +1,9 @@
 ---
 name: nova-review
-description: Unified review Hub Skill. Route by LEVEL to standard or strict review outputs; no code modification.
+description: Unified review Hub Skill. Route by LEVEL to lite, standard, or strict review outputs; no code modification.
 license: MIT
 allowed-tools: Read Glob Grep LS
-argument-hint: "Example: review LEVEL=strict INPUT='payment diff'"
+argument-hint: "Example: review LEVEL=lite INPUT='small PR diff'"
 metadata:
   novaPlugin:
     userInvocable: true
@@ -63,25 +63,26 @@ metadata:
 
 ## Examples
 
-- Use `/review` as the hub for standard or strict review.
+- Use `/review` as the hub for lite, standard, or strict review.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Skill-Specific Guidance
 
 ### Purpose
 
-Provide structured, severity-based review findings for code/design artifacts.
+Provide structured review findings for code/design artifacts, with routing by requested depth.
 
 ### Inputs
 
 | Parameter | Required | Default    | Notes                  | Example                 |
 | --------- | -------- | ---------- | ---------------------- | ----------------------- |
-| `LEVEL`   | No       | `standard` | `standard` or `strict` | `strict`                |
+| `LEVEL`   | No       | `standard` | `lite`, `standard`, or `strict` | `lite`                  |
 | `INPUT`   | Yes      | N/A        | Review target content  | `PR diff / module code` |
 
 ### Outputs
 
-- Severity buckets: `Critical`, `Major`, `Minor`.
+- `lite`: concise bullet findings through `nova-review-lite`.
+- `standard` and `strict`: severity buckets through `Critical`, `Major`, `Minor`.
 - Directional suggestions only.
 
 ### Workflow
@@ -89,6 +90,7 @@ Provide structured, severity-based review findings for code/design artifacts.
 1. Parse level and target.
 2. Hub routing policy:
 
+- `lite` -> `nova-review-lite`
 - `standard` -> `nova-review-only`
 - `strict` -> `nova-review-strict`
 
@@ -125,6 +127,7 @@ From `$ARGUMENTS`, extract the following:
 
 Choose the review depth level:
 
+- `lite` → Lightweight PR-style review with concise findings
 - `standard` (default) → Normal code review with Critical/Major/Minor findings
 - `strict` → Exhaustive high-stakes audit for production-critical code
 
@@ -163,7 +166,13 @@ You MUST NOT:
 
 Review the input comprehensively for:
 
-##### Standard level (all reviews):
+##### Lite level:
+
+- Obvious correctness bugs
+- Missing checks or tests likely to matter
+- High-signal maintainability risks
+
+##### Standard level:
 
 - Correctness
 - Overengineering or unnecessary complexity

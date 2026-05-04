@@ -339,9 +339,15 @@ function expectRegex(file, pattern, expected, label) {
 function validateVersionReferences() {
   const plugin = readJson('nova-plugin/.claude-plugin/plugin.json');
   const marketplace = readJson('.claude-plugin/marketplace.json');
+  const metadata = readJson('.claude-plugin/marketplace.metadata.json');
   const marketplaceEntry = marketplace.plugins?.find((entry) => entry.name === plugin.name);
   if (!marketplaceEntry) {
     recordError('.claude-plugin/marketplace.json', `missing plugin entry for ${plugin.name}`);
+    return;
+  }
+  const metadataEntry = metadata.plugins?.find((entry) => entry.name === plugin.name);
+  if (!metadataEntry) {
+    recordError('.claude-plugin/marketplace.metadata.json', `missing plugin metadata for ${plugin.name}`);
     return;
   }
 
@@ -351,9 +357,15 @@ function validateVersionReferences() {
       `plugins[].version is "${marketplaceEntry.version}", expected "${plugin.version}"`,
     );
   }
+  if (metadataEntry.version !== plugin.version) {
+    recordError(
+      '.claude-plugin/marketplace.metadata.json',
+      `plugins[].version is "${metadataEntry.version}", expected "${plugin.version}"`,
+    );
+  }
 
   const version = plugin.version;
-  const updated = marketplaceEntry['last-updated'];
+  const updated = metadataEntry['last-updated'];
 
   expectRegex('README.md', /version-(\d+\.\d+\.\d+)-blue\.svg/, version, 'version badge');
   expectRegex('README.md', /<td>(\d+\.\d+\.\d+)<\/td>/, version, 'plugin version table value');
@@ -396,7 +408,7 @@ function validateVersionReferences() {
       'command reference last-updated date',
     );
   } else {
-    recordWarning('.claude-plugin/marketplace.json', 'nova-plugin has no last-updated field');
+    recordWarning('.claude-plugin/marketplace.metadata.json', 'nova-plugin has no last-updated field');
   }
 
   const changelog = readFileSync(resolve(root, 'CHANGELOG.md'), 'utf8');
@@ -409,6 +421,49 @@ function validateVersionReferences() {
       'CHANGELOG.md',
       `release date for ${version} is "${changelogMatch[1]}", expected "${updated}"`,
     );
+  }
+}
+
+function validateReviewLevelLiteContract() {
+  const activeFiles = [
+    'nova-plugin/skills/nova-review/SKILL.md',
+    'nova-plugin/commands/review.md',
+    'nova-plugin/docs/commands/review/review.md',
+    'nova-plugin/docs/commands/review/review.README.md',
+    'nova-plugin/docs/commands/review/review.README.en.md',
+    'nova-plugin/docs/guides/commands-reference-guide.md',
+    'nova-plugin/docs/guides/commands-reference-guide.en.md',
+    'nova-plugin/docs/guides/claude-code-commands-handbook.md',
+    'nova-plugin/docs/guides/claude-code-commands-handbook.en.md',
+  ];
+  const stalePatterns = [
+    /不在统一命令/,
+    /not part of the unified command depth switch/i,
+  ];
+
+  for (const file of activeFiles) {
+    const src = readFileSync(resolve(root, file), 'utf8');
+    if (!/LEVEL=lite/.test(src)) {
+      recordError(file, 'missing /review LEVEL=lite contract');
+    }
+    for (const pattern of stalePatterns) {
+      if (pattern.test(src)) {
+        recordError(file, `stale /review LEVEL=lite wording matches ${pattern}`);
+      }
+    }
+  }
+
+  const skill = readFileSync(resolve(root, 'nova-plugin/skills/nova-review/SKILL.md'), 'utf8');
+  const routes = [
+    ['lite', 'nova-review-lite'],
+    ['standard', 'nova-review-only'],
+    ['strict', 'nova-review-strict'],
+  ];
+  for (const [level, target] of routes) {
+    const pattern = new RegExp(`\`${level}\`\\s*->\\s*\`${target}\``);
+    if (!pattern.test(skill)) {
+      recordError('nova-plugin/skills/nova-review/SKILL.md', `missing route ${level} -> ${target}`);
+    }
   }
 }
 
@@ -432,6 +487,7 @@ function validateReports() {
 validateMarkdownLinks();
 validateCommandDocs();
 validateVersionReferences();
+validateReviewLevelLiteContract();
 validateReports();
 
 if (warnings.length) {

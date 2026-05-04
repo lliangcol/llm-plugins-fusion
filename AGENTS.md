@@ -17,6 +17,7 @@ Explore -> Plan -> Review -> Implement -> Finalize
 ## Quick Facts
 
 - Marketplace entry: `.claude-plugin/marketplace.json`
+- Marketplace custom metadata: `.claude-plugin/marketplace.metadata.json`
 - Main plugin metadata: `nova-plugin/.claude-plugin/plugin.json`
 - Plugin version source of truth: `nova-plugin/.claude-plugin/plugin.json`
 - Commands: 20 files under `nova-plugin/commands/*.md`
@@ -32,14 +33,18 @@ Explore -> Plan -> Review -> Implement -> Finalize
 ## Sources of Truth
 
 - Plugin version: `nova-plugin/.claude-plugin/plugin.json`, mirrored in
-  `.claude-plugin/marketplace.json`.
+  `.claude-plugin/marketplace.json` and `.claude-plugin/marketplace.metadata.json`.
+- Marketplace-only custom status fields, including `last-updated`, live in
+  `.claude-plugin/marketplace.metadata.json`.
 - Command definitions: `nova-plugin/commands/*.md`.
 - Skill definitions: `nova-plugin/skills/nova-*/SKILL.md`.
 - Command documentation: `nova-plugin/docs/commands/`.
 - Shared command/skill policies: `nova-plugin/skills/_shared/`.
 - Active agent set: `nova-plugin/agents/`, enforced by
   `scripts/verify-agents.sh` and `scripts/verify-agents.ps1`.
-- Marketplace and plugin schemas: `schemas/marketplace.schema.json` and
+- Marketplace, marketplace metadata, and plugin schemas:
+  `schemas/marketplace.schema.json`,
+  `schemas/marketplace-metadata.schema.json`, and
   `schemas/plugin.schema.json`.
 
 ## Repository Layout
@@ -47,7 +52,8 @@ Explore -> Plan -> Review -> Implement -> Finalize
 ```text
 claude-plugins-fusion/
 |-- .claude-plugin/
-|   `-- marketplace.json              # Plugin marketplace entry
+|   |-- marketplace.json              # Plugin marketplace entry
+|   `-- marketplace.metadata.json     # Repository-local marketplace metadata
 |-- .github/workflows/
 |   |-- ci.yml                        # Agent, schema, and frontmatter checks
 |   `-- release.yml                   # Tag-based release and release notes
@@ -60,7 +66,7 @@ claude-plugins-fusion/
 |   |-- agents/                       # 14 default active agents
 |   |-- docs/                         # Command, skill, Codex, and agent docs
 |   `-- hooks/                        # Claude Code hook config and scripts
-|-- schemas/                          # Marketplace and plugin JSON Schemas
+|-- schemas/                          # Marketplace, metadata, and plugin JSON Schemas
 |-- scripts/                          # Repository-level validation scripts
 |-- README.md                         # User-facing overview and quickstart
 |-- CLAUDE.md                         # Claude Code repository guidance
@@ -84,6 +90,7 @@ On Bash-compatible shells:
 
 ```bash
 node scripts/validate-schemas.mjs
+node scripts/validate-claude-compat.mjs
 node scripts/lint-frontmatter.mjs
 bash scripts/verify-agents.sh
 node scripts/validate-hooks.mjs
@@ -96,6 +103,7 @@ On Windows PowerShell:
 
 ```powershell
 node scripts/validate-schemas.mjs
+node scripts/validate-claude-compat.mjs
 node scripts/lint-frontmatter.mjs
 .\scripts\verify-agents.ps1
 node scripts/validate-hooks.mjs
@@ -113,8 +121,10 @@ as locally passed unless Bash actually ran them.
 
 - `.claude-plugin/marketplace.json` registers installable plugins.
 - `nova-plugin/.claude-plugin/plugin.json` declares plugin name, version,
-  author, license, keywords, homepage, and repository metadata. Marketplace-only
-  display fields such as category and tags live in `.claude-plugin/marketplace.json`.
+  author, license, keywords, homepage, and repository metadata. Claude-compatible
+  marketplace display fields such as category and tags live in
+  `.claude-plugin/marketplace.json`; repository-local trust/risk/deprecation and
+  `last-updated` metadata lives in `.claude-plugin/marketplace.metadata.json`.
 - `nova-plugin/commands/*.md` contains Claude Code command definitions.
 - `nova-plugin/skills/nova-*/SKILL.md` contains Agent Skill definitions
   discovered by directory convention.
@@ -195,7 +205,7 @@ loop crosses workflow stages. Each command still needs `<id>.md`,
 - `/explore` is the unified exploration entry point. It routes by
   `PERSPECTIVE=observer|reviewer`.
 - `/review` is the unified review entry point. It adjusts review depth by
-  `LEVEL=standard|strict`.
+  `LEVEL=lite|standard|strict`.
 - `codex-review-only` runs Codex review only and writes a structured review
   artifact.
 - `codex-review-fix` runs review -> Claude Code fix -> local checks -> Codex
@@ -285,7 +295,8 @@ Also update:
 - the command overview or version notes in `README.md`
 - `CHANGELOG.md`
 - `nova-plugin/.claude-plugin/plugin.json` `version`
-- `.claude-plugin/marketplace.json` plugin `version` and `last-updated`
+- `.claude-plugin/marketplace.json` plugin `version`
+- `.claude-plugin/marketplace.metadata.json` plugin `version` and `last-updated`
 - `CLAUDE.md`, if quick facts, counts, workflows, or constraints changed
 - `AGENTS.md`, if agent-facing facts, counts, workflows, or constraints changed
 - `nova-plugin/docs/commands/<stage>/<id>.md`, `<id>.README.md`, and
@@ -309,7 +320,8 @@ node scripts/validate-all.mjs
 Version information must stay synchronized across:
 
 - `nova-plugin/.claude-plugin/plugin.json` `version`
-- `.claude-plugin/marketplace.json` plugin `version` and `last-updated`
+- `.claude-plugin/marketplace.json` plugin `version`
+- `.claude-plugin/marketplace.metadata.json` plugin `version` and `last-updated`
 - `CHANGELOG.md`
 - `CLAUDE.md`, if quick facts, counts, constraints, or workflows changed
 - `AGENTS.md`, if agent-facing facts, counts, constraints, or workflows changed
@@ -325,6 +337,7 @@ After metadata or schema changes, run:
 
 ```bash
 node scripts/validate-schemas.mjs
+node scripts/validate-claude-compat.mjs
 ```
 
 ### Modify Agents
@@ -381,7 +394,8 @@ node scripts/validate-docs.mjs
 ```
 
 This validates Markdown local links including anchors, command doc coverage and
-stage placement, release version/date sync, and non-archived report status.
+stage placement, release version/date sync from marketplace metadata, and
+non-archived report status.
 
 For a full pre-release or broad workflow change:
 
@@ -393,8 +407,8 @@ On Windows PowerShell, `validate-all.mjs` uses `.\scripts\verify-agents.ps1`.
 If Bash is unavailable, it warning-skips only the local `bash -n` hook syntax
 checks; CI/Linux still runs them.
 
-Current CI includes verify-agents, validate-schemas, lint-frontmatter,
-validate-hooks, hook `bash -n`, and validate-docs.
+Current CI includes verify-agents, validate-schemas, validate-claude-compat,
+lint-frontmatter, validate-hooks, hook `bash -n`, and validate-docs.
 
 ## Do Not Edit
 

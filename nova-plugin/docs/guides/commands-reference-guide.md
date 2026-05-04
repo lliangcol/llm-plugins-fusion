@@ -39,7 +39,7 @@
 | **方案设计** | 正式设计文档   | `/produce-plan`                                        | [示例](#场景-正式设计文档)     |
 | **方案设计** | Java后端设计   | `/backend-plan`                                        | [示例](#场景-java后端设计)     |
 | **方案评审** | 计划文档评审   | `/plan-review`                                         | [示例](#场景-计划文档评审)     |
-| **代码评审** | 日常PR评审     | `/review-lite`                                         | [示例](#场景-日常pr评审)       |
+| **代码评审** | 日常PR评审     | ⭐`/review LEVEL=lite` 或 `/review-lite`                | [示例](#场景-日常pr评审)       |
 | **代码评审** | 核心逻辑评审   | ⭐`/review` 或 `/review-only`                          | [示例](#场景-核心逻辑评审)     |
 | **代码评审** | 高风险代码审计 | ⭐`/review LEVEL=strict` 或 `/review-strict`           | [示例](#场景-高风险代码审计)   |
 | **闭环修复** | 当前分支闭环修复 | `/codex-review-fix`                                 | [示例](#工作流-c2-codex-闭环修复) |
@@ -98,7 +98,7 @@
 | 规划 | `/produce-plan`       | 🔴 强    | 正式文档   | ❌ 禁止    | 支持 profile 参数                                |
 | 规划 | `/backend-plan`       | 🔴 强    | 设计文档   | ❌ 禁止    | 等价于 `/produce-plan PLAN_PROFILE=java-backend` |
 | 规划 | `/plan-review`        | 🟡 中    | 评审意见   | ❌ 禁止    | -                                                |
-| 评审 | `/review-lite`        | 🟢 弱    | 反馈列表   | ❌ 禁止    | 快速评审                                         |
+| 评审 | `/review-lite`        | 🟢 弱    | 反馈列表   | ❌ 禁止    | 等价于 `/review LEVEL=lite`                     |
 | 评审 | ⭐`/review`           | 🟡-🔴    | 分级问题   | ❌ 禁止    | **统一命令，推荐**                               |
 | 评审 | `/review-only`        | 🟡 中    | 分级问题   | ❌ 禁止    | 等价于 `/review LEVEL=standard`                  |
 | 评审 | `/review-strict`      | 🔴 强    | 全面审计   | ❌ 禁止    | 等价于 `/review LEVEL=strict`                    |
@@ -884,11 +884,11 @@ PLAN_OUTPUT_PATH: docs/plans/inventory-deduction-design.md
 
 | 参数    | 必填    | 说明         | 可选值                              | 默认值     |
 | ------- | ------- | ------------ | ----------------------------------- | ---------- |
-| `LEVEL` | ⚪ 可选 | 评审严格程度 | `standard` (标准) / `strict` (严格) | `standard` |
+| `LEVEL` | ⚪ 可选 | 评审严格程度 | `lite` (轻量) / `standard` (标准) / `strict` (严格) | `standard` |
 
 #### 🎯 输出格式
 
-**两种级别均使用统一的分级输出格式**：
+**标准和严格级别使用统一的分级输出格式；轻量级别输出更短的 bullet findings**：
 
 ```markdown
 ### Critical
@@ -921,6 +921,12 @@ PLAN_OUTPUT_PATH: docs/plans/inventory-deduction-design.md
 - 测试覆盖率和测试质量
 - 可维护性和长期可读性
 
+**lite 级别（轻量快速评审）**：
+
+- 明显正确性问题
+- 高信号测试缺口
+- 低风险 PR 中最值得关注的维护性风险
+
 **strict 级别（额外 2 项维度）**：
 
 - API 或模块边界清晰度
@@ -933,6 +939,7 @@ PLAN_OUTPUT_PATH: docs/plans/inventory-deduction-design.md
 
 | LEVEL      | 语气                       | 说明                 |
 | ---------- | -------------------------- | -------------------- |
+| `lite`     | 简洁、高信号               | 适合小型 PR 快速反馈 |
 | `standard` | 中立、精确、评审导向       | 适合日常代码评审     |
 | `strict`   | 批判但建设性、更详细的论证 | 适合生产关键代码审计 |
 
@@ -1005,12 +1012,13 @@ Response:
 
 | LEVEL      | 等价命令         | 说明                     |
 | ---------- | ---------------- | ------------------------ |
+| `lite`     | `/review-lite`   | 轻量快速评审             |
 | `standard` | `/review-only`   | 标准代码评审（7 项维度） |
 | `strict`   | `/review-strict` | 严格代码审计（9 项维度） |
 
 **推荐使用**：优先使用 `/review`，原有命令保留向后兼容。
 
-**注意**：`/review-lite` 是更轻量的快速评审命令，不在统一命令范围内。
+`/review-lite` 是 `/review LEVEL=lite` 的兼容快捷入口。
 
 ---
 
@@ -1628,9 +1636,9 @@ EXPORT_PATH: docs/analysis/payment-status-issue.md
 ```
 根据变更风险选择:
 
-小改动 → /review-lite
-核心链路 → /review-only
-高风险/并发/金融 → /review-strict
+小改动 → /review LEVEL=lite
+核心链路 → /review LEVEL=standard
+高风险/并发/金融 → /review LEVEL=strict
 ```
 
 ---
@@ -1711,9 +1719,9 @@ EXPORT_PATH: docs/analysis/payment-status-issue.md
 
 | 命令             | 适用场景   | 深度  |
 | ---------------- | ---------- | ----- |
-| `/review-lite`   | 日常 PR    | 🟢 轻 |
-| `/review-only`   | 核心链路   | 🟡 中 |
-| `/review-strict` | 高风险审计 | 🔴 深 |
+| `/review LEVEL=lite` / `/review-lite` | 日常 PR    | 🟢 轻 |
+| `/review LEVEL=standard` / `/review-only` | 核心链路   | 🟡 中 |
+| `/review LEVEL=strict` / `/review-strict` | 高风险审计 | 🔴 深 |
 | `/codex-review-only` | 分支 review 工件化 | 🟡 中 |
 | `/codex-verify-only` | 定向复验 | 🟡 中 |
 

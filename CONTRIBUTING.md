@@ -30,7 +30,8 @@
 - **Frontmatter 规范**：
   - `commands/*.md` 必需字段：`id`、`stage`、`title`、`description`、`destructive-actions`（枚举 `none|low|medium|high`）、`allowed-tools`、`invokes.skill`。
   - `skills/*/SKILL.md` 必需字段：`name`、`description`、`license`、`allowed-tools`（空格分隔字符串）、`metadata.novaPlugin.*`（`userInvocable` / `autoLoad` / `subagentSafe` / `destructiveActions`）。
-- **JSON Schema**：`marketplace.json` / `plugin.json` 改动后必须通过 `node scripts/validate-schemas.mjs`。
+- **JSON Schema**：`marketplace.json` / `marketplace.metadata.json` / `plugin.json` 改动后必须通过 `node scripts/validate-schemas.mjs`。
+- **Claude 兼容性**：官方 marketplace manifest 改动后必须通过 `node scripts/validate-claude-compat.mjs`；若本机存在 Claude CLI，该脚本会运行 `claude plugin validate .` 和 `claude plugin validate nova-plugin`。
 - **Hook 校验**：hook 配置或脚本改动后运行 `node scripts/validate-hooks.mjs`；Bash 可用时还要运行两个 hook 脚本的 `bash -n`。
 - **文档校验**：用户文档、命令文档、版本日期或报告归档改动后运行 `node scripts/validate-docs.mjs`；它会校验 Markdown 本地链接与锚点、命令文档 stage 位置、版本日期同步和非归档报告状态。
 - **命令文档组织**：常规命令文档按工作流 stage 放在 `nova-plugin/docs/commands/<stage>/`；Codex 三个命令文档集中放在 `nova-plugin/docs/commands/codex/`，这是维护规则的明确例外。
@@ -47,7 +48,8 @@
 
 每次版本变更需要同步：
 - `nova-plugin/.claude-plugin/plugin.json` 的 `version`
-- `.claude-plugin/marketplace.json` 的 `plugins[].version`、`last-updated`
+- `.claude-plugin/marketplace.json` 的 `plugins[].version`
+- `.claude-plugin/marketplace.metadata.json` 的 `plugins[].version`、`last-updated`
 - `CHANGELOG.md` 新增条目
 
 ### 提交信息

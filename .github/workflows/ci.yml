@@ -24,6 +24,16 @@ jobs:
           node-version: '20'
       - run: node scripts/validate-schemas.mjs
 
+  validate-claude-compat:
+    name: Validate Claude Compatibility
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/validate-claude-compat.mjs
+
   lint-frontmatter:
     name: Lint Frontmatter
     runs-on: ubuntu-latest

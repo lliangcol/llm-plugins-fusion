@@ -7,6 +7,7 @@
 | 路径 | 说明 |
 |------|------|
 | `archive/nova-plugin/agents/` | 旧版按领域分组的 agent 文件（共 69 个） |
+| `.claude/agents/active/` | 预留占位目录，不是当前 active agent 存放目录 |
 
 ## 当前活跃 agents
 
@@ -14,8 +15,11 @@
 
 ```
 nova-plugin/agents/          ← 当前使用（14 个 agent .md 文件）
-.claude/agents/active/       ← .claude 本地 agent 配置
 ```
+
+`.claude/agents/active/` 仅作为预留占位目录保留；当前仓库的 active agent
+定义以 `nova-plugin/agents/` 为准，并由 `scripts/verify-agents.sh` 和
+`scripts/verify-agents.ps1` 校验。
 
 ## 为什么保留此目录
 

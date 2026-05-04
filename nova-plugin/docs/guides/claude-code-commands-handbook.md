@@ -32,7 +32,7 @@
 | 需要一份**轻量执行计划**（不写代码）           | `/plan-lite`                                           | 目标、非目标、选型、权衡、执行大纲、关键风险                      |
 | 需要一份**正式可评审的设计/计划文档**写入文件  | `/produce-plan` 或 `/backend-plan`                     | 强制写文件 + 固定章节结构；前者更通用，后者偏 Java/Spring         |
 | 对"计划文档"做决策质量评审（不改计划）         | `/plan-review`                                         | 只看决策清晰度、隐含假设、风险信号、必须回答的问题                |
-| 对现有代码/描述做快速 PR 反馈                  | `/review-lite`                                         | 快、只抓明显问题，高信噪比                                        |
+| 对现有代码/描述做快速 PR 反馈                  | ⭐`/review LEVEL=lite` 或 `/review-lite`                | **统一命令**：轻量级别，快、只抓明显问题，高信噪比                |
 | 对现有代码做常规严格评审（不给实现）           | ⭐`/review` 或 `/review-only`                          | **统一命令**：标准级别，分严重级别 + 给方向性改进建议             |
 | 高风险/核心模块/金融并发场景做"严苛审计式评审" | ⭐`/review LEVEL=strict` 或 `/review-strict`           | **统一命令**：严格级别，穷尽维度输出                              |
 | 让 Codex 先 review、Claude Code 再修复并复验   | `/codex-review-fix`                                    | 当前分支闭环，产出 `review.md` 与 `verify.md`                     |
@@ -344,19 +344,20 @@ PLAN_OUTPUT_PATH: docs/plans/ads-callback-reporting.md
 **定位**
 
 - **统一命令**：通过 `LEVEL` 参数选择评审严格程度
-- 支持两种级别：`standard`（标准，默认）/ `strict`（严格）
+- 支持三种级别：`lite`（轻量）/ `standard`（标准，默认）/ `strict`（严格）
 - 禁止写代码、禁止提供完整实现示例
 - 统一输出格式：Critical / Major / Minor 分级
 
 **参数**
 
 ```text
-LEVEL=standard (默认) 或 strict
+LEVEL=lite / standard (默认) / strict
 ```
 
 **等价关系**
 | LEVEL | 等价命令 | 评审维度 | 语气 |
 |-------|---------|---------|------|
+| `lite` | `/review-lite` | 明显问题、高信号风险 | 简洁、快速 |
 | `standard` | `/review-only` | 7 项标准维度 | 中立、精确 |
 | `strict` | `/review-strict` | 9 项维度（+API边界、演进风险等） | 批判但建设性 |
 
@@ -371,6 +372,12 @@ LEVEL=standard (默认) 或 strict
 - 错误处理和失败模式
 - 测试覆盖率和测试质量
 - 可维护性和长期可读性
+
+**lite 级别**：
+
+- 明显正确性问题
+- 高信号测试缺口
+- 低风险 PR 中最值得关注的维护性风险
 
 **strict 级别（额外）**：
 
@@ -420,7 +427,7 @@ public void handlePaymentCallback(PaymentCallback callback) {
 - 减少命令选择成本
 - 原有命令仍然可用，向后兼容
 
-**注意**：`/review-lite` 是更轻量的快速评审，不在统一命令范围内。
+`/review-lite` 是 `/review LEVEL=lite` 的兼容快捷入口。
 
 ---
 
@@ -621,13 +628,14 @@ PLAN_APPROVED: true
 
 ---
 
-### 7.3 Review：`/review-lite` vs `/review-only` vs `/review-strict`
+### 7.3 Review：`/review LEVEL=lite` vs `/review LEVEL=standard` vs `/review LEVEL=strict`
 
-| 对比维度 | `/review-lite`  | `/review-only`                         | `/review-strict`             |
-| -------- | --------------- | -------------------------------------- | ---------------------------- |
-| 深度     | 轻量高信噪比    | 系统化、按严重级别                     | 穷尽式、生产关键假设         |
-| 输出     | bullet findings | Critical/Major/Minor + why + direction | 同上但覆盖维度更多、更严苛   |
-| 适用     | 日常 PR、小改动 | 核心链路、中高风险                     | 金融/并发/大重构/上线前 gate |
+| 对比维度 | `/review LEVEL=lite` | `/review LEVEL=standard`               | `/review LEVEL=strict`       |
+| -------- | -------------------- | -------------------------------------- | ---------------------------- |
+| 快捷入口 | `/review-lite`       | `/review-only`                         | `/review-strict`             |
+| 深度     | 轻量高信噪比         | 系统化、按严重级别                     | 穷尽式、生产关键假设         |
+| 输出     | bullet findings      | Critical/Major/Minor + why + direction | 同上但覆盖维度更多、更严苛   |
+| 适用     | 日常 PR、小改动      | 核心链路、中高风险                     | 金融/并发/大重构/上线前 gate |
 
 ---
 
@@ -661,9 +669,9 @@ PLAN_APPROVED: true
 
 ### 场景 C：PR 评审
 
-- 小改动：`/review-lite`
-- 核心链路：`/review-only`
-- 并发/金融/大重构：`/review-strict`
+- 小改动：`/review LEVEL=lite` 或 `/review-lite`
+- 核心链路：`/review LEVEL=standard` 或 `/review-only`
+- 并发/金融/大重构：`/review LEVEL=strict` 或 `/review-strict`
 
 ---
 

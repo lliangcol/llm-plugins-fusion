@@ -2,7 +2,7 @@
 id: review
 stage: review
 title: /review
-description: "Unified review entry that routes by LEVEL for standard or strict review without fixes."
+description: "Unified review entry that routes by LEVEL for lite, standard, or strict review without fixes."
 destructive-actions: none
 allowed-tools: Read Glob Grep LS
 invokes:

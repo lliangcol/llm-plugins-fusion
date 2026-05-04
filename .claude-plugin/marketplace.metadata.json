@@ -1,0 +1,12 @@
+{
+  "plugins": [
+    {
+      "name": "nova-plugin",
+      "version": "1.0.9",
+      "trust-level": "author-verified",
+      "risk-level": "low",
+      "deprecated": false,
+      "last-updated": "2026-05-04"
+    }
+  ]
+}

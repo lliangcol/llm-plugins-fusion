@@ -19,6 +19,8 @@ jobs:
           node-version: '20'
       - name: Schema validation
         run: node scripts/validate-schemas.mjs
+      - name: Claude compatibility validation
+        run: node scripts/validate-claude-compat.mjs
       - name: Frontmatter lint
         run: node scripts/lint-frontmatter.mjs
       - name: Agent count verification

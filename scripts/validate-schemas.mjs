@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 /**
  * Schema validation script
- * Validates plugin.json and marketplace.json against their JSON schemas.
+ * Validates plugin.json, marketplace.json, and marketplace.metadata.json
+ * against their JSON schemas, then checks name/version alignment.
  * Dependencies: none (uses built-in fetch/readFile only)
  *
  * Usage: node scripts/validate-schemas.mjs
@@ -121,6 +122,11 @@ const targets = [
     data: loadJson('.claude-plugin/marketplace.json'),
     label: '.claude-plugin/marketplace.json',
   },
+  {
+    schema: loadJson('schemas/marketplace-metadata.schema.json'),
+    data: loadJson('.claude-plugin/marketplace.metadata.json'),
+    label: '.claude-plugin/marketplace.metadata.json',
+  },
 ];
 
 let allPassed = true;
@@ -135,6 +141,48 @@ for (const { schema, data, label } of targets) {
       console.error(`  - ${e}`);
     }
   }
+}
+
+function findPluginEntry(container, name, label) {
+  const entry = container.plugins?.find((item) => item.name === name);
+  if (!entry) {
+    allPassed = false;
+    console.error(`✗ ${label}`);
+    console.error(`  - missing plugin entry for ${name}`);
+  }
+  return entry;
+}
+
+const plugin = loadJson('nova-plugin/.claude-plugin/plugin.json');
+const marketplace = loadJson('.claude-plugin/marketplace.json');
+const metadata = loadJson('.claude-plugin/marketplace.metadata.json');
+const marketplaceEntry = findPluginEntry(marketplace, plugin.name, '.claude-plugin/marketplace.json');
+const metadataEntry = findPluginEntry(metadata, plugin.name, '.claude-plugin/marketplace.metadata.json');
+
+if (marketplaceEntry && marketplaceEntry.version !== plugin.version) {
+  allPassed = false;
+  console.error('✗ marketplace version alignment');
+  console.error(`  - .claude-plugin/marketplace.json has ${marketplaceEntry.version}, expected ${plugin.version}`);
+}
+
+if (metadataEntry && metadataEntry.version !== plugin.version) {
+  allPassed = false;
+  console.error('✗ marketplace metadata version alignment');
+  console.error(`  - .claude-plugin/marketplace.metadata.json has ${metadataEntry.version}, expected ${plugin.version}`);
+}
+
+if (
+  marketplaceEntry
+  && metadataEntry
+  && (marketplaceEntry.name !== metadataEntry.name || marketplaceEntry.version !== metadataEntry.version)
+) {
+  allPassed = false;
+  console.error('✗ marketplace metadata alignment');
+  console.error('  - marketplace.json and marketplace.metadata.json must agree on plugin name/version');
+}
+
+if (marketplaceEntry && metadataEntry && marketplaceEntry.version === plugin.version && metadataEntry.version === plugin.version) {
+  console.log('✓ marketplace name/version alignment');
 }
 
 if (!allPassed) {

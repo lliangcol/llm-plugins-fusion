@@ -96,12 +96,13 @@
 
 #### 2. `/review` - 统一代码评审命令
 
-**替代**: `review-only` + `review-strict`
+**当前涵盖**: `review-lite` + `review-only` + `review-strict`
 **新文件**: [commands/review.md](../../commands/review.md)
-**参数**: `LEVEL=standard|strict`
+**参数**: `LEVEL=lite|standard|strict`
 
 | LEVEL             | 审查维度                        | 语气                      | 等价于           |
 | ----------------- | ------------------------------- | ------------------------- | ---------------- |
+| `lite`            | 明显问题和高信号风险            | 简洁、快速                | `/review-lite`   |
 | `standard` (默认) | 7 项标准维度                    | Neutral, Precise          | `/review-only`   |
 | `strict`          | 9 项维度（+API 边界、演进风险） | Critical but constructive | `/review-strict` |
 
@@ -155,7 +156,7 @@
 所有原有命令**保持独立存在**，用户可以继续使用：
 
 - `/explore-lite` 和 `/explore-review` 仍然可用
-- `/review-only` 和 `/review-strict` 仍然可用
+- `/review-lite`、`/review-only` 和 `/review-strict` 仍然可用
 - `/backend-plan` 仍然可用
 
 **推荐路径**:
@@ -216,7 +217,7 @@
 
 ## 📌 变更清单
 
-### 修改的文件（10 个）
+### 修改的文件（13 个）
 
 1. [commands/finalize-work.md](../../commands/finalize-work.md) - 修复空章节
 2. [commands/review-only.md](../../commands/review-only.md) - 修复措辞矛盾
@@ -236,7 +237,7 @@
 
 1. [commands/explore.md](../../commands/explore.md) - 统一探索命令
 2. [commands/review.md](../../commands/review.md) - 统一评审命令
-3. [docs/OPTIMIZATION_SUMMARY.md](OPTIMIZATION_SUMMARY.md) - 本文档
+3. [docs/architecture/OPTIMIZATION_SUMMARY.md](OPTIMIZATION_SUMMARY.md) - 本文档当前路径
 
 ---
 
@@ -251,6 +252,7 @@
 2. **新命令验证**
    - `/explore PERSPECTIVE=observer` 输出等价于 `/explore-lite`
    - `/explore PERSPECTIVE=reviewer` 输出等价于 `/explore-review`
+   - `/review LEVEL=lite` 输出等价于 `/review-lite`
    - `/review LEVEL=standard` 输出等价于 `/review-only`
    - `/review LEVEL=strict` 输出等价于 `/review-strict`
    - `/produce-plan PLAN_PROFILE=java-backend` 输出等价于 `/backend-plan`

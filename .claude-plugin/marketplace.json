@@ -24,11 +24,7 @@
       "repository": "https://github.com/lliangcol/llm-plugins-fusion",
       "license": "MIT",
       "tags": ["workflow", "ai-coding", "claude-code", "codex-review"],
-      "keywords": ["explore", "plan", "review", "implement", "finalize", "codex"],
-      "trust-level": "author-verified",
-      "risk-level": "low",
-      "deprecated": false,
-      "last-updated": "2026-05-04"
+      "keywords": ["explore", "plan", "review", "implement", "finalize", "codex"]
     }
   ]
 }

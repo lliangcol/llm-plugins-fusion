@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://github.com/lliangcol/llm-plugins-fusion/schemas/marketplace.schema.json",
   "title": "Marketplace Registry",
-  "description": "Schema for .claude-plugin/marketplace.json (aligned with Anthropic official marketplace format; extra fields allowed for forward compatibility).",
+  "description": "Schema for .claude-plugin/marketplace.json aligned with the Claude-compatible marketplace manifest. Repository-local custom metadata belongs in .claude-plugin/marketplace.metadata.json.",
   "type": "object",
   "required": ["name", "owner", "plugins"],
   "additionalProperties": true,
@@ -34,7 +34,7 @@
       "items": {
         "type": "object",
         "required": ["name", "source", "version"],
-        "additionalProperties": true,
+        "additionalProperties": false,
         "properties": {
           "name": {
             "type": "string",
@@ -113,18 +113,6 @@
             "type": "array",
             "items": { "type": "string" }
           },
-          "trust-level": {
-            "type": "string",
-            "enum": ["official", "author-verified", "community", "experimental"]
-          },
-          "risk-level": {
-            "type": "string",
-            "enum": ["low", "medium", "high"]
-          },
-          "deprecated": { "type": "boolean" },
-          "replacement": { "type": "string" },
-          "sunset-date": { "type": "string", "format": "date" },
-          "last-updated": { "type": "string", "format": "date" },
           "checksum": { "type": "string" }
         }
       }
