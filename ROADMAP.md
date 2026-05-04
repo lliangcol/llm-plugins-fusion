@@ -12,9 +12,11 @@
 - 🧑‍💻 **插件作者**：希望把自己的命令与工作流打包分发。
 - 🛠 **市场维护者**：负责 schema、CI、信任分级与披露。
 
-## 短期（当前维护窗口）— 标准对齐 + 止血
+## 短期（v1.0.8-v1.0.9，基本完成）— 标准对齐 + 止血
 
-目标：**在 v1.0.9 基线之上保持 Claude plugin validate、schema、frontmatter lint、agents/packs、hooks 和文档契约稳定；v1.1.0 继续作为下一轮能力扩展目标**。
+目标：**在 v1.0.9 基线之上保持 Claude plugin validate、schema、frontmatter lint、agents/packs、hooks 和文档契约稳定；下一版继续作为兼容矩阵与 registry 预备的能力扩展目标，具体版本号在 release 前确认**。
+
+当前短期目标已基本完成，后续仅保留回归修复、契约稳定和验证补强。
 
 | 任务 | 状态 | 说明 |
 | --- | --- | --- |
@@ -30,9 +32,22 @@
 | `validate-docs.mjs` + CI 接入 | ✅ 完成 | 校验 Markdown 本地链接与锚点、命令文档 stage 覆盖、版本日期同步和非归档报告状态 |
 | `validate-all.mjs` 本地总入口 | ✅ 完成 | 串联 schema、Claude 兼容性、frontmatter、agent、pack、hook、docs；Windows 无 Bash 时仅 warning 跳过 `bash -n` |
 
+## 当前状态（仓库 HEAD，vNext 候选准备）
+
+当前发布版本仍为 `v1.0.9`。仓库 HEAD 已进入下一版候选准备阶段，相关进展记录在 `CHANGELOG.md` 的 `Unreleased` 区块。
+
+已进入候选准备的能力包括：
+
+- 6 个 core agents 与 8 个 capability packs 已落地。
+- marketplace 自定义 trust/risk/deprecation/date 元数据已拆分到 repository-local metadata。
+- `validate-all.mjs` 已覆盖 schema、Claude compat、frontmatter、agents、packs、hooks 和 docs。
+- 下一步聚焦兼容矩阵、registry 生成预备、脚手架设计和发布版本决策。
+
 ## 中期（1–2 月）— 多插件 + 市场门面
 
 目标：**把"市场"口号落地为可公开访问的 URL**。
+
+vNext 只承诺兼容矩阵与 registry 准备，不承诺公开 portal；公开 URL、registry 自动生成和多插件市场门面属于中期后续目标。
 
 - **仓库结构重构**：`nova-plugin/` → `plugins/nova-core/`；拆出 `plugins/nova-codex-loop/`、`plugins/nova-java-stack/`。
 - **marketplace 多条目**：每个 `plugins/*/plugin.json` 自动合成 `marketplace.json`，由 `scripts/generate-registry.mjs` 消除手工双写。
@@ -63,9 +78,11 @@
 | --- | --- | --- |
 | v1.0.8 | 2026-04 | Codex 闭环三件套 + 开放 schema + SKILL 标准对齐 |
 | v1.0.9 | 2026-05 | skill-first thin commands + shared policies + Claude CLI validate 修复 |
-| v1.1.0 | 2026-05 | 校验稳态后的兼容矩阵与 registry 预备 |
+| vNext | 2026-05 | 校验稳态后的兼容矩阵与 registry 预备；发布为 minor 还是 major 需在 release 前确认 |
 | v1.2.0 | 2026-06 | Registry 自动生成 + 脚手架 + 示例录屏 |
 | v2.0.0 | 2026-Q3 | 仓库结构重构为 monorepo；多插件上线；BREAKING 迁移指南 |
+
+> 发布前需确认 active agent 收敛是否构成公开兼容破坏；若构成 breaking change，应调整为 major release 并同步更新 CHANGELOG 与迁移说明。
 
 ## 非目标（明确不做）
 
