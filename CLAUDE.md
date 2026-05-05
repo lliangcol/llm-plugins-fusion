@@ -308,6 +308,8 @@ node scripts/validate-schemas.mjs
 node scripts/validate-claude-compat.mjs
 ```
 
+Release tags must use `v<plugin-version>` and match `nova-plugin/.claude-plugin/plugin.json` exactly; the release workflow rejects mismatched tags.
+
 ### Modify Agents
 
 - Active agents belong only in `nova-plugin/agents/`.

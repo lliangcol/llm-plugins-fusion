@@ -40,6 +40,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 删除已移除的辅助前端应用，并移除对应的 CI npm lint/test、同步检查脚本与 release 构建产物上传。
 
 ### Fixed
+- 修复 docs 锚点校验中同一标题 slug 候选重复计数的问题，避免不存在的重复标题锚点被误判为有效。
+- 收紧 schema 校验：`format: date` 现在校验真实日历日期，并检测 registry / marketplace / metadata 插件条目的重复 source 或 name。
+- release workflow 现在校验 tag 版本必须匹配 `nova-plugin/.claude-plugin/plugin.json` 中的插件版本，避免错误 tag 生成不一致 release。
 - 修复 Codex 闭环本地检查未覆盖 Claude 兼容性与 capability pack 校验的问题，避免 `/codex-review-fix` 的本地验证范围弱于仓库质量门。
 - 新一轮 Codex review 成功后同步清理旧 `verify.md` 与 `checks.txt`，防止 verify 自动读取上一轮检查产物。
 - 修正路线图与贡献清单中 schema 扩展边界、Claude 兼容性校验和 `validate-all` 覆盖范围的过期描述。

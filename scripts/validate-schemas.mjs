@@ -22,6 +22,18 @@ function loadJson(relPath) {
   return JSON.parse(readFileSync(full, 'utf8'));
 }
 
+function isValidIsoDate(value) {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) return false;
+  const [, yearRaw, monthRaw, dayRaw] = match;
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  const day = Number(dayRaw);
+  const leapYear = year % 4 === 0 && (year % 100 !== 0 || year % 400 === 0);
+  const daysInMonth = [31, leapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return month >= 1 && month <= 12 && day >= 1 && day <= daysInMonth[month - 1];
+}
+
 // Minimal JSON Schema draft-07 validator
 // Supports: required/type/pattern/format/minLength/additionalProperties/properties/items/minItems/uniqueItems/enum/oneOf/const
 function validate(schema, data, path = '') {
@@ -64,7 +76,7 @@ function validate(schema, data, path = '') {
         errors.push(`${path}: value "${data}" is not a valid URI`);
       }
     }
-    if (schema.format === 'date' && !/^\d{4}-\d{2}-\d{2}$/.test(data)) {
+    if (schema.format === 'date' && !isValidIsoDate(data)) {
       errors.push(`${path}: value "${data}" is not a valid ISO-8601 date (YYYY-MM-DD)`);
     }
     if (schema.format === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data)) {
@@ -151,7 +163,8 @@ for (const { schema, data, label } of targets) {
 }
 
 function findPluginEntry(container, name, label) {
-  const entry = container.plugins?.find((item) => item.name === name);
+  const plugins = Array.isArray(container.plugins) ? container.plugins : [];
+  const entry = plugins.find((item) => item?.name === name);
   if (!entry) {
     allPassed = false;
     console.error(`✗ ${label}`);
@@ -160,9 +173,29 @@ function findPluginEntry(container, name, label) {
   return entry;
 }
 
+function validateUniqueValues(items, label, fieldLabel, selector) {
+  if (!Array.isArray(items)) return;
+  const seen = new Map();
+  for (const [index, item] of items.entries()) {
+    const value = selector(item);
+    if (typeof value !== 'string' || value.length === 0) continue;
+    if (seen.has(value)) {
+      allPassed = false;
+      console.error(`✗ ${label}`);
+      console.error(`  - duplicate ${fieldLabel} "${value}" at indexes ${seen.get(value)} and ${index}`);
+    } else {
+      seen.set(value, index);
+    }
+  }
+}
+
 const plugin = loadJson('nova-plugin/.claude-plugin/plugin.json');
+const registrySource = loadJson('.claude-plugin/registry.source.json');
 const marketplace = loadJson('.claude-plugin/marketplace.json');
 const metadata = loadJson('.claude-plugin/marketplace.metadata.json');
+validateUniqueValues(registrySource.plugins ?? [], '.claude-plugin/registry.source.json', 'plugin source', (entry) => entry?.source);
+validateUniqueValues(marketplace.plugins ?? [], '.claude-plugin/marketplace.json', 'plugin name', (entry) => entry?.name);
+validateUniqueValues(metadata.plugins ?? [], '.claude-plugin/marketplace.metadata.json', 'plugin name', (entry) => entry?.name);
 const marketplaceEntry = findPluginEntry(marketplace, plugin.name, '.claude-plugin/marketplace.json');
 const metadataEntry = findPluginEntry(metadata, plugin.name, '.claude-plugin/marketplace.metadata.json');
 

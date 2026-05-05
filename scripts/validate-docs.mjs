@@ -219,14 +219,11 @@ function addSlugWithDedup(anchors, counts, slug) {
 
 function headingSlugCandidates(headingText) {
   const text = stripInlineMarkdown(headingText.replace(/\s+#+\s*$/, ''));
-  return [
-    text,
-    text.trim(),
-    text.replace(/\p{Extended_Pictographic}/gu, ''),
-    text.replace(/\p{Extended_Pictographic}/gu, '').trim(),
-  ]
+  const withoutEmoji = text.replace(/\p{Extended_Pictographic}/gu, '');
+  const candidates = [text.trim(), withoutEmoji.trim()]
     .map((candidate) => slugifyAnchor(candidate))
     .filter(Boolean);
+  return [...new Set(candidates)];
 }
 
 function collectMarkdownAnchors(file) {
