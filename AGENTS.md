@@ -18,6 +18,7 @@ Explore -> Plan -> Review -> Implement -> Finalize
 
 - Marketplace entry: `.claude-plugin/marketplace.json`
 - Marketplace custom metadata: `.claude-plugin/marketplace.metadata.json`
+- Registry generation source: `.claude-plugin/registry.source.json`
 - Main plugin metadata: `nova-plugin/.claude-plugin/plugin.json`
 - Plugin version source of truth: `nova-plugin/.claude-plugin/plugin.json`
 - Commands: 20 files under `nova-plugin/commands/*.md`
@@ -33,10 +34,13 @@ Explore -> Plan -> Review -> Implement -> Finalize
 
 ## Sources of Truth
 
-- Plugin version: `nova-plugin/.claude-plugin/plugin.json`, mirrored in
-  `.claude-plugin/marketplace.json` and `.claude-plugin/marketplace.metadata.json`.
-- Marketplace-only custom status fields, including `last-updated`, live in
-  `.claude-plugin/marketplace.metadata.json`.
+- Plugin-owned metadata, including version:
+  `nova-plugin/.claude-plugin/plugin.json`.
+- Registry-owned marketplace fields and custom status fields, including
+  `last-updated`: `.claude-plugin/registry.source.json`.
+- Generated registry outputs: `.claude-plugin/marketplace.json` and
+  `.claude-plugin/marketplace.metadata.json`; regenerate with
+  `node scripts/generate-registry.mjs --write`.
 - Command definitions: `nova-plugin/commands/*.md`.
 - Skill definitions: `nova-plugin/skills/nova-*/SKILL.md`.
 - Command documentation: `nova-plugin/docs/commands/`.
@@ -45,7 +49,8 @@ Explore -> Plan -> Review -> Implement -> Finalize
   `scripts/verify-agents.sh` and `scripts/verify-agents.ps1`.
 - Capability packs: `nova-plugin/packs/`, enforced by
   `scripts/validate-packs.mjs`.
-- Marketplace, marketplace metadata, and plugin schemas:
+- Registry source, marketplace, marketplace metadata, and plugin schemas:
+  `schemas/registry-source.schema.json`,
   `schemas/marketplace.schema.json`,
   `schemas/marketplace-metadata.schema.json`, and
   `schemas/plugin.schema.json`.
@@ -55,8 +60,9 @@ Explore -> Plan -> Review -> Implement -> Finalize
 ```text
 claude-plugins-fusion/
 |-- .claude-plugin/
-|   |-- marketplace.json              # Plugin marketplace entry
-|   `-- marketplace.metadata.json     # Repository-local marketplace metadata
+|   |-- registry.source.json          # Human-maintained registry generation source
+|   |-- marketplace.json              # Generated plugin marketplace entry
+|   `-- marketplace.metadata.json     # Generated repository-local marketplace metadata
 |-- .github/workflows/
 |   |-- ci.yml                        # Agent, schema, and frontmatter checks
 |   `-- release.yml                   # Tag-based release and release notes
@@ -93,6 +99,7 @@ node scripts/validate-all.mjs
 On Bash-compatible shells:
 
 ```bash
+node scripts/generate-registry.mjs
 node scripts/validate-schemas.mjs
 node scripts/validate-claude-compat.mjs
 node scripts/lint-frontmatter.mjs
@@ -107,6 +114,7 @@ node scripts/validate-docs.mjs
 On Windows PowerShell:
 
 ```powershell
+node scripts/generate-registry.mjs
 node scripts/validate-schemas.mjs
 node scripts/validate-claude-compat.mjs
 node scripts/lint-frontmatter.mjs
@@ -125,12 +133,16 @@ as locally passed unless Bash actually ran them.
 
 ### Plugin Discovery
 
-- `.claude-plugin/marketplace.json` registers installable plugins.
+- `.claude-plugin/registry.source.json` is the human-maintained source for
+  registry generation. It owns registry-level marketplace data, plugin source
+  paths, marketplace-only fields such as category and tags, and repository-local
+  trust/risk/deprecation/`last-updated` metadata.
+- `.claude-plugin/marketplace.json` registers installable plugins and is
+  generated from `registry.source.json` plus each plugin manifest.
+- `.claude-plugin/marketplace.metadata.json` stores repository-local metadata
+  and is generated from `registry.source.json` plus each plugin manifest.
 - `nova-plugin/.claude-plugin/plugin.json` declares plugin name, version,
-  author, license, keywords, homepage, and repository metadata. Claude-compatible
-  marketplace display fields such as category and tags live in
-  `.claude-plugin/marketplace.json`; repository-local trust/risk/deprecation and
-  `last-updated` metadata lives in `.claude-plugin/marketplace.metadata.json`.
+  author, license, keywords, homepage, and repository metadata.
 - `nova-plugin/commands/*.md` contains Claude Code command definitions.
 - `nova-plugin/skills/nova-*/SKILL.md` contains Agent Skill definitions
   discovered by directory convention.
@@ -310,8 +322,11 @@ Also update:
 - the command overview or version notes in `README.md`
 - `CHANGELOG.md`
 - `nova-plugin/.claude-plugin/plugin.json` `version`
-- `.claude-plugin/marketplace.json` plugin `version`
-- `.claude-plugin/marketplace.metadata.json` plugin `version` and `last-updated`
+- `.claude-plugin/registry.source.json` plugin registry metadata, including
+  `last-updated`
+- generated `.claude-plugin/marketplace.json` plugin `version`
+- generated `.claude-plugin/marketplace.metadata.json` plugin `version` and
+  `last-updated`
 - `CLAUDE.md`, if quick facts, counts, workflows, or constraints changed
 - `AGENTS.md`, if agent-facing facts, counts, workflows, or constraints changed
 - `nova-plugin/docs/commands/<stage>/<id>.md`, `<id>.README.md`, and
@@ -332,11 +347,14 @@ node scripts/validate-all.mjs
 
 ### Modify Plugin Metadata or Version
 
-Version information must stay synchronized across:
+Version information is generated from:
 
 - `nova-plugin/.claude-plugin/plugin.json` `version`
-- `.claude-plugin/marketplace.json` plugin `version`
-- `.claude-plugin/marketplace.metadata.json` plugin `version` and `last-updated`
+- `.claude-plugin/registry.source.json` plugin registry metadata, including
+  `last-updated`
+- generated `.claude-plugin/marketplace.json` plugin `version`
+- generated `.claude-plugin/marketplace.metadata.json` plugin `version` and
+  `last-updated`
 - `CHANGELOG.md`
 - `CLAUDE.md`, if quick facts, counts, constraints, or workflows changed
 - `AGENTS.md`, if agent-facing facts, counts, constraints, or workflows changed
@@ -351,6 +369,7 @@ Versioning follows SemVer:
 After metadata or schema changes, run:
 
 ```bash
+node scripts/generate-registry.mjs --write
 node scripts/validate-schemas.mjs
 node scripts/validate-claude-compat.mjs
 ```
@@ -373,6 +392,7 @@ workflow behavior.
 Metadata or marketplace changes:
 
 ```bash
+node scripts/generate-registry.mjs --write
 node scripts/validate-schemas.mjs
 ```
 
@@ -453,6 +473,10 @@ validate-docs.
   and each pack README must include enhanced mode and fallback mode.
 - User-facing behavior changes require documentation and `CHANGELOG.md`
   updates.
+- `.claude-plugin/marketplace.json` and
+  `.claude-plugin/marketplace.metadata.json` are generated outputs; update
+  `plugin.json` or `registry.source.json`, then run
+  `node scripts/generate-registry.mjs --write`.
 - Review and Explore commands should not modify project code.
 - Non-implementation commands may declare `Write` or `Edit` only for explicit
   artifacts such as analysis, plan, review, or verification files.

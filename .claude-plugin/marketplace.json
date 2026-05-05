@@ -18,13 +18,25 @@
         "email": "lliangcoder@gmail.com",
         "url": "https://github.com/lliangcol"
       },
-      "description": "A powerful extension designed for AI coding assistants, enhancing developer productivity and workflow efficiency.",
+      "description": "nova-plugin is a powerful and versatile third-party extension for AI coding assistants (compatible with Claude Code), aimed at significantly enhancing developer productivity and coding experience. It integrates practical tools and features to help you write, debug, and maintain code more intelligently and efficiently.",
       "category": "workflow",
       "homepage": "https://github.com/lliangcol/llm-plugins-fusion",
       "repository": "https://github.com/lliangcol/llm-plugins-fusion",
       "license": "MIT",
-      "tags": ["workflow", "ai-coding", "claude-code", "codex-review"],
-      "keywords": ["explore", "plan", "review", "implement", "finalize", "codex"]
+      "tags": [
+        "workflow",
+        "ai-coding",
+        "claude-code",
+        "codex-review"
+      ],
+      "keywords": [
+        "explore",
+        "plan",
+        "review",
+        "implement",
+        "finalize",
+        "codex"
+      ]
     }
   ]
 }

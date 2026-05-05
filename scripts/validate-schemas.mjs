@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * Schema validation script
- * Validates plugin.json, marketplace.json, and marketplace.metadata.json
- * against their JSON schemas, then checks name/version alignment.
+ * Validates plugin.json, registry.source.json, marketplace.json, and
+ * marketplace.metadata.json against their JSON schemas, then checks
+ * name/version alignment and generated registry drift.
  * Dependencies: none (uses built-in fetch/readFile only)
  *
  * Usage: node scripts/validate-schemas.mjs
@@ -11,6 +12,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { generateRegistryFiles } from './generate-registry.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -118,6 +120,11 @@ const targets = [
     label: 'nova-plugin/.claude-plugin/plugin.json',
   },
   {
+    schema: loadJson('schemas/registry-source.schema.json'),
+    data: loadJson('.claude-plugin/registry.source.json'),
+    label: '.claude-plugin/registry.source.json',
+  },
+  {
     schema: loadJson('schemas/marketplace.schema.json'),
     data: loadJson('.claude-plugin/marketplace.json'),
     label: '.claude-plugin/marketplace.json',
@@ -183,6 +190,31 @@ if (
 
 if (marketplaceEntry && metadataEntry && marketplaceEntry.version === plugin.version && metadataEntry.version === plugin.version) {
   console.log('✓ marketplace name/version alignment');
+}
+
+function normalizeNewlines(value) {
+  return value.replace(/\r\n/g, '\n');
+}
+
+let generatedOutputsPassed = true;
+try {
+  for (const { relPath, content } of generateRegistryFiles(root)) {
+    const current = normalizeNewlines(readFileSync(resolve(root, relPath), 'utf8'));
+    if (current !== content) {
+      generatedOutputsPassed = false;
+      allPassed = false;
+      console.error(`✗ generated registry output ${relPath}`);
+      console.error('  - file is out of date; run node scripts/generate-registry.mjs --write');
+    }
+  }
+
+  if (generatedOutputsPassed) {
+    console.log('✓ generated registry outputs');
+  }
+} catch (error) {
+  allPassed = false;
+  console.error('✗ generated registry outputs');
+  console.error(`  - ${error.message}`);
 }
 
 if (!allPassed) {

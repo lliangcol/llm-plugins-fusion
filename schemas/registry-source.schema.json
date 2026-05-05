@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/lliangcol/llm-plugins-fusion/schemas/registry-source.schema.json",
+  "title": "Registry Generation Source",
+  "description": "Human-maintained source for generating the Claude-compatible marketplace manifest and repository-local marketplace metadata.",
+  "type": "object",
+  "required": ["name", "owner", "plugins"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "owner": {
+      "type": "object",
+      "required": ["name"],
+      "additionalProperties": true,
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "email": { "type": "string", "format": "email" },
+        "url": { "type": "string", "format": "uri" }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "properties": {
+        "description": { "type": "string" }
+      }
+    },
+    "plugins": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["source", "category", "tags", "metadata"],
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Relative path to the local plugin directory whose .claude-plugin/plugin.json provides plugin-owned fields."
+          },
+          "category": {
+            "type": "string",
+            "enum": [
+              "development",
+              "productivity",
+              "review",
+              "testing",
+              "documentation",
+              "devops",
+              "security",
+              "data",
+              "workflow",
+              "other"
+            ]
+          },
+          "tags": {
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 },
+            "uniqueItems": true
+          },
+          "icon": { "type": "string" },
+          "screenshots": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "checksum": { "type": "string" },
+          "metadata": {
+            "type": "object",
+            "required": ["trust-level", "risk-level", "deprecated", "last-updated"],
+            "additionalProperties": false,
+            "properties": {
+              "trust-level": {
+                "type": "string",
+                "enum": ["official", "author-verified", "community", "experimental"]
+              },
+              "risk-level": {
+                "type": "string",
+                "enum": ["low", "medium", "high"]
+              },
+              "deprecated": { "type": "boolean" },
+              "last-updated": { "type": "string", "format": "date" }
+            }
+          }
+        }
+      }
+    }
+  }
+}

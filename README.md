@@ -147,8 +147,9 @@ Capability packs: `java`, `security`, `dependency`, `docs`, `release`, `marketpl
 ```text
 llm-plugins-fusion/
 |-- .claude-plugin/
-|   |-- marketplace.json              # Claude marketplace 入口
-|   `-- marketplace.metadata.json     # 仓库本地 trust/risk/date 元数据
+|   |-- registry.source.json          # registry 生成输入
+|   |-- marketplace.json              # 生成的 Claude marketplace 入口
+|   `-- marketplace.metadata.json     # 生成的仓库本地 trust/risk/date 元数据
 |-- nova-plugin/
 |   |-- .claude-plugin/plugin.json    # 插件元信息，版本事实源
 |   |-- commands/                     # 20 个 slash command 薄入口
@@ -159,8 +160,10 @@ llm-plugins-fusion/
 |   `-- hooks/                        # Claude Code hook 配置和脚本
 |-- docs/
 |   |-- agents/                       # core agent 路由、plugin-aware routing 与迁移清单
+|   |-- marketplace/                  # 市场门面信息架构准备
+|   |-- releases/                     # release 决策与兼容性说明
 |   `-- reports/archive/              # 历史审计报告
-|-- schemas/                          # marketplace / metadata / plugin schemas
+|-- schemas/                          # registry source / marketplace / metadata / plugin schemas
 |-- scripts/                          # 本地和 CI 校验脚本
 |-- README.md
 |-- CONTRIBUTING.md
@@ -181,17 +184,20 @@ llm-plugins-fusion/
 | [Hooks 设计](./nova-plugin/docs/architecture/hooks-design.md) | 写入前检查和审计日志 hook | 维护安全边界 |
 | [Core agent 路由](./docs/agents/ROUTING.md) | 6 个 core agents 与 capability packs 的路由规则 | 选择或维护 agent |
 | [Plugin-aware routing](./docs/agents/PLUGIN_AWARE_ROUTING.md) | enhanced / fallback mode 与 pack 启用规则 | 维护 pack 路由 |
+| [Marketplace portal IA](./docs/marketplace/portal-information-architecture.md) | 市场门面信息架构、数据源和 vNext / v1.2.0 / v2.0.0 边界 | 准备 marketplace portal |
+| [vNext release decision](./docs/releases/vnext-release-decision.md) | vNext 版本级别与兼容性矩阵 | 发布决策 |
 | [Capability packs](./nova-plugin/packs/README.md) | 8 个领域能力包索引 | 维护 packs |
 | [Legacy agents 汇总](./nova-plugin/docs/agents/agents-summary.md) | 已归档 legacy agents 的历史角色说明 | 查阅旧版设计 |
 | [English overview](./nova-plugin/docs/overview/README.en.md) | English project overview | English readers |
 
 ## Maintenance
 
-版本事实源：
+版本与 registry 事实源：
 
-- `nova-plugin/.claude-plugin/plugin.json`
-- `.claude-plugin/marketplace.json`
-- `.claude-plugin/marketplace.metadata.json`
+- `nova-plugin/.claude-plugin/plugin.json`：插件元信息与版本事实源
+- `.claude-plugin/registry.source.json`：registry、marketplace 展示字段和 trust/risk/date 元数据事实源
+- `.claude-plugin/marketplace.json`：生成的 Claude marketplace manifest
+- `.claude-plugin/marketplace.metadata.json`：生成的仓库本地 metadata
 - `CHANGELOG.md`
 
 Command 与 skill 必须一对一：
@@ -222,6 +228,7 @@ node scripts/validate-all.mjs
 按变更范围运行：
 
 ```bash
+node scripts/generate-registry.mjs
 node scripts/validate-schemas.mjs
 node scripts/validate-claude-compat.mjs
 node scripts/lint-frontmatter.mjs

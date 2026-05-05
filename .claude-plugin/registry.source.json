@@ -1,0 +1,25 @@
+{
+  "$schema": "../schemas/registry-source.schema.json",
+  "name": "llm-plugins-fusion",
+  "owner": {
+    "name": "liu liang",
+    "email": "lliangcoder@gmail.com",
+    "url": "https://github.com/lliangcol"
+  },
+  "metadata": {
+    "description": "A curated marketplace of third-party LLM assistant plugins for productivity and development workflows."
+  },
+  "plugins": [
+    {
+      "source": "./nova-plugin",
+      "category": "workflow",
+      "tags": ["workflow", "ai-coding", "claude-code", "codex-review"],
+      "metadata": {
+        "trust-level": "author-verified",
+        "risk-level": "low",
+        "deprecated": false,
+        "last-updated": "2026-05-04"
+      }
+    }
+  ]
+}

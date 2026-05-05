@@ -147,8 +147,9 @@ Capability packs: `java`, `security`, `dependency`, `docs`, `release`, `marketpl
 ```text
 llm-plugins-fusion/
 |-- .claude-plugin/
-|   |-- marketplace.json              # Claude marketplace entry
-|   `-- marketplace.metadata.json     # repository-local trust/risk/date metadata
+|   |-- registry.source.json          # registry generation input
+|   |-- marketplace.json              # generated Claude marketplace entry
+|   `-- marketplace.metadata.json     # generated repository-local trust/risk/date metadata
 |-- nova-plugin/
 |   |-- .claude-plugin/plugin.json    # plugin metadata and version source
 |   |-- commands/                     # 20 slash command thin wrappers
@@ -159,8 +160,10 @@ llm-plugins-fusion/
 |   `-- hooks/                        # Claude Code hook config and scripts
 |-- docs/
 |   |-- agents/                       # core agent routing, plugin-aware routing, and migration manifest
+|   |-- marketplace/                  # marketplace portal information architecture preparation
+|   |-- releases/                     # release decisions and compatibility notes
 |   `-- reports/archive/              # historical audit reports
-|-- schemas/                          # marketplace / metadata / plugin schemas
+|-- schemas/                          # registry source / marketplace / metadata / plugin schemas
 |-- scripts/                          # local and CI validation scripts
 |-- README.md
 |-- CONTRIBUTING.md
@@ -181,16 +184,19 @@ llm-plugins-fusion/
 | [Hooks design](../architecture/hooks-design.md) | Pre-write checks and audit hooks | Maintaining safety boundaries |
 | [Core agent routing](../../../docs/agents/ROUTING.md) | Routing rules for 6 core agents and capability packs | Choosing or maintaining agents |
 | [Plugin-aware routing](../../../docs/agents/PLUGIN_AWARE_ROUTING.md) | Enhanced / fallback mode and pack activation rules | Maintaining pack routing |
+| [Marketplace portal IA](../../../docs/marketplace/portal-information-architecture.md) | Marketplace portal information architecture, data sources, and vNext / v1.2.0 / v2.0.0 boundaries | Preparing the marketplace portal |
+| [vNext release decision](../../../docs/releases/vnext-release-decision.md) | vNext release level and compatibility matrix | Release decision |
 | [Capability packs](../../packs/README.md) | Index for 8 domain capability packs | Maintaining packs |
 | [Legacy agents summary](../agents/agents-summary.en.md) | Historical legacy agent roles | Inspecting old design |
 
 ## Maintenance
 
-Version sources:
+Version and registry sources:
 
-- `nova-plugin/.claude-plugin/plugin.json`
-- `.claude-plugin/marketplace.json`
-- `.claude-plugin/marketplace.metadata.json`
+- `nova-plugin/.claude-plugin/plugin.json`: plugin metadata and version source
+- `.claude-plugin/registry.source.json`: registry, marketplace display fields, and trust/risk/date metadata source
+- `.claude-plugin/marketplace.json`: generated Claude marketplace manifest
+- `.claude-plugin/marketplace.metadata.json`: generated repository-local metadata
 - `CHANGELOG.md`
 
 Commands and skills must stay one-to-one:
@@ -221,6 +227,7 @@ node scripts/validate-all.mjs
 Targeted checks:
 
 ```bash
+node scripts/generate-registry.mjs
 node scripts/validate-schemas.mjs
 node scripts/validate-claude-compat.mjs
 node scripts/lint-frontmatter.mjs

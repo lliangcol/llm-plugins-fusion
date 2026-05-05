@@ -47,7 +47,7 @@
 
 目标：**把"市场"口号落地为可公开访问的 URL**。
 
-vNext 只承诺兼容矩阵与 registry 准备，不承诺公开 portal；公开 URL、registry 自动生成和多插件市场门面属于中期后续目标。
+vNext 只承诺兼容矩阵、registry 准备和[市场门面信息架构](docs/marketplace/portal-information-architecture.md)，不承诺公开 portal；公开 URL、registry 自动生成和多插件市场门面属于中期后续目标。
 
 - **仓库结构重构**：`nova-plugin/` → `plugins/nova-core/`；拆出 `plugins/nova-codex-loop/`、`plugins/nova-java-stack/`。
 - **marketplace 多条目**：每个 `plugins/*/plugin.json` 自动合成 `marketplace.json`，由 `scripts/generate-registry.mjs` 消除手工双写。
