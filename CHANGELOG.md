@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 新增 `.claude-plugin/marketplace.metadata.json` 与对应 schema，用于保存 marketplace 自定义 trust/risk/deprecation/date 元数据。
 - 新增 `scripts/validate-claude-compat.mjs`，静态拦截 Claude CLI 拒绝的 marketplace 插件级字段，并在 Claude CLI 可用时运行插件兼容校验。
 - 新增 `.claude-plugin/registry.source.json`、`schemas/registry-source.schema.json` 与 `scripts/generate-registry.mjs`，为 marketplace 与 repository-local metadata 提供自动生成输入契约。
-- 新增 marketplace portal 信息架构准备文档，明确市场门面数据源、导航模型和 vNext / v1.2.0 / v2.0.0 边界。
+- 新增 marketplace portal 信息架构准备文档，明确市场门面数据源、导航模型和 vNext / v2.0.0 / v2.1.0 / v3.0.0 边界。
 
 ### Changed
 - 将 active agents 从 14 个固定专家收敛为 6 个 core agents：`orchestrator`、`architect`、`builder`、`reviewer`、`verifier`、`publisher`。
@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - `scripts/validate-all.mjs` 接入 pack validation。
 - 版本策略仍需人工确认：若 active agent 名称被视为公开兼容承诺，建议 major；否则至少 minor。
 - 全面优化根 `README.md` 与英文概览，补强安装、命令选择、文档导航、维护规则和质量门说明。
+- 重写 `ROADMAP.md`，将当前 unreleased 架构规划为 `2.0.0` 兼容边界发布，并将 registry 作者工作流、trust 策略和多插件 marketplace 重构拆分到后续里程碑。
 - 重整 `nova-plugin/docs/` 索引，将历史命令优化总结移入 `nova-plugin/docs/history/`，避免与当前架构文档混淆。
 - 明确 `agents-summary` 的 active agent 快速索引与 legacy archive 摘要边界，降低误读为当前 active 集合的风险。
 - CI 与 release 预检接入 docs 校验；Codex 项目检查脚本补充 hooks、docs 和 hook `bash -n` 校验任务。
