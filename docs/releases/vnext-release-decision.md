@@ -1,6 +1,6 @@
 # vNext Release Decision
 
-Status: release candidate prepared
+Status: release candidate validated
 Date: 2026-05-06
 
 ## Decision
@@ -80,3 +80,13 @@ Required for release prep:
 - `claude plugin validate .` when Claude CLI is installed
 
 Bash hook syntax checks only count as locally run when Bash is available.
+
+Validation result on 2026-05-06:
+
+- `node scripts/generate-registry.mjs --write` produced no tracked diff.
+- `node scripts/validate-all.mjs` passed with Git Bash on PATH:
+  `failed=0 skipped=0`.
+- Hook script syntax checks ran locally through Git Bash.
+- `git diff --check` passed.
+- `claude plugin validate .` and `claude plugin validate nova-plugin` passed
+  through the Claude compatibility validation path.

@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 新增 `scripts/validate-claude-compat.mjs`，静态拦截 Claude CLI 拒绝的 marketplace 插件级字段，并在 Claude CLI 可用时运行插件兼容校验。
 - 新增 `.claude-plugin/registry.source.json`、`schemas/registry-source.schema.json` 与 `scripts/generate-registry.mjs`，为 marketplace 与 repository-local metadata 提供自动生成输入契约。
 - 新增 marketplace portal 信息架构准备文档，明确市场门面数据源、导航模型和 vNext / v2.0.0 / v2.1.0 / v2.2.0 / v3.0.0 边界。
+- 新增 `v2.0.0` 人工发布步骤文档，覆盖最终校验、提交、打 tag、GitHub Release 监控、安装 smoke check 和失败处理。
 
 ### Changed
 - 将 active agents 从 14 个固定专家收敛为 6 个 core agents：`orchestrator`、`architect`、`builder`、`reviewer`、`verifier`、`publisher`。
@@ -45,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - `/review` 统一入口现在明确支持 `LEVEL=lite|standard|strict`，并将 `lite` 路由到 `nova-review-lite`。
 - CI、release 与 `validate-all` 接入 Claude 兼容校验，并增加 `/review LEVEL=lite` 文档契约防回归检查。
 - 清理历史优化总结与 archive notice 中会误导 active agent 位置或历史文件路径的说明。
+- 记录 `2.0.0` release candidate 的本地全量校验结果，明确 hook Bash 语法检查已实际执行且无 skipped 项。
 
 ### Removed
 - 删除已移除的辅助前端应用，并移除对应的 CI npm lint/test、同步检查脚本与 release 构建产物上传。

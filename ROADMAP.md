@@ -53,7 +53,7 @@ agents、packs、hooks 和文档的本地/CI 校验体系。
 | 准备发布元数据 | Prepared | `plugin.json`、registry source `last-updated`、生成的 marketplace 文件、README badge 和 changelog 均同步到 `2.0.0`。 |
 | 发布迁移说明 | Prepared | 用户能清楚看到 commands/skills 兼容，active agents 已收敛为 6-core 模型。 |
 | 关闭 Unreleased changelog | Prepared | 当前 Unreleased 条目进入 `2.0.0` release section，并明确 `BREAKING` 说明。 |
-| 运行全量校验 | Pending | `node scripts/validate-all.mjs` 通过；本地 Bash hook 语法检查是否实际运行需如实记录。 |
+| 运行全量校验 | Passed | 2026-05-06 已运行 `node scripts/validate-all.mjs`，并通过 Git Bash 补跑本地 hook `bash -n`，结果 `failed=0 skipped=0`。 |
 
 `2.0.0` 非目标：
 

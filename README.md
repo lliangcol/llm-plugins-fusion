@@ -186,6 +186,7 @@ llm-plugins-fusion/
 | [Plugin-aware routing](./docs/agents/PLUGIN_AWARE_ROUTING.md) | enhanced / fallback mode 与 pack 启用规则 | 维护 pack 路由 |
 | [Marketplace portal IA](./docs/marketplace/portal-information-architecture.md) | 市场门面信息架构、数据源和 vNext / v2.0.0 / v2.1.0 / v2.2.0 / v3.0.0 边界 | 准备 marketplace portal |
 | [vNext release decision](./docs/releases/vnext-release-decision.md) | vNext 版本级别与兼容性矩阵 | 发布决策 |
+| [v2.0.0 manual release steps](./docs/releases/v2.0.0-manual-release-steps.md) | 人工发布、打 tag、GitHub Release 校验与失败处理步骤 | 发布执行 |
 | [Capability packs](./nova-plugin/packs/README.md) | 8 个领域能力包索引 | 维护 packs |
 | [Legacy agents 汇总](./nova-plugin/docs/agents/agents-summary.md) | 已归档 legacy agents 的历史角色说明 | 查阅旧版设计 |
 | [English overview](./nova-plugin/docs/overview/README.en.md) | English project overview | English readers |
