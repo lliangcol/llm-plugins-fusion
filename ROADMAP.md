@@ -40,7 +40,7 @@ agents、packs、hooks 和文档的本地/CI 校验体系。
 这条路径避免在 registry、贡献流程和信任模型还不够强时，过早承诺一个需要
 长期维护的 marketplace UI。
 
-## Milestone 1: v2.0.0 兼容边界发布
+## Milestone 1: v2.0.0 active-agent 兼容边界发布
 
 目标时间：2026-05
 

@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 新增 `.claude-plugin/marketplace.metadata.json` 与对应 schema，用于保存 marketplace 自定义 trust/risk/deprecation/date 元数据。
 - 新增 `scripts/validate-claude-compat.mjs`，静态拦截 Claude CLI 拒绝的 marketplace 插件级字段，并在 Claude CLI 可用时运行插件兼容校验。
 - 新增 `.claude-plugin/registry.source.json`、`schemas/registry-source.schema.json` 与 `scripts/generate-registry.mjs`，为 marketplace 与 repository-local metadata 提供自动生成输入契约。
-- 新增 marketplace portal 信息架构准备文档，明确市场门面数据源、导航模型和 vNext / v2.0.0 / v2.1.0 / v3.0.0 边界。
+- 新增 marketplace portal 信息架构准备文档，明确市场门面数据源、导航模型和 vNext / v2.0.0 / v2.1.0 / v2.2.0 / v3.0.0 边界。
 
 ### Changed
 - 将 active agents 从 14 个固定专家收敛为 6 个 core agents：`orchestrator`、`architect`、`builder`、`reviewer`、`verifier`、`publisher`。
