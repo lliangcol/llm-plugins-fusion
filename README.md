@@ -6,7 +6,7 @@
 
 **第三方 LLM 编码助手插件市场与 `nova-plugin` 工程工作流插件集合**
 
-[![Version](https://img.shields.io/badge/version-1.0.9-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
 
 </div>
@@ -34,7 +34,7 @@ Explore -> Plan -> Review -> Implement -> Finalize
 <table>
 <tr>
 <td><strong>插件版本</strong></td>
-<td>1.0.9</td>
+<td>2.0.0</td>
 </tr>
 <tr>
 <td><strong>主插件</strong></td>

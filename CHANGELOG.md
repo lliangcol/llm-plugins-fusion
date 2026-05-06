@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-05-06
+
+### BREAKING
+- Active-agent surface 改为固定 6-core model：`orchestrator`、`architect`、`builder`、`reviewer`、`verifier`、`publisher`。旧 active specialist agent 文件不再作为公开 active set 提供；需要通过 core agents 与 capability packs 的迁移映射承接旧角色。
+
+### Compatibility
+- Commands 兼容：20 个 Claude Code command 文件继续保留，`/review-lite`、`/review-only`、`/review-strict` 等兼容入口仍可使用。
+- Skills 兼容：20 个 `nova-*` skills 继续与 commands 保持一对一映射，并继续使用 Agent Skills frontmatter 契约。
+
 ### Added
 - 新增 `nova-plugin/packs/` capability packs：`java`、`security`、`dependency`、`docs`、`release`、`marketplace`、`frontend`、`mcp`，所有 pack 均声明 enhanced mode 与 fallback mode。
 - 新增 `scripts/validate-packs.mjs`，校验 pack 目录、README 标准章节、pack 索引与 plugin-aware routing 引用。
@@ -24,7 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 将 active agents 从 14 个固定专家收敛为 6 个 core agents：`orchestrator`、`architect`、`builder`、`reviewer`、`verifier`、`publisher`。
 - `scripts/verify-agents.sh` 与 `scripts/verify-agents.ps1` 改为校验 6 个 core agent 文件、frontmatter 必需字段、`name` 与 basename 一致性，以及 agent 正文标准标签。
 - `scripts/validate-all.mjs` 接入 pack validation。
-- 版本策略仍需人工确认：若 active agent 名称被视为公开兼容承诺，建议 major；否则至少 minor。
+- 发布版本确认为 `2.0.0`，将 active-agent 兼容边界变化作为 major release 处理。
 - 全面优化根 `README.md` 与英文概览，补强安装、命令选择、文档导航、维护规则和质量门说明。
 - 重写 `ROADMAP.md`，将当前 unreleased 架构规划为 `2.0.0` 兼容边界发布，并将 registry 作者工作流、trust 策略和多插件 marketplace 重构拆分到后续里程碑。
 - 重整 `nova-plugin/docs/` 索引，将历史命令优化总结移入 `nova-plugin/docs/history/`，避免与当前架构文档混淆。
@@ -153,6 +162,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - MIT 开源协议
 - 中英双语 README 文档
 
+[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.9...v2.0.0
 [1.0.9]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.8...v1.0.9
 [1.0.8]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.7...v1.0.8
 [1.0.7]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.6...v1.0.7

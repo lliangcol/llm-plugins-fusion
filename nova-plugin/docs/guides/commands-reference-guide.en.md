@@ -1,6 +1,6 @@
 ﻿# 📚 Nova Plugin Command Reference (Full)
 
-> **Version**: 1.0.9 | **Last updated**: 2026-05-04
+> **Version**: 2.0.0 | **Last updated**: 2026-05-06
 >
 > This guide is a complete technical reference for all `nova-plugin` commands, including parameter notes, scenario examples, and workflow templates.
 >

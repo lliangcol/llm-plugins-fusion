@@ -2,11 +2,11 @@
   "plugins": [
     {
       "name": "nova-plugin",
-      "version": "1.0.9",
+      "version": "2.0.0",
       "trust-level": "author-verified",
       "risk-level": "low",
       "deprecated": false,
-      "last-updated": "2026-05-04"
+      "last-updated": "2026-05-06"
     }
   ]
 }

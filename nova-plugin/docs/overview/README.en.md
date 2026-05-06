@@ -6,7 +6,7 @@ English | [中文](../../../README.md)
 
 **A third-party LLM coding-assistant plugin marketplace and `nova-plugin` engineering workflow collection**
 
-[![Version](https://img.shields.io/badge/version-1.0.9-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
+[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](../../../LICENSE)
 
 </div>
@@ -34,7 +34,7 @@ It serves three audiences:
 <table>
 <tr>
 <td><strong>Plugin version</strong></td>
-<td>1.0.9</td>
+<td>2.0.0</td>
 </tr>
 <tr>
 <td><strong>Main plugin</strong></td>

@@ -1,17 +1,19 @@
 # vNext Release Decision
 
-Status: proposed
-Date: 2026-05-05
+Status: release candidate prepared
+Date: 2026-05-06
 
 ## Decision
 
-vNext should be released as a major version, with target version `2.0.0`.
+vNext is being prepared as the `2.0.0` release candidate.
 
-This task does not bump versions. The current version fields remain unchanged:
+The release prep updates the version fields to `2.0.0`:
 
-- `nova-plugin/.claude-plugin/plugin.json`: `1.0.9`
-- `.claude-plugin/marketplace.json`: `1.0.9`
-- `.claude-plugin/marketplace.metadata.json`: `1.0.9`
+- `nova-plugin/.claude-plugin/plugin.json`: `2.0.0`
+- `.claude-plugin/marketplace.json`: `2.0.0`
+- `.claude-plugin/marketplace.metadata.json`: `2.0.0`
+
+The release date and generated metadata date are both `2026-05-06`.
 
 ## Rationale
 
@@ -48,7 +50,7 @@ SemVer outcome:
 | --- | --- | --- | --- |
 | Claude Code plugin install | Compatible | No blocker | Official plugin metadata remains in `nova-plugin/.claude-plugin/plugin.json`; custom marketplace metadata stays outside the plugin manifest. |
 | Claude Code marketplace manifest | Compatible | No blocker | `.claude-plugin/marketplace.json` keeps Claude-compatible display fields only. Do not add repository-local fields such as `trust-level`, `risk-level`, `deprecated`, or `last-updated` here. |
-| Repository-local marketplace metadata | Compatible | No blocker | `.claude-plugin/registry.source.json` owns trust, risk, deprecation, and last-updated fields; `.claude-plugin/marketplace.metadata.json` is generated from it. Version and date stay unchanged until the actual release bump. |
+| Repository-local marketplace metadata | Compatible | No blocker | `.claude-plugin/registry.source.json` owns trust, risk, deprecation, and last-updated fields; `.claude-plugin/marketplace.metadata.json` is generated from it. Version is `2.0.0` and `last-updated` is `2026-05-06` for this release candidate. |
 | Claude Code commands | Compatible | No blocker | The 20 command files remain present. Compatibility shortcuts such as `/review-lite`, `/review-only`, and `/review-strict` remain available. |
 | Claude Code skills | Compatible | No blocker | Commands and `nova-*` skills remain one-to-one. Skill frontmatter follows the Agent Skills contract. |
 | Claude Code active agents | Breaking | Major required | The active set is now the 6 core agents. Former specialist roles are legacy or mapped through core agents plus capability packs. |
@@ -56,28 +58,25 @@ SemVer outcome:
 | Codex review/fix/verify loop | Compatible with prerequisites | No blocker | Codex commands remain available. Local use requires Codex CLI plus Bash for the distributed scripts. |
 | Codex runtime artifacts | Compatible | No blocker | `.codex/` remains runtime-only and must not be committed or treated as release source. |
 | Validation scripts | Compatible for maintainers | No blocker | `validate-all`, docs validation, pack validation, and Claude compatibility checks expand release gates without changing plugin install shape. |
-| Version metadata | Deferred | Explicit non-action | Do not update `plugin.json`, `marketplace.json`, `marketplace.metadata.json`, README badges, or changelog release sections in this task. |
+| Version metadata | Prepared | Release candidate action | `plugin.json`, generated marketplace files, README badges, command reference versions, and changelog release section are synchronized to `2.0.0` / `2026-05-06`. |
 
 ## Release Notes Guidance
 
-When the actual vNext release is prepared:
+This release candidate follows these release note boundaries:
 
-- Bump to `2.0.0` in the plugin metadata, then regenerate the marketplace entry
-  and marketplace metadata from the registry source.
-- Set `last-updated` to the release date in
-  `.claude-plugin/registry.source.json`.
-- Move the relevant Unreleased entries into a `2.0.0` changelog section.
-- Call out the breaking active-agent change prominently.
-- Keep command/skill compatibility notes separate from agent compatibility
-  notes so users can distinguish unchanged slash commands from changed routing
-  internals.
+- `CHANGELOG.md` has a `2.0.0` section dated `2026-05-06`.
+- `CHANGELOG.md` calls out the breaking active-agent change prominently.
+- Command and skill compatibility notes are separate from the active-agent
+  breaking note so users can distinguish unchanged slash commands from changed
+  routing internals.
 
 ## Validation
 
-Required for this artifact:
+Required for release prep:
 
-- `node scripts/validate-docs.mjs`
-- Codex CLI `/review` with no P1 or P2 findings
+- `node scripts/generate-registry.mjs --write`
+- `node scripts/validate-all.mjs`
+- `git diff --check`
+- `claude plugin validate .` when Claude CLI is installed
 
-The version files listed in the Decision section must remain unchanged for this
-task.
+Bash hook syntax checks only count as locally run when Bash is available.

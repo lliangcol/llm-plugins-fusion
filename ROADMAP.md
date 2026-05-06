@@ -14,14 +14,14 @@ agents、packs、hooks 和文档的本地/CI 校验体系。
 
 | 领域 | 当前状态 |
 | --- | --- |
-| 发布版本 | `nova-plugin` 当前发布版本仍是 `1.0.9`；仓库 HEAD 已包含 unreleased 变更。 |
+| 发布版本 | `nova-plugin` 当前 release candidate 版本为 `2.0.0`；正式 tag / GitHub release 尚未创建。 |
 | 插件能力面 | 20 个 slash commands 与 20 个一对一 `nova-*` skills。 |
 | Agent 模型 | `nova-plugin/agents/` 中固定 6 个 active core agents；旧 specialist agent 模型已进入 legacy。 |
 | Capability packs | `nova-plugin/packs/` 中固定 8 个 packs，均声明 enhanced mode 与 fallback mode。 |
 | Registry 模型 | `.claude-plugin/registry.source.json` 生成 Claude-compatible marketplace 输出和 repository-local metadata。 |
 | 质量门 | `node scripts/validate-all.mjs` 是本地总入口。 |
 | Marketplace 门面 | 已有文档型准备：[Marketplace portal IA](docs/marketplace/portal-information-architecture.md)。 |
-| 发布决策 | [vNext release decision](docs/releases/vnext-release-decision.md) 建议将当前 unreleased 工作作为 `2.0.0` 发布。 |
+| 发布决策 | [vNext release decision](docs/releases/vnext-release-decision.md) 已将当前工作确认为 `2.0.0` release candidate 兼容边界。 |
 
 关键结论：旧路线图中“`v2.0.0` = monorepo 重构”的含义不再适用。
 当前下一次 major 应留给已经发生的 active-agent 兼容边界变化；多插件目录重构
@@ -49,10 +49,10 @@ agents、packs、hooks 和文档的本地/CI 校验体系。
 
 | 工作项 | 状态 | 验收标准 |
 | --- | --- | --- |
-| 确认 major 版本决策 | Proposed | 维护者接受 active-agent 变化属于公开兼容边界变化。 |
-| 准备发布元数据 | Pending | `plugin.json`、registry source `last-updated`、生成的 marketplace 文件、README badge 和 changelog 均同步到 `2.0.0`。 |
-| 发布迁移说明 | Pending | 用户能清楚看到 commands/skills 兼容，active agents 已收敛为 6-core 模型。 |
-| 关闭 Unreleased changelog | Pending | 当前 Unreleased 条目进入 `2.0.0` release section，并明确 `BREAKING` 说明。 |
+| 确认 major 版本决策 | Accepted | 维护者接受 active-agent 变化属于公开兼容边界变化。 |
+| 准备发布元数据 | Prepared | `plugin.json`、registry source `last-updated`、生成的 marketplace 文件、README badge 和 changelog 均同步到 `2.0.0`。 |
+| 发布迁移说明 | Prepared | 用户能清楚看到 commands/skills 兼容，active agents 已收敛为 6-core 模型。 |
+| 关闭 Unreleased changelog | Prepared | 当前 Unreleased 条目进入 `2.0.0` release section，并明确 `BREAKING` 说明。 |
 | 运行全量校验 | Pending | `node scripts/validate-all.mjs` 通过；本地 Bash hook 语法检查是否实际运行需如实记录。 |
 
 `2.0.0` 非目标：
