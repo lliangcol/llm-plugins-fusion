@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-05-09
+
 ### Added
 - 新增 registry 多插件 fixture 校验：`fixtures/registry/multi-plugin/` 与 `scripts/validate-registry-fixtures.mjs`，并接入 `validate-all`、CI 和 release precheck。
 - 新增由 registry 生成的 Markdown catalog：`docs/marketplace/catalog.md`。
@@ -179,7 +181,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - MIT 开源协议
 - 中英双语 README 文档
 
-[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.1.0...HEAD
+[2.1.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.9...v2.0.0
 [1.0.9]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.8...v1.0.9
 [1.0.8]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.7...v1.0.8

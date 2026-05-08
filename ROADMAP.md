@@ -1,6 +1,6 @@
 # Roadmap
 
-最后审阅：2026-05-08
+最后审阅：2026-05-09
 
 本路线图基于当前 `llm-plugins-fusion` 仓库现状制定：仓库仍以一个主插件
 `nova-plugin` 为核心，已具备生成式 marketplace 元数据、6 个 core agents、
@@ -14,7 +14,7 @@ agents、packs、hooks 和文档的本地/CI 校验体系。
 
 | 领域 | 当前状态 |
 | --- | --- |
-| 发布版本 | `nova-plugin` 当前稳定版本为 `2.0.0`；正式 tag `v2.0.0` 与 GitHub release 已于 2026-05-06 创建。 |
+| 发布版本 | `nova-plugin` 当前稳定版本为 `2.1.0`；正式 tag `v2.1.0` 与 GitHub release 已于 2026-05-09 创建。 |
 | 插件能力面 | 20 个 slash commands 与 20 个一对一 `nova-*` skills。 |
 | Agent 模型 | `nova-plugin/agents/` 中固定 6 个 active core agents；旧 specialist agent 模型已进入 legacy。 |
 | Capability packs | `nova-plugin/packs/` 中固定 8 个 packs，均声明 enhanced mode 与 fallback mode。 |
@@ -70,8 +70,9 @@ agents、packs、hooks 和文档的本地/CI 校验体系。
 目标：让未来插件作者能理解如何新增、验证和维护插件，同时保持当前单插件
 目录布局继续有效。
 
-状态：本地已完成，作为 `Unreleased` 变更等待维护者决定是否按 `2.1.0`
-或合并到后续 release 发布。
+状态：Released / Completed。`v2.1.0` 于 2026-05-09 发布，并合并当前
+`Unreleased` 中非破坏性的 registry、作者工作流、trust、兼容性和评审策略
+改进。
 
 | 工作项 | 状态 | 验收证据 |
 | --- | --- | --- |
@@ -98,8 +99,9 @@ node scripts/validate-docs.mjs
 
 目标：让 marketplace entries 对外部贡献而言可评审、可维护、可追踪风险。
 
-状态：本地已完成，作为 `Unreleased` 变更等待维护者决定是否按 `2.2.0`
-或合并到后续 release 发布。
+状态：Completed in `v2.1.0`。原计划单独作为 `v2.2.0` 发布的非破坏性
+trust、维护状态与评审策略工作已合并进 `v2.1.0`；当前没有独立
+`v2.2.0` Unreleased 范围。
 
 | 工作项 | 状态 | 验收证据 |
 | --- | --- | --- |
@@ -115,12 +117,12 @@ marketplace manifest。
 
 ## Milestone 4: v3.0.0 多插件 marketplace 候选
 
-目标时间：只有当 `v2.1.0` 与 `v2.2.0` 证明多插件维护确实必要时才启动。
+目标时间：只有当 `v2.1.0` 发布后的真实使用情况证明多插件维护确实必要时才启动。
 
 目标：决定仓库是否需要显式多插件布局，以及公开 portal 是否值得承担维护成本。
 
-状态：Deferred。`v2.1.0` 与 `v2.2.0` 的本地结果已经通过 fixture、
-生成 catalog、metadata evidence 与评审文档解决当前维护痛点；仓库仍只有一个
+状态：Deferred。`v2.1.0` 已经通过 fixture、生成 catalog、metadata evidence
+与评审文档解决当前维护痛点；仓库仍只有一个
 主插件、一个 maintainer cadence，且没有多个 plugin owner 或公开 portal 运营压力。
 因此没有证据支持现在启动 breaking 的目录迁移。
 
