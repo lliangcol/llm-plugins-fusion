@@ -1,19 +1,20 @@
 # vNext Release Decision
 
-Status: release candidate validated
+Status: released as `2.0.0`
 Date: 2026-05-06
 
 ## Decision
 
-vNext is being prepared as the `2.0.0` release candidate.
+vNext was released as `2.0.0`.
 
-The release prep updates the version fields to `2.0.0`:
+The release prep updated the version fields to `2.0.0`:
 
 - `nova-plugin/.claude-plugin/plugin.json`: `2.0.0`
 - `.claude-plugin/marketplace.json`: `2.0.0`
 - `.claude-plugin/marketplace.metadata.json`: `2.0.0`
 
-The release date and generated metadata date are both `2026-05-06`.
+The release date and generated metadata date are both `2026-05-06`. The
+published release tag is `v2.0.0`.
 
 ## Rationale
 
@@ -50,7 +51,7 @@ SemVer outcome:
 | --- | --- | --- | --- |
 | Claude Code plugin install | Compatible | No blocker | Official plugin metadata remains in `nova-plugin/.claude-plugin/plugin.json`; custom marketplace metadata stays outside the plugin manifest. |
 | Claude Code marketplace manifest | Compatible | No blocker | `.claude-plugin/marketplace.json` keeps Claude-compatible display fields only. Do not add repository-local fields such as `trust-level`, `risk-level`, `deprecated`, or `last-updated` here. |
-| Repository-local marketplace metadata | Compatible | No blocker | `.claude-plugin/registry.source.json` owns trust, risk, deprecation, and last-updated fields; `.claude-plugin/marketplace.metadata.json` is generated from it. Version is `2.0.0` and `last-updated` is `2026-05-06` for this release candidate. |
+| Repository-local marketplace metadata | Compatible | No blocker | `.claude-plugin/registry.source.json` owns trust, risk, deprecation, and last-updated fields; `.claude-plugin/marketplace.metadata.json` is generated from it. Version is `2.0.0` and `last-updated` is `2026-05-06` for this release. |
 | Claude Code commands | Compatible | No blocker | The 20 command files remain present. Compatibility shortcuts such as `/review-lite`, `/review-only`, and `/review-strict` remain available. |
 | Claude Code skills | Compatible | No blocker | Commands and `nova-*` skills remain one-to-one. Skill frontmatter follows the Agent Skills contract. |
 | Claude Code active agents | Breaking | Major required | The active set is now the 6 core agents. Former specialist roles are legacy or mapped through core agents plus capability packs. |
@@ -58,11 +59,11 @@ SemVer outcome:
 | Codex review/fix/verify loop | Compatible with prerequisites | No blocker | Codex commands remain available. Local use requires Codex CLI plus Bash for the distributed scripts. |
 | Codex runtime artifacts | Compatible | No blocker | `.codex/` remains runtime-only and must not be committed or treated as release source. |
 | Validation scripts | Compatible for maintainers | No blocker | `validate-all`, docs validation, pack validation, and Claude compatibility checks expand release gates without changing plugin install shape. |
-| Version metadata | Prepared | Release candidate action | `plugin.json`, generated marketplace files, README badges, command reference versions, and changelog release section are synchronized to `2.0.0` / `2026-05-06`. |
+| Version metadata | Prepared | Release action | `plugin.json`, generated marketplace files, README badges, command reference versions, and changelog release section are synchronized to `2.0.0` / `2026-05-06`. |
 
 ## Release Notes Guidance
 
-This release candidate follows these release note boundaries:
+This release follows these release note boundaries:
 
 - `CHANGELOG.md` has a `2.0.0` section dated `2026-05-06`.
 - `CHANGELOG.md` calls out the breaking active-agent change prominently.

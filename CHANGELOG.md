@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Changed
+- 更新路线图、v2.0.0 发布记录、portal IA 与安全支持范围文档，使其反映 `v2.0.0` 已正式发布而非 release candidate 状态。
+
 ## [2.0.0] - 2026-05-06
 
 ### BREAKING

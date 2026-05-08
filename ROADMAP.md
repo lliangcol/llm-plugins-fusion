@@ -1,6 +1,6 @@
 # Roadmap
 
-最后审阅：2026-05-06
+最后审阅：2026-05-08
 
 本路线图基于当前 `llm-plugins-fusion` 仓库现状制定：仓库仍以一个主插件
 `nova-plugin` 为核心，已具备生成式 marketplace 元数据、6 个 core agents、
@@ -14,14 +14,14 @@ agents、packs、hooks 和文档的本地/CI 校验体系。
 
 | 领域 | 当前状态 |
 | --- | --- |
-| 发布版本 | `nova-plugin` 当前 release candidate 版本为 `2.0.0`；正式 tag / GitHub release 尚未创建。 |
+| 发布版本 | `nova-plugin` 当前稳定版本为 `2.0.0`；正式 tag `v2.0.0` 与 GitHub release 已于 2026-05-06 创建。 |
 | 插件能力面 | 20 个 slash commands 与 20 个一对一 `nova-*` skills。 |
 | Agent 模型 | `nova-plugin/agents/` 中固定 6 个 active core agents；旧 specialist agent 模型已进入 legacy。 |
 | Capability packs | `nova-plugin/packs/` 中固定 8 个 packs，均声明 enhanced mode 与 fallback mode。 |
 | Registry 模型 | `.claude-plugin/registry.source.json` 生成 Claude-compatible marketplace 输出和 repository-local metadata。 |
 | 质量门 | `node scripts/validate-all.mjs` 是本地总入口。 |
 | Marketplace 门面 | 已有文档型准备：[Marketplace portal IA](docs/marketplace/portal-information-architecture.md)。 |
-| 发布决策 | [vNext release decision](docs/releases/vnext-release-decision.md) 已将当前工作确认为 `2.0.0` release candidate 兼容边界。 |
+| 发布决策 | [vNext release decision](docs/releases/vnext-release-decision.md) 已将 active-agent 变化确认为 `2.0.0` major release 兼容边界。 |
 
 关键结论：旧路线图中“`v2.0.0` = monorepo 重构”的含义不再适用。
 当前下一次 major 应留给已经发生的 active-agent 兼容边界变化；多插件目录重构
@@ -44,16 +44,17 @@ agents、packs、hooks 和文档的本地/CI 校验体系。
 
 目标时间：2026-05
 
-目标：把当前 unreleased 架构作为明确的 major release 发布；不移动插件路径，
+目标：把当前架构作为明确的 major release 发布；不移动插件路径，
 不引入无关交付风险。
 
 | 工作项 | 状态 | 验收标准 |
 | --- | --- | --- |
 | 确认 major 版本决策 | Accepted | 维护者接受 active-agent 变化属于公开兼容边界变化。 |
-| 准备发布元数据 | Prepared | `plugin.json`、registry source `last-updated`、生成的 marketplace 文件、README badge 和 changelog 均同步到 `2.0.0`。 |
-| 发布迁移说明 | Prepared | 用户能清楚看到 commands/skills 兼容，active agents 已收敛为 6-core 模型。 |
-| 关闭 Unreleased changelog | Prepared | 当前 Unreleased 条目进入 `2.0.0` release section，并明确 `BREAKING` 说明。 |
+| 准备发布元数据 | Completed | `plugin.json`、registry source `last-updated`、生成的 marketplace 文件、README badge 和 changelog 均同步到 `2.0.0`。 |
+| 发布迁移说明 | Completed | 用户能清楚看到 commands/skills 兼容，active agents 已收敛为 6-core 模型。 |
+| 关闭 Unreleased changelog | Completed | 当前 Unreleased 条目进入 `2.0.0` release section，并明确 `BREAKING` 说明。 |
 | 运行全量校验 | Passed | 2026-05-06 已运行 `node scripts/validate-all.mjs`，并通过 Git Bash 补跑本地 hook `bash -n`，结果 `failed=0 skipped=0`。 |
+| 创建正式发布 | Released | `v2.0.0` annotated tag 与 GitHub release 已创建，release notes 来自 `CHANGELOG.md` 的 `2.0.0` section。 |
 
 `2.0.0` 非目标：
 
