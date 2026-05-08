@@ -95,6 +95,7 @@ function runHookSyntaxChecks() {
 }
 
 runNode('validate schemas', 'scripts/validate-schemas.mjs');
+runNode('validate registry fixtures', 'scripts/validate-registry-fixtures.mjs');
 runNode('validate Claude compatibility', 'scripts/validate-claude-compat.mjs');
 runNode('lint frontmatter', 'scripts/lint-frontmatter.mjs');
 runAgentVerification();

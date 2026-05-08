@@ -72,7 +72,15 @@
           "checksum": { "type": "string" },
           "metadata": {
             "type": "object",
-            "required": ["trust-level", "risk-level", "deprecated", "last-updated"],
+            "required": [
+              "trust-level",
+              "risk-level",
+              "deprecated",
+              "last-updated",
+              "maintainer",
+              "compatibility",
+              "review"
+            ],
             "additionalProperties": false,
             "properties": {
               "trust-level": {
@@ -84,7 +92,39 @@
                 "enum": ["low", "medium", "high"]
               },
               "deprecated": { "type": "boolean" },
-              "last-updated": { "type": "string", "format": "date" }
+              "last-updated": { "type": "string", "format": "date" },
+              "maintainer": {
+                "type": "object",
+                "required": ["name"],
+                "additionalProperties": false,
+                "properties": {
+                  "name": { "type": "string", "minLength": 1 },
+                  "email": { "type": "string", "format": "email" },
+                  "url": { "type": "string", "format": "uri" }
+                }
+              },
+              "compatibility": {
+                "type": "object",
+                "required": ["commands", "skills", "docs", "validation", "prerequisites"],
+                "additionalProperties": false,
+                "properties": {
+                  "commands": { "type": "string", "minLength": 1 },
+                  "skills": { "type": "string", "minLength": 1 },
+                  "docs": { "type": "string", "minLength": 1 },
+                  "validation": { "type": "string", "minLength": 1 },
+                  "prerequisites": { "type": "string", "minLength": 1 }
+                }
+              },
+              "review": {
+                "type": "object",
+                "required": ["trustPolicy", "securityReview", "releaseHygiene"],
+                "additionalProperties": false,
+                "properties": {
+                  "trustPolicy": { "type": "string", "minLength": 1 },
+                  "securityReview": { "type": "string", "minLength": 1 },
+                  "releaseHygiene": { "type": "string", "minLength": 1 }
+                }
+              }
             }
           }
         }

@@ -54,7 +54,7 @@ It serves three audiences:
 </tr>
 </table>
 
-The validation suite covers schemas, Claude compatibility, command / skill frontmatter, core agent inventory, capability pack structure, hooks, Markdown local links, and command documentation coverage.
+The validation suite covers schemas, registry fixtures, Claude compatibility, command / skill frontmatter, core agent inventory, capability pack structure, hooks, Markdown local links, command documentation coverage, and generated catalog drift.
 
 ```bash
 node scripts/validate-all.mjs
@@ -149,7 +149,7 @@ llm-plugins-fusion/
 |-- .claude-plugin/
 |   |-- registry.source.json          # registry generation input
 |   |-- marketplace.json              # generated Claude marketplace entry
-|   `-- marketplace.metadata.json     # generated repository-local trust/risk/date metadata
+|   `-- marketplace.metadata.json     # generated repository-local trust/risk/maintainer/evidence metadata
 |-- nova-plugin/
 |   |-- .claude-plugin/plugin.json    # plugin metadata and version source
 |   |-- commands/                     # 20 slash command thin wrappers
@@ -160,9 +160,10 @@ llm-plugins-fusion/
 |   `-- hooks/                        # Claude Code hook config and scripts
 |-- docs/
 |   |-- agents/                       # core agent routing, plugin-aware routing, and migration manifest
-|   |-- marketplace/                  # marketplace portal information architecture preparation
-|   |-- releases/                     # release decisions and compatibility notes
+|   |-- marketplace/                  # catalog, author workflow, compatibility, trust, and review docs
+|   |-- releases/                     # release decisions, runbook, and hygiene docs
 |   `-- reports/archive/              # historical audit reports
+|-- fixtures/                         # registry multi-entry fixture
 |-- schemas/                          # registry source / marketplace / metadata / plugin schemas
 |-- scripts/                          # local and CI validation scripts
 |-- README.md
@@ -184,7 +185,13 @@ llm-plugins-fusion/
 | [Hooks design](../architecture/hooks-design.md) | Pre-write checks and audit hooks | Maintaining safety boundaries |
 | [Core agent routing](../../../docs/agents/ROUTING.md) | Routing rules for 6 core agents and capability packs | Choosing or maintaining agents |
 | [Plugin-aware routing](../../../docs/agents/PLUGIN_AWARE_ROUTING.md) | Enhanced / fallback mode and pack activation rules | Maintaining pack routing |
+| [Marketplace catalog](../../../docs/marketplace/catalog.md) | Generated plugin catalog and compatibility evidence | Browsing marketplace entries |
 | [Marketplace portal IA](../../../docs/marketplace/portal-information-architecture.md) | Marketplace portal information architecture, data sources, and vNext / v2.0.0 / v2.1.0 / v2.2.0 / v3.0.0 boundaries | Preparing the marketplace portal |
+| [Registry author workflow](../../../docs/marketplace/registry-author-workflow.md) | Plugin entry updates, scaffold dry-run, profiles, and validation flow | Plugin authors and maintainers |
+| [Compatibility matrix](../../../docs/marketplace/compatibility-matrix.md) | Claude Code, Codex CLI, Bash, Node.js, and optional enhanced tools | Reviewing compatibility |
+| [Trust policy](../../../docs/marketplace/trust-policy.md) | Trust/risk/deprecation/last-updated/maintainer semantics and review requirements | Reviewing marketplace metadata |
+| [Security review route](../../../docs/marketplace/security-review-route.md) | Security-sensitive plugin change route and minimum checks | Security review |
+| [Release hygiene](../../../docs/releases/release-hygiene.md) | Tag/version sync, generated drift, changelog, and pre-release review | Release preparation |
 | [vNext release decision](../../../docs/releases/vnext-release-decision.md) | vNext release level and compatibility matrix | Release decision |
 | [Capability packs](../../packs/README.md) | Index for 8 domain capability packs | Maintaining packs |
 | [Legacy agents summary](../agents/agents-summary.en.md) | Historical legacy agent roles | Inspecting old design |
@@ -194,9 +201,10 @@ llm-plugins-fusion/
 Version and registry sources:
 
 - `nova-plugin/.claude-plugin/plugin.json`: plugin metadata and version source
-- `.claude-plugin/registry.source.json`: registry, marketplace display fields, and trust/risk/date metadata source
+- `.claude-plugin/registry.source.json`: registry, marketplace display fields, and trust/risk/maintainer/evidence metadata source
 - `.claude-plugin/marketplace.json`: generated Claude marketplace manifest
 - `.claude-plugin/marketplace.metadata.json`: generated repository-local metadata
+- `docs/marketplace/catalog.md`: generated Markdown catalog
 - `CHANGELOG.md`
 
 Commands and skills must stay one-to-one:
@@ -229,6 +237,7 @@ Targeted checks:
 ```bash
 node scripts/generate-registry.mjs
 node scripts/validate-schemas.mjs
+node scripts/validate-registry-fixtures.mjs
 node scripts/validate-claude-compat.mjs
 node scripts/lint-frontmatter.mjs
 node scripts/validate-packs.mjs

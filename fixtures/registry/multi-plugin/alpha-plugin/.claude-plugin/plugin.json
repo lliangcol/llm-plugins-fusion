@@ -1,0 +1,14 @@
+{
+  "name": "alpha-plugin",
+  "description": "Fixture alpha plugin used for registry generation coverage.",
+  "version": "1.2.3",
+  "author": {
+    "name": "Alpha Maintainer",
+    "email": "alpha@example.com",
+    "url": "https://example.com/alpha"
+  },
+  "license": "MIT",
+  "keywords": ["alpha", "workflow"],
+  "homepage": "https://example.com/alpha",
+  "repository": "https://example.com/alpha.git"
+}

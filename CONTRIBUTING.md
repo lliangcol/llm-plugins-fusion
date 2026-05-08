@@ -32,6 +32,8 @@
   - `skills/*/SKILL.md` 必需字段：`name`、`description`、`license`、`allowed-tools`（空格分隔字符串）、`metadata.novaPlugin.*`（`userInvocable` / `autoLoad` / `subagentSafe` / `destructiveActions`）。
 - **JSON Schema**：`registry.source.json` / `marketplace.json` / `marketplace.metadata.json` / `plugin.json` 改动后必须通过 `node scripts/validate-schemas.mjs`。
 - **Registry 生成**：`.claude-plugin/marketplace.json` 与 `.claude-plugin/marketplace.metadata.json` 是生成产物。维护 registry 时改 `nova-plugin/.claude-plugin/plugin.json` 与 `.claude-plugin/registry.source.json`，再运行 `node scripts/generate-registry.mjs --write`。
+- **Catalog 生成**：`docs/marketplace/catalog.md` 同样由 registry source 生成，不手工编辑。它展示当前插件 entry、maintainer、trust/risk、compatibility evidence 和 review policy 链接。
+- **Registry fixture**：多插件 entry 生成能力由 `fixtures/registry/multi-plugin/` 和 `node scripts/validate-registry-fixtures.mjs` 覆盖，确保未来多 entry 不破坏当前单插件布局。
 - **Claude 兼容性**：官方 marketplace manifest 改动后必须通过 `node scripts/validate-claude-compat.mjs`；若本机存在 Claude CLI，该脚本会运行 `claude plugin validate .` 和 `claude plugin validate nova-plugin`。
 - **Hook 校验**：hook 配置或脚本改动后运行 `node scripts/validate-hooks.mjs`；Bash 可用时还要运行两个 hook 脚本的 `bash -n`。
 - **文档校验**：用户文档、命令文档、版本日期或报告归档改动后运行 `node scripts/validate-docs.mjs`；它会校验 Markdown 本地链接与锚点、命令文档 stage 位置、版本日期同步和非归档报告状态。
@@ -53,7 +55,20 @@
 - `.claude-plugin/registry.source.json` 的 `last-updated`
 - 生成后的 `.claude-plugin/marketplace.json` 的 `plugins[].version`
 - 生成后的 `.claude-plugin/marketplace.metadata.json` 的 `plugins[].version`、`last-updated`
+- 生成后的 `docs/marketplace/catalog.md`
 - `CHANGELOG.md` 新增条目
+
+## 添加或维护 marketplace entry
+
+新增或修改插件 entry 时，请先阅读 [Registry Author Workflow](./docs/marketplace/registry-author-workflow.md)。核心规则：
+
+1. 插件自有字段写在 `<plugin>/.claude-plugin/plugin.json`。
+2. marketplace 展示字段和 repository-local metadata 写在 `.claude-plugin/registry.source.json`。
+3. 每个 entry 都必须声明 maintainer、trust/risk/deprecated/last-updated、compatibility evidence 和 review policy 链接。
+4. 运行 `node scripts/generate-registry.mjs --write` 生成 marketplace、metadata 和 catalog。
+5. 运行 `node scripts/validate-schemas.mjs`、`node scripts/validate-registry-fixtures.mjs`、`node scripts/validate-claude-compat.mjs` 和 `node scripts/validate-docs.mjs`。
+
+PR 需要说明 metadata rationale、安全影响、维护 owner 和本地校验输出；仓库模板见 [`.github/pull_request_template.md`](./.github/pull_request_template.md)。
 
 ### 提交信息
 
@@ -74,6 +89,7 @@ chore(schemas): tighten plugin.schema.json enum
 # 1. schema 校验
 node scripts/generate-registry.mjs
 node scripts/validate-schemas.mjs
+node scripts/validate-registry-fixtures.mjs
 
 # 2. Claude 兼容性校验
 node scripts/validate-claude-compat.mjs

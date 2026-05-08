@@ -76,8 +76,14 @@ Options:
   --dry-run                    Print target files without writing.
   --help                       Show this help.
 
+Profiles:
+  read                          Read-only repository inspection; no project writes.
+  artifact                      Explicit artifact writing; no production code edits.
+  implementation                Bounded project-code edits; implement stage only.
+
 Examples:
-  node scripts/scaffold.mjs command /foo --stage plan --description "Create a practical foo execution plan."
+  node scripts/scaffold.mjs command /foo --stage plan --description "Create a practical foo execution plan." --dry-run
+  node scripts/scaffold.mjs command /foo-artifact --stage review --profile artifact --description "Write a bounded foo review artifact."
   node scripts/scaffold.mjs command /foo-fix --stage implement --profile implementation --description "Implement a bounded foo fix with validation."
 `;
 }

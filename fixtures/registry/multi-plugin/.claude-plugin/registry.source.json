@@ -1,0 +1,70 @@
+{
+  "$schema": "../../../../schemas/registry-source.schema.json",
+  "name": "fixture-marketplace",
+  "owner": {
+    "name": "Fixture Owner",
+    "email": "fixture@example.com",
+    "url": "https://example.com"
+  },
+  "metadata": {
+    "description": "Fixture registry used to validate multi-plugin generation."
+  },
+  "plugins": [
+    {
+      "source": "./alpha-plugin",
+      "category": "development",
+      "tags": ["alpha", "workflow"],
+      "metadata": {
+        "trust-level": "official",
+        "risk-level": "low",
+        "deprecated": false,
+        "last-updated": "2026-05-08",
+        "maintainer": {
+          "name": "Alpha Maintainer",
+          "email": "alpha@example.com",
+          "url": "https://example.com/alpha"
+        },
+        "compatibility": {
+          "commands": "alpha-plugin/commands/",
+          "skills": "alpha-plugin/skills/",
+          "docs": "alpha-plugin/docs/README.md",
+          "validation": "scripts/validate-all.mjs",
+          "prerequisites": "docs/marketplace/compatibility-matrix.md"
+        },
+        "review": {
+          "trustPolicy": "docs/marketplace/trust-policy.md",
+          "securityReview": "docs/marketplace/security-review-route.md",
+          "releaseHygiene": "docs/releases/release-hygiene.md"
+        }
+      }
+    },
+    {
+      "source": "./plugins/beta-plugin",
+      "category": "testing",
+      "tags": ["beta", "validation"],
+      "metadata": {
+        "trust-level": "community",
+        "risk-level": "medium",
+        "deprecated": false,
+        "last-updated": "2026-05-08",
+        "maintainer": {
+          "name": "Beta Maintainer",
+          "email": "beta@example.com",
+          "url": "https://example.com/beta"
+        },
+        "compatibility": {
+          "commands": "plugins/beta-plugin/commands/",
+          "skills": "plugins/beta-plugin/skills/",
+          "docs": "plugins/beta-plugin/docs/README.md",
+          "validation": "scripts/validate-all.mjs",
+          "prerequisites": "docs/marketplace/compatibility-matrix.md"
+        },
+        "review": {
+          "trustPolicy": "docs/marketplace/trust-policy.md",
+          "securityReview": "docs/marketplace/security-review-route.md",
+          "releaseHygiene": "docs/releases/release-hygiene.md"
+        }
+      }
+    }
+  ]
+}

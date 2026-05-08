@@ -9,8 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+- 新增 registry 多插件 fixture 校验：`fixtures/registry/multi-plugin/` 与 `scripts/validate-registry-fixtures.mjs`，并接入 `validate-all`、CI 和 release precheck。
+- 新增由 registry 生成的 Markdown catalog：`docs/marketplace/catalog.md`。
+- 新增 marketplace 作者工作流、兼容矩阵、trust policy、安全评审路径和 release hygiene 文档。
+- 新增 PR 模板，要求校验输出、metadata rationale、安全说明和维护 owner。
+
 ### Changed
-- 更新路线图、v2.0.0 发布记录、portal IA 与安全支持范围文档，使其反映 `v2.0.0` 已正式发布而非 release candidate 状态。
+- 更新路线图、v2.0.0 发布记录、portal IA 与安全支持范围文档，使其反映 `v2.0.0` 已正式发布而非候选发布状态。
+- 扩展 repository-local marketplace metadata，增加 maintainer、compatibility evidence 和 review policy 链接，同时继续保持 Claude-compatible marketplace manifest 不含自定义 trust/risk 字段。
+- 补强 `scripts/scaffold.mjs --help`，直接展示 dry-run 示例、常见 profile 和后续校验入口。
+- 将 `nova-plugin` repository-local `risk-level` 调整为 `medium`，与 write-capable commands、hooks 和 Bash script 风险策略保持一致。
+- 扩展 registry fixture 校验，扫描完整 marketplace 输出并覆盖 top-level metadata 泄漏场景。
+- 扩展 Claude compatibility 静态校验，禁止真实 marketplace manifest 泄漏 `maintainer`、`compatibility` 和 `review` 字段。
+- 将 `ROADMAP.md` 中 `v2.1.0` 与 `v2.2.0` 本地可完成项标记为完成，并记录 `v3.0.0` 多插件目录和 public portal 的 deferred rationale。
 
 ## [2.0.0] - 2026-05-06
 
@@ -49,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - `/review` 统一入口现在明确支持 `LEVEL=lite|standard|strict`，并将 `lite` 路由到 `nova-review-lite`。
 - CI、release 与 `validate-all` 接入 Claude 兼容校验，并增加 `/review LEVEL=lite` 文档契约防回归检查。
 - 清理历史优化总结与 archive notice 中会误导 active agent 位置或历史文件路径的说明。
-- 记录 `2.0.0` release candidate 的本地全量校验结果，明确 hook Bash 语法检查已实际执行且无 skipped 项。
+- 记录 `2.0.0` 正式发布前的本地全量校验结果，明确 hook Bash 语法检查已实际执行且无 skipped 项。
 
 ### Removed
 - 删除已移除的辅助前端应用，并移除对应的 CI npm lint/test、同步检查脚本与 release 构建产物上传。

@@ -3,7 +3,7 @@
  * Schema validation script
  * Validates plugin.json, registry.source.json, marketplace.json, and
  * marketplace.metadata.json against their JSON schemas, then checks
- * name/version alignment and generated registry drift.
+ * name/version alignment and generated registry/catalog drift.
  * Dependencies: none (uses built-in fetch/readFile only)
  *
  * Usage: node scripts/validate-schemas.mjs

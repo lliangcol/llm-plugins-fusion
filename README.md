@@ -54,7 +54,7 @@ Explore -> Plan -> Review -> Implement -> Finalize
 </tr>
 </table>
 
-仓库当前的自动化质量门覆盖 schema、Claude 兼容性、command / skill frontmatter、core agent 集合、capability pack 结构、hooks 配置、Markdown 本地链接与命令文档覆盖。完整检查入口是：
+仓库当前的自动化质量门覆盖 schema、registry fixture、Claude 兼容性、command / skill frontmatter、core agent 集合、capability pack 结构、hooks 配置、Markdown 本地链接、命令文档覆盖与生成 catalog 漂移。完整检查入口是：
 
 ```bash
 node scripts/validate-all.mjs
@@ -149,7 +149,7 @@ llm-plugins-fusion/
 |-- .claude-plugin/
 |   |-- registry.source.json          # registry 生成输入
 |   |-- marketplace.json              # 生成的 Claude marketplace 入口
-|   `-- marketplace.metadata.json     # 生成的仓库本地 trust/risk/date 元数据
+|   `-- marketplace.metadata.json     # 生成的仓库本地 trust/risk/maintainer/evidence 元数据
 |-- nova-plugin/
 |   |-- .claude-plugin/plugin.json    # 插件元信息，版本事实源
 |   |-- commands/                     # 20 个 slash command 薄入口
@@ -160,9 +160,10 @@ llm-plugins-fusion/
 |   `-- hooks/                        # Claude Code hook 配置和脚本
 |-- docs/
 |   |-- agents/                       # core agent 路由、plugin-aware routing 与迁移清单
-|   |-- marketplace/                  # 市场门面信息架构准备
-|   |-- releases/                     # release 决策与兼容性说明
+|   |-- marketplace/                  # catalog、作者流程、兼容矩阵、trust 与安全评审策略
+|   |-- releases/                     # release 决策、runbook 与 hygiene 说明
 |   `-- reports/archive/              # 历史审计报告
+|-- fixtures/                         # registry 多 entry fixture
 |-- schemas/                          # registry source / marketplace / metadata / plugin schemas
 |-- scripts/                          # 本地和 CI 校验脚本
 |-- README.md
@@ -184,7 +185,13 @@ llm-plugins-fusion/
 | [Hooks 设计](./nova-plugin/docs/architecture/hooks-design.md) | 写入前检查和审计日志 hook | 维护安全边界 |
 | [Core agent 路由](./docs/agents/ROUTING.md) | 6 个 core agents 与 capability packs 的路由规则 | 选择或维护 agent |
 | [Plugin-aware routing](./docs/agents/PLUGIN_AWARE_ROUTING.md) | enhanced / fallback mode 与 pack 启用规则 | 维护 pack 路由 |
+| [Marketplace catalog](./docs/marketplace/catalog.md) | 由 registry 生成的当前插件 catalog 与兼容证据 | 浏览 marketplace entry |
 | [Marketplace portal IA](./docs/marketplace/portal-information-architecture.md) | 市场门面信息架构、数据源和 vNext / v2.0.0 / v2.1.0 / v2.2.0 / v3.0.0 边界 | 准备 marketplace portal |
+| [Registry author workflow](./docs/marketplace/registry-author-workflow.md) | 新增插件 entry、scaffold dry-run、profile 与校验流程 | 插件作者与维护者 |
+| [Compatibility matrix](./docs/marketplace/compatibility-matrix.md) | Claude Code、Codex CLI、Bash、Node.js 与 enhanced tools 前置条件 | 评审兼容性 |
+| [Trust policy](./docs/marketplace/trust-policy.md) | trust/risk/deprecation/last-updated/maintainer 语义与评审要求 | 评审 marketplace metadata |
+| [Security review route](./docs/marketplace/security-review-route.md) | 安全敏感插件变更的评审路径和最小检查 | 安全评审 |
+| [Release hygiene](./docs/releases/release-hygiene.md) | tag/version 同步、生成产物漂移、changelog 与发布前 review | 发布准备 |
 | [vNext release decision](./docs/releases/vnext-release-decision.md) | vNext 版本级别与兼容性矩阵 | 发布决策 |
 | [v2.0.0 manual release steps](./docs/releases/v2.0.0-manual-release-steps.md) | 人工发布、打 tag、GitHub Release 校验与失败处理步骤 | 发布执行 |
 | [Capability packs](./nova-plugin/packs/README.md) | 8 个领域能力包索引 | 维护 packs |
@@ -196,9 +203,10 @@ llm-plugins-fusion/
 版本与 registry 事实源：
 
 - `nova-plugin/.claude-plugin/plugin.json`：插件元信息与版本事实源
-- `.claude-plugin/registry.source.json`：registry、marketplace 展示字段和 trust/risk/date 元数据事实源
+- `.claude-plugin/registry.source.json`：registry、marketplace 展示字段和 trust/risk/maintainer/evidence 元数据事实源
 - `.claude-plugin/marketplace.json`：生成的 Claude marketplace manifest
 - `.claude-plugin/marketplace.metadata.json`：生成的仓库本地 metadata
+- `docs/marketplace/catalog.md`：由 registry 生成的 Markdown catalog
 - `CHANGELOG.md`
 
 Command 与 skill 必须一对一：
@@ -231,6 +239,7 @@ node scripts/validate-all.mjs
 ```bash
 node scripts/generate-registry.mjs
 node scripts/validate-schemas.mjs
+node scripts/validate-registry-fixtures.mjs
 node scripts/validate-claude-compat.mjs
 node scripts/lint-frontmatter.mjs
 node scripts/validate-packs.mjs

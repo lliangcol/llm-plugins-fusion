@@ -47,11 +47,15 @@ SemVer outcome:
 
 ## Compatibility Matrix
 
+The detailed ongoing prerequisite matrix now lives in
+[Compatibility matrix](../marketplace/compatibility-matrix.md). The table below
+records the `2.0.0` release decision boundary.
+
 | Surface | vNext compatibility | Release impact | Notes |
 | --- | --- | --- | --- |
 | Claude Code plugin install | Compatible | No blocker | Official plugin metadata remains in `nova-plugin/.claude-plugin/plugin.json`; custom marketplace metadata stays outside the plugin manifest. |
-| Claude Code marketplace manifest | Compatible | No blocker | `.claude-plugin/marketplace.json` keeps Claude-compatible display fields only. Do not add repository-local fields such as `trust-level`, `risk-level`, `deprecated`, or `last-updated` here. |
-| Repository-local marketplace metadata | Compatible | No blocker | `.claude-plugin/registry.source.json` owns trust, risk, deprecation, and last-updated fields; `.claude-plugin/marketplace.metadata.json` is generated from it. Version is `2.0.0` and `last-updated` is `2026-05-06` for this release. |
+| Claude Code marketplace manifest | Compatible | No blocker | `.claude-plugin/marketplace.json` keeps Claude-compatible display fields only. Do not add repository-local fields such as `trust-level`, `risk-level`, `deprecated`, `last-updated`, `maintainer`, `compatibility`, or `review` here. |
+| Repository-local marketplace metadata | Compatible | No blocker | `.claude-plugin/registry.source.json` owns trust, risk, deprecation, last-updated, maintainer, compatibility evidence, and review links; `.claude-plugin/marketplace.metadata.json` is generated from it. Version is `2.0.0` and `last-updated` is `2026-05-06` for this release. |
 | Claude Code commands | Compatible | No blocker | The 20 command files remain present. Compatibility shortcuts such as `/review-lite`, `/review-only`, and `/review-strict` remain available. |
 | Claude Code skills | Compatible | No blocker | Commands and `nova-*` skills remain one-to-one. Skill frontmatter follows the Agent Skills contract. |
 | Claude Code active agents | Breaking | Major required | The active set is now the 6 core agents. Former specialist roles are legacy or mapped through core agents plus capability packs. |
@@ -73,10 +77,11 @@ This release follows these release note boundaries:
 
 ## Validation
 
-Required for release prep:
+Required for current release prep and future registry changes:
 
 - `node scripts/generate-registry.mjs --write`
 - `node scripts/validate-all.mjs`
+- `node scripts/validate-registry-fixtures.mjs` for registry generation changes
 - `git diff --check`
 - `claude plugin validate .` when Claude CLI is installed
 

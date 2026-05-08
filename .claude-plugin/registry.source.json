@@ -16,9 +16,26 @@
       "tags": ["workflow", "ai-coding", "claude-code", "codex-review"],
       "metadata": {
         "trust-level": "author-verified",
-        "risk-level": "low",
+        "risk-level": "medium",
         "deprecated": false,
-        "last-updated": "2026-05-06"
+        "last-updated": "2026-05-06",
+        "maintainer": {
+          "name": "liu liang",
+          "email": "lliangcoder@gmail.com",
+          "url": "https://github.com/lliangcol"
+        },
+        "compatibility": {
+          "commands": "nova-plugin/commands/",
+          "skills": "nova-plugin/skills/",
+          "docs": "nova-plugin/docs/README.md",
+          "validation": "scripts/validate-all.mjs",
+          "prerequisites": "docs/marketplace/compatibility-matrix.md"
+        },
+        "review": {
+          "trustPolicy": "docs/marketplace/trust-policy.md",
+          "securityReview": "docs/marketplace/security-review-route.md",
+          "releaseHygiene": "docs/releases/release-hygiene.md"
+        }
       }
     }
   ]

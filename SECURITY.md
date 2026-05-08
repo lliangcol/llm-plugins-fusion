@@ -36,6 +36,10 @@
 2. **destructive-actions 分级**：每个命令在 frontmatter 中声明 `none / low / medium / high`，配合 skill 的 `subagentSafe` 字段共同决定是否允许在 agent 自动化流中调用。
 3. **Codex 闭环的安全边界**：`codex-review-fix` 等命令在 SKILL.md 中显式禁止 `git reset --hard`、`git clean -fd`、批量删除等操作。
 4. **供应链**：仓库级脚本尽量使用 Node.js 内置模块与 Bash/PowerShell；CI 持续执行 schema、frontmatter 与 active agent 校验。
+5. **Marketplace metadata 分层**：`trust-level`、`risk-level`、`deprecated`、`last-updated`、maintainer 与 review evidence 保留在 repository-local metadata，不写入 Claude-compatible marketplace manifest。
+
+安全敏感的插件、registry、hook、脚本或 write-capable command 变更应按
+[Security Review Route](./docs/marketplace/security-review-route.md) 执行评审。
 
 ## 披露策略
 

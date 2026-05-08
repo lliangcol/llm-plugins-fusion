@@ -1,0 +1,14 @@
+{
+  "name": "beta-plugin",
+  "description": "Fixture beta plugin used to validate multiple registry entries.",
+  "version": "0.4.5",
+  "author": {
+    "name": "Beta Maintainer",
+    "email": "beta@example.com",
+    "url": "https://example.com/beta"
+  },
+  "license": "MIT",
+  "keywords": ["beta", "validation"],
+  "homepage": "https://example.com/beta",
+  "repository": "https://example.com/beta.git"
+}

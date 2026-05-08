@@ -19,6 +19,9 @@ const forbiddenMarketplaceKeys = new Set([
   'risk-level',
   'deprecated',
   'last-updated',
+  'maintainer',
+  'compatibility',
+  'review',
 ]);
 
 let failed = 0;

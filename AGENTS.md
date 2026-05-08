@@ -18,7 +18,9 @@ Explore -> Plan -> Review -> Implement -> Finalize
 
 - Marketplace entry: `.claude-plugin/marketplace.json`
 - Marketplace custom metadata: `.claude-plugin/marketplace.metadata.json`
+- Generated marketplace catalog: `docs/marketplace/catalog.md`
 - Registry generation source: `.claude-plugin/registry.source.json`
+- Registry multi-entry fixture: `fixtures/registry/multi-plugin/`
 - Main plugin metadata: `nova-plugin/.claude-plugin/plugin.json`
 - Plugin version source of truth: `nova-plugin/.claude-plugin/plugin.json`
 - Commands: 20 files under `nova-plugin/commands/*.md`
@@ -36,11 +38,16 @@ Explore -> Plan -> Review -> Implement -> Finalize
 
 - Plugin-owned metadata, including version:
   `nova-plugin/.claude-plugin/plugin.json`.
-- Registry-owned marketplace fields and custom status fields, including
-  `last-updated`: `.claude-plugin/registry.source.json`.
+- Registry-owned marketplace fields and custom metadata, including
+  `last-updated`, maintainer, compatibility evidence, and review links:
+  `.claude-plugin/registry.source.json`.
 - Generated registry outputs: `.claude-plugin/marketplace.json` and
-  `.claude-plugin/marketplace.metadata.json`; regenerate with
+  `.claude-plugin/marketplace.metadata.json`, plus generated catalog
+  `docs/marketplace/catalog.md`; regenerate with
   `node scripts/generate-registry.mjs --write`.
+- Registry fixture coverage:
+  `fixtures/registry/multi-plugin/`, enforced by
+  `scripts/validate-registry-fixtures.mjs`.
 - Command definitions: `nova-plugin/commands/*.md`.
 - Skill definitions: `nova-plugin/skills/nova-*/SKILL.md`.
 - Command documentation: `nova-plugin/docs/commands/`.
@@ -67,7 +74,11 @@ claude-plugins-fusion/
 |   |-- ci.yml                        # Agent, schema, and frontmatter checks
 |   `-- release.yml                   # Tag-based release and release notes
 |-- docs/
-|   `-- agents/                       # Active agent routing and migration notes
+|   |-- agents/                       # Active agent routing and migration notes
+|   |-- marketplace/                  # Catalog, author workflow, compatibility, trust, review docs
+|   `-- releases/                     # Release decision, runbook, and hygiene docs
+|-- fixtures/
+|   `-- registry/multi-plugin/        # Multi-entry registry generation fixture
 |-- nova-plugin/
 |   |-- .claude-plugin/plugin.json    # nova-plugin metadata and version
 |   |-- commands/                     # 20 Claude Code command definitions
@@ -101,6 +112,7 @@ On Bash-compatible shells:
 ```bash
 node scripts/generate-registry.mjs
 node scripts/validate-schemas.mjs
+node scripts/validate-registry-fixtures.mjs
 node scripts/validate-claude-compat.mjs
 node scripts/lint-frontmatter.mjs
 bash scripts/verify-agents.sh
@@ -116,6 +128,7 @@ On Windows PowerShell:
 ```powershell
 node scripts/generate-registry.mjs
 node scripts/validate-schemas.mjs
+node scripts/validate-registry-fixtures.mjs
 node scripts/validate-claude-compat.mjs
 node scripts/lint-frontmatter.mjs
 .\scripts\verify-agents.ps1
@@ -136,11 +149,14 @@ as locally passed unless Bash actually ran them.
 - `.claude-plugin/registry.source.json` is the human-maintained source for
   registry generation. It owns registry-level marketplace data, plugin source
   paths, marketplace-only fields such as category and tags, and repository-local
-  trust/risk/deprecation/`last-updated` metadata.
+  trust/risk/deprecation/`last-updated`, maintainer, compatibility, and review
+  metadata.
 - `.claude-plugin/marketplace.json` registers installable plugins and is
   generated from `registry.source.json` plus each plugin manifest.
 - `.claude-plugin/marketplace.metadata.json` stores repository-local metadata
   and is generated from `registry.source.json` plus each plugin manifest.
+- `docs/marketplace/catalog.md` is a generated Markdown catalog derived from
+  the same registry source and plugin manifests.
 - `nova-plugin/.claude-plugin/plugin.json` declares plugin name, version,
   author, license, keywords, homepage, and repository metadata.
 - `nova-plugin/commands/*.md` contains Claude Code command definitions.
@@ -327,6 +343,7 @@ Also update:
 - generated `.claude-plugin/marketplace.json` plugin `version`
 - generated `.claude-plugin/marketplace.metadata.json` plugin `version` and
   `last-updated`
+- generated `docs/marketplace/catalog.md` plugin version and metadata evidence
 - `CLAUDE.md`, if quick facts, counts, workflows, or constraints changed
 - `AGENTS.md`, if agent-facing facts, counts, workflows, or constraints changed
 - `nova-plugin/docs/commands/<stage>/<id>.md`, `<id>.README.md`, and
@@ -355,6 +372,7 @@ Version information is generated from:
 - generated `.claude-plugin/marketplace.json` plugin `version`
 - generated `.claude-plugin/marketplace.metadata.json` plugin `version` and
   `last-updated`
+- generated `docs/marketplace/catalog.md` plugin version and metadata evidence
 - `CHANGELOG.md`
 - `CLAUDE.md`, if quick facts, counts, constraints, or workflows changed
 - `AGENTS.md`, if agent-facing facts, counts, constraints, or workflows changed
@@ -371,6 +389,7 @@ After metadata or schema changes, run:
 ```bash
 node scripts/generate-registry.mjs --write
 node scripts/validate-schemas.mjs
+node scripts/validate-registry-fixtures.mjs
 node scripts/validate-claude-compat.mjs
 ```
 
@@ -398,6 +417,7 @@ Metadata or marketplace changes:
 ```bash
 node scripts/generate-registry.mjs --write
 node scripts/validate-schemas.mjs
+node scripts/validate-registry-fixtures.mjs
 ```
 
 Command or skill contract/frontmatter changes:
@@ -453,8 +473,8 @@ If Bash is unavailable, it warning-skips only the local `bash -n` hook syntax
 checks; CI/Linux still runs them.
 
 Current CI includes verify-agents, validate-packs, validate-schemas,
-validate-claude-compat, lint-frontmatter, validate-hooks, hook `bash -n`, and
-validate-docs.
+validate-registry-fixtures, validate-claude-compat, lint-frontmatter,
+validate-hooks, hook `bash -n`, and validate-docs.
 
 ## Do Not Edit
 
@@ -478,8 +498,8 @@ validate-docs.
 - User-facing behavior changes require documentation and `CHANGELOG.md`
   updates.
 - `.claude-plugin/marketplace.json` and
-  `.claude-plugin/marketplace.metadata.json` are generated outputs; update
-  `plugin.json` or `registry.source.json`, then run
+  `.claude-plugin/marketplace.metadata.json` and `docs/marketplace/catalog.md`
+  are generated outputs; update `plugin.json` or `registry.source.json`, then run
   `node scripts/generate-registry.mjs --write`.
 - Review and Explore commands should not modify project code.
 - Non-implementation commands may declare `Write` or `Edit` only for explicit
