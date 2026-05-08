@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+- 新增 `v3.0.0` readiness evidence 台账，用于记录多插件目录和 public portal
+  启动门槛，并明确当前仍不启动 breaking 迁移。
+
 ## [2.1.0] - 2026-05-09
 
 ### Added

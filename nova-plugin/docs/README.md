@@ -104,6 +104,7 @@ Core agents use documentation-only capability packs for domain routing. Packs do
 - [Plugin-aware routing](../../docs/agents/PLUGIN_AWARE_ROUTING.md)
 - [Marketplace catalog](../../docs/marketplace/catalog.md)
 - [Registry author workflow](../../docs/marketplace/registry-author-workflow.md)
+- [v3 readiness evidence](../../docs/marketplace/v3-readiness-evidence.md)
 - [Compatibility matrix](../../docs/marketplace/compatibility-matrix.md)
 - [Trust policy](../../docs/marketplace/trust-policy.md)
 - [Security review route](../../docs/marketplace/security-review-route.md)

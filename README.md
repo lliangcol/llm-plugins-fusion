@@ -187,6 +187,7 @@ llm-plugins-fusion/
 | [Plugin-aware routing](./docs/agents/PLUGIN_AWARE_ROUTING.md) | enhanced / fallback mode 与 pack 启用规则 | 维护 pack 路由 |
 | [Marketplace catalog](./docs/marketplace/catalog.md) | 由 registry 生成的当前插件 catalog 与兼容证据 | 浏览 marketplace entry |
 | [Marketplace portal IA](./docs/marketplace/portal-information-architecture.md) | 市场门面信息架构、数据源和 vNext / v2.0.0 / v2.1.0 / v2.2.0 / v3.0.0 边界 | 准备 marketplace portal |
+| [v3 readiness evidence](./docs/marketplace/v3-readiness-evidence.md) | 多插件目录和 public portal 是否应启动的证据台账 | 评估 v3.0.0 是否可进入计划 |
 | [Registry author workflow](./docs/marketplace/registry-author-workflow.md) | 新增插件 entry、scaffold dry-run、profile 与校验流程 | 插件作者与维护者 |
 | [Compatibility matrix](./docs/marketplace/compatibility-matrix.md) | Claude Code、Codex CLI、Bash、Node.js 与 enhanced tools 前置条件 | 评审兼容性 |
 | [Trust policy](./docs/marketplace/trust-policy.md) | trust/risk/deprecation/last-updated/maintainer 语义与评审要求 | 评审 marketplace metadata |

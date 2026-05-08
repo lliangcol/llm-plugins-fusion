@@ -27,7 +27,7 @@ later portal work can be implemented from stable repository contracts.
 | Commands and skills | `nova-plugin/commands/` and `nova-plugin/skills/nova-*/SKILL.md` | Capability summaries and command/skill counts |
 | Command documentation | `nova-plugin/docs/commands/` | Detail links for users evaluating a plugin |
 | Agents and capability packs | `nova-plugin/agents/` and `nova-plugin/packs/` | Routing and capability summaries |
-| Release boundary and compatibility notes | `docs/releases/vnext-release-decision.md` and `ROADMAP.md` | Version-phase guidance |
+| Release boundary and compatibility notes | `docs/releases/vnext-release-decision.md`, `ROADMAP.md`, and `docs/marketplace/v3-readiness-evidence.md` | Version-phase guidance and `v3.0.0` activation evidence |
 
 Portal implementation code must not become a new source of truth for these
 fields. If generated portal pages are introduced later, they should consume
@@ -43,7 +43,7 @@ these repository sources rather than duplicate plugin metadata by hand.
 | Compatibility matrix | Maintainers and advanced users | Claude Code install compatibility, Codex prerequisites, Bash and Node.js requirements, command/skill compatibility, optional enhanced tools | Ready from [Compatibility matrix](compatibility-matrix.md) |
 | Contribution entry | Plugin authors | Registry source contract, plugin manifest contract, scaffold dry-run/profile workflow, validation commands, docs requirements | Ready from `CONTRIBUTING.md` and [Registry author workflow](registry-author-workflow.md) |
 | Trust and maintenance policy | Maintainers | `trust-level`, `risk-level`, `deprecated`, `last-updated`, maintainer ownership, compatibility evidence, review links | Ready from [Trust policy](trust-policy.md) and [Security review route](security-review-route.md) |
-| Roadmap and migration | Maintainers and authors | vNext, v2.0.0, v2.1.0, v2.2.0, and v3.0.0 boundaries, breaking-change expectations | Ready from roadmap and release decision doc |
+| Roadmap and migration | Maintainers and authors | vNext, v2.0.0, v2.1.0, v2.2.0, and v3.0.0 boundaries, breaking-change expectations, and activation evidence | Ready from roadmap, release decision doc, and [v3 readiness evidence](v3-readiness-evidence.md) |
 
 ## Navigation Model
 
@@ -70,7 +70,7 @@ For the current repository, these map to Markdown and generated metadata:
 | Compatibility | `docs/marketplace/compatibility-matrix.md` and `docs/releases/vnext-release-decision.md` |
 | Contribute | `CONTRIBUTING.md` and `docs/marketplace/registry-author-workflow.md` |
 | Trust | `docs/marketplace/trust-policy.md`, `docs/marketplace/security-review-route.md`, `SECURITY.md`, metadata schema, and marketplace metadata |
-| Roadmap | `ROADMAP.md` |
+| Roadmap | `ROADMAP.md` and `docs/marketplace/v3-readiness-evidence.md` |
 
 ## Phase Boundaries
 

@@ -124,10 +124,13 @@ marketplace manifest。
 状态：Deferred。`v2.1.0` 已经通过 fixture、生成 catalog、metadata evidence
 与评审文档解决当前维护痛点；仓库仍只有一个
 主插件、一个 maintainer cadence，且没有多个 plugin owner 或公开 portal 运营压力。
-因此没有证据支持现在启动 breaking 的目录迁移。
+因此没有证据支持现在启动 breaking 的目录迁移。后续是否激活 `v3.0.0`
+由 [v3 readiness evidence](docs/marketplace/v3-readiness-evidence.md) 记录真实
+维护压力和启动门槛。
 
 | 工作项 | 决策门槛 | 状态 / rationale |
 | --- | --- | --- |
+| Evidence tracking | Required before activation | Active：使用 [v3 readiness evidence](docs/marketplace/v3-readiness-evidence.md) 记录 post-`v2.1.0` 信号；当前证据仍不足以启动 migration。 |
 | 多插件目录布局 | Required | Deferred：当前 `nova-plugin/` 路径仍满足安装和 registry 维护；仅 fixture 覆盖多 entry 生成，不迁移真实目录。 |
 | Public portal | Optional | Deferred：生成的 Markdown catalog 已满足当前浏览与评审需求，不引入 frontend stack 或部署依赖。 |
 | Plugin split | Optional | Deferred：没有真实用户需求证明需要拆出 `nova-core` 或 Codex-loop packaging。 |
@@ -147,6 +150,7 @@ marketplace manifest。
 | Validation | 优先扩展仓库脚本，而不是依赖人工 checklist；registry 行为变化需要同步 fixture 覆盖。 |
 | Claude compatibility | Claude 可接受的 plugin 字段与 repository-local marketplace metadata 继续分离。 |
 | Registry catalog | `docs/marketplace/catalog.md` 保持由 `node scripts/generate-registry.mjs --write` 生成，不手工漂移。 |
+| Roadmap evidence | `docs/marketplace/v3-readiness-evidence.md` 记录是否存在足够真实维护压力来激活 `v3.0.0`，不得用 fixture-only 支持替代生产迁移证据。 |
 | Codex loop | `codex-review-only`、`codex-review-fix`、`codex-verify-only` 的 artifact 规则继续保持严格；不得提交 `.codex/` runtime 输出。 |
 | Agents and packs | active agents 固定 6 个、packs 固定 8 个，除非未来 release 明确改变该契约。 |
 | Internationalization | 触碰用户文档时顺手提高英文覆盖率。 |
