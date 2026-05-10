@@ -6,7 +6,7 @@
     "url": "https://github.com/lliangcol"
   },
   "metadata": {
-    "description": "A curated marketplace of third-party LLM assistant plugins for productivity and development workflows."
+    "description": "A Claude Code marketplace source for the nova-plugin AI engineering workflow framework and related public workflow metadata."
   },
   "plugins": [
     {
@@ -18,7 +18,7 @@
         "email": "lliangcoder@gmail.com",
         "url": "https://github.com/lliangcol"
       },
-      "description": "nova-plugin is a powerful and versatile third-party extension for AI coding assistants (compatible with Claude Code), aimed at significantly enhancing developer productivity and coding experience. It integrates practical tools and features to help you write, debug, and maintain code more intelligently and efficiently.",
+      "description": "nova-plugin is a Claude Code compatible workflow plugin for AI coding assistants. It provides Explore, Plan, Review, Implement, and Finalize command/skill contracts, consumer profile guidance, and validation-aware handoff patterns for multi-project engineering work.",
       "category": "workflow",
       "homepage": "https://github.com/lliangcol/llm-plugins-fusion",
       "repository": "https://github.com/lliangcol/llm-plugins-fusion",

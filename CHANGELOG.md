@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   profile、验证和 handoff 形态。
 - 新增 `v3.0.0` readiness evidence 台账，用于记录多插件目录和 public portal
   启动门槛，并明确当前仍不启动 breaking 迁移。
+- 新增项目优化方案，明确定位、可靠性、易用性、维护性、环境差异和稳定
+  推广门槛的后续改进路径。
+- 新增五阶段 workflow evaluation 示例和人工 review rubric，用于评估主命令
+  输出质量而不是只依赖结构校验。
+- 新增 release evidence 模板，用于记录 release/promotion 前的 exact tag、
+  环境、校验结果和 skipped checks。
 - 扩展 `scripts/validate-docs.mjs`，自动校验 `SECURITY.md` 当前 MINOR
   支持范围，并拦截活跃文档中陈旧的 `v1.x` 未来规划标签。
 
@@ -23,10 +29,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 将公开定位收敛为多项目 AI 工程工作流框架，保留 marketplace 作为安装/分发
   形式，并优先展示 `/explore`、`/produce-plan`、`/review`、
   `/implement-plan`、`/finalize-work` 五个主入口。
+- 收敛 `nova-plugin` marketplace 描述，强调 workflow plugin、command/skill
+  契约、consumer profile guidance 和 validation-aware handoff。
+- 强化 README、英文 overview 和命令手册中的默认五命令上手路径，并将
+  Codex CLI + Bash 前置条件放到 Codex 命令附近。
 - 增强 Java 与 Frontend capability pack 的通用检查点，覆盖事务、幂等、并发、
   DTO / Entity、异常模型、数据源、MQ / scheduled jobs、Maven 模块校验、
   observability、rollback，以及设计系统、响应式布局、状态管理、表单、
   loading/error/empty、可访问性、路由、组件结构和截图/Playwright 验证。
+- 扩展 `scripts/validate-docs.mjs`，校验 README、英文 overview、AGENTS 和
+  CLAUDE 中的 command、skill、active agent 和 capability pack 数量事实。
+- 扩展 `scripts/validate-all.mjs`，输出 Node.js、Git、Claude CLI、Codex CLI、
+  Bash、commit 和 exact tag 的环境摘要。
 
 ### Fixed
 - 修正 `SECURITY.md` 支持范围中的当前 MINOR 版本说明，使其与 `2.1.0`

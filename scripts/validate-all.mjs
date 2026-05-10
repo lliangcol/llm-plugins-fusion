@@ -27,6 +27,48 @@ function commandExists(command, args = ['--version']) {
   return result.status === 0;
 }
 
+function commandDetails(command, args = ['--version']) {
+  const result = spawnSync(command, args, {
+    cwd: root,
+    encoding: 'utf8',
+    shell: false,
+  });
+  if (result.error || result.status !== 0) {
+    return { available: false, detail: 'not available' };
+  }
+  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)[0];
+  return { available: true, detail: output || 'available' };
+}
+
+function gitValue(args) {
+  const result = spawnSync('git', args, {
+    cwd: root,
+    encoding: 'utf8',
+    shell: false,
+  });
+  if (result.error || result.status !== 0) return null;
+  return result.stdout.trim() || null;
+}
+
+function printEnvironmentSummary() {
+  console.log('\n== environment summary ==');
+  console.log(`Node.js: ${process.version}`);
+  for (const [label, command] of [
+    ['Git', 'git'],
+    ['Claude CLI', 'claude'],
+    ['Codex CLI', 'codex'],
+    ['Bash', 'bash'],
+  ]) {
+    const { available, detail } = commandDetails(command);
+    console.log(`${label}: ${available ? detail : 'not available'}`);
+  }
+  console.log(`Commit: ${gitValue(['rev-parse', '--short', 'HEAD']) ?? 'unknown'}`);
+  console.log(`Exact tag: ${gitValue(['describe', '--tags', '--exact-match', 'HEAD']) ?? 'none'}`);
+}
+
 function run(label, command, args) {
   console.log(`\n== ${label} ==`);
   const result = spawnSync(command, args, {
@@ -94,6 +136,7 @@ function runHookSyntaxChecks() {
   return ok;
 }
 
+printEnvironmentSummary();
 runNode('validate schemas', 'scripts/validate-schemas.mjs');
 runNode('validate registry fixtures', 'scripts/validate-registry-fixtures.mjs');
 runNode('validate Claude compatibility', 'scripts/validate-claude-compat.mjs');

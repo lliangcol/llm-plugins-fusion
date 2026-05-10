@@ -7,7 +7,7 @@
     "url": "https://github.com/lliangcol"
   },
   "metadata": {
-    "description": "A curated marketplace of third-party LLM assistant plugins for productivity and development workflows."
+    "description": "A Claude Code marketplace source for the nova-plugin AI engineering workflow framework and related public workflow metadata."
   },
   "plugins": [
     {

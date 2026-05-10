@@ -25,6 +25,21 @@ This command set decomposes an engineering activity into five phases:
 
 ## 1. Fast decision: which command should I use right now?
 
+Start with the five primary entries by default. Use advanced commands only for
+compatibility shortcuts, backend-specific planning, or the Codex loop:
+
+```text
+/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+```
+
+| Current goal | Default command | Output or action |
+| --- | --- | --- |
+| Understand the problem, no solutions | `/explore` | Facts, uncertainties, risk signals |
+| Produce a reviewable plan | `/produce-plan` | Formal plan document |
+| Review plans, code, or risk | `/review` | Findings by `LEVEL=lite|standard|strict` |
+| Implement an approved plan | `/implement-plan` | Project edits based on the plan |
+| Summarize delivery and follow-ups | `/finalize-work` | Delivery notes, risks, validation, follow-up |
+
 ### 1.1 One-line decision table (most used)
 
 | What you need right now                                             | Recommended command                  | Why                                                                                         |
@@ -45,6 +60,10 @@ This command set decomposes an engineering activity into five phases:
 | Implement with explicit steps, allow small corrections              | `/implement-standard`                | Controlled; stop and ask if blocked                                                         |
 | Implement quickly for low-risk tasks                                | `/implement-lite`                    | Speed-first; small refactors allowed                                                        |
 | Wrap up deliverables (commit/PR/summary), **no more code changes**  | `/finalize-work` or `/finalize-lite` | Full delivery vs minimal 3-point summary                                                    |
+
+The three Codex commands are advanced paths. They require a locally callable
+Codex CLI and Bash for the skill scripts. The ordinary five-stage workflow does
+not require Codex CLI.
 
 ---
 

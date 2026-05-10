@@ -25,7 +25,7 @@ Source data:
 - Deprecated: `false`
 - Last updated: `2026-05-09`
 - Maintainer: liu liang / [https://github.com/lliangcol](https://github.com/lliangcol) / `lliangcoder@gmail.com`
-- Description: nova-plugin is a powerful and versatile third-party extension for AI coding assistants (compatible with Claude Code), aimed at significantly enhancing developer productivity and coding experience. It integrates practical tools and features to help you write, debug, and maintain code more intelligently and efficiently.
+- Description: nova-plugin is a Claude Code compatible workflow plugin for AI coding assistants. It provides Explore, Plan, Review, Implement, and Finalize command/skill contracts, consumer profile guidance, and validation-aware handoff patterns for multi-project engineering work.
 
 Compatibility evidence:
 

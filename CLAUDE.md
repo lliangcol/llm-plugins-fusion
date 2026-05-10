@@ -15,6 +15,9 @@ Marketplace metadata is the current installation and distribution mechanism; do 
 - Generated marketplace catalog: `docs/marketplace/catalog.md`
 - Consumer profile templates: `docs/consumers/`
 - Redacted workflow examples: `docs/examples/`
+- Workflow evaluation examples: `docs/examples/workflow-evaluation.md`
+- Project optimization plan: `docs/project-optimization-plan.md`
+- Release evidence template: `docs/releases/release-evidence-template.md`
 - Registry generation source: `.claude-plugin/registry.source.json`
 - Registry multi-entry fixture: `fixtures/registry/multi-plugin/`
 - Main plugin metadata: `nova-plugin/.claude-plugin/plugin.json`
@@ -38,6 +41,9 @@ Marketplace metadata is the current installation and distribution mechanism; do 
 - Command documentation: `nova-plugin/docs/commands/`.
 - Consumer profile templates: `docs/consumers/`.
 - Redacted workflow examples: `docs/examples/`.
+- Workflow evaluation examples: `docs/examples/workflow-evaluation.md`.
+- Project optimization plan: `docs/project-optimization-plan.md`.
+- Release evidence template: `docs/releases/release-evidence-template.md`.
 - Shared command/skill policies: `nova-plugin/skills/_shared/`.
 - Active agent set: `nova-plugin/agents/`, enforced by `scripts/verify-agents.sh` and `scripts/verify-agents.ps1`.
 - Capability packs: `nova-plugin/packs/`, enforced by `scripts/validate-packs.mjs`.
@@ -59,7 +65,9 @@ claude-plugins-fusion/
 |   |-- consumers/                    # Public consumer profile contract and redacted templates
 |   |-- examples/                     # Redacted Java backend and frontend workflow examples
 |   |-- marketplace/                  # Catalog, author workflow, compatibility, trust, review docs
-|   `-- releases/                     # Release decision, runbook, and hygiene docs
+|   |-- releases/                     # Release decision, runbook, hygiene docs, evidence template
+|   |-- project-optimization-plan.md   # Current optimization record
+|   `-- reports/                      # Optimization reports and historical audit archive
 |-- fixtures/
 |   `-- registry/multi-plugin/        # Multi-entry registry generation fixture
 |-- nova-plugin/
@@ -388,7 +396,7 @@ Documentation changes:
 node scripts/validate-docs.mjs
 ```
 
-This validates Markdown local links including anchors, command doc coverage and stage placement, release version/date sync from marketplace metadata, and non-archived report status.
+This validates Markdown local links including anchors, command doc coverage and stage placement, release version/date sync from marketplace metadata, documentation inventory counts, current security support range, stale active planning labels, and non-archived report status.
 
 For a full pre-release or broad workflow change, run all repository checks:
 

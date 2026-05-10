@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * Validate active Markdown documentation for local link/anchor health, command
- * doc coverage and placement, release metadata drift, security support range,
- * stale active planning labels, and stale non-archived reports.
+ * doc coverage and placement, release metadata drift, documentation inventory
+ * counts, security support range, stale active planning labels, and stale
+ * non-archived reports.
  *
  * Historical archives are intentionally excluded from link checks because they
  * preserve old repository state. Active docs should link to current files.
@@ -444,6 +445,171 @@ function validateVersionReferences() {
   }
 }
 
+function countFiles(dir, predicate) {
+  return readdirSync(resolve(root, dir), { withFileTypes: true })
+    .filter((entry) => entry.isFile() && predicate(entry.name))
+    .length;
+}
+
+function countDirectories(dir, predicate) {
+  return readdirSync(resolve(root, dir), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && predicate(entry.name))
+    .length;
+}
+
+function expectInventoryRegex(file, pattern, expectedValues, label) {
+  const src = readFileSync(resolve(root, file), 'utf8');
+  const match = src.match(pattern);
+  if (!match) {
+    recordError(file, `missing ${label}`);
+    return;
+  }
+  for (let index = 0; index < expectedValues.length; index += 1) {
+    const actual = match[index + 1];
+    const expected = String(expectedValues[index]);
+    if (actual !== expected) {
+      recordError(
+        file,
+        `${label} value ${index + 1} is "${actual}", expected "${expected}"`,
+      );
+    }
+  }
+}
+
+function validateInventoryFacts() {
+  const commandCount = countFiles('nova-plugin/commands', (name) => name.endsWith('.md'));
+  const skillCount = countDirectories('nova-plugin/skills', (name) => name.startsWith('nova-'));
+  const activeAgentCount = countFiles('nova-plugin/agents', (name) => name.endsWith('.md'));
+  const packCount = countDirectories('nova-plugin/packs', () => true);
+
+  const checks = [
+    {
+      file: 'README.md',
+      pattern: /<td>(\d+) 个命令，(\d+) 个一对一 skills<\/td>/,
+      values: [commandCount, skillCount],
+      label: 'README command/skill count',
+    },
+    {
+      file: 'README.md',
+      pattern: /<td>(\d+) 个 core agents，位于 <code>nova-plugin\/agents\/<\/code>；(\d+) 个 capability packs/,
+      values: [activeAgentCount, packCount],
+      label: 'README agent/pack count',
+    },
+    {
+      file: 'README.md',
+      pattern: /\|   \|-- commands\/\s+# (\d+) 个 slash command/,
+      values: [commandCount],
+      label: 'README repository tree command count',
+    },
+    {
+      file: 'README.md',
+      pattern: /\|   \|-- skills\/\s+# (\d+) 个 nova-\* skills/,
+      values: [skillCount],
+      label: 'README repository tree skill count',
+    },
+    {
+      file: 'README.md',
+      pattern: /\|   \|-- agents\/\s+# (\d+) 个 core active agents/,
+      values: [activeAgentCount],
+      label: 'README repository tree agent count',
+    },
+    {
+      file: 'README.md',
+      pattern: /\|   \|-- packs\/\s+# (\d+) 个 capability pack 文档/,
+      values: [packCount],
+      label: 'README repository tree pack count',
+    },
+    {
+      file: 'nova-plugin/docs/overview/README.en.md',
+      pattern: /<td>(\d+) commands, (\d+) one-to-one skills<\/td>/,
+      values: [commandCount, skillCount],
+      label: 'English overview command/skill count',
+    },
+    {
+      file: 'nova-plugin/docs/overview/README.en.md',
+      pattern: /<td>(\d+) core agents in <code>nova-plugin\/agents\/<\/code>; (\d+) capability packs/,
+      values: [activeAgentCount, packCount],
+      label: 'English overview agent/pack count',
+    },
+    {
+      file: 'nova-plugin/docs/overview/README.en.md',
+      pattern: /\|   \|-- commands\/\s+# (\d+) slash command/,
+      values: [commandCount],
+      label: 'English overview repository tree command count',
+    },
+    {
+      file: 'nova-plugin/docs/overview/README.en.md',
+      pattern: /\|   \|-- skills\/\s+# (\d+) nova-\* skills/,
+      values: [skillCount],
+      label: 'English overview repository tree skill count',
+    },
+    {
+      file: 'nova-plugin/docs/overview/README.en.md',
+      pattern: /\|   \|-- agents\/\s+# (\d+) core active agents/,
+      values: [activeAgentCount],
+      label: 'English overview repository tree agent count',
+    },
+    {
+      file: 'nova-plugin/docs/overview/README.en.md',
+      pattern: /\|   \|-- packs\/\s+# (\d+) capability pack docs/,
+      values: [packCount],
+      label: 'English overview repository tree pack count',
+    },
+    {
+      file: 'AGENTS.md',
+      pattern: /- Commands: (\d+) files under `nova-plugin\/commands\/\*\.md`/,
+      values: [commandCount],
+      label: 'AGENTS command count',
+    },
+    {
+      file: 'AGENTS.md',
+      pattern: /- Skills: (\d+) files under `nova-plugin\/skills\/nova-\*\/SKILL\.md`/,
+      values: [skillCount],
+      label: 'AGENTS skill count',
+    },
+    {
+      file: 'AGENTS.md',
+      pattern: /- Active agents: (\d+) core files under `nova-plugin\/agents\/\*\.md`/,
+      values: [activeAgentCount],
+      label: 'AGENTS active agent count',
+    },
+    {
+      file: 'AGENTS.md',
+      pattern: /- Capability packs: (\d+) documentation packs under `nova-plugin\/packs\/\*\/README\.md`/,
+      values: [packCount],
+      label: 'AGENTS pack count',
+    },
+    {
+      file: 'CLAUDE.md',
+      pattern: /- Current command snapshot: (\d+) files under `nova-plugin\/commands\/\*\.md`/,
+      values: [commandCount],
+      label: 'CLAUDE command count',
+    },
+    {
+      file: 'CLAUDE.md',
+      pattern: /- Current skill snapshot: (\d+) files under `nova-plugin\/skills\/nova-\*\/SKILL\.md`/,
+      values: [skillCount],
+      label: 'CLAUDE skill count',
+    },
+    {
+      file: 'CLAUDE.md',
+      pattern: /- Current active agent snapshot: (\d+) core files under `nova-plugin\/agents\/\*\.md`/,
+      values: [activeAgentCount],
+      label: 'CLAUDE active agent count',
+    },
+    {
+      file: 'CLAUDE.md',
+      pattern: /- Capability pack snapshot: (\d+) documentation packs under `nova-plugin\/packs\/\*\/README\.md`/,
+      values: [packCount],
+      label: 'CLAUDE pack count',
+    },
+  ];
+
+  for (const check of checks) {
+    expectInventoryRegex(check.file, check.pattern, check.values, check.label);
+  }
+}
+
 function validateReviewLevelLiteContract() {
   const activeFiles = [
     'nova-plugin/skills/nova-review/SKILL.md',
@@ -555,6 +721,7 @@ function validateReports() {
 validateMarkdownLinks();
 validateCommandDocs();
 validateVersionReferences();
+validateInventoryFacts();
 validateReviewLevelLiteContract();
 validateSecuritySupportRange();
 validateStaleActivePlanningLabels();

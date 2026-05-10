@@ -25,7 +25,7 @@ The repository can support private consumer projects, but public content should 
 
 Marketplace metadata is the current installation and distribution mechanism; this repository should not be described as a mature multi-plugin ecosystem or as already having a public portal.
 
-It serves three audiences:
+It serves these audiences:
 
 | Audience | Needs | Start here |
 | --- | --- | --- |
@@ -33,6 +33,24 @@ It serves three audiences:
 | Plugin users | Install `nova-plugin`, pick commands, copy usage templates | [Quick Start](#quick-start), [Command Map](#command-map), [docs index](../README.md) |
 | Plugin authors | Add commands / skills and understand frontmatter contracts | [CONTRIBUTING.md](../../../CONTRIBUTING.md), [Skill-first design](../architecture/dual-track-design.md) |
 | Maintainers | Schema, CI, validation, release, and safety boundaries | [Quality Gates](#quality-gates), [SECURITY.md](../../../SECURITY.md), [CHANGELOG.md](../../../CHANGELOG.md) |
+
+Use it when:
+
+- You already use Claude Code and want a stable explore / plan / review /
+  implement / finalize workflow for AI-assisted engineering.
+- You maintain multiple projects and want public workflow guidance while keeping
+  real consumer profiles in private project repositories.
+- You want schema, frontmatter, documentation, and release checks to reduce
+  plugin maintenance drift.
+
+It is not ready for:
+
+- A mature multi-plugin marketplace, public portal, paid distribution, or hosted
+  registry.
+- A standalone runtime automation platform beyond Claude Code commands and
+  skills.
+- Publishing real closed-source project configuration, endpoints, credentials,
+  or private knowledge base content.
 
 ## Current Status
 
@@ -104,6 +122,20 @@ Start using it:
 
 Private consumer projects should maintain their own project-local profile before running the workflow. The public contract is in [docs/consumers/](../../../docs/consumers/README.md).
 
+### Default Workflow
+
+```text
+/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+```
+
+| Current goal | Default command | Notes |
+| --- | --- | --- |
+| Understand the problem without solutions | `/explore` | Gather facts, uncertainties, and risk signals only. |
+| Produce a reviewable plan | `/produce-plan` | Write a formal plan for review and implementation. |
+| Review plans, code, or risk | `/review` | Defaults to standard depth; use `LEVEL=lite|strict` to adjust. |
+| Implement an approved plan | `/implement-plan` | Requires a clear plan and `PLAN_APPROVED=true`. |
+| Summarize delivery and follow-ups | `/finalize-work` | Freeze state and write delivery notes without expanding scope. |
+
 ## Command Map
 
 New users and consumer profiles should default to the five main entries: `/explore`, `/produce-plan`, `/review`, `/implement-plan`, and `/finalize-work`. Other commands remain available as advanced or compatibility entries without behavior changes.
@@ -133,6 +165,10 @@ Or use the semi-automated loop:
 ```text
 /codex-review-fix
 ```
+
+Codex commands are an advanced path. They require a locally callable Codex CLI
+and Bash for the distributed skill scripts. The ordinary five-stage workflow
+does not require Codex CLI.
 
 ## Core Agents + Packs
 
@@ -171,7 +207,8 @@ llm-plugins-fusion/
 |   |-- examples/                     # redacted Java backend / frontend workflow examples
 |   |-- marketplace/                  # catalog, author workflow, compatibility, trust, and review docs
 |   |-- releases/                     # release decisions, runbook, and hygiene docs
-|   `-- reports/archive/              # historical audit reports
+|   |-- project-optimization-plan.md   # current project optimization plan
+|   `-- reports/                      # optimization reports and historical audit archive
 |-- fixtures/                         # registry multi-entry fixture
 |-- schemas/                          # registry source / marketplace / metadata / plugin schemas
 |-- scripts/                          # local and CI validation scripts
@@ -189,6 +226,7 @@ llm-plugins-fusion/
 | [nova-plugin docs index](../README.md) | Docs structure, command coverage, maintenance rules | First navigation point |
 | [Consumer profile templates](../../../docs/consumers/README.md) | Multi-project consumer profile contract and redacted Java backend / frontend templates | Private project adoption |
 | [Redacted examples](../../../docs/examples/README.md) | Redacted Java backend and frontend workflow examples | Writing private profiles or handoff templates |
+| [Workflow evaluation examples](../../../docs/examples/workflow-evaluation.md) | Public-safe five-stage workflow examples, rubrics, and failure signals | Evaluating command output quality |
 | [Command Reference Guide](../guides/commands-reference-guide.en.md) | Parameters, examples, workflow templates | Daily command lookup |
 | [Command Handbook](../guides/claude-code-commands-handbook.en.md) | Command selection and copy-ready usage | Quick start |
 | [Codex Loop Guide](../commands/codex/codex-review-fix.README.en.md) | review / fix / verify collaboration | Claude Code + Codex |
@@ -204,6 +242,7 @@ llm-plugins-fusion/
 | [Trust policy](../../../docs/marketplace/trust-policy.md) | Trust/risk/deprecation/last-updated/maintainer semantics and review requirements | Reviewing marketplace metadata |
 | [Security review route](../../../docs/marketplace/security-review-route.md) | Security-sensitive plugin change route and minimum checks | Security review |
 | [Release hygiene](../../../docs/releases/release-hygiene.md) | Tag/version sync, generated drift, changelog, and pre-release review | Release preparation |
+| [Release evidence template](../../../docs/releases/release-evidence-template.md) | Environment, tag, validation, and skipped-check evidence before release or promotion | Release evidence capture |
 | [vNext release decision](../../../docs/releases/vnext-release-decision.md) | vNext release level and compatibility matrix | Release decision |
 | [Capability packs](../../packs/README.md) | Index for 8 domain capability packs | Maintaining packs |
 | [Legacy agents summary](../agents/agents-summary.en.md) | Historical legacy agent roles | Inspecting old design |

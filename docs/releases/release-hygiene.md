@@ -43,6 +43,10 @@ node scripts/validate-all.mjs
 git diff --check
 ```
 
+Record the exact target, environment, validation results, skipped checks, and
+promotion decision with
+[Release evidence template](release-evidence-template.md).
+
 When Bash is available, confirm hook syntax checks actually ran:
 
 ```bash
@@ -59,6 +63,8 @@ must run the Bash syntax checks.
 Before tagging, search for:
 
 - Stale `release candidate`, `vNext`, or outdated version wording.
+- Whether the target is an exact tag:
+  `git describe --tags --exact-match HEAD`.
 - Command, skill, agent, or pack counts that no longer match repository facts.
 - Dead local links or anchors.
 - Changelog/date/version drift.

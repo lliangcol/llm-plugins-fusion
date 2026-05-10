@@ -22,6 +22,20 @@
 
 ## 1. 快速决策：我现在该用哪个命令？
 
+默认从五个主入口开始，只有在需要兼容入口、专项后端计划或 Codex 闭环时再使用高级命令：
+
+```text
+/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+```
+
+| 当前目标 | 默认命令 | 输出或动作 |
+| --- | --- | --- |
+| 理解问题，不要方案 | `/explore` | 事实、不确定性、风险信号 |
+| 形成可评审计划 | `/produce-plan` | 写入正式计划文档 |
+| 审查计划、代码或风险 | `/review` | 按 `LEVEL=lite|standard|strict` 输出 findings |
+| 按批准计划实施 | `/implement-plan` | 根据 plan 修改项目文件 |
+| 交付总结和后续事项 | `/finalize-work` | 交付说明、风险、验证和 follow-up |
+
 ### 1.1 一句话判定表（最常用）
 
 | 你现在要做什么？                               | 推荐命令                                               | 关键理由                                                          |
@@ -42,6 +56,8 @@
 | 有计划或明确步骤，但允许少量纠错               | `/implement-standard`                                  | 计划为主，允许小调整，遇阻停下提问                                |
 | 追求速度、允许小重构与必要的微调               | `/implement-lite`                                      | "快实现"，避免过度设计                                            |
 | 做完了要交付：commit/PR/变更总结（不再改代码） | `/finalize-work` 或 `/finalize-lite`                   | 前者更完整（含 Git/无 Git 分支），后者极简三要素                  |
+
+Codex 三个命令是高级路径，需要本机可调用 Codex CLI，并需要 Bash 执行 skill 脚本。普通五阶段 workflow 不需要 Codex CLI。
 
 ---
 
