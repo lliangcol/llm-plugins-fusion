@@ -65,6 +65,12 @@ Before tagging, search for:
 - Generated marketplace, metadata, or catalog drift.
 - `.codex/` runtime artifacts.
 
+`node scripts/validate-docs.mjs` also checks that `SECURITY.md` declares the
+current MINOR support range derived from `plugin.json`, and that active planning
+tables do not keep stale `v1.x` future-version labels. Historical changelog,
+archive, and `nova-plugin/docs/history/` content are intentionally excluded from
+that stale-planning scan.
+
 Use [Registry Author Workflow](../marketplace/registry-author-workflow.md),
 [Trust Policy](../marketplace/trust-policy.md), and
 [Security Review Route](../marketplace/security-review-route.md) for the

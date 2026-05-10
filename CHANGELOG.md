@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Added
 - 新增 `v3.0.0` readiness evidence 台账，用于记录多插件目录和 public portal
   启动门槛，并明确当前仍不启动 breaking 迁移。
+- 扩展 `scripts/validate-docs.mjs`，自动校验 `SECURITY.md` 当前 MINOR
+  支持范围，并拦截活跃文档中陈旧的 `v1.x` 未来规划标签。
+
+### Fixed
+- 修正 `SECURITY.md` 支持范围中的当前 MINOR 版本说明，使其与 `2.1.0`
+  发布状态保持一致。
+- 修正 hooks 设计文档中过期的 `v1.1` / `v1.2` 未来计划标签，避免与当前
+  发布基线混淆。
 
 ## [2.1.0] - 2026-05-09
 

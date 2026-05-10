@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 /**
  * Validate active Markdown documentation for local link/anchor health, command
- * doc coverage and placement, release metadata drift, and stale non-archived
- * reports.
+ * doc coverage and placement, release metadata drift, security support range,
+ * stale active planning labels, and stale non-archived reports.
  *
  * Historical archives are intentionally excluded from link checks because they
  * preserve old repository state. Active docs should link to current files.
@@ -39,11 +39,22 @@ const ARCHIVE_SEGMENTS = [
   ['docs', 'reports', 'archive'],
 ];
 
+const HISTORY_SEGMENTS = [
+  ['nova-plugin', 'docs', 'history'],
+];
+
 const CODEX_COMMAND_IDS = new Set([
   'codex-review-fix',
   'codex-review-only',
   'codex-verify-only',
 ]);
+
+const STALE_ACTIVE_PLANNING_PATTERNS = [
+  {
+    pattern: /^\|[^\n|]*\bv1\.\d+(?:\.\d+)?\b[^\n|]*\|/gm,
+    message: 'stale v1.x version label in active planning table; use Deferred or a current roadmap lane',
+  },
+];
 
 const LINE_ANCHOR_PATTERN = /^L\d+(?:-L\d+)?$/i;
 const markdownAnchorsByFile = new Map();
@@ -63,6 +74,18 @@ function recordWarning(file, msg) {
 function isArchivePath(absPath) {
   const parts = rel(absPath).split('/');
   return ARCHIVE_SEGMENTS.some((segments) => {
+    for (let i = 0; i <= parts.length - segments.length; i += 1) {
+      if (segments.every((segment, offset) => parts[i + offset] === segment)) {
+        return true;
+      }
+    }
+    return false;
+  });
+}
+
+function hasPathSegments(absPath, segmentGroups) {
+  const parts = rel(absPath).split('/');
+  return segmentGroups.some((segments) => {
     for (let i = 0; i <= parts.length - segments.length; i += 1) {
       if (segments.every((segment, offset) => parts[i + offset] === segment)) {
         return true;
@@ -464,6 +487,54 @@ function validateReviewLevelLiteContract() {
   }
 }
 
+function expectedCurrentMinorRange(version) {
+  const match = /^(\d+)\.(\d+)\.\d+(?:[-+].*)?$/.exec(version);
+  if (!match) return null;
+  return `${match[1]}.${match[2]}.x`;
+}
+
+function validateSecuritySupportRange() {
+  const plugin = readJson('nova-plugin/.claude-plugin/plugin.json');
+  const expectedRange = expectedCurrentMinorRange(plugin.version);
+  if (!expectedRange) {
+    recordError('nova-plugin/.claude-plugin/plugin.json', `version "${plugin.version}" cannot derive current MINOR support range`);
+    return;
+  }
+
+  const file = 'SECURITY.md';
+  const src = readFileSync(resolve(root, file), 'utf8');
+  const match = src.match(/最新 MINOR 版本（当前 `([^`]+)`）/);
+  if (!match) {
+    recordError(file, 'missing current MINOR support range in security policy');
+    return;
+  }
+  if (match[1] !== expectedRange) {
+    recordError(file, `current MINOR support range is "${match[1]}", expected "${expectedRange}" from plugin version ${plugin.version}`);
+  }
+}
+
+function shouldSkipStalePlanningScan(absPath) {
+  const relPath = rel(absPath);
+  return relPath === 'CHANGELOG.md'
+    || isArchivePath(absPath)
+    || hasPathSegments(absPath, HISTORY_SEGMENTS);
+}
+
+function validateStaleActivePlanningLabels() {
+  const markdownFiles = walkFiles(root, (abs) => extname(abs).toLowerCase() === '.md')
+    .filter((abs) => !shouldSkipStalePlanningScan(abs));
+
+  for (const file of markdownFiles) {
+    const src = stripFencedCode(readFileSync(file, 'utf8'));
+    for (const { pattern, message } of STALE_ACTIVE_PLANNING_PATTERNS) {
+      pattern.lastIndex = 0;
+      for (const match of src.matchAll(pattern)) {
+        recordError(rel(file), `line ${lineNumberAt(src, match.index ?? 0)} has ${message}`);
+      }
+    }
+  }
+}
+
 function validateReports() {
   const reportsDir = resolve(root, 'docs/reports');
   if (!existsSync(reportsDir)) return;
@@ -485,6 +556,8 @@ validateMarkdownLinks();
 validateCommandDocs();
 validateVersionReferences();
 validateReviewLevelLiteContract();
+validateSecuritySupportRange();
+validateStaleActivePlanningLabels();
 validateReports();
 
 if (warnings.length) {

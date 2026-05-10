@@ -147,8 +147,10 @@ Claude Code hook 执行都会失败。
 
 ## 扩展计划
 
-| 版本 | 计划 |
+以下事项是未排期候选，不属于当前 `2.1.0` 已发布能力，也不作为下一版本承诺。
+
+| 状态 | 计划 |
 |------|------|
-| v1.1 | 实现 Stop Hook：在 finalize 命令后校验 CHANGELOG 已更新 |
-| v1.2 | 实现 Notification Hook：`permission_prompt` 时记录危险操作请求 |
-| v1.2 | HTTP Hook：将审计日志推送到本地 webhook（可选） |
+| Deferred | 实现 Stop Hook：在 finalize 命令后校验 CHANGELOG 已更新 |
+| Deferred | 实现 Notification Hook：`permission_prompt` 时记录危险操作请求 |
+| Deferred | HTTP Hook：将审计日志推送到本地 webhook（可选） |
