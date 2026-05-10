@@ -40,11 +40,22 @@ compatibility shortcuts, backend-specific planning, or the Codex loop:
 | Implement an approved plan | `/implement-plan` | Project edits based on the plan |
 | Summarize delivery and follow-ups | `/finalize-work` | Delivery notes, risks, validation, follow-up |
 
-### 1.1 One-line decision table (most used)
+### 1.1 Minimal templates for the five primary entries
+
+| Command | Minimal template |
+| --- | --- |
+| `/explore` | `/explore summarize facts, uncertainties, and risks for this requirement; no solutions` |
+| `/produce-plan` | `/produce-plan PLAN_OUTPUT_PATH=docs/plans/example.md PLAN_INTENT="write a reviewable plan for the confirmed requirement"` |
+| `/review` | `/review LEVEL=standard review this plan or diff and return severity-ranked findings` |
+| `/implement-plan` | `/implement-plan PLAN_INPUT_PATH=docs/plans/example.md PLAN_APPROVED=true` |
+| `/finalize-work` | `/finalize-work summarize completed changes, validation, limitations, and follow-ups` |
+
+### 1.2 One-line decision table (most used)
 
 | What you need right now                                             | Recommended command                  | Why                                                                                         |
 | ------------------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------- |
-| Understand the current problem/requirements with **no solutions**   | `/senior-explore`                    | Explicitly forbids “recommendations/implementation/design”; outputs facts, questions, risks |
+| Understand the current problem/requirements with **no solutions**   | `/explore`                           | Primary entry for facts, uncertainties, and risk signals only                               |
+| Deeper analysis or an exported exploration artifact                 | `/senior-explore`                    | Advanced entry with fuller intent/context/depth parameters                                  |
 | Quickly align understanding (short exploration)                     | `/explore` or `/explore-lite`        | Unified command defaults to observer perspective; shorter structure: Observations / Uncertainties / Risks |
 | Think like a reviewer to generate questions, still **no solutions** | `/explore PERSPECTIVE=reviewer` or `/explore-review` | Unified command switches to reviewer perspective; outputs: clear / questions / risk signals |
 | A **lightweight execution plan** (no code)                          | `/plan-lite`                         | Goals, non-goals, approach, trade-offs, outline, key risks                                  |

@@ -85,6 +85,19 @@ node scripts/validate-all.mjs
 
 On Windows without Bash, `validate-all` warns and skips local `bash -n` hook syntax checks. CI/Linux still runs those checks and must pass.
 
+## Stable Promotion Boundary
+
+Promote formal release tags such as `v2.1.0`, not a moving `main` branch.
+Current `main` may contain follow-up work under `CHANGELOG.md` `Unreleased`,
+so it should be described as an unreleased development snapshot until tagged.
+
+Before promoting a release, record the target commit, exact tag,
+`node scripts/validate-all.mjs`, `git diff --check`, Bash hook syntax checks,
+and skipped checks with the [release evidence template](../../../docs/releases/release-evidence-template.md).
+If Windows local validation reports `failed=0 skipped=1` because Bash is not
+available, describe that exactly and rely on CI/Linux evidence for the two
+`bash -n` hook checks.
+
 ## Quick Start
 
 ### Prerequisites
@@ -135,6 +148,16 @@ Private consumer projects should maintain their own project-local profile before
 | Review plans, code, or risk | `/review` | Defaults to standard depth; use `LEVEL=lite|strict` to adjust. |
 | Implement an approved plan | `/implement-plan` | Requires a clear plan and `PLAN_APPROVED=true`. |
 | Summarize delivery and follow-ups | `/finalize-work` | Freeze state and write delivery notes without expanding scope. |
+
+Minimal copyable examples:
+
+| Command | Example |
+| --- | --- |
+| `/explore` | `/explore summarize facts, uncertainties, and risks for this requirement; no solutions` |
+| `/produce-plan` | `/produce-plan PLAN_OUTPUT_PATH=docs/plans/example.md PLAN_INTENT="write a reviewable plan for the confirmed requirement"` |
+| `/review` | `/review LEVEL=standard review this plan or diff and return severity-ranked findings` |
+| `/implement-plan` | `/implement-plan PLAN_INPUT_PATH=docs/plans/example.md PLAN_APPROVED=true` |
+| `/finalize-work` | `/finalize-work summarize completed changes, validation, limitations, and follow-ups` |
 
 ## Command Map
 

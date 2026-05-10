@@ -36,11 +36,22 @@
 | 按批准计划实施 | `/implement-plan` | 根据 plan 修改项目文件 |
 | 交付总结和后续事项 | `/finalize-work` | 交付说明、风险、验证和 follow-up |
 
-### 1.1 一句话判定表（最常用）
+### 1.1 五个主入口最小模板
+
+| 命令 | 最小模板 |
+| --- | --- |
+| `/explore` | `/explore 梳理这个需求的事实、不确定性和风险，不要给方案` |
+| `/produce-plan` | `/produce-plan PLAN_OUTPUT_PATH=docs/plans/example.md PLAN_INTENT="为已确认需求写可评审计划"` |
+| `/review` | `/review LEVEL=standard 请评审这个计划或 diff，按严重级别输出 findings` |
+| `/implement-plan` | `/implement-plan PLAN_INPUT_PATH=docs/plans/example.md PLAN_APPROVED=true` |
+| `/finalize-work` | `/finalize-work 总结本次已完成变更、验证结果、限制和后续事项` |
+
+### 1.2 一句话判定表（最常用）
 
 | 你现在要做什么？                               | 推荐命令                                               | 关键理由                                                          |
 | ---------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------- |
-| 先把问题/需求/现状搞清楚，不要任何方案         | `/senior-explore`                                      | 明确禁止"建议/实现/设计"，只输出事实、问题、风险                  |
+| 先把问题/需求/现状搞清楚，不要任何方案         | ⭐`/explore`                                           | 默认主入口：只输出事实、不确定性和风险信号                        |
+| 需要更深分析或导出探索 artifact                | `/senior-explore`                                      | 高级入口：强约束探索，可使用更完整的 intent/context/depth 参数    |
 | 快速对齐理解（轻量版探索）                     | ⭐`/explore` 或 `/explore-lite`                        | **统一命令**：默认观察者视角，输出更短                            |
 | 用"评审者心态"梳理问题，但仍不许给方案         | ⭐`/explore PERSPECTIVE=reviewer` 或 `/explore-review` | **统一命令**：评审者视角，只输出 clear / questions / risk signals |
 | 需要一份**轻量执行计划**（不写代码）           | `/plan-lite`                                           | 目标、非目标、选型、权衡、执行大纲、关键风险                      |

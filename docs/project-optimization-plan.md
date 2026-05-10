@@ -120,10 +120,15 @@ Existing Coverage:
 - Redacted examples and consumer profile templates already define public-safe
   sample material.
 - Command and skill contracts already define read/write boundaries.
+- Release evidence now points to a concrete workflow evaluation record template
+  for manual runs before minor releases.
 
 Completed Work:
 
 - Added a public-safe workflow evaluation set under `docs/examples/`.
+- Added `docs/examples/workflow-evaluation-record-template.md` so maintainers
+  can record the five-command manual run without relying on exact text
+  snapshots.
 - Covered the five primary commands with realistic but fictional tasks.
 - Defined output rubrics instead of exact text snapshots: facts versus
   assumptions, risk prioritization, honest validation reporting, and read-only
@@ -213,6 +218,8 @@ Existing Coverage:
 - Active agents are fixed under `nova-plugin/agents/`.
 - Agent verification output already warns about archive scan risk and suggests
   measuring `/context`.
+- `docs/agents/archive-context-measurement.md` defines the measurement record
+  and decision rule before any archive movement.
 
 Remaining Work:
 

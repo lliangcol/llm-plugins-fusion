@@ -79,6 +79,12 @@ node scripts/validate-all.mjs
 
 Windows PowerShell 可以运行 Node 校验和 `scripts/verify-agents.ps1`。如果本机没有 Bash，`validate-all` 会 warning 跳过本地 `bash -n` hook 语法检查；CI/Linux 仍会执行并要求通过。
 
+## 稳定发布与推广口径
+
+当前稳定推广对象是正式 release tag，例如 `v2.1.0`。当前 `main` 可能包含 `CHANGELOG.md` `Unreleased` 下的后续文档或优化工作，不能描述为稳定版本，也不能替代 release tag 做安装、推广或发布证据。
+
+发布或推广前必须使用 [release evidence template](./docs/releases/release-evidence-template.md) 记录目标 commit、exact tag、`node scripts/validate-all.mjs`、`git diff --check`、Bash hook syntax 检查和 skipped checks。Windows 本地如果因为没有 Bash 得到 `failed=0 skipped=1`，只能描述为“本地结构校验通过但 hook shell syntax 未本地执行”，需要 CI/Linux 的 `bash -n` 结果作为补充证据。
+
 ## Quick Start
 
 ### 前置条件
@@ -129,6 +135,16 @@ Windows PowerShell 可以运行 Node 校验和 `scripts/verify-agents.ps1`。如
 | 审查计划、代码或风险 | `/review` | 默认标准级别，可用 `LEVEL=lite|strict` 调整深度。 |
 | 按已批准计划实施 | `/implement-plan` | 需要明确的 plan 和 `PLAN_APPROVED=true`。 |
 | 交付总结和后续事项 | `/finalize-work` | 冻结现状，生成交付说明，不再扩 scope。 |
+
+最小可复制示例：
+
+| 命令 | 示例 |
+| --- | --- |
+| `/explore` | `/explore 梳理这个需求的事实、不确定性和风险，不要给方案` |
+| `/produce-plan` | `/produce-plan PLAN_OUTPUT_PATH=docs/plans/example.md PLAN_INTENT="为已确认需求写可评审计划"` |
+| `/review` | `/review LEVEL=standard 请评审这个计划或 diff，按严重级别输出 findings` |
+| `/implement-plan` | `/implement-plan PLAN_INPUT_PATH=docs/plans/example.md PLAN_APPROVED=true` |
+| `/finalize-work` | `/finalize-work 总结本次已完成变更、验证结果、限制和后续事项` |
 
 ## Command Map
 

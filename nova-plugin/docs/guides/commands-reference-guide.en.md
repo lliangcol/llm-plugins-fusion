@@ -36,10 +36,10 @@
 | Category                 | Scenario                               | Recommended command   | Jump                              |
 | ------------------------ | -------------------------------------- | --------------------- | --------------------------------- |
 | **Requirement analysis** | Understand a new feature request       | `/senior-explore`     | [Example](#场景-新功能需求分析)   |
-| **Requirement analysis** | Quick alignment / shared understanding | `/explore-lite`       | [Example](#场景-快速认知对齐)     |
-| **Requirement analysis** | Review a requirements doc              | `/explore-review`     | [Example](#场景-需求文档评审)     |
+| **Requirement analysis** | Quick alignment / shared understanding | `/explore` or `/explore-lite`       | [Example](#场景-快速认知对齐)     |
+| **Requirement analysis** | Review a requirements doc              | `/explore PERSPECTIVE=reviewer` or `/explore-review`     | [Example](#场景-需求文档评审)     |
 | **Incident / debugging** | Investigate a production issue         | `/senior-explore`     | [Example](#场景-生产问题深度排查) |
-| **Incident / debugging** | Quick issue triage                     | `/explore-lite`       | [Example](#场景-快速问题定位)     |
+| **Incident / debugging** | Quick issue triage                     | `/explore` or `/explore-lite`       | [Example](#场景-快速问题定位)     |
 | **Design / planning**    | Small task planning                    | `/plan-lite`          | [Example](#场景-小型任务规划)     |
 | **Design / planning**    | Formal design doc                      | `/produce-plan`       | [Example](#场景-正式设计文档)     |
 | **Design / planning**    | Java backend design (Spring)           | `/backend-plan`       | [Example](#场景-java后端设计)     |
@@ -55,6 +55,10 @@
 | **Implementation**       | Fast, low-risk implementation          | `/implement-lite`     | [Example](#场景-快速修复)         |
 | **Delivery**             | Full delivery output (commit/PR)       | `/finalize-work`      | [Example](#场景-完整工作交付)     |
 | **Delivery**             | Minimal summary                        | `/finalize-lite`      | [Example](#场景-快速工作总结)     |
+
+For onboarding, default to `/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work`.
+Other commands are advanced or compatibility entries unless a specific scenario
+requires them.
 
 ---
 

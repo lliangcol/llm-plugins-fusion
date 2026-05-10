@@ -2,7 +2,13 @@
 
 Active agents live in `nova-plugin/agents/`. The active set is six core agents plus documentation-only capability packs in `nova-plugin/packs/`.
 
-Legacy agents are archived under `.claude/agents/archive/nova-plugin/agents/` (see [MIGRATION_MANIFEST.md](MIGRATION_MANIFEST.md)). The former active specialist set is mapped to core agents and packs in [CORE_AGENTS_MIGRATION.md](CORE_AGENTS_MIGRATION.md).
+Legacy agents are archived under `.claude/agents/archive/nova-plugin/agents/`
+(see [MIGRATION_MANIFEST.md](MIGRATION_MANIFEST.md)). The former active
+specialist set is mapped to core agents and packs in
+[CORE_AGENTS_MIGRATION.md](CORE_AGENTS_MIGRATION.md). If the archive appears to
+increase Claude Code context size, measure it with
+[archive-context-measurement.md](archive-context-measurement.md) before moving
+files.
 
 ## Active Agents
 

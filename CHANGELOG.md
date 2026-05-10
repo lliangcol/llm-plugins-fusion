@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   输出质量而不是只依赖结构校验。
 - 新增 release evidence 模板，用于记录 release/promotion 前的 exact tag、
   环境、校验结果和 skipped checks。
+- 新增五阶段 workflow evaluation 记录模板与 archive context 测量模板，避免在
+  未运行人工评估或 `/context` 测量时误报质量证据。
 - 扩展 `scripts/validate-docs.mjs`，自动校验 `SECURITY.md` 当前 MINOR
   支持范围，并拦截活跃文档中陈旧的 `v1.x` 未来规划标签。
 
@@ -33,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   契约、consumer profile guidance 和 validation-aware handoff。
 - 强化 README、英文 overview 和命令手册中的默认五命令上手路径，并将
   Codex CLI + Bash 前置条件放到 Codex 命令附近。
+- 补充稳定 release tag 与 unreleased `main` 的推广边界，并在 release
+  evidence 中加入五阶段 workflow evaluation 记录项。
 - 增强 Java 与 Frontend capability pack 的通用检查点，覆盖事务、幂等、并发、
   DTO / Entity、异常模型、数据源、MQ / scheduled jobs、Maven 模块校验、
   observability、rollback，以及设计系统、响应式布局、状态管理、表单、

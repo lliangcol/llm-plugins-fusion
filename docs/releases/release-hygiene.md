@@ -12,6 +12,9 @@ plugin changes. It complements the concrete `2.0.0` release runbook in
 - `nova-plugin/.claude-plugin/plugin.json` is the plugin version source of
   truth.
 - Release tags must be `v<plugin-version>` and match `plugin.json` exactly.
+- Stable promotion targets must be exact release tags. A moving `main` branch,
+  especially one with `CHANGELOG.md` `Unreleased` content, is an unreleased
+  development snapshot rather than stable release material.
 - Do not create, overwrite, delete, or push public tags without explicit
   maintainer approval.
 - A changelog release section is required before publishing a release.
@@ -70,6 +73,10 @@ Before tagging, search for:
 - Changelog/date/version drift.
 - Generated marketplace, metadata, or catalog drift.
 - `.codex/` runtime artifacts.
+- For minor releases, whether the five primary commands were manually evaluated
+  with `docs/examples/workflow-evaluation.md` and recorded with
+  `docs/examples/workflow-evaluation-record-template.md`, or why that evidence
+  is not applicable.
 
 `node scripts/validate-docs.mjs` also checks that `SECURITY.md` declares the
 current MINOR support range derived from `plugin.json`, and that active planning
