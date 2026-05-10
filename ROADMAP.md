@@ -1,10 +1,11 @@
 # Roadmap
 
-最后审阅：2026-05-09
+最后审阅：2026-05-10
 
-本路线图基于当前 `llm-plugins-fusion` 仓库现状制定：仓库仍以一个主插件
-`nova-plugin` 为核心，已具备生成式 marketplace 元数据、6 个 core agents、
-8 个文档型 capability packs，以及覆盖 schema、Claude 兼容性、frontmatter、
+本路线图基于当前 `llm-plugins-fusion` 仓库现状制定：仓库定位为公开的
+多项目 AI 工程工作流框架，仍以一个主插件 `nova-plugin` 为核心。当前已经具备
+生成式 marketplace 安装/分发元数据、6 个 core agents、8 个文档型 capability
+packs、consumer profile 模板，以及覆盖 schema、Claude 兼容性、frontmatter、
 agents、packs、hooks 和文档的本地/CI 校验体系。
 
 ## 当前基线
@@ -18,9 +19,11 @@ agents、packs、hooks 和文档的本地/CI 校验体系。
 | 插件能力面 | 20 个 slash commands 与 20 个一对一 `nova-*` skills。 |
 | Agent 模型 | `nova-plugin/agents/` 中固定 6 个 active core agents；旧 specialist agent 模型已进入 legacy。 |
 | Capability packs | `nova-plugin/packs/` 中固定 8 个 packs，均声明 enhanced mode 与 fallback mode。 |
+| Consumer profiles | `docs/consumers/` 提供公开 profile 契约与脱敏 Java backend / frontend 模板；真实 profile 保存在 consumer 项目本地。 |
+| Redacted examples | `docs/examples/` 提供脱敏 Java backend 与 frontend workflow 示例，不包含真实 consumer 信息。 |
 | Registry 模型 | `.claude-plugin/registry.source.json` 生成 Claude-compatible marketplace 输出、repository-local metadata 和 Markdown catalog。 |
 | 质量门 | `node scripts/validate-all.mjs` 是本地总入口，并包含 registry fixture 校验。 |
-| Marketplace 门面 | 已有文档型准备：[Marketplace portal IA](docs/marketplace/portal-information-architecture.md) 与生成 catalog：[Marketplace catalog](docs/marketplace/catalog.md)。 |
+| Marketplace 分发 | marketplace 继续作为安装/分发形式；生成 catalog 满足当前浏览和评审，不启动 public portal。 |
 | 发布决策 | [vNext release decision](docs/releases/vnext-release-decision.md) 已将 active-agent 变化确认为 `2.0.0` major release 兼容边界。 |
 
 关键结论：旧路线图中“`v2.0.0` = monorepo 重构”的含义不再适用。
@@ -29,16 +32,22 @@ agents、packs、hooks 和文档的本地/CI 校验体系。
 
 ## 总方向
 
-项目目标仍是从“维护良好的单插件仓库”演进为“可信的第三方 LLM 编码助手插件
-市场”。新的推进顺序是：
+当前优先级是 workflow framework + consumer profile templates。项目目标是让
+`nova-plugin` 成为可复用的多项目 AI 工程工作流框架，并通过公开仓库沉淀通用
+workflow、profile 契约、脱敏模板和通用 pack 指南。Marketplace 继续作为安装
+与分发形式保留，但不是当前叙事的成熟多插件生态。
+
+新的推进顺序是：
 
 1. 先稳定并发布当前兼容边界。
-2. 再让 registry 与插件作者工作流足够实用。
-3. 继续补强 trust、维护状态、兼容性与安全审查元数据。
-4. 最后基于真实维护压力决定是否进入 breaking 的多插件目录结构与公开 portal。
+2. 再让五阶段 workflow 与 consumer profile 契约足够清晰。
+3. 继续补强 Java、frontend、security、dependency 等通用 pack 指南。
+4. 保持 registry、trust、兼容性与安全审查元数据可靠，服务安装/分发。
+5. 最后基于真实维护压力决定是否进入 breaking 的多插件目录结构与公开 portal。
 
 这条路径避免在 registry、贡献流程和信任模型还不够强时，过早承诺一个需要
-长期维护的 marketplace UI。
+长期维护的 marketplace UI，也避免为单个领域提前扩张大量 `/java-*` 或
+`/frontend-*` 命令。
 
 ## Milestone 1: v2.0.0 active-agent 兼容边界发布
 
@@ -115,7 +124,7 @@ trust、维护状态与评审策略工作已合并进 `v2.1.0`；当前没有独
 字段必须继续留在 repository-local metadata，不应写回 Claude-compatible
 marketplace manifest。
 
-## Milestone 4: v3.0.0 多插件 marketplace 候选
+## Milestone 4: v3.0.0 多插件目录与 public portal 候选
 
 目标时间：只有当 `v2.1.0` 发布后的真实使用情况证明多插件维护确实必要时才启动。
 
@@ -128,12 +137,23 @@ marketplace manifest。
 由 [v3 readiness evidence](docs/marketplace/v3-readiness-evidence.md) 记录真实
 维护压力和启动门槛。
 
+当前边界：
+
+- 优先推进 workflow framework + consumer profile templates。
+- 暂不做 public portal。
+- 暂不做多插件目录迁移。
+- 暂不新增大量 `/java-*` 或 `/frontend-*` 领域命令；领域差异优先通过
+  capability packs 和 consumer profile 承接。
+- `v3.0.0` 继续 deferred，除非出现真实多插件、多 owner、独立发布节奏或当前
+  布局维护压力的证据。
+
 | 工作项 | 决策门槛 | 状态 / rationale |
 | --- | --- | --- |
 | Evidence tracking | Required before activation | Active：使用 [v3 readiness evidence](docs/marketplace/v3-readiness-evidence.md) 记录 post-`v2.1.0` 信号；当前证据仍不足以启动 migration。 |
 | 多插件目录布局 | Required | Deferred：当前 `nova-plugin/` 路径仍满足安装和 registry 维护；仅 fixture 覆盖多 entry 生成，不迁移真实目录。 |
 | Public portal | Optional | Deferred：生成的 Markdown catalog 已满足当前浏览与评审需求，不引入 frontend stack 或部署依赖。 |
 | Plugin split | Optional | Deferred：没有真实用户需求证明需要拆出 `nova-core` 或 Codex-loop packaging。 |
+| 领域命令扩张 | Optional | Deferred：Java 和 frontend 差异先由 packs、consumer profile 和脱敏模板承接，不新增大量领域命令。 |
 | Release automation | Optional | Deferred：当前 release hygiene、CI 和手工 runbook 足以控制风险；SBOM、签名或 release notes 自动化暂不设为阻断项。 |
 | Ecosystem submission | Optional | Deferred：等待 metadata、安装指引和真实多插件维护压力进一步稳定。 |
 
@@ -147,6 +167,7 @@ marketplace manifest。
 | 工作流 | 规则 |
 | --- | --- |
 | Documentation | 命令数量、skill 数量、agents、packs 或工作流约束变化时，同步 README、命令文档、skill 文档、`AGENTS.md` 和 `CLAUDE.md`。 |
+| Consumer profiles | 公开仓库只维护通用契约、脱敏模板和示例；真实 consumer profile 保存在 consumer 项目本地。 |
 | Validation | 优先扩展仓库脚本，而不是依赖人工 checklist；registry 行为变化需要同步 fixture 覆盖。 |
 | Claude compatibility | Claude 可接受的 plugin 字段与 repository-local marketplace metadata 继续分离。 |
 | Registry catalog | `docs/marketplace/catalog.md` 保持由 `node scripts/generate-registry.mjs --write` 生成，不手工漂移。 |
@@ -159,6 +180,9 @@ marketplace manifest。
 
 - 不做付费 marketplace、托管私有 registry 或商业授权层。
 - 不构建自定义 coding-assistant 客户端。
+- 不做 public portal，除非 v3 readiness evidence 出现足够真实需求。
+- 不做多插件目录迁移，除非出现真实多插件、多 owner、独立发布节奏或当前布局维护压力。
+- 不新增大量 `/java-*` 或 `/frontend-*` 领域命令；优先使用 capability packs 与 consumer profile。
 - 不引入 runtime dynamic pack/plugin loading，除非后续设计单独批准。
 - 不为了展示数据而引入新的 frontend stack；现阶段 Markdown 与生成的 registry 文件优先。
 - 不做没有兼容窗口和迁移说明的破坏性安装路径变更。

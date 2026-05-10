@@ -4,7 +4,7 @@ English | [中文](../../../README.md)
 
 # LLM Plugins Fusion
 
-**A third-party LLM coding-assistant plugin marketplace and `nova-plugin` engineering workflow collection**
+**A public multi-project AI engineering workflow framework with `nova-plugin`, consumer profile contracts, and redacted templates**
 
 [![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](../../../LICENSE)
@@ -15,17 +15,22 @@ English | [中文](../../../README.md)
 
 ## Positioning
 
-`llm-plugins-fusion` is a third-party plugin marketplace repository for LLM coding assistants. Its primary plugin is `nova-plugin`, a Claude Code-compatible workflow plugin that covers the engineering loop from discovery to handoff:
+`llm-plugins-fusion` is a public multi-project AI engineering workflow framework for LLM coding assistants. Its primary deliverable is `nova-plugin`, distributed through the Claude Code marketplace format, and it covers the engineering loop from discovery to handoff:
 
 ```text
 Explore -> Plan -> Review -> Implement -> Finalize
 ```
 
+The repository can support private consumer projects, but public content should only contain generic workflows, consumer profile contracts, redacted Java backend/frontend templates, and general capability pack guidance. Real consumer profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`, `.claude/`, or private docs.
+
+Marketplace metadata is the current installation and distribution mechanism; this repository should not be described as a mature multi-plugin ecosystem or as already having a public portal.
+
 It serves three audiences:
 
 | Audience | Needs | Start here |
 | --- | --- | --- |
-| Plugin users | Install the plugin, pick commands, copy usage templates | [Quick Start](#quick-start), [Command Map](#command-map), [docs index](../README.md) |
+| Consumer maintainers | Adopt the generic workflow, maintain private profiles, choose validation boundaries | [Consumer profiles](../../../docs/consumers/README.md), [Examples](../../../docs/examples/README.md), [Command Map](#command-map) |
+| Plugin users | Install `nova-plugin`, pick commands, copy usage templates | [Quick Start](#quick-start), [Command Map](#command-map), [docs index](../README.md) |
 | Plugin authors | Add commands / skills and understand frontmatter contracts | [CONTRIBUTING.md](../../../CONTRIBUTING.md), [Skill-first design](../architecture/dual-track-design.md) |
 | Maintainers | Schema, CI, validation, release, and safety boundaries | [Quality Gates](#quality-gates), [SECURITY.md](../../../SECURITY.md), [CHANGELOG.md](../../../CHANGELOG.md) |
 
@@ -94,19 +99,21 @@ Confirm installation:
 Start using it:
 
 ```bash
-/senior-explore analyze the current project structure and main risks
+/explore analyze the current project structure and main risks
 ```
+
+Private consumer projects should maintain their own project-local profile before running the workflow. The public contract is in [docs/consumers/](../../../docs/consumers/README.md).
 
 ## Command Map
 
-New users should start with the unified commands: `/explore`, `/produce-plan`, `/review`, `/implement-plan`, and `/finalize-work`. Use the Codex trio when you need stronger external review and verification.
+New users and consumer profiles should default to the five main entries: `/explore`, `/produce-plan`, `/review`, `/implement-plan`, and `/finalize-work`. Other commands remain available as advanced or compatibility entries without behavior changes.
 
-| Stage | Goal | Recommended commands | Other commands |
+| Stage | Goal | Main entry | Advanced / compatibility entries |
 | --- | --- | --- | --- |
-| Explore | Understand the problem, gather facts, expose uncertainty | `/explore`, `/senior-explore` | `/explore-lite`, `/explore-review` |
+| Explore | Understand the problem, gather facts, expose uncertainty | `/explore` | `/senior-explore`, `/explore-lite`, `/explore-review` |
 | Plan | Produce an implementation plan or design document | `/produce-plan` | `/plan-lite`, `/plan-review`, `/backend-plan` |
 | Review | Review code, plans, or branch risk | `/review` | `/review-lite`, `/review-only`, `/review-strict`, `/codex-review-only`, `/codex-verify-only` |
-| Implement | Execute an approved plan or run a fix loop | `/implement-plan`, `/codex-review-fix` | `/implement-standard`, `/implement-lite` |
+| Implement | Execute an approved plan | `/implement-plan` | `/implement-standard`, `/implement-lite`, `/codex-review-fix` |
 | Finalize | Summarize delivery, risks, verification, and follow-ups | `/finalize-work` | `/finalize-lite` |
 
 Common path:
@@ -160,6 +167,8 @@ llm-plugins-fusion/
 |   `-- hooks/                        # Claude Code hook config and scripts
 |-- docs/
 |   |-- agents/                       # core agent routing, plugin-aware routing, and migration manifest
+|   |-- consumers/                    # consumer profile contract and redacted templates
+|   |-- examples/                     # redacted Java backend / frontend workflow examples
 |   |-- marketplace/                  # catalog, author workflow, compatibility, trust, and review docs
 |   |-- releases/                     # release decisions, runbook, and hygiene docs
 |   `-- reports/archive/              # historical audit reports
@@ -178,6 +187,8 @@ llm-plugins-fusion/
 | Document | Contents | Use case |
 | --- | --- | --- |
 | [nova-plugin docs index](../README.md) | Docs structure, command coverage, maintenance rules | First navigation point |
+| [Consumer profile templates](../../../docs/consumers/README.md) | Multi-project consumer profile contract and redacted Java backend / frontend templates | Private project adoption |
+| [Redacted examples](../../../docs/examples/README.md) | Redacted Java backend and frontend workflow examples | Writing private profiles or handoff templates |
 | [Command Reference Guide](../guides/commands-reference-guide.en.md) | Parameters, examples, workflow templates | Daily command lookup |
 | [Command Handbook](../guides/claude-code-commands-handbook.en.md) | Command selection and copy-ready usage | Quick start |
 | [Codex Loop Guide](../commands/codex/codex-review-fix.README.en.md) | review / fix / verify collaboration | Claude Code + Codex |
@@ -186,7 +197,8 @@ llm-plugins-fusion/
 | [Core agent routing](../../../docs/agents/ROUTING.md) | Routing rules for 6 core agents and capability packs | Choosing or maintaining agents |
 | [Plugin-aware routing](../../../docs/agents/PLUGIN_AWARE_ROUTING.md) | Enhanced / fallback mode and pack activation rules | Maintaining pack routing |
 | [Marketplace catalog](../../../docs/marketplace/catalog.md) | Generated plugin catalog and compatibility evidence | Browsing marketplace entries |
-| [Marketplace portal IA](../../../docs/marketplace/portal-information-architecture.md) | Marketplace portal information architecture, data sources, and vNext / v2.0.0 / v2.1.0 / v2.2.0 / v3.0.0 boundaries | Preparing the marketplace portal |
+| [Marketplace portal IA](../../../docs/marketplace/portal-information-architecture.md) | Marketplace portal information architecture, data sources, and vNext / v2.0.0 / v2.1.0 / v2.2.0 / v3.0.0 boundaries | Evaluating the deferred portal boundary |
+| [v3 readiness evidence](../../../docs/marketplace/v3-readiness-evidence.md) | Evidence ledger for whether multi-plugin directories or a public portal should start | Evaluating whether v3.0.0 should move into planning |
 | [Registry author workflow](../../../docs/marketplace/registry-author-workflow.md) | Plugin entry updates, scaffold dry-run, profiles, and validation flow | Plugin authors and maintainers |
 | [Compatibility matrix](../../../docs/marketplace/compatibility-matrix.md) | Claude Code, Codex CLI, Bash, Node.js, and optional enhanced tools | Reviewing compatibility |
 | [Trust policy](../../../docs/marketplace/trust-policy.md) | Trust/risk/deprecation/last-updated/maintainer semantics and review requirements | Reviewing marketplace metadata |

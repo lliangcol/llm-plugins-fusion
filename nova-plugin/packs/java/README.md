@@ -33,6 +33,28 @@ Optional enhancement: `jdtls-lsp`. It is not a hard dependency of `nova-plugin`.
 3. Implement or review with Spring and JVM compatibility in mind.
 4. Run targeted tests first, then broader build checks when risk warrants.
 
+## Key Checkpoints
+
+- Transaction boundary: identify where writes begin, commit, roll back, and
+  cross service boundaries.
+- Idempotency: check retry, duplicate request, and repeated command behavior.
+- Concurrency: review locking, async execution, parallel updates, and race
+  conditions.
+- DTO / Entity boundary: keep persistence entities, API DTOs, and internal
+  models separated according to local patterns.
+- Exception model: preserve the project's standard error mapping and exception
+  hierarchy.
+- Data source declaration: confirm changes do not accidentally alter database,
+  schema, tenant, or persistence routing assumptions.
+- MQ / scheduled jobs: inspect message handlers, producers, consumers,
+  scheduling, retries, and side effects when touched.
+- Maven module validation: run affected module checks and broader `-am` or root
+  checks when contracts cross module boundaries.
+- Observability: preserve or add logs, metrics, traces, and audit points where
+  the project pattern requires them.
+- Rollback plan: document whether the change can be reverted, disabled, or
+  released safely in stages.
+
 ## Verification
 
 - Prefer project-provided Maven or Gradle commands.

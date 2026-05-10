@@ -10,10 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Added
+- 新增 `docs/consumers/` consumer profile 契约与脱敏 Java backend / frontend
+  接入模板，明确真实 profile 应保存在 consumer 项目本地。
+- 新增 `docs/examples/` 脱敏 Java backend 与 frontend workflow 示例，用于说明
+  profile、验证和 handoff 形态。
 - 新增 `v3.0.0` readiness evidence 台账，用于记录多插件目录和 public portal
   启动门槛，并明确当前仍不启动 breaking 迁移。
 - 扩展 `scripts/validate-docs.mjs`，自动校验 `SECURITY.md` 当前 MINOR
   支持范围，并拦截活跃文档中陈旧的 `v1.x` 未来规划标签。
+
+### Changed
+- 将公开定位收敛为多项目 AI 工程工作流框架，保留 marketplace 作为安装/分发
+  形式，并优先展示 `/explore`、`/produce-plan`、`/review`、
+  `/implement-plan`、`/finalize-work` 五个主入口。
+- 增强 Java 与 Frontend capability pack 的通用检查点，覆盖事务、幂等、并发、
+  DTO / Entity、异常模型、数据源、MQ / scheduled jobs、Maven 模块校验、
+  observability、rollback，以及设计系统、响应式布局、状态管理、表单、
+  loading/error/empty、可访问性、路由、组件结构和截图/Playwright 验证。
 
 ### Fixed
 - 修正 `SECURITY.md` 支持范围中的当前 MINOR 版本说明，使其与 `2.1.0`

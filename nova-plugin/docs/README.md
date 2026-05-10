@@ -1,6 +1,6 @@
 # nova-plugin 文档索引
 
-此目录保存 `nova-plugin` 的用户文档、命令文档、架构说明和历史记录。当前文档覆盖由 `node scripts/validate-docs.mjs` 校验：Markdown 本地链接与锚点、命令文档 stage 位置、版本日期同步、`/review LEVEL=lite` 契约，以及命令文档三件套完整性。
+此目录保存 `nova-plugin` 的用户文档、命令文档、架构说明和历史记录。`nova-plugin` 是公开多项目 AI 工程工作流框架的主插件交付物；marketplace 是安装与分发形式，不表示当前已经是成熟的多插件生态。当前文档覆盖由 `node scripts/validate-docs.mjs` 校验：Markdown 本地链接与锚点、命令文档 stage 位置、版本日期同步、`/review LEVEL=lite` 契约，以及命令文档三件套完整性。
 
 ## 快速入口
 
@@ -11,6 +11,8 @@
 | 架构与设计 | [architecture/](architecture/) | 当前 command / skill 双轨设计、hooks 设计 |
 | Agents | [agents/](agents/) | core agent 快速索引与 legacy archive 汇总 |
 | Capability packs | [../packs/README.md](../packs/README.md) | 8 个领域能力包与 enhanced / fallback mode |
+| Consumer profiles | [../../docs/consumers/README.md](../../docs/consumers/README.md) | 多项目 consumer profile 契约与脱敏模板 |
+| Redacted examples | [../../docs/examples/README.md](../../docs/examples/README.md) | Java backend / frontend 脱敏 workflow 示例 |
 | 历史记录 | [history/](history/) | 已归档的历史优化记录，不作为当前状态事实源 |
 | English overview | [overview/README.en.md](overview/README.en.md) | English project overview |
 
@@ -73,6 +75,8 @@ Core agents use documentation-only capability packs for domain routing. Packs do
 
 ## 命令文档
 
+推荐默认入口是 `/explore`、`/produce-plan`、`/review`、`/implement-plan`、`/finalize-work`。其它命令继续作为高级/兼容入口保留，本文档索引不改变任何命令行为。
+
 常规命令文档按 workflow stage 组织在 `commands/<stage>/` 下。Codex 命令跨 Review / Implement / Finalize 语义，为避免拆散闭环说明，统一维护在 `commands/codex/`；这是明确例外。
 
 | 阶段 | 路径 | 命令 |
@@ -96,6 +100,8 @@ Core agents use documentation-only capability packs for domain routing. Packs do
 
 - [命令完全参考手册](guides/commands-reference-guide.md)
 - [命令使用手册](guides/claude-code-commands-handbook.md)
+- [Consumer profile templates](../../docs/consumers/README.md)
+- [Redacted examples](../../docs/examples/README.md)
 - [Codex 闭环说明](commands/codex/codex-review-fix.README.md)
 - [Skill-first 设计说明](architecture/dual-track-design.md)
 - [Hooks 设计文档](architecture/hooks-design.md)

@@ -4,7 +4,7 @@
 
 # LLM Plugins Fusion
 
-**第三方 LLM 编码助手插件市场与 `nova-plugin` 工程工作流插件集合**
+**公开的多项目 AI 工程工作流框架，提供 `nova-plugin` 工作流、consumer profile 契约和脱敏模板**
 
 [![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
@@ -15,17 +15,22 @@
 
 ## 项目定位
 
-`llm-plugins-fusion` 是一个面向 LLM 编码助手的第三方插件市场仓库。目前主插件是 `nova-plugin`，兼容 Claude Code 插件市场，提供从理解问题到交付总结的工程化命令体系：
+`llm-plugins-fusion` 是一个公开的多项目 AI 工程工作流框架。目前主交付物是 `nova-plugin`，通过 Claude Code marketplace 形式安装和分发，提供从理解问题到交付总结的工程化命令体系：
 
 ```text
 Explore -> Plan -> Review -> Implement -> Finalize
 ```
 
+仓库可以支持闭源 consumer 项目接入，但公开内容只沉淀通用工作流、consumer profile 契约、脱敏 Java 后端/前端模板和通用 capability pack 指南。真实 consumer profile 应保存在 consumer 自己的 `AGENTS.md`、`CLAUDE.md`、`.claude/` 或私有文档中。
+
+Marketplace 是当前安装与分发形式；本仓库不把当前状态描述为成熟的多插件生态，也不要求已有 public portal。
+
 它适合三类使用者：
 
 | 使用者 | 关注点 | 推荐入口 |
 | --- | --- | --- |
-| 插件用户 | 安装插件、选择命令、复制使用模板 | [Quick Start](#quick-start)、[Command Map](#command-map)、[文档索引](./nova-plugin/docs/README.md) |
+| Consumer 项目维护者 | 接入通用 workflow、维护私有 profile、选择验证边界 | [Consumer profiles](./docs/consumers/README.md)、[Examples](./docs/examples/README.md)、[Command Map](#command-map) |
+| 插件用户 | 安装 `nova-plugin`、选择命令、复制使用模板 | [Quick Start](#quick-start)、[Command Map](#command-map)、[文档索引](./nova-plugin/docs/README.md) |
 | 插件作者 | 新增 command / skill、理解 frontmatter 契约 | [CONTRIBUTING.md](./CONTRIBUTING.md)、[Skill-first 设计](./nova-plugin/docs/architecture/dual-track-design.md) |
 | 维护者 | schema、CI、本地校验、发布与安全边界 | [Quality Gates](#quality-gates)、[SECURITY.md](./SECURITY.md)、[CHANGELOG.md](./CHANGELOG.md) |
 
@@ -94,19 +99,21 @@ Windows PowerShell 可以运行 Node 校验和 `scripts/verify-agents.ps1`。如
 开始使用：
 
 ```bash
-/senior-explore 分析当前项目结构和主要风险
+/explore 分析当前项目结构和主要风险
 ```
+
+私有 consumer 项目应先在项目本地维护 profile，再按 profile 指定的规则和校验命令执行工作流。公开 profile 契约见 [docs/consumers/](./docs/consumers/README.md)。
 
 ## Command Map
 
-新用户优先使用统一入口：`/explore`、`/produce-plan`、`/review`、`/implement-plan`、`/finalize-work`。需要更强自动化复核时，再使用 Codex 三件套。
+新用户和 consumer profile 默认优先使用五个主入口：`/explore`、`/produce-plan`、`/review`、`/implement-plan`、`/finalize-work`。其它命令保留为高级/兼容入口，不改变既有行为。
 
-| 阶段 | 目标 | 推荐命令 | 其他命令 |
+| 阶段 | 目标 | 主入口 | 高级/兼容入口 |
 | --- | --- | --- | --- |
-| Explore | 理解问题、收集事实、暴露不确定性 | `/explore`, `/senior-explore` | `/explore-lite`, `/explore-review` |
+| Explore | 理解问题、收集事实、暴露不确定性 | `/explore` | `/senior-explore`, `/explore-lite`, `/explore-review` |
 | Plan | 输出实现方案或设计文档 | `/produce-plan` | `/plan-lite`, `/plan-review`, `/backend-plan` |
 | Review | 审查代码、计划或分支风险 | `/review` | `/review-lite`, `/review-only`, `/review-strict`, `/codex-review-only`, `/codex-verify-only` |
-| Implement | 按计划实施或执行闭环修复 | `/implement-plan`, `/codex-review-fix` | `/implement-standard`, `/implement-lite` |
+| Implement | 按计划实施 | `/implement-plan` | `/implement-standard`, `/implement-lite`, `/codex-review-fix` |
 | Finalize | 交付总结、风险、验证与后续事项 | `/finalize-work` | `/finalize-lite` |
 
 常用路径：
@@ -160,6 +167,8 @@ llm-plugins-fusion/
 |   `-- hooks/                        # Claude Code hook 配置和脚本
 |-- docs/
 |   |-- agents/                       # core agent 路由、plugin-aware routing 与迁移清单
+|   |-- consumers/                    # consumer profile 契约与脱敏接入模板
+|   |-- examples/                     # 脱敏 Java backend / frontend 示例
 |   |-- marketplace/                  # catalog、作者流程、兼容矩阵、trust 与安全评审策略
 |   |-- releases/                     # release 决策、runbook 与 hygiene 说明
 |   `-- reports/archive/              # 历史审计报告
@@ -178,6 +187,8 @@ llm-plugins-fusion/
 | 文档 | 内容 | 适用场景 |
 | --- | --- | --- |
 | [nova-plugin 文档索引](./nova-plugin/docs/README.md) | 文档结构、命令文档覆盖、维护规则 | 先找入口 |
+| [Consumer profile templates](./docs/consumers/README.md) | 多项目 consumer profile 契约、Java backend / frontend 脱敏模板 | 闭源或私有项目接入 |
+| [Redacted examples](./docs/examples/README.md) | 脱敏 Java backend 和 frontend workflow 示例 | 编写私有 profile 或 handoff 模板 |
 | [命令完全参考手册](./nova-plugin/docs/guides/commands-reference-guide.md) | 参数、示例、工作流模板 | 日常查命令 |
 | [命令使用手册](./nova-plugin/docs/guides/claude-code-commands-handbook.md) | 命令选择、使用方式、复制模板 | 快速上手 |
 | [Codex 闭环说明](./nova-plugin/docs/commands/codex/codex-review-fix.README.md) | review / fix / verify 协作流程 | Claude Code + Codex |
@@ -186,7 +197,7 @@ llm-plugins-fusion/
 | [Core agent 路由](./docs/agents/ROUTING.md) | 6 个 core agents 与 capability packs 的路由规则 | 选择或维护 agent |
 | [Plugin-aware routing](./docs/agents/PLUGIN_AWARE_ROUTING.md) | enhanced / fallback mode 与 pack 启用规则 | 维护 pack 路由 |
 | [Marketplace catalog](./docs/marketplace/catalog.md) | 由 registry 生成的当前插件 catalog 与兼容证据 | 浏览 marketplace entry |
-| [Marketplace portal IA](./docs/marketplace/portal-information-architecture.md) | 市场门面信息架构、数据源和 vNext / v2.0.0 / v2.1.0 / v2.2.0 / v3.0.0 边界 | 准备 marketplace portal |
+| [Marketplace portal IA](./docs/marketplace/portal-information-architecture.md) | 市场门面信息架构、数据源和 vNext / v2.0.0 / v2.1.0 / v2.2.0 / v3.0.0 边界 | 评估 deferred portal 边界 |
 | [v3 readiness evidence](./docs/marketplace/v3-readiness-evidence.md) | 多插件目录和 public portal 是否应启动的证据台账 | 评估 v3.0.0 是否可进入计划 |
 | [Registry author workflow](./docs/marketplace/registry-author-workflow.md) | 新增插件 entry、scaffold dry-run、profile 与校验流程 | 插件作者与维护者 |
 | [Compatibility matrix](./docs/marketplace/compatibility-matrix.md) | Claude Code、Codex CLI、Bash、Node.js 与 enhanced tools 前置条件 | 评审兼容性 |

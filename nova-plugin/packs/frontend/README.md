@@ -33,6 +33,27 @@ Optional enhancement: any frontend tooling already present in the host project. 
 3. Implement accessible, responsive behavior.
 4. Verify with available build/test tools and manual QA notes.
 
+## Key Checkpoints
+
+- Design system consistency: reuse existing components, tokens, spacing, and
+  interaction patterns.
+- Responsive layout: verify supported desktop and mobile viewports for overflow,
+  overlap, and layout shifts.
+- State management: keep local, shared, cached, and server state boundaries
+  explicit.
+- Forms and validation: cover valid input, invalid input, submission, reset,
+  and disabled states.
+- Loading / error / empty states: make each asynchronous state visible and
+  recoverable.
+- Accessibility: check semantic structure, labels, focus order, keyboard
+  operation, and contrast-sensitive states.
+- Routing boundaries: keep route ownership, guards, and navigation side effects
+  clear.
+- Component structure: keep reusable components generic and feature-specific
+  components scoped.
+- Playwright or screenshot verification: capture browser evidence when tooling
+  is available, especially for visual or responsive changes.
+
 ## Verification
 
 - Run existing frontend lint, typecheck, build, or test commands.

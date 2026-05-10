@@ -1,7 +1,7 @@
 # v3.0.0 Readiness Evidence
 
 Status: active
-Date: 2026-05-09
+Date: 2026-05-10
 
 This document tracks whether the repository has enough real maintenance
 pressure to start the deferred `v3.0.0` multi-plugin marketplace work described
@@ -12,6 +12,10 @@ but the repository must not move `nova-plugin/`, introduce a public portal
 frontend, or change plugin installation paths until the activation criteria
 below are met.
 
+The current priority is workflow framework + consumer profile templates. Public
+docs may add generic profile contracts, redacted Java backend/frontend examples,
+and pack guidance while `v3.0.0` remains deferred.
+
 ## Current Decision
 
 | Area | Current evidence | Decision |
@@ -21,6 +25,8 @@ below are met.
 | Release cadence | `v2.1.0` shipped registry, trust, compatibility, and review work as one plugin release. | Keep single-plugin release flow. |
 | Catalog needs | Generated Markdown catalog is sufficient for current browsing and review. | Do not build a frontend portal. |
 | Registry operations | Source-driven generation and fixtures cover current metadata needs. | Continue validating fixtures before adding structure. |
+| Consumer project support | Generic profiles and redacted examples can support private consumers without publishing private project facts. | Keep profiles as docs, not new plugins. |
+| Domain workflows | Java and frontend needs are handled by capability packs and consumer profiles. | Do not add large `/java-*` or `/frontend-*` command families. |
 
 ## Activation Criteria
 
@@ -35,12 +41,14 @@ criterion has concrete evidence and the optional criteria have been considered.
 | Public portal demand | No | User or maintainer evidence that generated Markdown catalog and README navigation are no longer sufficient. |
 | Release automation gap | No | Repeated manual release errors that cannot be solved by release hygiene, CI checks, or small script improvements. |
 | Ecosystem submission need | No | A concrete submission or distribution target that requires a different repository or marketplace shape. |
+| Domain command pressure | No | Repeated evidence that packs and consumer profiles cannot support Java or frontend work without new command families. |
 
 ## Evidence Log
 
 | Date | Signal | Evidence | Decision impact |
 | --- | --- | --- | --- |
 | 2026-05-09 | Post-`v2.1.0` baseline | `v2.1.0` release completed with one production plugin, generated catalog, registry fixtures, and repository-local metadata. | Keep `v3.0.0` deferred. |
+| 2026-05-10 | Consumer profile direction | Public docs added generic consumer profile contracts, redacted backend/frontend templates, and examples without adding plugins, owners, portal code, or command behavior changes. | Supports workflow framework direction while keeping `v3.0.0` deferred. |
 
 ## Allowed While Deferred
 
@@ -51,6 +59,8 @@ criterion has concrete evidence and the optional criteria have been considered.
   owns the data.
 - Add non-breaking docs that clarify author workflow, trust review, or release
   hygiene.
+- Add generic consumer profile contracts, redacted examples, and capability pack
+  guidance that avoid private consumer facts.
 
 ## Not Allowed Without Activation
 
@@ -58,6 +68,9 @@ criterion has concrete evidence and the optional criteria have been considered.
 - Introducing `plugins/*` as the production install path.
 - Adding a frontend framework, deployment job, or public portal dependency.
 - Changing plugin install commands or marketplace source paths.
+- Adding large domain-specific command families such as `/java-*` or
+  `/frontend-*` without evidence that packs and consumer profiles are
+  insufficient.
 - Treating fixture-only multi-plugin support as evidence that production
   migration is necessary.
 

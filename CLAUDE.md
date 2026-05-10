@@ -4,13 +4,17 @@ This file provides guidance to Claude Code when working in this repository.
 
 ## Project Purpose
 
-**LLM Plugins Fusion** is a third-party plugin marketplace and plugin collection for LLM coding assistants. The current primary plugin is `nova-plugin`, which is compatible with Claude Code and provides an engineering workflow that spans Explore -> Plan -> Review -> Implement -> Finalize.
+**LLM Plugins Fusion** is a public multi-project AI engineering workflow framework for LLM coding assistants. The current primary plugin is `nova-plugin`, which is distributed through the Claude Code marketplace format and provides an engineering workflow that spans Explore -> Plan -> Review -> Implement -> Finalize.
+
+Marketplace metadata is the current installation and distribution mechanism; do not treat the repository as a mature multi-plugin ecosystem unless future evidence and roadmap updates say so. Public docs may include generic `nova-plugin` workflow guidance, consumer profile contracts, redacted Java backend/frontend templates, and capability pack guidance. Real consumer profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`, `.claude/`, or private docs.
 
 ## Quick Facts
 
 - Marketplace entry: `.claude-plugin/marketplace.json`
 - Marketplace custom metadata: `.claude-plugin/marketplace.metadata.json`
 - Generated marketplace catalog: `docs/marketplace/catalog.md`
+- Consumer profile templates: `docs/consumers/`
+- Redacted workflow examples: `docs/examples/`
 - Registry generation source: `.claude-plugin/registry.source.json`
 - Registry multi-entry fixture: `fixtures/registry/multi-plugin/`
 - Main plugin metadata: `nova-plugin/.claude-plugin/plugin.json`
@@ -32,6 +36,8 @@ This file provides guidance to Claude Code when working in this repository.
 - Command definitions: `nova-plugin/commands/*.md`.
 - Skill definitions: `nova-plugin/skills/nova-*/SKILL.md`.
 - Command documentation: `nova-plugin/docs/commands/`.
+- Consumer profile templates: `docs/consumers/`.
+- Redacted workflow examples: `docs/examples/`.
 - Shared command/skill policies: `nova-plugin/skills/_shared/`.
 - Active agent set: `nova-plugin/agents/`, enforced by `scripts/verify-agents.sh` and `scripts/verify-agents.ps1`.
 - Capability packs: `nova-plugin/packs/`, enforced by `scripts/validate-packs.mjs`.
@@ -50,6 +56,8 @@ claude-plugins-fusion/
 |   `-- release.yml                   # Tag-based release and release notes
 |-- docs/
 |   |-- agents/                       # Active agent routing and migration notes
+|   |-- consumers/                    # Public consumer profile contract and redacted templates
+|   |-- examples/                     # Redacted Java backend and frontend workflow examples
 |   |-- marketplace/                  # Catalog, author workflow, compatibility, trust, review docs
 |   `-- releases/                     # Release decision, runbook, and hygiene docs
 |-- fixtures/
