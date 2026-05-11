@@ -28,8 +28,15 @@
    ```bash
    npm run validate
    npm run validate:docs
+   npm run validate:schemas
+   npm run validate:runtime
    npm run validate:regression
    npm run scan:distribution
+   ```
+
+   Consumer profile scaffold 需要参数，例如：
+   ```bash
+   npm run scaffold:consumer -- --type java-backend --out <dir>
    ```
 
 ### 工程约定

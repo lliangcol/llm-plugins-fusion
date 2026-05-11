@@ -1,8 +1,10 @@
 # CLAUDE.md
 
-This file provides Claude Code guidance for this repository. Keep it in sync
-with `AGENTS.md` whenever repository structure, command counts, validation
-rules, or workflow constraints change.
+This file provides canonical Claude Code guidance for this repository. Keep
+`AGENTS.md` as a short Codex / generic-agent adapter that references this file
+instead of copying it wholesale. When repository structure, command counts,
+validation rules, or workflow constraints change, update this file first and
+then update only the affected adapter notes in `AGENTS.md`.
 
 ## Project Purpose
 
@@ -43,8 +45,9 @@ consumer project's own `AGENTS.md`, `CLAUDE.md`, `.claude/`, or private docs.
 - Project optimization plan: `docs/project-optimization-plan.md`
 - Release evidence template: `docs/releases/release-evidence-template.md`
 - Maintainer npm shortcuts: `package.json` (`validate`, `validate:docs`,
-  `validate:schemas`, `validate:regression`, `scan:distribution`; no
-  `check`/`lint`/`test`/`build` script names)
+  `validate:schemas`, `validate:runtime`, `validate:regression`,
+  `scan:distribution`, `scaffold:consumer`; no `check`/`lint`/`test`/`build`
+  script names)
 - Repository validation scripts require Node.js 20+. Hook shell syntax and
   runtime smoke checks require Bash; Windows without Bash may warning-skip
   local Bash-dependent checks, while CI/Linux must run them.
@@ -96,8 +99,7 @@ llm-plugins-fusion/
 |   |-- prompts/
 |   |-- releases/
 |   |-- workflows/
-|   |-- project-optimization-plan.md
-|   `-- reports/
+|   `-- project-optimization-plan.md
 |-- fixtures/registry/multi-plugin/
 |-- nova-plugin/
 |   |-- .claude-plugin/plugin.json
@@ -116,8 +118,7 @@ llm-plugins-fusion/
 |-- CONTRIBUTING.md
 |-- CHANGELOG.md
 |-- ROADMAP.md
-|-- SECURITY.md
-`-- .claude/agents/archive/            # Archived legacy agents, not active
+`-- SECURITY.md
 ```
 
 ## Common Checks
@@ -153,8 +154,15 @@ Maintainer npm shortcuts are optional and dependency-free:
 npm run validate
 npm run validate:docs
 npm run validate:schemas
+npm run validate:runtime
 npm run validate:regression
 npm run scan:distribution
+```
+
+Consumer profile scaffolding through npm requires arguments:
+
+```bash
+npm run scaffold:consumer -- --type java-backend --out <dir>
 ```
 
 Windows agent verification:
@@ -276,10 +284,8 @@ verifier
 Capability packs are exactly: `java`, `security`, `dependency`, `docs`,
 `release`, `marketplace`, `frontend`, and `mcp`.
 
-Active agents live in `nova-plugin/agents/`; legacy agents live under
-`.claude/agents/archive/nova-plugin/agents/` and are not active. Capability
-packs live in `nova-plugin/packs/` and must document both enhanced mode and
-fallback mode.
+Active agents live in `nova-plugin/agents/`. Capability packs live in
+`nova-plugin/packs/` and must document both enhanced mode and fallback mode.
 
 If the active agent or pack set changes, update the files, verification scripts,
 routing docs, migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
@@ -360,8 +366,8 @@ Release tags must use `v<plugin-version>` and match
 
 ### Modify Agents or Capability Packs
 
-- Active agents belong only in `nova-plugin/agents/`; archived or legacy agents
-  belong under `.claude/agents/archive/`.
+- Active agents belong only in `nova-plugin/agents/`; do not recreate retired
+  `.claude/agents/` archive paths as active agent locations.
 - If the active agent or pack set changes, update agent or pack files, both
   `verify-agents` scripts, `scripts/validate-packs.mjs`, routing docs,
   migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
@@ -395,8 +401,8 @@ risk scan, validation regression checks, and validate-docs.
 
 - Do not commit Codex runtime artifacts from `.codex/`, including timestamped
   `codex-review-fix` runs, `latest`, and `latest-artifacts/`.
-- Do not edit archived agents under `.claude/agents/archive/` as if they were
-  active agents.
+- Do not recreate retired `.claude/agents/` archive paths as active agent
+  locations. Active agents belong only in `nova-plugin/agents/`.
 
 ## Key Constraints
 

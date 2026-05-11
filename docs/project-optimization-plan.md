@@ -12,12 +12,12 @@ framework. Promote released tags, not unreleased `main` snapshots. Keep
 deferred until real maintenance pressure appears.
 
 This document is the active optimization record. Tracks 1 through 5 have been
-implemented for the `v2.2.0` release-ready work. Track 6 remains conditional
-because archive movement is only justified after Claude Code context
-measurement proves token pressure. The 2026-05-12 unattended P0-P2 pass added
-release evidence drafts, pending workflow/archive measurement records,
-maintainer npm shortcuts, consumer profile scaffolding, regression checks, and
-expanded distribution-risk scanning without creating tags or releases.
+implemented for the `v2.2.0` release-ready work. Track 6 has been resolved by
+removing stale archive documentation from the public working tree rather than
+keeping a second active archive surface. The 2026-05-12 unattended P0-P2 pass
+added maintainer npm shortcuts, consumer profile scaffolding, regression
+checks, workflow evaluation fixtures, and expanded distribution-risk scanning
+without creating tags or releases.
 
 Primary optimization sequence:
 
@@ -26,7 +26,7 @@ Primary optimization sequence:
 3. Workflow reliability examples and review rubrics.
 4. Fact drift validation.
 5. Environment and release evidence.
-6. Archive token pressure, only after measurement confirms a problem.
+6. Retired archive cleanup and active-agent surface protection.
 
 ## Current Baseline
 
@@ -213,35 +213,33 @@ Acceptance Criteria:
 - CI/Linux remains the authoritative Bash syntax and runtime smoke gate.
 - Operators can tell whether they validated an exact tag or unreleased `main`.
 
-### 6. Archive Token Pressure
+### 6. Retired Archive Cleanup
 
-Status: conditional; no archive move without measurement
+Status: completed in current unreleased work
 
-Why: Archived `.claude` agent files may add context cost if Claude Code scans
-`.claude/**`.
+Why: Retired `.claude` agent files and intermediate archive measurement records
+added maintenance noise while active agents are already fixed under
+`nova-plugin/agents/`.
 
 Existing Coverage:
 
 - Active agents are fixed under `nova-plugin/agents/`.
-- Agent verification output already warns about archive scan risk and suggests
-  measuring `/context`.
-- `docs/agents/archive-context-measurement.md` defines the measurement record
-  and decision rule before any archive movement.
+- Routing docs point to the current 6-core-agent model and capability packs.
+- `AGENTS.md` and `CLAUDE.md` state that retired `.claude/agents/` paths are
+  not active agent locations.
 
-Remaining Work:
+Completed Work:
 
-- Measure Claude Code `/context` before and after any archive movement.
-- Current pending record:
-  `docs/agents/archive-context-measurement-2026-05-12.md`.
-- If token pressure is confirmed, move the archive to a less-scanned path and
-  update references and verification scripts.
-- Do not treat archived agents as active agents during the migration.
+- Removed retired `.claude/agents/` archive documents from the current
+  deliverable tree.
+- Removed intermediate archive measurement records from `docs/agents/`.
+- Updated active indexes so they only describe current routing documents.
 
 Acceptance Criteria:
 
 - Active agent set remains exactly six files under `nova-plugin/agents/`.
-- Any archive movement has measured token benefit.
-- No active docs or scripts point to stale archive paths after a move.
+- Retired `.claude/agents/` paths are not recreated as active surfaces.
+- No active documentation points to removed archive measurement files.
 
 ## Execution Order
 
@@ -250,7 +248,7 @@ Acceptance Criteria:
 3. Workflow reliability examples and review rubrics.
 4. Fact drift validation.
 5. Environment and release evidence.
-6. Archive token pressure, only if measurement confirms the issue.
+6. Retired archive cleanup and active-agent surface protection.
 
 Do not start public portal work, production multi-plugin directory migration, or
 large domain command families as part of these tracks.

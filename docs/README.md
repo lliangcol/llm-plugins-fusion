@@ -5,7 +5,7 @@ Date: 2026-05-12
 
 This is the repository-level map for public documentation under `docs/`.
 Use [nova-plugin/docs/README.md](../nova-plugin/docs/README.md) for
-plugin-specific user docs, command docs, architecture notes, and history.
+plugin-specific user docs, command docs, and current architecture notes.
 
 Detailed local indexes remain in subdirectories that need them, such as
 `docs/consumers/`, `docs/examples/`, and `docs/prompts/`. This page owns the
@@ -32,14 +32,12 @@ duplicate every document.
 docs/
 |-- README.md
 |-- getting-started.md              # shortest install and workflow entry
-|-- agents/                       # core agent routing, pack routing, and migration records
+|-- agents/                       # core agent routing and pack routing
 |-- consumers/                    # public-safe consumer profile contracts and setup templates
 |-- examples/                     # redacted workflow examples and evaluation templates
 |-- marketplace/                  # generated catalog, registry workflow, trust, compatibility, and review docs
 |-- prompts/                      # reusable public-safe prompt templates
-|-- releases/                     # release decisions, evidence templates, runbooks, and hygiene docs
-|-- reports/
-|   `-- archive/                  # historical reports, not current-state sources of truth
+|-- releases/                     # release evidence templates and hygiene docs
 |-- workflows/                    # reusable agent workflow guidance
 `-- project-optimization-plan.md  # active project optimization plan
 ```
@@ -48,13 +46,12 @@ docs/
 
 | Area | Owns |
 | --- | --- |
-| [agents/](agents/) | Core agent routing, plugin-aware routing, migration mapping, and archive measurement guidance. |
+| [agents/](agents/) | Core agent routing and plugin-aware routing. |
 | [consumers/](consumers/) | Public-safe consumer profile contracts, redacted project templates, and cross-tool setup notes. |
-| [examples/](examples/) | Redacted Java backend/frontend examples and manual workflow evaluation records. |
+| [examples/](examples/) | Redacted Java backend/frontend examples and workflow evaluation templates. |
 | [marketplace/](marketplace/) | Marketplace catalog output, registry author workflow, compatibility, trust, security review, and v3 readiness evidence. |
 | [prompts/](prompts/) | Copyable prompt templates for Codex, Claude Code, delivery docs, HTML artifacts, and workbench cleanup. |
-| [releases/](releases/) | Release evidence, release hygiene, vNext decisions, manual release runbooks, and unreleased snapshot evidence. |
-| [reports/archive/](reports/archive/) | Historical audits and reports that should not be treated as active project facts. |
+| [releases/](releases/) | Release evidence templates and release hygiene rules. |
 | [workflows/](workflows/) | Context-safe agent workflows and the thin-harness/fat-skills placement doctrine. |
 
 ## Current Documents
@@ -65,10 +62,6 @@ docs/
 | --- | --- |
 | [agents/ROUTING.md](agents/ROUTING.md) | Current 6-core-agent routing and capability pack hints. |
 | [agents/PLUGIN_AWARE_ROUTING.md](agents/PLUGIN_AWARE_ROUTING.md) | Enhanced/fallback mode and pack activation rules. |
-| [agents/CORE_AGENTS_MIGRATION.md](agents/CORE_AGENTS_MIGRATION.md) | Compatibility mapping from the previous specialist-agent set. |
-| [agents/MIGRATION_MANIFEST.md](agents/MIGRATION_MANIFEST.md) | Migration inventory and active/archive file mapping. |
-| [agents/archive-context-measurement.md](agents/archive-context-measurement.md) | Procedure for measuring whether archived agents affect context size. |
-| [agents/archive-context-measurement-2026-05-12.md](agents/archive-context-measurement-2026-05-12.md) | Pending archive token measurement record; keep archive in place until measured. |
 
 ### Consumers
 
@@ -92,7 +85,6 @@ docs/
 | [examples/README.md](examples/README.md) | Local index for public-safe examples. |
 | [examples/workflow-evaluation.md](examples/workflow-evaluation.md) | Five-stage workflow evaluation examples and rubric. |
 | [examples/workflow-evaluation-record-template.md](examples/workflow-evaluation-record-template.md) | Manual evidence record template for workflow-quality checks. |
-| [examples/workflow-evaluation-record-2026-05-12.md](examples/workflow-evaluation-record-2026-05-12.md) | `v2.2.0` workflow evaluation record with fixture prepared and manual command execution still pending. |
 | [examples/java-backend/redacted-feature.md](examples/java-backend/redacted-feature.md) | Generic Java/Spring workflow example. |
 | [examples/frontend/basic-feature.md](examples/frontend/basic-feature.md) | Generic frontend workflow example. |
 
@@ -128,11 +120,7 @@ docs/
 | Document | Purpose |
 | --- | --- |
 | [releases/release-evidence-template.md](releases/release-evidence-template.md) | Release or promotion evidence template. |
-| [releases/release-evidence-v2.2.0.md](releases/release-evidence-v2.2.0.md) | `v2.2.0` release evidence draft with pending tag, plugin install smoke, and GitHub Release blockers. |
 | [releases/release-hygiene.md](releases/release-hygiene.md) | Version, tag, generated artifact, and pre-release hygiene rules. |
-| [releases/vnext-release-decision.md](releases/vnext-release-decision.md) | vNext release-level decision and compatibility notes. |
-| [releases/v2.0.0-manual-release-steps.md](releases/v2.0.0-manual-release-steps.md) | Manual release runbook for the v2.0.0 release. |
-| [releases/unreleased-snapshot-evidence-2026-05-12.md](releases/unreleased-snapshot-evidence-2026-05-12.md) | Snapshot evidence for the current unreleased working tree. |
 
 ### Workflows And Reports
 
@@ -142,7 +130,6 @@ docs/
 | [workflows/thin-harness-fat-skills.md](workflows/thin-harness-fat-skills.md) | Placement doctrine for scripts, skills, prompts, packs, and profiles. |
 | [getting-started.md](getting-started.md) | Install, `/route`, five primary commands, Codex prerequisites, and common failure handling. |
 | [project-optimization-plan.md](project-optimization-plan.md) | Active optimization plan for positioning, reliability, usability, maintenance, and release readiness. |
-| [reports/archive/project-status-audit-2026-04-28.md](reports/archive/project-status-audit-2026-04-28.md) | Historical audit report, retained for context only. |
 
 ## Maintenance Rules
 
@@ -154,7 +141,6 @@ docs/
   regenerated from `.claude-plugin/registry.source.json`.
 - Keep private consumer names, local paths, endpoints, credentials, repository
   addresses, and business rules out of public docs and prompts.
-- Do not treat files under `docs/reports/archive/` as current-state evidence.
 - For documentation-only edits, run:
 
 ```bash

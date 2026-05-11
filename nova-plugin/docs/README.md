@@ -1,6 +1,6 @@
 # nova-plugin 文档索引
 
-此目录保存 `nova-plugin` 的用户文档、命令文档、架构说明和历史记录。`nova-plugin` 是公开多项目 AI 工程工作流框架的主插件交付物；marketplace 是安装与分发形式，不表示当前已经是成熟的多插件生态。当前文档覆盖由 `node scripts/validate-docs.mjs` 校验：Markdown 本地链接与锚点、命令文档 stage 位置、版本日期同步、`/review LEVEL=lite` 契约，以及命令文档三件套完整性。
+此目录保存 `nova-plugin` 的用户文档、命令文档和当前架构说明。`nova-plugin` 是公开多项目 AI 工程工作流框架的主插件交付物；marketplace 是安装与分发形式，不表示当前已经是成熟的多插件生态。当前文档覆盖由 `node scripts/validate-docs.mjs` 校验：Markdown 本地链接与锚点、命令文档 stage 位置、版本日期同步、`/review LEVEL=lite` 契约，以及命令文档三件套完整性。
 
 ## 快速入口
 
@@ -18,7 +18,6 @@
 | Thin harness, fat skills | [../../docs/workflows/thin-harness-fat-skills.md](../../docs/workflows/thin-harness-fat-skills.md) | 脚本、skill、prompt、pack 和 consumer profile 的沉淀边界 |
 | Prompt templates | [../../docs/prompts/README.md](../../docs/prompts/README.md) | Codex、Claude Code 和通用交付文档 prompt 模板 |
 | Redacted examples | [../../docs/examples/README.md](../../docs/examples/README.md) | Java backend / frontend 脱敏 workflow 示例 |
-| 历史记录 | [history/](history/) | 已归档的历史优化记录，不作为当前状态事实源 |
 | English overview | [overview/README.en.md](overview/README.en.md) | English project overview |
 
 ## 文档结构
@@ -42,8 +41,6 @@ nova-plugin/docs/
 |   |-- agent-development-stack.md
 |   |-- dual-track-design.md
 |   `-- hooks-design.md
-|-- history/
-|   `-- command-optimization-2026-02-04.md
 `-- overview/
     `-- README.en.md
 ```
@@ -57,7 +54,6 @@ nova-plugin/docs/
 | Commands | 63 | 21 个命令，每个命令 `<id>.md`、`<id>.README.md`、`<id>.README.en.md` |
 | Capability packs | 9 | `nova-plugin/packs/README.md` + 8 个 pack README |
 | Architecture | 3 | 当前设计文档 |
-| History | 1 | 历史优化记录 |
 | Overview | 1 | 英文项目概览 |
 
 ## Capability Packs
@@ -131,14 +127,13 @@ Core agents use documentation-only capability packs for domain routing. Packs do
 - [Security review route](../../docs/marketplace/security-review-route.md)
 - [Release hygiene](../../docs/releases/release-hygiene.md)
 - [English overview](overview/README.en.md)
-- [Historical command optimization record](history/command-optimization-2026-02-04.md)
 
 ## 维护规则
 
 - 新增、删除、重命名命令时，同步 `nova-plugin/commands/`、`nova-plugin/skills/nova-*/` 和 `nova-plugin/docs/commands/`。
 - 用户可见行为、参数、输出、工具权限或安全边界变化时，同步 guides、命令文档和 `CHANGELOG.md`。
 - Capability pack 或 plugin-aware routing 改动后运行 `node scripts/validate-packs.mjs`。
-- 当前设计文档放在 `architecture/`；阶段性总结、历史优化记录和非当前状态报告放在 `history/` 或仓库级 `docs/reports/archive/`。
+- 当前设计文档放在 `architecture/`；临时分析、历史优化记录和非当前状态报告不要放入当前交付文档树。
 - 文档改动后运行：
 
 ```bash

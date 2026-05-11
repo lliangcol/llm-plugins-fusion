@@ -17,7 +17,7 @@ Rules and memory
 
 | Layer | Current files | Responsibility |
 | --- | --- | --- |
-| Memory | [AGENTS.md](../../../AGENTS.md), [CLAUDE.md](../../../CLAUDE.md), [docs/consumers/](../../../docs/consumers/) | Repository rules, public workflow guidance, and private consumer profile boundaries |
+| Memory | [CLAUDE.md](../../../CLAUDE.md), [AGENTS.md](../../../AGENTS.md), [docs/consumers/](../../../docs/consumers/) | Claude guidance source, non-Claude agent adapter, public workflow guidance, and private consumer profile boundaries |
 | Skills | [nova-plugin/skills/](../../skills/), [nova-plugin/skills/_shared/](../../skills/_shared/) | Command behavior, parameter resolution, safety boundaries, outputs, and reusable policy |
 | Guardrails | [nova-plugin/hooks/](../../hooks/), [scripts/](../../../scripts/) | Deterministic checks, audit hooks, schema validation, docs validation, and release evidence |
 | Delegation | [nova-plugin/agents/](../../agents/), [nova-plugin/packs/](../../packs/), [docs/agents/](../../../docs/agents/) | Six core agents, documentation-only capability packs, and enhanced/fallback routing |
@@ -30,7 +30,8 @@ Rules and memory
 The memory layer defines what the repository is, how agents should work inside
 it, and where private project facts belong.
 
-- `AGENTS.md` and `CLAUDE.md` are repository guidance for coding agents.
+- `CLAUDE.md` is the canonical repository guidance for Claude Code and shared
+  project facts; `AGENTS.md` is the short Codex / generic-agent adapter.
 - `docs/consumers/` defines public-safe consumer profile contracts and
   templates.
 - Real consumer profiles must stay in the consumer project's own `AGENTS.md`,

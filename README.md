@@ -84,8 +84,15 @@ node scripts/validate-all.mjs
 npm run validate
 npm run validate:docs
 npm run validate:schemas
+npm run validate:runtime
 npm run validate:regression
 npm run scan:distribution
+```
+
+Consumer profile scaffold 需要参数；npm 入口示例：
+
+```bash
+npm run scaffold:consumer -- --type java-backend --out <dir>
 ```
 
 Windows PowerShell 可以运行 Node 校验和 `scripts/verify-agents.ps1`。如果本机没有 Bash，`validate-all` 会 warning 跳过本地 Bash-dependent hook syntax 与 runtime smoke 检查；CI/Linux 仍会执行并要求通过。
@@ -219,7 +226,7 @@ Capability packs: `java`, `security`, `dependency`, `docs`, `release`, `marketpl
 
 | 层 | 当前事实源 | 维护重点 |
 | --- | --- | --- |
-| Memory | `AGENTS.md`、`CLAUDE.md`、`docs/consumers/` | 仓库规则、consumer profile 边界、公开/私有信息分离 |
+| Memory | `CLAUDE.md`、`AGENTS.md`、`docs/consumers/` | Claude 规范事实源、非 Claude agent 适配、consumer profile 边界、公开/私有信息分离 |
 | Skills | `nova-plugin/skills/`、`nova-plugin/commands/` | command / skill 一对一、参数、安全边界和输出契约 |
 | Guardrails | `nova-plugin/hooks/`、`scripts/validate-*.mjs` | 确定性 hook、schema、frontmatter、docs 和发布校验 |
 | Delegation | `nova-plugin/agents/`、`nova-plugin/packs/` | 6 个 core agents、8 个 capability packs、enhanced / fallback 路由 |
@@ -239,7 +246,7 @@ llm-plugins-fusion/
 |   |-- skills/                       # 21 个 nova-* skills + _shared 策略
 |   |-- agents/                       # 6 个 core active agents
 |   |-- packs/                        # 8 个 capability pack 文档
-|   |-- docs/                         # 用户文档、命令文档、架构和历史记录
+|   |-- docs/                         # 用户文档、命令文档和当前架构说明
 |   `-- hooks/                        # Claude Code hook 配置和脚本
 |-- docs/
 |   |-- README.md                     # 仓库级文档总索引
@@ -250,8 +257,7 @@ llm-plugins-fusion/
 |   |-- prompts/                      # 可复制的公开安全 prompt 模板
 |   |-- releases/                     # release 决策、runbook 与 hygiene 说明
 |   |-- workflows/                    # 上下文安全 agent workflow 指南
-|   |-- project-optimization-plan.md   # 当前项目优化方案
-|   `-- reports/                      # 优化报告与历史审计归档
+|   `-- project-optimization-plan.md   # 当前项目优化方案
 |-- fixtures/                         # registry 多 entry fixture
 |-- schemas/                          # registry source / marketplace / metadata / plugin schemas
 |-- scripts/                          # 本地和 CI 校验脚本
@@ -272,8 +278,8 @@ llm-plugins-fusion/
 | [仓库文档总索引](./docs/README.md) | `docs/` 目录结构、文档清单和维护规则 | 查找公开仓库文档 |
 | [Getting Started](./docs/getting-started.md) | 安装、`/route`、五主命令、Codex 前置条件和常见失败处理 | 新用户最短路径 |
 | [nova-plugin 文档索引](./nova-plugin/docs/README.md) | 文档结构、命令文档覆盖、维护规则 | 先找入口 |
-| [AGENTS.md](./AGENTS.md) | Codex 和通用 AI coding agent 的仓库规则 | Agent 在本仓库工作前读取 |
-| [CLAUDE.md](./CLAUDE.md) | Claude Code 的仓库规则 | Claude Code 在本仓库工作前读取 |
+| [CLAUDE.md](./CLAUDE.md) | Claude Code 的仓库级规范和共享事实源 | Claude Code 在本仓库工作前读取 |
+| [AGENTS.md](./AGENTS.md) | Codex 和通用 AI coding agent 的轻量适配规则 | 非 Claude agent 在本仓库工作前读取 |
 | [CONTRIBUTING.md](./CONTRIBUTING.md) | PR、marketplace entry、命令/skill 维护规则 | 准备贡献或改结构 |
 | [CHANGELOG.md](./CHANGELOG.md) | 版本历史和 unreleased 变更 | 查版本影响 |
 | [ROADMAP.md](./ROADMAP.md) | 当前路线图、非目标和维护规则 | 规划后续工作 |
@@ -288,7 +294,6 @@ llm-plugins-fusion/
 | [Workbench consumer template](./docs/consumers/workbench-template.md) | 私有工作区目录、命名、checkpoint 和 handoff 规则 | 长任务过程资产沉淀 |
 | [Redacted examples](./docs/examples/README.md) | 脱敏 Java backend 和 frontend workflow 示例 | 编写私有 profile 或 handoff 模板 |
 | [Workflow evaluation examples](./docs/examples/workflow-evaluation.md) | 五阶段 workflow 的公开安全样例、rubric 和失败信号 | 验证命令输出质量 |
-| [Workflow evaluation record](./docs/examples/workflow-evaluation-record-2026-05-12.md) | `v2.2.0` 五阶段 workflow evaluation fixture 已准备，人工命令执行仍待办 | 发布前 workflow 质量证据 |
 | [Context-safe workflows](./docs/workflows/context-safe-agent-workflows.md) | 防上下文膨胀的 review、fix、文档和交付闭环 | 大任务拆分与断点续跑 |
 | [Thin harness, fat skills doctrine](./docs/workflows/thin-harness-fat-skills.md) | 判定脚本、skill、prompt、pack 和 consumer profile 的沉淀边界 | 把重复 agent 工作流转成项目资产 |
 | [Prompt template library](./docs/prompts/README.md) | Codex、Claude Code 和通用交付文档 prompt 模板 | 复制到私有 consumer 项目后定制 |
@@ -302,7 +307,7 @@ llm-plugins-fusion/
 | [Plugin-aware routing](./docs/agents/PLUGIN_AWARE_ROUTING.md) | enhanced / fallback mode 与 pack 启用规则 | 维护 pack 路由 |
 | [项目优化方案](./docs/project-optimization-plan.md) | 当前项目定位、可靠性、易用性、维护性和发布推广优化计划 | 规划后续优化 |
 | [Marketplace catalog](./docs/marketplace/catalog.md) | 由 registry 生成的当前插件 catalog 与兼容证据 | 浏览 marketplace entry |
-| [Marketplace portal IA](./docs/marketplace/portal-information-architecture.md) | 市场门面信息架构、数据源和 vNext / v2.0.0 / v2.1.0 / v2.2.0 / v3.0.0 边界 | 评估 deferred portal 边界 |
+| [Marketplace portal IA](./docs/marketplace/portal-information-architecture.md) | 市场门面信息架构、数据源、当前 `v2.2.0` 单插件边界和 deferred `v3.0.0` 边界 | 评估 deferred portal 边界 |
 | [v3 readiness evidence](./docs/marketplace/v3-readiness-evidence.md) | 多插件目录和 public portal 是否应启动的证据台账 | 评估 v3.0.0 是否可进入计划 |
 | [Registry author workflow](./docs/marketplace/registry-author-workflow.md) | 新增插件 entry、scaffold dry-run、profile 与校验流程 | 插件作者与维护者 |
 | [Compatibility matrix](./docs/marketplace/compatibility-matrix.md) | Claude Code、Codex CLI、Bash、Node.js 与 enhanced tools 前置条件 | 评审兼容性 |
@@ -310,9 +315,6 @@ llm-plugins-fusion/
 | [Security review route](./docs/marketplace/security-review-route.md) | 安全敏感插件变更的评审路径和最小检查 | 安全评审 |
 | [Release hygiene](./docs/releases/release-hygiene.md) | tag/version 同步、生成产物漂移、changelog 与发布前 review | 发布准备 |
 | [Release evidence template](./docs/releases/release-evidence-template.md) | release/promotion 前的环境、tag、校验和 skipped 记录模板 | 发布证据留档 |
-| [v2.2.0 release evidence draft](./docs/releases/release-evidence-v2.2.0.md) | `v2.2.0` release evidence 草稿，记录 exact tag、plugin install smoke 和人工步骤 pending | 发布前阻断项跟踪 |
-| [vNext release decision](./docs/releases/vnext-release-decision.md) | vNext 版本级别与兼容性矩阵 | 发布决策 |
-| [v2.0.0 manual release steps](./docs/releases/v2.0.0-manual-release-steps.md) | 人工发布、打 tag、GitHub Release 校验与失败处理步骤 | 发布执行 |
 | [Capability packs](./nova-plugin/packs/README.md) | 8 个领域能力包索引 | 维护 packs |
 | [English overview](./nova-plugin/docs/overview/README.en.md) | English project overview | English readers |
 
@@ -326,8 +328,11 @@ llm-plugins-fusion/
 - `.claude-plugin/marketplace.metadata.json`：生成的仓库本地 metadata
 - `docs/marketplace/catalog.md`：由 registry 生成的 Markdown catalog
 - `CHANGELOG.md`
-- `package.json`：维护者便捷脚本；不声明 `check` / `lint` / `test` / `build`
-  脚本名，避免被 `run-project-checks.sh` 的 package script discovery 重复执行
+- `package.json`：维护者便捷脚本（`validate`、`validate:docs`、
+  `validate:schemas`、`validate:runtime`、`validate:regression`、
+  `scan:distribution`、`scaffold:consumer`）；不声明 `check` / `lint` /
+  `test` / `build` 脚本名，避免被 `run-project-checks.sh` 的 package script
+  discovery 重复执行
 
 Command 与 skill 必须一对一：
 

@@ -221,7 +221,7 @@ Capability packs: `java`, `security`, `dependency`, `docs`, `release`, `marketpl
 
 | Layer | Current sources | Maintenance focus |
 | --- | --- | --- |
-| Memory | `AGENTS.md`, `CLAUDE.md`, `docs/consumers/` | Repository rules, consumer profile boundaries, public/private information separation |
+| Memory | `CLAUDE.md`, `AGENTS.md`, `docs/consumers/` | Claude guidance source, non-Claude agent adapter, consumer profile boundaries, public/private information separation |
 | Skills | `nova-plugin/skills/`, `nova-plugin/commands/` | One-to-one command / skill mapping, parameters, safety boundaries, and output contracts |
 | Guardrails | `nova-plugin/hooks/`, `scripts/validate-*.mjs` | Deterministic hooks, schema, frontmatter, docs, and release validation |
 | Delegation | `nova-plugin/agents/`, `nova-plugin/packs/` | 6 core agents, 8 capability packs, enhanced / fallback routing |
@@ -241,7 +241,7 @@ llm-plugins-fusion/
 |   |-- skills/                       # 21 nova-* skills + _shared policies
 |   |-- agents/                       # 6 core active agents
 |   |-- packs/                        # 8 capability pack docs
-|   |-- docs/                         # user docs, command docs, architecture, history
+|   |-- docs/                         # user docs, command docs, and current architecture notes
 |   `-- hooks/                        # Claude Code hook config and scripts
 |-- docs/
 |   |-- README.md                     # repository-level documentation index
@@ -252,8 +252,7 @@ llm-plugins-fusion/
 |   |-- prompts/                      # public-safe copyable prompt templates
 |   |-- releases/                     # release decisions, runbook, and hygiene docs
 |   |-- workflows/                    # context-safe agent workflow guidance
-|   |-- project-optimization-plan.md   # current project optimization plan
-|   `-- reports/                      # optimization reports and historical audit archive
+|   `-- project-optimization-plan.md   # current project optimization plan
 |-- fixtures/                         # registry multi-entry fixture
 |-- schemas/                          # registry source / marketplace / metadata / plugin schemas
 |-- scripts/                          # local and CI validation scripts
@@ -273,8 +272,8 @@ llm-plugins-fusion/
 | --- | --- | --- |
 | [Repository docs index](../../../docs/README.md) | `docs/` directory map, document inventory, and maintenance rules | Finding public repository docs |
 | [nova-plugin docs index](../README.md) | Docs structure, command coverage, maintenance rules | First navigation point |
-| [AGENTS.md](../../../AGENTS.md) | Repository rules for Codex and generic AI coding agents | Agent work in this repository |
-| [CLAUDE.md](../../../CLAUDE.md) | Repository rules for Claude Code | Claude Code work in this repository |
+| [CLAUDE.md](../../../CLAUDE.md) | Canonical repository guidance for Claude Code and shared project facts | Claude Code work in this repository |
+| [AGENTS.md](../../../AGENTS.md) | Lightweight Codex and generic AI-agent adapter | Non-Claude agent work in this repository |
 | [CONTRIBUTING.md](../../../CONTRIBUTING.md) | PR, marketplace entry, and command/skill maintenance rules | Contributing or changing structure |
 | [CHANGELOG.md](../../../CHANGELOG.md) | Version history and unreleased changes | Understanding version impact |
 | [ROADMAP.md](../../../ROADMAP.md) | Roadmap, non-goals, and maintenance rules | Planning follow-up work |
@@ -300,7 +299,7 @@ llm-plugins-fusion/
 | [Core agent routing](../../../docs/agents/ROUTING.md) | Routing rules for 6 core agents and capability packs | Choosing or maintaining agents |
 | [Plugin-aware routing](../../../docs/agents/PLUGIN_AWARE_ROUTING.md) | Enhanced / fallback mode and pack activation rules | Maintaining pack routing |
 | [Marketplace catalog](../../../docs/marketplace/catalog.md) | Generated plugin catalog and compatibility evidence | Browsing marketplace entries |
-| [Marketplace portal IA](../../../docs/marketplace/portal-information-architecture.md) | Marketplace portal information architecture, data sources, and vNext / v2.0.0 / v2.1.0 / v2.2.0 / v3.0.0 boundaries | Evaluating the deferred portal boundary |
+| [Marketplace portal IA](../../../docs/marketplace/portal-information-architecture.md) | Marketplace portal information architecture, data sources, current `v2.2.0` single-plugin boundary, and deferred `v3.0.0` boundary | Evaluating the deferred portal boundary |
 | [v3 readiness evidence](../../../docs/marketplace/v3-readiness-evidence.md) | Evidence ledger for whether multi-plugin directories or a public portal should start | Evaluating whether v3.0.0 should move into planning |
 | [Registry author workflow](../../../docs/marketplace/registry-author-workflow.md) | Plugin entry updates, scaffold dry-run, profiles, and validation flow | Plugin authors and maintainers |
 | [Compatibility matrix](../../../docs/marketplace/compatibility-matrix.md) | Claude Code, Codex CLI, Bash, Node.js, and optional enhanced tools | Reviewing compatibility |
@@ -308,7 +307,6 @@ llm-plugins-fusion/
 | [Security review route](../../../docs/marketplace/security-review-route.md) | Security-sensitive plugin change route and minimum checks | Security review |
 | [Release hygiene](../../../docs/releases/release-hygiene.md) | Tag/version sync, generated drift, changelog, and pre-release review | Release preparation |
 | [Release evidence template](../../../docs/releases/release-evidence-template.md) | Environment, tag, validation, and skipped-check evidence before release or promotion | Release evidence capture |
-| [vNext release decision](../../../docs/releases/vnext-release-decision.md) | vNext release level and compatibility matrix | Release decision |
 | [Capability packs](../../packs/README.md) | Index for 8 domain capability packs | Maintaining packs |
 
 ## Maintenance

@@ -17,16 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   当前文档清单、归档边界和文档维护规则。
 - 新增 `docs/getting-started.md` 极简上手文档，聚焦安装、`/route`、五主命令、
   Codex 前置条件和常见失败处理。
-- 新增 `docs/examples/workflow-evaluation-record-2026-05-12.md` 五阶段 workflow
-  evaluation 草稿，明确人工命令执行仍为 pending。
-- 新增 `docs/releases/release-evidence-v2.2.0.md` 正式 release evidence 草稿，
-  将 exact tag、plugin install smoke、GitHub Release 和人工 workflow
-  evaluation 记录为 blocker/pending。
-- 新增 `docs/agents/archive-context-measurement-2026-05-12.md` archive token
-  pressure pending record，当前决策为 keep archive in place。
 - 新增无第三方依赖的 `package.json` 维护者便捷入口，提供 `validate`、
-  `validate:docs`、`validate:schemas`、`validate:regression` 和
-  `scan:distribution`，并避免 `check` / `lint` / `test` / `build` 脚本名。
+  `validate:docs`、`validate:schemas`、`validate:runtime`、
+  `validate:regression`、`scan:distribution` 和 `scaffold:consumer`，并避免
+  `check` / `lint` / `test` / `build` 脚本名。
 - 新增 `scripts/scaffold-consumer-profile.mjs`，支持从 redacted consumer
   templates dry-run 或 `--write` 初始化 `java-backend`、`frontend`、`workbench`
   profile。
@@ -44,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   allowlist。
 - 在根 README、英文 overview、`nova-plugin/docs/README.md`、`AGENTS.md`
   和 `CLAUDE.md` 中补充仓库文档总索引与根目录文档入口，减少跨目录导航分散。
+- 将 `AGENTS.md` 收敛为 Codex / 通用 agent 适配层，引用 `CLAUDE.md`
+  承载共享仓库规范，避免两个 agent 规范文件大段重复。
 - 将 `run-project-checks.sh` 从字符串命令执行改为显式 task dispatcher，移除
   shell `eval`，同时保持 repo checks、package script discovery、report file
   和 lint/test/build/all 模式。
@@ -53,6 +49,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 收敛 `2.2.0` release-ready 事实：在正式 tag、隔离环境 install smoke、
   GitHub Release 和人工 workflow evaluation 完成前，不把当前 snapshot 描述为
   stable release。
+
+### Removed
+- 删除当前交付不再需要的中间、历史和临时文档，包括 retired
+  `.claude/agents/` archive、过期 release 决策/证据草稿、临时 workflow
+  evaluation 记录、历史报告归档和 `nova-plugin/docs/history/` 历史优化记录；
+  保留当前 README、索引、规范、release hygiene、evidence template、routing
+  和 marketplace 文档。
 
 ## [2.2.0] - 2026-05-12
 
