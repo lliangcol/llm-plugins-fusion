@@ -15,7 +15,7 @@ consumer fixture before this can be used as release-quality workflow evidence.
 ```text
 Date: 2026-05-12
 Evaluator: pending manual evaluator
-Target commit: pending; current worktree has uncommitted changes
+Target commit: pending; record exact disposable fixture commit before command execution
 Exact tag: none; local v2.2.0 tag not present
 Plugin version: 2.2.0
 Claude Code version: pending

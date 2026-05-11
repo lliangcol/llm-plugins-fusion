@@ -47,7 +47,10 @@ while [[ $# -gt 0 ]]; do
       shift
       ;;
     --report-file)
-      REPORT_FILE="${2:-}"
+      if [[ $# -lt 2 || -z "${2:-}" || "${2:-}" == --* ]]; then
+        die "--report-file 需要路径参数。"
+      fi
+      REPORT_FILE="$2"
       shift 2
       ;;
     -h|--help)
@@ -239,7 +242,7 @@ should_run_phase() {
       ;;
     build)
       [[ "$phase" == "build" ]]
-    ;;
+      ;;
     *)
       return 1
       ;;

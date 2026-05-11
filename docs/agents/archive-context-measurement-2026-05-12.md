@@ -14,7 +14,7 @@ reduction claim is made.
 Date: 2026-05-12
 Evaluator: pending manual Claude Code evaluator
 Claude Code version: pending
-Target commit: 869e12dd0cf42912befda7b721295bafc7a69c7c plus current uncommitted working tree
+Target commit: pending; record `git rev-parse HEAD` when measurement is actually run
 Exact tag: none; local v2.2.0 tag not present
 Before path: .claude/agents/archive/
 After path tested: not tested

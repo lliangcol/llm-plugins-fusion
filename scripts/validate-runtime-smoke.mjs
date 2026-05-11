@@ -132,6 +132,11 @@ run('run-project-checks.sh rejects unknown args', [
   '--definitely-invalid',
 ], { expectFailure: true, outputPattern: /未知参数/ });
 
+run('run-project-checks.sh requires report-file path', [
+  'nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh',
+  '--report-file',
+], { expectFailure: true, outputPattern: /--report-file/ });
+
 assertFileDoesNotMatch(
   'run-project-checks.sh uses explicit task dispatcher',
   'nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh',

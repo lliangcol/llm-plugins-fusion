@@ -23,6 +23,10 @@ dist/
 
 # Env
 .env
+.env.*
+!.env.example
+!.env.template
+!.env.sample
 .envrc
 
 # Claude

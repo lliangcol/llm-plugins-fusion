@@ -3,15 +3,15 @@
 Status: draft
 Date: 2026-05-12
 
-This evidence records a local validation pass for the current unreleased working
-tree. It is not release evidence for a stable tag and must not be used to
-promote the current branch as a published release.
+This evidence records a historical local validation pass for an unreleased
+working tree snapshot. It is not release evidence for a stable tag and must not
+be used to promote the current branch as a published release.
 
 ## Release Target
 
 ```text
 Release or promotion target: unreleased snapshot only
-Commit: 869e12dd0cf42912befda7b721295bafc7a69c7c plus current uncommitted working tree
+Commit: historical validation target was 869e12dd0cf42912befda7b721295bafc7a69c7c plus then-uncommitted work; rerun evidence and record `git rev-parse HEAD` for the current branch
 Exact tag: none
 Plugin version: 2.2.0
 Registry last-updated: 2026-05-12

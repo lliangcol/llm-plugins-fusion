@@ -14,7 +14,7 @@ stable release.
 
 ```text
 Release or promotion target: v2.2.0 release candidate / release-ready line
-Commit: 869e12dd0cf42912befda7b721295bafc7a69c7c plus current uncommitted working tree
+Commit: pending exact release commit; fill with `git rev-parse HEAD` when final release evidence is collected
 Exact tag: none; local v2.2.0 tag not present
 Plugin version: 2.2.0
 Registry last-updated: 2026-05-12
@@ -113,5 +113,5 @@ Not applicable reason: not applicable; 2.2.0 changes workflow onboarding and evi
 Promote / do not promote: Do not promote yet / pending manual steps
 Reason: exact v2.2.0 tag, plugin install smoke in isolated environment, GitHub Release, and manual workflow evaluation are pending
 Known limitations: this draft records release readiness work, not a published stable release
-Follow-up: commit validated changes, create and push v2.2.0 tag manually, run CI/release workflow, run plugin install smoke in isolation, and complete workflow evaluation
+Follow-up: commit any final validated changes, create and push v2.2.0 tag manually, run CI/release workflow, run plugin install smoke in isolation, and complete workflow evaluation
 ```
