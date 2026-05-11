@@ -1,8 +1,8 @@
 # Project Optimization Plan
 
 Status: active
-Date: 2026-05-10
-Scope: post-`v2.1.0` optimization roadmap for `llm-plugins-fusion`
+Date: 2026-05-12
+Scope: post-`v2.2.0` optimization roadmap for `llm-plugins-fusion`
 
 ## Executive Summary
 
@@ -12,9 +12,12 @@ framework. Promote released tags, not unreleased `main` snapshots. Keep
 deferred until real maintenance pressure appears.
 
 This document is the active optimization record. Tracks 1 through 5 have been
-implemented in the current unreleased work. Track 6 remains conditional because
-archive movement is only justified after Claude Code context measurement proves
-token pressure.
+implemented for the `v2.2.0` release-ready work. Track 6 remains conditional
+because archive movement is only justified after Claude Code context
+measurement proves token pressure. The 2026-05-12 unattended P0-P2 pass added
+release evidence drafts, pending workflow/archive measurement records,
+maintainer npm shortcuts, consumer profile scaffolding, regression checks, and
+expanded distribution-risk scanning without creating tags or releases.
 
 Primary optimization sequence:
 
@@ -29,19 +32,21 @@ Primary optimization sequence:
 
 - `nova-plugin` is the only production plugin. Multi-plugin behavior is covered
   by registry fixtures, not by production plugin directories.
-- `v2.1.0` is the latest released line. Current `main` may contain unreleased
-  documentation work and must not be promoted as stable release content.
+- `v2.2.0` is the current release-ready line. Stable promotion still requires
+  an exact `v2.2.0` tag; moving `main` must not be promoted as stable release
+  content.
 - README already presents the main workflow path:
   `/explore` -> `/produce-plan` -> `/review` -> `/implement-plan` ->
   `/finalize-work`.
 - Existing validation covers schemas, generated registry output drift, registry
   fixtures, Claude compatibility, command/skill frontmatter, active agents,
-  packs, hooks configuration, documentation links, version references, current
-  minor support range, stale active planning labels, and active documentation
-  inventory counts.
+  packs, hooks configuration, runtime smoke, distribution risk scanning,
+  regression checks for key validation contracts, documentation links, version
+  references, current minor support range, stale active planning labels, and
+  active documentation inventory counts.
 - On Windows without Bash, `node scripts/validate-all.mjs` may report
-  `skipped=1` for local hook shell syntax checks. CI/Linux must still run the
-  Bash syntax gate before release or promotion.
+  skipped Bash-dependent checks for local hook shell syntax and runtime smoke.
+  CI/Linux must still run the Bash gates before release or promotion.
 
 ## Optimization Tracks
 
@@ -181,15 +186,16 @@ Acceptance Criteria:
 
 Status: completed in current unreleased work
 
-Why: Local validation can pass with a skipped Bash syntax check on Windows, and
-that status is easy to misreport.
+Why: Local validation can pass with skipped Bash-dependent checks on Windows,
+and that status is easy to misreport.
 
 Existing Coverage:
 
-- `validate-all` reports `skipped=1` when Bash is unavailable on Windows.
-- Release hygiene states that skipped local hook syntax checks must not be
-  described as locally passed.
-- CI/release workflows run Bash syntax checks.
+- `validate-all` reports skipped Bash-dependent checks when Bash is unavailable
+  on Windows.
+- Release hygiene states that skipped local hook syntax and runtime smoke checks
+  must not be described as locally passed.
+- CI/release workflows run Bash syntax and runtime smoke checks.
 
 Completed Work:
 
@@ -202,8 +208,9 @@ Completed Work:
 
 Acceptance Criteria:
 
-- Release evidence cannot confuse `skipped=1` with a full local pass.
-- CI/Linux remains the authoritative Bash syntax gate.
+- Release evidence cannot confuse skipped Bash-dependent checks with a full
+  local pass.
+- CI/Linux remains the authoritative Bash syntax and runtime smoke gate.
 - Operators can tell whether they validated an exact tag or unreleased `main`.
 
 ### 6. Archive Token Pressure
@@ -224,6 +231,8 @@ Existing Coverage:
 Remaining Work:
 
 - Measure Claude Code `/context` before and after any archive movement.
+- Current pending record:
+  `docs/agents/archive-context-measurement-2026-05-12.md`.
 - If token pressure is confirmed, move the archive to a less-scanned path and
   update references and verification scripts.
 - Do not treat archived agents as active agents during the migration.
@@ -254,8 +263,8 @@ A release or promotion pass is stable only when all of these are true:
 - Plugin version, registry source, generated marketplace files, generated
   catalog, README badge, changelog, and release date are synchronized.
 - `node scripts/validate-all.mjs` passes.
-- If local Windows validation reports `skipped=1`, CI/Linux release validation
-  shows hook shell syntax checks passed.
+- If local Windows validation reports skipped Bash-dependent checks, CI/Linux
+  release validation shows hook shell syntax and runtime smoke checks passed.
 - `git diff --check` passes.
 - Active docs do not describe deferred `v3.0.0`, public portal, or production
   multi-plugin migration as current capability.
@@ -276,6 +285,9 @@ For broad changes:
 ```bash
 node scripts/generate-registry.mjs --write
 node scripts/validate-all.mjs
+node scripts/validate-runtime-smoke.mjs
+node scripts/scan-distribution-risk.mjs
+node scripts/validate-regression.mjs
 git diff --check
 ```
 
@@ -293,5 +305,6 @@ bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 
-If Bash is unavailable on Windows and `validate-all` reports `skipped=1`, record
-that limitation explicitly and rely on CI/Linux for the hook syntax gate.
+If Bash is unavailable on Windows and `validate-all` reports skipped
+Bash-dependent checks, record that limitation explicitly and rely on CI/Linux
+for the hook syntax and runtime smoke gates.

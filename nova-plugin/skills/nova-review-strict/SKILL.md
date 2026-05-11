@@ -65,6 +65,31 @@ metadata:
 - Use `/review-strict` as a compatibility shortcut for strict review.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
+## Common Rationalizations
+
+| Rationalization | Required Response |
+| --- | --- |
+| "This is small enough to skip validation." | Run the focused check or state why it is unavailable. |
+| "The existing output contract is obvious." | Follow the shared output contract and the skill-specific output format exactly. |
+| "The nearby cleanup is harmless." | Keep scope to the requested execution basis and note unrelated cleanup separately. |
+| "A plausible result is enough." | Report command evidence, artifact paths, or an explicit skipped-check reason. |
+
+## Red Flags
+
+- Scope expands beyond the requested execution basis.
+- Validation is claimed without command evidence, artifact evidence, or a skipped-check reason.
+- Existing user changes are overwritten, normalized, or reformatted without being part of the task.
+- The output omits required residual risk, deviations, or follow-up notes.
+- The skill uses tools outside its declared safety boundary.
+
+## Verification
+
+- [ ] Inputs were resolved through the shared parameter policy.
+- [ ] Safety preflight was respected before side effects.
+- [ ] Relevant checks were run or explicitly skipped with reason.
+- [ ] Existing user changes were preserved unless explicitly in scope.
+- [ ] Output follows the shared output contract and skill-specific format.
+
 ## Skill-Specific Guidance
 
 ### Purpose

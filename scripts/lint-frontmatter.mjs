@@ -162,7 +162,14 @@ function hasSideEffectTool(tools) {
   return splitTools(tools).some((tool) => ['Write', 'Edit', 'MultiEdit', 'Bash'].includes(tool));
 }
 
-function lintToolRisk(rel, toolsValue, destructiveActions) {
+function hasReadOnlyBashGuard(src) {
+  return /must not\s+(?:commit|push|merge|rebase|modify|write)/i.test(src)
+    || /do not\s+(?:commit|push|merge|rebase|modify|write|edit)/i.test(src)
+    || /no (?:code|project) changes/i.test(src)
+    || /不修改|不得.*(?:提交|推送|合并|变基|写)/.test(src);
+}
+
+function lintToolRisk(rel, toolsValue, destructiveActions, src = '') {
   const tools = new Set(splitTools(toolsValue));
   const level = String(destructiveActions);
   if ((tools.has('Write') || tools.has('Edit') || tools.has('MultiEdit')) && level === 'none') {
@@ -170,6 +177,9 @@ function lintToolRisk(rel, toolsValue, destructiveActions) {
   }
   if (tools.has('MultiEdit') && !['medium', 'high'].includes(level)) {
     recordError(rel, 'MultiEdit requires destructive-actions medium or high');
+  }
+  if (tools.has('Bash') && level === 'none' && !hasReadOnlyBashGuard(src)) {
+    recordWarning(rel, 'Bash with destructive-actions none must be read-only probing only; use low when Bash writes artifacts or invokes external review/verify tools');
   }
 }
 
@@ -203,7 +213,7 @@ function lintCommands() {
     if (!obj['allowed-tools']) recordError(rel, 'missing allowed-tools');
     else if (typeof obj['allowed-tools'] !== 'string') recordError(rel, 'allowed-tools must be a space-separated string');
 
-    lintToolRisk(rel, obj['allowed-tools'], obj['destructive-actions']);
+    lintToolRisk(rel, obj['allowed-tools'], obj['destructive-actions'], src);
 
     if (!obj.invokes || typeof obj.invokes !== 'object') {
       recordError(rel, 'missing invokes.skill');
@@ -251,7 +261,7 @@ function lintSkills() {
     if (!obj['allowed-tools']) recordError(rel, 'missing allowed-tools');
     else if (typeof obj['allowed-tools'] !== 'string') recordError(rel, 'allowed-tools must be a space-separated string');
 
-    lintToolRisk(rel, obj['allowed-tools'], obj.metadata?.novaPlugin?.destructiveActions);
+    lintToolRisk(rel, obj['allowed-tools'], obj.metadata?.novaPlugin?.destructiveActions, src);
 
     for (const heading of STANDARD_SKILL_HEADINGS) {
       const count = countHeading(src, heading);

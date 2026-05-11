@@ -110,10 +110,13 @@ Claude Code 在使用主技能时应遵循：
 - 当前仓库会优先覆盖：
   - `scripts/verify-agents.sh`
   - `node scripts/validate-schemas.mjs`
+  - `node scripts/validate-registry-fixtures.mjs`
   - `node scripts/validate-claude-compat.mjs`
   - `node scripts/lint-frontmatter.mjs`
   - `node scripts/validate-packs.mjs`
   - `node scripts/validate-hooks.mjs`
+  - `node scripts/validate-runtime-smoke.mjs`
+  - `node scripts/scan-distribution-risk.mjs`
   - `node scripts/validate-docs.mjs`
   - hook 脚本 `bash -n` 语法检查（当 Bash 可用时）
 
@@ -196,6 +199,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-fix/scripts/codex-verify.sh
 
 - 先确认仓库脚本是否存在且本地依赖齐全
 - Node 项目需要 `node` 与安装完成的依赖目录
+- 当前仓库存在 Node 校验脚本时，如果执行脚本的 Bash 环境没有 `node`，相关检查会失败而不是静默跳过
 - 可先单独执行被探测到的命令确认环境
 
 ## 11. Win11 + WSL 使用说明

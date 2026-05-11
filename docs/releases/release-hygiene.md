@@ -1,7 +1,7 @@
 # Release Hygiene
 
 Status: active
-Date: 2026-05-08
+Date: 2026-05-11
 
 This document defines the release and pre-release checks for marketplace and
 plugin changes. It complements the concrete `2.0.0` release runbook in
@@ -43,6 +43,9 @@ For broad release or workflow changes:
 ```bash
 node scripts/generate-registry.mjs --write
 node scripts/validate-all.mjs
+node scripts/validate-runtime-smoke.mjs
+node scripts/scan-distribution-risk.mjs
+node scripts/validate-regression.mjs
 git diff --check
 ```
 
@@ -58,8 +61,14 @@ bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 
 If Bash is not available on Windows, `node scripts/validate-all.mjs` may report
-`skipped=1`; do not describe hook syntax as locally passed in that case. CI/Linux
-must run the Bash syntax checks.
+skipped Bash-dependent checks; do not describe hook syntax or runtime smoke as
+locally passed in that case. CI/Linux must run the Bash syntax and runtime smoke
+checks.
+
+Run `node scripts/validate-plugin-install.mjs` only in CI or an isolated
+test-user environment. It may install or update user-scope Claude plugin state,
+so unattended local release evidence should record it as pending instead of
+running it by default.
 
 ## Review Before Release
 
@@ -73,6 +82,15 @@ Before tagging, search for:
 - Changelog/date/version drift.
 - Generated marketplace, metadata, or catalog drift.
 - `.codex/` runtime artifacts.
+- Runtime smoke coverage for distributed Bash/Codex helper scripts.
+- Distribution risk scan output for active private paths, credentials, JWTs,
+  npm tokens, cloud provider keys, private network addresses, internal
+  endpoints, private SSH repository URLs, and real `.env` values.
+- Regression coverage for registry generation, distribution risk scanning, and
+  command/skill/docs drift.
+- Plugin install smoke evidence from CI or an isolated test-user environment,
+  never from an unattended run that may mutate the operator's user-scope
+  Claude plugin installation.
 - For minor releases, whether the five primary commands were manually evaluated
   with `docs/examples/workflow-evaluation.md` and recorded with
   `docs/examples/workflow-evaluation-record-template.md`, or why that evidence

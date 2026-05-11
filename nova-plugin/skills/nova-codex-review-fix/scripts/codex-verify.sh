@@ -67,6 +67,7 @@ FINAL_PROMPT="${ARTIFACTS_DIR}/prompt.verify.md"
 PATCH_FILE="${ARTIFACTS_DIR}/verify.diff.patch"
 STATUS_FILE="${ARTIFACTS_DIR}/verify.git-status.txt"
 FILES_FILE="${ARTIFACTS_DIR}/verify.changed-files.txt"
+RUNTIME_FILE="${ARTIFACTS_DIR}/verify.runtime-environment.txt"
 
 if [[ -n "$CHECKS_FILE" ]]; then
   CHECKS_FILE="$(resolve_path "$CHECKS_FILE")"
@@ -83,12 +84,14 @@ else
   done
 fi
 
+write_runtime_environment "${RUNTIME_FILE}"
 git status --short > "${STATUS_FILE}"
 {
   git diff --binary --find-renames "${BASE_BRANCH}...HEAD" || true
   printf '\n### worktree diff\n'
   git diff --binary --find-renames HEAD || true
 } > "${PATCH_FILE}"
+write_untracked_diff "${PATCH_FILE}"
 {
   git diff --name-only "${BASE_BRANCH}...HEAD" || true
   git diff --name-only HEAD || true
@@ -107,12 +110,13 @@ $(cat "${PROMPT_TEMPLATE}")
 - Git 状态文件: ${STATUS_FILE}
 - 当前变更文件列表: ${FILES_FILE}
 - 当前 patch 文件: ${PATCH_FILE}
+- 运行环境文件: ${RUNTIME_FILE}
 
 请先读取 review 文件；如果提供了 checks 文件，也要把它纳入验证依据。直接输出 Markdown。
 EOF
 
 mapfile -t CODEX_ARGS < <(codex_exec_args "$ROOT")
-codex "${CODEX_ARGS[@]}" "${VERIFY_FILE}" - < "${FINAL_PROMPT}"
+"${CODEX_BIN}" "${CODEX_ARGS[@]}" "${VERIFY_FILE}" - < "${FINAL_PROMPT}"
 
 [[ -s "${VERIFY_FILE}" ]] || die "Codex 未生成 verify.md。"
 write_latest_pointer "$OUTPUT_DIR"

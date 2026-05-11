@@ -36,7 +36,7 @@ Usage: codex-review.sh [--base <branch>] [--output-dir <dir>] [--only-staged] [-
   --base         基线分支，默认自动识别
   --output-dir   输出目录，默认 .codex/codex-review-fix/<timestamp>
   --only-staged  仅审查暂存区改动
-  --full         在分支 diff 基础上额外包含未提交改动与未跟踪文件摘要
+  --full         在分支 diff 基础上额外包含未提交改动与未跟踪文件内容
 EOF
       exit 0
       ;;
@@ -68,10 +68,12 @@ STATUS_FILE="${ARTIFACTS_DIR}/git-status.txt"
 FILES_FILE="${ARTIFACTS_DIR}/changed-files.txt"
 SCOPE_FILE="${ARTIFACTS_DIR}/review.scope.txt"
 UNTRACKED_FILE="${ARTIFACTS_DIR}/untracked-files.txt"
+RUNTIME_FILE="${ARTIFACTS_DIR}/runtime-environment.txt"
 
 info "仓库根目录: ${ROOT}"
 info "输出目录: ${OUTPUT_DIR}"
 
+write_runtime_environment "${RUNTIME_FILE}"
 git status --short > "${STATUS_FILE}"
 : > "${UNTRACKED_FILE}"
 
@@ -88,6 +90,7 @@ elif [[ "$FULL_MODE" == true ]]; then
     printf '\n### staged and unstaged worktree diff\n'
     git diff --binary --find-renames HEAD || true
   } > "${PATCH_FILE}"
+  write_untracked_diff "${PATCH_FILE}"
   {
     git diff --name-only "${BASE_BRANCH}...HEAD" || true
     git diff --name-only HEAD || true
@@ -115,12 +118,13 @@ $(cat "${PROMPT_TEMPLATE}")
 - 变更文件列表: ${FILES_FILE}
 - Patch 文件: ${PATCH_FILE}
 - 未跟踪文件列表: ${UNTRACKED_FILE}
+- 运行环境文件: ${RUNTIME_FILE}
 
 请阅读这些文件并产出最终 review 报告，直接输出 Markdown。
 EOF
 
 mapfile -t CODEX_ARGS < <(codex_exec_args "$ROOT")
-codex "${CODEX_ARGS[@]}" "${REVIEW_FILE}" - < "${FINAL_PROMPT}"
+"${CODEX_BIN}" "${CODEX_ARGS[@]}" "${REVIEW_FILE}" - < "${FINAL_PROMPT}"
 
 [[ -s "${REVIEW_FILE}" ]] || die "Codex 未生成 review.md。"
 write_latest_pointer "$OUTPUT_DIR"

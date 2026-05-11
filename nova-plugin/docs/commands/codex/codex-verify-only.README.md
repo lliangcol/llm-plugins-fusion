@@ -5,6 +5,7 @@
 ## 命令定位
 
 - 基于已有 `review.md` 做 Codex verify
+- 输出 `verify.md` 与 `verify.runtime-environment.txt`
 - 适用：修复后复验、多人协作二次确认
 
 ## 参数说明

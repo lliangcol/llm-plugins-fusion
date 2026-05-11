@@ -1,7 +1,7 @@
 # Security Review Route
 
 Status: active
-Date: 2026-05-08
+Date: 2026-05-11
 
 Use this route for marketplace or plugin changes that affect execution risk,
 data exposure, credentials, dependency behavior, hooks, Bash scripts, or
@@ -38,9 +38,10 @@ Run the security review path when a change touches any of these areas:
 | --- | --- |
 | Registry metadata | `node scripts/generate-registry.mjs --write`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs`, `node scripts/validate-claude-compat.mjs` |
 | Command or skill risk | `node scripts/lint-frontmatter.mjs`, command docs review, shared safety preflight review |
+| Distributed Bash/Codex scripts | `node scripts/validate-runtime-smoke.mjs`, runtime environment artifact review, no committed `.codex/` artifacts |
 | Hooks | `node scripts/validate-hooks.mjs`, `bash -n` for both hook scripts when Bash is available |
 | Documentation | `node scripts/validate-docs.mjs` |
-| Broad workflow changes | `node scripts/validate-all.mjs`, `git diff --check` |
+| Broad workflow changes | `node scripts/validate-all.mjs`, `node scripts/scan-distribution-risk.mjs`, `git diff --check` |
 
 ## Reviewer Output
 
@@ -49,5 +50,7 @@ Security review notes should state:
 - The affected plugin entry and maintainer.
 - The risk-level rationale and whether it changed.
 - Sensitive tool, hook, script, network, credential, or dependency behavior.
+- Distribution risk scan result for active private paths, credentials, private
+  network addresses, and internal endpoints.
 - Validation run and any skipped checks, including Bash availability.
 - Residual risk or explicit reason no additional security action is needed.

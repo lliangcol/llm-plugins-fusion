@@ -2,9 +2,9 @@
 /**
  * Run the repository validation suite from one entry point.
  *
- * Bash hook syntax checks are required in CI/Linux. On Windows developer
- * machines without Bash, they are skipped with a warning so local checks can
- * still run.
+ * Bash hook syntax and runtime smoke checks are required in CI/Linux. On
+ * Windows developer machines without Bash, they are skipped with warnings so
+ * local checks can still run.
  */
 
 import { spawnSync } from 'node:child_process';
@@ -136,6 +136,20 @@ function runHookSyntaxChecks() {
   return ok;
 }
 
+function runRuntimeSmoke() {
+  if (!commandExists('bash')) {
+    if (process.platform === 'win32') {
+      console.warn('\nWARNING runtime smoke: bash not found; skipping local Bash runtime smoke checks');
+      skipped += 1;
+      return true;
+    }
+    console.error('\nERROR runtime smoke: bash not found; Bash runtime smoke is required outside Windows');
+    failed += 1;
+    return false;
+  }
+  return runNode('validate runtime smoke', 'scripts/validate-runtime-smoke.mjs');
+}
+
 printEnvironmentSummary();
 runNode('validate schemas', 'scripts/validate-schemas.mjs');
 runNode('validate registry fixtures', 'scripts/validate-registry-fixtures.mjs');
@@ -145,6 +159,9 @@ runAgentVerification();
 runNode('validate packs', 'scripts/validate-packs.mjs');
 runNode('validate hooks', 'scripts/validate-hooks.mjs');
 runHookSyntaxChecks();
+runRuntimeSmoke();
+runNode('scan distribution risk', 'scripts/scan-distribution-risk.mjs');
+runNode('validate regression', 'scripts/validate-regression.mjs');
 runNode('validate docs', 'scripts/validate-docs.mjs');
 
 console.log(`\nSummary: failed=${failed} skipped=${skipped}`);

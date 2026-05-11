@@ -54,6 +54,17 @@ jobs:
           node-version: '20'
       - run: node scripts/validate-claude-compat.mjs
 
+  plugin-install-smoke:
+    name: Plugin Install Smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm install -g @anthropic-ai/claude-code
+      - run: node scripts/validate-plugin-install.mjs
+
   lint-frontmatter:
     name: Lint Frontmatter
     runs-on: ubuntu-latest
@@ -75,6 +86,36 @@ jobs:
       - run: node scripts/validate-hooks.mjs
       - run: bash -n nova-plugin/hooks/scripts/pre-write-check.sh
       - run: bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+
+  validate-runtime-smoke:
+    name: Validate Runtime Smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/validate-runtime-smoke.mjs
+
+  scan-distribution-risk:
+    name: Scan Distribution Risk
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/scan-distribution-risk.mjs
+
+  validate-regression:
+    name: Validate Regression
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/validate-regression.mjs
 
   validate-docs:
     name: Validate Docs

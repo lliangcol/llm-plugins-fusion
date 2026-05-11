@@ -38,6 +38,18 @@ When a skill writes an artifact:
 - Keep artifact content review-ready and self-contained.
 - Use repository-relative paths in the artifact when that improves portability.
 
+When a skill or prompt writes an HTML artifact:
+
+- Report the HTML path and the source artifact or evidence used.
+- State that the HTML is a derived reading artifact unless explicitly approved
+  as source.
+- Provide a concise Markdown summary in chat.
+- Do not paste the full HTML into chat.
+- State skipped validation, unsupported browser assumptions, or unavailable
+  source evidence.
+- Prefer an adjacent Markdown summary or source note when the HTML artifact is
+  meant to be retained.
+
 ## Verification Output
 
 Verification summaries should include:

@@ -11,8 +11,8 @@ contracts, artifact policy, and agent routing boundaries.
 | Command              | Skill name                | Summary                                   | user-invocable | destructive-actions |
 | -------------------- | ------------------------- | ----------------------------------------- | -------------- | ------------------- |
 | `codex-review-fix`   | `nova-codex-review-fix`   | Codex review/fix/verify semi-auto loop    | true           | medium              |
-| `codex-review-only`  | `nova-codex-review-only`  | Codex-driven branch review only           | true           | none                |
-| `codex-verify-only`  | `nova-codex-verify-only`  | Codex verify against existing review file | true           | none                |
+| `codex-review-only`  | `nova-codex-review-only`  | Codex-driven branch review only           | true           | low                 |
+| `codex-verify-only`  | `nova-codex-verify-only`  | Codex verify against existing review file | true           | low                 |
 | `backend-plan`       | `nova-backend-plan`       | Java/Spring 12-section design plan output | true           | low                 |
 | `explore`            | `nova-explore`            | Unified exploration Hub                   | true           | none                |
 | `explore-lite`       | `nova-explore-lite`       | Observer-mode quick exploration           | true           | none                |
@@ -29,14 +29,16 @@ contracts, artifact policy, and agent routing boundaries.
 | `review-lite`        | `nova-review-lite`        | Lightweight review                        | true           | none                |
 | `review-only`        | `nova-review-only`        | Standard-depth review                     | true           | none                |
 | `review-strict`      | `nova-review-strict`      | Strict exhaustive review                  | true           | none                |
+| `route`              | `nova-route`              | Read-only workflow route selection        | true           | none                |
 | `senior-explore`     | `nova-senior-explore`     | Deep exploration + optional export        | true           | low                 |
 
 ## Recommended Entrypoints
 
 1. Use `nova-codex-review-fix` when you need a review -> fix -> verify closed loop with external Codex scripts.
-2. Use `nova-explore` for unified exploration routing; use `nova-senior-explore` for deep analysis.
-3. Use `nova-review` for unified severity-based routing; use `nova-review-lite` for daily quick checks.
-4. Use `nova-produce-plan` for formal docs; use `nova-backend-plan` for Java/Spring-specific design.
+2. Use `nova-route` when the next command, skill, agent, pack, or validation path is unclear.
+3. Use `nova-explore` for unified exploration routing; use `nova-senior-explore` for deep analysis.
+4. Use `nova-review` for unified severity-based routing; use `nova-review-lite` for daily quick checks.
+5. Use `nova-produce-plan` for formal docs; use `nova-backend-plan` for Java/Spring-specific design.
 
 ## Troubleshooting
 

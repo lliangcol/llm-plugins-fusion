@@ -1,0 +1,9 @@
+{
+  "warnings": [
+    {
+      "path": "docs/reports/archive/project-status-audit-2026-04-28.md",
+      "label": "machine-local absolute path",
+      "reason": "Historical audit archive retained for context; scanner output remains redacted."
+    }
+  ]
+}

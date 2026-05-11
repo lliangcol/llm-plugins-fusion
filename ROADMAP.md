@@ -1,6 +1,6 @@
 # Roadmap
 
-最后审阅：2026-05-10
+最后审阅：2026-05-12
 
 本路线图基于当前 `llm-plugins-fusion` 仓库现状制定：仓库定位为公开的
 多项目 AI 工程工作流框架，仍以一个主插件 `nova-plugin` 为核心。当前已经具备
@@ -15,14 +15,14 @@ agents、packs、hooks 和文档的本地/CI 校验体系。
 
 | 领域 | 当前状态 |
 | --- | --- |
-| 发布版本 | `nova-plugin` 当前稳定版本为 `2.1.0`；正式 tag `v2.1.0` 与 GitHub release 已于 2026-05-09 创建。 |
-| 插件能力面 | 20 个 slash commands 与 20 个一对一 `nova-*` skills。 |
+| 发布版本 | `nova-plugin` 当前 release-ready 版本为 `2.2.0`；稳定推广必须使用正式 tag `v2.2.0`，不能用移动 `main`。 |
+| 插件能力面 | 21 个 slash commands 与 21 个一对一 `nova-*` skills。 |
 | Agent 模型 | `nova-plugin/agents/` 中固定 6 个 active core agents；旧 specialist agent 模型已进入 legacy。 |
 | Capability packs | `nova-plugin/packs/` 中固定 8 个 packs，均声明 enhanced mode 与 fallback mode。 |
 | Consumer profiles | `docs/consumers/` 提供公开 profile 契约与脱敏 Java backend / frontend 模板；真实 profile 保存在 consumer 项目本地。 |
 | Redacted examples | `docs/examples/` 提供脱敏 Java backend 与 frontend workflow 示例，不包含真实 consumer 信息。 |
 | Registry 模型 | `.claude-plugin/registry.source.json` 生成 Claude-compatible marketplace 输出、repository-local metadata 和 Markdown catalog。 |
-| 质量门 | `node scripts/validate-all.mjs` 是本地总入口，并包含 registry fixture 校验。 |
+| 质量门 | `node scripts/validate-all.mjs` 是默认本地总入口，并包含 registry fixture、runtime smoke 和分发风险扫描；Claude 插件安装 smoke test 在 CI 或 marketplace consumption 验证中单独运行。 |
 | Marketplace 分发 | marketplace 继续作为安装/分发形式；生成 catalog 满足当前浏览和评审，不启动 public portal。 |
 | 发布决策 | [vNext release decision](docs/releases/vnext-release-decision.md) 已将 active-agent 变化确认为 `2.0.0` major release 兼容边界。 |
 
@@ -102,23 +102,25 @@ node scripts/lint-frontmatter.mjs
 node scripts/validate-docs.mjs
 ```
 
-## Milestone 3: v2.2.0 Trust、维护状态与评审策略
+## Milestone 3: v2.2.0 路由、运行时与分发安全强化
 
-目标时间：registry 作者工作流稳定之后
+目标时间：2026-05
 
-目标：让 marketplace entries 对外部贡献而言可评审、可维护、可追踪风险。
+目标：在保持单插件布局不变的前提下，提高首次路由、Codex Bash 运行时、
+分发安全扫描、consumer 工作台模板和 release evidence 的可靠性。
 
-状态：Completed in `v2.1.0`。原计划单独作为 `v2.2.0` 发布的非破坏性
-trust、维护状态与评审策略工作已合并进 `v2.1.0`；当前没有独立
-`v2.2.0` Unreleased 范围。
+状态：Release-ready / Completed。`v2.2.0` 是非破坏性 minor，新增
+`/route` 路由入口，补强 Codex runtime smoke、分发风险扫描、Claude 插件安装
+smoke、consumer setup 文档、prompt 模板和 workflow handoff 约束。
 
 | 工作项 | 状态 | 验收证据 |
 | --- | --- | --- |
-| Trust policy | Completed | [Trust policy](docs/marketplace/trust-policy.md) 定义 `trust-level`、`risk-level`、`deprecated`、`last-updated`、`maintainer`、`compatibility` 和 `review` 语义与评审要求。 |
-| Contribution checklist | Completed | [`.github/pull_request_template.md`](.github/pull_request_template.md) 要求校验输出、metadata rationale、安全说明和维护 owner；[CONTRIBUTING.md](CONTRIBUTING.md) 链接该流程。 |
-| Compatibility evidence | Completed | `.claude-plugin/registry.source.json` 每个 plugin entry 必填 compatibility evidence；生成的 [Marketplace catalog](docs/marketplace/catalog.md) 展示命令/skill 覆盖、校验状态和前置条件。 |
-| Security review route | Completed | [Security review route](docs/marketplace/security-review-route.md) 基于 security pack、core reviewer/verifier 职责和现有质量门定义安全敏感插件变更路径。 |
-| Release hygiene | Completed | [Release hygiene](docs/releases/release-hygiene.md) 说明 tag/version 同步、生成产物漂移检查、changelog 要求和 Bash skip 说明。 |
+| Read-only route entry | Completed | `/route` 与 `nova-route` 选择下一步 command、skill、core agent、capability packs、必需输入和验证路径。 |
+| Runtime smoke | Completed | `scripts/validate-runtime-smoke.mjs` 校验 Codex helper 语法、help 输出、安全失败路径和跨平台 executable fallback。 |
+| Distribution risk scan | Completed | `scripts/scan-distribution-risk.mjs` 扫描活跃分发内容中的密钥、私有路径、私网地址和内部 endpoint，并对历史归档降级 warning。 |
+| Plugin install smoke | Scripted / pending release evidence | `scripts/validate-plugin-install.mjs` 覆盖 marketplace add/list、plugin validate、user-scope install/update 和版本核对；正式 release evidence 仍需在 CI 或隔离测试用户环境运行，因为它会修改 user-scope Claude 插件安装状态。 |
+| Consumer/workflow guidance | Completed | Consumer setup 文档、Workbench 模板、context-safe workflow、prompt 模板和 agent development stack 文档已加入公共安全边界。 |
+| Release evidence | Completed | Release evidence 模板、unreleased snapshot evidence 和 `validate-all` 环境摘要记录 exact tag、runtime、skipped checks 和分发风险扫描状态。 |
 
 该里程碑应保持非破坏性。如果新的 trust 或 metadata 字段会被 Claude CLI 拒绝，
 字段必须继续留在 repository-local metadata，不应写回 Claude-compatible
@@ -126,12 +128,12 @@ marketplace manifest。
 
 ## Milestone 4: v3.0.0 多插件目录与 public portal 候选
 
-目标时间：只有当 `v2.1.0` 发布后的真实使用情况证明多插件维护确实必要时才启动。
+目标时间：只有当 `v2.2.0` 正式 tag 发布后的真实使用情况证明多插件维护确实必要时才启动。
 
 目标：决定仓库是否需要显式多插件布局，以及公开 portal 是否值得承担维护成本。
 
-状态：Deferred。`v2.1.0` 已经通过 fixture、生成 catalog、metadata evidence
-与评审文档解决当前维护痛点；仓库仍只有一个
+状态：Deferred。`v2.2.0` 继续通过 fixture、生成 catalog、metadata evidence、
+runtime smoke、分发扫描与评审文档解决当前维护痛点；仓库仍只有一个
 主插件、一个 maintainer cadence，且没有多个 plugin owner 或公开 portal 运营压力。
 因此没有证据支持现在启动 breaking 的目录迁移。后续是否激活 `v3.0.0`
 由 [v3 readiness evidence](docs/marketplace/v3-readiness-evidence.md) 记录真实
@@ -149,7 +151,7 @@ marketplace manifest。
 
 | 工作项 | 决策门槛 | 状态 / rationale |
 | --- | --- | --- |
-| Evidence tracking | Required before activation | Active：使用 [v3 readiness evidence](docs/marketplace/v3-readiness-evidence.md) 记录 post-`v2.1.0` 信号；当前证据仍不足以启动 migration。 |
+| Evidence tracking | Required before activation | Active：使用 [v3 readiness evidence](docs/marketplace/v3-readiness-evidence.md) 记录 post-`v2.2.0` 信号；当前证据仍不足以启动 migration。 |
 | 多插件目录布局 | Required | Deferred：当前 `nova-plugin/` 路径仍满足安装和 registry 维护；仅 fixture 覆盖多 entry 生成，不迁移真实目录。 |
 | Public portal | Optional | Deferred：生成的 Markdown catalog 已满足当前浏览与评审需求，不引入 frontend stack 或部署依赖。 |
 | Plugin split | Optional | Deferred：没有真实用户需求证明需要拆出 `nova-core` 或 Codex-loop packaging。 |

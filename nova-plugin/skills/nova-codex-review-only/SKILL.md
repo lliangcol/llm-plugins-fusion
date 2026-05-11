@@ -9,7 +9,7 @@ metadata:
     userInvocable: true
     autoLoad: false
     subagentSafe: true
-    destructiveActions: none
+    destructiveActions: low
 ---
 
 ## Inputs
@@ -26,7 +26,7 @@ metadata:
 - Normalize parameter names to uppercase snake case and map known mode words to `REVIEW_MODE`; do not pass unsupported free-form payload to scripts.
 - Explicit values win over inferred values only when they do not conflict with another explicit value.
 - Apply documented defaults only when unambiguous; probe Git status, base branches, and latest artifacts only for context parameters.
-- Safety-boundary parameters for this skill: none for this skill.
+- Safety-boundary parameters for this skill: none for this skill; artifact writes stay under the script output directory.
 - In non-interactive mode, fail before side effects when required or safety-boundary parameters are missing.
 - Full policy: `nova-plugin/skills/_shared/parameter-resolution.md`.
 
@@ -76,6 +76,31 @@ metadata:
 - Use `/codex-review-only` for the review step only.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
+## Common Rationalizations
+
+| Rationalization | Required Response |
+| --- | --- |
+| "This is small enough to skip validation." | Run the focused check or state why it is unavailable. |
+| "The existing output contract is obvious." | Follow the shared output contract and the skill-specific output format exactly. |
+| "The nearby cleanup is harmless." | Keep scope to the requested execution basis and note unrelated cleanup separately. |
+| "A plausible result is enough." | Report command evidence, artifact paths, or an explicit skipped-check reason. |
+
+## Red Flags
+
+- Scope expands beyond the requested execution basis.
+- Validation is claimed without command evidence, artifact evidence, or a skipped-check reason.
+- Existing user changes are overwritten, normalized, or reformatted without being part of the task.
+- The output omits required residual risk, deviations, or follow-up notes.
+- The skill uses tools outside its declared safety boundary.
+
+## Verification
+
+- [ ] Inputs were resolved through the shared parameter policy.
+- [ ] Safety preflight was respected before side effects.
+- [ ] Relevant checks were run or explicitly skipped with reason.
+- [ ] Existing user changes were preserved unless explicitly in scope.
+- [ ] Output follows the shared output contract and skill-specific format.
+
 ## Skill-Specific Guidance
 
 ### 目的
@@ -87,6 +112,7 @@ metadata:
 1. 先确认 `CLAUDE_PLUGIN_ROOT` 可用，然后调用 `${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-fix/scripts/codex-review.sh`
 2. 默认审查当前分支相对 base 的差异
 3. 输出 `review.md` 给后续人工或 Claude Code 消费
+4. 同步输出 `runtime-environment.txt`，记录执行目录、脚本目录、Git/Bash/Node/Codex 路径和版本
 
 ### 适用场景
 
@@ -97,6 +123,7 @@ metadata:
 ### 安全边界
 
 - 不写代码
+- 允许写 `.codex` review artifact，不允许修改项目代码
 - 不扩大审查范围
 - 对低置信问题保持克制
 

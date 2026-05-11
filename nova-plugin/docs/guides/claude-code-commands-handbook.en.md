@@ -25,7 +25,8 @@ This command set decomposes an engineering activity into five phases:
 
 ## 1. Fast decision: which command should I use right now?
 
-Start with the five primary entries by default. Use advanced commands only for
+Start with the five primary entries by default. If the right entry point is
+unclear, use read-only `/route` first. Use advanced commands only for
 compatibility shortcuts, backend-specific planning, or the Codex loop:
 
 ```text
@@ -34,6 +35,7 @@ compatibility shortcuts, backend-specific planning, or the Codex loop:
 
 | Current goal | Default command | Output or action |
 | --- | --- | --- |
+| Unsure where to start | `/route` | Next command, skill, agent, pack, inputs, and validation path |
 | Understand the problem, no solutions | `/explore` | Facts, uncertainties, risk signals |
 | Produce a reviewable plan | `/produce-plan` | Formal plan document |
 | Review plans, code, or risk | `/review` | Findings by `LEVEL=lite|standard|strict` |
@@ -54,6 +56,7 @@ compatibility shortcuts, backend-specific planning, or the Codex loop:
 
 | What you need right now                                             | Recommended command                  | Why                                                                                         |
 | ------------------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------- |
+| Unsure which nova command or skill should handle the request        | `/route`                             | Read-only route selection for command / skill / agent / pack and validation path             |
 | Understand the current problem/requirements with **no solutions**   | `/explore`                           | Primary entry for facts, uncertainties, and risk signals only                               |
 | Deeper analysis or an exported exploration artifact                 | `/senior-explore`                    | Advanced entry with fuller intent/context/depth parameters                                  |
 | Quickly align understanding (short exploration)                     | `/explore` or `/explore-lite`        | Unified command defaults to observer perspective; shorter structure: Observations / Uncertainties / Risks |

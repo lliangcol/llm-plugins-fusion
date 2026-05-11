@@ -3,7 +3,7 @@ id: codex-review-only
 stage: review
 title: /codex-review-only
 description: "Run Codex review only and write a structured review artifact without modifying code."
-destructive-actions: none
+destructive-actions: low
 allowed-tools: Bash Read Glob Grep LS
 invokes:
   skill: nova-codex-review-only
@@ -20,3 +20,4 @@ Entry semantics:
 - Runs the review script only and writes review artifacts.
 - Supports `REVIEW_MODE=branch|staged|full`, optional `BASE`, and optional `OUTPUT_DIR`.
 - Must not modify project code or enter the fix loop.
+- Declares low artifact risk because it runs Bash and writes `.codex` review artifacts.

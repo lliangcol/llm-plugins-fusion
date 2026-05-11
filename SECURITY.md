@@ -4,9 +4,13 @@
 
 | 版本 | 安全修复 |
 | --- | --- |
-| 最新 MINOR 版本（当前 `2.1.x`） | ✅ |
+| 最新 MINOR 版本（当前 `2.2.x`） | ✅ |
 | 上一 MINOR 版本 | ⚠️ 仅高危漏洞 |
 | 更早版本 | ❌ |
+
+支持范围跟随 `nova-plugin/.claude-plugin/plugin.json` 的版本事实源。稳定推广仍
+必须以 exact release tag 为准；release-ready 工作树或 moving `main` 不等同于
+已发布版本。
 
 ## 报告漏洞
 

@@ -1,136 +1,135 @@
 # AGENTS.md
 
-This file provides repository guidance for Codex and other AI coding agents.
-It is adapted from `CLAUDE.md`; keep both files in sync when repository
-structure, validation rules, command counts, or workflow constraints change.
+This file provides repository guidance for Codex and other AI coding agents. It
+is adapted from `CLAUDE.md`; keep both files in sync whenever repository
+structure, command counts, validation rules, or workflow constraints change.
 
 ## Project Purpose
 
 **LLM Plugins Fusion** is a public multi-project AI engineering workflow
-framework for LLM coding assistants. The primary plugin is `nova-plugin`,
-which is distributed through the Claude Code marketplace format and provides an
-engineering workflow:
+framework for LLM coding assistants. The primary plugin is `nova-plugin`, which
+is distributed through the Claude Code marketplace format and supports:
 
 ```text
 Explore -> Plan -> Review -> Implement -> Finalize
 ```
 
-Marketplace metadata is the current installation and distribution mechanism; do
-not treat the repository as a mature multi-plugin ecosystem unless future
-evidence and roadmap updates say so. Public docs may include generic
-`nova-plugin` workflow guidance, consumer profile contracts, redacted Java
-backend/frontend templates, and capability pack guidance. Real consumer
-profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
-`.claude/`, or private docs.
+Marketplace metadata is the current installation and distribution mechanism.
+Do not describe this repository as a mature multi-plugin ecosystem unless
+future evidence and roadmap updates say so. Public docs may include generic
+workflow guidance, consumer profile contracts, redacted examples, prompt
+templates, and capability pack guidance. Real consumer profiles belong in the
+consumer project's own `AGENTS.md`, `CLAUDE.md`, `.claude/`, or private docs.
 
 ## Quick Facts
 
 - Marketplace entry: `.claude-plugin/marketplace.json`
 - Marketplace custom metadata: `.claude-plugin/marketplace.metadata.json`
-- Generated marketplace catalog: `docs/marketplace/catalog.md`
-- Consumer profile templates: `docs/consumers/`
-- Redacted workflow examples: `docs/examples/`
-- Workflow evaluation examples: `docs/examples/workflow-evaluation.md`
-- Project optimization plan: `docs/project-optimization-plan.md`
-- Release evidence template: `docs/releases/release-evidence-template.md`
 - Registry generation source: `.claude-plugin/registry.source.json`
 - Registry multi-entry fixture: `fixtures/registry/multi-plugin/`
-- Main plugin metadata: `nova-plugin/.claude-plugin/plugin.json`
-- Plugin version source of truth: `nova-plugin/.claude-plugin/plugin.json`
-- Commands: 20 files under `nova-plugin/commands/*.md`
-- Skills: 20 files under `nova-plugin/skills/nova-*/SKILL.md`
+- Generated marketplace catalog: `docs/marketplace/catalog.md`
+- Main plugin metadata and version source: `nova-plugin/.claude-plugin/plugin.json`
+- Commands: 21 files under `nova-plugin/commands/*.md`
+- Skills: 21 files under `nova-plugin/skills/nova-*/SKILL.md`
 - Command docs: each command has `<id>.md`, `<id>.README.md`, and
   `<id>.README.en.md` under `nova-plugin/docs/commands/**/`
 - Shared skill policies: `nova-plugin/skills/_shared/*.md`
 - Active agents: 6 core files under `nova-plugin/agents/*.md`
 - Capability packs: 8 documentation packs under `nova-plugin/packs/*/README.md`
-- Repository validation scripts require Node.js 20+. Hook shell syntax checks
-  require Bash; Windows without Bash may warning-skip local `bash -n`, while
-  CI/Linux must run it.
+- Consumer profile templates: `docs/consumers/`
+- Redacted workflow examples: `docs/examples/`
+- Prompt template library: `docs/prompts/`
+- Workflow guidance: `docs/workflows/`
+- Repository docs index: `docs/README.md`
+- Project optimization plan: `docs/project-optimization-plan.md`
+- Release evidence template: `docs/releases/release-evidence-template.md`
+- Maintainer npm shortcuts: `package.json` (`validate`, `validate:docs`,
+  `validate:schemas`, `validate:regression`, `scan:distribution`; no
+  `check`/`lint`/`test`/`build` script names)
+- Repository validation scripts require Node.js 20+. Hook shell syntax and
+  runtime smoke checks require Bash; Windows without Bash may warning-skip
+  local Bash-dependent checks, while CI/Linux must run them.
 
 ## Sources of Truth
 
-- Plugin-owned metadata, including version:
-  `nova-plugin/.claude-plugin/plugin.json`.
-- Registry-owned marketplace fields and custom metadata, including
-  `last-updated`, maintainer, compatibility evidence, and review links:
-  `.claude-plugin/registry.source.json`.
-- Generated registry outputs: `.claude-plugin/marketplace.json` and
-  `.claude-plugin/marketplace.metadata.json`, plus generated catalog
-  `docs/marketplace/catalog.md`; regenerate with
-  `node scripts/generate-registry.mjs --write`.
-- Registry fixture coverage:
-  `fixtures/registry/multi-plugin/`, enforced by
-  `scripts/validate-registry-fixtures.mjs`.
-- Command definitions: `nova-plugin/commands/*.md`.
-- Skill definitions: `nova-plugin/skills/nova-*/SKILL.md`.
-- Command documentation: `nova-plugin/docs/commands/`.
-- Consumer profile templates: `docs/consumers/`.
-- Redacted workflow examples: `docs/examples/`.
-- Workflow evaluation examples: `docs/examples/workflow-evaluation.md`.
-- Project optimization plan: `docs/project-optimization-plan.md`.
-- Release evidence template: `docs/releases/release-evidence-template.md`.
-- Shared command/skill policies: `nova-plugin/skills/_shared/`.
-- Active agent set: `nova-plugin/agents/`, enforced by
-  `scripts/verify-agents.sh` and `scripts/verify-agents.ps1`.
-- Capability packs: `nova-plugin/packs/`, enforced by
-  `scripts/validate-packs.mjs`.
-- Registry source, marketplace, marketplace metadata, and plugin schemas:
-  `schemas/registry-source.schema.json`,
-  `schemas/marketplace.schema.json`,
-  `schemas/marketplace-metadata.schema.json`, and
-  `schemas/plugin.schema.json`.
+| Area | Source |
+| --- | --- |
+| Plugin metadata and version | `nova-plugin/.claude-plugin/plugin.json` |
+| Registry-owned marketplace fields | `.claude-plugin/registry.source.json` |
+| Generated marketplace outputs | `.claude-plugin/marketplace.json`, `.claude-plugin/marketplace.metadata.json`, `docs/marketplace/catalog.md` |
+| Marketplace and plugin schemas | `schemas/registry-source.schema.json`, `schemas/marketplace.schema.json`, `schemas/marketplace-metadata.schema.json`, `schemas/plugin.schema.json` |
+| Commands | `nova-plugin/commands/*.md` |
+| Skills | `nova-plugin/skills/nova-*/SKILL.md` |
+| Shared skill policies | `nova-plugin/skills/_shared/` |
+| Command docs | `nova-plugin/docs/commands/` |
+| Active agents | `nova-plugin/agents/` |
+| Capability packs | `nova-plugin/packs/` |
+| Consumer templates | `docs/consumers/` |
+| Examples and workflow evaluation | `docs/examples/` |
+| Prompt templates | `docs/prompts/` |
+| Workflow guidance | `docs/workflows/` |
+| Project optimization record | `docs/project-optimization-plan.md` |
+| Release evidence and hygiene | `docs/releases/` |
+
+Generated marketplace files must be updated from their sources with:
+
+```bash
+node scripts/generate-registry.mjs --write
+```
 
 ## Repository Layout
 
 ```text
-claude-plugins-fusion/
+llm-plugins-fusion/
 |-- .claude-plugin/
-|   |-- registry.source.json          # Human-maintained registry generation source
-|   |-- marketplace.json              # Generated plugin marketplace entry
-|   `-- marketplace.metadata.json     # Generated repository-local marketplace metadata
+|   |-- registry.source.json
+|   |-- marketplace.json
+|   `-- marketplace.metadata.json
 |-- .github/workflows/
-|   |-- ci.yml                        # Agent, schema, and frontmatter checks
-|   `-- release.yml                   # Tag-based release and release notes
+|   |-- ci.yml
+|   `-- release.yml
 |-- docs/
-|   |-- agents/                       # Active agent routing and migration notes
-|   |-- consumers/                    # Public consumer profile contract and redacted templates
-|   |-- examples/                     # Redacted Java backend and frontend workflow examples
-|   |-- marketplace/                  # Catalog, author workflow, compatibility, trust, review docs
-|   |-- releases/                     # Release decision, runbook, hygiene docs, evidence template
-|   |-- project-optimization-plan.md   # Current optimization record
-|   `-- reports/                      # Optimization reports and historical audit archive
-|-- fixtures/
-|   `-- registry/multi-plugin/        # Multi-entry registry generation fixture
+|   |-- README.md
+|   |-- agents/
+|   |-- consumers/
+|   |-- examples/
+|   |-- marketplace/
+|   |-- prompts/
+|   |-- releases/
+|   |-- workflows/
+|   |-- project-optimization-plan.md
+|   `-- reports/
+|-- fixtures/registry/multi-plugin/
 |-- nova-plugin/
-|   |-- .claude-plugin/plugin.json    # nova-plugin metadata and version
-|   |-- commands/                     # 20 Claude Code command definitions
-|   |-- skills/                       # 20 Agent Skills mapped one-to-one with commands
+|   |-- .claude-plugin/plugin.json
+|   |-- commands/                     # 21 Claude Code command definitions
+|   |-- skills/                       # 21 Agent Skills mapped one-to-one with commands
 |   |-- agents/                       # 6 core active agents
 |   |-- packs/                        # 8 capability pack docs
-|   |-- docs/                         # Command, skill, Codex, and agent docs
-|   `-- hooks/                        # Claude Code hook config and scripts
-|-- schemas/                          # Marketplace, metadata, and plugin JSON Schemas
-|-- scripts/                          # Repository-level validation scripts
-|-- README.md                         # User-facing overview and quickstart
-|-- CLAUDE.md                         # Claude Code repository guidance
-|-- AGENTS.md                         # Codex and generic AI agent guidance
-|-- CONTRIBUTING.md                   # Contribution rules and metadata contracts
-|-- CHANGELOG.md                      # Version history
-|-- ROADMAP.md                        # Planned evolution
-|-- SECURITY.md                       # Vulnerability reporting and security policy
+|   |-- docs/
+|   `-- hooks/
+|-- schemas/
+|-- scripts/
+|-- README.md
+|-- CLAUDE.md
+|-- AGENTS.md
+|-- CODE_OF_CONDUCT.md
+|-- CONTRIBUTING.md
+|-- CHANGELOG.md
+|-- ROADMAP.md
+|-- SECURITY.md
 `-- .claude/agents/archive/            # Archived legacy agents, not active
 ```
 
 ## Common Checks
 
-All repository checks from one entry point:
+Default non-mutating repository checks:
 
 ```bash
 node scripts/validate-all.mjs
 ```
 
-On Bash-compatible shells:
+Targeted checks:
 
 ```bash
 node scripts/generate-registry.mjs
@@ -143,52 +142,61 @@ node scripts/validate-packs.mjs
 node scripts/validate-hooks.mjs
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+node scripts/validate-runtime-smoke.mjs
+node scripts/scan-distribution-risk.mjs
+node scripts/validate-regression.mjs
 node scripts/validate-docs.mjs
 ```
 
-On Windows PowerShell:
+Maintainer npm shortcuts are optional and dependency-free:
+
+```bash
+npm run validate
+npm run validate:docs
+npm run validate:schemas
+npm run validate:regression
+npm run scan:distribution
+```
+
+Windows agent verification:
 
 ```powershell
-node scripts/generate-registry.mjs
-node scripts/validate-schemas.mjs
-node scripts/validate-registry-fixtures.mjs
-node scripts/validate-claude-compat.mjs
-node scripts/lint-frontmatter.mjs
 .\scripts\verify-agents.ps1
-node scripts/validate-packs.mjs
-node scripts/validate-hooks.mjs
-node scripts/validate-docs.mjs
-node scripts/validate-all.mjs
+```
+
+Claude CLI install smoke is intentionally separate because it may install or
+update a user-scope plugin:
+
+```bash
+node scripts/validate-plugin-install.mjs
+```
+
+Consumer profile scaffolding is dry-run by default:
+
+```bash
+node scripts/scaffold-consumer-profile.mjs --type java-backend --out <dir>
+node scripts/scaffold-consumer-profile.mjs --type frontend --out <dir>
+node scripts/scaffold-consumer-profile.mjs --type workbench --out <dir>
 ```
 
 If Bash is not installed on Windows, `node scripts/validate-all.mjs` warns and
-skips the local `bash -n` hook syntax checks. Do not report those syntax checks
-as locally passed unless Bash actually ran them.
+skips local Bash-dependent checks. Do not report hook syntax or runtime smoke
+checks as locally passed unless Bash actually ran them.
 
-## Architecture Notes
+## Architecture Contracts
 
-### Plugin Discovery
+### Registry and Marketplace
 
-- `.claude-plugin/registry.source.json` is the human-maintained source for
-  registry generation. It owns registry-level marketplace data, plugin source
-  paths, marketplace-only fields such as category and tags, and repository-local
+- `.claude-plugin/registry.source.json` owns registry-level marketplace data,
+  plugin source paths, category, tags, and repository-local
   trust/risk/deprecation/`last-updated`, maintainer, compatibility, and review
   metadata.
-- `.claude-plugin/marketplace.json` registers installable plugins and is
-  generated from `registry.source.json` plus each plugin manifest.
-- `.claude-plugin/marketplace.metadata.json` stores repository-local metadata
-  and is generated from `registry.source.json` plus each plugin manifest.
-- `docs/marketplace/catalog.md` is a generated Markdown catalog derived from
-  the same registry source and plugin manifests.
-- `nova-plugin/.claude-plugin/plugin.json` declares plugin name, version,
-  author, license, keywords, homepage, and repository metadata.
-- `nova-plugin/commands/*.md` contains Claude Code command definitions.
-- `nova-plugin/skills/nova-*/SKILL.md` contains Agent Skill definitions
-  discovered by directory convention.
-- `nova-plugin/packs/*/README.md` documents optional capability packs used by
-  core agents for domain-specific routing, enhanced mode, and fallback mode.
-- `nova-plugin/hooks/hooks.json` defines safety checks and audit hooks around
-  tool use.
+- `.claude-plugin/marketplace.json`,
+  `.claude-plugin/marketplace.metadata.json`, and
+  `docs/marketplace/catalog.md` are generated outputs.
+- Repository-local fields such as `trust-level`, `risk-level`, `deprecated`,
+  `last-updated`, `maintainer`, `compatibility`, and `review` must not leak
+  into the Claude-compatible marketplace manifest.
 
 ### Commands and Skills
 
@@ -227,54 +235,35 @@ metadata:
     destructiveActions: none|low|medium|high
 ```
 
-Read-only commands normally use:
+Read-only commands normally use `allowed-tools: Read Glob Grep LS`. Write-capable
+implementation commands may also use `Write Edit MultiEdit Bash`.
 
-```yaml
-allowed-tools: Read Glob Grep LS
-```
-
-Write-capable implementation commands may also need:
-
-```yaml
-allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
-```
-
-Use `node scripts/lint-frontmatter.mjs` to validate frontmatter shape, command
-descriptions, command/skill mappings, required skill sections, safety preflight
-references, and naming. When adding, removing, or renaming commands or skills,
-confirm both sides of the one-to-one mapping exist.
-
-Command documentation normally lives under
-`nova-plugin/docs/commands/<stage>/`. Codex commands are the explicit exception:
-`codex-review-fix`, `codex-review-only`, and `codex-verify-only` are documented
-together under `nova-plugin/docs/commands/codex/` because their review/fix/verify
-loop crosses workflow stages. Each command still needs `<id>.md`,
-`<id>.README.md`, and `<id>.README.en.md`.
+Command documentation normally lives under `nova-plugin/docs/commands/<stage>/`.
+Codex commands are the explicit exception: `codex-review-fix`,
+`codex-review-only`, and `codex-verify-only` are documented together under
+`nova-plugin/docs/commands/codex/`.
 
 ### Command System
 
 | Stage | Commands | Purpose |
 | --- | --- | --- |
-| Explore | `senior-explore`, `explore`, `explore-lite`, `explore-review` | Understanding, fact gathering, and review-oriented exploration |
+| Explore | `route`, `senior-explore`, `explore`, `explore-lite`, `explore-review` | Route selection, understanding, fact gathering, and review-oriented exploration |
 | Plan | `plan-lite`, `plan-review`, `produce-plan`, `backend-plan` | Lightweight planning, formal planning, and Java/Spring backend planning |
 | Review | `review`, `review-lite`, `review-only`, `review-strict`, `codex-review-only`, `codex-verify-only` | Human review entry points and Codex-based verification |
 | Implement | `implement-plan`, `implement-standard`, `implement-lite`, `codex-review-fix` | Plan-based implementation, standard implementation, lightweight implementation, and Codex-driven fix loops |
 | Finalize | `finalize-work`, `finalize-lite` | Delivery summaries and handoff |
 
-- `/explore` is the unified exploration entry point. It routes by
-  `PERSPECTIVE=observer|reviewer`.
-- `/review` is the unified review entry point. It adjusts review depth by
-  `LEVEL=lite|standard|strict`.
-- `codex-review-only` runs Codex review only and writes a structured review
-  artifact.
-- `codex-review-fix` runs review -> Claude Code fix -> local checks -> Codex
-  verify.
-- `codex-verify-only` verifies against existing review and check artifacts.
+- `/route` is read-only and recommends the next command, skill, core agent,
+  capability packs, required inputs, validation expectations, and fallback path.
+- `/explore` routes by `PERSPECTIVE=observer|reviewer`.
+- `/review` adjusts depth by `LEVEL=lite|standard|strict`.
+- `codex-review-only` writes review artifacts only.
+- `codex-review-fix` runs review -> Claude Code fix -> local checks -> verify.
+- `codex-verify-only` verifies against an existing review and optional checks.
 
 ### Active Agents and Capability Packs
 
-Active agents live in `nova-plugin/agents/`. The current active set is fixed at
-6 core agents:
+Active agents are exactly:
 
 ```text
 architect
@@ -285,36 +274,16 @@ reviewer
 verifier
 ```
 
-`orchestrator` decomposes work, chooses core agents and capability packs, and
-summarizes results. It does not implement directly. See
-`docs/agents/ROUTING.md` and `docs/agents/PLUGIN_AWARE_ROUTING.md` for routing
-rules.
+Capability packs are exactly: `java`, `security`, `dependency`, `docs`,
+`release`, `marketplace`, `frontend`, and `mcp`.
 
-Capability packs live in `nova-plugin/packs/`. They are documentation-only
-domain packs for `java`, `security`, `dependency`, `docs`, `release`,
-`marketplace`, `frontend`, and `mcp`. Packs must describe enhanced mode and
-fallback mode because installed plugins are optional accelerators, not hard
-dependencies.
+Active agents live in `nova-plugin/agents/`; legacy agents live under
+`.claude/agents/archive/nova-plugin/agents/` and are not active. Capability
+packs live in `nova-plugin/packs/` and must document both enhanced mode and
+fallback mode.
 
-The former active specialist set is mapped to the core model in
-`docs/agents/CORE_AGENTS_MIGRATION.md`.
-
-If the active agent set or pack set changes, update:
-
-- `nova-plugin/agents/`
-- `nova-plugin/packs/`
-- `scripts/verify-agents.sh`
-- `scripts/verify-agents.ps1`
-- `scripts/validate-packs.mjs`
-- `docs/agents/ROUTING.md`
-- `docs/agents/PLUGIN_AWARE_ROUTING.md`
-- `docs/agents/CORE_AGENTS_MIGRATION.md`, when routing compatibility changes
-- `docs/agents/MIGRATION_MANIFEST.md`, if an archive migration is involved
-- `CLAUDE.md`
-- `AGENTS.md`
-
-Legacy agents are archived under `.claude/agents/archive/nova-plugin/agents/`.
-They are not part of the `nova-plugin/agents/` active set.
+If the active agent or pack set changes, update the files, verification scripts,
+routing docs, migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
 
 ### Hooks
 
@@ -325,87 +294,58 @@ They are not part of the `nova-plugin/agents/` active set.
 - `PostToolUse`: matches `Write|Edit|MultiEdit|Bash` and asynchronously runs
   `hooks/scripts/post-audit-log.sh` through Bash.
 
-Hook scripts rely on `CLAUDE_PLUGIN_ROOT` to locate the plugin root. Hook
-commands should invoke `.sh` files explicitly through Bash unless the scripts
-are deliberately tracked with a Unix executable bit.
+Hook scripts rely on `CLAUDE_PLUGIN_ROOT`. Invoke `.sh` scripts explicitly
+through Bash unless the scripts are deliberately tracked with a Unix executable
+bit.
 
-Hook scripts are Bash scripts. On Windows, they may require Git Bash, WSL, or
-another Bash-compatible runtime.
-
-## Change Guidelines
+## Change Workflows
 
 ### Modify an Existing Command
 
 1. Edit `nova-plugin/commands/<id>.md`.
-2. Update `nova-plugin/skills/nova-<id>/SKILL.md`.
-3. If user-facing docs change, update
-   `nova-plugin/docs/commands/<stage>/<id>.md`, the relevant README, or
-   `nova-plugin/skills/README.md`. For Codex commands, use
-   `nova-plugin/docs/commands/codex/`.
-4. If behavior, parameters, outputs, tool permissions, or safety boundaries
-   change, update `CHANGELOG.md` and decide whether a version bump is required.
+2. Edit `nova-plugin/skills/nova-<id>/SKILL.md`.
+3. Update command docs or `nova-plugin/skills/README.md` when user-facing
+   behavior changes.
+4. Update `CHANGELOG.md` and decide whether a version bump is required when
+   behavior, parameters, outputs, tool permissions, or safety boundaries change.
 5. Run `node scripts/lint-frontmatter.mjs`.
 
 ### Add a New Command and Skill
 
-Every new command must have a matching skill:
+Every new command must have a matching skill and three command docs:
 
 ```text
 nova-plugin/commands/<id>.md
 nova-plugin/skills/nova-<id>/SKILL.md
+nova-plugin/docs/commands/<stage>/<id>.md
+nova-plugin/docs/commands/<stage>/<id>.README.md
+nova-plugin/docs/commands/<stage>/<id>.README.en.md
 ```
 
-Also update:
+For Codex commands, place the three docs under
+`nova-plugin/docs/commands/codex/` instead of a stage directory.
 
-- `nova-plugin/skills/README.md`
-- the command overview or version notes in `README.md`
-- `CHANGELOG.md`
-- `nova-plugin/.claude-plugin/plugin.json` `version`
-- `.claude-plugin/registry.source.json` plugin registry metadata, including
-  `last-updated`
-- generated `.claude-plugin/marketplace.json` plugin `version`
-- generated `.claude-plugin/marketplace.metadata.json` plugin `version` and
-  `last-updated`
-- generated `docs/marketplace/catalog.md` plugin version and metadata evidence
-- `CLAUDE.md`, if quick facts, counts, workflows, or constraints changed
-- `AGENTS.md`, if agent-facing facts, counts, workflows, or constraints changed
-- `nova-plugin/docs/commands/<stage>/<id>.md`, `<id>.README.md`, and
-  `<id>.README.en.md`; use `nova-plugin/docs/commands/codex/` for Codex
-  commands
-
-After adding a command, run:
-
-```bash
-node scripts/validate-all.mjs
-```
-
-On Windows PowerShell:
-
-```powershell
-node scripts/validate-all.mjs
-```
+Also update `README.md`, `CHANGELOG.md`, `nova-plugin/skills/README.md`,
+`CLAUDE.md`, `AGENTS.md`, plugin version metadata, registry source, generated
+marketplace outputs, and generated catalog when counts, version, or public
+behavior change. Run `node scripts/validate-all.mjs`.
 
 ### Modify Plugin Metadata or Version
 
-Version information is generated from:
+Version information is synchronized across:
 
-- `nova-plugin/.claude-plugin/plugin.json` `version`
-- `.claude-plugin/registry.source.json` plugin registry metadata, including
-  `last-updated`
-- generated `.claude-plugin/marketplace.json` plugin `version`
-- generated `.claude-plugin/marketplace.metadata.json` plugin `version` and
-  `last-updated`
-- generated `docs/marketplace/catalog.md` plugin version and metadata evidence
+- `nova-plugin/.claude-plugin/plugin.json`
+- `.claude-plugin/registry.source.json`
+- generated marketplace outputs and catalog
 - `CHANGELOG.md`
-- `CLAUDE.md`, if quick facts, counts, constraints, or workflows changed
-- `AGENTS.md`, if agent-facing facts, counts, constraints, or workflows changed
+- `README.md`, `SECURITY.md`, `CLAUDE.md`, and `AGENTS.md` when facts or
+  supported version ranges change
 
 Versioning follows SemVer:
 
 - MAJOR: command deletion, command rename, or incompatible behavior changes.
 - MINOR: new command, skill, agent, or significant capability expansion.
-- PATCH: bug fix, documentation update, internal refactor, or metadata
-  correction.
+- PATCH: bug fix, documentation update, internal refactor, or metadata correction.
 
 After metadata or schema changes, run:
 
@@ -417,119 +357,63 @@ node scripts/validate-claude-compat.mjs
 ```
 
 Release tags must use `v<plugin-version>` and match
-`nova-plugin/.claude-plugin/plugin.json` exactly; the release workflow rejects
-mismatched tags.
+`nova-plugin/.claude-plugin/plugin.json` exactly.
 
-### Modify Agents
+### Modify Agents or Capability Packs
 
-- Active agents belong only in `nova-plugin/agents/`.
-- Archived or legacy agents belong under `.claude/agents/archive/`.
-- If the active set changes, update agent files, both `verify-agents` scripts,
-  routing docs, migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
-- Agent frontmatter uses `name`, `description`, and `tools`.
-- Keep agent bodies short and route-focused.
+- Active agents belong only in `nova-plugin/agents/`; archived or legacy agents
+  belong under `.claude/agents/archive/`.
+- If the active agent or pack set changes, update agent or pack files, both
+  `verify-agents` scripts, `scripts/validate-packs.mjs`, routing docs,
+  migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
+- Agent frontmatter uses `name`, `description`, and `tools`; keep agent bodies
+  short and route-focused.
 
 ## Quality Gates
 
-Run only the checks that match the area changed. Use the full pre-release block
-when a change crosses multiple areas, affects release metadata, or changes
-workflow behavior.
+Run focused checks for narrow changes and `node scripts/validate-all.mjs` for
+broad workflow, release, metadata, or cross-layer changes.
 
-Metadata or marketplace changes:
+| Layer changed | Common files | Focused checks |
+| --- | --- | --- |
+| Memory and docs | `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/**`, `nova-plugin/docs/**` | `node scripts/validate-docs.mjs` |
+| Skills and commands | `nova-plugin/commands/**`, `nova-plugin/skills/**` | `node scripts/lint-frontmatter.mjs` |
+| Guardrails | `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, distributed Bash scripts | `node scripts/validate-hooks.mjs`, hook `bash -n`, changed script validation, `node scripts/validate-regression.mjs` when validator behavior changes |
+| Delegation | `nova-plugin/agents/**`, `nova-plugin/packs/**`, `docs/agents/**` | `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`, plus `node scripts/validate-packs.mjs` |
+| Distribution | `.claude-plugin/registry.source.json`, `nova-plugin/.claude-plugin/plugin.json`, generated marketplace outputs | `node scripts/generate-registry.mjs --write`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs`, `node scripts/validate-claude-compat.mjs`; `node scripts/validate-plugin-install.mjs` when install smoke is required |
 
-```bash
-node scripts/generate-registry.mjs --write
-node scripts/validate-schemas.mjs
-node scripts/validate-registry-fixtures.mjs
-```
-
-Command or skill contract/frontmatter changes:
-
-```bash
-node scripts/lint-frontmatter.mjs
-```
-
-Active agent changes:
-
-```bash
-bash scripts/verify-agents.sh
-```
-
-On Windows PowerShell:
-
-```powershell
-.\scripts\verify-agents.ps1
-```
-
-Capability pack changes:
-
-```bash
-node scripts/validate-packs.mjs
-```
-
-Hook config or hook script changes:
-
-```bash
-node scripts/validate-hooks.mjs
-bash -n nova-plugin/hooks/scripts/pre-write-check.sh
-bash -n nova-plugin/hooks/scripts/post-audit-log.sh
-```
-
-Documentation changes:
-
-```bash
-node scripts/validate-docs.mjs
-```
-
-This validates Markdown local links including anchors, command doc coverage and
-stage placement, release version/date sync from marketplace metadata,
-documentation inventory counts, current security support range, stale active
-planning labels, and non-archived report status.
-
-For a full pre-release or broad workflow change:
-
-```bash
-node scripts/validate-all.mjs
-```
-
-On Windows PowerShell, `validate-all.mjs` uses `.\scripts\verify-agents.ps1`.
-If Bash is unavailable, it warning-skips only the local `bash -n` hook syntax
-checks; CI/Linux still runs them.
+`node scripts/validate-docs.mjs` validates Markdown links and anchors, command
+doc coverage and stage placement, version/date sync, inventory counts, current
+security support range, stale active planning labels, and non-archived report
+status.
 
 Current CI includes verify-agents, validate-packs, validate-schemas,
-validate-registry-fixtures, validate-claude-compat, lint-frontmatter,
-validate-hooks, hook `bash -n`, and validate-docs.
+validate-registry-fixtures, validate-claude-compat, plugin install smoke,
+lint-frontmatter, validate-hooks, hook `bash -n`, runtime smoke, distribution
+risk scan, validation regression checks, and validate-docs.
 
 ## Do Not Edit
 
 - Do not commit Codex runtime artifacts from `.codex/`, including timestamped
   `codex-review-fix` runs, `latest`, and `latest-artifacts/`.
 - Do not edit archived agents under `.claude/agents/archive/` as if they were
-  active agents; active agents live in `nova-plugin/agents/`.
+  active agents.
 
 ## Key Constraints
 
 - `commands/*.md` and `skills/nova-*/SKILL.md` must remain one-to-one.
-- Each command must have three command docs in its workflow stage directory
-  under `nova-plugin/docs/commands/`; Codex command docs are centralized under
-  `nova-plugin/docs/commands/codex/`.
+- Every command must have three command docs; Codex command docs are centralized
+  under `nova-plugin/docs/commands/codex/`.
 - `allowed-tools` must be a space-separated string, not a YAML array.
-- `destructive-actions` must be one of `none`, `low`, `medium`, or `high`.
-- `nova-plugin/agents/` must match the exact 6 core-agent file set expected by
-  the verification scripts.
-- `nova-plugin/packs/` must contain exactly the 8 documented capability packs,
-  and each pack README must include enhanced mode and fallback mode.
-- User-facing behavior changes require documentation and `CHANGELOG.md`
-  updates.
-- `.claude-plugin/marketplace.json` and
-  `.claude-plugin/marketplace.metadata.json` and `docs/marketplace/catalog.md`
-  are generated outputs; update `plugin.json` or `registry.source.json`, then run
-  `node scripts/generate-registry.mjs --write`.
+- `destructive-actions` must be `none`, `low`, `medium`, or `high`.
+- `nova-plugin/agents/` must match the exact 6 core-agent file set.
+- `nova-plugin/packs/` must contain exactly 8 documented capability packs, and
+  each pack README must include enhanced mode and fallback mode.
+- User-facing behavior changes require documentation and `CHANGELOG.md` updates.
+- Generated marketplace outputs must be regenerated from source files.
 - Review and Explore commands should not modify project code.
-- Non-implementation commands may declare `Write` or `Edit` only for explicit
+- Non-implementation commands may declare write tools only for explicit
   artifacts such as analysis, plan, review, or verification files.
-- Implementation commands are project-code write-capable only when declared
-  with write tools.
-- Within the Codex set, only `codex-review-fix` should modify project files;
-  `codex-review-only` and `codex-verify-only` should only create review or
+- Within the Codex set, only `codex-review-fix` should modify project files.
+  `codex-review-only` and `codex-verify-only` should create only review or
   verification artifacts.

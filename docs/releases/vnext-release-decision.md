@@ -85,7 +85,8 @@ Required for current release prep and future registry changes:
 - `git diff --check`
 - `claude plugin validate .` when Claude CLI is installed
 
-Bash hook syntax checks only count as locally run when Bash is available.
+Bash-dependent hook syntax and runtime smoke checks only count as locally run
+when Bash is available.
 
 Validation result on 2026-05-06:
 

@@ -10,6 +10,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Added
+- 新增 `docs/README.md` 仓库级文档总索引，集中维护 `docs/` 目录结构、
+  当前文档清单、归档边界和文档维护规则。
+- 新增 `docs/getting-started.md` 极简上手文档，聚焦安装、`/route`、五主命令、
+  Codex 前置条件和常见失败处理。
+- 新增 `docs/examples/workflow-evaluation-record-2026-05-12.md` 五阶段 workflow
+  evaluation 草稿，明确人工命令执行仍为 pending。
+- 新增 `docs/releases/release-evidence-v2.2.0.md` 正式 release evidence 草稿，
+  将 exact tag、plugin install smoke、GitHub Release 和人工 workflow
+  evaluation 记录为 blocker/pending。
+- 新增 `docs/agents/archive-context-measurement-2026-05-12.md` archive token
+  pressure pending record，当前决策为 keep archive in place。
+- 新增无第三方依赖的 `package.json` 维护者便捷入口，提供 `validate`、
+  `validate:docs`、`validate:schemas`、`validate:regression` 和
+  `scan:distribution`，并避免 `check` / `lint` / `test` / `build` 脚本名。
+- 新增 `scripts/scaffold-consumer-profile.mjs`，支持从 redacted consumer
+  templates dry-run 或 `--write` 初始化 `java-backend`、`frontend`、`workbench`
+  profile。
+- 新增 `scripts/validate-regression.mjs`，用 Node 内置能力覆盖 registry 生成、
+  分发风险扫描和 command/skill/docs drift 的关键回归。
+- 新增 `scripts/distribution-risk.allowlist.json`，为历史归档风险发现提供
+  redacted allowlisted warning 记录。
+
+### Changed
+- 在根 README、英文 overview、`nova-plugin/docs/README.md`、`AGENTS.md`
+  和 `CLAUDE.md` 中补充仓库文档总索引与根目录文档入口，减少跨目录导航分散。
+- 将 `run-project-checks.sh` 从字符串命令执行改为显式 task dispatcher，移除
+  shell `eval`，同时保持 repo checks、package script discovery、report file
+  和 lint/test/build/all 模式。
+- 扩展 runtime smoke，静态拦截 `run-project-checks.sh` 重新引入 `eval` 的风险。
+- 扩展分发风险扫描，覆盖 JWT、npm token、Azure/GCP key、私有 SSH repo URL
+  和真实 `.env` 值，并继续保证输出脱敏。
+- 收敛 `2.2.0` release-ready 事实：在正式 tag、隔离环境 install smoke、
+  GitHub Release 和人工 workflow evaluation 完成前，不把当前 snapshot 描述为
+  stable release。
+
+## [2.2.0] - 2026-05-12
+
+Status: release-ready notes; the exact `v2.2.0` tag is pending in the current
+local repository. Do not treat this section as published stable release evidence
+until the tag and release workflow exist.
+
+### Added
+- 新增 `/route` 与 `nova-route` 只读路由入口，用于在非 Claude slash
+  command 场景或任务意图不明确时选择下一步 nova command、skill、core
+  agent、capability packs、必需输入和验证路径。
+- 新增 `scripts/validate-plugin-install.mjs` 与 CI 安装 smoke test，覆盖
+  `claude plugin validate`、marketplace add/list 和
+  `nova-plugin@llm-plugins-fusion` user-scope 安装链路。
+- 新增 `scripts/validate-runtime-smoke.mjs`，在不调用 Codex、不写入 `.codex/`
+  的前提下校验分发 Bash 脚本语法、help 输出和安全失败路径。
+- 新增 `scripts/scan-distribution-risk.mjs`，扫描活跃分发内容中的密钥、
+  私有路径、私网地址和内部 endpoint，并将历史归档发现降级为 warning。
+- 将 runtime smoke 与分发风险扫描接入 `scripts/validate-all.mjs`、CI 和
+  release workflow。
 - 新增 `docs/consumers/` consumer profile 契约与脱敏 Java backend / frontend
   接入模板，明确真实 profile 应保存在 consumer 项目本地。
 - 新增 `docs/examples/` 脱敏 Java backend 与 frontend workflow 示例，用于说明
@@ -26,8 +80,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   未运行人工评估或 `/context` 测量时误报质量证据。
 - 扩展 `scripts/validate-docs.mjs`，自动校验 `SECURITY.md` 当前 MINOR
   支持范围，并拦截活跃文档中陈旧的 `v1.x` 未来规划标签。
+- 新增 context-safe agent workflow 指南，沉淀大任务拆分、review checkpoint、
+  fix loop、交付文档和上下文治理规则。
+- 新增 `docs/prompts/` prompt 模板库，覆盖 Codex review/verify、Claude Code
+  review 修复、subagent/串行 checkpoint、交付文档和 workbench 整理。
+- 新增可选 HTML workflow artifact 的公共安全 prompt 模板和配套指导，明确
+  HTML 是计划、评审、报告和 handoff 的派生阅读制品，不替代事实源。
+- 新增 public-safe Workbench consumer 模板，用于私有工作区需求、设计、
+  review、fix、测试、prompt 和 handoff 资产治理。
+- 新增 agent development stack 架构文档，说明 memory、skills、guardrails、
+  delegation 和 distribution 五层维护边界。
+- 新增 unreleased snapshot evidence 草稿，记录当前工作树验证结果、exact tag
+  状态和未完成的人工 release evidence 项。
+- 新增 `nova-plugin` 五层架构说明，将 memory、skills、guardrails、
+  delegation 和 distribution 映射到事实源文件与质量门。
 
 ### Changed
+- 将 `nova-plugin` 版本提升到 `2.2.0`，命令与 skill 数量扩展为 21 个一对一
+  入口，并同步 marketplace metadata 的 `last-updated` 到 `2026-05-12`。
+- 扩展核心写入、评审、Codex 和收尾 skills 的 rationalization、red flag 与
+  verification 行为约束，减少跳过验证、扩大 scope 或误报结果的风险。
+- 增强 docs/security/release capability packs，对官方文档 grounding、
+  高风险 doubt-driven review、deprecation 和 migration 规划给出 fallback
+  路由，不新增 pack 数量。
+- 新增 Cursor、Gemini CLI、OpenCode、Copilot 和 Codex 的跨工具消费说明，
+  明确非 Claude Code 环境如何引用 `nova-route` 和 `nova-*` skills。
 - 将公开定位收敛为多项目 AI 工程工作流框架，保留 marketplace 作为安装/分发
   形式，并优先展示 `/explore`、`/produce-plan`、`/review`、
   `/implement-plan`、`/finalize-work` 五个主入口。
@@ -45,6 +122,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   CLAUDE 中的 command、skill、active agent 和 capability pack 数量事实。
 - 扩展 `scripts/validate-all.mjs`，输出 Node.js、Git、Claude CLI、Codex CLI、
   Bash、commit 和 exact tag 的环境摘要。
+- Codex review/verify 脚本现在记录 runtime environment artifact，包含工作目录、
+  脚本目录、Git/Bash/Node/Codex 路径和版本、`CODEX_MODEL` 与 `CODEX_PROFILE`。
+- Codex 脚本现在会验证 `codex --version` 是否真的可执行，并在 Windows/WSL
+  场景下 fallback 到可用的 `codex.exe`，避免 PATH 上的坏 shim 通过预检查后
+  在实际 review/verify 时失败。
+- `run-project-checks.sh` 现在同样支持 `node.exe` fallback，避免 WSL Bash
+  环境找不到 `node` 时误判仓库级 Node 校验不可运行，并在 package script
+  探测时转换 WSL/Git Bash 路径供 Windows Node 使用。
+- `run-project-checks.sh` 现在覆盖 registry fixture 校验，使 Codex fix loop
+  的本地 lint 范围与仓库级 release gate 保持一致。
+- 将 `codex-review-only` 与 `codex-verify-only` 从 `none` 调整为 `low`
+  artifact 风险，明确它们会运行 Bash 并写入 `.codex` review/verify artifact，
+  但不得修改项目代码。
+- `scripts/lint-frontmatter.mjs` 现在会识别显式只读 Bash guard，避免
+  `/finalize-work` 这类只读 Git/环境探测命令产生误报，同时继续提示未声明边界
+  的 `Bash` + `none` 组合。
 
 ### Removed
 - 删除 `nova-plugin/docs` 中已历史化的 legacy agent 摘要文件，并将 agent
@@ -53,10 +146,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   `docs/reports/project-optimization-plan.html` 静态报告产物。
 
 ### Fixed
-- 修正 `SECURITY.md` 支持范围中的当前 MINOR 版本说明，使其与 `2.1.0`
+- 修正 `SECURITY.md` 支持范围中的当前 MINOR 版本说明，使其与 `2.2.0`
   发布状态保持一致。
 - 修正 hooks 设计文档中过期的 `v1.1` / `v1.2` 未来计划标签，避免与当前
   发布基线混淆。
+- 修正 `codex-review.sh --full` 与 `codex-verify.sh` 的 patch artifact，
+  现在会包含未跟踪文件内容，而不是只提供未跟踪文件名。
+- 修正文档中的机器本地绝对路径示例，避免活跃分发内容携带个人路径。
+- 修正分发风险扫描日志会输出命中原文的问题，现在只报告文件、行号、类型和
+  脱敏占位符。
+- 修正 `run-project-checks.sh` 在 Bash 环境缺少 `node` 时静默跳过仓库 Node
+  校验并误报成功的问题。
+- 修正 runtime environment artifact 中版本命令失败会产生多行值的问题，保持
+  `key=value` 输出稳定。
 
 ## [2.1.0] - 2026-05-09
 
@@ -230,7 +332,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - MIT 开源协议
 - 中英双语 README 文档
 
-[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.9...v2.0.0
 [1.0.9]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.8...v1.0.9

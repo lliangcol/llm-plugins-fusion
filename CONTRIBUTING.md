@@ -19,9 +19,17 @@
 1. Fork 本仓库，从 `main` 切出特性分支：`git checkout -b feat/<topic>`。
 2. 准备 Node.js 20+，用于运行仓库级 schema、Claude 兼容性、frontmatter、pack、hooks 与 docs 校验脚本。
 3. 若要验证 active agents，在 macOS / Linux / Git Bash 中运行 Bash 脚本，或在 Windows PowerShell 中运行对应 `.ps1` 脚本。
-4. 若要执行 hook 脚本语法检查，需要 Bash（macOS/Linux、Git Bash、WSL 或其他 PATH 中可用的 `bash`）。Windows 本地没有 Bash 时，`node scripts/validate-all.mjs` 会 warning 跳过 `bash -n`；CI/Linux 仍必须执行并通过。
+4. 若要执行 hook 脚本语法检查和 Codex runtime smoke，需要 Bash（macOS/Linux、Git Bash、WSL 或其他 PATH 中可用的 `bash`）。Windows 本地没有 Bash 时，`node scripts/validate-all.mjs` 会 warning 跳过本地 Bash-dependent 检查；CI/Linux 仍必须执行并通过。
    ```bash
    node scripts/validate-all.mjs
+   ```
+5. 可选使用维护者 npm 便捷入口；`package.json` 不声明 `check` / `lint` /
+   `test` / `build` 脚本名，避免被 Codex 项目检查脚本重复自动发现。
+   ```bash
+   npm run validate
+   npm run validate:docs
+   npm run validate:regression
+   npm run scan:distribution
    ```
 
 ### 工程约定
@@ -36,6 +44,9 @@
 - **Registry fixture**：多插件 entry 生成能力由 `fixtures/registry/multi-plugin/` 和 `node scripts/validate-registry-fixtures.mjs` 覆盖，确保未来多 entry 不破坏当前单插件布局。
 - **Claude 兼容性**：官方 marketplace manifest 改动后必须通过 `node scripts/validate-claude-compat.mjs`；若本机存在 Claude CLI，该脚本会运行 `claude plugin validate .` 和 `claude plugin validate nova-plugin`。
 - **Hook 校验**：hook 配置或脚本改动后运行 `node scripts/validate-hooks.mjs`；Bash 可用时还要运行两个 hook 脚本的 `bash -n`。
+- **Runtime smoke**：Codex Bash helper 脚本或其调用方式变更后运行 `node scripts/validate-runtime-smoke.mjs`；它只校验语法、help 输出和安全失败路径，不调用 Codex，也不写 `.codex/`。
+- **分发风险扫描**：发布、文档、模板或 marketplace 变更后运行 `node scripts/scan-distribution-risk.mjs`，确认活跃分发内容不含真实密钥、JWT、npm token、云厂商 key、机器本地路径、私网地址、内部 endpoint、私有 SSH repo URL 或真实 `.env` 值。历史归档发现只能作为 redacted warning 或 `scripts/distribution-risk.allowlist.json` 中的 allowlisted warning。
+- **回归校验**：验证脚本、registry 生成、分发风险扫描或 command/docs drift 规则变更后运行 `node scripts/validate-regression.mjs`。
 - **文档校验**：用户文档、命令文档、版本日期、安全支持范围、活跃规划文字或报告归档改动后运行 `node scripts/validate-docs.mjs`；它会校验 Markdown 本地链接与锚点、命令文档 stage 位置、版本日期同步、`SECURITY.md` 当前 MINOR 支持范围、活跃文档中的陈旧规划标签和非归档报告状态。
 - **Pack 校验**：capability pack 或 plugin-aware routing 改动后运行 `node scripts/validate-packs.mjs`；每个 pack 必须包含 enhanced mode 和 fallback mode。
 - **命令文档组织**：常规命令文档按工作流 stage 放在 `nova-plugin/docs/commands/<stage>/`；Codex 三个命令文档集中放在 `nova-plugin/docs/commands/codex/`，这是维护规则的明确例外。
@@ -66,7 +77,7 @@
 2. marketplace 展示字段和 repository-local metadata 写在 `.claude-plugin/registry.source.json`。
 3. 每个 entry 都必须声明 maintainer、trust/risk/deprecated/last-updated、compatibility evidence 和 review policy 链接。
 4. 运行 `node scripts/generate-registry.mjs --write` 生成 marketplace、metadata 和 catalog。
-5. 运行 `node scripts/validate-schemas.mjs`、`node scripts/validate-registry-fixtures.mjs`、`node scripts/validate-claude-compat.mjs` 和 `node scripts/validate-docs.mjs`。
+5. 运行 `node scripts/validate-schemas.mjs`、`node scripts/validate-registry-fixtures.mjs`、`node scripts/validate-claude-compat.mjs`、`node scripts/scan-distribution-risk.mjs` 和 `node scripts/validate-docs.mjs`。
 
 PR 需要说明 metadata rationale、安全影响、维护 owner 和本地校验输出；仓库模板见 [`.github/pull_request_template.md`](./.github/pull_request_template.md)。
 
@@ -110,7 +121,16 @@ node scripts/validate-hooks.mjs
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 
-# 8. docs 校验
+# 8. Codex runtime smoke（需要 Bash，Windows 无 Bash 时 warning-skip）
+node scripts/validate-runtime-smoke.mjs
+
+# 9. 分发风险扫描
+node scripts/scan-distribution-risk.mjs
+
+# 10. 核心回归校验
+node scripts/validate-regression.mjs
+
+# 11. docs 校验
 node scripts/validate-docs.mjs
 ```
 
@@ -137,6 +157,20 @@ Codex 命令文档使用集中目录 `nova-plugin/docs/commands/codex/`，不按
 - `README.md` 中的命令总览表
 - `nova-plugin/skills/README.md` 或相关用户文档
 - `CHANGELOG.md`
+
+## 初始化 consumer profile
+
+公开仓库只提供 redacted 模板。要在 consumer-owned 工作区初始化本地 profile，
+先 dry-run：
+
+```bash
+node scripts/scaffold-consumer-profile.mjs --type java-backend --out <dir>
+node scripts/scaffold-consumer-profile.mjs --type frontend --out <dir>
+node scripts/scaffold-consumer-profile.mjs --type workbench --out <dir>
+```
+
+确认输出目录属于私有 consumer 工作区后再添加 `--write`。不要把生成后的私有
+事实、路径、endpoint、凭据、仓库地址或业务规则提交回本公开仓库。
 
 ## License
 

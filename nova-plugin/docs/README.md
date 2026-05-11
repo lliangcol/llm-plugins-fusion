@@ -7,11 +7,16 @@
 | 分类 | 路径 | 内容 |
 | --- | --- | --- |
 | 使用手册 | [guides/](guides/) | 命令参考、命令选择、复制模板 |
-| 命令文档 | [commands/](commands/) | 20 个命令的详细说明与中英文 README |
-| 架构与设计 | [architecture/](architecture/) | 当前 command / skill 双轨设计、hooks 设计 |
+| 命令文档 | [commands/](commands/) | 21 个命令的详细说明与中英文 README |
+| 架构与设计 | [architecture/](architecture/) | 五层架构、command / skill 双轨设计、hooks 设计 |
+| 仓库文档总索引 | [../../docs/README.md](../../docs/README.md) | `docs/` 目录结构、文档清单和维护规则 |
 | Agent routing | [../../docs/agents/ROUTING.md](../../docs/agents/ROUTING.md) | 当前 6 个 core agents 与 capability packs 路由 |
 | Capability packs | [../packs/README.md](../packs/README.md) | 8 个领域能力包与 enhanced / fallback mode |
 | Consumer profiles | [../../docs/consumers/README.md](../../docs/consumers/README.md) | 多项目 consumer profile 契约与脱敏模板 |
+| Cross-tool setup | [../../docs/consumers/README.md](../../docs/consumers/README.md) | Cursor、Gemini CLI、OpenCode、Copilot、Codex 等工具消费 nova skills 的入口 |
+| Context-safe workflows | [../../docs/workflows/context-safe-agent-workflows.md](../../docs/workflows/context-safe-agent-workflows.md) | 大任务拆分、checkpoint、review/fix/verify 交付闭环 |
+| Thin harness, fat skills | [../../docs/workflows/thin-harness-fat-skills.md](../../docs/workflows/thin-harness-fat-skills.md) | 脚本、skill、prompt、pack 和 consumer profile 的沉淀边界 |
+| Prompt templates | [../../docs/prompts/README.md](../../docs/prompts/README.md) | Codex、Claude Code 和通用交付文档 prompt 模板 |
 | Redacted examples | [../../docs/examples/README.md](../../docs/examples/README.md) | Java backend / frontend 脱敏 workflow 示例 |
 | 历史记录 | [history/](history/) | 已归档的历史优化记录，不作为当前状态事实源 |
 | English overview | [overview/README.en.md](overview/README.en.md) | English project overview |
@@ -34,6 +39,7 @@ nova-plugin/docs/
 |   |-- finalize/
 |   `-- codex/
 |-- architecture/
+|   |-- agent-development-stack.md
 |   |-- dual-track-design.md
 |   `-- hooks-design.md
 |-- history/
@@ -48,9 +54,9 @@ nova-plugin/docs/
 | --- | ---: | --- |
 | 根索引 | 1 | 当前文件 |
 | Guides | 4 | 中英文命令参考与使用手册 |
-| Commands | 60 | 20 个命令，每个命令 `<id>.md`、`<id>.README.md`、`<id>.README.en.md` |
+| Commands | 63 | 21 个命令，每个命令 `<id>.md`、`<id>.README.md`、`<id>.README.en.md` |
 | Capability packs | 9 | `nova-plugin/packs/README.md` + 8 个 pack README |
-| Architecture | 2 | 当前设计文档 |
+| Architecture | 3 | 当前设计文档 |
 | History | 1 | 历史优化记录 |
 | Overview | 1 | 英文项目概览 |
 
@@ -71,13 +77,13 @@ Core agents use documentation-only capability packs for domain routing. Packs do
 
 ## 命令文档
 
-推荐默认入口是 `/explore`、`/produce-plan`、`/review`、`/implement-plan`、`/finalize-work`。其它命令继续作为高级/兼容入口保留，本文档索引不改变任何命令行为。
+推荐默认入口是 `/explore`、`/produce-plan`、`/review`、`/implement-plan`、`/finalize-work`。当下一步入口不清楚时，先用只读 `/route`。其它命令继续作为高级/兼容入口保留，本文档索引不改变任何命令行为。
 
 常规命令文档按 workflow stage 组织在 `commands/<stage>/` 下。Codex 命令跨 Review / Implement / Finalize 语义，为避免拆散闭环说明，统一维护在 `commands/codex/`；这是明确例外。
 
 | 阶段 | 路径 | 命令 |
 | --- | --- | --- |
-| Explore | [commands/explore/](commands/explore/) | `explore`, `explore-lite`, `explore-review`, `senior-explore` |
+| Explore | [commands/explore/](commands/explore/) | `route`, `explore`, `explore-lite`, `explore-review`, `senior-explore` |
 | Plan | [commands/plan/](commands/plan/) | `plan-lite`, `plan-review`, `produce-plan`, `backend-plan` |
 | Review | [commands/review/](commands/review/) | `review`, `review-lite`, `review-only`, `review-strict` |
 | Implement | [commands/implement/](commands/implement/) | `implement-lite`, `implement-plan`, `implement-standard` |
@@ -95,10 +101,23 @@ Core agents use documentation-only capability packs for domain routing. Packs do
 ## 常用文档
 
 - [命令完全参考手册](guides/commands-reference-guide.md)
+- [Command Reference Guide (English)](guides/commands-reference-guide.en.md)
 - [命令使用手册](guides/claude-code-commands-handbook.md)
+- [Command Handbook (English)](guides/claude-code-commands-handbook.en.md)
+- [仓库文档总索引](../../docs/README.md)
 - [Consumer profile templates](../../docs/consumers/README.md)
+- [Cursor setup for nova skills](../../docs/consumers/cursor-setup.md)
+- [Gemini CLI setup for nova skills](../../docs/consumers/gemini-cli-setup.md)
+- [OpenCode setup for nova skills](../../docs/consumers/opencode-setup.md)
+- [Copilot setup for nova skills](../../docs/consumers/copilot-setup.md)
+- [Codex setup for nova skills](../../docs/consumers/codex-setup.md)
+- [Workbench consumer template](../../docs/consumers/workbench-template.md)
+- [Context-safe workflows](../../docs/workflows/context-safe-agent-workflows.md)
+- [Thin harness, fat skills workflow doctrine](../../docs/workflows/thin-harness-fat-skills.md)
+- [Prompt template library](../../docs/prompts/README.md)
 - [Redacted examples](../../docs/examples/README.md)
 - [Codex 闭环说明](commands/codex/codex-review-fix.README.md)
+- [Agent Development Stack](architecture/agent-development-stack.md)
 - [Skill-first 设计说明](architecture/dual-track-design.md)
 - [Hooks 设计文档](architecture/hooks-design.md)
 - [Capability packs](../packs/README.md)
@@ -112,6 +131,7 @@ Core agents use documentation-only capability packs for domain routing. Packs do
 - [Security review route](../../docs/marketplace/security-review-route.md)
 - [Release hygiene](../../docs/releases/release-hygiene.md)
 - [English overview](overview/README.en.md)
+- [Historical command optimization record](history/command-optimization-2026-02-04.md)
 
 ## 维护规则
 

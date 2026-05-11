@@ -11,6 +11,7 @@ Use this policy for analysis, plan, review, verification, and handoff artifacts.
 | Review | `.codex/codex-review-fix/...` or user-provided path | Runtime review artifacts are not release source files. |
 | Verify | `.codex/codex-review-fix/...` or user-provided path | May reference checks output. |
 | Handoff | Chat output unless a path is explicit | Should summarize state and validation. |
+| HTML visual artifact | User-provided path or consumer workbench `html/` directory | Optional derived reading artifact; Markdown, code, review, or validation source remains authoritative. |
 
 ## Write Rules
 
@@ -20,6 +21,13 @@ Use this policy for analysis, plan, review, verification, and handoff artifacts.
 - Keep generated artifacts deterministic enough for review.
 - Do not write artifacts outside the repository unless the user provides the
   absolute path.
+- Treat HTML artifacts as derived reading artifacts unless a workflow explicitly
+  says otherwise.
+- Do not silently generate HTML for every command output.
+- Generate HTML only when the user provides an explicit output path or output
+  directory, or when a consumer-local workflow already defines the target.
+- Keep private consumer HTML artifacts in the consumer workspace, not this
+  public repository.
 
 ## Runtime Artifacts
 

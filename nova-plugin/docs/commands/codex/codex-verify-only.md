@@ -29,3 +29,4 @@
 ## 输出规范
 
 - 必须包含：已解决 / 未解决 / 不确定 / 新增高风险问题 / 是否建议合并
+- 提供 verify 文件路径与 `verify.runtime-environment.txt` 路径

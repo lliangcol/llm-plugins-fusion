@@ -64,7 +64,7 @@ Skill 的职责是：
 - 定义输入参数、默认值、别名和 safety-boundary 参数。
 - 说明何时需要 preflight，以及哪些文件、脚本或 artifact 可能被写入。
 - 保留从旧 command 迁移来的详细行为契约。
-- 引用 `_shared` 通用策略，避免参数、安全和输出规则在 20 个 skill 中漂移。
+- 引用 `_shared` 通用策略，避免参数、安全和输出规则在 21 个 skill 中漂移。
 
 ---
 
@@ -123,7 +123,7 @@ nova-plugin/skills/nova-<id>/SKILL.md
 
 ```bash
 node scripts/validate-schemas.mjs
-claude plugin validate "D:\Projects\claude-plugins-fusion\nova-plugin"
+claude plugin validate nova-plugin
 ```
 
 若修改 hooks：

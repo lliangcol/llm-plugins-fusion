@@ -5,6 +5,7 @@
 ## Command Positioning
 
 - Runs the Codex review script and writes a structured review artifact.
+- Outputs `review.md` and `runtime-environment.txt`.
 - Use when: you want review findings first and do not want to enter the fix loop yet.
 
 ## Parameters
@@ -25,4 +26,3 @@
 ```
 
 When invoked through the plugin, scripts should be called through `${CLAUDE_PLUGIN_ROOT}` instead of assuming the current repository contains `nova-plugin/`.
-

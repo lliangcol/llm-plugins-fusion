@@ -1,7 +1,7 @@
 {
   "name": "nova-plugin",
   "description": "nova-plugin is a Claude Code compatible workflow plugin for AI coding assistants. It provides Explore, Plan, Review, Implement, and Finalize command/skill contracts, consumer profile guidance, and validation-aware handoff patterns for multi-project engineering work.",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "author": {
     "name": "liu liang",
     "email": "lliangcoder@gmail.com",

@@ -1,7 +1,7 @@
 # Marketplace Portal Information Architecture
 
 Status: preparation
-Date: 2026-05-09
+Date: 2026-05-12
 
 This document defines the information architecture for a future marketplace
 portal. It is documentation-only preparation: it does not move `nova-plugin/`,
@@ -78,10 +78,12 @@ For the current repository, these map to Markdown and generated metadata:
 `docs/releases/vnext-release-decision.md` records the decision that shipped that
 lane as `2.0.0`; the vNext portal commitments below therefore describe the
 completed documentation-only preparation scope, while the `v2.0.0` row describes
-the published active-agent compatibility boundary. The `v2.1.0` lane is now
-released and includes the registry, author-workflow, trust, compatibility, and
-review-policy work that had previously been split between local `v2.1.0` and
-`v2.2.0` planning lanes. It does not require a plugin path move or a public
+the published active-agent compatibility boundary. The `v2.1.0` lane shipped
+registry, author-workflow, trust, compatibility, and review-policy work. The
+`v2.2.0` lane keeps the same single-plugin portal boundary while adding routing,
+runtime smoke, distribution risk scanning, a plugin install smoke script that
+must run only in CI or an isolated test-user environment, consumer setup, and
+workflow artifact guidance. It does not require a plugin path move or a public
 portal implementation. The breaking multi-plugin repository layout remains a
 future `v3.0.0` candidate.
 
@@ -90,7 +92,7 @@ future `v3.0.0` candidate.
 | vNext | Information architecture only. Define source ownership, surfaces, navigation labels, and compatibility boundaries for the current single-plugin marketplace. | Markdown docs, roadmap links, validation with `node scripts/validate-docs.mjs`. | Public portal URL, frontend implementation, plugin path moves, version bump, release automation dependencies. |
 | v2.0.0 | Active-agent compatibility boundary. Released the current 6-core-agent model as a clear major version without moving plugin paths. | Release metadata updates, changelog `BREAKING` notes, migration guidance, full repository validation. | Registry authoring expansion, frontend portal implementation, plugin path moves, release signing or SBOM pipeline requirements. |
 | v2.1.0 | Registry, author workflow, trust, and review readiness. Make multi-entry registry data practical and make marketplace entries reviewable, maintainable, and risk-traceable. | Released: registry fixture validation, generated Markdown catalog, scaffold dry-run/profile docs, author workflow docs, compatibility matrix, trust policy, PR checklist, maintainer and compatibility evidence metadata, security review route, release hygiene docs. | Breaking repository layout changes, mandatory frontend stack, public portal deployment. |
-| v2.2.0 | No active standalone release scope after `v2.1.0`; this lane is retained only as historical planning context. | No current Unreleased items. Future non-breaking marketplace maintenance can reuse this minor lane if new scope appears. | Breaking repository layout changes, frontend implementation, Claude-incompatible metadata in the marketplace manifest. |
+| v2.2.0 | Routing, runtime, and distribution safety hardening without changing the single-plugin marketplace boundary. | `/route` and `nova-route`, runtime smoke validation, distribution risk scan, plugin install smoke script for CI or isolated test-user execution, consumer setup docs, prompt templates, Workbench template, and release evidence improvements. | Breaking repository layout changes, frontend implementation, Claude-incompatible metadata in the marketplace manifest. |
 | v3.0.0 | Optional breaking marketplace structure. Move from single primary plugin layout to explicit multi-plugin repository layout only if real maintenance pressure justifies it. | `plugins/*` layout decision, `nova-plugin` migration plan, multi-plugin catalog, public portal implementation decision if separately approved. | Treating path changes as silent internals; shipping without migration docs and changelog `BREAKING` notes. |
 
 ## Explicit Non-Goals For This Preparation

@@ -49,6 +49,7 @@ criterion has concrete evidence and the optional criteria have been considered.
 | --- | --- | --- | --- |
 | 2026-05-09 | Post-`v2.1.0` baseline | `v2.1.0` release completed with one production plugin, generated catalog, registry fixtures, and repository-local metadata. | Keep `v3.0.0` deferred. |
 | 2026-05-10 | Consumer profile direction | Public docs added generic consumer profile contracts, redacted backend/frontend templates, and examples without adding plugins, owners, portal code, or command behavior changes. | Supports workflow framework direction while keeping `v3.0.0` deferred. |
+| 2026-05-12 | `v2.2.0` release-ready evidence pass | Added release evidence drafts, scaffold and validation improvements, and pending workflow/archive records while keeping one production plugin and no public portal implementation. Exact `v2.2.0` tag and release workflow remain pending. | Keep `v3.0.0` deferred until real post-release maintenance pressure exists. |
 
 ## Allowed While Deferred
 

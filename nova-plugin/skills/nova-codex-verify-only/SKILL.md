@@ -9,7 +9,7 @@ metadata:
     userInvocable: true
     autoLoad: false
     subagentSafe: true
-    destructiveActions: none
+    destructiveActions: low
 ---
 
 ## Inputs
@@ -77,6 +77,31 @@ metadata:
 - Use `/codex-verify-only` for verify against an existing review file.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
+## Common Rationalizations
+
+| Rationalization | Required Response |
+| --- | --- |
+| "This is small enough to skip validation." | Run the focused check or state why it is unavailable. |
+| "The existing output contract is obvious." | Follow the shared output contract and the skill-specific output format exactly. |
+| "The nearby cleanup is harmless." | Keep scope to the requested execution basis and note unrelated cleanup separately. |
+| "A plausible result is enough." | Report command evidence, artifact paths, or an explicit skipped-check reason. |
+
+## Red Flags
+
+- Scope expands beyond the requested execution basis.
+- Validation is claimed without command evidence, artifact evidence, or a skipped-check reason.
+- Existing user changes are overwritten, normalized, or reformatted without being part of the task.
+- The output omits required residual risk, deviations, or follow-up notes.
+- The skill uses tools outside its declared safety boundary.
+
+## Verification
+
+- [ ] Inputs were resolved through the shared parameter policy.
+- [ ] Safety preflight was respected before side effects.
+- [ ] Relevant checks were run or explicitly skipped with reason.
+- [ ] Existing user changes were preserved unless explicitly in scope.
+- [ ] Output follows the shared output contract and skill-specific format.
+
 ## Skill-Specific Guidance
 
 ### 目的
@@ -89,6 +114,7 @@ metadata:
 2. 如有本地 checks 输出，一并提供 `CHECKS_FILE`
 3. 先确认 `CLAUDE_PLUGIN_ROOT` 可用，然后调用 `${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-fix/scripts/codex-verify.sh --review-file <path>`
 4. 阅读 `verify.md`，确认已解决、未解决和剩余阻塞项
+5. 同步查看 `verify.runtime-environment.txt`，核对执行目录、脚本目录、Git/Bash/Node/Codex 路径和版本
 
 ### 适用场景
 
@@ -99,6 +125,7 @@ metadata:
 ### 安全边界
 
 - 不做新实现
+- 允许写 `.codex` verify artifact，不允许修改项目代码
 - 只在高置信时报告新增高风险问题
 - 重点验证上一轮 review 项是否关闭
 

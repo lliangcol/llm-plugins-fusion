@@ -3,7 +3,7 @@ id: codex-verify-only
 stage: review
 title: /codex-verify-only
 description: "Run Codex verification against an existing review artifact and optional checks output."
-destructive-actions: none
+destructive-actions: low
 allowed-tools: Bash Read Glob Grep LS
 invokes:
   skill: nova-codex-verify-only
@@ -20,3 +20,4 @@ Entry semantics:
 - Requires explicit `REVIEW_FILE` before verification.
 - Accepts optional `CHECKS_FILE`, `BASE`, and `OUTPUT_DIR` when supported by the verify script.
 - Must not perform new implementation work.
+- Declares low artifact risk because it runs Bash and writes `.codex` verification artifacts.

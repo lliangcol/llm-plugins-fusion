@@ -35,8 +35,18 @@ jobs:
         run: |
           bash -n nova-plugin/hooks/scripts/pre-write-check.sh
           bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+      - name: Runtime smoke validation
+        run: node scripts/validate-runtime-smoke.mjs
+      - name: Distribution risk scan
+        run: node scripts/scan-distribution-risk.mjs
+      - name: Regression validation
+        run: node scripts/validate-regression.mjs
       - name: Documentation validation
         run: node scripts/validate-docs.mjs
+      - name: Plugin install smoke
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          node scripts/validate-plugin-install.mjs
 
   release:
     name: Create GitHub Release

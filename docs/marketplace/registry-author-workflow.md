@@ -1,7 +1,7 @@
 # Registry Author Workflow
 
 Status: active
-Date: 2026-05-08
+Date: 2026-05-11
 
 This workflow is for adding or maintaining marketplace entries without changing
 the current `nova-plugin/` installation path. It keeps generated marketplace
@@ -43,6 +43,7 @@ node scripts/generate-registry.mjs
 node scripts/validate-schemas.mjs
 node scripts/validate-registry-fixtures.mjs
 node scripts/validate-claude-compat.mjs
+node scripts/scan-distribution-risk.mjs
 node scripts/validate-docs.mjs
 ```
 

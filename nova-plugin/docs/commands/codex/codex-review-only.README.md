@@ -5,6 +5,7 @@
 ## 命令定位
 
 - 使用外部脚本调起 Codex，对当前分支输出结构化 review 报告
+- 输出 `review.md` 与 `runtime-environment.txt`
 - 适用：想先 review，暂时不进入修复
 
 ## 参数说明

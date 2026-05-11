@@ -1,6 +1,6 @@
 ﻿# 📚 Nova Plugin Command Reference (Full)
 
-> **Version**: 2.1.0 | **Last updated**: 2026-05-09
+> **Version**: 2.2.0 | **Last updated**: 2026-05-12
 >
 > This guide is a complete technical reference for all `nova-plugin` commands, including parameter notes, scenario examples, and workflow templates.
 >
@@ -35,6 +35,7 @@
 
 | Category                 | Scenario                               | Recommended command   | Jump                              |
 | ------------------------ | -------------------------------------- | --------------------- | --------------------------------- |
+| **Routing**              | Unsure which command should start      | `/route`              | [Docs](../commands/explore/route.md) |
 | **Requirement analysis** | Understand a new feature request       | `/senior-explore`     | [Example](#场景-新功能需求分析)   |
 | **Requirement analysis** | Quick alignment / shared understanding | `/explore` or `/explore-lite`       | [Example](#场景-快速认知对齐)     |
 | **Requirement analysis** | Review a requirements doc              | `/explore PERSPECTIVE=reviewer` or `/explore-review`     | [Example](#场景-需求文档评审)     |
@@ -101,6 +102,7 @@ The diagram shows the core Explore -> Plan -> Review -> Implement -> Finalize fl
 
 | Stage     | Command               | Constraint | Output                | Writes code? | Notes                                       |
 | --------- | --------------------- | :--------: | --------------------- | :----------: | ------------------------------------------- |
+| Routing   | `/route`              | 🟡 Medium  | Route recommendation  |      ❌      | Read-only command / skill / agent / pack selection |
 | Explore   | `/senior-explore`     | 🔴 Strong  | Analysis output       |      ❌      | Deep analysis                               |
 | Explore   | ⭐`/explore`          | 🟡 Medium  | Perspective-based     |      ❌      | **Unified command, recommended**            |
 | Explore   | `/explore-lite`       |  🟢 Weak   | Short analysis        |      ❌      | = `/explore PERSPECTIVE=observer`           |
@@ -122,7 +124,7 @@ The diagram shows the core Explore -> Plan -> Review -> Implement -> Finalize fl
 | Finalize | `/finalize-work` | 🔴 Strong | Delivery artifacts | ❌ |
 | Finalize | `/finalize-lite` | 🟢 Weak | Minimal summary | ❌ |
 
-**Total commands**: 20 (17 existing + 3 Codex loop commands)
+**Total commands**: 21 (18 workflow commands + 3 Codex loop commands)
 **Recommended**: Use ⭐ marked unified commands for simplified workflow
 
 ---

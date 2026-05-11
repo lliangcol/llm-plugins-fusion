@@ -24,4 +24,4 @@
 ## 输出规范
 
 - 不修改代码
-- 提供 review 文件路径与简要结论
+- 提供 review 文件路径、`runtime-environment.txt` 路径与简要结论

@@ -14,7 +14,7 @@
 活跃的 agent 定义位于：
 
 ```
-nova-plugin/agents/          ← 当前使用（14 个 agent .md 文件）
+nova-plugin/agents/          ← 当前使用（6 个 core agent .md 文件）
 ```
 
 `.claude/agents/active/` 仅作为预留占位目录保留；当前仓库的 active agent
@@ -26,4 +26,4 @@ nova-plugin/agents/          ← 当前使用（14 个 agent .md 文件）
 - 提供历史版本参考，便于查阅早期设计决策
 - 避免直接删除导致 git 历史丢失
 
-> **注意：** 请勿将本目录中的文件作为活跃 agent 引用。如需恢复某个 agent，请将其迁移到 `nova-plugin/agents/` 并更新 `scripts/verify-agents.sh` 计数。
+> **注意：** 请勿将本目录中的文件作为活跃 agent 引用。如需恢复某个 agent，请将其迁移到 `nova-plugin/agents/` 并同步更新验证脚本、路由文档、`AGENTS.md` 与 `CLAUDE.md`。

@@ -5,6 +5,7 @@
 ## Command Positioning
 
 - Runs Codex verification against an existing `review.md`.
+- Outputs `verify.md` and `verify.runtime-environment.txt`.
 - Use when: fixes have been applied and you need a second-pass verification artifact.
 
 ## Parameters
@@ -20,4 +21,3 @@
 ```text
 /codex-verify-only REVIEW_FILE=.codex/codex-review-fix/latest-artifacts/review.md CHECKS_FILE=.codex/codex-review-fix/latest-artifacts/checks.txt BASE=main
 ```
-

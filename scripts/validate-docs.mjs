@@ -603,6 +603,24 @@ function validateInventoryFacts() {
       values: [packCount],
       label: 'CLAUDE pack count',
     },
+    {
+      file: 'ROADMAP.md',
+      pattern: /\| 插件能力面 \| (\d+) 个 slash commands 与 (\d+) 个一对一 `nova-\*` skills。 \|/,
+      values: [commandCount, skillCount],
+      label: 'ROADMAP current command/skill count',
+    },
+    {
+      file: 'docs/marketplace/compatibility-matrix.md',
+      pattern: /\| Nova commands and skills \| (\d+) commands and (\d+) one-to-one `nova-\*` skills \|/,
+      values: [commandCount, skillCount],
+      label: 'compatibility matrix command/skill count',
+    },
+    {
+      file: 'nova-plugin/docs/architecture/dual-track-design.md',
+      pattern: /避免参数、安全和输出规则在 (\d+) 个 skill 中漂移/,
+      values: [skillCount],
+      label: 'dual-track skill count',
+    },
   ];
 
   for (const check of checks) {
