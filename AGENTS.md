@@ -120,6 +120,7 @@ node scripts/validate-hooks.mjs
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 node scripts/validate-runtime-smoke.mjs
+node scripts/validate-surface-budget.mjs
 node scripts/scan-distribution-risk.mjs
 node scripts/validate-regression.mjs
 node scripts/validate-docs.mjs
@@ -140,6 +141,7 @@ npm run validate:docs
 npm run validate:schemas
 npm run validate:runtime
 npm run validate:regression
+npm run validate:surface
 npm run scan:distribution
 ```
 

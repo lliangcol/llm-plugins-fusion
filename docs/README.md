@@ -111,6 +111,7 @@ docs/
 | [prompts/claude-code/fix-from-review.md](prompts/claude-code/fix-from-review.md) | Claude Code prompt for fixing confirmed review findings. |
 | [prompts/claude-code/subagent-execution.md](prompts/claude-code/subagent-execution.md) | Subagent execution prompt for parallelizable work. |
 | [prompts/claude-code/serial-checkpoint.md](prompts/claude-code/serial-checkpoint.md) | Serial checkpoint prompt when subagents are unavailable or unsuitable. |
+| [prompts/common/checkpoint-artifact.md](prompts/common/checkpoint-artifact.md) | Prompt for writing resumable private workbench checkpoint artifacts. |
 | [prompts/common/delivery-docs.md](prompts/common/delivery-docs.md) | Prompt for API, test, implementation, deployment, and handoff docs. |
 | [prompts/common/html-artifact.md](prompts/common/html-artifact.md) | Prompt for optional HTML reading artifacts. |
 | [prompts/common/skill-harness-audit.md](prompts/common/skill-harness-audit.md) | Prompt for deciding whether a workflow belongs in a script, skill, prompt, pack, or profile. |

@@ -10,6 +10,7 @@
     "validate:docs": "node scripts/validate-docs.mjs",
     "validate:runtime": "node scripts/validate-runtime-smoke.mjs",
     "validate:regression": "node scripts/validate-regression.mjs",
+    "validate:surface": "node scripts/validate-surface-budget.mjs",
     "scan:distribution": "node scripts/scan-distribution-risk.mjs",
     "scaffold:consumer": "node scripts/scaffold-consumer-profile.mjs"
   }

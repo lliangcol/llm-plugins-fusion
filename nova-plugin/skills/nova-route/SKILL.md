@@ -79,6 +79,17 @@ Choose the next workflow step before work starts. This skill improves routing qu
 
 ### Routing Table
 
+Use this as the first-stage keyword router before selecting the specific command.
+
+| Intent family | Keyword signals | Primary route |
+| --- | --- | --- |
+| Explore | understand, investigate, clarify, unknowns, facts, risk, scope | `/explore` or `/senior-explore` |
+| Plan | plan, design, proposal, approach, architecture, API shape, migration | `/produce-plan`, `/plan-lite`, or `/backend-plan` |
+| Review | review, audit, verify plan, risk check, security, dependency, PR feedback | `/review`, `/plan-review`, `/codex-review-only`, or `/codex-verify-only` |
+| Implement | implement, fix, refactor, integrate, apply plan, change files | `/implement-plan`, `/implement-standard`, or `/implement-lite` |
+| Finalize | summarize, handoff, release notes, delivery, close out | `/finalize-work` or `/finalize-lite` |
+| Codex loop | Codex, external review, review artifact, verify artifact, closed loop | `/codex-review-fix`, `/codex-review-only`, or `/codex-verify-only` |
+
 | Request signal | Command | Skill | Core agent | Pack hints |
 | --- | --- | --- | --- | --- |
 | Understand facts, unknowns, or risk only | `/explore` | `nova-explore` | `orchestrator` or `reviewer` | Domain packs from context |
@@ -106,7 +117,11 @@ Choose the next workflow step before work starts. This skill improves routing qu
 - Fallback path:
 ```
 
-If the work requires a sequence, output the shortest safe sequence:
+For `DEPTH=normal`, add a one-sentence rationale after the fixed fields. For
+`DEPTH=brief`, output only the fixed fields.
+
+If the work requires a sequence, output the shortest safe sequence and keep the
+same fixed fields for the immediate next step:
 
 ```markdown
 ## Recommended Route

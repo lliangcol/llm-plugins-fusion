@@ -46,8 +46,8 @@ consumer project's own `AGENTS.md`, `CLAUDE.md`, `.claude/`, or private docs.
 - Release evidence template: `docs/releases/release-evidence-template.md`
 - Maintainer npm shortcuts: `package.json` (`validate`, `validate:docs`,
   `validate:schemas`, `validate:runtime`, `validate:regression`,
-  `scan:distribution`, `scaffold:consumer`; no `check`/`lint`/`test`/`build`
-  script names)
+  `validate:surface`, `scan:distribution`, `scaffold:consumer`; no
+  `check`/`lint`/`test`/`build` script names)
 - Repository validation scripts require Node.js 20+. Hook shell syntax and
   runtime smoke checks require Bash; Windows without Bash may warning-skip
   local Bash-dependent checks, while CI/Linux must run them.
@@ -143,6 +143,7 @@ node scripts/validate-hooks.mjs
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 node scripts/validate-runtime-smoke.mjs
+node scripts/validate-surface-budget.mjs
 node scripts/scan-distribution-risk.mjs
 node scripts/validate-regression.mjs
 node scripts/validate-docs.mjs
@@ -156,6 +157,7 @@ npm run validate:docs
 npm run validate:schemas
 npm run validate:runtime
 npm run validate:regression
+npm run validate:surface
 npm run scan:distribution
 ```
 
@@ -383,7 +385,7 @@ broad workflow, release, metadata, or cross-layer changes.
 | --- | --- | --- |
 | Memory and docs | `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/**`, `nova-plugin/docs/**` | `node scripts/validate-docs.mjs` |
 | Skills and commands | `nova-plugin/commands/**`, `nova-plugin/skills/**` | `node scripts/lint-frontmatter.mjs` |
-| Guardrails | `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, distributed Bash scripts | `node scripts/validate-hooks.mjs`, hook `bash -n`, changed script validation, `node scripts/validate-regression.mjs` when validator behavior changes |
+| Guardrails | `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, distributed Bash scripts | `node scripts/validate-hooks.mjs`, hook `bash -n`, changed script validation, `node scripts/validate-surface-budget.mjs` when prompt surfaces change, `node scripts/validate-regression.mjs` when validator behavior changes |
 | Delegation | `nova-plugin/agents/**`, `nova-plugin/packs/**`, `docs/agents/**` | `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`, plus `node scripts/validate-packs.mjs` |
 | Distribution | `.claude-plugin/registry.source.json`, `nova-plugin/.claude-plugin/plugin.json`, generated marketplace outputs | `node scripts/generate-registry.mjs --write`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs`, `node scripts/validate-claude-compat.mjs`; `node scripts/validate-plugin-install.mjs` when install smoke is required |
 
@@ -392,10 +394,16 @@ doc coverage and stage placement, version/date sync, inventory counts, current
 security support range, stale active planning labels, and non-archived report
 status.
 
+Prompt-surface budget checks are a bloat guard, not a quality metric. Run
+`node scripts/validate-surface-budget.mjs` when command, skill, agent, or pack
+surfaces change.
+
 Current CI includes verify-agents, validate-packs, validate-schemas,
 validate-registry-fixtures, validate-claude-compat, plugin install smoke,
-lint-frontmatter, validate-hooks, hook `bash -n`, runtime smoke, distribution
-risk scan, validation regression checks, and validate-docs.
+lint-frontmatter, validate-hooks, hook `bash -n`, runtime smoke, surface budget,
+distribution risk scan, validation regression checks, validate-docs, and a
+Windows non-Bash smoke job for schemas, docs, frontmatter, and
+`scripts/verify-agents.ps1`.
 
 ## Do Not Edit
 

@@ -57,6 +57,12 @@
 | **Delivery**             | Full delivery output (commit/PR)       | `/finalize-work`      | [Example](#场景-完整工作交付)     |
 | **Delivery**             | Minimal summary                        | `/finalize-lite`      | [Example](#场景-快速工作总结)     |
 
+`/route` is the read-only first-stage router: it classifies the request as
+explore, plan, review, implement, finalize, or Codex loop, then recommends one
+next command, skill, core agent, capability packs, required inputs, validation
+expectations, and fallback. It does not write plans, edit code, or run
+validation.
+
 For onboarding, default to `/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work`.
 Other commands are advanced or compatibility entries unless a specific scenario
 requires them.
@@ -102,7 +108,7 @@ The diagram shows the core Explore -> Plan -> Review -> Implement -> Finalize fl
 
 | Stage     | Command               | Constraint | Output                | Writes code? | Notes                                       |
 | --------- | --------------------- | :--------: | --------------------- | :----------: | ------------------------------------------- |
-| Routing   | `/route`              | 🟡 Medium  | Route recommendation  |      ❌      | Read-only command / skill / agent / pack selection |
+| Routing   | `/route`              | 🟡 Medium  | Route recommendation  |      ❌      | Read-only first-stage command / skill / agent / pack / validation routing |
 | Explore   | `/senior-explore`     | 🔴 Strong  | Analysis output       |      ❌      | Deep analysis                               |
 | Explore   | ⭐`/explore`          | 🟡 Medium  | Perspective-based     |      ❌      | **Unified command, recommended**            |
 | Explore   | `/explore-lite`       |  🟢 Weak   | Short analysis        |      ❌      | = `/explore PERSPECTIVE=observer`           |

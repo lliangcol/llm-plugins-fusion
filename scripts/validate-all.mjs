@@ -160,6 +160,7 @@ runNode('validate packs', 'scripts/validate-packs.mjs');
 runNode('validate hooks', 'scripts/validate-hooks.mjs');
 runHookSyntaxChecks();
 runRuntimeSmoke();
+runNode('validate surface budget', 'scripts/validate-surface-budget.mjs');
 runNode('scan distribution risk', 'scripts/scan-distribution-risk.mjs');
 runNode('validate regression', 'scripts/validate-regression.mjs');
 runNode('validate docs', 'scripts/validate-docs.mjs');

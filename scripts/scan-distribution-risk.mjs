@@ -7,6 +7,7 @@
  */
 
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { basename, dirname, extname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -121,6 +122,11 @@ export const checks = [
     pattern: /^\s*(?!#)([A-Z][A-Z0-9_]{2,})\s*=\s*(?!(?:<[^>]+>|\$\{[^}]+\}|REPLACE(?:_ME)?|TODO|TBD|CHANGEME|CHANGE_ME|EXAMPLE|PLACEHOLDER|DUMMY|SAMPLE|REDACTED|null|true|false|0|1)\s*$)(?:"[^"\r\n]{8,}"|'[^'\r\n]{8,}'|[^\s#'"][^\r\n#]{7,})/gmi,
     fileFilter: isRuntimeEnvFile,
   },
+  {
+    label: 'high-risk blanket permission advice',
+    pattern: /\b(?:dangerously-skip-permissions|skip[- ]permissions)\b/gi,
+    matchFilter: isAffirmativePermissionAdvice,
+  },
 ];
 
 function rel(rootDir, absPath) {
@@ -169,6 +175,12 @@ function lineNumberAt(src, index) {
   return src.slice(0, index).split(/\r?\n/).length;
 }
 
+function lineAt(src, index) {
+  const start = src.lastIndexOf('\n', index) + 1;
+  const end = src.indexOf('\n', index);
+  return src.slice(start, end === -1 ? src.length : end);
+}
+
 function isRuntimeEnvFile(relPath) {
   const name = basename(relPath).toLowerCase();
   if (!name.startsWith('.env')) return false;
@@ -189,6 +201,15 @@ function isAllowlistedWarning(rootDir, absPath, label, allowlist) {
   return allowlist.has(`${rel(rootDir, absPath)}::${label}`);
 }
 
+function isAffirmativePermissionAdvice({ src, match }) {
+  const line = lineAt(src, match.index ?? 0);
+  if (/\b(?:do not|don't|never|avoid|not recommend|not recommended|forbid|forbidden|prohibit|prohibited)\b/i.test(line)) {
+    return false;
+  }
+  if (/(?:不建议|不要|不得|禁止|避免)/.test(line)) return false;
+  return /\b(?:recommend|recommended|required|requires|use|run|enable|set|默认|推荐|要求|使用|运行|启用)\b/i.test(line);
+}
+
 function recordFinding({ rootDir, absPath, src, match, label, allowlist, errors, warnings }) {
   const item = {
     path: rel(rootDir, absPath),
@@ -206,9 +227,29 @@ function recordFinding({ rootDir, absPath, src, match, label, allowlist, errors,
   }
 }
 
+function recordPathFinding({ rootDir, relPath, label, errors }) {
+  errors.push({
+    path: relPath,
+    line: 1,
+    label,
+    redacted: '<redacted>',
+    scope: 'active',
+  });
+}
+
 export function formatFinding(finding) {
   const prefix = finding.scope ? `${finding.scope} ` : '';
   return `${prefix}${finding.path}:${finding.line} ${finding.label}: ${finding.redacted}`;
+}
+
+function trackedCodexArtifacts(rootDir) {
+  const result = spawnSync('git', ['ls-files', '-z', '--', '.codex'], {
+    cwd: rootDir,
+    encoding: 'utf8',
+    shell: false,
+  });
+  if (result.error || result.status !== 0 || !result.stdout) return [];
+  return result.stdout.split('\0').filter(Boolean).map((path) => path.replace(/\\/g, '/'));
 }
 
 export function scanDistributionRisk(options = {}) {
@@ -216,6 +257,15 @@ export function scanDistributionRisk(options = {}) {
   const allowlist = loadAllowlist(rootDir, options.allowlistPath ?? DEFAULT_ALLOWLIST_PATH);
   const errors = [];
   const warnings = [];
+
+  for (const artifact of trackedCodexArtifacts(rootDir)) {
+    recordPathFinding({
+      rootDir,
+      relPath: artifact,
+      label: 'tracked Codex runtime artifact',
+      errors,
+    });
+  }
 
   for (const file of walk(rootDir, rootDir)) {
     let src;
@@ -232,6 +282,7 @@ export function scanDistributionRisk(options = {}) {
       if (check.fileFilter && !check.fileFilter(relPath)) continue;
       check.pattern.lastIndex = 0;
       for (const match of src.matchAll(check.pattern)) {
+        if (check.matchFilter && !check.matchFilter({ src, match, relPath })) continue;
         recordFinding({
           rootDir,
           absPath: file,

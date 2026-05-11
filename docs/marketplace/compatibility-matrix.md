@@ -16,7 +16,9 @@ entries. It is the compatibility evidence target referenced by
 | Nova commands and skills | 21 commands and 21 one-to-one `nova-*` skills | `node scripts/lint-frontmatter.mjs` | Command docs remain covered by `node scripts/validate-docs.mjs`. |
 | Codex review/fix/verify loop | Codex CLI plus Bash for distributed skill scripts | `nova-plugin/docs/commands/codex/`, `nova-plugin/skills/nova-codex-review-fix/scripts/`, and `node scripts/validate-runtime-smoke.mjs` | Codex runtime artifacts under `.codex/` are never committed. Review/verify runs record runtime environment artifacts with CLI paths and versions. If Codex CLI is unavailable, use the ordinary `/review` -> `/implement-plan` path instead. |
 | Repository validation | Node.js 20+ | `node scripts/validate-all.mjs`, including `node scripts/validate-runtime-smoke.mjs` and `node scripts/scan-distribution-risk.mjs` | Validation scripts use built-in Node.js APIs and repository files. |
+| Prompt-surface budgets | Node.js 20+ | `node scripts/validate-surface-budget.mjs` | Budget checks are a prompt bloat guard, not a feature-quality metric. |
 | Hook syntax checks | Bash on PATH | `bash -n nova-plugin/hooks/scripts/pre-write-check.sh` and `bash -n nova-plugin/hooks/scripts/post-audit-log.sh` | Windows without Bash may warning-skip local syntax checks; CI/Linux must run them. |
+| Windows maintenance smoke | Windows runner with Node.js 20 and PowerShell | CI `windows-node-smoke` job | Runs non-Bash checks only: schemas, docs, frontmatter, and `scripts/verify-agents.ps1`. Bash-dependent checks remain CI/Linux evidence. |
 | Optional enhanced tools | Installed plugins or tools named by capability packs | `docs/agents/PLUGIN_AWARE_ROUTING.md` and `nova-plugin/packs/` | Enhanced mode is optional; fallback mode must remain documented. |
 
 ## Current Plugin Evidence
@@ -34,6 +36,8 @@ entries. It is the compatibility evidence target referenced by
   as command and skill inventories.
 - Validation evidence should name the script or check suite reviewers can run
   locally.
+- Surface budget evidence prevents prompt growth from becoming invisible; it
+  does not prove workflow output quality.
 - Release evidence must include distribution risk scan output before public
   promotion or artifact publishing.
 - Prerequisite evidence should state optional tools separately from required

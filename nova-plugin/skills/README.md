@@ -35,7 +35,7 @@ contracts, artifact policy, and agent routing boundaries.
 ## Recommended Entrypoints
 
 1. Use `nova-codex-review-fix` when you need a review -> fix -> verify closed loop with external Codex scripts.
-2. Use `nova-route` when the next command, skill, agent, pack, or validation path is unclear.
+2. Use `nova-route` as the read-only first-stage router when the next command, skill, agent, pack, or validation path is unclear.
 3. Use `nova-explore` for unified exploration routing; use `nova-senior-explore` for deep analysis.
 4. Use `nova-review` for unified severity-based routing; use `nova-review-lite` for daily quick checks.
 5. Use `nova-produce-plan` for formal docs; use `nova-backend-plan` for Java/Spring-specific design.

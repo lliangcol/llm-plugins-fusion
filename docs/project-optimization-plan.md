@@ -27,6 +27,7 @@ Primary optimization sequence:
 4. Fact drift validation.
 5. Environment and release evidence.
 6. Retired archive cleanup and active-agent surface protection.
+7. GSD-informed reliability hardening.
 
 ## Current Baseline
 
@@ -42,8 +43,8 @@ Primary optimization sequence:
   fixtures, Claude compatibility, command/skill frontmatter, active agents,
   packs, hooks configuration, runtime smoke, distribution risk scanning,
   regression checks for key validation contracts, documentation links, version
-  references, current minor support range, stale active planning labels, and
-  active documentation inventory counts.
+  references, current minor support range, stale active planning labels, prompt
+  surface budgets, and active documentation inventory counts.
 - On Windows without Bash, `node scripts/validate-all.mjs` may report
   skipped Bash-dependent checks for local hook shell syntax and runtime smoke.
   CI/Linux must still run the Bash gates before release or promotion.
@@ -205,6 +206,8 @@ Completed Work:
   validation output; skipped count remains in the validation summary.
 - Kept Bash as the authoritative hook syntax runtime; did not add a PowerShell
   substitute unless the hook runtime changes.
+- Added a Windows non-Bash CI smoke lane for schema, docs, frontmatter, and
+  PowerShell agent verification evidence.
 
 Acceptance Criteria:
 
@@ -212,6 +215,33 @@ Acceptance Criteria:
   local pass.
 - CI/Linux remains the authoritative Bash syntax and runtime smoke gate.
 - Operators can tell whether they validated an exact tag or unreleased `main`.
+
+### 7. GSD-Informed Reliability Hardening
+
+Status: in progress in current unreleased work
+
+Why: The GSD project demonstrates useful engineering controls for AI workflow
+systems: compact routing, durable checkpoints, prompt-surface budgets, and
+explicit release evidence. Nova should adopt the controls that fit its
+marketplace-oriented, low-default-permission model without copying GSD's broad
+command surface or high-permission posture.
+
+Planned Work:
+
+- Strengthen `/route` as the read-only first-stage router.
+- Add a checkpoint artifact contract for private consumer workbenches.
+- Add `node scripts/validate-surface-budget.mjs` as a prompt bloat guard.
+- Add Windows non-Bash CI smoke evidence.
+- Expand distribution risk scanning for high-risk blanket permission advice and
+  tracked `.codex/` runtime artifacts.
+
+Acceptance Criteria:
+
+- The command count remains 21 and command/skill one-to-one mapping remains
+  intact.
+- No public doc recommends blanket permission bypasses as the default path.
+- Surface budget validation is wired into `validate-all`, CI, npm shortcuts,
+  and release evidence.
 
 ### 6. Retired Archive Cleanup
 
@@ -249,6 +279,7 @@ Acceptance Criteria:
 4. Fact drift validation.
 5. Environment and release evidence.
 6. Retired archive cleanup and active-agent surface protection.
+7. GSD-informed reliability hardening.
 
 Do not start public portal work, production multi-plugin directory migration, or
 large domain command families as part of these tracks.

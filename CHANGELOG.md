@@ -31,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   分发风险扫描和 command/skill/docs drift 的关键回归。
 - 新增 `scripts/distribution-risk.allowlist.json`，为历史归档风险发现提供
   redacted allowlisted warning 记录。
+- 新增 `scripts/validate-surface-budget.mjs` 与 surface budget allowlist，
+  用于限制公开 command、skill、agent 和 pack 文档表面积继续膨胀。
+- 新增 `docs/prompts/common/checkpoint-artifact.md`，为私有 consumer workbench
+  中的长任务恢复点提供公共安全 prompt 模板。
 
 ### Changed
 - 收紧文件扫描与本地检查边界：`.gitignore` 不再放行 retired
@@ -59,6 +63,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   stable release。
 - 收紧 checkpoint 与 verification 输出契约：验证证据必须对应预期行为、
   仓库事实、review finding 或变更目标，不能只用测试通过替代行为或事实确认。
+- 明确 `/route` / `nova-route` 是只读第一阶段路由器，先做 intent family
+  分类，再推荐最小可执行下一步和必要验证建议。
 
 ### Removed
 - 删除当前交付不再需要的中间、历史和临时文档，包括 retired

@@ -56,7 +56,7 @@ Capability packs are optional routing context, not runtime-loaded agents. See [P
 10. "大型重构: 模块拆分，降低耦合" -> `architect` then `builder`, with relevant domain packs.
 11. "补测试: 提升覆盖率并修复 flaky" -> `verifier` then `builder`, with relevant domain packs.
 12. "部署/环境/容器/CI/CD/平台治理问题" -> `architect`, `builder`, and `verifier`; use `release`, `dependency`, or `mcp` when relevant.
-13. "不确定该从哪个 nova 命令开始" -> use `/route` / `nova-route` first; it selects command, skill, core agent, packs, required inputs, validation, and fallback path.
+13. "不确定该从哪个 nova 命令开始" -> use `/route` / `nova-route` first; it is the read-only first-stage router for command, skill, core agent, packs, required inputs, validation, and fallback path.
 14. "按官方文档核对框架用法" -> `reviewer` or `architect`, with `docs` plus the relevant domain pack.
 15. "高风险结论需要反向验证" -> `reviewer`, with `security` or the relevant domain pack.
 16. "迁移、废弃、兼容窗口和回滚策略" -> `architect` then `publisher`, with `release` and `docs`.

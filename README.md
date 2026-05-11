@@ -88,6 +88,8 @@ Windows PowerShell 可以运行 Node 校验和 `scripts/verify-agents.ps1`。如
 ## Quick Start
 
 最短上手路径见 [docs/getting-started.md](./docs/getting-started.md)。普通 `nova-plugin` workflow 只需要 Claude Code 插件；维护仓库或运行本地校验需要 Node.js 20+；Codex 闭环命令额外需要本机 Codex CLI 和 Bash。
+`nova-plugin` 不建议用全局权限绕过作为默认运行方式；写入、Bash 和外部
+CLI 流程应通过明确参数、preflight、artifact 范围和验证证据来约束。
 
 在 Claude Code 中添加 marketplace 并安装插件：
 
@@ -277,6 +279,7 @@ npm run validate:docs
 npm run validate:schemas
 npm run validate:runtime
 npm run validate:regression
+npm run validate:surface
 npm run scan:distribution
 ```
 

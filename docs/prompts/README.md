@@ -31,6 +31,7 @@ rules out of this public repository.
 | [claude-code/fix-from-review.md](claude-code/fix-from-review.md) | Claude Code should fix confirmed review findings in scoped batches. |
 | [claude-code/subagent-execution.md](claude-code/subagent-execution.md) | A task can be split across independent subagents or workers. |
 | [claude-code/serial-checkpoint.md](claude-code/serial-checkpoint.md) | Subagents are not available or should not be used, so one agent must proceed by checkpoints. |
+| [common/checkpoint-artifact.md](common/checkpoint-artifact.md) | A long-running task needs a resumable Markdown checkpoint in a private consumer workbench. |
 | [common/delivery-docs.md](common/delivery-docs.md) | A completed change needs API, test, implementation, deployment, and handoff docs. |
 | [common/html-artifact.md](common/html-artifact.md) | A plan, review, report, or handoff needs a visual, shareable HTML artifact without making HTML the source of truth. |
 | [common/skill-harness-audit.md](common/skill-harness-audit.md) | A repeated agent workflow needs placement as a script, skill, prompt, pack, or consumer profile. |

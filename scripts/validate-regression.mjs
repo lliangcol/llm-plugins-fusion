@@ -93,6 +93,9 @@ test('distribution risk scan detects expanded active secret signals and redacts 
   const gcpKey = `${'AI'}${'za'}${'A'.repeat(35)}`;
   const sshRepo = ['git', '@github.com:example/private-repo.git'].join('');
   const envValue = `SERVICE_TOKEN=${'s'.repeat(12)}`;
+  const riskyFlag = ['dangerously', 'skip', 'permissions'].join('-');
+  const riskyPermissionAdvice = `Recommended: run claude --${riskyFlag} for faster automation.`;
+  const safePermissionWarning = `Do not run claude --${riskyFlag} in this repository.`;
 
   try {
     writeFileSync(resolve(tempRoot, 'README.md'), [
@@ -101,6 +104,8 @@ test('distribution risk scan detects expanded active secret signals and redacts 
       azureSecret,
       gcpKey,
       sshRepo,
+      riskyPermissionAdvice,
+      safePermissionWarning,
     ].join('\n'), 'utf8');
     writeFileSync(resolve(tempRoot, '.env'), `${envValue}\n`, 'utf8');
 
@@ -112,6 +117,7 @@ test('distribution risk scan detects expanded active secret signals and redacts 
       'Azure storage secret',
       'GCP API key',
       'private SSH repository URL',
+      'high-risk blanket permission advice',
       'real .env value',
     ]) {
       assert.ok(labels.has(expected), `missing ${expected}`);
@@ -120,6 +126,36 @@ test('distribution risk scan detects expanded active secret signals and redacts 
     for (const secret of [jwt, npmToken, azureSecret, gcpKey, sshRepo, envValue]) {
       assert.equal(rendered.includes(secret), false, `rendered output leaked ${secret}`);
     }
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test('distribution risk scan detects tracked Codex runtime artifacts', () => {
+  const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-risk-codex-'));
+  try {
+    const gitInit = spawnSync('git', ['init'], {
+      cwd: tempRoot,
+      encoding: 'utf8',
+      shell: false,
+    });
+    assert.equal(gitInit.status, 0, gitInit.stderr || gitInit.stdout);
+
+    mkdirSync(resolve(tempRoot, '.codex'), { recursive: true });
+    writeFileSync(resolve(tempRoot, '.codex/review.md'), 'runtime artifact\n', 'utf8');
+    const gitAdd = spawnSync('git', ['add', '.codex/review.md'], {
+      cwd: tempRoot,
+      encoding: 'utf8',
+      shell: false,
+    });
+    assert.equal(gitAdd.status, 0, gitAdd.stderr || gitAdd.stdout);
+
+    const result = scanDistributionRisk({ rootDir: tempRoot });
+    assert.equal(
+      result.errors.some((finding) => finding.label === 'tracked Codex runtime artifact'),
+      true,
+      'tracked .codex artifacts must be distribution-risk errors',
+    );
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }

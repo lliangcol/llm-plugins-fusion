@@ -37,6 +37,14 @@ Claude-compatible `.claude-plugin/marketplace.json`.
 | `medium` | Write-capable commands, hooks, Bash scripts, generated artifacts, dependency-sensitive behavior, or broader workflow impact. |
 | `high` | Security-sensitive automation, credential handling, destructive operations, networked execution, or behavior that requires explicit maintainer approval. |
 
+## Permission Posture
+
+`nova-plugin` does not rely on blanket high-permission execution as a public
+recommendation. Write-capable commands and external CLI loops must keep their
+scope explicit through command parameters, safety preflight, and validation
+evidence. Documentation should describe required tools and fallback paths
+without recommending global permission bypasses.
+
 ## Review Requirements
 
 - Registry changes must update `.claude-plugin/registry.source.json` first, then
@@ -47,5 +55,8 @@ Claude-compatible `.claude-plugin/marketplace.json`.
   repository-local metadata.
 - Security-sensitive changes follow
   [Security Review Route](security-review-route.md).
+- Public docs and prompts must keep high-risk permission guidance scoped,
+  contextual, and preferably negative unless a maintainer approves a specific
+  local-only procedure.
 - Release or version changes follow
   [Release Hygiene](../releases/release-hygiene.md).

@@ -68,6 +68,10 @@ Before running Bash or external scripts:
 - Confirm required environment, such as `CLAUDE_PLUGIN_ROOT`, Git repository,
   Bash, Codex CLI, or Node.js, as applicable.
 - Treat missing runtime dependencies as a blocker, not as a reason to guess.
+- Keep execution scoped to the command, script, files, and artifacts named in
+  the preflight card.
+- Do not recommend blanket permission bypasses or global high-permission
+  runtime modes as the default path for `nova-plugin` workflows.
 
 ## Disallowed Operations
 

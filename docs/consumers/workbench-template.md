@@ -68,6 +68,40 @@ delivery reports, and handoff artifacts. Treat those HTML files as derived
 reading artifacts; keep the durable Markdown checkpoint, source requirements,
 review artifact, code diff, or validation output as the authority.
 
+## Checkpoint Artifact Contract
+
+Use checkpoint artifacts for multi-session work, cross-tool handoffs, review/fix
+loops, or any task where another agent may need to resume without reading the
+chat history.
+
+Minimum checkpoint shape:
+
+```markdown
+# Checkpoint: <task or unit>
+
+## Scope
+## Inputs Read
+## Work Completed
+## Decisions
+## Evidence
+## Behavior Verified
+## Validation
+## Skipped or Unverified
+## Open Items
+## Next Unit
+```
+
+Field requirements:
+
+- `Evidence` cites source files, diffs, artifacts, or command output.
+- `Behavior Verified` names the acceptance behavior, repository fact, review
+  finding, or change goal confirmed by the evidence.
+- `Validation` records commands or checks actually run and observed results.
+- `Skipped or Unverified` records skipped checks, unverified behavior, reason,
+  and residual risk.
+
+Reusable prompt: [Checkpoint Artifact Prompt](../prompts/common/checkpoint-artifact.md).
+
 ## Naming
 
 Use names that sort and resume well:
@@ -149,4 +183,5 @@ Run this checklist before final handoff:
 
 - [Context-Safe Agent Workflows](../workflows/context-safe-agent-workflows.md)
 - [Prompt Template Library](../prompts/README.md)
+- [Checkpoint Artifact Prompt](../prompts/common/checkpoint-artifact.md)
 - [Workbench tidy prompt](../prompts/common/workbench-tidy.md)

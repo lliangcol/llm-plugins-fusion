@@ -10,6 +10,7 @@ Use this policy for analysis, plan, review, verification, and handoff artifacts.
 | Plan | User-provided `PLAN_OUTPUT_PATH` | Must be explicit or confirmed before writing. |
 | Review | `.codex/codex-review-fix/...` or user-provided path | Runtime review artifacts are not release source files. |
 | Verify | `.codex/codex-review-fix/...` or user-provided path | May reference checks output. |
+| Checkpoint | Consumer workbench path or explicit user-provided path | Resumable Markdown artifact for long work; records evidence, behavior verified, validation, skipped checks, and next unit. |
 | Handoff | Chat output unless a path is explicit | Should summarize state and validation. |
 | HTML visual artifact | User-provided path or consumer workbench `html/` directory | Optional derived reading artifact; Markdown, code, review, or validation source remains authoritative. |
 
@@ -19,6 +20,10 @@ Use this policy for analysis, plan, review, verification, and handoff artifacts.
 - Create parent directories only for the explicit target artifact.
 - Overwrite only when the skill explicitly allows overwrite or the user confirms.
 - Keep generated artifacts deterministic enough for review.
+- For long-running work, prefer a small checkpoint artifact over relying on chat
+  history. Use the public template in
+  `docs/prompts/common/checkpoint-artifact.md` and store concrete private facts
+  only in the consumer workspace.
 - Do not write artifacts outside the repository unless the user provides the
   absolute path.
 - Treat HTML artifacts as derived reading artifacts unless a workflow explicitly

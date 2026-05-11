@@ -18,6 +18,8 @@ Run the security review path when a change touches any of these areas:
   ownership, deprecation, or compatibility evidence.
 - Dependency installation, generated artifacts consumed by users, or external
   network behavior.
+- Documentation or prompts that recommend broad permission bypasses, unscoped
+  external command execution, or unchecked automation.
 - Documentation that changes security guidance, disclosure flow, or release
   failure handling.
 
@@ -41,6 +43,7 @@ Run the security review path when a change touches any of these areas:
 | Distributed Bash/Codex scripts | `node scripts/validate-runtime-smoke.mjs`, runtime environment artifact review, no committed `.codex/` artifacts |
 | Hooks | `node scripts/validate-hooks.mjs`, `bash -n` for both hook scripts when Bash is available |
 | Documentation | `node scripts/validate-docs.mjs` |
+| Prompt or workflow surface size | `node scripts/validate-surface-budget.mjs` |
 | Broad workflow changes | `node scripts/validate-all.mjs`, `node scripts/scan-distribution-risk.mjs`, `git diff --check` |
 
 ## Reviewer Output
@@ -51,6 +54,7 @@ Security review notes should state:
 - The risk-level rationale and whether it changed.
 - Sensitive tool, hook, script, network, credential, or dependency behavior.
 - Distribution risk scan result for active private paths, credentials, private
-  network addresses, and internal endpoints.
+  network addresses, internal endpoints, high-risk blanket permission advice,
+  and tracked `.codex/` runtime artifacts.
 - Validation run and any skipped checks, including Bash availability.
 - Residual risk or explicit reason no additional security action is needed.

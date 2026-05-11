@@ -1,0 +1,10 @@
+{
+  "overrides": [
+    {
+      "path": "nova-plugin/skills/nova-produce-plan/SKILL.md",
+      "limit": 340,
+      "reason": "Retains migrated slash-command contract details for the formal planning workflow.",
+      "splitPlan": "When this skill is next edited for behavior, move reusable planning contract detail into shared policy or command docs and bring the skill under the default 300-line budget."
+    }
+  ]
+}

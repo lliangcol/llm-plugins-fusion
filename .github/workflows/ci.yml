@@ -97,6 +97,16 @@ jobs:
           node-version: '20'
       - run: node scripts/validate-runtime-smoke.mjs
 
+  validate-surface-budget:
+    name: Validate Surface Budget
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/validate-surface-budget.mjs
+
   scan-distribution-risk:
     name: Scan Distribution Risk
     runs-on: ubuntu-latest
@@ -126,3 +136,17 @@ jobs:
         with:
           node-version: '20'
       - run: node scripts/validate-docs.mjs
+
+  windows-node-smoke:
+    name: Windows Node Smoke
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/validate-schemas.mjs
+      - run: node scripts/validate-docs.mjs
+      - run: node scripts/lint-frontmatter.mjs
+      - run: .\scripts\verify-agents.ps1
+        shell: pwsh

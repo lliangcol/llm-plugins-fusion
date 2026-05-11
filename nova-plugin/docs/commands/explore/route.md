@@ -4,7 +4,9 @@
 
 ## 用途
 
-`/route` 是只读工作流路由入口，用于在开始工作前选择下一步 `nova-plugin` 命令、skill、core agent、capability packs、必需输入和验证路径。
+`/route` 是只读第一阶段工作流路由入口，用于在开始工作前选择下一步 `nova-plugin` 命令、skill、core agent、capability packs、必需输入和验证路径。
+
+它先把请求归类为 Explore、Plan、Review、Implement、Finalize 或 Codex loop，再推荐一个最小可执行的下一步；只有跨阶段任务才输出短序列。
 
 ## 参数
 
@@ -30,6 +32,8 @@
 
 如果需要一串工作流步骤，输出最短安全序列。
 
+`DEPTH=brief` 时只输出固定字段；默认 `normal` 可附一行简短理由。
+
 ## 示例
 
 ```text
@@ -48,3 +52,4 @@ Cursor 中没有 Claude slash command，如何用 nova skills 处理这个需求
 - 不写计划文件或路由 artifact。
 - 不运行测试、安装、Git 或外部 review 命令。
 - 不发明不存在的命令、skill、agent 或 pack。
+- 不把验证建议描述为已经通过。
