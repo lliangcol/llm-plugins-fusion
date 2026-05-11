@@ -6,7 +6,7 @@
 
 ## Scope
 
-This report records the current repository state for `D:\Projects\claude-plugins-fusion`.
+This report records the repository state for `<local-path>\claude-plugins-fusion`.
 
 Audit coverage:
 

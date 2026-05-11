@@ -1,0 +1,32 @@
+diff --git a/src/invoice-sync.js b/src/invoice-sync.js
+index 1111111..2222222 100644
+--- a/src/invoice-sync.js
++++ b/src/invoice-sync.js
+@@ -8,10 +8,10 @@ export async function syncPendingInvoices({ store, accountingClient, logger }) {
+   const pending = await store.findPendingInvoices();
+ 
+   for (const invoice of pending) {
++    await store.markSynced(invoice.id);
+     try {
+       await accountingClient.sendInvoice(invoice);
+-      await store.markSynced(invoice.id);
+       logger.info({ invoiceId: invoice.id }, "invoice synced");
+     } catch (error) {
+       logger.warn({ invoiceId: invoice.id, error }, "invoice sync failed");
+@@ -23,6 +23,7 @@ export async function syncPendingInvoices({ store, accountingClient, logger }) {
+ }
+diff --git a/test/invoice-sync.test.js b/test/invoice-sync.test.js
+index 3333333..4444444 100644
+--- a/test/invoice-sync.test.js
++++ b/test/invoice-sync.test.js
+@@ -14,3 +14,10 @@ test("marks invoice synced after successful send", async () => {
+   await syncPendingInvoices({ store, accountingClient, logger });
+   assert.equal(store.syncedIds.length, 1);
+ });
++
++test("logs external failures", async () => {
++  const store = fakeStore([{ id: "inv-1" }]);
++  const accountingClient = failingAccountingClient();
++  await syncPendingInvoices({ store, accountingClient, logger });
++  assert.equal(logger.warnCalls.length, 1);
++});

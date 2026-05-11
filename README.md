@@ -288,7 +288,7 @@ llm-plugins-fusion/
 | [Workbench consumer template](./docs/consumers/workbench-template.md) | 私有工作区目录、命名、checkpoint 和 handoff 规则 | 长任务过程资产沉淀 |
 | [Redacted examples](./docs/examples/README.md) | 脱敏 Java backend 和 frontend workflow 示例 | 编写私有 profile 或 handoff 模板 |
 | [Workflow evaluation examples](./docs/examples/workflow-evaluation.md) | 五阶段 workflow 的公开安全样例、rubric 和失败信号 | 验证命令输出质量 |
-| [Workflow evaluation record](./docs/examples/workflow-evaluation-record-2026-05-12.md) | `v2.2.0` 五阶段 workflow evaluation 草稿，等待人工命令执行 | 发布前 workflow 质量证据 |
+| [Workflow evaluation record](./docs/examples/workflow-evaluation-record-2026-05-12.md) | `v2.2.0` 五阶段 workflow evaluation fixture 已准备，人工命令执行仍待办 | 发布前 workflow 质量证据 |
 | [Context-safe workflows](./docs/workflows/context-safe-agent-workflows.md) | 防上下文膨胀的 review、fix、文档和交付闭环 | 大任务拆分与断点续跑 |
 | [Thin harness, fat skills doctrine](./docs/workflows/thin-harness-fat-skills.md) | 判定脚本、skill、prompt、pack 和 consumer profile 的沉淀边界 | 把重复 agent 工作流转成项目资产 |
 | [Prompt template library](./docs/prompts/README.md) | Codex、Claude Code 和通用交付文档 prompt 模板 | 复制到私有 consumer 项目后定制 |

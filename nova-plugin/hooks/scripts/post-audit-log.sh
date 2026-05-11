@@ -11,9 +11,21 @@ set -euo pipefail
 
 INPUT=$(cat)
 
+node_command() {
+  local candidate=""
+  for candidate in node node.exe; do
+    if command -v "$candidate" >/dev/null 2>&1 && "$candidate" --version >/dev/null 2>&1; then
+      printf '%s\n' "$candidate"
+      return 0
+    fi
+  done
+  return 1
+}
+
 json_read() {
   local field="$1"
   local jq_expr
+  local node_bin=""
 
   case "$field" in
     tool_name) jq_expr='.tool_name // "unknown"' ;;
@@ -29,8 +41,8 @@ json_read() {
     return 0
   fi
 
-  if command -v node >/dev/null 2>&1; then
-    printf '%s' "$INPUT" | node -e '
+  if node_bin="$(node_command)"; then
+    printf '%s' "$INPUT" | "$node_bin" -e '
 const fs = require("fs");
 const field = process.argv[1];
 let data = {};
@@ -55,6 +67,40 @@ process.stdout.write(value == null ? "" : String(value));
   return 0
 }
 
+redact_sensitive_text() {
+  local text="$1"
+  local node_bin=""
+
+  if node_bin="$(node_command)"; then
+    printf '%s' "$text" | "$node_bin" -e '
+const fs = require("fs");
+let value = fs.readFileSync(0, "utf8");
+const patterns = [
+  [/\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b/g, "<redacted>"],
+  [/\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{20,}\b/g, "<redacted>"],
+  [/\bxox[baprs]-[A-Za-z0-9-]{20,}\b/g, "<redacted>"],
+  [/\bnpm_[A-Za-z0-9]{36,}\b/g, "<redacted>"],
+  [/\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g, "<redacted>"],
+  [/(Authorization:\s*Bearer\s+)[^\s]+/gi, "$1<redacted>"],
+  [/\b(password|secret|api[_-]?key|access[_-]?token|auth[_-]?token|bearer[_-]?token|refresh[_-]?token|client[_-]?secret|private[_-]?key|npm[_-]?token|github[_-]?token|openai[_-]?api[_-]?key)\b\s*[:=]\s*(?:"[^"]{6,}"|\x27[^\x27]{6,}\x27|[^\s#"\x27=]{16,})/gi, "$1=<redacted>"],
+];
+for (const [pattern, replacement] of patterns) {
+  value = value.replace(pattern, replacement);
+}
+process.stdout.write(value);
+' 2>/dev/null || printf '%s' "$text"
+    return 0
+  fi
+
+  printf '%s' "$text" \
+    | sed -E \
+      -e 's/sk-(proj-)?[A-Za-z0-9_-]{20,}/<redacted>/g' \
+      -e 's/(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{20,}/<redacted>/g' \
+      -e 's/xox[baprs]-[A-Za-z0-9-]{20,}/<redacted>/g' \
+      -e 's/npm_[A-Za-z0-9]{36,}/<redacted>/g' \
+      -e 's/eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/<redacted>/g'
+}
+
 TOOL_NAME=$(json_read tool_name)
 TOOL_NAME=${TOOL_NAME:-unknown}
 FILE_PATH=$(json_read file_path)
@@ -68,12 +114,14 @@ if [ -n "$FILE_PATH" ]; then
   SUMMARY="$FILE_PATH"
 elif [ -n "$COMMAND" ]; then
   # 命令截断到 60 字符
-  SUMMARY="${COMMAND:0:60}"
-  [ ${#COMMAND} -gt 60 ] && SUMMARY="${SUMMARY}..."
+  REDACTED_COMMAND=$(redact_sensitive_text "$COMMAND")
+  SUMMARY="${REDACTED_COMMAND:0:60}"
+  [ ${#REDACTED_COMMAND} -gt 60 ] && SUMMARY="${SUMMARY}..."
 else
   SUMMARY=$(json_read tool_input_keys)
   SUMMARY=${SUMMARY:-N/A}
 fi
+SUMMARY=$(redact_sensitive_text "$SUMMARY")
 
 STATUS="SUCCESS"
 if [ "$SUCCESS" = "false" ]; then

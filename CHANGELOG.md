@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Added
+- 新增 `fixtures/workflow/invoice-sync/` 公开安全五阶段 workflow evaluation
+  fixture，为 `/explore`、`/produce-plan`、`/review`、`/implement-plan`、
+  `/finalize-work` 提供脱敏输入、buggy review diff 和 approved plan。
 - 新增 `docs/README.md` 仓库级文档总索引，集中维护 `docs/` 目录结构、
   当前文档清单、归档边界和文档维护规则。
 - 新增 `docs/getting-started.md` 极简上手文档，聚焦安装、`/route`、五主命令、
@@ -33,6 +36,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   redacted allowlisted warning 记录。
 
 ### Changed
+- 增强 Claude hook 安全边界：pre-write 检测更多常见 token / secret 形态，
+  post-audit 在写入 Bash 命令摘要前进行脱敏，并把覆盖加入 runtime smoke。
+- `scripts/scaffold.mjs` 新增 `--docs-dir codex` / `--codex`，避免新增 Codex
+  command 时把三份命令文档生成到普通 stage 目录。
+- 将历史审计报告中的机器本地路径替换为脱敏占位，并清空对应分发风险
+  allowlist。
 - 在根 README、英文 overview、`nova-plugin/docs/README.md`、`AGENTS.md`
   和 `CLAUDE.md` 中补充仓库文档总索引与根目录文档入口，减少跨目录导航分散。
 - 将 `run-project-checks.sh` 从字符串命令执行改为显式 task dispatcher，移除

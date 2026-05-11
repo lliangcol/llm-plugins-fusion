@@ -82,6 +82,13 @@ node scripts/scaffold.mjs command /foo-artifact --stage review --profile artifac
 node scripts/scaffold.mjs command /foo-fix --stage implement --profile implementation --description "Implement a bounded foo fix with validation."
 ```
 
+Codex command docs are centralized under `nova-plugin/docs/commands/codex/`.
+Use `--docs-dir codex` or `--codex` when scaffolding a new Codex command:
+
+```bash
+node scripts/scaffold.mjs command /codex-audit --stage review --profile artifact --docs-dir codex --description "Write a bounded Codex audit artifact." --dry-run
+```
+
 After scaffolding a command, update user-facing indexes and run:
 
 ```bash

@@ -61,7 +61,7 @@ bash -n nova-plugin/hooks/scripts/post-audit-log.sh: passed
 Exact v2.2.0 tag: blocker / pending manual creation and push after commit
 GitHub Release: blocker / pending release workflow or manual release creation
 Plugin install smoke: blocker / pending CI or isolated test-user environment
-Five-stage workflow evaluation: blocker / pending manual execution of docs/examples/workflow-evaluation-record-2026-05-12.md
+Five-stage workflow evaluation: blocker / fixture prepared at fixtures/workflow/invoice-sync/; pending manual execution of docs/examples/workflow-evaluation-record-2026-05-12.md
 Archive context measurement: non-release blocker unless archive movement is proposed; pending measurement and keep archive in place
 ```
 
@@ -99,7 +99,7 @@ Deferred v3/public portal wording checked: yes; active docs keep v3, public port
 ```text
 Manual evaluation source: docs/examples/workflow-evaluation.md
 Workflow evaluation record: docs/examples/workflow-evaluation-record-2026-05-12.md
-Commands evaluated: pending manual execution of /explore, /produce-plan, /review, /implement-plan, /finalize-work
+Commands evaluated: fixture prepared; pending manual execution of /explore, /produce-plan, /review, /implement-plan, /finalize-work
 Boundary control result: pending
 Facts vs assumptions result: pending
 Skipped validation reporting result: pending

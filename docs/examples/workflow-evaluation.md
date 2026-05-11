@@ -8,6 +8,10 @@ primary `nova-plugin` workflow commands. They are intentionally fictional and
 must not include private project names, repository paths, endpoints,
 credentials, runtime flags, or proprietary workflows.
 
+The disposable fixture for these scenarios is
+[fixtures/workflow/invoice-sync/](../../fixtures/workflow/invoice-sync/).
+Use a throwaway branch or copy when running implementation commands.
+
 ## Evaluation Rules
 
 - Evaluate output quality, not exact wording.

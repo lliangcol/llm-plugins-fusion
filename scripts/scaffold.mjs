@@ -30,8 +30,9 @@ const VALUE_FLAGS = new Set([
   'argument-hint',
   'input-name',
   'subagent-safe',
+  'docs-dir',
 ]);
-const BOOLEAN_FLAGS = new Set(['dry-run', 'force', 'help']);
+const BOOLEAN_FLAGS = new Set(['codex', 'dry-run', 'force', 'help']);
 
 const PROFILES = {
   read: {
@@ -72,6 +73,8 @@ Options:
   --argument-hint <text>       Skill argument hint.
   --input-name <name>          Primary skill input parameter. Default depends on profile.
   --subagent-safe <bool>       true or false. Default: true.
+  --docs-dir <dir>             Command docs directory. Use codex for Codex commands.
+  --codex                      Shorthand for --docs-dir codex.
   --force                      Overwrite existing scaffold targets.
   --dry-run                    Print target files without writing.
   --help                       Show this help.
@@ -85,6 +88,7 @@ Examples:
   node scripts/scaffold.mjs command /foo --stage plan --description "Create a practical foo execution plan." --dry-run
   node scripts/scaffold.mjs command /foo-artifact --stage review --profile artifact --description "Write a bounded foo review artifact."
   node scripts/scaffold.mjs command /foo-fix --stage implement --profile implementation --description "Implement a bounded foo fix with validation."
+  node scripts/scaffold.mjs command /codex-audit --stage review --profile artifact --docs-dir codex --description "Write a bounded Codex audit artifact."
 `;
 }
 
@@ -210,6 +214,21 @@ function validateProfileStageConsistency(profileName, stage) {
   fail('implementation profile can only be used with --stage implement; choose --profile read or --profile artifact for non-implementation stages');
 }
 
+function resolveDocsDir(stage, options) {
+  const docsDir = options.codex ? 'codex' : String(options['docs-dir'] ?? stage);
+  if (options.codex && options['docs-dir'] && options['docs-dir'] !== 'codex') {
+    fail('--codex cannot be combined with --docs-dir other than codex');
+  }
+  if (docsDir === 'codex') return docsDir;
+  if (!STAGES.has(docsDir)) {
+    fail(`--docs-dir "${docsDir}" must be codex or one of ${[...STAGES].join(', ')}`);
+  }
+  if (docsDir !== stage) {
+    fail('--docs-dir can only differ from --stage when it is codex');
+  }
+  return docsDir;
+}
+
 function rel(path) {
   return relative(root, path).split(sep).join('/');
 }
@@ -254,11 +273,13 @@ function buildConfig(positional, options) {
   const subagentSafe = options['subagent-safe'] === undefined
     ? true
     : parseBoolean(options['subagent-safe'], 'subagent-safe');
+  const docsDir = resolveDocsDir(stage, options);
 
   return {
     id,
     skillName,
     stage,
+    docsDir,
     description,
     allowedTools,
     destructiveActions,
@@ -555,7 +576,7 @@ ${artifactParameterRows(config)}| \`CONSTRAINTS\` | No | Scope boundaries or com
 }
 
 function scaffoldFiles(config) {
-  const docsDir = resolve(root, 'nova-plugin/docs/commands', config.stage);
+  const docsDir = resolve(root, 'nova-plugin/docs/commands', config.docsDir);
   return [
     {
       path: resolve(root, 'nova-plugin/commands', `${config.id}.md`),

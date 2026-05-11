@@ -7,6 +7,7 @@
  */
 
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
@@ -184,6 +185,31 @@ test('command, skill, and command-doc surfaces stay one-to-one', () => {
       );
     }
   }
+});
+
+test('scaffold dry-run routes Codex command docs to codex directory', () => {
+  const result = spawnSync(process.execPath, [
+    'scripts/scaffold.mjs',
+    'command',
+    '/codex-smoke',
+    '--stage',
+    'review',
+    '--profile',
+    'artifact',
+    '--docs-dir',
+    'codex',
+    '--description',
+    'Write a bounded Codex smoke artifact.',
+    '--dry-run',
+  ], {
+    cwd: root,
+    encoding: 'utf8',
+    shell: false,
+  });
+
+  assert.equal(result.status, 0, result.stderr || result.stdout);
+  assert.match(result.stdout, /nova-plugin\/docs\/commands\/codex\/codex-smoke\.md/);
+  assert.doesNotMatch(result.stdout, /nova-plugin\/docs\/commands\/review\/codex-smoke\.md/);
 });
 
 console.log(`Summary: failed=${failed}`);

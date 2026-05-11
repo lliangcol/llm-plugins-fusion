@@ -92,7 +92,7 @@ docs/
 | [examples/README.md](examples/README.md) | Local index for public-safe examples. |
 | [examples/workflow-evaluation.md](examples/workflow-evaluation.md) | Five-stage workflow evaluation examples and rubric. |
 | [examples/workflow-evaluation-record-template.md](examples/workflow-evaluation-record-template.md) | Manual evidence record template for workflow-quality checks. |
-| [examples/workflow-evaluation-record-2026-05-12.md](examples/workflow-evaluation-record-2026-05-12.md) | Draft `v2.2.0` workflow evaluation record pending manual command execution. |
+| [examples/workflow-evaluation-record-2026-05-12.md](examples/workflow-evaluation-record-2026-05-12.md) | `v2.2.0` workflow evaluation record with fixture prepared and manual command execution still pending. |
 | [examples/java-backend/redacted-feature.md](examples/java-backend/redacted-feature.md) | Generic Java/Spring workflow example. |
 | [examples/frontend/basic-feature.md](examples/frontend/basic-feature.md) | Generic frontend workflow example. |
 

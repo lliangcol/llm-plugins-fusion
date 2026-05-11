@@ -1,14 +1,16 @@
 # Workflow Evaluation Record - 2026-05-12
 
-Status: draft, pending manual command execution
+Status: fixture prepared, pending manual command execution
 Date: 2026-05-12
 
 This record instantiates the
 [workflow evaluation record template](workflow-evaluation-record-template.md)
 for the public-safe scenarios in
-[workflow-evaluation.md](workflow-evaluation.md). It is not a passed manual
-evaluation. The five commands below still need to be run in a disposable
-consumer fixture before this can be used as release-quality workflow evidence.
+[workflow-evaluation.md](workflow-evaluation.md), using the disposable fixture
+at [fixtures/workflow/invoice-sync/](../../fixtures/workflow/invoice-sync/).
+It is not a passed manual evaluation. The five commands below still need to be
+run in a disposable consumer fixture before this can be used as release-quality
+workflow evidence.
 
 ## Run Metadata
 
@@ -21,7 +23,8 @@ Plugin version: 2.2.0
 Claude Code version: pending
 Model: pending
 Consumer profile used: public-safe fictional invoice sync scenario
-Environment notes: pending disposable fixture or throwaway branch setup
+Fixture: fixtures/workflow/invoice-sync/
+Environment notes: fixture prepared; pending disposable copy or throwaway branch execution
 ```
 
 If `Exact tag` remains `none`, this record is an unreleased development
@@ -30,9 +33,9 @@ snapshot and must not be used to promote a stable release.
 ## Safety Setup
 
 ```text
-Workspace type: pending disposable fixture or throwaway branch
+Workspace type: fixtures/workflow/invoice-sync/ in a disposable copy or throwaway branch
 Pre-run git status: pending
-Expected files that may be written: only /produce-plan artifacts, approved /implement-plan fixture edits, and /finalize-work handoff artifacts
+Expected files that may be written: only fixtures/workflow/invoice-sync/out/ plan or handoff artifacts, approved /implement-plan fixture edits, and /finalize-work handoff artifacts
 Cleanup plan: discard the disposable fixture or reset the throwaway branch after recording results
 Post-run git status: pending
 ```
@@ -49,7 +52,7 @@ details into this record.
 ```text
 Command: /explore
 Scenario: A product note says "sync invoices every night" but does not define retries, ownership, or data freshness.
-Input used: public-safe invoice sync ambiguity scenario
+Input used: fixtures/workflow/invoice-sync/inputs/product-note.md
 Output artifact or transcript location: pending
 Boundary control: pending; expected read-only fact gathering with no design or code changes
 Facts vs assumptions: pending; expected explicit separation of known facts, unknowns, and assumptions
@@ -66,7 +69,7 @@ Reviewer notes: pending manual evaluation
 ```text
 Command: /produce-plan
 Scenario: A small service needs a documented plan for idempotent invoice sync with no schema migration.
-Input used: public-safe planning scenario with no-schema-change constraint
+Input used: fixtures/workflow/invoice-sync/inputs/planning-brief.md
 Output artifact or transcript location: pending
 Boundary control: pending; expected plan artifact only, no project code edits
 Facts vs assumptions: pending; expected goals, non-goals, constraints, approach, validation, rollback, and assumptions
@@ -83,7 +86,7 @@ Reviewer notes: pending manual evaluation
 ```text
 Command: /review
 Scenario: A diff marks invoices as synced before the external call succeeds and has no retry tests.
-Input used: public-safe review scenario
+Input used: fixtures/workflow/invoice-sync/inputs/review-diff.patch
 Output artifact or transcript location: pending
 Boundary control: pending; expected findings only, no implementation
 Facts vs assumptions: pending; expected severity-ranked correctness, idempotency, failure-mode, and test-gap findings
@@ -100,7 +103,7 @@ Reviewer notes: pending manual evaluation
 ```text
 Command: /implement-plan
 Scenario: An approved plan requires moving the status update after successful sync and adding focused tests.
-Input used: public-safe approved implementation scenario with PLAN_APPROVED=true
+Input used: fixtures/workflow/invoice-sync/plans/approved-implementation-plan.md with PLAN_APPROVED=true
 Output artifact or transcript location: pending
 Boundary control: pending; expected scoped fixture edits only
 Facts vs assumptions: pending; expected deviations from the plan to be explicit

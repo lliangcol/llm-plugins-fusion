@@ -143,6 +143,25 @@ assertFileDoesNotMatch(
   /\beval\s+/,
 );
 
+runTempBash('pre-write hook rejects common token shapes', `
+secret_tail="aaaaaaaaaaaaaaaaaaaaaaaa"
+token="sk-proj-\${secret_tail}"
+payload="$(printf '{"tool_input":{"file_path":"src/example.js","content":"OPENAI_API_KEY=%s"}}' "$token")"
+printf '%s' "$payload" | bash nova-plugin/hooks/scripts/pre-write-check.sh
+`, { expectFailure: true, outputPattern: /敏感信息/ });
+
+runTempBash('post-audit hook redacts command secrets', `
+secret_tail="bbbbbbbbbbbbbbbbbbbbbbbb"
+token="sk-proj-\${secret_tail}"
+log_dir="$(dirname "$0")/hook-data"
+mkdir "$log_dir"
+export CLAUDE_PLUGIN_DATA="$log_dir"
+payload="$(printf '{"tool_name":"Bash","tool_input":{"command":"curl -H Authorization: Bearer %s https://example.test"},"tool_response":{"success":true}}' "$token")"
+printf '%s' "$payload" | bash nova-plugin/hooks/scripts/post-audit-log.sh
+grep -q '<redacted>' "$log_dir/audit.log"
+! grep -q "$token" "$log_dir/audit.log"
+`);
+
 runTempBash('codex_executable falls back to codex.exe', `
 tmp="$(dirname "$0")/bin"
 mkdir "$tmp"

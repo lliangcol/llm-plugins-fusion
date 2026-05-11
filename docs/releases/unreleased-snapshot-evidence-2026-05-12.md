@@ -101,7 +101,7 @@ Not applicable reason: not applicable; this remains required before a minor rele
 ## Unfinished Manual Evidence
 
 ```text
-Five-stage workflow evaluation record: draft created at docs/examples/workflow-evaluation-record-2026-05-12.md; manual command execution not completed
+Five-stage workflow evaluation record: fixture prepared at fixtures/workflow/invoice-sync/ and documented in docs/examples/workflow-evaluation-record-2026-05-12.md; manual command execution not completed
 Claude Code /context archive token pressure measurement: pending at docs/agents/archive-context-measurement-2026-05-12.md
 Exact tag release validation: not completed; Exact tag is none
 Plugin install smoke: pending isolated CI or test-user execution; not run in unattended mode
