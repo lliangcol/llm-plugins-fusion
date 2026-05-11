@@ -314,6 +314,7 @@ llm-plugins-fusion/
 | [Trust policy](./docs/marketplace/trust-policy.md) | trust/risk/deprecation/last-updated/maintainer 语义与评审要求 | 评审 marketplace metadata |
 | [Security review route](./docs/marketplace/security-review-route.md) | 安全敏感插件变更的评审路径和最小检查 | 安全评审 |
 | [Release hygiene](./docs/releases/release-hygiene.md) | tag/version 同步、生成产物漂移、changelog 与发布前 review | 发布准备 |
+| [Release validation runbook](./docs/releases/release-validation-runbook.md) | exact tag、隔离安装 smoke、人工 workflow evaluation 和 promotion 决策的操作步骤 | 发布验证 |
 | [Release evidence template](./docs/releases/release-evidence-template.md) | release/promotion 前的环境、tag、校验和 skipped 记录模板 | 发布证据留档 |
 | [Capability packs](./nova-plugin/packs/README.md) | 8 个领域能力包索引 | 维护 packs |
 | [English overview](./nova-plugin/docs/overview/README.en.md) | English project overview | English readers |

@@ -7,6 +7,9 @@ Use this template before promoting a release tag or describing a branch as
 stable. It records whether validation ran against an exact tag or against
 unreleased `main`, and whether any local checks were skipped.
 
+For the step-by-step manual operation sequence, use
+[release-validation-runbook.md](release-validation-runbook.md).
+
 ## Target Rules
 
 - Promote exact release tags such as `v2.2.0`; do not promote moving `main` as stable.

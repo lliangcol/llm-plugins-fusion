@@ -24,6 +24,7 @@ duplicate every document.
 | Split large agent work into resumable units | [workflows/context-safe-agent-workflows.md](workflows/context-safe-agent-workflows.md) |
 | Maintain marketplace registry metadata | [marketplace/registry-author-workflow.md](marketplace/registry-author-workflow.md) |
 | Prepare release or promotion evidence | [releases/release-evidence-template.md](releases/release-evidence-template.md) |
+| Run release validation manually | [releases/release-validation-runbook.md](releases/release-validation-runbook.md) |
 | Review current project optimization work | [project-optimization-plan.md](project-optimization-plan.md) |
 
 ## Directory Map
@@ -37,7 +38,7 @@ docs/
 |-- examples/                     # redacted workflow examples and evaluation templates
 |-- marketplace/                  # generated catalog, registry workflow, trust, compatibility, and review docs
 |-- prompts/                      # reusable public-safe prompt templates
-|-- releases/                     # release evidence templates and hygiene docs
+|-- releases/                     # release evidence templates, runbooks, and hygiene docs
 |-- workflows/                    # reusable agent workflow guidance
 `-- project-optimization-plan.md  # active project optimization plan
 ```
@@ -51,7 +52,7 @@ docs/
 | [examples/](examples/) | Redacted Java backend/frontend examples and workflow evaluation templates. |
 | [marketplace/](marketplace/) | Marketplace catalog output, registry author workflow, compatibility, trust, security review, and v3 readiness evidence. |
 | [prompts/](prompts/) | Copyable prompt templates for Codex, Claude Code, delivery docs, HTML artifacts, and workbench cleanup. |
-| [releases/](releases/) | Release evidence templates and release hygiene rules. |
+| [releases/](releases/) | Release evidence templates, validation runbooks, and release hygiene rules. |
 | [workflows/](workflows/) | Context-safe agent workflows and the thin-harness/fat-skills placement doctrine. |
 
 ## Current Documents
@@ -120,6 +121,7 @@ docs/
 | Document | Purpose |
 | --- | --- |
 | [releases/release-evidence-template.md](releases/release-evidence-template.md) | Release or promotion evidence template. |
+| [releases/release-validation-runbook.md](releases/release-validation-runbook.md) | Manual runbook for exact tag, isolated install smoke, workflow evaluation, and promotion decisions. |
 | [releases/release-hygiene.md](releases/release-hygiene.md) | Version, tag, generated artifact, and pre-release hygiene rules. |
 
 ### Workflows And Reports

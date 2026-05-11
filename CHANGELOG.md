@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Added
+- 新增 `docs/releases/release-validation-runbook.md`，补充 exact tag、隔离
+  plugin install smoke、人工 workflow evaluation、release evidence 组装和
+  promotion 决策的维护者操作步骤。
 - 新增 `fixtures/workflow/invoice-sync/` 公开安全五阶段 workflow evaluation
   fixture，为 `/explore`、`/produce-plan`、`/review`、`/implement-plan`、
   `/finalize-work` 提供脱敏输入、buggy review diff 和 approved plan。

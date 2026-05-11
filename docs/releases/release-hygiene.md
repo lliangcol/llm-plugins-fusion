@@ -5,7 +5,8 @@ Date: 2026-05-12
 
 This document defines the release and pre-release checks for marketplace and
 plugin changes. Use it with the
-[Release evidence template](release-evidence-template.md) before promoting a
+[Release evidence template](release-evidence-template.md) and
+[Release validation runbook](release-validation-runbook.md) before promoting a
 tag or publishing release notes.
 
 ## Version And Tag Rules
@@ -70,6 +71,10 @@ Run `node scripts/validate-plugin-install.mjs` only in CI or an isolated
 test-user environment. It may install or update user-scope Claude plugin state,
 so unattended local release evidence should record it as pending instead of
 running it by default.
+
+For the full manual sequence, including exact tag creation, isolated install
+smoke cleanup, workflow evaluation recording, and final promotion decisions, use
+[Release validation runbook](release-validation-runbook.md).
 
 ## Review Before Release
 
