@@ -268,7 +268,6 @@ llm-plugins-fusion/
 | [Release evidence template](../../../docs/releases/release-evidence-template.md) | Environment, tag, validation, and skipped-check evidence before release or promotion | Release evidence capture |
 | [vNext release decision](../../../docs/releases/vnext-release-decision.md) | vNext release level and compatibility matrix | Release decision |
 | [Capability packs](../../packs/README.md) | Index for 8 domain capability packs | Maintaining packs |
-| [Legacy agents summary](../agents/agents-summary.en.md) | Historical legacy agent roles | Inspecting old design |
 
 ## Maintenance
 

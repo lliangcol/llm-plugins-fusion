@@ -46,6 +46,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 扩展 `scripts/validate-all.mjs`，输出 Node.js、Git、Claude CLI、Codex CLI、
   Bash、commit 和 exact tag 的环境摘要。
 
+### Removed
+- 删除 `nova-plugin/docs` 中已历史化的 legacy agent 摘要文件，并将 agent
+  入口统一指向仓库级当前 routing 文档。
+- 删除已由 `docs/project-optimization-plan.md` 取代的
+  `docs/reports/project-optimization-plan.html` 静态报告产物。
+
 ### Fixed
 - 修正 `SECURITY.md` 支持范围中的当前 MINOR 版本说明，使其与 `2.1.0`
   发布状态保持一致。

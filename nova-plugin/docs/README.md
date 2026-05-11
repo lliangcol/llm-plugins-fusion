@@ -9,7 +9,7 @@
 | 使用手册 | [guides/](guides/) | 命令参考、命令选择、复制模板 |
 | 命令文档 | [commands/](commands/) | 20 个命令的详细说明与中英文 README |
 | 架构与设计 | [architecture/](architecture/) | 当前 command / skill 双轨设计、hooks 设计 |
-| Agents | [agents/](agents/) | core agent 快速索引与 legacy archive 汇总 |
+| Agent routing | [../../docs/agents/ROUTING.md](../../docs/agents/ROUTING.md) | 当前 6 个 core agents 与 capability packs 路由 |
 | Capability packs | [../packs/README.md](../packs/README.md) | 8 个领域能力包与 enhanced / fallback mode |
 | Consumer profiles | [../../docs/consumers/README.md](../../docs/consumers/README.md) | 多项目 consumer profile 契约与脱敏模板 |
 | Redacted examples | [../../docs/examples/README.md](../../docs/examples/README.md) | Java backend / frontend 脱敏 workflow 示例 |
@@ -33,9 +33,6 @@ nova-plugin/docs/
 |   |-- implement/
 |   |-- finalize/
 |   `-- codex/
-|-- agents/
-|   |-- agents-summary.md
-|   `-- agents-summary.en.md
 |-- architecture/
 |   |-- dual-track-design.md
 |   `-- hooks-design.md
@@ -52,7 +49,6 @@ nova-plugin/docs/
 | 根索引 | 1 | 当前文件 |
 | Guides | 4 | 中英文命令参考与使用手册 |
 | Commands | 60 | 20 个命令，每个命令 `<id>.md`、`<id>.README.md`、`<id>.README.en.md` |
-| Agents | 2 | 中英文 core agent 快速索引 + legacy archive 汇总 |
 | Capability packs | 9 | `nova-plugin/packs/README.md` + 8 个 pack README |
 | Architecture | 2 | 当前设计文档 |
 | History | 1 | 历史优化记录 |
@@ -105,8 +101,8 @@ Core agents use documentation-only capability packs for domain routing. Packs do
 - [Codex 闭环说明](commands/codex/codex-review-fix.README.md)
 - [Skill-first 设计说明](architecture/dual-track-design.md)
 - [Hooks 设计文档](architecture/hooks-design.md)
-- [Agents 汇总](agents/agents-summary.md)
 - [Capability packs](../packs/README.md)
+- [Core agent routing](../../docs/agents/ROUTING.md)
 - [Plugin-aware routing](../../docs/agents/PLUGIN_AWARE_ROUTING.md)
 - [Marketplace catalog](../../docs/marketplace/catalog.md)
 - [Registry author workflow](../../docs/marketplace/registry-author-workflow.md)
