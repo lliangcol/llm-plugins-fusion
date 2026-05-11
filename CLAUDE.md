@@ -410,6 +410,14 @@ risk scan, validation regression checks, and validate-docs.
   `rg --files -uu` or an equivalent scan, then exclude `.git/`, `.codex/`,
   dependency directories, build outputs, IDE directories, caches, logs, and
   temporary/runtime artifacts before grouping review units.
+- Broad or multi-step work should leave review-unit or acceptance-unit
+  checkpoints with evidence, verified behavior or facts, skipped checks, and
+  residual risk.
+- Validation claims require observed command output or artifact evidence; when
+  claiming behavior or facts are verified, also state the supporting evidence.
+  Skipped or unavailable checks need an explicit reason.
+- When repository instructions conflict, surface the conflict and follow the
+  source-of-truth table instead of blending incompatible rules.
 - `commands/*.md` and `skills/nova-*/SKILL.md` must remain one-to-one.
 - Every command must have three command docs; Codex command docs are centralized
   under `nova-plugin/docs/commands/codex/`.

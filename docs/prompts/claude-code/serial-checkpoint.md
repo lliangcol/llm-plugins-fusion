@@ -36,9 +36,18 @@ checkpoint 格式：
 ## Inputs Read
 ## Work Completed
 ## Decisions
+## Behavior Verified
 ## Validation
+## Skipped or Unverified
 ## Open Items
 ## Next Unit
+
+字段语义：
+- `Behavior Verified`: 本 unit 已用证据确认的目标行为或仓库事实；
+  不能只写 “tests passed”。
+- `Validation`: 实际执行的命令或检查，以及观察到的结果。
+- `Skipped or Unverified`: 未验证的目标行为或仓库事实、跳过原因和
+  剩余风险。
 
 final-summary.md 必须包含：
 - 已完成内容

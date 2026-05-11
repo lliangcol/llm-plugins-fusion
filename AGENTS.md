@@ -56,9 +56,14 @@ node scripts/generate-registry.mjs --write
 - For broad repository work, follow the file-tree scan rule in
   [CLAUDE.md](CLAUDE.md). Outside Claude Code, use `rg --files -uu` or an
   equivalent scan and apply the same exclusions before grouping review units.
+- For broad or multi-step work, record per-unit evidence, verified behavior or
+  facts, skipped checks, and residual risk before moving to the next unit.
 - Treat [CLAUDE.md](CLAUDE.md) as the shared rule source. If this file and
   `CLAUDE.md` conflict, follow `CLAUDE.md` for repository contracts and then
   update this adapter if the difference affects non-Claude agents.
+- When this adapter, command docs, skills, or `CLAUDE.md` disagree, report the
+  conflict and follow `CLAUDE.md` or the matching source listed above instead
+  of averaging behaviors.
 - Do not assume Claude slash-command runtime behavior outside Claude Code.
   Generic agents should read the command and skill Markdown as contracts and
   execute normal repository edits and validation commands directly.

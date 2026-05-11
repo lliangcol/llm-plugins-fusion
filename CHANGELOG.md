@@ -57,6 +57,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 收敛 `2.2.0` release-ready 事实：在正式 tag、隔离环境 install smoke、
   GitHub Release 和人工 workflow evaluation 完成前，不把当前 snapshot 描述为
   stable release。
+- 收紧 checkpoint 与 verification 输出契约：验证证据必须对应预期行为、
+  仓库事实、review finding 或变更目标，不能只用测试通过替代行为或事实确认。
 
 ### Removed
 - 删除当前交付不再需要的中间、历史和临时文档，包括 retired

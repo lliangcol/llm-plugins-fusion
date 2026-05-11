@@ -106,12 +106,26 @@ Task:
 Unit:
 Inputs read:
 Evidence:
+Behavior evidence:
 Findings:
 - [P1|P2|P3] ...
+Acceptance behavior verified:
 Validation gaps:
+Skipped or unverified:
 Next unit:
 Stop condition:
 ```
+
+Field requirements:
+
+- `Evidence` records source locations, artifacts, or command output that support
+  findings or decisions.
+- `Behavior evidence` records observed behavior or repository facts that prove
+  the intended acceptance behavior, review finding, or change goal.
+- `Acceptance behavior verified` names the behavior or repository fact
+  confirmed in this unit; do not substitute a raw passing check for this field.
+- `Skipped or unverified` lists skipped checks, unverified behavior or facts,
+  why they were not verified, and residual risk.
 
 The final review should lead with confirmed findings and include:
 
@@ -179,6 +193,8 @@ Stop and split the task when any of these appear:
 - an implementation step starts before acceptance criteria or reviewed plan are
   clear;
 - a checkpoint grows into a full report instead of a resumable summary;
+- tests pass but do not encode the intended acceptance behavior, review
+  finding, or change goal;
 - validation is skipped but the final handoff describes it as passed;
 - private consumer facts are about to be copied into public docs.
 

@@ -19,6 +19,8 @@ exists.
 - 不输出完整 diff 或完整源码。
 - 不把未执行的检查描述为通过。
 - 只把有代码证据和验证证据支撑的问题标记为 resolved。
+- 不仅凭测试通过标记 finding resolved；必须说明测试或检查覆盖了原 finding
+  的哪个期望行为。
 
 执行步骤：
 1. 读取 review artifact，提取每个 finding 的编号、严重级别、证据和期望行为。
@@ -32,6 +34,15 @@ exists.
 5. 只审查与修复相关的代码路径。
 6. 输出 verify artifact。
 
+状态判定规则：
+- `resolved`: 同时有代码证据和验证证据，且 `行为对应` 明确覆盖原
+  finding 的期望行为。
+- `partially resolved`: 修复覆盖了部分期望行为，但仍有行为未验证、
+  未覆盖或失败；必须写入剩余风险。
+- `not resolved`: 证据显示 finding 仍存在，或修复范围没有触及该行为。
+- `unable to verify`: 缺少必要输入、环境、artifact 或检查输出；必须说明
+  缺少什么证据。
+
 输出结构：
 # Codex Verification
 
@@ -40,6 +51,7 @@ exists.
 - [编号] <resolved|partially resolved|not resolved|unable to verify>
   - 证据：
   - 验证：
+  - 行为对应：原 finding 的哪个期望行为被上述验证覆盖
   - 剩余风险：
 
 ## Checks

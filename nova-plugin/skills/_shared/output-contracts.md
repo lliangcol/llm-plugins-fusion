@@ -56,10 +56,19 @@ Verification summaries should include:
 
 - Commands or checks run.
 - Pass/fail result for each check.
+- The acceptance behavior, repository fact, review finding, or change goal each
+  check supports.
 - Any skipped checks and why.
+- Behavior, repository facts, findings, or edge cases that remain unverified.
 - Residual risk or blockers.
 
 Never claim checks passed unless their result was observed.
+Never treat "tests pass" alone as completion evidence; state what intended
+behavior, repository fact, or change goal the tests or checks actually cover.
+Never mark a review finding as resolved without mapping evidence and validation
+back to the finding's expected behavior.
+Never omit known unverified behavior, repository facts, skipped checks, or edge
+cases from the verification summary.
 
 ## Failure Output
 
