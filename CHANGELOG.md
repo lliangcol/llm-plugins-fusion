@@ -32,9 +32,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 新增 `scripts/distribution-risk.allowlist.json`，为历史归档风险发现提供
   redacted allowlisted warning 记录。
 - 新增 `scripts/validate-surface-budget.mjs` 与 surface budget allowlist，
-  用于限制公开 command、skill、agent 和 pack 文档表面积继续膨胀。
+  用于限制公开 command、skill、agent 和 pack 文档表面积继续膨胀，并接入
+  `validate-all`、CI、npm shortcut 与 release evidence。
 - 新增 `docs/prompts/common/checkpoint-artifact.md`，为私有 consumer workbench
   中的长任务恢复点提供公共安全 prompt 模板。
+- 新增 `docs/workflows/routing-validation-guardrails.md`，说明 `/route`、
+  checkpoint evidence、surface budget 和 distribution-risk guardrails 的维护方式。
+- 新增 `docs/workflows/verification-evidence-contract.md`，说明验证声明如何映射
+  到行为、仓库事实、review finding 或变更目标。
 
 ### Changed
 - 收紧文件扫描与本地检查边界：`.gitignore` 不再放行 retired
@@ -65,6 +70,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   仓库事实、review finding 或变更目标，不能只用测试通过替代行为或事实确认。
 - 明确 `/route` / `nova-route` 是只读第一阶段路由器，先做 intent family
   分类，再推荐最小可执行下一步和必要验证建议。
+- 扩展分发风险扫描与回归测试，拦截高风险 blanket permission 建议和已跟踪
+  `.codex/` 运行时制品。
+- 增加 Windows 非 Bash CI smoke lane，覆盖 schema、docs、frontmatter 和
+  PowerShell agent verification，补齐本地 Windows skipped check 的替代证据。
 
 ### Removed
 - 删除当前交付不再需要的中间、历史和临时文档，包括 retired

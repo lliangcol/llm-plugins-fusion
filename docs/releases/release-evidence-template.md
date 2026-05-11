@@ -49,12 +49,14 @@ Operating system:
 node scripts/generate-registry.mjs --write:
 node scripts/validate-all.mjs:
 node scripts/validate-runtime-smoke.mjs:
+node scripts/validate-surface-budget.mjs:
 node scripts/scan-distribution-risk.mjs:
 node scripts/validate-regression.mjs:
 node scripts/validate-plugin-install.mjs:
 git diff --check:
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh:
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh:
+Windows CI non-Bash smoke:
 ```
 
 ## Skipped Checks
@@ -89,6 +91,7 @@ Workflow evaluation record:
 Commands evaluated:
 Boundary control result:
 Facts vs assumptions result:
+Checkpoint artifact result:
 Skipped validation reporting result:
 Next-stage handoff result:
 Not applicable reason:

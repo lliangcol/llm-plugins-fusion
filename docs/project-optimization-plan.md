@@ -27,7 +27,7 @@ Primary optimization sequence:
 4. Fact drift validation.
 5. Environment and release evidence.
 6. Retired archive cleanup and active-agent surface protection.
-7. GSD-informed reliability hardening.
+7. Reliability guardrail hardening.
 
 ## Current Baseline
 
@@ -216,33 +216,6 @@ Acceptance Criteria:
 - CI/Linux remains the authoritative Bash syntax and runtime smoke gate.
 - Operators can tell whether they validated an exact tag or unreleased `main`.
 
-### 7. GSD-Informed Reliability Hardening
-
-Status: in progress in current unreleased work
-
-Why: The GSD project demonstrates useful engineering controls for AI workflow
-systems: compact routing, durable checkpoints, prompt-surface budgets, and
-explicit release evidence. Nova should adopt the controls that fit its
-marketplace-oriented, low-default-permission model without copying GSD's broad
-command surface or high-permission posture.
-
-Planned Work:
-
-- Strengthen `/route` as the read-only first-stage router.
-- Add a checkpoint artifact contract for private consumer workbenches.
-- Add `node scripts/validate-surface-budget.mjs` as a prompt bloat guard.
-- Add Windows non-Bash CI smoke evidence.
-- Expand distribution risk scanning for high-risk blanket permission advice and
-  tracked `.codex/` runtime artifacts.
-
-Acceptance Criteria:
-
-- The command count remains 21 and command/skill one-to-one mapping remains
-  intact.
-- No public doc recommends blanket permission bypasses as the default path.
-- Surface budget validation is wired into `validate-all`, CI, npm shortcuts,
-  and release evidence.
-
 ### 6. Retired Archive Cleanup
 
 Status: completed in current unreleased work
@@ -271,6 +244,32 @@ Acceptance Criteria:
 - Retired `.claude/agents/` paths are not recreated as active surfaces.
 - No active documentation points to removed archive measurement files.
 
+### 7. Reliability Guardrail Hardening
+
+Status: completed in current unreleased work
+
+Why: Recent workflow reviews identified reliability controls that fit
+`nova-plugin`: compact routing, durable checkpoints, prompt-surface budgets,
+and explicit release evidence. Nova should adopt those controls while preserving
+its marketplace-oriented, low-default-permission model.
+
+Completed Work:
+
+- Strengthened `/route` as the read-only first-stage router.
+- Added a checkpoint artifact contract for private consumer workbenches.
+- Added `node scripts/validate-surface-budget.mjs` as a prompt bloat guard.
+- Added Windows non-Bash CI smoke evidence.
+- Expanded distribution risk scanning for high-risk blanket permission advice
+  and tracked `.codex/` runtime artifacts.
+
+Acceptance Criteria:
+
+- The command count remains 21 and command/skill one-to-one mapping remains
+  intact.
+- No public doc recommends blanket permission bypasses as the default path.
+- Surface budget validation is wired into `validate-all`, CI, npm shortcuts,
+  and release evidence.
+
 ## Execution Order
 
 1. Positioning and promotion language.
@@ -279,7 +278,7 @@ Acceptance Criteria:
 4. Fact drift validation.
 5. Environment and release evidence.
 6. Retired archive cleanup and active-agent surface protection.
-7. GSD-informed reliability hardening.
+7. Reliability guardrail hardening.
 
 Do not start public portal work, production multi-plugin directory migration, or
 large domain command families as part of these tracks.

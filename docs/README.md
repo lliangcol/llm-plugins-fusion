@@ -22,6 +22,8 @@ duplicate every document.
 | Understand core agents and capability pack routing | [agents/ROUTING.md](agents/ROUTING.md) |
 | Reuse public-safe workflow prompts | [prompts/README.md](prompts/README.md) |
 | Split large agent work into resumable units | [workflows/context-safe-agent-workflows.md](workflows/context-safe-agent-workflows.md) |
+| Maintain routing and validation guardrails | [workflows/routing-validation-guardrails.md](workflows/routing-validation-guardrails.md) |
+| Understand verification evidence standards | [workflows/verification-evidence-contract.md](workflows/verification-evidence-contract.md) |
 | Maintain marketplace registry metadata | [marketplace/registry-author-workflow.md](marketplace/registry-author-workflow.md) |
 | Prepare release or promotion evidence | [releases/release-evidence-template.md](releases/release-evidence-template.md) |
 | Run release validation manually | [releases/release-validation-runbook.md](releases/release-validation-runbook.md) |
@@ -53,7 +55,7 @@ docs/
 | [marketplace/](marketplace/) | Marketplace catalog output, registry author workflow, compatibility, trust, security review, and v3 readiness evidence. |
 | [prompts/](prompts/) | Copyable prompt templates for Codex, Claude Code, delivery docs, HTML artifacts, and workbench cleanup. |
 | [releases/](releases/) | Release evidence templates, validation runbooks, and release hygiene rules. |
-| [workflows/](workflows/) | Context-safe agent workflows and the thin-harness/fat-skills placement doctrine. |
+| [workflows/](workflows/) | Context-safe agent workflows, routing/validation guardrails, and the thin-harness/fat-skills placement doctrine. |
 
 ## Current Documents
 
@@ -130,6 +132,8 @@ docs/
 | Document | Purpose |
 | --- | --- |
 | [workflows/context-safe-agent-workflows.md](workflows/context-safe-agent-workflows.md) | Large-task, review, fix, delivery, and checkpoint workflows. |
+| [workflows/routing-validation-guardrails.md](workflows/routing-validation-guardrails.md) | Guardrails for first-stage routing, checkpoint evidence, surface budgets, and distribution-risk scanning. |
+| [workflows/verification-evidence-contract.md](workflows/verification-evidence-contract.md) | Standards for mapping checks, checkpoints, and handoffs to verified behavior or facts. |
 | [workflows/thin-harness-fat-skills.md](workflows/thin-harness-fat-skills.md) | Placement doctrine for scripts, skills, prompts, packs, and profiles. |
 | [getting-started.md](getting-started.md) | Install, `/route`, five primary commands, Codex prerequisites, and common failure handling. |
 | [project-optimization-plan.md](project-optimization-plan.md) | Active optimization plan for positioning, reliability, usability, maintenance, and release readiness. |

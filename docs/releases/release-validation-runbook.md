@@ -21,7 +21,9 @@ A snapshot is promotable only when all required evidence exists.
 | Repository structure and docs | Automated | `node scripts/validate-all.mjs` passes with skipped checks explained. |
 | Generated marketplace outputs | Automated | `node scripts/generate-registry.mjs` reports no drift, or `--write` was run before validation. |
 | Formatting | Automated | `git diff --check` passes. |
+| Prompt-surface budget | Automated | `node scripts/validate-surface-budget.mjs` passes, and every allowlist entry has a reason and split plan. |
 | Distribution risk | Automated | `node scripts/scan-distribution-risk.mjs` passes with no active findings. |
+| Windows non-Bash smoke | Automated / CI | Schema, docs, frontmatter, and PowerShell agent verification pass on Windows without relying on Bash. |
 | Exact release target | Manual | `git describe --tags --exact-match HEAD` returns `v<plugin-version>`. |
 | Plugin install path | Manual / CI | `node scripts/validate-plugin-install.mjs` passes in CI or an isolated test-user environment. |
 | Workflow output quality | Manual | Five primary commands are evaluated and recorded, or an explicit not-applicable reason is accepted. |
@@ -49,6 +51,8 @@ Expected conditions:
   release commit.
 - `node scripts/generate-registry.mjs` reports current generated outputs.
 - `node scripts/validate-all.mjs` reports `failed=0`.
+- `node scripts/validate-surface-budget.mjs` reports pass; any allowlist
+  warning has an explicit rationale and split plan.
 - If `skipped` is non-zero, each skipped check has replacement CI/Linux
   evidence before promotion.
 - `git diff --check` reports no whitespace errors.
@@ -60,6 +64,7 @@ so their outputs can be pasted into release evidence:
 NODE_BIN="${NODE_BIN:-node}"
 command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
 "$NODE_BIN" scripts/validate-runtime-smoke.mjs </dev/null
+"$NODE_BIN" scripts/validate-surface-budget.mjs </dev/null
 "$NODE_BIN" scripts/scan-distribution-risk.mjs </dev/null
 "$NODE_BIN" scripts/validate-regression.mjs </dev/null
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
@@ -220,6 +225,9 @@ Evaluate each command against the rubric:
   scoped to the approved plan.
 - Evidence quality: facts, assumptions, unknowns, risks, and validation status
   are distinguishable.
+- Checkpoint quality: long or resumable work records scope, inputs read,
+  completed work, decisions, behavior evidence, skipped checks, open items, and
+  the next unit without publicizing private consumer details.
 - User value: each output helps the next workflow stage proceed.
 - Safety: no private details are introduced, and skipped checks are reported
   honestly.
@@ -237,6 +245,8 @@ include:
   operator, and date.
 - Environment summary from `node scripts/validate-all.mjs`.
 - Outputs or summaries for all required checks.
+- Prompt-surface budget status and any override rationale.
+- Windows non-Bash smoke status or the CI run that supplies it.
 - Skipped checks and replacement evidence.
 - Plugin install smoke result from CI or isolated test-user execution.
 - Manual workflow evaluation record path or an accepted not-applicable reason.
@@ -273,6 +283,7 @@ PLUGIN_VERSION="${PLUGIN_VERSION%$'\r'}"
 "$NODE_BIN" scripts/validate-all.mjs </dev/null
 git diff --check
 "$NODE_BIN" scripts/generate-registry.mjs </dev/null
+"$NODE_BIN" scripts/validate-surface-budget.mjs </dev/null
 "$NODE_BIN" scripts/scaffold-consumer-profile.mjs --type java-backend --out ../consumer-smoke </dev/null
 git describe --tags --exact-match HEAD || true
 git tag --list "v${PLUGIN_VERSION}"
