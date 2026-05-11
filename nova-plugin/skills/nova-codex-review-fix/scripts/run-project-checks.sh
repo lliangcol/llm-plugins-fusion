@@ -200,7 +200,7 @@ discover_node_tasks() {
   fi
 
   mapfile -t PKGS < <(find "${ROOT}" \
-    \( -path "*/node_modules" -o -path "*/dist" -o -path "*/build" -o -path "*/target" -o -path "*/.codex" -o -path "*/.runtime-smoke-*" -o -path "*/.next" -o -path "*/.nuxt" -o -path "*/out" \) -prune \
+    \( -path "*/node_modules" -o -path "*/dist" -o -path "*/build" -o -path "*/target" -o -path "*/.codex" -o -path "*/.cache" -o -path "*/.idea" -o -path "*/.vite" -o -path "*/.vscode" -o -path "*/coverage" -o -path "*/logs" -o -path "*/tmp" -o -path "*/temp" -o -path "*/.runtime-smoke-*" -o -path "*/.next" -o -path "*/.nuxt" -o -path "*/out" \) -prune \
     -o -name package.json -print 2>/dev/null)
   for pkg in "${PKGS[@]}"; do
     local dir

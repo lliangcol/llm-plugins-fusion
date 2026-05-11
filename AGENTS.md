@@ -53,9 +53,9 @@ node scripts/generate-registry.mjs --write
 
 ## Agent Rules
 
-- Start from the actual file tree. Use `rg --files -uu` or an equivalent scan,
-  excluding `.git/`, `.codex/`, dependency directories, build outputs, caches,
-  logs, and temporary files.
+- For broad repository work, follow the file-tree scan rule in
+  [CLAUDE.md](CLAUDE.md). Outside Claude Code, use `rg --files -uu` or an
+  equivalent scan and apply the same exclusions before grouping review units.
 - Treat [CLAUDE.md](CLAUDE.md) as the shared rule source. If this file and
   `CLAUDE.md` conflict, follow `CLAUDE.md` for repository contracts and then
   update this adapter if the difference affects non-Claude agents.

@@ -123,9 +123,21 @@ run('codex-review.sh rejects unknown args', [
   '--definitely-invalid',
 ], { expectFailure: true, outputPattern: /未知参数/ });
 
+run('codex-review.sh requires option values', [
+  'nova-plugin/skills/nova-codex-review-fix/scripts/codex-review.sh',
+  '--base',
+  '--full',
+], { expectFailure: true, outputPattern: /--base 需要参数值/ });
+
 run('codex-verify.sh requires review file', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/codex-verify.sh',
 ], { expectFailure: true, outputPattern: /--review-file|review\.md/ });
+
+run('codex-verify.sh requires option values', [
+  'nova-plugin/skills/nova-codex-review-fix/scripts/codex-verify.sh',
+  '--review-file',
+  '--base',
+], { expectFailure: true, outputPattern: /--review-file 需要参数值/ });
 
 run('run-project-checks.sh rejects unknown args', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh',

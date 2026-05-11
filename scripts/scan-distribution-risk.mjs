@@ -19,13 +19,21 @@ export const DEFAULT_ALLOWLIST_PATH = 'scripts/distribution-risk.allowlist.json'
 const skipDirs = new Set([
   '.git',
   '.codex',
+  '.cache',
+  '.idea',
+  '.vite',
+  '.vscode',
   'node_modules',
+  'coverage',
+  'logs',
   'dist',
   'build',
   'target',
   '.next',
   '.nuxt',
   'out',
+  'tmp',
+  'temp',
 ]);
 
 const textExtensions = new Set([

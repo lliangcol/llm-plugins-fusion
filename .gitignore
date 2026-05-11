@@ -1,9 +1,10 @@
-﻿# OS
+# OS
 .DS_Store
 Thumbs.db
 
 # Logs
 *.log
+logs/
 
 # Python
 __pycache__/
@@ -29,12 +30,8 @@ dist/
 !.env.sample
 .envrc
 
-# Claude
+# Claude project/runtime state
 **/.claude/
-!.claude/
-!.claude/agents/
-!.claude/agents/**
-.claude/settings*.json
 
 # Codex
 .codex/

@@ -30,6 +30,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   redacted allowlisted warning 记录。
 
 ### Changed
+- 收紧文件扫描与本地检查边界：`.gitignore` 不再放行 retired
+  `.claude/agents/**`，文档校验、分发风险扫描和 Codex package script
+  discovery 统一跳过 IDE、cache、coverage、logs、tmp/temp 等非源码目录。
+- 将 broad repository file-tree scan 规则上移到 `CLAUDE.md`，`AGENTS.md`
+  改为引用该 canonical 规则并只保留非 Claude agent 的执行差异说明。
 - 增强 Claude hook 安全边界：pre-write 检测更多常见 token / secret 形态，
   post-audit 在写入 Bash 命令摘要前进行脱敏，并把覆盖加入 runtime smoke。
 - `scripts/scaffold.mjs` 新增 `--docs-dir codex` / `--codex`，避免新增 Codex
@@ -56,6 +61,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   evaluation 记录、历史报告归档和 `nova-plugin/docs/history/` 历史优化记录；
   保留当前 README、索引、规范、release hygiene、evidence template、routing
   和 marketplace 文档。
+
+### Fixed
+- 修正 Codex review/verify Bash helper 的参数解析：`--base`、
+  `--output-dir`、`--review-file` 和 `--checks-file` 缺少值时现在会明确失败，
+  不再依赖 `shift` 错误或把下一个 flag 当作参数值。
 
 ## [2.2.0] - 2026-05-12
 

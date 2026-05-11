@@ -406,6 +406,10 @@ risk scan, validation regression checks, and validate-docs.
 
 ## Key Constraints
 
+- Broad repository work must start from the actual file tree. Use
+  `rg --files -uu` or an equivalent scan, then exclude `.git/`, `.codex/`,
+  dependency directories, build outputs, IDE directories, caches, logs, and
+  temporary/runtime artifacts before grouping review units.
 - `commands/*.md` and `skills/nova-*/SKILL.md` must remain one-to-one.
 - Every command must have three command docs; Codex command docs are centralized
   under `nova-plugin/docs/commands/codex/`.

@@ -27,12 +27,21 @@ const warnings = [];
 const SKIP_DIRS = new Set([
   '.git',
   '.codex',
+  '.cache',
+  '.idea',
+  '.vite',
+  '.vscode',
   'node_modules',
+  'coverage',
+  'logs',
   'dist',
   'build',
+  'target',
   '.next',
   '.nuxt',
   'out',
+  'tmp',
+  'temp',
 ]);
 
 const ARCHIVE_SEGMENTS = [

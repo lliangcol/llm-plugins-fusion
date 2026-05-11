@@ -11,21 +11,33 @@ BASE_BRANCH=""
 OUTPUT_DIR=""
 CHECKS_FILE=""
 
+require_option_value() {
+  local option="$1"
+  local value="${2:-}"
+  if [[ -z "$value" || "$value" == --* ]]; then
+    die "${option} 需要参数值。"
+  fi
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --review-file)
+      require_option_value "$1" "${2:-}"
       REVIEW_FILE="${2:-}"
       shift 2
       ;;
     --base)
+      require_option_value "$1" "${2:-}"
       BASE_BRANCH="${2:-}"
       shift 2
       ;;
     --output-dir)
+      require_option_value "$1" "${2:-}"
       OUTPUT_DIR="${2:-}"
       shift 2
       ;;
     --checks-file)
+      require_option_value "$1" "${2:-}"
       CHECKS_FILE="${2:-}"
       shift 2
       ;;

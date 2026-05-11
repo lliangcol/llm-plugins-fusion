@@ -11,13 +11,23 @@ OUTPUT_DIR=""
 ONLY_STAGED=false
 FULL_MODE=false
 
+require_option_value() {
+  local option="$1"
+  local value="${2:-}"
+  if [[ -z "$value" || "$value" == --* ]]; then
+    die "${option} 需要参数值。"
+  fi
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --base)
+      require_option_value "$1" "${2:-}"
       BASE_BRANCH="${2:-}"
       shift 2
       ;;
     --output-dir)
+      require_option_value "$1" "${2:-}"
       OUTPUT_DIR="${2:-}"
       shift 2
       ;;
