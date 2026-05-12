@@ -59,6 +59,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   和 `CLAUDE.md` 中补充仓库文档总索引与根目录文档入口，减少跨目录导航分散。
 - 将 `AGENTS.md` 收敛为 Codex / 通用 agent 适配层，引用 `CLAUDE.md`
   承载共享仓库规范，避免两个 agent 规范文件大段重复。
+- 收紧 frontend capability pack 与 agent routing 示例 wording，避免把 deferred
+  public portal 误读为当前已实现的仓库能力。
 - 将 `run-project-checks.sh` 从字符串命令执行改为显式 task dispatcher，移除
   shell `eval`，同时保持 repo checks、package script discovery、report file
   和 lint/test/build/all 模式。

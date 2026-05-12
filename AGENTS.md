@@ -32,7 +32,9 @@ consumer profiles belong in the consumer project's own `AGENTS.md`,
 - Active agents: 6 core files under `nova-plugin/agents/*.md`
 - Capability packs: 8 documentation packs under `nova-plugin/packs/*/README.md`
 
-Additional facts are owned by these source files:
+Additional facts are owned by these source files. If an adapter note conflicts
+with one of these files, follow the listed source and update this file only when
+the non-Claude behavior needs to change.
 
 | Area | Source |
 | --- | --- |
@@ -58,9 +60,6 @@ node scripts/generate-registry.mjs --write
   equivalent scan and apply the same exclusions before grouping review units.
 - For broad or multi-step work, record per-unit evidence, verified behavior or
   facts, skipped checks, and residual risk before moving to the next unit.
-- Treat [CLAUDE.md](CLAUDE.md) as the shared rule source. If this file and
-  `CLAUDE.md` conflict, follow `CLAUDE.md` for repository contracts and then
-  update this adapter if the difference affects non-Claude agents.
 - When this adapter, command docs, skills, or `CLAUDE.md` disagree, report the
   conflict and follow `CLAUDE.md` or the matching source listed above instead
   of averaging behaviors.
@@ -98,42 +97,16 @@ nova-plugin/skills/nova-<id>/SKILL.md
   Windows warning-skips from `node scripts/validate-all.mjs` must be reported
   as skipped, not passed.
 
-## Common Checks
+## Validation
 
-Default full validation:
+Use [CLAUDE.md](CLAUDE.md#common-checks) for the full current validation list.
+The default full validation remains:
 
 ```bash
 node scripts/validate-all.mjs
 ```
 
-Focused checks:
-
-```bash
-node scripts/generate-registry.mjs
-node scripts/validate-schemas.mjs
-node scripts/validate-registry-fixtures.mjs
-node scripts/validate-claude-compat.mjs
-node scripts/lint-frontmatter.mjs
-bash scripts/verify-agents.sh
-node scripts/validate-packs.mjs
-node scripts/validate-hooks.mjs
-bash -n nova-plugin/hooks/scripts/pre-write-check.sh
-bash -n nova-plugin/hooks/scripts/post-audit-log.sh
-node scripts/validate-runtime-smoke.mjs
-node scripts/validate-surface-budget.mjs
-node scripts/scan-distribution-risk.mjs
-node scripts/validate-regression.mjs
-node scripts/validate-docs.mjs
-```
-
-Windows agent verification:
-
-```powershell
-.\scripts\verify-agents.ps1
-```
-
-Maintainer npm shortcuts in `package.json` are dependency-free and deliberately
-avoid `check`, `lint`, `test`, and `build` script names:
+Maintainer validation npm shortcuts in `package.json` are dependency-free:
 
 ```bash
 npm run validate
@@ -145,10 +118,10 @@ npm run validate:surface
 npm run scan:distribution
 ```
 
-Consumer profile scaffolding through npm requires arguments:
+Windows agent verification uses:
 
-```bash
-npm run scaffold:consumer -- --type java-backend --out <dir>
+```powershell
+.\scripts\verify-agents.ps1
 ```
 
 `node scripts/validate-plugin-install.mjs` is intentionally separate because it
@@ -156,37 +129,17 @@ may install or update a user-scope Claude Code plugin.
 
 ## Change Boundaries
 
-- Existing command behavior changes require updates to the matching command,
-  skill, command docs, user-facing docs when behavior changes, and
-  `CHANGELOG.md` when public behavior, parameters, outputs, tool permissions,
-  or safety boundaries change.
-- New commands require the command file, matching skill, and three command docs.
-  Codex command docs live under `nova-plugin/docs/commands/codex/`; other
-  command docs live under `nova-plugin/docs/commands/<stage>/`.
-- Metadata or version changes require regenerated marketplace outputs and the
-  schema / registry / Claude-compatibility checks listed in [CLAUDE.md](CLAUDE.md).
-- Agent or pack set changes require matching updates to files, verification
-  scripts, routing docs, migration notes when relevant, [CLAUDE.md](CLAUDE.md),
-  and this file.
+- Use [CLAUDE.md](CLAUDE.md#change-workflows) for command, skill, metadata,
+  agent, pack, and version change workflows.
+- Keep this adapter updated only for inventory changes or rules that affect
+  Codex and generic agents differently from Claude Code.
+- Retired paths are not current documentation surfaces: `.claude/agents/**`,
+  `docs/reports/**`, and `nova-plugin/docs/history/**`. Do not recreate them
+  unless a maintainer explicitly reintroduces a documented archive or history
+  policy.
 
 ## Review Units
 
-For broad repository work, review in small units and record evidence:
-
-| Unit | Common files | Focused checks |
-| --- | --- | --- |
-| Memory and docs | `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/**`, `nova-plugin/docs/**` | `node scripts/validate-docs.mjs` |
-| Skills and commands | `nova-plugin/commands/**`, `nova-plugin/skills/**` | `node scripts/lint-frontmatter.mjs` |
-| Guardrails | `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, distributed Bash scripts | `node scripts/validate-hooks.mjs`, hook `bash -n`, `node scripts/validate-regression.mjs` when validator behavior changes |
-| Delegation | `nova-plugin/agents/**`, `nova-plugin/packs/**`, `docs/agents/**` | `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`, plus `node scripts/validate-packs.mjs` |
-| Distribution | `.claude-plugin/registry.source.json`, `nova-plugin/.claude-plugin/plugin.json`, generated marketplace outputs | `node scripts/generate-registry.mjs --write`, schema checks, registry fixture checks, Claude compatibility checks |
-
-## Retired Paths
-
-- `.claude/agents/**`
-- `docs/reports/**`
-- `nova-plugin/docs/history/**`
-
-These paths are not current documentation surfaces. Do not recreate them for
-new work unless a maintainer explicitly reintroduces a documented archive or
-history policy.
+For broad repository work, use the quality-gate table in
+[CLAUDE.md](CLAUDE.md#quality-gates), process one coherent unit at a time, and
+record the evidence and residual risk before moving to the next unit.

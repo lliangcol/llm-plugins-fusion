@@ -2,11 +2,15 @@
 
 ## Purpose
 
-Support portal or registry UI work, accessibility, interaction quality, and frontend validation.
+Support frontend work in host projects, including portal or registry UI work
+when such a frontend exists, plus accessibility, interaction quality, and
+frontend validation.
 
 ## When to Use
 
-Use this pack for UI screens, registry portals, navigation, responsive behavior, accessibility review, and frontend build/test tasks in projects that include a frontend.
+Use this pack for UI screens, host-project registry portals, navigation,
+responsive behavior, accessibility review, and frontend build/test tasks in
+projects that include a frontend.
 
 ## Related Plugins
 

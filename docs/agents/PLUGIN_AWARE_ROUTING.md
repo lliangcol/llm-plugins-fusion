@@ -27,7 +27,7 @@ Installed plugins, MCP tools, language servers, or scanners may improve a task's
 | CHANGELOG, versioning, release notes, handoff | [release](../../nova-plugin/packs/release/) | Use `session-report` when available for structured handoff and session summaries. | Use repository changelog, release workflow, validation results, and final summary. |
 | Deprecation, migration, rollout, rollback, compatibility window | [release](../../nova-plugin/packs/release/) | Use release/session tooling when available for structured migration evidence. | Use changelog, compatibility docs, rollout notes, rollback plan, and validation evidence. |
 | Plugin metadata, marketplace schema, registry | [marketplace](../../nova-plugin/packs/marketplace/) | Use nova repository scripts and schemas for manifest and compatibility validation. | Use schema validators, documented metadata rules, and manual JSON review. |
-| Portal or registry UI, accessibility, interaction | [frontend](../../nova-plugin/packs/frontend/) | Use the host project's existing frontend stack, preview server, tests, and accessibility tools when present. | Use existing files, manual QA checklists, responsive reasoning, and documentation constraints. |
+| Host-project portal or registry UI, deferred portal IA, accessibility, interaction | [frontend](../../nova-plugin/packs/frontend/) | Use the host project's existing frontend stack, preview server, tests, and accessibility tools when present. | Use existing files, manual QA checklists, responsive reasoning, and documentation constraints. |
 | MCP config, server/client examples, tool integration | [mcp](../../nova-plugin/packs/mcp/) | Use available MCP tools or plugins for discovery, schema understanding, and integration checks. | Use `.mcp.json`, docs, schema checks, config review, and manual permission reasoning. |
 
 ## Routing Patterns
@@ -43,7 +43,7 @@ Installed plugins, MCP tools, language servers, or scanners may improve a task's
 | "Cross-check this high-confidence security-sensitive decision." | `reviewer` | [security](../../nova-plugin/packs/security/) plus relevant domain packs |
 | "Plan a deprecation or migration path." | `architect` then `publisher` | [release](../../nova-plugin/packs/release/) and [docs](../../nova-plugin/packs/docs/) |
 | "Marketplace schema validation failed." | `verifier` then `builder` | [marketplace](../../nova-plugin/packs/marketplace/) |
-| "Registry portal has layout and accessibility issues." | `reviewer` then `builder` | [frontend](../../nova-plugin/packs/frontend/) |
+| "The host project's registry UI has layout and accessibility issues." | `reviewer` then `builder` | [frontend](../../nova-plugin/packs/frontend/) |
 | "Add MCP server setup docs." | `architect` then `publisher` | [mcp](../../nova-plugin/packs/mcp/) and [docs](../../nova-plugin/packs/docs/) |
 
 ## Enhancement Rules

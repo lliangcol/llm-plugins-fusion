@@ -128,7 +128,7 @@ docs/
 | [releases/release-validation-runbook.md](releases/release-validation-runbook.md) | Manual runbook for exact tag, isolated install smoke, workflow evaluation, and promotion decisions. |
 | [releases/release-hygiene.md](releases/release-hygiene.md) | Version, tag, generated artifact, and pre-release hygiene rules. |
 
-### Workflows And Reports
+### Workflows And Project State
 
 | Document | Purpose |
 | --- | --- |

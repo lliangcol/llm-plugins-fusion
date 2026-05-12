@@ -128,7 +128,7 @@ cat <<'EOF'
 - Route this task: 'Plan release: versioning, tags, changelog, hotfix procedure.'
 - Route this task: 'Marketplace schema validation failed after metadata edits.'
 - Route this task: 'MCP server setup docs and config need review.'
-- Route this task: 'Registry portal layout has accessibility regressions.'
+- Route this task: 'Host-project registry UI layout has accessibility regressions.'
 - Route this task: 'Unclear owner: mixed app bug + CI + docs mismatch; coordinate core agents and packs.'
 EOF
 

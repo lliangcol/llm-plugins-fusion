@@ -28,7 +28,7 @@ Capability packs are optional routing context, not runtime-loaded agents. See [P
 | `docs` | README, CLAUDE.md, AGENTS.md, technical docs. |
 | `release` | CHANGELOG, version strategy, session reports, handoff. |
 | `marketplace` | Plugin and marketplace schemas, registry metadata. |
-| `frontend` | Portal or registry UI, accessibility, interaction quality. |
+| `frontend` | Host-project portal or registry UI, deferred portal IA review, accessibility, interaction quality. |
 | `mcp` | MCP config, server/client examples, tool integration. |
 
 ## Keyword Routing Table
