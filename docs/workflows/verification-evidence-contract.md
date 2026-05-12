@@ -130,6 +130,7 @@ appear:
 | [AGENTS.md](../../AGENTS.md) | Codex and generic-agent adapter that points to the same evidence expectations. |
 | [Shared Output Contracts](../../nova-plugin/skills/_shared/output-contracts.md) | Skill-level verification output requirements. |
 | [Context-Safe Agent Workflows](context-safe-agent-workflows.md) | Review unit, fix loop, and checkpoint method. |
+| [GSD-Informed Reliability Hardening](gsd-informed-hardening.md) | Maintenance note for the adopted hardening controls and non-goals. |
 | [Routing and Validation Guardrails](routing-validation-guardrails.md) | Maintenance guardrails for routing, checkpoint evidence, prompt budgets, and distribution-risk scanning. |
 | [Serial Checkpoint Prompt](../prompts/claude-code/serial-checkpoint.md) | Claude Code prompt for one-unit-at-a-time work. |
 | [Codex Final Verification Prompt](../prompts/codex/final-verification.md) | Codex prompt for verifying fixes against an existing review artifact. |

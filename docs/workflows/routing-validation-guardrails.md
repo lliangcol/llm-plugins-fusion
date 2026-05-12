@@ -108,9 +108,9 @@ security, or CI guardrails:
 ## Related Documents
 
 - [Context-Safe Agent Workflows](context-safe-agent-workflows.md)
+- [GSD-Informed Reliability Hardening](gsd-informed-hardening.md)
 - [Verification Evidence Contract](verification-evidence-contract.md)
 - [Thin Harness, Fat Skills Workflow Doctrine](thin-harness-fat-skills.md)
-- [Verification Evidence Contract](verification-evidence-contract.md)
 - [Checkpoint Artifact Prompt](../prompts/common/checkpoint-artifact.md)
 - [Workbench Consumer Template](../consumers/workbench-template.md)
 - [Security Review Route](../marketplace/security-review-route.md)

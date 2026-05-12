@@ -22,6 +22,7 @@ duplicate every document.
 | Understand core agents and capability pack routing | [agents/ROUTING.md](agents/ROUTING.md) |
 | Reuse public-safe workflow prompts | [prompts/README.md](prompts/README.md) |
 | Split large agent work into resumable units | [workflows/context-safe-agent-workflows.md](workflows/context-safe-agent-workflows.md) |
+| Review GSD-informed reliability hardening | [workflows/gsd-informed-hardening.md](workflows/gsd-informed-hardening.md) |
 | Maintain routing and validation guardrails | [workflows/routing-validation-guardrails.md](workflows/routing-validation-guardrails.md) |
 | Understand verification evidence standards | [workflows/verification-evidence-contract.md](workflows/verification-evidence-contract.md) |
 | Maintain marketplace registry metadata | [marketplace/registry-author-workflow.md](marketplace/registry-author-workflow.md) |
@@ -132,6 +133,7 @@ docs/
 | Document | Purpose |
 | --- | --- |
 | [workflows/context-safe-agent-workflows.md](workflows/context-safe-agent-workflows.md) | Large-task, review, fix, delivery, and checkpoint workflows. |
+| [workflows/gsd-informed-hardening.md](workflows/gsd-informed-hardening.md) | Maintenance note for the GSD-informed routing, checkpoint, evidence, budget, and distribution-risk hardening. |
 | [workflows/routing-validation-guardrails.md](workflows/routing-validation-guardrails.md) | Guardrails for first-stage routing, checkpoint evidence, surface budgets, and distribution-risk scanning. |
 | [workflows/verification-evidence-contract.md](workflows/verification-evidence-contract.md) | Standards for mapping checks, checkpoints, and handoffs to verified behavior or facts. |
 | [workflows/thin-harness-fat-skills.md](workflows/thin-harness-fat-skills.md) | Placement doctrine for scripts, skills, prompts, packs, and profiles. |

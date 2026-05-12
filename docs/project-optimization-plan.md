@@ -248,6 +248,8 @@ Acceptance Criteria:
 
 Status: completed in current unreleased work
 
+Maintenance note: [workflows/gsd-informed-hardening.md](workflows/gsd-informed-hardening.md)
+
 Why: Recent workflow reviews identified reliability controls that fit
 `nova-plugin`: compact routing, durable checkpoints, prompt-surface budgets,
 and explicit release evidence. Nova should adopt those controls while preserving

@@ -40,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   checkpoint evidence、surface budget 和 distribution-risk guardrails 的维护方式。
 - 新增 `docs/workflows/verification-evidence-contract.md`，说明验证声明如何映射
   到行为、仓库事实、review finding 或变更目标。
+- 新增 `docs/workflows/gsd-informed-hardening.md`，持久化记录 GSD-informed
+  reliability hardening 的采纳项、非目标、维护规则和验证方式。
 
 ### Changed
 - 收紧文件扫描与本地检查边界：`.gitignore` 不再放行 retired
