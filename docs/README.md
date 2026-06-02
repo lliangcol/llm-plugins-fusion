@@ -1,7 +1,7 @@
 # Repository Documentation Index
 
 Status: active
-Date: 2026-05-12
+Date: 2026-06-02
 
 This is the repository-level map for public documentation under `docs/`.
 Use [nova-plugin/docs/README.md](../nova-plugin/docs/README.md) for
@@ -17,6 +17,9 @@ duplicate every document.
 | Need | Entry |
 | --- | --- |
 | Get started quickly with `nova-plugin` | [getting-started.md](getting-started.md) |
+| See scenario-based workflow examples | [showcase/README.md](showcase/README.md) |
+| Prepare social preview and demo capture assets | [assets/README.md](assets/README.md) |
+| Track growth metrics and manual promotion channels | [growth/README.md](growth/README.md) |
 | Adopt `nova-plugin` in a private project | [consumers/README.md](consumers/README.md) |
 | Choose a nova command or inspect plugin docs | [../nova-plugin/docs/README.md](../nova-plugin/docs/README.md) |
 | Understand core agents and capability pack routing | [agents/ROUTING.md](agents/ROUTING.md) |
@@ -36,12 +39,15 @@ duplicate every document.
 docs/
 |-- README.md
 |-- getting-started.md              # shortest install and workflow entry
+|-- assets/                       # social preview and demo capture guidance
 |-- agents/                       # core agent routing and pack routing
 |-- consumers/                    # public-safe consumer profile contracts and setup templates
 |-- examples/                     # redacted workflow examples and evaluation templates
+|-- growth/                       # growth metric definitions and collection cadence
 |-- marketplace/                  # generated catalog, registry workflow, trust, compatibility, and review docs
 |-- prompts/                      # reusable public-safe prompt templates
 |-- releases/                     # release evidence templates, runbooks, and hygiene docs
+|-- showcase/                     # scenario-based public workflow examples
 |-- workflows/                    # reusable agent workflow guidance
 `-- project-optimization-plan.md  # active project optimization plan
 ```
@@ -51,14 +57,23 @@ docs/
 | Area | Owns |
 | --- | --- |
 | [agents/](agents/) | Core agent routing and plugin-aware routing. |
+| [assets/](assets/) | Public-safe social preview and demo capture guidance. |
 | [consumers/](consumers/) | Public-safe consumer profile contracts, redacted project templates, and cross-tool setup notes. |
 | [examples/](examples/) | Redacted Java backend/frontend examples and workflow evaluation templates. |
+| [growth/](growth/) | Growth metrics, traffic collection cadence, and manual channel record format. |
 | [marketplace/](marketplace/) | Marketplace catalog output, registry author workflow, compatibility, trust, security review, and v3 readiness evidence. |
 | [prompts/](prompts/) | Copyable prompt templates for Codex, Claude Code, delivery docs, HTML artifacts, and workbench cleanup. |
 | [releases/](releases/) | Release evidence templates, validation runbooks, and release hygiene rules. |
+| [showcase/](showcase/) | Scenario-based public workflow examples for first-time visitors. |
 | [workflows/](workflows/) | Context-safe agent workflows, routing/validation guardrails, and the thin-harness/fat-skills placement doctrine. |
 
 ## Current Documents
+
+### Assets
+
+| Document | Purpose |
+| --- | --- |
+| [assets/README.md](assets/README.md) | Social preview requirements, demo capture storyboard, and privacy boundary. |
 
 ### Agents
 
@@ -91,6 +106,12 @@ docs/
 | [examples/workflow-evaluation-record-template.md](examples/workflow-evaluation-record-template.md) | Manual evidence record template for workflow-quality checks. |
 | [examples/java-backend/redacted-feature.md](examples/java-backend/redacted-feature.md) | Generic Java/Spring workflow example. |
 | [examples/frontend/basic-feature.md](examples/frontend/basic-feature.md) | Generic frontend workflow example. |
+
+### Growth
+
+| Document | Purpose |
+| --- | --- |
+| [growth/README.md](growth/README.md) | Stars, forks, issues, PRs, releases, traffic metrics, collection cadence, and manual channel record. |
 
 ### Marketplace
 
@@ -127,6 +148,15 @@ docs/
 | [releases/release-evidence-template.md](releases/release-evidence-template.md) | Release or promotion evidence template. |
 | [releases/release-validation-runbook.md](releases/release-validation-runbook.md) | Manual runbook for exact tag, isolated install smoke, workflow evaluation, and promotion decisions. |
 | [releases/release-hygiene.md](releases/release-hygiene.md) | Version, tag, generated artifact, and pre-release hygiene rules. |
+
+### Showcase
+
+| Document | Purpose |
+| --- | --- |
+| [showcase/README.md](showcase/README.md) | Local index for scenario-based workflow examples. |
+| [showcase/java-backend.md](showcase/java-backend.md) | Java backend workflow showcase with validation and private context boundary. |
+| [showcase/frontend.md](showcase/frontend.md) | Frontend workflow showcase with UI state, accessibility, and screenshot validation boundaries. |
+| [showcase/release-and-docs.md](showcase/release-and-docs.md) | Release and docs workflow showcase with version, generated-file, and validation evidence boundaries. |
 
 ### Workflows And Project State
 

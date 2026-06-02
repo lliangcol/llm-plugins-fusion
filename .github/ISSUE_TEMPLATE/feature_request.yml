@@ -1,0 +1,59 @@
+name: Feature request
+description: Suggest a public-safe improvement to nova-plugin or repository workflows.
+title: "[Feature]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for feature proposals that can be discussed publicly. Keep examples generic and redacted.
+
+        Do not include credentials, private endpoints, private repository addresses, local machine paths, consumer-specific business rules, or private knowledge-base content.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Target area
+      description: Choose the closest repository surface.
+      options:
+        - Commands or skills
+        - Agents or capability packs
+        - Marketplace metadata or packaging
+        - Hooks, scripts, or validation
+        - Documentation, examples, or templates
+        - GitHub workflows
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+      description: Describe the public-safe workflow need this feature would address.
+      placeholder: What workflow is hard or missing today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Explain the change you want and how contributors would use it.
+      placeholder: What should the repository or plugin do differently?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Describe any current workaround or related roadmap item.
+  - type: textarea
+    id: compatibility
+    attributes:
+      label: Compatibility and risk notes
+      description: Note any likely impact on commands, skills, agents, packs, marketplace metadata, validation, or public docs.
+      placeholder: Mention expected validation updates or migration concerns if known.
+  - type: checkboxes
+    id: public-safety
+    attributes:
+      label: Public-safety check
+      options:
+        - label: I have kept this request free of credentials, private endpoints, private repository addresses, local machine paths, consumer-specific facts, and private knowledge-base content.
+          required: true

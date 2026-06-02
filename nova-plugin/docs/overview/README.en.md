@@ -4,53 +4,70 @@ English | [中文](../../../README.md)
 
 # LLM Plugins Fusion
 
-**A public multi-project AI engineering workflow framework with `nova-plugin`, consumer profile contracts, and redacted templates**
+**Make Claude Code follow an engineering loop: Explore -> Plan -> Review -> Implement -> Finalize.**
 
-[![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](../../../LICENSE)
+[![CI](https://github.com/lliangcol/llm-plugins-fusion/actions/workflows/ci.yml/badge.svg)](https://github.com/lliangcol/llm-plugins-fusion/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/lliangcol/llm-plugins-fusion?label=release)](https://github.com/lliangcol/llm-plugins-fusion/releases/latest)
+[![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion/releases/tag/v2.2.0)
+[![License](https://img.shields.io/github/license/lliangcol/llm-plugins-fusion)](../../../LICENSE)
 
 </div>
 
 ---
 
-## Positioning
+## 30-Second Summary
 
-`llm-plugins-fusion` is a public multi-project AI engineering workflow framework for LLM coding assistants. Its primary deliverable is `nova-plugin`, distributed through the Claude Code marketplace format, and it covers the engineering loop from discovery to handoff:
+`llm-plugins-fusion` is a public AI engineering workflow framework for LLM coding assistants. Its current primary deliverable is `nova-plugin`, an installable Claude Code workflow plugin that turns ad hoc prompting into a reusable, reviewable, delivery-aware process with commands, skills, core agents, capability packs, and validation guardrails.
 
 ```text
 Explore -> Plan -> Review -> Implement -> Finalize
 ```
 
-The repository can support private consumer projects, but public content should only contain generic workflows, consumer profile contracts, redacted Java backend/frontend templates, and general capability pack guidance. Real consumer profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`, `.claude/`, or private docs.
+Marketplace metadata is the current installation and distribution mechanism. This repository should not be described as a mature multi-plugin ecosystem, and the deferred public portal is not an implemented capability. Public content should contain only generic workflows, consumer profile contracts, redacted templates, prompt templates, and capability pack guidance. Real consumer profiles, endpoints, credentials, private knowledge, business rules, and private repository addresses belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`, `.claude/`, or private docs.
 
-Marketplace metadata is the current installation and distribution mechanism; this repository should not be described as a mature multi-plugin ecosystem or as already having a public portal.
+## 3-Minute Install
 
-It serves these audiences:
+Regular `nova-plugin` workflows only require the Claude Code plugin. Repository maintenance and local validation require Node.js 20+. Codex loop commands also require a locally callable Codex CLI and Bash.
 
-| Audience | Needs | Start here |
+```text
+/plugin marketplace add lliangcol/llm-plugins-fusion
+/plugin install nova-plugin@llm-plugins-fusion
+/route This task touches docs, versioning, and install validation; recommend the next nova workflow step
+```
+
+Confirm installation:
+
+```text
+/plugin
+```
+
+After the first install, start with read-only `/route`. It should recommend the next command, skill, core agent, capability packs, required inputs, validation path, and fallback mode.
+
+## Who It Helps
+
+| Audience | Start here | Goal |
 | --- | --- | --- |
-| Consumer maintainers | Adopt the generic workflow, maintain private profiles, choose validation boundaries | [Consumer profiles](../../../docs/consumers/README.md), [Examples](../../../docs/examples/README.md), [Command Map](#command-map) |
-| Plugin users | Install `nova-plugin`, pick commands, copy usage templates | [Quick Start](#quick-start), [Command Map](#command-map), [docs index](../README.md) |
-| Plugin authors | Add commands / skills and understand frontmatter contracts | [CONTRIBUTING.md](../../../CONTRIBUTING.md), [Skill-first design](../architecture/dual-track-design.md) |
-| Maintainers | Schema, CI, validation, release, and safety boundaries | [Quality Gates](#quality-gates), [SECURITY.md](../../../SECURITY.md), [CHANGELOG.md](../../../CHANGELOG.md) |
+| Claude Code users | [Getting Started](../../../docs/getting-started.md) | Install `nova-plugin` and complete the first `/route` workflow in minutes. |
+| Consumer maintainers | [Consumer profiles](../../../docs/consumers/README.md) | Keep private project context local while reusing the public workflow contract. |
+| Plugin authors | [CONTRIBUTING.md](../../../CONTRIBUTING.md) | Change commands or skills after reading the [skill-first design](../architecture/dual-track-design.md). |
+| Maintainers | [Quality Gates](#quality-gates) | Run validation by change scope and record release evidence. |
 
-Use it when:
+## Showcase
 
-- You already use Claude Code and want a stable explore / plan / review /
-  implement / finalize workflow for AI-assisted engineering.
-- You maintain multiple projects and want public workflow guidance while keeping
-  real consumer profiles in private project repositories.
-- You want schema, frontmatter, documentation, and release checks to reduce
-  plugin maintenance drift.
+| Scenario | Entry | What it demonstrates |
+| --- | --- | --- |
+| Java backend | [docs/showcase/java-backend.md](../../../docs/showcase/java-backend.md) | Turning a vague backend task into explore, plan, review, implement, and finalize evidence. |
+| Frontend | [docs/showcase/frontend.md](../../../docs/showcase/frontend.md) | Converting UI work into component, state, accessibility, and screenshot validation boundaries. |
+| Release and docs | [docs/showcase/release-and-docs.md](../../../docs/showcase/release-and-docs.md) | Handling release notes, docs sync, validation evidence, and residual risk. |
 
-It is not ready for:
+Demo capture guidance lives in [docs/assets/README.md](../../../docs/assets/README.md). Growth metric definitions live in [docs/growth/README.md](../../../docs/growth/README.md).
 
-- A mature multi-plugin marketplace, public portal, paid distribution, or hosted
-  registry.
-- A standalone runtime automation platform beyond Claude Code commands and
-  skills.
-- Publishing real closed-source project configuration, endpoints, credentials,
-  or private knowledge base content.
+## Security And Trust
+
+- Write-capable, Bash, and external CLI flows must be constrained by explicit parameters, preflight checks, artifact scope, and validation evidence.
+- Public docs must not contain real consumer profiles, endpoints, credentials, private repository addresses, business rules, or private knowledge-base content.
+- The default local gate is `node scripts/validate-all.mjs`; Windows Bash-dependent warning-skips must be reported as skipped, not passed.
+- Report security issues privately through [SECURITY.md](../../../SECURITY.md), not public issues.
 
 ## Current Status
 

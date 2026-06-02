@@ -42,6 +42,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   到行为、仓库事实、review finding 或变更目标。
 - 新增 `docs/workflows/gsd-informed-hardening.md`，持久化记录 GSD-informed
   reliability hardening 的采纳项、非目标、维护规则和验证方式。
+- 新增 GitHub issue forms、Dependabot GitHub Actions 更新配置和 Dependency
+  Review workflow，用于公开安全反馈、依赖更新和 PR 依赖审查。
+- 新增 `docs/showcase/`、`docs/assets/`、`docs/growth/` 和
+  `docs/assets/social-preview-1280x640.png`，补充首次访问者 showcase、社交
+  预览、demo capture 和增长指标口径。
+- 新增 `scripts/collect-github-metrics.mjs`，采集公开 GitHub repository 指标，
+  并在无 `GITHUB_TOKEN` 时把 owner-only traffic endpoints 记录为 skipped。
 
 ### Changed
 - 收紧文件扫描与本地检查边界：`.gitignore` 不再放行 retired
@@ -67,9 +74,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 扩展 runtime smoke，静态拦截 `run-project-checks.sh` 重新引入 `eval` 的风险。
 - 扩展分发风险扫描，覆盖 JWT、npm token、Azure/GCP key、私有 SSH repo URL
   和真实 `.env` 值，并继续保证输出脱敏。
-- 收敛 `2.2.0` release-ready 事实：在正式 tag、隔离环境 install smoke、
-  GitHub Release 和人工 workflow evaluation 完成前，不把当前 snapshot 描述为
-  stable release。
+- 清理 `2.2.0` 推广口径：正式 tag 和 release 已存在后，公开入口统一使用
+  exact `v2.2.0` 作为稳定推广基线，同时继续区分 moving `main` 与 release。
 - 收紧 checkpoint 与 verification 输出契约：验证证据必须对应预期行为、
   仓库事实、review finding 或变更目标，不能只用测试通过替代行为或事实确认。
 - 明确 `/route` / `nova-route` 是只读第一阶段路由器，先做 intent family
@@ -93,9 +99,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [2.2.0] - 2026-05-12
 
-Status: release-ready notes; the exact `v2.2.0` tag is pending in the current
-local repository. Do not treat this section as published stable release evidence
-until the tag and release workflow exist.
+Status: stable release notes for exact `v2.2.0`. Use the published release tag
+as promotion evidence; moving `main` may contain later `Unreleased` changes and
+must not replace the exact release tag as stable evidence.
 
 ### Added
 - 新增 `/route` 与 `nova-route` 只读路由入口，用于在非 Claude slash

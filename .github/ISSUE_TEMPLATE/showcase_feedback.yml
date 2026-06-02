@@ -1,0 +1,55 @@
+name: Showcase and growth feedback
+description: Share public-safe showcase ideas, adoption feedback, and ecosystem growth suggestions.
+title: "[Showcase]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for public-safe showcase and growth feedback. Redacted examples, generic workflow observations, and ecosystem suggestions are welcome.
+
+        Do not include credentials, private endpoints, private repository addresses, local machine paths, consumer names, business rules, or private knowledge-base content.
+  - type: dropdown
+    id: feedback-type
+    attributes:
+      label: Feedback type
+      description: Choose the closest category.
+      options:
+        - Showcase idea
+        - Growth or adoption feedback
+        - Documentation signal
+        - Capability pack suggestion
+        - Marketplace listing feedback
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the idea or feedback in public-safe terms.
+      placeholder: What should be showcased, improved, or clarified?
+    validations:
+      required: true
+  - type: textarea
+    id: audience
+    attributes:
+      label: Intended audience
+      description: Who would benefit from this feedback or showcase?
+      placeholder: Maintainers, plugin evaluators, AI coding assistant users, or another public audience.
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Public-safe evidence or example
+      description: Provide sanitized context, links to public material, or a generic example if available.
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Suggested outcome
+      description: Describe the repository, docs, marketplace, or workflow change you would like to see.
+  - type: checkboxes
+    id: public-safety
+    attributes:
+      label: Public-safety check
+      options:
+        - label: I have removed credentials, private endpoints, private repository addresses, local machine paths, consumer names, business rules, and private knowledge-base content.
+          required: true

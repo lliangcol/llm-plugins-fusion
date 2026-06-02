@@ -1,0 +1,89 @@
+name: Bug report
+description: Report reproducible behavior in nova-plugin, validation, docs, or marketplace packaging.
+title: "[Bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for public, reproducible bugs. Do not include credentials, private endpoints, private repository addresses, local machine paths, consumer-specific facts, or undisclosed vulnerability details.
+
+        Security issues must be reported privately through the Security Policy instead of a public issue.
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      description: Choose the closest repository surface.
+      options:
+        - Commands or skills
+        - Agents or capability packs
+        - Marketplace metadata or packaging
+        - Hooks, scripts, or validation
+        - Documentation or examples
+        - GitHub workflows
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: Describe the observed problem in public-safe terms.
+      placeholder: What happened, and what part of the repository or plugin is affected?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction steps
+      description: Provide the smallest public-safe steps that reproduce the behavior.
+      placeholder: |
+        1. Run ...
+        2. Open ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should have happened?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: What happened instead?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Plugin or repository version
+      description: Use the release tag, plugin version, or commit SHA if available.
+      placeholder: v2.2.0, 2.2.0, or a commit SHA
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Platform
+      description: Choose the platform where you observed the issue.
+      options:
+        - Windows
+        - macOS
+        - Linux
+        - CI
+        - Not platform-specific
+        - Other
+  - type: textarea
+    id: validation
+    attributes:
+      label: Validation output
+      description: Paste short, sanitized command output when available.
+      placeholder: Include only public-safe output from repository checks or GitHub Actions.
+  - type: checkboxes
+    id: public-safety
+    attributes:
+      label: Public-safety check
+      options:
+        - label: I have removed credentials, private endpoints, private repository addresses, local machine paths, consumer-specific facts, and undisclosed vulnerability details.
+          required: true

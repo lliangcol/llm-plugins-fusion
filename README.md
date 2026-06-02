@@ -4,35 +4,70 @@
 
 # LLM Plugins Fusion
 
-**面向 LLM coding assistant 的公开 AI 工程工作流框架，当前以 `nova-plugin` 为主交付物**
+**让 Claude Code 按 Explore -> Plan -> Review -> Implement -> Finalize 的工程节奏工作。**
 
-[![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](./LICENSE)
+[![CI](https://github.com/lliangcol/llm-plugins-fusion/actions/workflows/ci.yml/badge.svg)](https://github.com/lliangcol/llm-plugins-fusion/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/lliangcol/llm-plugins-fusion?label=release)](https://github.com/lliangcol/llm-plugins-fusion/releases/latest)
+[![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion/releases/tag/v2.2.0)
+[![License](https://img.shields.io/github/license/lliangcol/llm-plugins-fusion)](./LICENSE)
 
 </div>
 
 ---
 
-## 项目定位
+## 30 秒看懂
 
-`llm-plugins-fusion` 用公开、可校验的方式沉淀多项目 AI 编码工作流。当前主交付物是 `nova-plugin`，通过 Claude Code marketplace 安装和分发，并围绕五阶段工程节奏组织命令、skills、agent 路由和验证边界：
+`llm-plugins-fusion` 是面向 LLM coding assistant 的公开 AI 工程工作流框架。当前主交付物是 `nova-plugin`：一个可通过 Claude Code marketplace 安装的 workflow plugin，用命令、skills、core agents、capability packs 和验证脚本，把临时 prompt 收敛成可复用、可审查、可交付的工程流程。
 
 ```text
 Explore -> Plan -> Review -> Implement -> Finalize
 ```
 
-本仓库适合沉淀通用 workflow、consumer profile 契约、脱敏模板、prompt 模板和 capability pack 指南。真实 consumer profile、endpoint、凭据、私有知识库、业务规则和私有仓库地址应保存在 consumer 项目自己的 `AGENTS.md`、`CLAUDE.md`、`.claude/` 或私有文档中。
+Marketplace metadata 只是当前安装与分发机制。本仓库不描述为成熟多插件生态，也不把 deferred public portal 当作已实现能力。公开内容只保存通用 workflow、consumer profile 契约、脱敏模板、prompt 模板和 capability pack 指南；真实 consumer profile、endpoint、凭据、私有知识库、业务规则和私有仓库地址应保存在 consumer 项目自己的 `AGENTS.md`、`CLAUDE.md`、`.claude/` 或私有文档中。
 
-当前 marketplace 只是安装与分发机制。本仓库不把当前状态描述为成熟多插件生态，也不把 deferred public portal 当作已实现能力。
+## 3 分钟安装
 
-## 快速导航
+普通 `nova-plugin` workflow 只需要 Claude Code 插件；维护仓库或运行本地校验需要 Node.js 20+；Codex 闭环命令额外需要本机 Codex CLI 和 Bash。
+
+```text
+/plugin marketplace add lliangcol/llm-plugins-fusion
+/plugin install nova-plugin@llm-plugins-fusion
+/route 这项任务涉及文档、版本和安装验证，请推荐下一步 nova workflow
+```
+
+确认插件可用：
+
+```text
+/plugin
+```
+
+第一次安装后先运行只读 `/route`。它会推荐下一步 command、skill、core agent、capability packs、必要输入、验证路径和 fallback mode。
+
+## 适用人群
 
 | 你是 | 先读 | 目标 |
 | --- | --- | --- |
-| 插件用户 | [Getting Started](./docs/getting-started.md) | 安装 `nova-plugin`，然后从 [Quick Start](#quick-start) 或 [Command Map](#command-map) 选择命令。 |
+| Claude Code 用户 | [Getting Started](./docs/getting-started.md) | 5 分钟内安装 `nova-plugin`，并用 `/route` 完成第一次路由。 |
 | Consumer 项目维护者 | [Consumer profiles](./docs/consumers/README.md) | 在私有项目维护 profile，把公开仓库只当作通用 workflow 和模板来源。 |
 | 插件作者 | [CONTRIBUTING.md](./CONTRIBUTING.md) | 修改 command / skill 前确认 [Skill-first 设计](./nova-plugin/docs/architecture/dual-track-design.md)。 |
 | 维护者 | [Quality Gates](#quality-gates) | 按变更范围运行校验，并用 [release evidence template](./docs/releases/release-evidence-template.md) 记录证据。 |
+
+## Showcase
+
+| 场景 | 入口 | 你会看到 |
+| --- | --- | --- |
+| Java backend | [docs/showcase/java-backend.md](./docs/showcase/java-backend.md) | 从模糊后端需求进入 explore、plan、review、implement、finalize 的证据链。 |
+| Frontend | [docs/showcase/frontend.md](./docs/showcase/frontend.md) | 把 UI 需求转成组件、状态、可访问性和截图验证边界。 |
+| Release and docs | [docs/showcase/release-and-docs.md](./docs/showcase/release-and-docs.md) | 用 nova workflow 处理发布说明、文档同步、验证证据和残余风险。 |
+
+更多视觉资产与录屏脚本见 [docs/assets/README.md](./docs/assets/README.md)，增长指标口径见 [docs/growth/README.md](./docs/growth/README.md)。
+
+## Security & Trust
+
+- 写入、Bash 和外部 CLI 流程必须通过明确参数、preflight、artifact 范围和验证证据约束；不建议用全局权限绕过作为默认运行方式。
+- 公开仓库不存放真实 consumer profile、endpoint、凭据、私有仓库地址、业务规则或私有知识库。
+- 本地默认质量门是 `node scripts/validate-all.mjs`；Windows 无 Bash 时，Bash-dependent 检查只能报告为 skipped，不能报告为 passed。
+- 安全问题请按 [SECURITY.md](./SECURITY.md) 私下披露，不要在公开 issue 中暴露漏洞细节。
 
 ## 当前状态
 
@@ -65,30 +100,11 @@ Explore -> Plan -> Review -> Implement -> Finalize
 node scripts/validate-all.mjs
 ```
 
-该入口覆盖 schema、registry fixtures、Claude 兼容性、command / skill frontmatter、core agent 集合、capability pack 结构、hooks、Codex runtime smoke、分发风险扫描、核心回归检查、Markdown 链接、命令文档覆盖和生成 catalog 漂移。Windows PowerShell 可以运行 Node 校验和 `scripts/verify-agents.ps1`；如果本机没有 Bash，Bash-dependent 检查只能报告为 skipped，不能报告为 passed。
+该入口覆盖 schema、registry fixtures、Claude 兼容性、command / skill frontmatter、core agent 集合、capability pack 结构、hooks、Codex runtime smoke、分发风险扫描、核心回归检查、Markdown 链接、命令文档覆盖和生成 catalog 漂移。
 
 ## Quick Start
 
-最短上手路径见 [docs/getting-started.md](./docs/getting-started.md)。普通 `nova-plugin` workflow 只需要 Claude Code 插件；维护仓库或运行本地校验需要 Node.js 20+；Codex 闭环命令额外需要本机 Codex CLI 和 Bash。
-
-在 Claude Code 中添加 marketplace 并安装插件：
-
-```text
-/plugin marketplace add lliangcol/llm-plugins-fusion
-/plugin install nova-plugin@llm-plugins-fusion
-```
-
-确认插件可用：
-
-```text
-/plugin
-```
-
-不确定下一步时，从只读路由开始：
-
-```text
-/route 这项任务涉及文档、版本和安装验证，请推荐下一步 nova workflow
-```
+最短上手路径见 [docs/getting-started.md](./docs/getting-started.md)。
 
 常规工作流优先使用五个主入口：
 
@@ -103,8 +119,6 @@ node scripts/validate-all.mjs
 | 审查计划、代码或风险 | `/review` | 默认标准级别，可用 `LEVEL=lite|strict` 调整深度。 |
 | 按已批准计划实施 | `/implement-plan` | 需要明确的 plan 和 `PLAN_APPROVED=true`。 |
 | 交付总结和后续事项 | `/finalize-work` | 固化 changed files、validation、限制和 next steps。 |
-
-`nova-plugin` 不建议用全局权限绕过作为默认运行方式。写入、Bash 和外部 CLI 流程应通过明确参数、preflight、artifact 范围和验证证据来约束。
 
 ## Command Map
 
