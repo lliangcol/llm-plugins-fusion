@@ -44,9 +44,10 @@ consumer project's own `AGENTS.md`, `CLAUDE.md`, `.claude/`, or private docs.
 - Repository docs index: `docs/README.md`
 - Project optimization plan: `docs/project-optimization-plan.md`
 - Release evidence template: `docs/releases/release-evidence-template.md`
-- Maintainer npm shortcuts: `package.json` (`validate`, `validate:docs`,
-  `validate:schemas`, `validate:runtime`, `validate:regression`,
-  `validate:surface`, `scan:distribution`, `scaffold:consumer`; no
+- Maintainer npm shortcuts: `package.json` (`doctor`, `validate`,
+  `validate:maintainer`, `validate:docs`, `validate:schemas`,
+  `validate:runtime`, `validate:regression`, `validate:surface`,
+  `validate:workflow`, `scan:distribution`, `scaffold:consumer`; no
   `check`/`lint`/`test`/`build` script names)
 - Repository validation scripts require Node.js 20+. Hook shell syntax and
   runtime smoke checks require Bash; Windows without Bash may warning-skip
@@ -146,18 +147,22 @@ node scripts/validate-runtime-smoke.mjs
 node scripts/validate-surface-budget.mjs
 node scripts/scan-distribution-risk.mjs
 node scripts/validate-regression.mjs
+node scripts/validate-workflow-fixtures.mjs
 node scripts/validate-docs.mjs
 ```
 
 Maintainer npm shortcuts are optional and dependency-free:
 
 ```bash
+npm run doctor
 npm run validate
+npm run validate:maintainer
 npm run validate:docs
 npm run validate:schemas
 npm run validate:runtime
 npm run validate:regression
 npm run validate:surface
+npm run validate:workflow
 npm run scan:distribution
 ```
 
@@ -177,7 +182,8 @@ Claude CLI install smoke is intentionally separate because it may install or
 update a user-scope plugin:
 
 ```bash
-node scripts/validate-plugin-install.mjs
+node scripts/validate-plugin-install.mjs --dry-run
+node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
 ```
 
 Consumer profile scaffolding is dry-run by default:
@@ -401,8 +407,8 @@ surfaces change.
 Current CI includes verify-agents, validate-packs, validate-schemas,
 validate-registry-fixtures, validate-claude-compat, plugin install smoke,
 lint-frontmatter, validate-hooks, hook `bash -n`, runtime smoke, surface budget,
-distribution risk scan, validation regression checks, validate-docs, and a
-Windows non-Bash smoke job for schemas, docs, frontmatter, and
+distribution risk scan, validation regression checks, workflow fixture
+validation, validate-docs, and a Windows non-Bash smoke job for schemas, docs, frontmatter, and
 `scripts/verify-agents.ps1`.
 
 ## Do Not Edit

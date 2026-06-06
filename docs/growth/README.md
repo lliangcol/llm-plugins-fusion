@@ -48,6 +48,17 @@ When you know the star count at the start of the traffic window, pass it with
 `--stars-before <count>` so the visitor-to-star estimate uses new stars divided
 by unique views instead of total stars.
 
+Before using a snapshot for public promotion, pair the growth metrics with
+repository readiness evidence:
+
+```bash
+npm run doctor
+npm run validate:workflow
+```
+
+If `npm run doctor` reports that HEAD is not an exact release tag, describe the
+content as a development snapshot rather than a stable release.
+
 ## Privacy Boundary
 
 - Do not commit `.metrics/` output.

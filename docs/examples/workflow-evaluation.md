@@ -12,12 +12,24 @@ The disposable fixture for these scenarios is
 [fixtures/workflow/invoice-sync/](../../fixtures/workflow/invoice-sync/).
 Use a throwaway branch or copy when running implementation commands.
 
+The fixture contract is also checked by:
+
+```bash
+node scripts/validate-workflow-fixtures.mjs
+```
+
+That automated check proves fixture integrity and expected signals. It does not
+execute Claude Code slash commands and does not replace the manual quality
+record.
+
 ## Evaluation Rules
 
 - Evaluate output quality, not exact wording.
 - Keep read-only commands read-only.
 - Separate facts from assumptions.
 - Report skipped validation honestly.
+- Run `node scripts/validate-workflow-fixtures.mjs` before recording release
+  evidence for these scenarios.
 - Prefer concise findings over broad redesign.
 
 ## Scenario Set

@@ -29,6 +29,7 @@ node scripts/validate-all.mjs
 node scripts/validate-runtime-smoke.mjs
 node scripts/scan-distribution-risk.mjs
 node scripts/validate-regression.mjs
+node scripts/validate-workflow-fixtures.mjs
 git diff --check
 ```
 
@@ -41,6 +42,7 @@ bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 
 If a check was skipped, explain the concrete reason.
 
-Plugin install smoke (`node scripts/validate-plugin-install.mjs`) may install or
-update user-scope Claude plugin state. Run it only in CI or an isolated test
-user environment, or record it as pending/skipped with that reason.
+Plugin install smoke (`node scripts/validate-plugin-install.mjs --dry-run`) is
+safe to preview. Run `node scripts/validate-plugin-install.mjs
+--accept-user-scope-mutation` only in CI or an isolated test-user environment,
+or record it as pending/skipped with that reason.

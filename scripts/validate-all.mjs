@@ -10,9 +10,12 @@
 import { spawnSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { assertNodeVersion } from './lib/node-version.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
+
+assertNodeVersion({ label: 'repository validation' });
 
 let failed = 0;
 let skipped = 0;
@@ -163,6 +166,7 @@ runRuntimeSmoke();
 runNode('validate surface budget', 'scripts/validate-surface-budget.mjs');
 runNode('scan distribution risk', 'scripts/scan-distribution-risk.mjs');
 runNode('validate regression', 'scripts/validate-regression.mjs');
+runNode('validate workflow fixtures', 'scripts/validate-workflow-fixtures.mjs');
 runNode('validate docs', 'scripts/validate-docs.mjs');
 
 console.log(`\nSummary: failed=${failed} skipped=${skipped}`);

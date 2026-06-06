@@ -161,6 +161,38 @@ test('distribution risk scan detects tracked Codex runtime artifacts', () => {
   }
 });
 
+test('distribution risk scan does not skip tracked files under generated-name directories', () => {
+  const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-risk-tracked-out-'));
+  try {
+    const gitInit = spawnSync('git', ['init'], {
+      cwd: tempRoot,
+      encoding: 'utf8',
+      shell: false,
+    });
+    assert.equal(gitInit.status, 0, gitInit.stderr || gitInit.stdout);
+
+    mkdirSync(resolve(tempRoot, 'out'), { recursive: true });
+    writeFileSync(resolve(tempRoot, 'out/secret.md'), `npm_${'a'.repeat(36)}\n`, 'utf8');
+    const gitAdd = spawnSync('git', ['add', 'out/secret.md'], {
+      cwd: tempRoot,
+      encoding: 'utf8',
+      shell: false,
+    });
+    assert.equal(gitAdd.status, 0, gitAdd.stderr || gitAdd.stdout);
+
+    const result = scanDistributionRisk({ rootDir: tempRoot });
+    assert.equal(
+      result.errors.some((finding) => (
+        finding.path === 'out/secret.md' && finding.label === 'npm token'
+      )),
+      true,
+      'tracked files under out/ must remain in the distribution-risk scan',
+    );
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test('distribution risk allowlist only annotates historical warnings', () => {
   const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-risk-allowlist-'));
   try {

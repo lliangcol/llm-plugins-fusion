@@ -28,6 +28,7 @@ Primary optimization sequence:
 5. Environment and release evidence.
 6. Retired archive cleanup and active-agent surface protection.
 7. Reliability guardrail hardening.
+8. Maintainer diagnostics and workflow check repeatability.
 
 ## Current Baseline
 
@@ -272,6 +273,34 @@ Acceptance Criteria:
 - Surface budget validation is wired into `validate-all`, CI, npm shortcuts,
   and release evidence.
 
+### 8. Maintainer Diagnostics And Workflow Check Repeatability
+
+Status: completed in current unreleased work
+
+Why: The project had strong documentation, but maintainers still needed a
+single diagnostic entry, a maintainer-level gate including whitespace checks,
+and a repeatable fixture contract for workflow-quality evidence.
+
+Completed Work:
+
+- Added `npm run doctor` for read-only environment, version, tag, working-tree,
+  and generated registry diagnostics.
+- Added `npm run validate:maintainer` for default validation, generated
+  registry drift, and `git diff --check`.
+- Added `npm run validate:workflow` for public-safe workflow fixture integrity.
+- Made plugin install smoke require explicit user-scope mutation confirmation.
+- Documented source-controlled workflow checks as a design boundary instead of
+  adding a new runtime prematurely.
+
+Acceptance Criteria:
+
+- Maintainers can diagnose snapshot readiness without mutating repository or
+  user plugin state.
+- Release evidence distinguishes fixture contract validation from manual
+  slash-command quality evaluation.
+- Source-controlled check work stays public-safe and script-backed before any
+  future `.nova/checks` surface is introduced.
+
 ## Execution Order
 
 1. Positioning and promotion language.
@@ -281,6 +310,7 @@ Acceptance Criteria:
 5. Environment and release evidence.
 6. Retired archive cleanup and active-agent surface protection.
 7. Reliability guardrail hardening.
+8. Maintainer diagnostics and workflow check repeatability.
 
 Do not start public portal work, production multi-plugin directory migration, or
 large domain command families as part of these tracks.
@@ -318,6 +348,7 @@ node scripts/validate-all.mjs
 node scripts/validate-runtime-smoke.mjs
 node scripts/scan-distribution-risk.mjs
 node scripts/validate-regression.mjs
+node scripts/validate-workflow-fixtures.mjs
 git diff --check
 ```
 

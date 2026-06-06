@@ -20,6 +20,24 @@ Every pack must support two modes:
 | [frontend](frontend/) | Portal or registry UI, accessibility, and interaction quality | `architect`, `builder`, `reviewer`, `verifier` |
 | [mcp](mcp/) | MCP configuration, server/client examples, and tool integration | `architect`, `builder`, `reviewer`, `verifier` |
 
+## Selection Guide
+
+Use packs as routing hints, not as mandatory runtime dependencies.
+
+| Task signal | Start with | Add when needed |
+| --- | --- | --- |
+| Java/Spring endpoint, Maven module, scheduled job, transaction, DTO/entity mapping | `java` | `security`, `dependency`, `release` |
+| Auth, secret handling, permission boundary, public/private data risk | `security` | `dependency`, `marketplace` |
+| Package upgrade, dependency review, lockfile, supply-chain finding | `dependency` | `security`, `release` |
+| README, command docs, consumer template, prompt, changelog | `docs` | `release`, `marketplace` |
+| Version, tag, release evidence, promotion, install smoke | `release` | `marketplace`, `docs`, `dependency` |
+| Plugin metadata, registry source, generated marketplace files | `marketplace` | `release`, `security` |
+| UI, accessibility, responsive layout, Playwright or screenshot validation | `frontend` | `docs`, `release` |
+| MCP server/client setup, tool config, integration examples | `mcp` | `security`, `docs` |
+
+If more than three packs seem necessary, route through `orchestrator` first and
+split the task into smaller units with evidence and skipped-check notes.
+
 ## Maintenance
 
 - Keep this index in sync with `nova-plugin/packs/*/README.md`.

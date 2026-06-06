@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Added
+- 新增 `scripts/doctor.mjs` 与 `npm run doctor`，以只读方式汇总 Node/Git/Bash/
+  Claude/Codex、版本、exact tag、工作区状态和 generated registry 漂移状态。
+- 新增 `scripts/validate-maintainer.mjs` 与 `npm run validate:maintainer`，把
+  默认质量门、registry 生成漂移检查和 `git diff --check` 收敛为维护者发布前入口。
+- 新增 `scripts/validate-workflow-fixtures.mjs` 与 `npm run validate:workflow`，
+  自动校验 `fixtures/workflow/invoice-sync/` 的 public-safe fixture 合约、
+  ordering bug 信号、approved plan 边界和 workflow rubric 覆盖。
+- 新增 `docs/workflows/source-controlled-checks.md`，定义 source-controlled
+  workflow checks、未来 `.nova/checks` 边界和当前 fixture validator 的职责。
 - 新增 `docs/releases/release-validation-runbook.md`，补充 exact tag、隔离
   plugin install smoke、人工 workflow evaluation、release evidence 组装和
   promotion 决策的维护者操作步骤。
@@ -51,6 +60,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   并在无 `GITHUB_TOKEN` 时把 owner-only traffic endpoints 记录为 skipped。
 
 ### Changed
+- `scripts/validate-plugin-install.mjs` 现在默认拒绝 mutating install/update；
+  `--dry-run` 只打印计划步骤，实际 user-scope 安装 smoke 必须显式传入
+  `--accept-user-scope-mutation` 或 `--yes`，CI 和 release workflow 已同步。
+- `scripts/validate-all.mjs` 接入 Node 20 preflight 和 workflow fixture 验证；
+  `package.json` 增加 `engines.node` 并暴露 `doctor`、`validate:maintainer`
+  和 `validate:workflow` npm 入口。
+- 收敛只读 explore/plan/review/finalize-lite/route skills 的 artifact wording，
+  明确当前调用默认 chat output，不得把通用 artifact 模板误读为可写项目文件。
 - 收紧文件扫描与本地检查边界：`.gitignore` 不再放行 retired
   `.claude/agents/**`，文档校验、分发风险扫描和 Codex package script
   discovery 统一跳过 IDE、cache、coverage、logs、tmp/temp 等非源码目录。
@@ -93,6 +110,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   和 marketplace 文档。
 
 ### Fixed
+- 修正分发风险扫描按 basename 跳过 `out`、`dist`、`build` 等目录时可能
+  漏扫未来已跟踪内容的问题；已跟踪文件位于这些目录下时仍会进入扫描。
 - 修正 Codex review/verify Bash helper 的参数解析：`--base`、
   `--output-dir`、`--review-file` 和 `--checks-file` 缺少值时现在会明确失败，
   不再依赖 `shift` 错误或把下一个 flag 当作参数值。

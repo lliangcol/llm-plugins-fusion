@@ -7,6 +7,15 @@ This fixture is fictional. It exists so maintainers can run the primary workflow
 without copying private project names, paths, endpoints, credentials, runtime
 flags, repository addresses, or real business rules into release evidence.
 
+The fixture files and expected signals are validated by:
+
+```bash
+node scripts/validate-workflow-fixtures.mjs
+```
+
+This validation checks the public-safe harness. It does not run Claude Code
+slash commands or assert golden wording.
+
 ## Scenario
 
 A product note says invoices should sync every night. The note does not define

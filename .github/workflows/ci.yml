@@ -63,7 +63,7 @@ jobs:
         with:
           node-version: '20'
       - run: npm install -g @anthropic-ai/claude-code
-      - run: node scripts/validate-plugin-install.mjs
+      - run: node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
 
   lint-frontmatter:
     name: Lint Frontmatter
@@ -126,6 +126,16 @@ jobs:
         with:
           node-version: '20'
       - run: node scripts/validate-regression.mjs
+
+  validate-workflow-fixtures:
+    name: Validate Workflow Fixtures
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/validate-workflow-fixtures.mjs
 
   validate-docs:
     name: Validate Docs

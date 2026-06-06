@@ -16,6 +16,11 @@ workflow quickly without exposing private consumer context.
 No demo GIF is currently tracked. Do not link GIFs from README or release notes
 until the actual files exist.
 
+Before adding a demo GIF or short video to public docs, the captured run must
+have matching command evidence from `npm run doctor`, `npm run
+validate:workflow`, or an equivalent release record. Do not present a mock
+terminal session as product evidence.
+
 ## Social Preview Requirements
 
 - Size: `1280x640`.
@@ -55,6 +60,18 @@ or mock command results.
 3. Show docs validation output and `git diff --check`.
 4. Close on final handoff with changed files, validation, skipped checks, and
    manual GitHub UI actions.
+
+## Capture Acceptance Checklist
+
+- Use an exact release tag for installation demos, or label the capture as a
+  development snapshot.
+- Run `npm run doctor` in the repository before capture and record warnings.
+- Use `fixtures/workflow/invoice-sync/` or another public-safe fixture for
+  workflow demonstrations.
+- If Bash checks are skipped on Windows, show the skipped status explicitly and
+  cite CI/Linux evidence for release promotion.
+- Keep the final GIF, source recording notes, and transcript reviewable before
+  linking from README or release notes.
 
 ## Privacy Boundary
 

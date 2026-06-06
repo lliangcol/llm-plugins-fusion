@@ -23,9 +23,10 @@ A snapshot is promotable only when all required evidence exists.
 | Formatting | Automated | `git diff --check` passes. |
 | Prompt-surface budget | Automated | `node scripts/validate-surface-budget.mjs` passes, and every allowlist entry has a reason and split plan. |
 | Distribution risk | Automated | `node scripts/scan-distribution-risk.mjs` passes with no active findings. |
+| Workflow fixture contract | Automated | `node scripts/validate-workflow-fixtures.mjs` passes; this proves fixture integrity, not slash-command output quality. |
 | Windows non-Bash smoke | Automated / CI | Schema, docs, frontmatter, and PowerShell agent verification pass on Windows without relying on Bash. |
 | Exact release target | Manual | `git describe --tags --exact-match HEAD` returns `v<plugin-version>`. |
-| Plugin install path | Manual / CI | `node scripts/validate-plugin-install.mjs` passes in CI or an isolated test-user environment. |
+| Plugin install path | Manual / CI | `node scripts/validate-plugin-install.mjs --accept-user-scope-mutation` passes in CI or an isolated test-user environment. |
 | Workflow output quality | Manual | Five primary commands are evaluated and recorded, or an explicit not-applicable reason is accepted. |
 | Release publication | Manual / CI | GitHub release workflow completes for the pushed `v<plugin-version>` tag. |
 
@@ -43,6 +44,12 @@ git status --short
 "$NODE_BIN" scripts/generate-registry.mjs </dev/null
 "$NODE_BIN" scripts/validate-all.mjs </dev/null
 git diff --check
+```
+
+Maintainers can use the dependency-free wrapper for the last three local checks:
+
+```bash
+npm run validate:maintainer
 ```
 
 Expected conditions:
@@ -67,6 +74,7 @@ command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
 "$NODE_BIN" scripts/validate-surface-budget.mjs </dev/null
 "$NODE_BIN" scripts/scan-distribution-risk.mjs </dev/null
 "$NODE_BIN" scripts/validate-regression.mjs </dev/null
+"$NODE_BIN" scripts/validate-workflow-fixtures.mjs </dev/null
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
@@ -141,9 +149,15 @@ After pushing, record:
 
 ## Isolated Plugin Install Smoke
 
-`node scripts/validate-plugin-install.mjs` mutates Claude Code user-scope plugin
-state. Run it only in CI or in an isolated test-user environment, not in an
-operator's everyday Claude profile.
+`node scripts/validate-plugin-install.mjs --accept-user-scope-mutation` mutates
+Claude Code user-scope plugin state. Run it only in CI or in an isolated
+test-user environment, not in an operator's everyday Claude profile.
+
+Preview the planned steps without mutation:
+
+```bash
+node scripts/validate-plugin-install.mjs --dry-run
+```
 
 Recommended setup:
 
@@ -158,7 +172,7 @@ claude --version
 git describe --tags --exact-match HEAD
 NODE_BIN="${NODE_BIN:-node}"
 command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
-"$NODE_BIN" scripts/validate-plugin-install.mjs </dev/null
+"$NODE_BIN" scripts/validate-plugin-install.mjs --accept-user-scope-mutation </dev/null
 ```
 
 Expected script behavior:
@@ -284,6 +298,7 @@ PLUGIN_VERSION="${PLUGIN_VERSION%$'\r'}"
 git diff --check
 "$NODE_BIN" scripts/generate-registry.mjs </dev/null
 "$NODE_BIN" scripts/validate-surface-budget.mjs </dev/null
+"$NODE_BIN" scripts/validate-workflow-fixtures.mjs </dev/null
 "$NODE_BIN" scripts/scaffold-consumer-profile.mjs --type java-backend --out ../consumer-smoke </dev/null
 git describe --tags --exact-match HEAD || true
 git tag --list "v${PLUGIN_VERSION}"

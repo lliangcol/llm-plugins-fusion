@@ -109,12 +109,15 @@ node scripts/validate-all.mjs
 Maintainer validation npm shortcuts in `package.json` are dependency-free:
 
 ```bash
+npm run doctor
 npm run validate
+npm run validate:maintainer
 npm run validate:docs
 npm run validate:schemas
 npm run validate:runtime
 npm run validate:regression
 npm run validate:surface
+npm run validate:workflow
 npm run scan:distribution
 ```
 
@@ -124,8 +127,10 @@ Windows agent verification uses:
 .\scripts\verify-agents.ps1
 ```
 
-`node scripts/validate-plugin-install.mjs` is intentionally separate because it
-may install or update a user-scope Claude Code plugin.
+`node scripts/validate-plugin-install.mjs --dry-run` is the safe preview path.
+Run `node scripts/validate-plugin-install.mjs --accept-user-scope-mutation`
+only in CI or an isolated test-user environment because it may install or
+update a user-scope Claude Code plugin.
 
 ## Change Boundaries
 

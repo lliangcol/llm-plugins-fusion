@@ -35,7 +35,7 @@ metadata:
 
 - This skill is read-only for project files and must not modify code or write route artifacts.
 - No interrupting preflight is required for ordinary Read/Glob/Grep/LS usage.
-- If the workflow is extended to write an explicit artifact or invoke Bash, run the shared preflight first.
+- This skill has no export mode; a future write-capable route variant must be a separate command with explicit output parameters and shared preflight.
 - Do not infer safety-boundary values for artifact exports, project edits, branch changes, or external tool invocation.
 - Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.
 

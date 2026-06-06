@@ -27,6 +27,7 @@ duplicate every document.
 | Split large agent work into resumable units | [workflows/context-safe-agent-workflows.md](workflows/context-safe-agent-workflows.md) |
 | Review GSD-informed reliability hardening | [workflows/gsd-informed-hardening.md](workflows/gsd-informed-hardening.md) |
 | Maintain routing and validation guardrails | [workflows/routing-validation-guardrails.md](workflows/routing-validation-guardrails.md) |
+| Design source-controlled workflow checks | [workflows/source-controlled-checks.md](workflows/source-controlled-checks.md) |
 | Understand verification evidence standards | [workflows/verification-evidence-contract.md](workflows/verification-evidence-contract.md) |
 | Maintain marketplace registry metadata | [marketplace/registry-author-workflow.md](marketplace/registry-author-workflow.md) |
 | Prepare release or promotion evidence | [releases/release-evidence-template.md](releases/release-evidence-template.md) |
@@ -102,7 +103,7 @@ docs/
 | Document | Purpose |
 | --- | --- |
 | [examples/README.md](examples/README.md) | Local index for public-safe examples. |
-| [examples/workflow-evaluation.md](examples/workflow-evaluation.md) | Five-stage workflow evaluation examples and rubric. |
+| [examples/workflow-evaluation.md](examples/workflow-evaluation.md) | Five-stage workflow evaluation examples, fixture validation command, and rubric. |
 | [examples/workflow-evaluation-record-template.md](examples/workflow-evaluation-record-template.md) | Manual evidence record template for workflow-quality checks. |
 | [examples/java-backend/redacted-feature.md](examples/java-backend/redacted-feature.md) | Generic Java/Spring workflow example. |
 | [examples/frontend/basic-feature.md](examples/frontend/basic-feature.md) | Generic frontend workflow example. |
@@ -165,6 +166,7 @@ docs/
 | [workflows/context-safe-agent-workflows.md](workflows/context-safe-agent-workflows.md) | Large-task, review, fix, delivery, and checkpoint workflows. |
 | [workflows/gsd-informed-hardening.md](workflows/gsd-informed-hardening.md) | Maintenance note for the GSD-informed routing, checkpoint, evidence, budget, and distribution-risk hardening. |
 | [workflows/routing-validation-guardrails.md](workflows/routing-validation-guardrails.md) | Guardrails for first-stage routing, checkpoint evidence, surface budgets, and distribution-risk scanning. |
+| [workflows/source-controlled-checks.md](workflows/source-controlled-checks.md) | Design note for source-controlled workflow checks and fixture validation boundaries. |
 | [workflows/verification-evidence-contract.md](workflows/verification-evidence-contract.md) | Standards for mapping checks, checkpoints, and handoffs to verified behavior or facts. |
 | [workflows/thin-harness-fat-skills.md](workflows/thin-harness-fat-skills.md) | Placement doctrine for scripts, skills, prompts, packs, and profiles. |
 | [getting-started.md](getting-started.md) | Install, `/route`, five primary commands, Codex prerequisites, and common failure handling. |

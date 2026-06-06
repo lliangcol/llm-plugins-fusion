@@ -41,12 +41,14 @@ jobs:
         run: node scripts/scan-distribution-risk.mjs
       - name: Regression validation
         run: node scripts/validate-regression.mjs
+      - name: Workflow fixture validation
+        run: node scripts/validate-workflow-fixtures.mjs
       - name: Documentation validation
         run: node scripts/validate-docs.mjs
       - name: Plugin install smoke
         run: |
           npm install -g @anthropic-ai/claude-code
-          node scripts/validate-plugin-install.mjs
+          node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
 
   release:
     name: Create GitHub Release

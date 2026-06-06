@@ -50,6 +50,7 @@ Use this default unless a specific repo contract says otherwise:
 | Cross-tool handoff summaries, review checkpoints, test plans, deployment notes | Artifact under the consumer workbench | Durable, resumable, and safer than relying on chat history. |
 | Visual HTML artifacts for plans, reviews, reports, or handoffs | Prompt template plus consumer workbench | High-value presentation format, but not a reason to add a new command or runtime by default. |
 | Optional domain hints such as Java, security, release, frontend, dependency, MCP | Capability pack | Routing context without forcing a runtime dependency. |
+| Repeatable public-safe workflow checks and fixture signal checks | Script plus source-controlled fixture or design note | Keeps AI workflow expectations reviewable without adding a heavy runtime. |
 | Browser, shell, Codex, or external tool invocation details | Command/skill safety section plus script when deterministic | Keeps side effects explicit and auditable. |
 
 When in doubt, ask: "Is this deterministic enough to test as code?" If yes,

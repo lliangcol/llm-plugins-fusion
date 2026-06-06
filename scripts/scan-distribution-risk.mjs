@@ -17,7 +17,7 @@ const scriptPath = fileURLToPath(import.meta.url);
 
 export const DEFAULT_ALLOWLIST_PATH = 'scripts/distribution-risk.allowlist.json';
 
-const skipDirs = new Set([
+const alwaysSkipDirs = new Set([
   '.git',
   '.codex',
   '.cache',
@@ -25,6 +25,9 @@ const skipDirs = new Set([
   '.vite',
   '.vscode',
   'node_modules',
+]);
+
+const generatedSkipDirs = new Set([
   'coverage',
   'logs',
   'dist',
@@ -149,9 +152,32 @@ function isHistorical(rootDir, absPath) {
   return hasPathSegments(rootDir, absPath, historicalSegments);
 }
 
+const trackedFilesByRoot = new Map();
+
+function trackedFiles(rootDir) {
+  if (trackedFilesByRoot.has(rootDir)) return trackedFilesByRoot.get(rootDir);
+  const result = spawnSync('git', ['ls-files', '-z'], {
+    cwd: rootDir,
+    encoding: 'utf8',
+    shell: false,
+  });
+  const files = result.error || result.status !== 0 || !result.stdout
+    ? []
+    : result.stdout.split('\0').filter(Boolean).map((path) => path.replace(/\\/g, '/'));
+  trackedFilesByRoot.set(rootDir, files);
+  return files;
+}
+
+function hasTrackedFilesUnder(rootDir, absPath) {
+  const prefix = `${rel(rootDir, absPath).replace(/\/?$/, '/')}`;
+  return trackedFiles(rootDir).some((path) => path.startsWith(prefix));
+}
+
 function shouldSkipDir(rootDir, absPath) {
   const name = rel(rootDir, absPath).split('/').at(-1);
-  return skipDirs.has(name) || name.startsWith('.runtime-smoke-');
+  if (alwaysSkipDirs.has(name) || name.startsWith('.runtime-smoke-')) return true;
+  if (!generatedSkipDirs.has(name)) return false;
+  return !hasTrackedFilesUnder(rootDir, absPath);
 }
 
 function shouldReadFile(fileName) {

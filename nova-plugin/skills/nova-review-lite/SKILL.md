@@ -32,14 +32,14 @@ metadata:
 
 - This skill is read-only for project files and must not modify code.
 - No interrupting preflight is required for ordinary Read/Glob/Grep/LS usage.
-- If the workflow is extended to write an explicit artifact or invoke Bash, run the shared preflight first.
+- This invocation has no implicit export mode; a future write-capable variant must declare an explicit output path and run shared preflight before writing artifacts or invoking Bash.
 - Do not infer safety-boundary values for artifact exports or latest artifact selection.
 - Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.
 
 ## Outputs
 
 - Follow the skill-specific output rules below and the shared output contract.
-- For written artifacts, report the path and a short executive summary instead of pasting the full artifact into chat.
+- Use chat output only unless the command's input table declares an explicit output path; when allowed, report the path and a short summary instead of pasting the full artifact into chat.
 - For reviews and verification, lead with findings or verdicts and state residual risk.
 - Full policy: `nova-plugin/skills/_shared/output-contracts.md`.
 - Artifact policy: `nova-plugin/skills/_shared/artifact-policy.md`.
