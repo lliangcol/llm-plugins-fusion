@@ -129,10 +129,25 @@ if [ "$SUCCESS" = "false" ]; then
 fi
 
 # 确定日志文件路径
-# 优先使用 CLAUDE_PLUGIN_DATA，回退到系统临时目录
-LOG_DIR="${CLAUDE_PLUGIN_DATA:-/tmp/nova-plugin}"
-mkdir -p "$LOG_DIR"
+# 优先使用 CLAUDE_PLUGIN_DATA，回退到用户状态目录。
+if [ "${NOVA_AUDIT_DISABLED:-0}" = "1" ]; then
+  exit 0
+fi
+
+DEFAULT_STATE_HOME="${XDG_STATE_HOME:-${HOME:-/tmp}/.local/state}"
+LOG_DIR="${CLAUDE_PLUGIN_DATA:-$DEFAULT_STATE_HOME/nova-plugin}"
+mkdir -p "$LOG_DIR" 2>/dev/null || exit 0
+chmod 700 "$LOG_DIR" 2>/dev/null || true
 LOG_FILE="$LOG_DIR/audit.log"
+touch "$LOG_FILE" 2>/dev/null || exit 0
+chmod 600 "$LOG_FILE" 2>/dev/null || true
+
+LOG_SIZE=$(wc -c < "$LOG_FILE" 2>/dev/null || printf '0')
+if [ "${LOG_SIZE:-0}" -gt 5242880 ] 2>/dev/null; then
+  mv -f "$LOG_FILE" "$LOG_FILE.1" 2>/dev/null || true
+  : > "$LOG_FILE" 2>/dev/null || true
+  chmod 600 "$LOG_FILE" 2>/dev/null || true
+fi
 
 # 追加日志（非阻塞，忽略写入失败）
 printf "%-24s %-16s %-8s %s\n" "$TIMESTAMP" "$TOOL_NAME" "$STATUS" "$SUMMARY" >> "$LOG_FILE" 2>/dev/null || true

@@ -3,11 +3,11 @@
  * Read-only repository doctor for maintainers and first-time contributors.
  */
 
-import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { REQUIRED_NODE_MAJOR, nodeMajorVersion } from './lib/node-version.mjs';
+import { captureProcess } from './lib/process-runner.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -19,35 +19,33 @@ function readJson(path) {
   return JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 }
 
-function commandResult(command, args = ['--version']) {
-  const result = spawnSync(command, args, {
+async function commandResult(command, args = ['--version']) {
+  const result = await captureProcess(`doctor ${command}`, command, args, {
     cwd: root,
-    encoding: 'utf8',
-    shell: false,
+    timeoutMs: 30_000,
   });
   const output = `${result.stdout ?? ''}${result.stderr ?? ''}`
     .split(/\r?\n/)
     .map((line) => line.trim())
     .filter(Boolean)[0];
   return {
-    ok: !result.error && result.status === 0,
-    detail: output || (result.error ? result.error.message : 'not available'),
-    status: result.status,
+    ok: result.ok,
+    detail: output || result.errorMessage || 'not available',
+    status: result.code,
   };
 }
 
-function gitValue(args) {
-  const result = spawnSync('git', args, {
+async function gitValue(args) {
+  const result = await captureProcess(`git ${args.join(' ')}`, 'git', args, {
     cwd: root,
-    encoding: 'utf8',
-    shell: false,
+    timeoutMs: 30_000,
   });
-  if (result.error || result.status !== 0) return null;
+  if (!result.ok) return null;
   return result.stdout.trim() || null;
 }
 
-function runCheck(label, fn) {
-  const result = fn();
+async function runCheck(label, fn) {
+  const result = await fn();
   const status = result.status ?? (result.ok ? 'OK' : 'WARN');
   if (status === 'ERROR') errors += 1;
   if (status === 'WARN') warnings += 1;
@@ -61,7 +59,7 @@ const metadataEntry = metadata.plugins?.find((entry) => entry.name === plugin.na
 
 console.log('== llm-plugins-fusion doctor ==');
 
-runCheck('Node.js', () => {
+await runCheck('Node.js', () => {
   const major = nodeMajorVersion();
   return {
     status: major !== null && major >= REQUIRED_NODE_MAJOR ? 'OK' : 'ERROR',
@@ -75,8 +73,8 @@ for (const [label, command] of [
   ['Claude CLI', 'claude'],
   ['Codex CLI', 'codex'],
 ]) {
-  runCheck(label, () => {
-    const result = commandResult(command);
+  await runCheck(label, async () => {
+    const result = await commandResult(command);
     const optional = label === 'Claude CLI' || label === 'Codex CLI' || label === 'Bash';
     return {
       status: result.ok ? 'OK' : (optional ? 'WARN' : 'ERROR'),
@@ -85,34 +83,34 @@ for (const [label, command] of [
   });
 }
 
-runCheck('Package/plugin version', () => ({
+await runCheck('Package/plugin version', () => ({
   status: packageJson.version === plugin.version ? 'OK' : 'ERROR',
   detail: `package=${packageJson.version}; plugin=${plugin.version}`,
 }));
 
-runCheck('Registry metadata date', () => ({
+await runCheck('Registry metadata date', () => ({
   status: metadataEntry?.['last-updated'] ? 'OK' : 'WARN',
   detail: metadataEntry?.['last-updated'] ?? 'missing last-updated',
 }));
 
-runCheck('Git working tree', () => {
-  const status = gitValue(['status', '--short']);
+await runCheck('Git working tree', async () => {
+  const status = await gitValue(['status', '--short']);
   return {
     status: status ? 'WARN' : 'OK',
     detail: status ? 'working tree has changes' : 'clean',
   };
 });
 
-runCheck('Exact release tag', () => {
-  const tag = gitValue(['describe', '--tags', '--exact-match', 'HEAD']);
+await runCheck('Exact release tag', async () => {
+  const tag = await gitValue(['describe', '--tags', '--exact-match', 'HEAD']);
   return {
     status: tag ? 'OK' : 'WARN',
     detail: tag ?? 'HEAD is not an exact release tag; treat as development snapshot',
   };
 });
 
-runCheck('Generated registry drift', () => {
-  const result = commandResult(process.execPath, ['scripts/generate-registry.mjs']);
+await runCheck('Generated registry drift', async () => {
+  const result = await commandResult(process.execPath, ['scripts/generate-registry.mjs']);
   return {
     status: result.ok ? 'OK' : 'ERROR',
     detail: result.ok ? 'generated outputs are current' : result.detail,

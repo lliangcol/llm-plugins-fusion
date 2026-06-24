@@ -17,38 +17,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Schema validation
-        run: node scripts/validate-schemas.mjs
-      - name: Registry fixture validation
-        run: node scripts/validate-registry-fixtures.mjs
-      - name: Claude compatibility validation
-        run: node scripts/validate-claude-compat.mjs
-      - name: Frontmatter lint
-        run: node scripts/lint-frontmatter.mjs
-      - name: Agent count verification
-        run: bash scripts/verify-agents.sh
-      - name: Capability pack validation
-        run: node scripts/validate-packs.mjs
-      - name: Hook config validation
-        run: node scripts/validate-hooks.mjs
-      - name: Hook script syntax
-        run: |
-          bash -n nova-plugin/hooks/scripts/pre-write-check.sh
-          bash -n nova-plugin/hooks/scripts/post-audit-log.sh
-      - name: Runtime smoke validation
-        run: node scripts/validate-runtime-smoke.mjs
-      - name: Distribution risk scan
-        run: node scripts/scan-distribution-risk.mjs
-      - name: Regression validation
-        run: node scripts/validate-regression.mjs
-      - name: Workflow fixture validation
-        run: node scripts/validate-workflow-fixtures.mjs
-      - name: Documentation validation
-        run: node scripts/validate-docs.mjs
-      - name: Plugin install smoke
-        run: |
-          npm install -g @anthropic-ai/claude-code
-          node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
+      - name: Full validation
+        run: npm run ci:full
+      - name: Plugin install dry run
+        run: node scripts/validate-plugin-install.mjs --dry-run
 
   release:
     name: Create GitHub Release

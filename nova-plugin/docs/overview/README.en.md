@@ -94,7 +94,7 @@ Demo capture guidance lives in [docs/assets/README.md](../../../docs/assets/READ
 </tr>
 </table>
 
-The default validation suite covers schemas, registry fixtures, Claude compatibility, command / skill frontmatter, core agent inventory, capability pack structure, hooks, Codex Bash runtime smoke, distribution risk scanning, Markdown local links, command documentation coverage, and generated catalog drift. CI also runs Claude plugin install smoke testing.
+The default validation suite covers schemas, registry fixtures, Claude compatibility, command / skill frontmatter, core agent inventory, capability pack structure, hooks, Codex Bash runtime smoke, distribution risk scanning, Markdown local links, command documentation coverage, and generated catalog drift. CI also previews the Claude plugin install path with a dry run; real user-scope install smoke belongs only in CI or an isolated test-user environment.
 
 ```bash
 node scripts/validate-all.mjs
@@ -369,7 +369,7 @@ node scripts/generate-registry.mjs
 node scripts/validate-schemas.mjs
 node scripts/validate-registry-fixtures.mjs
 node scripts/validate-claude-compat.mjs
-node scripts/validate-plugin-install.mjs
+node scripts/validate-plugin-install.mjs --dry-run
 node scripts/lint-frontmatter.mjs
 node scripts/validate-packs.mjs
 node scripts/validate-hooks.mjs
@@ -403,11 +403,13 @@ bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 
-Claude plugin install smoke requires the Claude CLI and attempts a user-scope
-plugin install:
+Claude plugin install dry run does not call Claude CLI and does not mutate
+user-scope plugin state. Real install smoke requires Claude CLI and must run
+only in CI or an isolated test-user environment:
 
 ```bash
-node scripts/validate-plugin-install.mjs
+node scripts/validate-plugin-install.mjs --dry-run
+node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
 ```
 
 Codex runtime smoke and distribution risk checks:

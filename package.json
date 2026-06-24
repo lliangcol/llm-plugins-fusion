@@ -9,6 +9,10 @@
   },
   "scripts": {
     "doctor": "node scripts/doctor.mjs",
+    "test": "node --test \"tests/**/*.test.mjs\"",
+    "lint": "node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs",
+    "ci:quick": "node scripts/validate-schemas.mjs && node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs && node scripts/validate-hooks.mjs",
+    "ci:full": "node scripts/validate-all.mjs",
     "validate": "node scripts/validate-all.mjs",
     "validate:maintainer": "node scripts/validate-maintainer.mjs",
     "validate:schemas": "node scripts/validate-schemas.mjs",

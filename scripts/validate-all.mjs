@@ -7,167 +7,293 @@
  * local checks can still run.
  */
 
-import { spawnSync } from 'node:child_process';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
+import {
+  captureProcess,
+  commandDetails,
+  commandExists,
+  runProcess,
+} from './lib/process-runner.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
+const maxConcurrency = Number.parseInt(process.env.NOVA_VALIDATE_CONCURRENCY ?? '3', 10);
+const writeTimings = process.argv.includes('--write-timings') || process.env.NOVA_VALIDATE_WRITE_TIMINGS === '1';
 
 assertNodeVersion({ label: 'repository validation' });
 
 let failed = 0;
 let skipped = 0;
+const timings = [];
 
-function commandExists(command, args = ['--version']) {
-  const result = spawnSync(command, args, {
-    cwd: root,
-    encoding: 'utf8',
-    stdio: 'ignore',
-    shell: false,
-  });
-  return result.status === 0;
+function normalizeConcurrency(value) {
+  return Number.isInteger(value) && value > 0 ? value : 3;
 }
 
-function commandDetails(command, args = ['--version']) {
-  const result = spawnSync(command, args, {
+async function gitValue(args) {
+  const result = await captureProcess(`git ${args.join(' ')}`, 'git', args, {
     cwd: root,
-    encoding: 'utf8',
-    shell: false,
+    timeoutMs: 10_000,
   });
-  if (result.error || result.status !== 0) {
-    return { available: false, detail: 'not available' };
-  }
-  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter(Boolean)[0];
-  return { available: true, detail: output || 'available' };
-}
-
-function gitValue(args) {
-  const result = spawnSync('git', args, {
-    cwd: root,
-    encoding: 'utf8',
-    shell: false,
-  });
-  if (result.error || result.status !== 0) return null;
+  if (!result.ok) return null;
   return result.stdout.trim() || null;
 }
 
-function printEnvironmentSummary() {
-  console.log('\n== environment summary ==');
-  console.log(`Node.js: ${process.version}`);
-  for (const [label, command] of [
+async function environmentSummary() {
+  const tools = await Promise.all([
     ['Git', 'git'],
     ['Claude CLI', 'claude'],
     ['Codex CLI', 'codex'],
     ['Bash', 'bash'],
-  ]) {
-    const { available, detail } = commandDetails(command);
-    console.log(`${label}: ${available ? detail : 'not available'}`);
-  }
-  console.log(`Commit: ${gitValue(['rev-parse', '--short', 'HEAD']) ?? 'unknown'}`);
-  console.log(`Exact tag: ${gitValue(['describe', '--tags', '--exact-match', 'HEAD']) ?? 'none'}`);
-}
-
-function run(label, command, args) {
-  console.log(`\n== ${label} ==`);
-  const result = spawnSync(command, args, {
+  ].map(async ([label, command]) => [label, await commandDetails(command, ['--version'], {
     cwd: root,
-    stdio: 'inherit',
-    shell: false,
-  });
-  if (result.error) {
-    console.error(`ERROR ${label}: ${result.error.message}`);
-    failed += 1;
-    return false;
+    timeoutMs: 10_000,
+  })]));
+
+  console.log('\n== environment summary ==');
+  console.log(`Node.js: ${process.version}`);
+  for (const [label, detail] of tools) {
+    console.log(`${label}: ${detail.available ? detail.detail : 'not available'}`);
   }
-  if (result.status !== 0) {
-    console.error(`ERROR ${label}: exited with ${result.status}`);
-    failed += 1;
-    return false;
-  }
-  return true;
+  console.log(`Commit: ${await gitValue(['rev-parse', '--short', 'HEAD']) ?? 'unknown'}`);
+  console.log(`Exact tag: ${await gitValue(['describe', '--tags', '--exact-match', 'HEAD']) ?? 'none'}`);
+
+  return Object.fromEntries(tools.map(([label, detail]) => [label, detail.available]));
 }
 
-function runNode(label, script) {
-  return run(label, process.execPath, [script]);
+function nodeTask(label, script, timeoutMs = 120_000) {
+  return {
+    label,
+    run: () => runProcess(label, process.execPath, [script], {
+      cwd: root,
+      timeoutMs,
+    }),
+  };
 }
 
-function runAgentVerification() {
-  if (process.platform === 'win32') {
-    const shell = commandExists('powershell', ['-NoProfile', '-Command', '$PSVersionTable.PSVersion.ToString()'])
-      ? 'powershell'
-      : (commandExists('pwsh', ['-NoProfile', '-Command', '$PSVersionTable.PSVersion.ToString()']) ? 'pwsh' : null);
-    if (!shell) {
-      console.error('ERROR agent verification: neither powershell nor pwsh was found');
-      failed += 1;
-      return false;
-    }
-    return run('verify agents', shell, [
-      '-NoProfile',
-      '-ExecutionPolicy',
-      'Bypass',
-      '-File',
-      'scripts/verify-agents.ps1',
-    ]);
+function commandTask(label, command, args, timeoutMs = 120_000) {
+  return {
+    label,
+    run: () => runProcess(label, command, args, {
+      cwd: root,
+      timeoutMs,
+    }),
+  };
+}
+
+function skippedTask(label, message) {
+  return {
+    label,
+    run: async () => ({
+      label,
+      ok: true,
+      skipped: true,
+      warning: message,
+      stdout: '',
+      stderr: '',
+      ms: 0,
+    }),
+  };
+}
+
+function failedTask(label, message) {
+  return {
+    label,
+    run: async () => ({
+      label,
+      ok: false,
+      errorMessage: message,
+      stdout: '',
+      stderr: '',
+      ms: 0,
+    }),
+  };
+}
+
+async function buildAgentVerificationTask() {
+  if (process.platform !== 'win32') {
+    return commandTask('verify agents', 'bash', ['scripts/verify-agents.sh']);
   }
-  return run('verify agents', 'bash', ['scripts/verify-agents.sh']);
+
+  const powershellAvailable = await commandExists('powershell', [
+    '-NoProfile',
+    '-Command',
+    '$PSVersionTable.PSVersion.ToString()',
+  ], { cwd: root, timeoutMs: 10_000 });
+  const pwshAvailable = powershellAvailable ? false : await commandExists('pwsh', [
+    '-NoProfile',
+    '-Command',
+    '$PSVersionTable.PSVersion.ToString()',
+  ], { cwd: root, timeoutMs: 10_000 });
+  const shell = powershellAvailable ? 'powershell' : (pwshAvailable ? 'pwsh' : null);
+
+  if (!shell) {
+    return failedTask('verify agents', 'neither powershell nor pwsh was found');
+  }
+
+  return commandTask('verify agents', shell, [
+    '-NoProfile',
+    '-ExecutionPolicy',
+    'Bypass',
+    '-File',
+    'scripts/verify-agents.ps1',
+  ]);
 }
 
-function runHookSyntaxChecks() {
-  if (!commandExists('bash')) {
+function buildHookSyntaxTasks(hasBash) {
+  if (!hasBash) {
     if (process.platform === 'win32') {
-      console.warn('\nWARNING hook shell syntax: bash not found; skipping local bash -n checks');
-      skipped += 1;
-      return true;
+      return [
+        skippedTask('hook shell syntax', 'WARNING hook shell syntax: bash not found; skipping local bash -n checks'),
+      ];
     }
-    console.error('\nERROR hook shell syntax: bash not found; bash -n checks are required outside Windows');
-    failed += 1;
-    return false;
+    return [
+      failedTask('hook shell syntax', 'bash not found; bash -n checks are required outside Windows'),
+    ];
   }
-  const scripts = [
-    'nova-plugin/hooks/scripts/pre-write-check.sh',
-    'nova-plugin/hooks/scripts/post-audit-log.sh',
+
+  return [
+    commandTask('hook shell syntax nova-plugin/hooks/scripts/pre-write-check.sh', 'bash', [
+      '-n',
+      'nova-plugin/hooks/scripts/pre-write-check.sh',
+    ], 30_000),
+    commandTask('hook shell syntax nova-plugin/hooks/scripts/post-audit-log.sh', 'bash', [
+      '-n',
+      'nova-plugin/hooks/scripts/post-audit-log.sh',
+    ], 30_000),
   ];
-  let ok = true;
-  for (const script of scripts) {
-    ok = run(`hook shell syntax ${script}`, 'bash', ['-n', script]) && ok;
-  }
-  return ok;
 }
 
-function runRuntimeSmoke() {
-  if (!commandExists('bash')) {
-    if (process.platform === 'win32') {
-      console.warn('\nWARNING runtime smoke: bash not found; skipping local Bash runtime smoke checks');
-      skipped += 1;
-      return true;
-    }
-    console.error('\nERROR runtime smoke: bash not found; Bash runtime smoke is required outside Windows');
+function buildRuntimeSmokeTask(hasBash) {
+  if (hasBash) {
+    return nodeTask('validate runtime smoke', 'scripts/validate-runtime-smoke.mjs');
+  }
+  if (process.platform === 'win32') {
+    return skippedTask('validate runtime smoke', 'WARNING runtime smoke: bash not found; skipping local Bash runtime smoke checks');
+  }
+  return failedTask('validate runtime smoke', 'bash not found; Bash runtime smoke is required outside Windows');
+}
+
+function printResult(result) {
+  if (result.warning) {
+    console.warn(`\n${result.warning}`);
+  } else {
+    console.log(`\n== ${result.label} ==`);
+  }
+
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+
+  if (result.skipped) {
+    skipped += 1;
+    timings.push({ label: result.label, status: 'skipped', ms: result.ms });
+    return;
+  }
+
+  if (!result.ok) {
+    const message = result.errorMessage
+      ?? (result.code == null ? 'failed' : `exited with ${result.code}`);
+    console.error(`ERROR ${result.label}: ${message}`);
     failed += 1;
-    return false;
   }
-  return runNode('validate runtime smoke', 'scripts/validate-runtime-smoke.mjs');
+
+  timings.push({
+    label: result.label,
+    status: result.ok ? 'passed' : 'failed',
+    ms: result.ms,
+  });
 }
 
-printEnvironmentSummary();
-runNode('validate schemas', 'scripts/validate-schemas.mjs');
-runNode('validate registry fixtures', 'scripts/validate-registry-fixtures.mjs');
-runNode('validate Claude compatibility', 'scripts/validate-claude-compat.mjs');
-runNode('lint frontmatter', 'scripts/lint-frontmatter.mjs');
-runAgentVerification();
-runNode('validate packs', 'scripts/validate-packs.mjs');
-runNode('validate hooks', 'scripts/validate-hooks.mjs');
-runHookSyntaxChecks();
-runRuntimeSmoke();
-runNode('validate surface budget', 'scripts/validate-surface-budget.mjs');
-runNode('scan distribution risk', 'scripts/scan-distribution-risk.mjs');
-runNode('validate regression', 'scripts/validate-regression.mjs');
-runNode('validate workflow fixtures', 'scripts/validate-workflow-fixtures.mjs');
-runNode('validate docs', 'scripts/validate-docs.mjs');
+async function runWithConcurrency(tasks, limit) {
+  const results = new Array(tasks.length);
+  let next = 0;
 
-console.log(`\nSummary: failed=${failed} skipped=${skipped}`);
-if (failed > 0) process.exit(1);
+  async function worker() {
+    while (next < tasks.length) {
+      const index = next;
+      next += 1;
+      results[index] = await tasks[index].run();
+    }
+  }
+
+  await Promise.all(Array.from(
+    { length: Math.min(normalizeConcurrency(limit), tasks.length) },
+    () => worker(),
+  ));
+  return results;
+}
+
+async function runTaskGroup(tasks) {
+  const results = await runWithConcurrency(tasks, maxConcurrency);
+  for (const result of results) printResult(result);
+}
+
+function printTimingSummary() {
+  console.log('\n== validation timings ==');
+  for (const timing of timings) {
+    const seconds = (timing.ms / 1000).toFixed(2);
+    console.log(`${timing.status.padEnd(7)} ${seconds.padStart(7)}s  ${timing.label}`);
+  }
+}
+
+async function maybeWriteTimings() {
+  if (!writeTimings) return;
+  const metricsDir = resolve(root, '.metrics');
+  await mkdir(metricsDir, { recursive: true });
+  await writeFile(
+    resolve(metricsDir, 'validation-timings.json'),
+    `${JSON.stringify({
+      generatedAt: new Date().toISOString(),
+      failed,
+      skipped,
+      timings,
+    }, null, 2)}\n`,
+    'utf8',
+  );
+}
+
+async function main() {
+  const environment = await environmentSummary();
+  const hasBash = environment.Bash;
+
+  const agentTask = await buildAgentVerificationTask();
+  const hookSyntaxTasks = buildHookSyntaxTasks(hasBash);
+  const runtimeSmokeTask = buildRuntimeSmokeTask(hasBash);
+
+  await runTaskGroup([
+    nodeTask('validate schemas', 'scripts/validate-schemas.mjs'),
+    nodeTask('validate registry fixtures', 'scripts/validate-registry-fixtures.mjs'),
+    nodeTask('validate Claude compatibility', 'scripts/validate-claude-compat.mjs'),
+    nodeTask('lint frontmatter', 'scripts/lint-frontmatter.mjs'),
+  ]);
+
+  await runTaskGroup([
+    agentTask,
+    nodeTask('validate packs', 'scripts/validate-packs.mjs'),
+    nodeTask('validate hooks', 'scripts/validate-hooks.mjs'),
+    ...hookSyntaxTasks,
+  ]);
+
+  await runTaskGroup([
+    runtimeSmokeTask,
+    nodeTask('validate surface budget', 'scripts/validate-surface-budget.mjs'),
+    nodeTask('scan distribution risk', 'scripts/scan-distribution-risk.mjs'),
+    nodeTask('validate regression', 'scripts/validate-regression.mjs'),
+    nodeTask('validate workflow fixtures', 'scripts/validate-workflow-fixtures.mjs'),
+    nodeTask('validate docs', 'scripts/validate-docs.mjs'),
+  ]);
+
+  printTimingSummary();
+  await maybeWriteTimings();
+
+  console.log(`\nSummary: failed=${failed} skipped=${skipped}`);
+  if (failed > 0) process.exit(1);
+}
+
+main().catch((error) => {
+  console.error(`ERROR repository validation: ${error.message}`);
+  process.exit(1);
+});

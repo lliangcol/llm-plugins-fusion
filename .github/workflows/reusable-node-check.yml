@@ -1,0 +1,33 @@
+name: Reusable Node Check
+
+on:
+  workflow_call:
+    inputs:
+      label:
+        required: true
+        type: string
+      command:
+        required: true
+        type: string
+      runner:
+        required: false
+        type: string
+        default: ubuntu-latest
+      node-version:
+        required: false
+        type: string
+        default: '20'
+
+permissions:
+  contents: read
+
+jobs:
+  node-check:
+    name: ${{ inputs.label }}
+    runs-on: ${{ inputs.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ inputs.node-version }}
+      - run: ${{ inputs.command }}

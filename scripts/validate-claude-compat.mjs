@@ -7,10 +7,10 @@
  *   claude plugin validate nova-plugin
  */
 
-import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { commandExists, runProcess } from './lib/process-runner.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -30,30 +30,17 @@ function readJson(relPath) {
   return JSON.parse(readFileSync(resolve(root, relPath), 'utf8'));
 }
 
-function commandExists(command) {
-  const result = spawnSync(command, ['--version'], {
-    cwd: root,
-    encoding: 'utf8',
-    stdio: 'ignore',
-    shell: false,
-  });
-  return result.status === 0;
-}
-
-function run(label, command, args) {
+async function run(label, command, args) {
   console.log(`\n== ${label} ==`);
-  const result = spawnSync(command, args, {
+  const result = await runProcess(label, command, args, {
     cwd: root,
-    stdio: 'inherit',
-    shell: false,
+    capture: false,
+    timeoutMs: 120_000,
   });
-  if (result.error) {
-    console.error(`ERROR ${label}: ${result.error.message}`);
-    failed += 1;
-    return;
-  }
-  if (result.status !== 0) {
-    console.error(`ERROR ${label}: exited with ${result.status}`);
+  if (!result.ok) {
+    const message = result.errorMessage
+      ?? (result.code == null ? 'failed' : `exited with ${result.code}`);
+    console.error(`ERROR ${label}: ${message}`);
     failed += 1;
   }
 }
@@ -83,9 +70,9 @@ if (failed === 0) {
   console.log('OK marketplace manifest has no Claude-rejected plugin metadata fields');
 }
 
-if (commandExists('claude')) {
-  run('claude plugin validate .', 'claude', ['plugin', 'validate', '.']);
-  run('claude plugin validate nova-plugin', 'claude', ['plugin', 'validate', 'nova-plugin']);
+if (await commandExists('claude', ['--version'], { cwd: root })) {
+  await run('claude plugin validate .', 'claude', ['plugin', 'validate', '.']);
+  await run('claude plugin validate nova-plugin', 'claude', ['plugin', 'validate', 'nova-plugin']);
 } else {
   console.warn('\nWARNING Claude CLI not found; skipping live claude plugin validate checks');
 }

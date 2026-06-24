@@ -110,6 +110,10 @@ Maintainer validation npm shortcuts in `package.json` are dependency-free:
 
 ```bash
 npm run doctor
+npm run test
+npm run lint
+npm run ci:quick
+npm run ci:full
 npm run validate
 npm run validate:maintainer
 npm run validate:docs
@@ -130,7 +134,9 @@ Windows agent verification uses:
 `node scripts/validate-plugin-install.mjs --dry-run` is the safe preview path.
 Run `node scripts/validate-plugin-install.mjs --accept-user-scope-mutation`
 only in CI or an isolated test-user environment because it may install or
-update a user-scope Claude Code plugin.
+update a user-scope Claude Code plugin. Default CI and release validation should
+prefer the dry-run path unless the job is explicitly isolated for mutation. The
+mutating GitHub Actions path is `.github/workflows/plugin-install-smoke.yml`.
 
 ## Change Boundaries
 

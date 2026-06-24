@@ -21,6 +21,8 @@ duplicate every document.
 | Prepare social preview and demo capture assets | [assets/README.md](assets/README.md) |
 | Track growth metrics and manual promotion channels | [growth/README.md](growth/README.md) |
 | Adopt `nova-plugin` in a private project | [consumers/README.md](consumers/README.md) |
+| Maintain repository checks and release gates | [maintainers/quickstart.md](maintainers/quickstart.md) |
+| Understand public compatibility boundaries | [compatibility/public-api.md](compatibility/public-api.md) |
 | Choose a nova command or inspect plugin docs | [../nova-plugin/docs/README.md](../nova-plugin/docs/README.md) |
 | Understand core agents and capability pack routing | [agents/ROUTING.md](agents/ROUTING.md) |
 | Reuse public-safe workflow prompts | [prompts/README.md](prompts/README.md) |
@@ -43,8 +45,10 @@ docs/
 |-- assets/                       # social preview and demo capture guidance
 |-- agents/                       # core agent routing and pack routing
 |-- consumers/                    # public-safe consumer profile contracts and setup templates
+|-- compatibility/                # public API and compatibility surface
 |-- examples/                     # redacted workflow examples and evaluation templates
 |-- growth/                       # growth metric definitions and collection cadence
+|-- maintainers/                  # maintainer quickstart, troubleshooting, and GitHub settings
 |-- marketplace/                  # generated catalog, registry workflow, trust, compatibility, and review docs
 |-- prompts/                      # reusable public-safe prompt templates
 |-- releases/                     # release evidence templates, runbooks, and hygiene docs
@@ -60,8 +64,10 @@ docs/
 | [agents/](agents/) | Core agent routing and plugin-aware routing. |
 | [assets/](assets/) | Public-safe social preview and demo capture guidance. |
 | [consumers/](consumers/) | Public-safe consumer profile contracts, redacted project templates, and cross-tool setup notes. |
+| [compatibility/](compatibility/) | Public API and compatibility boundaries. |
 | [examples/](examples/) | Redacted Java backend/frontend examples and workflow evaluation templates. |
 | [growth/](growth/) | Growth metrics, traffic collection cadence, and manual channel record format. |
+| [maintainers/](maintainers/) | Maintainer checks, troubleshooting, and GitHub security settings. |
 | [marketplace/](marketplace/) | Marketplace catalog output, registry author workflow, compatibility, trust, security review, and v3 readiness evidence. |
 | [prompts/](prompts/) | Copyable prompt templates for Codex, Claude Code, delivery docs, HTML artifacts, and workbench cleanup. |
 | [releases/](releases/) | Release evidence templates, validation runbooks, and release hygiene rules. |
@@ -113,6 +119,20 @@ docs/
 | Document | Purpose |
 | --- | --- |
 | [growth/README.md](growth/README.md) | Stars, forks, issues, PRs, releases, traffic metrics, collection cadence, and manual channel record. |
+
+### Compatibility
+
+| Document | Purpose |
+| --- | --- |
+| [compatibility/public-api.md](compatibility/public-api.md) | Stable commands, plugin identifiers, validation CLIs, generated file contracts, and breaking-change triggers. |
+
+### Maintainers
+
+| Document | Purpose |
+| --- | --- |
+| [maintainers/quickstart.md](maintainers/quickstart.md) | Maintainer change paths, default checks, timing evidence, and install smoke boundary. |
+| [maintainers/troubleshooting.md](maintainers/troubleshooting.md) | Common local validation, Bash, Claude CLI, hooks, audit log, and registry drift troubleshooting. |
+| [maintainers/github-security-settings.md](maintainers/github-security-settings.md) | Branch protection, ruleset, CodeQL, secret scanning, Dependabot, and required-check guidance. |
 
 ### Marketplace
 

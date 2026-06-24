@@ -1,0 +1,84 @@
+# Maintainer Troubleshooting
+
+Status: active
+Date: 2026-06-24
+
+This page covers common maintainer failures without relying on private machine
+details. If a check is skipped, report the exact skip reason rather than
+claiming it passed.
+
+## Windows Without Bash
+
+`node scripts/validate-all.mjs` may warning-skip Bash-dependent hook syntax or
+runtime smoke checks on Windows when Bash is unavailable. That is a local skip,
+not proof that the checks passed.
+
+Use a Bash-capable shell or CI/Linux to verify:
+
+```bash
+bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+node scripts/validate-runtime-smoke.mjs
+```
+
+## Claude CLI Missing
+
+The default local checks do not require Claude CLI. `doctor` and compatibility
+checks may warn that Claude CLI is missing.
+
+Use dry-run install smoke for unattended validation:
+
+```bash
+node scripts/validate-plugin-install.mjs --dry-run
+```
+
+Use real install smoke only in CI or an isolated test-user environment:
+
+```bash
+node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
+```
+
+## Hooks Fail Before Writing
+
+`pre-write-check.sh` blocks writes that include likely hardcoded secrets or an
+invalid `hooks.json` structure.
+
+Run:
+
+```bash
+node scripts/validate-hooks.mjs
+bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+```
+
+For hook schema failures, compare against `nova-plugin/hooks/hooks.json`.
+
+## Audit Log Location
+
+`post-audit-log.sh` writes to:
+
+```text
+${CLAUDE_PLUGIN_DATA:-${XDG_STATE_HOME:-$HOME/.local/state}/nova-plugin}/audit.log
+```
+
+The directory is created with `700`, the log file with `600`, and logs rotate
+to `audit.log.1` after 5 MB. Set `NOVA_AUDIT_DISABLED=1` to disable local audit
+logging for an environment.
+
+## CodeQL And Dependency Graph
+
+CodeQL runs from `.github/workflows/codeql.yml`. Dependency review may skip when
+the repository dependency graph is unavailable. Enable GitHub Dependency graph,
+Dependabot alerts, secret scanning, and code scanning in repository security
+settings before treating platform checks as complete.
+
+## Generated Registry Drift
+
+Generated marketplace files must not be hand-edited. If drift appears, update
+the source files and regenerate:
+
+```bash
+node scripts/generate-registry.mjs --write
+node scripts/validate-schemas.mjs
+node scripts/validate-registry-fixtures.mjs
+node scripts/validate-claude-compat.mjs
+```

@@ -7,11 +7,11 @@
  * installation state.
  */
 
-import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
+import { captureProcess, runProcess } from './lib/process-runner.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -45,39 +45,34 @@ function readJson(path) {
   return JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 }
 
-function run(label, command, args) {
+async function run(label, command, args) {
   console.log(`\n== ${label} ==`);
-  const result = spawnSync(command, args, {
+  const result = await runProcess(label, command, args, {
     cwd: root,
-    stdio: 'inherit',
-    shell: false,
+    capture: false,
+    timeoutMs: 300_000,
   });
-  if (result.error) {
-    console.error(`ERROR ${label}: ${result.error.message}`);
-    process.exit(1);
-  }
-  if (result.status !== 0) {
-    console.error(`ERROR ${label}: exited with ${result.status}`);
-    process.exit(result.status ?? 1);
+  if (!result.ok) {
+    const message = result.errorMessage
+      ?? (result.code == null ? 'failed' : `exited with ${result.code}`);
+    console.error(`ERROR ${label}: ${message}`);
+    process.exit(result.code ?? 1);
   }
 }
 
-function captureJson(label, command, args) {
+async function captureJson(label, command, args) {
   console.log(`\n== ${label} ==`);
-  const result = spawnSync(command, args, {
+  const result = await captureProcess(label, command, args, {
     cwd: root,
-    encoding: 'utf8',
-    shell: false,
+    timeoutMs: 300_000,
   });
-  if (result.error) {
-    console.error(`ERROR ${label}: ${result.error.message}`);
-    process.exit(1);
-  }
-  if (result.status !== 0) {
+  if (!result.ok) {
     process.stdout.write(result.stdout ?? '');
     process.stderr.write(result.stderr ?? '');
-    console.error(`ERROR ${label}: exited with ${result.status}`);
-    process.exit(result.status ?? 1);
+    const message = result.errorMessage
+      ?? (result.code == null ? 'failed' : `exited with ${result.code}`);
+    console.error(`ERROR ${label}: ${message}`);
+    process.exit(result.code ?? 1);
   }
   try {
     return JSON.parse(result.stdout);
@@ -140,23 +135,23 @@ if (!acceptedUserScopeMutation) {
   process.exit(1);
 }
 
-run('claude --version', 'claude', ['--version']);
-run('claude plugin validate .', 'claude', ['plugin', 'validate', '.']);
-run('claude plugin validate nova-plugin', 'claude', ['plugin', 'validate', 'nova-plugin']);
-run('claude plugin marketplace add ./', 'claude', ['plugin', 'marketplace', 'add', './']);
-run('claude plugin marketplace list', 'claude', ['plugin', 'marketplace', 'list']);
-run(
+await run('claude --version', 'claude', ['--version']);
+await run('claude plugin validate .', 'claude', ['plugin', 'validate', '.']);
+await run('claude plugin validate nova-plugin', 'claude', ['plugin', 'validate', 'nova-plugin']);
+await run('claude plugin marketplace add ./', 'claude', ['plugin', 'marketplace', 'add', './']);
+await run('claude plugin marketplace list', 'claude', ['plugin', 'marketplace', 'list']);
+await run(
   `claude plugin install ${pluginId}`,
   'claude',
   ['plugin', 'install', pluginId, '--scope', 'user'],
 );
-run(
+await run(
   `claude plugin update ${pluginId}`,
   'claude',
   ['plugin', 'update', pluginId, '--scope', 'user'],
 );
 
-const installedPlugins = captureJson(
+const installedPlugins = await captureJson(
   'claude plugin list --json',
   'claude',
   ['plugin', 'list', '--json'],

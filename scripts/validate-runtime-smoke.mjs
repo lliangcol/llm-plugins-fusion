@@ -6,10 +6,10 @@
  * does not run review/verify against a real branch and does not write .codex.
  */
 
-import { spawnSync } from 'node:child_process';
 import { chmodSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { commandExists, runProcess } from './lib/process-runner.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -17,33 +17,22 @@ const root = resolve(__dir, '..');
 let failed = 0;
 let skipped = 0;
 
-function commandExists(command) {
-  const result = spawnSync(command, ['--version'], {
+async function run(label, args, options = {}) {
+  const result = await runProcess(label, 'bash', args, {
     cwd: root,
-    encoding: 'utf8',
-    stdio: 'ignore',
-    shell: false,
-  });
-  return result.status === 0;
-}
-
-function run(label, args, options = {}) {
-  const result = spawnSync('bash', args, {
-    cwd: root,
-    encoding: 'utf8',
-    shell: false,
+    timeoutMs: 60_000,
   });
 
   const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
   const expectFailure = Boolean(options.expectFailure);
-  const statusOk = expectFailure ? result.status !== 0 : result.status === 0;
+  const statusOk = expectFailure ? result.code !== 0 : result.code === 0;
   const outputOk = options.outputPattern ? options.outputPattern.test(output) : true;
 
-  if (result.error || !statusOk || !outputOk) {
+  if (result.error || result.timedOut || !statusOk || !outputOk) {
     failed += 1;
     console.error(`ERROR ${label}`);
-    if (result.error) console.error(`  ${result.error.message}`);
-    console.error(`  status=${result.status}`);
+    if (result.errorMessage) console.error(`  ${result.errorMessage}`);
+    console.error(`  status=${result.code}`);
     if (options.outputPattern && !outputOk) {
       console.error(`  output did not match ${options.outputPattern}`);
     }
@@ -55,7 +44,7 @@ function run(label, args, options = {}) {
   console.log(`OK ${label}`);
 }
 
-function runTempBash(label, body, options = {}) {
+async function runTempBash(label, body, options = {}) {
   const dirName = `.runtime-smoke-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const dirAbs = resolve(root, dirName);
   const scriptRel = `${dirName}/case.sh`;
@@ -64,7 +53,7 @@ function runTempBash(label, body, options = {}) {
   writeFileSync(scriptAbs, `#!/usr/bin/env bash\nset -euo pipefail\n${body}\n`);
   chmodSync(scriptAbs, 0o755);
   try {
-    run(label, [scriptRel], options);
+    await run(label, [scriptRel], options);
   } finally {
     rmSync(dirAbs, { recursive: true, force: true });
   }
@@ -81,7 +70,7 @@ function assertFileDoesNotMatch(label, relPath, pattern) {
   console.log(`OK ${label}`);
 }
 
-if (!commandExists('bash')) {
+if (!(await commandExists('bash', ['--version'], { cwd: root }))) {
   if (process.platform === 'win32') {
     skipped += 1;
     console.warn('WARNING runtime smoke: bash not found; skipping local Bash runtime smoke checks');
@@ -100,51 +89,51 @@ const scripts = [
 ];
 
 for (const script of scripts) {
-  run(`bash -n ${script}`, ['-n', script]);
+  await run(`bash -n ${script}`, ['-n', script]);
 }
 
-run('codex-review.sh --help', [
+await run('codex-review.sh --help', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/codex-review.sh',
   '--help',
 ], { outputPattern: /Usage: codex-review\.sh/ });
 
-run('codex-verify.sh --help', [
+await run('codex-verify.sh --help', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/codex-verify.sh',
   '--help',
 ], { outputPattern: /Usage: codex-verify\.sh/ });
 
-run('run-project-checks.sh --help', [
+await run('run-project-checks.sh --help', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh',
   '--help',
 ], { outputPattern: /Usage: run-project-checks\.sh/ });
 
-run('codex-review.sh rejects unknown args', [
+await run('codex-review.sh rejects unknown args', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/codex-review.sh',
   '--definitely-invalid',
 ], { expectFailure: true, outputPattern: /未知参数/ });
 
-run('codex-review.sh requires option values', [
+await run('codex-review.sh requires option values', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/codex-review.sh',
   '--base',
   '--full',
 ], { expectFailure: true, outputPattern: /--base 需要参数值/ });
 
-run('codex-verify.sh requires review file', [
+await run('codex-verify.sh requires review file', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/codex-verify.sh',
 ], { expectFailure: true, outputPattern: /--review-file|review\.md/ });
 
-run('codex-verify.sh requires option values', [
+await run('codex-verify.sh requires option values', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/codex-verify.sh',
   '--review-file',
   '--base',
 ], { expectFailure: true, outputPattern: /--review-file 需要参数值/ });
 
-run('run-project-checks.sh rejects unknown args', [
+await run('run-project-checks.sh rejects unknown args', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh',
   '--definitely-invalid',
 ], { expectFailure: true, outputPattern: /未知参数/ });
 
-run('run-project-checks.sh requires report-file path', [
+await run('run-project-checks.sh requires report-file path', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh',
   '--report-file',
 ], { expectFailure: true, outputPattern: /--report-file/ });
@@ -155,14 +144,20 @@ assertFileDoesNotMatch(
   /\beval\s+/,
 );
 
-runTempBash('pre-write hook rejects common token shapes', `
+await runTempBash('pre-write hook rejects common token shapes', `
 secret_tail="aaaaaaaaaaaaaaaaaaaaaaaa"
 token="sk-proj-\${secret_tail}"
 payload="$(printf '{"tool_input":{"file_path":"src/example.js","content":"OPENAI_API_KEY=%s"}}' "$token")"
 printf '%s' "$payload" | bash nova-plugin/hooks/scripts/pre-write-check.sh
 `, { expectFailure: true, outputPattern: /敏感信息/ });
 
-runTempBash('post-audit hook redacts command secrets', `
+await runTempBash('pre-write hook validates hooks.json structure', `
+content='{"hooks":{"PreToolUse":[{"matcher":"Write","hooks":[{"type":"command","command":"bash \\"\${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh\\"","timeout":10}]}]}}'
+payload="$(CONTENT="$content" node -e 'process.stdout.write(JSON.stringify({tool_input:{file_path:"nova-plugin/hooks/hooks.json",content:process.env.CONTENT}}))')"
+printf '%s' "$payload" | CLAUDE_PLUGIN_ROOT="$PWD/nova-plugin" bash nova-plugin/hooks/scripts/pre-write-check.sh
+`);
+
+await runTempBash('post-audit hook redacts command secrets', `
 secret_tail="bbbbbbbbbbbbbbbbbbbbbbbb"
 token="sk-proj-\${secret_tail}"
 log_dir="$(dirname "$0")/hook-data"
@@ -174,7 +169,7 @@ grep -q '<redacted>' "$log_dir/audit.log"
 ! grep -q "$token" "$log_dir/audit.log"
 `);
 
-runTempBash('codex_executable falls back to codex.exe', `
+await runTempBash('codex_executable falls back to codex.exe', `
 tmp="$(dirname "$0")/bin"
 mkdir "$tmp"
 printf '%s\\n' '#!/usr/bin/env bash' 'echo "fake runtime: node: not found" >&2' 'exit 0' > "$tmp/codex"
@@ -185,7 +180,7 @@ source nova-plugin/skills/nova-codex-review-fix/scripts/codex-common.sh
 codex_executable
 `, { outputPattern: /codex\.exe/ });
 
-runTempBash('node_executable falls back to node.exe', `
+await runTempBash('node_executable falls back to node.exe', `
 tmp="$(dirname "$0")/bin"
 mkdir "$tmp"
 printf '%s\\n' '#!/usr/bin/env bash' 'echo "fake runtime: node: not found" >&2' 'exit 0' > "$tmp/node"
@@ -196,7 +191,7 @@ source nova-plugin/skills/nova-codex-review-fix/scripts/codex-common.sh
 node_executable
 `, { outputPattern: /node\.exe/ });
 
-runTempBash('ensure_codex_available rejects unusable shim', `
+await runTempBash('ensure_codex_available rejects unusable shim', `
 tmp="$(dirname "$0")/bin"
 mkdir "$tmp"
 printf '%s\\n' '#!/usr/bin/env bash' 'echo "fake runtime: node: not found" >&2' 'exit 0' > "$tmp/codex"
@@ -206,7 +201,7 @@ source nova-plugin/skills/nova-codex-review-fix/scripts/codex-common.sh
 ensure_codex_available
 `, { expectFailure: true, outputPattern: /未找到可运行的 codex 命令|not found/ });
 
-runTempBash('write_untracked_diff includes untracked file content', `
+await runTempBash('write_untracked_diff includes untracked file content', `
 helper="$PWD/nova-plugin/skills/nova-codex-review-fix/scripts/codex-common.sh"
 tmp_repo="$(dirname "$0")/repo"
 mkdir "$tmp_repo"
@@ -220,7 +215,7 @@ write_untracked_diff "$diff_file"
 grep -q 'untracked smoke content' "$diff_file"
 `);
 
-runTempBash('resolve_output_path allows missing parent directory', `
+await runTempBash('resolve_output_path allows missing parent directory', `
 helper="$PWD/nova-plugin/skills/nova-codex-review-fix/scripts/codex-common.sh"
 tmp_repo="$(dirname "$0")/repo"
 mkdir "$tmp_repo"

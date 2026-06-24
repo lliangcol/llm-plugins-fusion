@@ -9,7 +9,7 @@
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, isAbsolute, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -39,10 +39,40 @@ function copyDefined(target, source, key) {
   }
 }
 
-function pluginManifestPath(entry) {
+function normalizeRegistrySource(value) {
+  return String(value ?? '')
+    .replace(/[\\/]+$/, '')
+    .replace(/\\/g, '/');
+}
+
+function assertRepositoryRelativeSource(root, source) {
+  if (typeof source !== 'string') {
+    throw new Error('registry plugin source must be a string path to a local plugin directory');
+  }
+  const trimmed = source.trim();
+  if (!trimmed) {
+    throw new Error('registry plugin source must not be empty');
+  }
+  if (isAbsolute(trimmed)) {
+    throw new Error(`registry plugin source must not be absolute: ${source}`);
+  }
+  if (isExternalLink(trimmed) || trimmed.startsWith('//')) {
+    throw new Error(`registry plugin source must be a repository-relative path: ${source}`);
+  }
+
+  const rootAbs = resolve(root);
+  const sourceAbs = resolve(rootAbs, trimmed);
+  const relativeSource = relative(rootAbs, sourceAbs);
+  if (relativeSource.startsWith('..') || isAbsolute(relativeSource)) {
+    throw new Error(`registry plugin source escapes repository root: ${source}`);
+  }
+}
+
+function pluginManifestPath(entry, root = defaultRoot) {
   if (typeof entry.source !== 'string') {
     throw new Error('registry plugin source must be a string path to a local plugin directory');
   }
+  assertRepositoryRelativeSource(root, entry.source);
   return `${entry.source.replace(/[\\/]+$/, '')}/.claude-plugin/plugin.json`;
 }
 
@@ -187,10 +217,37 @@ function renderCatalog({ marketplace, metadata }) {
 
 export function buildRegistryObjects(root = defaultRoot) {
   const source = readJson(root, REGISTRY_SOURCE_PATH);
-  const plugins = source.plugins.map((entry) => ({
-    source: entry,
-    plugin: readJson(root, pluginManifestPath(entry)),
-  }));
+  if (!Array.isArray(source.plugins) || source.plugins.length === 0) {
+    throw new Error('registry.source.json must contain a non-empty plugins array');
+  }
+
+  const seenSources = new Set();
+  const seenPluginNames = new Set();
+  const plugins = source.plugins.map((entry) => {
+    assertRepositoryRelativeSource(root, entry.source);
+    const sourceKey = normalizeRegistrySource(entry.source);
+    if (seenSources.has(sourceKey)) {
+      throw new Error(`duplicate plugin source: ${entry.source}`);
+    }
+    seenSources.add(sourceKey);
+
+    const plugin = readJson(root, pluginManifestPath(entry, root));
+    if (typeof plugin.name !== 'string' || plugin.name.trim() === '') {
+      throw new Error(`plugin manifest is missing name for source ${entry.source}`);
+    }
+    if (seenPluginNames.has(plugin.name)) {
+      throw new Error(`duplicate plugin name: ${plugin.name}`);
+    }
+    seenPluginNames.add(plugin.name);
+
+    return {
+      source: entry,
+      plugin,
+    };
+  }).sort((left, right) => (
+    left.plugin.name.localeCompare(right.plugin.name)
+    || normalizeRegistrySource(left.source.source).localeCompare(normalizeRegistrySource(right.source.source))
+  ));
 
   const marketplace = {
     name: source.name,

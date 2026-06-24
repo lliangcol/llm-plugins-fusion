@@ -45,10 +45,10 @@ consumer project's own `AGENTS.md`, `CLAUDE.md`, `.claude/`, or private docs.
 - Project optimization plan: `docs/project-optimization-plan.md`
 - Release evidence template: `docs/releases/release-evidence-template.md`
 - Maintainer npm shortcuts: `package.json` (`doctor`, `validate`,
-  `validate:maintainer`, `validate:docs`, `validate:schemas`,
-  `validate:runtime`, `validate:regression`, `validate:surface`,
-  `validate:workflow`, `scan:distribution`, `scaffold:consumer`; no
-  `check`/`lint`/`test`/`build` script names)
+  `test`, `lint`, `ci:quick`, `ci:full`, `validate:maintainer`,
+  `validate:docs`, `validate:schemas`, `validate:runtime`,
+  `validate:regression`, `validate:surface`, `validate:workflow`,
+  `scan:distribution`, `scaffold:consumer`; no `check`/`build` script names)
 - Repository validation scripts require Node.js 20+. Hook shell syntax and
   runtime smoke checks require Bash; Windows without Bash may warning-skip
   local Bash-dependent checks, while CI/Linux must run them.
@@ -155,6 +155,10 @@ Maintainer npm shortcuts are optional and dependency-free:
 
 ```bash
 npm run doctor
+npm run test
+npm run lint
+npm run ci:quick
+npm run ci:full
 npm run validate
 npm run validate:maintainer
 npm run validate:docs
@@ -178,8 +182,9 @@ Windows agent verification:
 .\scripts\verify-agents.ps1
 ```
 
-Claude CLI install smoke is intentionally separate because it may install or
-update a user-scope plugin:
+Claude CLI install smoke is intentionally separate. The dry run is the safe
+preview path; the mutation path may install or update a user-scope plugin and
+should run only in CI or an isolated test-user environment:
 
 ```bash
 node scripts/validate-plugin-install.mjs --dry-run
@@ -405,11 +410,14 @@ Prompt-surface budget checks are a bloat guard, not a quality metric. Run
 surfaces change.
 
 Current CI includes verify-agents, validate-packs, validate-schemas,
-validate-registry-fixtures, validate-claude-compat, plugin install smoke,
+validate-registry-fixtures, validate-claude-compat, plugin install dry run,
 lint-frontmatter, validate-hooks, hook `bash -n`, runtime smoke, surface budget,
 distribution risk scan, validation regression checks, workflow fixture
-validation, validate-docs, and a Windows non-Bash smoke job for schemas, docs, frontmatter, and
-`scripts/verify-agents.ps1`.
+validation, validate-docs, CodeQL, and a Windows non-Bash smoke job for schemas,
+docs, frontmatter, and `scripts/verify-agents.ps1`. Repeated Node jobs route
+through `.github/workflows/reusable-node-check.yml`. Real user-scope plugin
+install smoke is isolated in `.github/workflows/plugin-install-smoke.yml` and
+is not a default merge or release blocker.
 
 ## Do Not Edit
 

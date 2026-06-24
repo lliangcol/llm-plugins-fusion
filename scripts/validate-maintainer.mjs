@@ -6,10 +6,10 @@
  * registry drift and whitespace in the working tree.
  */
 
-import { spawnSync } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
+import { runProcess } from './lib/process-runner.mjs';
 
 assertNodeVersion({ label: 'maintainer validation' });
 
@@ -17,29 +17,27 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
 let failed = 0;
 
-function run(label, command, args) {
+async function run(label, command, args) {
   console.log(`\n== ${label} ==`);
-  const result = spawnSync(command, args, {
+  const result = await runProcess(label, command, args, {
     cwd: root,
-    stdio: 'inherit',
-    shell: false,
+    capture: false,
+    timeoutMs: 180_000,
   });
-  if (result.error) {
-    console.error(`ERROR ${label}: ${result.error.message}`);
-    failed += 1;
-    return false;
-  }
-  if (result.status !== 0) {
-    console.error(`ERROR ${label}: exited with ${result.status}`);
+  if (!result.ok) {
+    const message = result.errorMessage
+      ?? (result.code == null ? 'failed' : `exited with ${result.code}`);
+    console.error(`ERROR ${label}: ${message}`);
     failed += 1;
     return false;
   }
   return true;
 }
 
-run('validate all', process.execPath, ['scripts/validate-all.mjs']);
-run('generated registry drift check', process.execPath, ['scripts/generate-registry.mjs']);
-run('git diff --check', 'git', ['diff', '--check']);
+await run('validate all', process.execPath, ['scripts/validate-all.mjs']);
+await run('generated registry drift check', process.execPath, ['scripts/generate-registry.mjs']);
+await run('git diff --check', 'git', ['diff', '--check']);
+await run('git diff --cached --check', 'git', ['diff', '--cached', '--check']);
 
 console.log(`\nSummary: failed=${failed}`);
 if (failed > 0) process.exit(1);

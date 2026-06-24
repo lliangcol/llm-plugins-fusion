@@ -1,0 +1,41 @@
+name: Plugin Install Smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '37 4 * * 2'
+
+permissions:
+  contents: read
+
+jobs:
+  mutating-install-smoke:
+    name: Mutating install smoke on disposable runner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install Claude CLI
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Validate user-scope install path
+        run: node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
+      - name: Record smoke context
+        if: always()
+        run: |
+          mkdir -p .metrics/plugin-install-smoke
+          {
+            echo "workflow=${GITHUB_WORKFLOW}"
+            echo "run_id=${GITHUB_RUN_ID}"
+            echo "runner=${RUNNER_NAME}"
+            echo "mutates_user_scope=true"
+            echo "scope=disposable GitHub-hosted runner"
+            date -u +"completed_at=%Y-%m-%dT%H:%M:%SZ"
+          } > .metrics/plugin-install-smoke/context.txt
+      - name: Upload failure context
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: plugin-install-smoke-context
+          path: .metrics/plugin-install-smoke/

@@ -72,7 +72,7 @@ release tag 作为稳定发布证据。
 - 公开仓库不存放真实 consumer profile、endpoint、凭据、私有仓库地址、业务规则或私有知识库。
 - 本地默认质量门是 `node scripts/validate-all.mjs`；Windows 无 Bash 时，Bash-dependent 检查只能报告为 skipped，不能报告为 passed。
 - 维护者发布前检查使用 `npm run validate:maintainer`，它在默认质量门之外还检查 generated registry 漂移和 `git diff --check`。
-- Claude 插件安装 smoke 需要显式 `--accept-user-scope-mutation`；不带该参数不会修改 user-scope 插件状态。
+- Claude 插件安装 smoke 的安全预览路径是 `node scripts/validate-plugin-install.mjs --dry-run`；真实 user-scope 安装/更新只应在隔离用户或 CI profile 中显式运行 `--accept-user-scope-mutation`。
 - 安全问题请按 [SECURITY.md](./SECURITY.md) 私下披露，不要在公开 issue 中暴露漏洞细节。
 
 ## 当前状态
@@ -234,6 +234,8 @@ llm-plugins-fusion/
 | 接入私有 consumer 项目 | [Consumer profile templates](./docs/consumers/README.md) |
 | 复用公开安全 workflow 示例 | [Redacted examples](./docs/examples/README.md) |
 | 维护 marketplace metadata | [Registry author workflow](./docs/marketplace/registry-author-workflow.md) |
+| 维护仓库检查、CI 和发布 gate | [Maintainer quickstart](./docs/maintainers/quickstart.md) |
+| 查看公共 API 和兼容边界 | [Public API compatibility](./docs/compatibility/public-api.md) |
 | 准备发布证据 | [Release evidence template](./docs/releases/release-evidence-template.md) |
 | 了解 agent routing 和 capability packs | [Core agent 路由](./docs/agents/ROUTING.md)、[Capability packs](./nova-plugin/packs/README.md) |
 | 阅读英文概览 | [English overview](./nova-plugin/docs/overview/README.en.md) |
@@ -246,7 +248,7 @@ llm-plugins-fusion/
 - `.claude-plugin/registry.source.json`：registry、marketplace 展示字段和 trust/risk/maintainer/evidence 元数据事实源
 - `.claude-plugin/marketplace.json`、`.claude-plugin/marketplace.metadata.json`、`docs/marketplace/catalog.md`：生成输出，不要手工编辑
 - `CHANGELOG.md`、`SECURITY.md`、`CLAUDE.md`、`AGENTS.md`：版本、支持范围、库存或行为边界变化时同步
-- `package.json`：维护者便捷脚本；刻意不声明 `check` / `lint` / `test` / `build` 脚本名
+- `package.json`：维护者便捷脚本；包含 dependency-free 的 `test`、`lint`、`ci:quick`、`ci:full` 别名，仍不声明 `check` / `build` 脚本名
 
 Command 与 skill 必须一对一：
 
@@ -292,6 +294,10 @@ git diff --check
 
 ```bash
 npm run doctor
+npm run test
+npm run lint
+npm run ci:quick
+npm run ci:full
 npm run validate
 npm run validate:maintainer
 npm run validate:docs
@@ -339,12 +345,14 @@ bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 
-Claude 插件安装 smoke test 需要 Claude CLI，且会尝试安装 user-scope 插件，因此不在默认本地检查中自动运行：
+Claude 插件安装 smoke 的 dry run 不会调用 Claude CLI，也不会修改 user-scope 插件状态。真实安装/更新 smoke 需要 Claude CLI，且会修改 user-scope 插件状态，因此只应在隔离用户或 CI profile 中显式运行：
 
 ```bash
 node scripts/validate-plugin-install.mjs --dry-run
 node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
 ```
+
+默认 CI 和 release validation 只运行 dry run；真实 user-scope smoke 由手动或定时的 `.github/workflows/plugin-install-smoke.yml` 在 disposable runner 上执行。
 
 ## Contributing
 

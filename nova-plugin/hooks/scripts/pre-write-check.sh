@@ -11,6 +11,8 @@
 set -euo pipefail
 
 INPUT=$(cat)
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd -- "$SCRIPT_DIR/../.." >/dev/null 2>&1 && pwd -P)}"
 
 node_command() {
   local candidate=""
@@ -119,6 +121,18 @@ try {
   return 1
 }
 
+validate_hooks_json_schema() {
+  local content="$1"
+  local node_bin=""
+
+  if node_bin="$(node_command)" && [ -f "$PLUGIN_ROOT/hooks/scripts/validate-hooks-json.mjs" ]; then
+    printf '%s' "$content" | CLAUDE_PLUGIN_ROOT="$PLUGIN_ROOT" "$node_bin" "$PLUGIN_ROOT/hooks/scripts/validate-hooks-json.mjs"
+    return
+  fi
+
+  json_has_hooks "$content"
+}
+
 FILE_PATH=$(json_read file_path)
 CONTENT=$(json_read content)
 
@@ -140,7 +154,8 @@ content_has_sensitive_value() {
 # ── 检查 1：敏感信息硬编码检测 ────────────────────────────────────
 if [ -n "$CONTENT" ] && content_has_sensitive_value "$CONTENT"; then
   echo "[nova-plugin] 疑似硬编码敏感信息，请使用环境变量替代。" >&2
-  echo "  匹配文件: $FILE_PATH" >&2
+  echo "  匹配文件: ${FILE_PATH:-unknown}" >&2
+  echo "  建议: 使用环境变量、占位符或私有 consumer profile，不要写入公开仓库内容。" >&2
   exit 2
 fi
 
@@ -148,11 +163,15 @@ fi
 if echo "$FILE_PATH" | grep -q 'hooks\.json$' && [ -n "$CONTENT" ]; then
   if ! json_valid "$CONTENT"; then
     echo "[nova-plugin] hooks.json JSON 格式无效，写入已阻止。" >&2
+    echo "  建议: 修复 JSON 语法后运行 node scripts/validate-hooks.mjs。" >&2
     exit 2
   fi
-  # 检查是否包含顶层 "hooks" 字段
-  if ! json_has_hooks "$CONTENT"; then
-    echo "[nova-plugin] hooks.json 缺少顶层 \"hooks\" 字段。" >&2
+  if ! HOOKS_SCHEMA_OUTPUT=$(validate_hooks_json_schema "$CONTENT" 2>&1); then
+    echo "[nova-plugin] hooks.json 结构无效，写入已阻止。" >&2
+    if [ -n "$HOOKS_SCHEMA_OUTPUT" ]; then
+      printf '%s\n' "$HOOKS_SCHEMA_OUTPUT" | sed 's/^/  /' >&2
+    fi
+    echo "  建议: 参考 nova-plugin/hooks/hooks.json，并运行 node scripts/validate-hooks.mjs。" >&2
     exit 2
   fi
 fi

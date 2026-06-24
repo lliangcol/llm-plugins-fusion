@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main]
 
+permissions:
+  contents: read
+
 jobs:
   verify-agents:
     name: Verify Agents
@@ -15,65 +18,40 @@ jobs:
       - run: bash scripts/verify-agents.sh
 
   validate-schemas:
-    name: Validate Schemas
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: node scripts/validate-schemas.mjs
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Validate Schemas
+      command: node scripts/validate-schemas.mjs
 
   validate-registry-fixtures:
-    name: Validate Registry Fixtures
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: node scripts/validate-registry-fixtures.mjs
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Validate Registry Fixtures
+      command: node scripts/validate-registry-fixtures.mjs
 
   validate-packs:
-    name: Validate Capability Packs
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: node scripts/validate-packs.mjs
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Validate Capability Packs
+      command: node scripts/validate-packs.mjs
 
   validate-claude-compat:
-    name: Validate Claude Compatibility
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: node scripts/validate-claude-compat.mjs
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Validate Claude Compatibility
+      command: node scripts/validate-claude-compat.mjs
 
-  plugin-install-smoke:
-    name: Plugin Install Smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: npm install -g @anthropic-ai/claude-code
-      - run: node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
+  plugin-install-dry-run:
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Plugin Install Dry Run
+      command: node scripts/validate-plugin-install.mjs --dry-run
 
   lint-frontmatter:
-    name: Lint Frontmatter
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: node scripts/lint-frontmatter.mjs
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Lint Frontmatter
+      command: node scripts/lint-frontmatter.mjs
 
   validate-hooks:
     name: Validate Hooks
@@ -88,64 +66,40 @@ jobs:
       - run: bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 
   validate-runtime-smoke:
-    name: Validate Runtime Smoke
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: node scripts/validate-runtime-smoke.mjs
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Validate Runtime Smoke
+      command: node scripts/validate-runtime-smoke.mjs
 
   validate-surface-budget:
-    name: Validate Surface Budget
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: node scripts/validate-surface-budget.mjs
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Validate Surface Budget
+      command: node scripts/validate-surface-budget.mjs
 
   scan-distribution-risk:
-    name: Scan Distribution Risk
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: node scripts/scan-distribution-risk.mjs
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Scan Distribution Risk
+      command: node scripts/scan-distribution-risk.mjs
 
   validate-regression:
-    name: Validate Regression
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: node scripts/validate-regression.mjs
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Validate Regression
+      command: node scripts/validate-regression.mjs
 
   validate-workflow-fixtures:
-    name: Validate Workflow Fixtures
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: node scripts/validate-workflow-fixtures.mjs
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Validate Workflow Fixtures
+      command: node scripts/validate-workflow-fixtures.mjs
 
   validate-docs:
-    name: Validate Docs
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-      - run: node scripts/validate-docs.mjs
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Validate Docs
+      command: node scripts/validate-docs.mjs
 
   windows-node-smoke:
     name: Windows Node Smoke
