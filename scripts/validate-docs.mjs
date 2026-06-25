@@ -1004,6 +1004,11 @@ function validateMaintainerDiagnosticContracts() {
     },
     {
       file: 'docs/maintainers/troubleshooting.md',
+      pattern: /\| Capability pack documentation-only, enhanced, or fallback boundary failure \| `node scripts\/validate-packs\.mjs` \| Keep packs as documentation guidance; do not introduce runtime dynamic loading as a fix\. \|/,
+      label: 'maintainer troubleshooting pack boundary shortcut',
+    },
+    {
+      file: 'docs/maintainers/troubleshooting.md',
       pattern: /\| `validate surface budget` warning or failure \| `npm run validate:surface` \| Split bloated shipped surfaces or update the allowlist only with a rationale and split plan\. \|/,
       label: 'maintainer troubleshooting surface budget shortcut',
     },
