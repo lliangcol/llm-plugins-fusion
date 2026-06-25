@@ -209,6 +209,14 @@ for CI or isolated test-user environments.
   the actual `validate-maintainer` gate label; commit `676eccd` was pushed to
   `origin/main` after `npm run validate:maintainer` passed with
   `failed=0 skipped=0`.
+- 2026-06-25: Refreshed this maintenance status file after pushed small-step
+  rounds made earlier candidates stale; commit `794ede5` was pushed to
+  `origin/main` after `npm run validate:maintainer` passed with
+  `failed=0 skipped=0`.
+- 2026-06-25: Added a maintainer troubleshooting shortcut for the
+  `validate surface budget` gate and synced docs/regression coverage; commit
+  `be4d302` was pushed to `origin/main` after `npm run validate:maintainer`
+  passed with `failed=0 skipped=0`.
 
 ## Next Round Candidates
 
