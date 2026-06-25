@@ -12,6 +12,20 @@
 - **功能建议**：说明场景、当前痛点、预期行为。优先参考 [ROADMAP.md](./ROADMAP.md) 判断是否已在计划内。
 - **安全问题**：请**不要**在公开 issue 中披露，改用 [SECURITY.md](./SECURITY.md) 描述的私下渠道。
 
+## 公开贡献边界
+
+- 本仓库只接收可公开维护的 workflow、consumer profile 契约、脱敏模板、
+  prompt 模板、capability pack 指南、验证脚本和 marketplace metadata。
+- 不要在 issue、PR、示例、模板、review notes 或 validation output 中包含真实
+  consumer 名称、私有路径、endpoint、凭据、仓库地址、runtime flags、业务规则、
+  客户数据、私有截图或私有知识库内容。
+- 不要把贡献描述成 public portal、付费 marketplace、production multi-plugin
+  directory、runtime dynamic loading 或大量领域命令扩张，除非 roadmap evidence
+  和 release evidence 已经明确激活该方向。
+- 不要用放宽全局权限、agent sandbox 或 workflow token scope 来掩盖缺失工具、
+  缺失 Bash、缺失 CLI 或缺失平台检查。把这类状态记录为 skipped、pending
+  或 not run，并说明替代 CI/Linux 或 owner-verified evidence。
+
 ## 提交 Pull Request
 
 ### 准备工作
@@ -23,12 +37,13 @@
    ```bash
    node scripts/validate-all.mjs
    ```
-5. 可选使用维护者 npm 便捷入口；`package.json` 不声明 `check` / `lint` /
-   `test` / `build` 脚本名，避免被 Codex 项目检查脚本重复自动发现。
+5. 可选使用维护者 npm 便捷入口；`package.json` 包含 dependency-free 的
+   `lint` 和 `test` 入口，仍不声明 `check` / `build` 脚本名。
    ```bash
    npm run validate
    npm run validate:docs
    npm run validate:schemas
+   npm run validate:github-workflows
    npm run validate:runtime
    npm run validate:regression
    npm run scan:distribution

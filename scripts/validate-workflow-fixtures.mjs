@@ -23,6 +23,20 @@ function read(relPath) {
   return readFileSync(resolve(root, relPath), 'utf8');
 }
 
+function assertContainsAll(relPath, fragments) {
+  const src = read(relPath);
+  for (const fragment of fragments) {
+    const pattern = fragment
+      .replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      .replace(/ /g, '\\s+');
+    assert.match(
+      src,
+      new RegExp(pattern, 'i'),
+      `${relPath} missing ${fragment}`,
+    );
+  }
+}
+
 function test(label, fn) {
   try {
     fn();
@@ -47,6 +61,48 @@ test('fixture files exist', () => {
   ]) {
     assert.equal(existsSync(resolve(root, relPath)), true, `missing ${relPath}`);
   }
+});
+
+test('workflow examples preserve public-safe redaction boundaries', () => {
+  const commonPrivateSignals = [
+    'private project names',
+    'endpoints',
+    'credentials',
+    'runtime flags',
+  ];
+
+  assertContainsAll('docs/examples/README.md', [
+    'public-safe examples',
+    'fictional or generic scenarios',
+    ...commonPrivateSignals,
+  ]);
+  assertContainsAll('docs/examples/workflow-evaluation.md', [
+    'public-safe scenarios',
+    'intentionally fictional',
+    ...commonPrivateSignals,
+  ]);
+  assertContainsAll('docs/examples/workflow-evaluation-record-template.md', [
+    'disposable consumer fixture',
+    'throwaway branch',
+    'Do not paste private project names',
+    'private repository URLs',
+  ]);
+  assertContainsAll(`${fixtureRoot}/README.md`, [
+    'public-safe disposable fixture',
+    'This fixture is fictional',
+    ...commonPrivateSignals,
+    'Do not copy private consumer facts',
+  ]);
+  assertContainsAll('docs/examples/java-backend/redacted-feature.md', [
+    'fictional backend feature',
+    'does not describe a real consumer',
+    'Do not publish private Maven profiles',
+  ]);
+  assertContainsAll('docs/examples/frontend/basic-feature.md', [
+    'fictional frontend feature',
+    'does not describe a real consumer',
+    'Do not publish private package scripts',
+  ]);
 });
 
 test('fixture output stays ignored and disposable', () => {

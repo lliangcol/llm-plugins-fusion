@@ -12,6 +12,15 @@ Detailed local indexes remain in subdirectories that need them, such as
 directory-level navigation for `docs/` so the root README does not need to
 duplicate every document.
 
+## Public Navigation Boundary
+
+`docs/showcase/` and `docs/examples/` are public-safe navigation aids, not a
+public portal or real consumer case-study library. Showcase pages explain
+reusable scenario workflows; examples provide redacted fixtures, rubrics, and
+templates. Keep consumer-specific profiles, endpoints, credentials, local
+paths, runtime flags, business rules, private repository addresses, and private
+knowledge-base content in the consumer-owned workspace.
+
 ## Start Here
 
 | Need | Entry |
@@ -35,6 +44,7 @@ duplicate every document.
 | Prepare release or promotion evidence | [releases/release-evidence-template.md](releases/release-evidence-template.md) |
 | Run release validation manually | [releases/release-validation-runbook.md](releases/release-validation-runbook.md) |
 | Review current project optimization work | [project-optimization-plan.md](project-optimization-plan.md) |
+| Resume small-step maintenance rounds | [llm-plugins-fusion-maintenance-status.md](llm-plugins-fusion-maintenance-status.md) |
 
 ## Directory Map
 
@@ -191,6 +201,7 @@ docs/
 | [workflows/thin-harness-fat-skills.md](workflows/thin-harness-fat-skills.md) | Placement doctrine for scripts, skills, prompts, packs, and profiles. |
 | [getting-started.md](getting-started.md) | Install, `/route`, five primary commands, Codex prerequisites, and common failure handling. |
 | [project-optimization-plan.md](project-optimization-plan.md) | Active optimization plan for positioning, reliability, usability, maintenance, and release readiness. |
+| [llm-plugins-fusion-maintenance-status.md](llm-plugins-fusion-maintenance-status.md) | Context-safe maintenance snapshot for small-step optimization rounds. |
 
 ## Maintenance Rules
 

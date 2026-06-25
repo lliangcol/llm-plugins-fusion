@@ -3,8 +3,10 @@
 Status: active
 Date: 2026-05-08
 
-This policy defines repository-local marketplace metadata. These fields are
-generated into `.claude-plugin/marketplace.metadata.json` and
+This policy defines repository-local marketplace metadata for the current
+`nova-plugin` entry. It is not a hosted public portal, paid marketplace,
+production multi-plugin directory, or external trust registry. These fields
+are generated into `.claude-plugin/marketplace.metadata.json` and
 `docs/marketplace/catalog.md`; they must not be copied into the
 Claude-compatible `.claude-plugin/marketplace.json`.
 
@@ -44,6 +46,13 @@ recommendation. Write-capable commands and external CLI loops must keep their
 scope explicit through command parameters, safety preflight, and validation
 evidence. Documentation should describe required tools and fallback paths
 without recommending global permission bypasses.
+
+Release workflow or `.github/workflows/**` changes should run
+`node scripts/validate-github-workflows.mjs`; it checks least-privilege
+workflow token scope, workflow file inventory, required-check docs and
+read-only print output synchronization, and isolated mutating install smoke
+boundaries. Do not broaden workflow token scope to compensate for missing tools
+or unavailable validators.
 
 ## Review Requirements
 

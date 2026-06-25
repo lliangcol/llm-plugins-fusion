@@ -7,6 +7,16 @@ This page covers common maintainer failures without relying on private machine
 details. If a check is skipped, report the exact skip reason rather than
 claiming it passed.
 
+## Boundary Rules
+
+- Do not loosen global permissions, agent sandbox settings, or workflow token
+  scope to hide a missing local tool or unavailable platform check.
+- Do not paste private machine paths, repository addresses, endpoints,
+  credentials, tokens, consumer names, business rules, or private alert details
+  into public troubleshooting notes.
+- Record unavailable checks as `skipped`, `not run`, or `pending` with the
+  reason and the replacement CI/Linux or owner-verified evidence.
+
 ## Windows Without Bash
 
 `node scripts/validate-all.mjs` may warning-skip Bash-dependent hook syntax or
@@ -51,6 +61,21 @@ bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 ```
 
 For hook schema failures, compare against `nova-plugin/hooks/hooks.json`.
+
+## GitHub Workflow Permissions
+
+When CI workflow edits fail permission review or token-scope checks, run:
+
+```bash
+npm run validate:github-workflows
+```
+
+This verifies read-only default token scope, forbids `pull_request_target`,
+keeps release write permission scoped to the release job, keeps the workflow
+file inventory synchronized with `CLAUDE.md`, keeps required-check docs and the
+read-only print script synchronized with CI labels, and keeps mutating plugin
+install smoke off default PR and push triggers. Do not broaden workflow token
+scope to hide missing local tools or unavailable GitHub platform checks.
 
 ## Audit Log Location
 

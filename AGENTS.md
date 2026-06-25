@@ -118,6 +118,7 @@ npm run validate
 npm run validate:maintainer
 npm run validate:docs
 npm run validate:schemas
+npm run validate:github-workflows
 npm run validate:runtime
 npm run validate:regression
 npm run validate:surface

@@ -31,8 +31,22 @@ nova-plugin/skills/nova-codex-verify-only/SKILL.md
 
 1. Start with `nova-route` when the next step is unclear.
 2. Follow the selected `nova-*` skill and its safety boundary.
-3. For Codex loop work, keep `.codex/` runtime artifacts out of commits unless the consumer project explicitly tracks them.
+3. For Codex loop work, keep `.codex/` runtime artifacts out of this public
+   repository and out of public handoff examples. In private consumer projects,
+   treat `.codex/` as disposable local evidence unless the project-local source
+   of truth defines a stricter artifact policy.
 4. Report validation evidence or skipped checks in the final handoff.
+
+## Public-Safe Boundaries
+
+- Keep consumer-specific rules, private paths, endpoints, credentials,
+  repository addresses, runtime flags, business rules, and private knowledge
+  base content in the consumer project.
+- Do not copy Codex runtime artifacts, environment summaries, local CLI paths,
+  or private review outputs back into this public repository.
+- If Codex CLI or Bash is unavailable, use the ordinary `nova-review` ->
+  `nova-implement-plan` skill path or report the missing prerequisite; do not
+  relax global permissions to hide the missing runtime.
 
 ## Fallback Notes
 

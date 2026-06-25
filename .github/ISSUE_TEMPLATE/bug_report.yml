@@ -8,6 +8,8 @@ body:
         Use this form for public, reproducible bugs. Do not include credentials, private endpoints, private repository addresses, local machine paths, consumer-specific facts, or undisclosed vulnerability details.
 
         Security issues must be reported privately through the Security Policy instead of a public issue.
+
+        If a tool, Bash, Claude CLI, Codex CLI, or platform check is unavailable, report it as skipped, pending, or not run with the reason. Do not broaden global permissions, agent sandbox settings, or workflow token scope to hide the missing check.
   - type: dropdown
     id: area
     attributes:

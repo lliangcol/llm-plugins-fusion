@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 新增 `scripts/validate-workflow-fixtures.mjs` 与 `npm run validate:workflow`，
   自动校验 `fixtures/workflow/invoice-sync/` 的 public-safe fixture 合约、
   ordering bug 信号、approved plan 边界和 workflow rubric 覆盖。
+- 新增 `scripts/validate-github-workflows.mjs`，独立校验 GitHub Actions
+  token scope、`pull_request_target` 禁用边界、release job 写权限下放和
+  mutating plugin install smoke 隔离触发器。
+- 新增 `npm run validate:github-workflows`，让维护者无需记忆脚本路径即可
+  单独验证 GitHub Actions workflow 权限合约。
 - 新增 `docs/workflows/source-controlled-checks.md`，定义 source-controlled
   workflow checks、未来 `.nova/checks` 边界和当前 fixture validator 的职责。
 - 新增 `docs/releases/release-validation-runbook.md`，补充 exact tag、隔离
@@ -58,8 +63,93 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   预览、demo capture 和增长指标口径。
 - 新增 `scripts/collect-github-metrics.mjs`，采集公开 GitHub repository 指标，
   并在无 `GITHUB_TOKEN` 时把 owner-only traffic endpoints 记录为 skipped。
+- 新增 `tests/e2e/doctor.test.mjs`，固定 `npm run doctor` 的只读诊断输出契约，
+  并确保 Claude/Codex CLI 缺失仍作为 warning 而非硬失败处理。
 
 ### Changed
+- 扩展 `scripts/validate-docs.mjs` 与 regression 覆盖，校验公开定位、
+  exact release tag 推广边界和 maintainer diagnostic warning 语义，防止
+  moving `main`、public portal 或 skipped Bash check 被误报为稳定发布证据。
+- GitHub workflow 权限合约现在从 `validate-docs` 拆到
+  `scripts/validate-github-workflows.mjs`，并接入 `validate-all`、CI 与
+  regression，防止公开仓库 CI 漂移成宽权限默认路径；该验证器同时校验
+  CI job labels、GitHub security settings 文档和只读打印脚本的 required-check
+  清单一致性，并固定 `.github/workflows/` 文件库存与 `CLAUDE.md` repository
+  layout 的同步关系；README、`CLAUDE.md` 和项目优化计划中的质量门覆盖叙述
+  也同步说明权限、库存和 required-check 合约，维护者 quickstart、
+  troubleshooting、marketplace trust policy、security review route、registry
+  author workflow 与 compatibility matrix 入口同步描述完整验证范围，release
+  hygiene、runbook 和 evidence template 也把 `validate-github-workflows` 作为
+  独立发布证据项记录。
+- GitHub security settings 的 suggested required-check 清单和只读打印脚本
+  现在包含 `Validate GitHub Workflows`，与 CI 实际 job 覆盖保持一致。
+- 补强中英文命令手册中的 Codex 高级路径边界，明确 review / verify artifact、
+  `.codex/` 本地证据、fallback workflow 和全局权限放宽的非默认地位。
+- `scripts/scaffold-consumer-profile.mjs` 现在拒绝把 `--write` 输出写入当前
+  公共仓库 checkout，避免误把私有 consumer profile 初始化到公开分发面。
+- 统一 Codex 与 OpenCode consumer setup 的 public/private 边界，明确 `.codex/`
+  runtime artifact、私有规则、缺失工具 fallback 和全局权限放宽的非默认地位。
+- `scripts/validate-workflow-fixtures.mjs` 现在校验 workflow examples 和
+  disposable fixture 保留 public-safe / redacted 边界声明，防止 release
+  evaluation 示例漂移成真实 consumer 细节。
+- `scripts/validate-docs.mjs` 现在校验 showcase public-safe / private-context
+  边界，并由 regression 覆盖，防止展示页漂移成真实 consumer 或 portal 叙事。
+- 仓库文档索引现在明确 `docs/showcase/` 和 `docs/examples/` 是 public-safe
+  navigation aids，而不是 public portal 或真实 consumer 案例库，并由
+  `validate-docs` / regression 固定。
+- `CLAUDE.md` 与项目优化计划中的 `validate-docs` 覆盖面说明现在同步包含
+  docs index navigation 与 showcase public-safety 合约，并由 regression 防漂移。
+- `docs/growth/` 现在明确增长指标只是本地公开口径，不是 public portal、
+  付费 marketplace、自动发布 workflow 或 owner-only analytics 发布面；
+  `validate-docs` / regression 已固定相关隐私和 exact-tag 边界。
+- `docs/assets/` 现在明确视觉资产和 demo capture 指南不是 public portal、
+  托管 demo、自动推广 workflow 或 release evidence 替代品；`validate-docs` /
+  regression 已固定手动动作、录屏证据、skipped-check 和隐私边界。
+- `docs/marketplace/portal-information-architecture.md` 现在明确自身不是已实现
+  public portal、托管 marketplace、frontend app、部署计划或 `v3.0.0` 激活证据；
+  `validate-docs` / regression 已固定 deferred portal IA 边界。
+- `docs/marketplace/v3-readiness-evidence.md` 现在明确 registry fixture 只能证明
+  generator 行为，不能作为生产多插件目录、`v3.0.0` 激活或安装路径迁移证据；
+  `validate-docs` / regression 已固定 v3 readiness evidence 边界。
+- `scripts/validate-packs.mjs` 现在固定 capability packs 的 documentation-only、
+  optional enhanced mode、required fallback mode 和 no runtime dynamic loading
+  边界，并由 regression 覆盖漂移场景。
+- `scripts/verify-agents.sh` 与 `scripts/verify-agents.ps1` 现在把
+  `.claude/agents/`、`docs/reports/` 和 `nova-plugin/docs/history/` 作为 retired
+  active-agent surface 硬边界，防止归档路径重新进入当前公开交付面。
+- `scripts/validate-docs.mjs` 现在固定 consumer profile 文档的公开/私有边界：
+  真实 profile、`.codex/` runtime 证据、私有配置和全局权限放宽建议不得漂移进
+  公开 setup 指南，并由 regression 覆盖。
+- Cursor、Gemini CLI 与 GitHub Copilot consumer setup 文档现在固定私有事实、
+  私有配置和缺失验证工具的权限绕过边界，`validate-docs` / regression 已覆盖。
+- Java backend 与 frontend consumer 脱敏模板的 placeholder、私有事实、
+  destructive/public portal 边界现在由 `validate-docs` / regression 固定。
+- Prompt template library 现在固定 public-safe placeholders、私有事实、
+  HTML 派生制品 source-of-truth、离线输出和 workbench tidy 边界。
+- Workflow evidence 文档中的 source-controlled checks、verification evidence
+  和 routing guardrail 边界现在由 `validate-docs` / regression 固定，避免漂移成
+  新 runtime、CI 层、跳过检查算 passed 或默认权限绕过建议。
+- Release evidence 文档中的 exact tag、skipped-check replacement、isolated
+  install smoke、manual workflow evidence 和缺证据不得 promote 规则现在由
+  `validate-docs` / regression 固定。
+- Maintainer troubleshooting 与 GitHub security settings 文档现在明确缺失工具
+  或平台检查不能靠放宽权限掩盖，owner-only 安全细节不得进入公开文档，并由
+  `validate-docs` / regression 固定。
+- Public API compatibility 文档现在明确稳定 API 不包含 public portal、付费
+  marketplace、生产多插件目录、runtime dynamic loading 或私有 consumer 内容，
+  并由 `validate-docs` / regression 固定。
+- Marketplace trust policy 与 security review route 现在固定 repository-local
+  metadata、public-safe disclosure、私有漏洞上报和权限绕过边界，并由
+  `validate-docs` / regression 固定。
+- Registry author workflow 与 compatibility matrix 现在固定当前单插件范围、
+  fixture-only 证据、optional enhanced tools、public-safe evidence 和权限边界，
+  并由 `validate-docs` / regression 固定。
+- CONTRIBUTING 与 PR template 现在固定公开贡献边界、私有事实脱敏、deferred
+  capability 和缺失工具不得靠权限放宽掩盖的规则，并由 `validate-docs` /
+  regression 固定。
+- GitHub issue templates 现在固定 public-safe bug / feature / showcase intake、
+  私有漏洞上报、deferred capability、缺失检查和 no permission bypass 边界，
+  并由 `validate-docs` / regression 固定。
 - `scripts/validate-plugin-install.mjs` 现在默认拒绝 mutating install/update；
   `--dry-run` 只打印计划步骤，实际 user-scope 安装 smoke 必须显式传入
   `--accept-user-scope-mutation` 或 `--yes`，CI 和 release workflow 已同步。

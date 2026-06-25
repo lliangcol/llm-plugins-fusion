@@ -7,6 +7,17 @@ This checklist covers repository settings that cannot be fully enforced from
 tracked source files. Maintainers should verify these settings in GitHub before
 promoting a release.
 
+## Manual Settings Boundary
+
+- This document is an owner-verified checklist, not a public portal, automated
+  settings auditor, or substitute for GitHub UI evidence.
+- Keep raw CodeQL alerts, secret scanning hits, dependency advisory details,
+  repository rule screenshots, tokens, and owner-only security settings out of
+  public docs and issue threads.
+- Do not raise default Actions token permissions or make mutating install smoke
+  a default required check just to satisfy this checklist; use least-privilege
+  workflow permissions and isolated release evidence.
+
 ## Required Repository Settings
 
 | Area | Required setting |
@@ -33,6 +44,7 @@ Validate Claude Compatibility
 Plugin Install Dry Run
 Lint Frontmatter
 Validate Hooks
+Validate GitHub Workflows
 Validate Runtime Smoke
 Validate Surface Budget
 Scan Distribution Risk

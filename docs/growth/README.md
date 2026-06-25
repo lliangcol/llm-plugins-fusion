@@ -7,7 +7,8 @@ This page defines the first-round growth measurement package for
 `llm-plugins-fusion`. It is a local repository deliverable only; GitHub Topics,
 Discussions, social preview uploads, real issue creation, and external posting
 remain maintainer-owned manual actions unless performed through the GitHub UI or
-an authenticated workflow.
+an authenticated workflow. It is not a public portal, paid marketplace,
+automated posting workflow, or owner-only analytics publication surface.
 
 ## Metric Definitions
 

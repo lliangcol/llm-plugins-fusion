@@ -79,6 +79,18 @@ The three Codex commands are advanced paths. They require a locally callable
 Codex CLI and Bash for the skill scripts. The ordinary five-stage workflow does
 not require Codex CLI.
 
+Codex boundaries:
+
+- `/codex-review-only` and `/codex-verify-only` may write review / verify
+  artifacts, but should not modify project code.
+- Only `/codex-review-fix` may drive project edits through the
+  review -> fix -> verify loop.
+- Runtime artifacts under `.codex/` are local evidence only and must not be
+  committed.
+- If Codex CLI or Bash is unavailable, fall back to the ordinary `/review` ->
+  `/implement-plan` workflow; do not loosen global permissions to hide missing
+  prerequisites.
+
 ---
 
 ## 2. Category 1: Explore (Understand only)

@@ -7,6 +7,18 @@ Use this route for marketplace or plugin changes that affect execution risk,
 data exposure, credentials, dependency behavior, hooks, Bash scripts, or
 write-capable commands.
 
+## Public Review Boundary
+
+- Keep security review notes public-safe: do not paste private vulnerability
+  reports, exploit details, credentials, tokens, private endpoints, repository
+  addresses, local paths, customer data, or private knowledge-base content into
+  public docs, issues, PR comments, or release artifacts.
+- Use [SECURITY.md](../../SECURITY.md) for private vulnerability reports and
+  keep public review output to sanitized risk category, affected surface,
+  validation, skipped checks, and residual risk.
+- Broad permission-bypass guidance must remain scoped, negative, or explicitly
+  maintainer-approved; do not turn it into a default operating mode.
+
 ## Trigger Conditions
 
 Run the security review path when a change touches any of these areas:
@@ -44,7 +56,13 @@ Run the security review path when a change touches any of these areas:
 | Hooks | `node scripts/validate-hooks.mjs`, `bash -n` for both hook scripts when Bash is available |
 | Documentation | `node scripts/validate-docs.mjs` |
 | Prompt or workflow surface size | `node scripts/validate-surface-budget.mjs` |
-| Broad workflow changes | `node scripts/validate-all.mjs`, `node scripts/scan-distribution-risk.mjs`, `git diff --check` |
+| Broad workflow changes | `node scripts/validate-github-workflows.mjs`, `node scripts/validate-all.mjs`, `node scripts/scan-distribution-risk.mjs`, `git diff --check` |
+
+Changes under `.github/workflows/**` must include
+`node scripts/validate-github-workflows.mjs`; that validator covers
+least-privilege token scope, workflow file inventory, required-check
+docs/read-only print output synchronization, and isolated mutating install
+smoke boundaries.
 
 ## Reviewer Output
 

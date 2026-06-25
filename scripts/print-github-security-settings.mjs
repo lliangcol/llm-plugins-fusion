@@ -15,6 +15,7 @@ const requiredChecks = [
   'Plugin Install Dry Run',
   'Lint Frontmatter',
   'Validate Hooks',
+  'Validate GitHub Workflows',
   'Validate Runtime Smoke',
   'Validate Surface Budget',
   'Scan Distribution Risk',

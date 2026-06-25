@@ -17,11 +17,12 @@ Explore -> Plan -> Review -> Implement -> Finalize
 ```
 
 Marketplace metadata is the current installation and distribution mechanism.
-Do not describe this repository as a mature multi-plugin ecosystem unless
-future evidence and roadmap updates say so. Public docs may include generic
-workflow guidance, consumer profile contracts, redacted examples, prompt
-templates, and capability pack guidance. Real consumer profiles belong in the
-consumer project's own `AGENTS.md`, `CLAUDE.md`, `.claude/`, or private docs.
+Do not describe this repository as a mature multi-plugin ecosystem or a public
+portal unless future evidence and roadmap updates say so. Public docs may
+include generic workflow guidance, consumer profile contracts, redacted
+examples, prompt templates, and capability pack guidance. Real consumer
+profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
+`.claude/`, or private docs.
 
 ## Quick Facts
 
@@ -46,9 +47,10 @@ consumer project's own `AGENTS.md`, `CLAUDE.md`, `.claude/`, or private docs.
 - Release evidence template: `docs/releases/release-evidence-template.md`
 - Maintainer npm shortcuts: `package.json` (`doctor`, `validate`,
   `test`, `lint`, `ci:quick`, `ci:full`, `validate:maintainer`,
-  `validate:docs`, `validate:schemas`, `validate:runtime`,
-  `validate:regression`, `validate:surface`, `validate:workflow`,
-  `scan:distribution`, `scaffold:consumer`; no `check`/`build` script names)
+  `validate:docs`, `validate:schemas`, `validate:github-workflows`,
+  `validate:runtime`, `validate:regression`, `validate:surface`,
+  `validate:workflow`, `scan:distribution`, `scaffold:consumer`; no
+  `check`/`build` script names)
 - Repository validation scripts require Node.js 20+. Hook shell syntax and
   runtime smoke checks require Bash; Windows without Bash may warning-skip
   local Bash-dependent checks, while CI/Linux must run them.
@@ -90,7 +92,11 @@ llm-plugins-fusion/
 |   `-- marketplace.metadata.json
 |-- .github/workflows/
 |   |-- ci.yml
-|   `-- release.yml
+|   |-- codeql.yml
+|   |-- dependency-review.yml
+|   |-- plugin-install-smoke.yml
+|   |-- release.yml
+|   `-- reusable-node-check.yml
 |-- docs/
 |   |-- README.md
 |   |-- agents/
@@ -141,6 +147,7 @@ node scripts/lint-frontmatter.mjs
 bash scripts/verify-agents.sh
 node scripts/validate-packs.mjs
 node scripts/validate-hooks.mjs
+node scripts/validate-github-workflows.mjs
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 node scripts/validate-runtime-smoke.mjs
@@ -163,6 +170,7 @@ npm run validate
 npm run validate:maintainer
 npm run validate:docs
 npm run validate:schemas
+npm run validate:github-workflows
 npm run validate:runtime
 npm run validate:regression
 npm run validate:surface
@@ -299,6 +307,10 @@ Capability packs are exactly: `java`, `security`, `dependency`, `docs`,
 
 Active agents live in `nova-plugin/agents/`. Capability packs live in
 `nova-plugin/packs/` and must document both enhanced mode and fallback mode.
+`node scripts/validate-packs.mjs` also guards the documentation-only pack
+boundary: packs are routing and validation guidance, optional enhanced tools
+are not hard dependencies, fallback mode remains required, and runtime dynamic
+loading is not current behavior.
 
 If the active agent or pack set changes, update the files, verification scripts,
 routing docs, migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
@@ -396,14 +408,22 @@ broad workflow, release, metadata, or cross-layer changes.
 | --- | --- | --- |
 | Memory and docs | `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/**`, `nova-plugin/docs/**` | `node scripts/validate-docs.mjs` |
 | Skills and commands | `nova-plugin/commands/**`, `nova-plugin/skills/**` | `node scripts/lint-frontmatter.mjs` |
-| Guardrails | `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, distributed Bash scripts | `node scripts/validate-hooks.mjs`, hook `bash -n`, changed script validation, `node scripts/validate-surface-budget.mjs` when prompt surfaces change, `node scripts/validate-regression.mjs` when validator behavior changes |
+| Guardrails | `.github/workflows/**`, `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, distributed Bash scripts | `node scripts/validate-github-workflows.mjs`, `node scripts/validate-hooks.mjs`, hook `bash -n`, changed script validation, `node scripts/validate-surface-budget.mjs` when prompt surfaces change, `node scripts/validate-regression.mjs` when validator behavior changes |
 | Delegation | `nova-plugin/agents/**`, `nova-plugin/packs/**`, `docs/agents/**` | `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`, plus `node scripts/validate-packs.mjs` |
 | Distribution | `.claude-plugin/registry.source.json`, `nova-plugin/.claude-plugin/plugin.json`, generated marketplace outputs | `node scripts/generate-registry.mjs --write`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs`, `node scripts/validate-claude-compat.mjs`; `node scripts/validate-plugin-install.mjs` when install smoke is required |
 
 `node scripts/validate-docs.mjs` validates Markdown links and anchors, command
 doc coverage and stage placement, version/date sync, inventory counts, current
-security support range, stale active planning labels, and non-archived report
-status.
+project positioning contracts, exact-tag release promotion boundaries,
+maintainer diagnostic and security setting semantics, public API compatibility
+contracts, marketplace trust, author workflow, compatibility, and security
+review contracts, contribution and issue intake contracts, docs index
+navigation contracts, consumer profile privacy contracts, prompt template
+privacy contracts, workflow evidence contracts, showcase public-safety
+contracts, growth metrics privacy contracts, assets capture privacy contracts,
+deferred portal IA contracts, v3 readiness evidence contracts, security support
+range, stale active planning labels, and
+non-archived report status.
 
 Prompt-surface budget checks are a bloat guard, not a quality metric. Run
 `node scripts/validate-surface-budget.mjs` when command, skill, agent, or pack
@@ -411,13 +431,14 @@ surfaces change.
 
 Current CI includes verify-agents, validate-packs, validate-schemas,
 validate-registry-fixtures, validate-claude-compat, plugin install dry run,
-lint-frontmatter, validate-hooks, hook `bash -n`, runtime smoke, surface budget,
+lint-frontmatter, validate-hooks, GitHub workflow permission, inventory, and
+required-check validation, hook `bash -n`, runtime smoke, surface budget,
 distribution risk scan, validation regression checks, workflow fixture
 validation, validate-docs, CodeQL, and a Windows non-Bash smoke job for schemas,
-docs, frontmatter, and `scripts/verify-agents.ps1`. Repeated Node jobs route
-through `.github/workflows/reusable-node-check.yml`. Real user-scope plugin
-install smoke is isolated in `.github/workflows/plugin-install-smoke.yml` and
-is not a default merge or release blocker.
+docs, frontmatter, and `scripts/verify-agents.ps1`. Repeated Node jobs route through
+`.github/workflows/reusable-node-check.yml`. Real user-scope plugin install
+smoke is isolated in `.github/workflows/plugin-install-smoke.yml` and is not a
+default merge or release blocker.
 
 ## Do Not Edit
 

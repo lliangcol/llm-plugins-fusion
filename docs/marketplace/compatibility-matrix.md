@@ -8,6 +8,22 @@ entries. It is the compatibility evidence target referenced by
 `.claude-plugin/registry.source.json` and generated into
 `docs/marketplace/catalog.md`.
 
+## Evidence Scope Boundary
+
+This matrix records compatibility evidence for the current `nova-plugin` entry
+and registry fixture behavior. It is not a hosted public portal, paid
+marketplace, runtime dynamic loading contract, or proof that production
+multi-plugin migration is active.
+
+Optional enhanced tools remain optional. If a tool is unavailable, record the
+check as unavailable, skipped, or pending with replacement evidence instead of
+broadening permissions or treating the missing tool as passed.
+
+Compatibility evidence must stay public-safe: cite sanitized docs, scripts, and
+check outputs, not private consumer paths, endpoints, credentials, repository
+addresses, runtime flags, business rules, customer data, or private
+knowledge-base content.
+
 ## Tooling Prerequisites
 
 | Surface | Requirement | Evidence | Notes |
@@ -16,6 +32,7 @@ entries. It is the compatibility evidence target referenced by
 | Nova commands and skills | 21 commands and 21 one-to-one `nova-*` skills | `node scripts/lint-frontmatter.mjs` | Command docs remain covered by `node scripts/validate-docs.mjs`. |
 | Codex review/fix/verify loop | Codex CLI plus Bash for distributed skill scripts | `nova-plugin/docs/commands/codex/`, `nova-plugin/skills/nova-codex-review-fix/scripts/`, and `node scripts/validate-runtime-smoke.mjs` | Codex runtime artifacts under `.codex/` are never committed. Review/verify runs record runtime environment artifacts with CLI paths and versions. If Codex CLI is unavailable, use the ordinary `/review` -> `/implement-plan` path instead. |
 | Repository validation | Node.js 20+ | `node scripts/validate-all.mjs`, including `node scripts/validate-runtime-smoke.mjs` and `node scripts/scan-distribution-risk.mjs` | Validation scripts use built-in Node.js APIs and repository files. |
+| GitHub workflow contracts | Node.js 20+ | `node scripts/validate-github-workflows.mjs` | Covers least-privilege workflow token scope, `.github/workflows/` inventory, required-check docs/read-only print output synchronization, and isolated mutating install smoke boundaries. |
 | Prompt-surface budgets | Node.js 20+ | `node scripts/validate-surface-budget.mjs` | Budget checks are a prompt bloat guard, not a feature-quality metric. |
 | Hook syntax checks | Bash on PATH | `bash -n nova-plugin/hooks/scripts/pre-write-check.sh` and `bash -n nova-plugin/hooks/scripts/post-audit-log.sh` | Windows without Bash may warning-skip local syntax checks; CI/Linux must run them. |
 | Windows maintenance smoke | Windows runner with Node.js 20 and PowerShell | CI `windows-node-smoke` job | Runs non-Bash checks only: schemas, docs, frontmatter, and `scripts/verify-agents.ps1`. Bash-dependent checks remain CI/Linux evidence. |
@@ -36,6 +53,9 @@ entries. It is the compatibility evidence target referenced by
   as command and skill inventories.
 - Validation evidence should name the script or check suite reviewers can run
   locally.
+- GitHub workflow evidence should include `node scripts/validate-github-workflows.mjs`
+  when CI/release workflows, workflow inventory, or required-check guidance
+  changes.
 - Surface budget evidence prevents prompt growth from becoming invisible; it
   does not prove workflow output quality.
 - Release evidence must include distribution risk scan output before public

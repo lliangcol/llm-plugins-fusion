@@ -26,6 +26,17 @@ location or reference them from project-local instructions.
 3. Keep consumer-specific commands and validation in the private project profile.
 4. Record skipped checks honestly when Gemini cannot run the selected validator.
 
+## Public-Safe Boundaries
+
+- Keep Gemini skill or context files that contain consumer facts in the
+  private consumer project.
+- Do not copy private paths, repository addresses, endpoints, credentials,
+  runtime flags, business rules, private knowledge base content, or
+  consumer-specific commands into public templates or examples.
+- If Gemini CLI cannot run the selected validator, report it as skipped or not
+  run with the reason; do not broaden global tool permissions, shell access, or
+  sandbox settings to hide the missing runtime.
+
 ## Fallback Notes
 
 - Gemini CLI command names may differ from Claude slash commands; use skill names as the stable contract.

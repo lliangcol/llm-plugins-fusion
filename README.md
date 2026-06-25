@@ -106,7 +106,7 @@ release tag 作为稳定发布证据。
 node scripts/validate-all.mjs
 ```
 
-该入口覆盖 schema、registry fixtures、Claude 兼容性、command / skill frontmatter、core agent 集合、capability pack 结构、hooks、Codex runtime smoke、分发风险扫描、核心回归检查、workflow fixture 合约、Markdown 链接、命令文档覆盖和生成 catalog 漂移。
+该入口覆盖 schema、registry fixtures、Claude 兼容性、command / skill frontmatter、core agent 集合、capability pack 结构、hooks、GitHub workflow 权限、库存和 required-check 合约、Codex runtime smoke、分发风险扫描、核心回归检查、workflow fixture 合约、Markdown 链接、命令文档覆盖和生成 catalog 漂移。
 
 维护者发布前质量门是：
 
@@ -302,6 +302,7 @@ npm run validate
 npm run validate:maintainer
 npm run validate:docs
 npm run validate:schemas
+npm run validate:github-workflows
 npm run validate:runtime
 npm run validate:regression
 npm run validate:surface
@@ -319,6 +320,7 @@ node scripts/validate-claude-compat.mjs
 node scripts/lint-frontmatter.mjs
 node scripts/validate-packs.mjs
 node scripts/validate-hooks.mjs
+node scripts/validate-github-workflows.mjs
 node scripts/validate-runtime-smoke.mjs
 node scripts/scan-distribution-risk.mjs
 node scripts/validate-regression.mjs

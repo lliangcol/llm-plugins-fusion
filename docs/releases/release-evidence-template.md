@@ -48,6 +48,7 @@ Operating system:
 ```text
 node scripts/generate-registry.mjs --write:
 node scripts/validate-all.mjs:
+node scripts/validate-github-workflows.mjs:
 node scripts/validate-runtime-smoke.mjs:
 node scripts/validate-surface-budget.mjs:
 node scripts/scan-distribution-risk.mjs:

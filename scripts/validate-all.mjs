@@ -274,6 +274,7 @@ async function main() {
     agentTask,
     nodeTask('validate packs', 'scripts/validate-packs.mjs'),
     nodeTask('validate hooks', 'scripts/validate-hooks.mjs'),
+    nodeTask('validate GitHub workflows', 'scripts/validate-github-workflows.mjs'),
     ...hookSyntaxTasks,
   ]);
 

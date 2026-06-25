@@ -72,6 +72,13 @@
 
 Codex 三个命令是高级路径，需要本机可调用 Codex CLI，并需要 Bash 执行 skill 脚本。普通五阶段 workflow 不需要 Codex CLI。
 
+Codex 边界：
+
+- `/codex-review-only` 和 `/codex-verify-only` 可以写 review / verify artifact，但不应修改项目代码。
+- 只有 `/codex-review-fix` 可以在 review -> fix -> verify 闭环中驱动项目文件修改。
+- `.codex/` 下的运行产物只作为本地证据，不提交到仓库。
+- 如果 Codex CLI 或 Bash 不可用，先回退到普通 `/review` -> `/implement-plan` workflow；不要通过放宽全局权限来掩盖前置条件缺失。
+
 ---
 
 ## 2. 命令类型一：Explore（探索 / 理解）

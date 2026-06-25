@@ -8,6 +8,19 @@ the current `nova-plugin/` installation path. It keeps generated marketplace
 files derived from source files and gives reviewers concrete evidence for each
 entry.
 
+## Current Scope Boundary
+
+This workflow documents registry mechanics for the current `nova-plugin` entry
+and reviewed future entries. It is not a public portal, paid marketplace,
+production multi-plugin directory, or reason to move `nova-plugin/`.
+Multi-entry fixtures prove generator behavior only; adding a real production
+plugin requires roadmap evidence, release evidence, and maintainer approval.
+
+Public registry metadata and review notes must stay generic and redacted. Do
+not include private consumer names, endpoints, credentials, repository
+addresses, local paths, runtime flags, business rules, or private
+knowledge-base content.
+
 ## Source Files
 
 | Source | Owner | Purpose |
@@ -53,6 +66,13 @@ For broad changes, run the full suite:
 node scripts/validate-all.mjs
 git diff --check
 ```
+
+Marketplace PRs that change CI/release workflows or required-check guidance
+must also run `node scripts/validate-github-workflows.mjs`. This proves
+workflow token scope, workflow file inventory, required-check docs/read-only
+print output synchronization, and isolated mutating install smoke boundaries.
+Do not loosen workflow token scope to compensate for missing tools or
+unavailable validators.
 
 ## Scaffold Workflow
 

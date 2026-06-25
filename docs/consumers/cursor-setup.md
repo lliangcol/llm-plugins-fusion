@@ -24,8 +24,18 @@ nova-plugin/skills/nova-finalize-work/SKILL.md
 3. Keep project-specific rules in the consumer repository, not this public repo.
 4. Run the validation command named by the selected skill or explain why it is unavailable.
 
+## Public-Safe Boundaries
+
+- Keep Cursor rules and project-specific workflow details in the consumer
+  repository.
+- Do not copy private paths, repository addresses, endpoints, credentials,
+  runtime flags, business rules, private knowledge base content, or
+  consumer-specific commands into public templates or examples.
+- If Cursor cannot run a selected validator, report it as skipped or not run
+  with the reason; do not loosen global permissions or agent sandbox settings
+  to bypass the missing tool.
+
 ## Fallback Notes
 
 - Cursor may not understand Claude slash commands; refer to skill names directly.
 - Claude Code hooks and plugin marketplace install are not part of Cursor setup.
-- Do not copy private paths, endpoints, credentials, or consumer-specific commands into public templates.

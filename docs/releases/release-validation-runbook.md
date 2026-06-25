@@ -22,6 +22,7 @@ A snapshot is promotable only when all required evidence exists.
 | Generated marketplace outputs | Automated | `node scripts/generate-registry.mjs` reports no drift, or `--write` was run before validation. |
 | Formatting | Automated | `git diff --check` passes. |
 | Prompt-surface budget | Automated | `node scripts/validate-surface-budget.mjs` passes, and every allowlist entry has a reason and split plan. |
+| GitHub workflow contracts | Automated | `node scripts/validate-github-workflows.mjs` passes; this proves workflow permissions, workflow inventory, and required-check list synchronization. |
 | Distribution risk | Automated | `node scripts/scan-distribution-risk.mjs` passes with no active findings. |
 | Workflow fixture contract | Automated | `node scripts/validate-workflow-fixtures.mjs` passes; this proves fixture integrity, not slash-command output quality. |
 | Windows non-Bash smoke | Automated / CI | Schema, docs, frontmatter, and PowerShell agent verification pass on Windows without relying on Bash. |
@@ -71,6 +72,7 @@ so their outputs can be pasted into release evidence:
 NODE_BIN="${NODE_BIN:-node}"
 command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
 "$NODE_BIN" scripts/validate-runtime-smoke.mjs </dev/null
+"$NODE_BIN" scripts/validate-github-workflows.mjs </dev/null
 "$NODE_BIN" scripts/validate-surface-budget.mjs </dev/null
 "$NODE_BIN" scripts/scan-distribution-risk.mjs </dev/null
 "$NODE_BIN" scripts/validate-regression.mjs </dev/null
@@ -297,6 +299,7 @@ PLUGIN_VERSION="${PLUGIN_VERSION%$'\r'}"
 "$NODE_BIN" scripts/validate-all.mjs </dev/null
 git diff --check
 "$NODE_BIN" scripts/generate-registry.mjs </dev/null
+"$NODE_BIN" scripts/validate-github-workflows.mjs </dev/null
 "$NODE_BIN" scripts/validate-surface-budget.mjs </dev/null
 "$NODE_BIN" scripts/validate-workflow-fixtures.mjs </dev/null
 "$NODE_BIN" scripts/scaffold-consumer-profile.mjs --type java-backend --out ../consumer-smoke </dev/null

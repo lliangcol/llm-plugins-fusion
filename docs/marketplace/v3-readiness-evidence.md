@@ -16,6 +16,10 @@ The current priority is workflow framework + consumer profile templates. Public
 docs may add generic profile contracts, redacted Java backend/frontend examples,
 and pack guidance while `v3.0.0` remains deferred.
 
+Registry fixtures may prove generator behavior, but they are not production
+plugin directories, `v3.0.0` activation evidence, or a reason to move install
+paths.
+
 ## Current Decision
 
 | Area | Current evidence | Decision |

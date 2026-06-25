@@ -42,10 +42,21 @@ Primary optimization sequence:
   `/finalize-work`.
 - Existing validation covers schemas, generated registry output drift, registry
   fixtures, Claude compatibility, command/skill frontmatter, active agents,
-  packs, hooks configuration, runtime smoke, distribution risk scanning,
-  regression checks for key validation contracts, documentation links, version
-  references, current minor support range, stale active planning labels, prompt
-  surface budgets, and active documentation inventory counts.
+  retired active-agent surface guards, packs, pack documentation-only
+  enhanced/fallback boundaries, hooks configuration, runtime smoke,
+  distribution risk scanning, regression checks for key validation contracts,
+  documentation links, version references, current minor support range, stale
+  active planning labels, prompt surface budgets, active documentation
+  inventory counts, GitHub workflow permission, inventory, and required-check
+  contracts, project positioning contracts, exact-tag release promotion
+  boundaries, maintainer diagnostic and
+  security setting semantics, public API compatibility contracts, marketplace
+  trust, author workflow, compatibility, and security review contracts,
+  contribution and issue intake contracts, docs index navigation contracts,
+  consumer profile privacy contracts, prompt template privacy contracts,
+  workflow evidence contracts, showcase public-safety contracts, growth
+  metrics privacy contracts, assets capture privacy contracts, deferred portal
+  IA contracts, and v3 readiness evidence contracts.
 - On Windows without Bash, `node scripts/validate-all.mjs` may report
   skipped Bash-dependent checks for local hook shell syntax and runtime smoke.
   CI/Linux must still run the Bash gates before release or promotion.
@@ -161,12 +172,24 @@ docs.
 
 Existing Coverage:
 
-- `validate-docs` checks active links, command doc coverage, version references,
-  current minor support range, stale active planning labels, and active
-  documentation inventory counts.
+- `validate-docs` checks active links, command doc coverage, version
+  references, current minor support range, stale active planning labels, active
+  documentation inventory counts, project positioning contracts, exact-tag
+  release promotion boundaries, maintainer diagnostic and security setting
+  semantics, public API compatibility contracts, marketplace trust, author
+  workflow, compatibility, and security review contracts, contribution and
+  issue intake contracts, docs index navigation contracts, consumer profile
+  privacy contracts, prompt template privacy contracts, workflow evidence
+  contracts, showcase public-safety contracts, growth metrics privacy
+  contracts, assets capture privacy contracts, deferred portal IA contracts,
+  and v3 readiness evidence contracts.
+- `validate-github-workflows` checks GitHub workflow token scope, workflow file
+  inventory, required-check docs and print output, forbids `pull_request_target`,
+  keeps release write permission scoped to the release job, and keeps mutating
+  plugin install smoke isolated from default PR/push checks.
 - `validate-schemas` checks generated registry outputs for drift.
 - `lint-frontmatter`, `verify-agents`, and `validate-packs` already validate
-  several structural counts.
+  several structural counts and pack enhanced/fallback routing boundaries.
 
 Completed Work:
 
@@ -288,6 +311,8 @@ Completed Work:
 - Added `npm run validate:maintainer` for default validation, generated
   registry drift, and `git diff --check`.
 - Added `npm run validate:workflow` for public-safe workflow fixture integrity.
+- Added `npm run validate:github-workflows` for least-privilege GitHub Actions
+  workflow contracts.
 - Made plugin install smoke require explicit user-scope mutation confirmation.
 - Documented source-controlled workflow checks as a design boundary instead of
   adding a new runtime prematurely.
@@ -345,6 +370,7 @@ For broad changes:
 ```bash
 node scripts/generate-registry.mjs --write
 node scripts/validate-all.mjs
+node scripts/validate-github-workflows.mjs
 node scripts/validate-runtime-smoke.mjs
 node scripts/scan-distribution-risk.mjs
 node scripts/validate-regression.mjs

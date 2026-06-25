@@ -17,6 +17,7 @@
     "validate:maintainer": "node scripts/validate-maintainer.mjs",
     "validate:schemas": "node scripts/validate-schemas.mjs",
     "validate:docs": "node scripts/validate-docs.mjs",
+    "validate:github-workflows": "node scripts/validate-github-workflows.mjs",
     "validate:runtime": "node scripts/validate-runtime-smoke.mjs",
     "validate:regression": "node scripts/validate-regression.mjs",
     "validate:surface": "node scripts/validate-surface-budget.mjs",

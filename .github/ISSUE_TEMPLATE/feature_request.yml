@@ -8,6 +8,8 @@ body:
         Use this form for feature proposals that can be discussed publicly. Keep examples generic and redacted.
 
         Do not include credentials, private endpoints, private repository addresses, local machine paths, consumer-specific business rules, or private knowledge-base content.
+
+        Do not present public portal, paid marketplace, production multi-plugin directory, runtime dynamic loading, or broad domain-command expansion as current capability unless roadmap and release evidence explicitly activate it. Do not propose broadening global permissions, sandbox settings, or workflow token scope as a workaround for missing tools or validators.
   - type: dropdown
     id: area
     attributes:
@@ -56,4 +58,6 @@ body:
       label: Public-safety check
       options:
         - label: I have kept this request free of credentials, private endpoints, private repository addresses, local machine paths, consumer-specific facts, and private knowledge-base content.
+          required: true
+        - label: I have not framed deferred portal, marketplace, multi-plugin, runtime loading, or broad domain-command work as current capability.
           required: true

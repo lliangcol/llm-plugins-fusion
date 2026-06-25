@@ -3,10 +3,10 @@
 This directory contains public-safe examples for applying `nova-plugin` to
 consumer projects. Examples must use fictional or generic scenarios only.
 
-Do not add examples that reveal a closed-source consumer's real name, path,
-private identifiers, private repository addresses, configuration values, network
-endpoints, runtime flags, private knowledge base content, or real project
-workflow details.
+Do not add examples that reveal a closed-source consumer's real name, private
+project names, private paths, private identifiers, private repository addresses,
+configuration values, network endpoints, credentials, runtime flags, private
+knowledge base content, or real project workflow details.
 
 ## Examples
 

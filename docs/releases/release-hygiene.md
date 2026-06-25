@@ -45,6 +45,7 @@ For broad release or workflow changes:
 ```bash
 node scripts/generate-registry.mjs --write
 node scripts/validate-all.mjs
+node scripts/validate-github-workflows.mjs
 node scripts/validate-runtime-smoke.mjs
 node scripts/scan-distribution-risk.mjs
 node scripts/validate-regression.mjs
@@ -104,9 +105,11 @@ Before tagging, search for:
 
 `node scripts/validate-docs.mjs` also checks that `SECURITY.md` declares the
 current MINOR support range derived from `plugin.json`, and that active planning
-tables do not keep stale `v1.x` future-version labels. Historical changelog
-entries and explicitly archived paths are intentionally excluded from that
-stale-planning scan.
+tables do not keep stale `v1.x` future-version labels. It also checks the core
+project positioning, exact-tag promotion wording, and maintainer diagnostic
+warning semantics in active release-facing docs. Historical changelog entries
+and explicitly archived paths are
+intentionally excluded from that stale-planning scan.
 
 Use [Registry Author Workflow](../marketplace/registry-author-workflow.md),
 [Trust Policy](../marketplace/trust-policy.md), and

@@ -7,6 +7,11 @@ This directory holds public-safe visual assets and capture guidance for
 `llm-plugins-fusion`. Assets should help a first-time visitor understand the
 workflow quickly without exposing private consumer context.
 
+Visual assets are not a public portal, hosted demo site, automated promotion
+workflow, or substitute for release evidence. GitHub social preview upload,
+external posting, and real demo publication remain maintainer-owned manual
+actions unless performed through the GitHub UI or an authenticated workflow.
+
 ## Current Assets
 
 | Asset | Purpose |

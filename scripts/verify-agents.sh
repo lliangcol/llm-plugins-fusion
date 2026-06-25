@@ -5,8 +5,11 @@ repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
 active_dir="nova-plugin/agents"
-archive_dir=".claude/agents/archive"
-legacy_agents_dir=".claude/agents/archive/nova-plugin/agents"
+retired_surface_dirs=(
+  ".claude/agents"
+  "docs/reports"
+  "nova-plugin/docs/history"
+)
 
 expected=(
   architect.md
@@ -93,21 +96,15 @@ for file_name in "${actual[@]}"; do
 done
 
 echo
-echo "== Archive presence (should not be default-scanned) =="
-if [[ -d "$archive_dir" ]]; then
-  arch_count="$(find "$archive_dir" -type f -name "*.md" 2>/dev/null | wc -l | tr -d ' ')"
-  echo "Archive md files: $arch_count"
-  if [[ -d "$legacy_agents_dir" ]]; then
-    legacy_agent_count="$(find "$legacy_agents_dir" -type f -name "*.md" 2>/dev/null | wc -l | tr -d ' ')"
-    echo "Legacy agent files: $legacy_agent_count"
+echo "== Retired active-agent surfaces =="
+for retired_dir in "${retired_surface_dirs[@]}"; do
+  if [[ -e "$retired_dir" ]]; then
+    echo "ERROR: Retired active-agent path must not exist in the current public surface: $retired_dir" >&2
+    echo "Active agents live only in nova-plugin/agents; do not recreate retired archive/history paths without a documented policy change." >&2
+    exit 1
   fi
-  if [[ "$arch_count" != "0" ]]; then
-    echo "NOTE: Archive is outside nova-plugin/agents, but if your Claude Code scans .claude/**, tokens may still be high."
-    echo "Mitigation (if needed): rename \`.claude/agents/archive/\` to \`.claude/agents-archive/\` or move it outside the repo."
-  fi
-else
-  echo "Archive directory not found (ok)."
-fi
+  echo "- $retired_dir: absent (ok)"
+done
 
 echo
 echo "== Manual acceptance checklist =="

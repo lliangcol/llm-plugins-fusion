@@ -7,6 +7,21 @@ This repository is a workflow framework, so the public API is the set of stable
 commands, plugin identifiers, generated files, validation CLIs, and documented
 contracts that users and maintainers can reasonably depend on.
 
+## Non-API Boundaries
+
+The public API is intentionally narrow:
+
+- `nova-plugin` is the only production plugin; registry fixtures and generated
+  multi-entry examples are not stable production plugin directories.
+- Marketplace metadata and the generated catalog are install and distribution
+  artifacts, not a hosted public portal, paid marketplace, or frontend
+  application.
+- Capability packs are documentation contracts; they do not create runtime
+  dynamic pack or plugin loading.
+- Consumer-specific profile content, endpoints, credentials, repository
+  addresses, local paths, runtime flags, business rules, and private
+  knowledge-base content are not part of the public API.
+
 ## Stable Install And Plugin Identifiers
 
 ```text

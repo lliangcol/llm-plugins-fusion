@@ -6,7 +6,7 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { dirname, isAbsolute, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -98,6 +98,11 @@ function targetPath(outDir, target) {
   return resolve(outDir, target);
 }
 
+function isInsideRepository(path) {
+  const rel = relative(root, path);
+  return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel));
+}
+
 function buildContent(typeConfig) {
   const template = readFileSync(resolve(root, typeConfig.source), 'utf8').trimEnd();
   return `# ${typeConfig.title}
@@ -139,6 +144,13 @@ function main(argv) {
     console.log('');
     console.log('Use --write to create the file.');
     return 0;
+  }
+
+  if (isInsideRepository(outputPath)) {
+    fail(
+      'refusing to write a consumer profile inside the public llm-plugins-fusion repository; '
+      + 'choose a consumer-owned workspace outside this checkout',
+    );
   }
 
   if (existsSync(outputPath) && !options.force) {

@@ -8,6 +8,8 @@ body:
         Use this form for public-safe showcase and growth feedback. Redacted examples, generic workflow observations, and ecosystem suggestions are welcome.
 
         Do not include credentials, private endpoints, private repository addresses, local machine paths, consumer names, business rules, or private knowledge-base content.
+
+        Do not submit real consumer case studies, private screenshots, private analytics, public portal claims, paid marketplace claims, automated promotion requests, or owner-only data. Keep evidence sanitized and generic.
   - type: dropdown
     id: feedback-type
     attributes:
@@ -52,4 +54,6 @@ body:
       label: Public-safety check
       options:
         - label: I have removed credentials, private endpoints, private repository addresses, local machine paths, consumer names, business rules, and private knowledge-base content.
+          required: true
+        - label: I have not included real consumer case-study details, private screenshots, private analytics, or public portal / paid marketplace claims.
           required: true

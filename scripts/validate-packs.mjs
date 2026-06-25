@@ -17,6 +17,7 @@ const root = resolve(__dir, '..');
 
 const packsRoot = resolve(root, 'nova-plugin/packs');
 const packsIndex = resolve(packsRoot, 'README.md');
+const agentRoutingDoc = resolve(root, 'docs/agents/ROUTING.md');
 const routingDoc = resolve(root, 'docs/agents/PLUGIN_AWARE_ROUTING.md');
 
 const expectedPacks = [
@@ -77,6 +78,27 @@ function extractRoutingPackRefs(src) {
   return [...refs].sort();
 }
 
+function extractSectionBody(src, section) {
+  const heading = new RegExp(`^## ${section}\\s*$`, 'm');
+  const match = heading.exec(src);
+  if (!match) return '';
+  const bodyStart = match.index + match[0].length;
+  const nextHeading = /^##\s+/m.exec(src.slice(bodyStart));
+  const bodyEnd = nextHeading ? bodyStart + nextHeading.index : src.length;
+  return src.slice(bodyStart, bodyEnd).trim();
+}
+
+function expectContentRegex(file, pattern, label) {
+  if (!existsSync(file)) {
+    record(rel(file), `missing ${label}`);
+    return;
+  }
+  const src = readFileSync(file, 'utf8');
+  if (!pattern.test(src)) {
+    record(rel(file), `missing ${label}`);
+  }
+}
+
 if (!existsSync(packsIndex)) {
   record('nova-plugin/packs/README.md', 'missing packs index');
 }
@@ -115,6 +137,12 @@ if (!existsSync(packsRoot)) {
         record(rel(readme), `missing required section "## ${section}"`);
       }
     }
+    for (const section of ['Enhanced Mode', 'Fallback Mode']) {
+      const body = extractSectionBody(src, section);
+      if (!body) {
+        record(rel(readme), `"## ${section}" must describe the mode, not just declare a heading`);
+      }
+    }
   }
 }
 
@@ -127,6 +155,37 @@ if (existsSync(packsIndex)) {
     );
   }
 }
+
+expectContentRegex(
+  packsIndex,
+  /Capability packs document domain-specific routing,[\s\S]*They do not implement runtime dynamic loading; agents use them as optional guidance/,
+  'packs index documentation-only runtime boundary',
+);
+expectContentRegex(
+  packsIndex,
+  /Every pack must support two modes:[\s\S]*Enhanced mode: optional installed plugins,[\s\S]*Fallback mode: the same task remains possible/,
+  'packs index enhanced and fallback mode boundary',
+);
+expectContentRegex(
+  agentRoutingDoc,
+  /plus documentation-only capability packs in `nova-plugin\/packs\/`[\s\S]*Capability packs are optional routing context, not runtime-loaded agents/,
+  'agent routing documentation-only pack boundary',
+);
+expectContentRegex(
+  routingDoc,
+  /Packs are documentation and validation guidance only; first-phase routing does not dynamically load pack runtimes/,
+  'plugin-aware routing documentation-only boundary',
+);
+expectContentRegex(
+  routingDoc,
+  /They are enhancements, not hard dependencies[\s\S]*Every route must remain executable in fallback mode/,
+  'plugin-aware routing optional enhancement boundary',
+);
+expectContentRegex(
+  routingDoc,
+  /Do not add runtime dynamic loading until a later design explicitly introduces it/,
+  'plugin-aware routing no runtime dynamic loading boundary',
+);
 
 if (!existsSync(routingDoc)) {
   record('docs/agents/PLUGIN_AWARE_ROUTING.md', 'missing plugin-aware routing doc');

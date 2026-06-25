@@ -6,7 +6,8 @@ Date: 2026-05-12
 This document defines the information architecture for a future marketplace
 portal. It is documentation-only preparation: it does not move `nova-plugin/`,
 does not build a frontend site, and does not add release or deployment pipeline
-dependencies.
+dependencies. It is not an implemented public portal, hosted marketplace,
+frontend app, deployment plan, or activation evidence for `v3.0.0`.
 
 ## Purpose
 

@@ -27,6 +27,17 @@ Consumer projects can also map Copilot personas to the core-agent model:
 3. Keep consumer-specific repository rules, checks, and branch policy private.
 4. Confirm validation with command output or state why Copilot could not run it.
 
+## Public-Safe Boundaries
+
+- Keep `.github/copilot-instructions.md` and persona mappings private unless
+  they are fully generic and redacted.
+- Do not copy private paths, repository addresses, endpoints, credentials,
+  runtime flags, branch policies, business rules, or private knowledge base
+  content into public templates or examples.
+- If Copilot cannot run a check, report it as skipped or not run with the
+  reason; do not loosen repository or agent permissions to bypass the missing
+  tool.
+
 ## Fallback Notes
 
 - Copilot instructions are not Claude Code commands; invoke skills by name.

@@ -65,6 +65,12 @@ jobs:
       - run: bash -n nova-plugin/hooks/scripts/pre-write-check.sh
       - run: bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 
+  validate-github-workflows:
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Validate GitHub Workflows
+      command: node scripts/validate-github-workflows.mjs
+
   validate-runtime-smoke:
     uses: ./.github/workflows/reusable-node-check.yml
     with:

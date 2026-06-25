@@ -76,5 +76,7 @@ node scripts/scaffold-consumer-profile.mjs --type workbench --out ../consumer-pr
 ```
 
 The command is dry-run by default. Add `--write` only when the output directory
-is a consumer-owned workspace. Generated files contain placeholders only; fill
-private facts inside that consumer workspace, not in this public repository.
+is a consumer-owned workspace outside this public repository checkout. The
+script refuses `--write` targets inside `llm-plugins-fusion`; use dry-run output
+for preview only. Generated files contain placeholders only; fill private facts
+inside that consumer workspace, not in this public repository.

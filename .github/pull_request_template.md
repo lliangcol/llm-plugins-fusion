@@ -18,6 +18,9 @@
 - [ ] Security-sensitive behavior is described, or this PR explains why none is affected.
 - [ ] Risk level matches write tools, hooks, scripts, dependencies, credentials, and network behavior.
 - [ ] Private vulnerability details are not disclosed publicly.
+- [ ] Public PR content is free of private consumer names, local paths, endpoints, credentials, repository addresses, runtime flags, business rules, customer data, private screenshots, and private knowledge-base content.
+- [ ] This PR does not present public portal, paid marketplace, production multi-plugin directory, runtime dynamic loading, or broad domain-command expansion as current capability unless roadmap and release evidence explicitly activate it.
+- [ ] Skipped or unavailable checks are recorded as skipped, pending, or not run with a reason; this PR does not broaden global permissions, agent sandbox settings, or workflow token scope to hide missing tools.
 
 ## Validation
 

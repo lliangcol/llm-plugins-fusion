@@ -5,8 +5,11 @@ $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 Set-Location $repoRoot
 
 $activeDir = Join-Path $repoRoot 'nova-plugin/agents'
-$archiveDir = Join-Path $repoRoot '.claude/agents/archive'
-$legacyAgentsDir = Join-Path $repoRoot '.claude/agents/archive/nova-plugin/agents'
+$retiredSurfaceDirs = @(
+  '.claude/agents',
+  'docs/reports',
+  'nova-plugin/docs/history'
+)
 
 $expected = @(
   'architect.md',
@@ -79,20 +82,13 @@ foreach ($fileName in $actual) {
 }
 
 Write-Host ""
-Write-Host "== Archive presence (should not be default-scanned) =="
-if (Test-Path $archiveDir) {
-  $archCount = (Get-ChildItem -Recurse -File $archiveDir -Filter *.md | Measure-Object).Count
-  Write-Host ("Archive md files: {0}" -f $archCount)
-  if (Test-Path $legacyAgentsDir) {
-    $legacyAgentCount = (Get-ChildItem -Recurse -File $legacyAgentsDir -Filter *.md | Measure-Object).Count
-    Write-Host ("Legacy agent files: {0}" -f $legacyAgentCount)
+Write-Host "== Retired active-agent surfaces =="
+foreach ($retiredDir in $retiredSurfaceDirs) {
+  $retiredPath = Join-Path $repoRoot $retiredDir
+  if (Test-Path $retiredPath) {
+    throw "Retired active-agent path must not exist in the current public surface: $retiredDir. Active agents live only in nova-plugin/agents; do not recreate retired archive/history paths without a documented policy change."
   }
-  if ($archCount -gt 0) {
-    Write-Host "NOTE: Archive is outside nova-plugin/agents, but if your Claude Code scans .claude/**, tokens may still be high."
-    Write-Host "Mitigation (if needed): rename `.claude/agents/archive/` to `.claude/agents-archive/` or move it outside the repo."
-  }
-} else {
-  Write-Host "Archive directory not found (ok)."
+  Write-Host ("- {0}: absent (ok)" -f $retiredDir)
 }
 
 Write-Host ""
