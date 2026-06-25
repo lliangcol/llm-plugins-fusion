@@ -217,6 +217,10 @@ for CI or isolated test-user environments.
   `validate surface budget` gate and synced docs/regression coverage; commit
   `be4d302` was pushed to `origin/main` after `npm run validate:maintainer`
   passed with `failed=0 skipped=0`.
+- 2026-06-25: Added a maintainer troubleshooting shortcut for capability pack
+  documentation-only, enhanced, and fallback boundary failures; commit
+  `2398155` was pushed to `origin/main` after `npm run validate:maintainer`
+  passed with `failed=0 skipped=0`.
 
 ## Next Round Candidates
 
