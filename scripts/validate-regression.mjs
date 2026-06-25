@@ -1452,6 +1452,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     assert.match(output, /maintainer troubleshooting fast failure map purpose/);
     assert.match(output, /maintainer troubleshooting docs failure shortcut/);
     assert.match(output, /maintainer troubleshooting GitHub workflow failure shortcut/);
+    assert.match(output, /maintainer troubleshooting surface budget shortcut/);
     assert.match(output, /maintainer troubleshooting runtime smoke failure shortcut/);
     assert.match(output, /maintainer troubleshooting GitHub workflow validator/);
     assert.match(output, /GitHub security settings manual evidence boundary/);

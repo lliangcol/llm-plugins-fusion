@@ -1004,6 +1004,11 @@ function validateMaintainerDiagnosticContracts() {
     },
     {
       file: 'docs/maintainers/troubleshooting.md',
+      pattern: /\| `validate surface budget` warning or failure \| `npm run validate:surface` \| Split bloated shipped surfaces or update the allowlist only with a rationale and split plan\. \|/,
+      label: 'maintainer troubleshooting surface budget shortcut',
+    },
+    {
+      file: 'docs/maintainers/troubleshooting.md',
       pattern: /\| Bash hook syntax failure \| `bash -n nova-plugin\/hooks\/scripts\/pre-write-check\.sh` and `bash -n nova-plugin\/hooks\/scripts\/post-audit-log\.sh` \| Run only where Bash is available; treat Windows no-Bash skips as skipped, not passed\. \|/,
       label: 'maintainer troubleshooting hook syntax failure shortcut',
     },
