@@ -27,7 +27,7 @@ maintainer gate again.
 | Markdown link, anchor, inventory, positioning, or release wording failure | `npm run validate:docs` | Fix active public docs only; do not patch generated marketplace outputs by hand. |
 | Command or skill frontmatter failure | `node scripts/lint-frontmatter.mjs` | Preserve command/skill one-to-one mapping and existing tool permission intent. |
 | GitHub workflow permission, inventory, or required-check drift | `npm run validate:github-workflows` | Do not broaden default token scope or move mutating plugin install smoke into default PR/push checks. |
-| Generated marketplace drift | `node scripts/generate-registry.mjs --write` | Edit registry or plugin metadata sources first, then regenerate outputs. |
+| `generated registry drift check` or generated marketplace drift | `node scripts/generate-registry.mjs --write` | Edit registry or plugin metadata sources first, then regenerate outputs. |
 | Distribution risk scan secret, private path, or `.codex/` artifact finding | `npm run scan:distribution` | Remove or redact the active public content; use allowlists only for intentional historical warnings. |
 | Bash hook syntax failure | `bash -n nova-plugin/hooks/scripts/pre-write-check.sh` and `bash -n nova-plugin/hooks/scripts/post-audit-log.sh` | Run only where Bash is available; treat Windows no-Bash skips as skipped, not passed. |
 | Codex runtime helper smoke failure | `node scripts/validate-runtime-smoke.mjs` | Use CI/Linux for replacement evidence when local Bash is unavailable. |

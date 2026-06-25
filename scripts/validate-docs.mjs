@@ -994,7 +994,7 @@ function validateMaintainerDiagnosticContracts() {
     },
     {
       file: 'docs/maintainers/troubleshooting.md',
-      pattern: /\| Generated marketplace drift \| `node scripts\/generate-registry\.mjs --write` \| Edit registry or plugin metadata sources first, then regenerate outputs\. \|/,
+      pattern: /\| `generated registry drift check` or generated marketplace drift \| `node scripts\/generate-registry\.mjs --write` \| Edit registry or plugin metadata sources first, then regenerate outputs\. \|/,
       label: 'maintainer troubleshooting generated registry failure shortcut',
     },
     {
