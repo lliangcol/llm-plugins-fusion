@@ -1004,7 +1004,12 @@ function validateMaintainerDiagnosticContracts() {
     },
     {
       file: 'docs/maintainers/troubleshooting.md',
-      pattern: /\| Bash hook syntax or runtime smoke failure \| `node scripts\/validate-runtime-smoke\.mjs` \| Treat Windows no-Bash skips as skipped, not passed; use CI\/Linux for replacement evidence\. \|/,
+      pattern: /\| Bash hook syntax failure \| `bash -n nova-plugin\/hooks\/scripts\/pre-write-check\.sh` and `bash -n nova-plugin\/hooks\/scripts\/post-audit-log\.sh` \| Run only where Bash is available; treat Windows no-Bash skips as skipped, not passed\. \|/,
+      label: 'maintainer troubleshooting hook syntax failure shortcut',
+    },
+    {
+      file: 'docs/maintainers/troubleshooting.md',
+      pattern: /\| Codex runtime helper smoke failure \| `node scripts\/validate-runtime-smoke\.mjs` \| Use CI\/Linux for replacement evidence when local Bash is unavailable\. \|/,
       label: 'maintainer troubleshooting runtime smoke failure shortcut',
     },
     {
