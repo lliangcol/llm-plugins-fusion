@@ -36,8 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   Codex 前置条件和常见失败处理。
 - 新增无第三方依赖的 `package.json` 维护者便捷入口，提供 `validate`、
   `validate:docs`、`validate:schemas`、`validate:runtime`、
-  `validate:regression`、`scan:distribution` 和 `scaffold:consumer`，并避免
-  `check` / `lint` / `test` / `build` 脚本名。
+  `validate:regression`、`scan:distribution`、`lint`、`test` 和
+  `scaffold:consumer`，并避免 `check` / `build` 脚本名。
 - 新增 `scripts/scaffold-consumer-profile.mjs`，支持从 redacted consumer
   templates dry-run 或 `--write` 初始化 `java-backend`、`frontend`、`workbench`
   profile。
@@ -81,6 +81,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   author workflow 与 compatibility matrix 入口同步描述完整验证范围，release
   hygiene、runbook 和 evidence template 也把 `validate-github-workflows` 作为
   独立发布证据项记录。
+- GitHub Actions workflow 依赖升级到当前 major line：`actions/checkout@v7`、
+  `actions/setup-node@v6`、`actions/upload-artifact@v7`、
+  `actions/dependency-review-action@v5`、`github/codeql-action@v4` 和
+  `softprops/action-gh-release@v3`，避免 CodeQL v3 等旧 runtime 路径继续漂移。
 - GitHub security settings 的 suggested required-check 清单和只读打印脚本
   现在包含 `Validate GitHub Workflows`，与 CI 实际 job 覆盖保持一致。
 - 补强中英文命令手册中的 Codex 高级路径边界，明确 review / verify artifact、
@@ -293,6 +297,9 @@ must not replace the exact release tag as stable evidence.
   探测时转换 WSL/Git Bash 路径供 Windows Node 使用。
 - `run-project-checks.sh` 现在覆盖 registry fixture 校验，使 Codex fix loop
   的本地 lint 范围与仓库级 release gate 保持一致。
+- `run-project-checks.sh` 现在补齐 GitHub workflow、surface budget 和
+  workflow fixture 校验，使 Codex fix loop 的本地 repo-check 范围与
+  默认质量门保持一致。
 - 将 `codex-review-only` 与 `codex-verify-only` 从 `none` 调整为 `low`
   artifact 风险，明确它们会运行 Bash 并写入 `.codex` review/verify artifact，
   但不得修改项目代码。

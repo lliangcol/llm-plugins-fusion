@@ -165,8 +165,16 @@ discover_repo_tasks() {
     append_node_task "validate-hooks" "scripts/validate-hooks.mjs"
   fi
 
+  if [[ -f "${ROOT}/scripts/validate-github-workflows.mjs" ]]; then
+    append_node_task "validate-github-workflows" "scripts/validate-github-workflows.mjs"
+  fi
+
   if [[ -f "${ROOT}/scripts/validate-runtime-smoke.mjs" ]]; then
     append_node_task "validate-runtime-smoke" "scripts/validate-runtime-smoke.mjs"
+  fi
+
+  if [[ -f "${ROOT}/scripts/validate-surface-budget.mjs" ]]; then
+    append_node_task "validate-surface-budget" "scripts/validate-surface-budget.mjs"
   fi
 
   if [[ -f "${ROOT}/scripts/scan-distribution-risk.mjs" ]]; then
@@ -175,6 +183,10 @@ discover_repo_tasks() {
 
   if [[ -f "${ROOT}/scripts/validate-regression.mjs" ]]; then
     append_node_task "validate-regression" "scripts/validate-regression.mjs"
+  fi
+
+  if [[ -f "${ROOT}/scripts/validate-workflow-fixtures.mjs" ]]; then
+    append_node_task "validate-workflow-fixtures" "scripts/validate-workflow-fixtures.mjs"
   fi
 
   if [[ -f "${ROOT}/scripts/validate-docs.mjs" ]]; then

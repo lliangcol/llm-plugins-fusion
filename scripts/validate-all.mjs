@@ -64,13 +64,23 @@ async function environmentSummary() {
   return Object.fromEntries(tools.map(([label, detail]) => [label, detail.available]));
 }
 
-function nodeTask(label, script, timeoutMs = 120_000) {
+function nodeTask(label, script, timeoutMs = 120_000, options = {}) {
   return {
     label,
-    run: () => runProcess(label, process.execPath, [script], {
-      cwd: root,
-      timeoutMs,
-    }),
+    run: async () => {
+      const result = await runProcess(label, process.execPath, [script], {
+        cwd: root,
+        timeoutMs,
+      });
+      const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+      if (result.ok && options.skippedPattern?.test(output)) {
+        return {
+          ...result,
+          skipped: true,
+        };
+      }
+      return result;
+    },
   };
 }
 
@@ -266,7 +276,12 @@ async function main() {
   await runTaskGroup([
     nodeTask('validate schemas', 'scripts/validate-schemas.mjs'),
     nodeTask('validate registry fixtures', 'scripts/validate-registry-fixtures.mjs'),
-    nodeTask('validate Claude compatibility', 'scripts/validate-claude-compat.mjs'),
+    nodeTask(
+      'validate Claude compatibility',
+      'scripts/validate-claude-compat.mjs',
+      120_000,
+      { skippedPattern: /skipping live claude plugin validate checks/i },
+    ),
     nodeTask('lint frontmatter', 'scripts/lint-frontmatter.mjs'),
   ]);
 

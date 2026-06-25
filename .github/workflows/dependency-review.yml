@@ -12,7 +12,7 @@ jobs:
     name: Dependency Review
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check dependency graph availability
         id: dependency-graph
         env:
@@ -50,4 +50,4 @@ jobs:
           exit 1
       - name: Review dependency changes
         if: steps.dependency-graph.outputs.available == 'true'
-        uses: actions/dependency-review-action@v4
+        uses: actions/dependency-review-action@v5

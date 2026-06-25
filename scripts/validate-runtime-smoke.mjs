@@ -70,6 +70,18 @@ function assertFileDoesNotMatch(label, relPath, pattern) {
   console.log(`OK ${label}`);
 }
 
+function assertFileContainsAll(label, relPath, patterns) {
+  const src = readFileSync(resolve(root, relPath), 'utf8');
+  const missing = patterns.filter((pattern) => !pattern.test(src));
+  if (missing.length > 0) {
+    failed += 1;
+    console.error(`ERROR ${label}`);
+    console.error(`  ${relPath} missing ${missing.map(String).join(', ')}`);
+    return;
+  }
+  console.log(`OK ${label}`);
+}
+
 if (!(await commandExists('bash', ['--version'], { cwd: root }))) {
   if (process.platform === 'win32') {
     skipped += 1;
@@ -142,6 +154,16 @@ assertFileDoesNotMatch(
   'run-project-checks.sh uses explicit task dispatcher',
   'nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh',
   /\beval\s+/,
+);
+
+assertFileContainsAll(
+  'run-project-checks.sh covers default repository gates',
+  'nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh',
+  [
+    /scripts\/validate-github-workflows\.mjs/,
+    /scripts\/validate-surface-budget\.mjs/,
+    /scripts\/validate-workflow-fixtures\.mjs/,
+  ],
 );
 
 await runTempBash('pre-write hook rejects common token shapes', `

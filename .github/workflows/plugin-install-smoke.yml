@@ -13,8 +13,8 @@ jobs:
     name: Mutating install smoke on disposable runner
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
         with:
           node-version: '20'
       - name: Install Claude CLI
@@ -35,7 +35,7 @@ jobs:
           } > .metrics/plugin-install-smoke/context.txt
       - name: Upload failure context
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: plugin-install-smoke-context
           path: .metrics/plugin-install-smoke/
