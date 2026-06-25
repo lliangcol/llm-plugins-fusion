@@ -16,8 +16,10 @@ implemented for the `v2.2.0` release-ready work. Track 6 has been resolved by
 removing stale archive documentation from the public working tree rather than
 keeping a second active archive surface. The 2026-05-12 unattended P0-P2 pass
 added maintainer npm shortcuts, consumer profile scaffolding, regression
-checks, workflow evaluation fixtures, and expanded distribution-risk scanning
-without creating tags or releases.
+checks, workflow evaluation fixtures, and expanded distribution-risk scanning.
+The exact `v2.2.0` tag and GitHub release now provide the stable promotion
+baseline; later `main` commits remain development snapshots until the next
+release tag.
 
 Primary optimization sequence:
 
@@ -34,9 +36,9 @@ Primary optimization sequence:
 
 - `nova-plugin` is the only production plugin. Multi-plugin behavior is covered
   by registry fixtures, not by production plugin directories.
-- `v2.2.0` is the current release-ready line. Stable promotion still requires
-  an exact `v2.2.0` tag; moving `main` must not be promoted as stable release
-  content.
+- Exact `v2.2.0` is the current stable promotion baseline. Moving `main` may
+  contain later unreleased maintenance work and must not be promoted as stable
+  release content.
 - README already presents the main workflow path:
   `/explore` -> `/produce-plan` -> `/review` -> `/implement-plan` ->
   `/finalize-work`.

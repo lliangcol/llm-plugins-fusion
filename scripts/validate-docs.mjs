@@ -824,9 +824,9 @@ function validateReleasePromotionContracts() {
     },
     {
       file: 'docs/project-optimization-plan.md',
-      pattern: new RegExp('Stable promotion still requires\\s+an exact `'
+      pattern: new RegExp('Exact `'
         + tagPattern
-        + '` tag; moving `main` must not be promoted as stable release\\s+content'),
+        + '` is the current stable promotion baseline[\\s\\S]*Moving `main` may\\s+contain later unreleased maintenance work and must not be promoted as stable\\s+release content'),
       label: 'optimization plan exact release tag promotion boundary',
     },
     {
