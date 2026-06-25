@@ -601,7 +601,7 @@ test('validate-github-workflows rejects workflow inventory and CLAUDE layout dri
   }
 });
 
-test('validate-docs enforces positioning, release, maintainer, public API, marketplace, contribution/issue intake, docs-index, consumer setup, prompt template, workflow evidence, showcase, growth, assets, portal, and v3 contracts', () => {
+test('validate-docs enforces positioning, maintenance status, release, maintainer, public API, marketplace, contribution/issue intake, docs-index, consumer setup, prompt template, workflow evidence, showcase, growth, assets, portal, and v3 contracts', () => {
   const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-docs-contract-'));
   const fixtureRoot = resolve(tempRoot, 'repo');
   try {
@@ -646,6 +646,35 @@ test('validate-docs enforces positioning, release, maintainer, public API, marke
         /docs index navigation contracts,[\s\S]*?v3 readiness evidence\s+contracts, /,
         '',
       ),
+      'utf8',
+    );
+
+    const maintenanceStatusPath = resolve(
+      fixtureRoot,
+      'docs/llm-plugins-fusion-maintenance-status.md',
+    );
+    const maintenanceStatus = readFileSync(maintenanceStatusPath, 'utf8');
+    assert.match(maintenanceStatus, /public AI engineering workflow framework centered on\r?\n`nova-plugin`/);
+    assert.match(maintenanceStatus, /- Commands: \d+ files under `nova-plugin\/commands\/\*\.md`\./);
+    writeFileSync(
+      maintenanceStatusPath,
+      maintenanceStatus
+        .replace(
+          /public AI engineering workflow framework centered on\r?\n`nova-plugin`/,
+          'public AI engineering workflow framework',
+        )
+        .replace(
+          /- Commands: \d+ files under `nova-plugin\/commands\/\*\.md`\./,
+          '- Commands: 999 files under `nova-plugin/commands/*.md`.',
+        )
+        .replace(
+          /`nova-plugin` is the only production plugin\./,
+          '`nova-plugin` is one production plugin.',
+        )
+        .replace(
+          /mature multi-plugin ecosystem, public portal, paid marketplace,\r?\nruntime dynamic plugin platform, or enterprise private knowledge base/,
+          'mature multi-plugin ecosystem',
+        ),
       'utf8',
     );
 
@@ -756,6 +785,7 @@ test('validate-docs enforces positioning, release, maintainer, public API, marke
     const troubleshootingPath = resolve(fixtureRoot, 'docs/maintainers/troubleshooting.md');
     const troubleshooting = readFileSync(troubleshootingPath, 'utf8');
     assert.match(troubleshooting, /Do not loosen global permissions/);
+    assert.match(troubleshooting, /## Fast Failure Map/);
     assert.match(troubleshooting, /workflow\r?\nfile inventory synchronized with `CLAUDE\.md`/);
     assert.match(troubleshooting, /required-check docs and the\r?\nread-only print script synchronized with CI labels/);
     writeFileSync(
@@ -767,6 +797,10 @@ test('validate-docs enforces positioning, release, maintainer, public API, marke
         )
         .replace(
           /## Boundary Rules[\s\S]*?## Windows Without Bash\r?\n/,
+          '## Windows Without Bash\n',
+        )
+        .replace(
+          /## Fast Failure Map[\s\S]*?## Windows Without Bash\r?\n/,
           '## Windows Without Bash\n',
         )
         .replace(
@@ -1415,6 +1449,10 @@ test('validate-docs enforces positioning, release, maintainer, public API, marke
     assert.match(output, /maintainer troubleshooting no permission bypass boundary/);
     assert.match(output, /maintainer troubleshooting private details boundary/);
     assert.match(output, /maintainer troubleshooting unavailable checks boundary/);
+    assert.match(output, /maintainer troubleshooting fast failure map purpose/);
+    assert.match(output, /maintainer troubleshooting docs failure shortcut/);
+    assert.match(output, /maintainer troubleshooting GitHub workflow failure shortcut/);
+    assert.match(output, /maintainer troubleshooting runtime smoke failure shortcut/);
     assert.match(output, /maintainer troubleshooting GitHub workflow validator/);
     assert.match(output, /GitHub security settings manual evidence boundary/);
     assert.match(output, /GitHub security settings private alert boundary/);

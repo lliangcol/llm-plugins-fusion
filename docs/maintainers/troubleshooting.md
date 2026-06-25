@@ -17,6 +17,20 @@ claiming it passed.
 - Record unavailable checks as `skipped`, `not run`, or `pending` with the
   reason and the replacement CI/Linux or owner-verified evidence.
 
+## Fast Failure Map
+
+Use the smallest focused check that matches the failure before running the full
+maintainer gate again.
+
+| Signal | First command | Boundary |
+| --- | --- | --- |
+| Markdown link, anchor, inventory, positioning, or release wording failure | `npm run validate:docs` | Fix active public docs only; do not patch generated marketplace outputs by hand. |
+| Command or skill frontmatter failure | `node scripts/lint-frontmatter.mjs` | Preserve command/skill one-to-one mapping and existing tool permission intent. |
+| GitHub workflow permission, inventory, or required-check drift | `npm run validate:github-workflows` | Do not broaden default token scope or move mutating plugin install smoke into default PR/push checks. |
+| Generated marketplace drift | `node scripts/generate-registry.mjs --write` | Edit registry or plugin metadata sources first, then regenerate outputs. |
+| Distribution risk scan secret, private path, or `.codex/` artifact finding | `npm run scan:distribution` | Remove or redact the active public content; use allowlists only for intentional historical warnings. |
+| Bash hook syntax or runtime smoke failure | `node scripts/validate-runtime-smoke.mjs` | Treat Windows no-Bash skips as skipped, not passed; use CI/Linux for replacement evidence. |
+
 ## Windows Without Bash
 
 `node scripts/validate-all.mjs` may warning-skip Bash-dependent hook syntax or

@@ -2,12 +2,13 @@
 /**
  * Validate active Markdown documentation for local link/anchor health, command
  * doc coverage and placement, release metadata drift, documentation inventory
- * counts, project positioning contracts, exact-tag release promotion
- * boundaries, maintainer diagnostic and security setting semantics, public API
- * compatibility contracts, marketplace trust, author workflow, compatibility,
- * and security review contracts, contribution and issue intake contracts, docs
- * index navigation contracts, consumer profile privacy contracts, prompt
- * template privacy contracts, workflow evidence contracts, showcase
+ * counts, project positioning contracts, maintenance status contracts,
+ * exact-tag release promotion boundaries, maintainer diagnostic and security
+ * setting semantics, public API compatibility contracts, marketplace trust,
+ * author workflow, compatibility, and security review contracts, contribution
+ * and issue intake contracts, docs index navigation contracts, consumer
+ * profile privacy contracts, prompt template privacy contracts, workflow
+ * evidence contracts, showcase
  * public-safety contracts, growth metrics privacy contracts, assets capture
  * privacy contracts, deferred portal IA contracts, v3 readiness evidence
  * contracts, security support range, stale active
@@ -682,6 +683,30 @@ function validateInventoryFacts() {
       values: [skillCount],
       label: 'dual-track skill count',
     },
+    {
+      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      pattern: /- Commands: (\d+) files under `nova-plugin\/commands\/\*\.md`/,
+      values: [commandCount],
+      label: 'maintenance status command count',
+    },
+    {
+      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      pattern: /- Skills: (\d+) files under `nova-plugin\/skills\/nova-\*\/SKILL\.md`/,
+      values: [skillCount],
+      label: 'maintenance status skill count',
+    },
+    {
+      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      pattern: /- Active agents: (\d+) core files under `nova-plugin\/agents\/\*\.md`/,
+      values: [activeAgentCount],
+      label: 'maintenance status active agent count',
+    },
+    {
+      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      pattern: /- Capability packs: (\d+) documentation packs under `nova-plugin\/packs\/\*\/README\.md`/,
+      values: [packCount],
+      label: 'maintenance status pack count',
+    },
   ];
 
   for (const check of checks) {
@@ -745,6 +770,26 @@ function validateProjectPositioningContracts() {
       file: 'nova-plugin/docs/overview/README.en.md',
       pattern: /This repository should not be described as a mature multi-plugin ecosystem, and the deferred public portal is not an implemented capability/,
       label: 'English overview mature ecosystem and public portal boundary',
+    },
+    {
+      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      pattern: /public AI engineering workflow framework centered on\s+`nova-plugin`/,
+      label: 'maintenance status nova-plugin centered boundary',
+    },
+    {
+      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      pattern: /Explore -> Plan -> Review -> Implement -> Finalize/,
+      label: 'maintenance status five-stage workflow boundary',
+    },
+    {
+      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      pattern: /`nova-plugin` is the only production plugin/,
+      label: 'maintenance status one production plugin boundary',
+    },
+    {
+      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      pattern: /must not be\s+described as a mature multi-plugin ecosystem, public portal, paid marketplace,\s+runtime dynamic plugin platform, or enterprise private knowledge base/,
+      label: 'maintenance status deferred scope boundary',
     },
   ];
 
@@ -926,6 +971,41 @@ function validateMaintainerDiagnosticContracts() {
       file: 'docs/maintainers/troubleshooting.md',
       pattern: /Record unavailable checks as `skipped`, `not run`, or `pending`[\s\S]*replacement CI\/Linux or owner-verified evidence/,
       label: 'maintainer troubleshooting unavailable checks boundary',
+    },
+    {
+      file: 'docs/maintainers/troubleshooting.md',
+      pattern: /## Fast Failure Map[\s\S]*Use the smallest focused check that matches the failure before running the full\s+maintainer gate again/,
+      label: 'maintainer troubleshooting fast failure map purpose',
+    },
+    {
+      file: 'docs/maintainers/troubleshooting.md',
+      pattern: /\| Markdown link, anchor, inventory, positioning, or release wording failure \| `npm run validate:docs` \| Fix active public docs only; do not patch generated marketplace outputs by hand\. \|/,
+      label: 'maintainer troubleshooting docs failure shortcut',
+    },
+    {
+      file: 'docs/maintainers/troubleshooting.md',
+      pattern: /\| Command or skill frontmatter failure \| `node scripts\/lint-frontmatter\.mjs` \| Preserve command\/skill one-to-one mapping and existing tool permission intent\. \|/,
+      label: 'maintainer troubleshooting frontmatter failure shortcut',
+    },
+    {
+      file: 'docs/maintainers/troubleshooting.md',
+      pattern: /\| GitHub workflow permission, inventory, or required-check drift \| `npm run validate:github-workflows` \| Do not broaden default token scope or move mutating plugin install smoke into default PR\/push checks\. \|/,
+      label: 'maintainer troubleshooting GitHub workflow failure shortcut',
+    },
+    {
+      file: 'docs/maintainers/troubleshooting.md',
+      pattern: /\| Generated marketplace drift \| `node scripts\/generate-registry\.mjs --write` \| Edit registry or plugin metadata sources first, then regenerate outputs\. \|/,
+      label: 'maintainer troubleshooting generated registry failure shortcut',
+    },
+    {
+      file: 'docs/maintainers/troubleshooting.md',
+      pattern: /\| Distribution risk scan secret, private path, or `\.codex\/` artifact finding \| `npm run scan:distribution` \| Remove or redact the active public content; use allowlists only for intentional historical warnings\. \|/,
+      label: 'maintainer troubleshooting distribution risk failure shortcut',
+    },
+    {
+      file: 'docs/maintainers/troubleshooting.md',
+      pattern: /\| Bash hook syntax or runtime smoke failure \| `node scripts\/validate-runtime-smoke\.mjs` \| Treat Windows no-Bash skips as skipped, not passed; use CI\/Linux for replacement evidence\. \|/,
+      label: 'maintainer troubleshooting runtime smoke failure shortcut',
     },
     {
       file: 'docs/maintainers/troubleshooting.md',

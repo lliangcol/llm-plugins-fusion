@@ -179,12 +179,32 @@ for CI or isolated test-user environments.
   3. Improve maintainer troubleshooting links from common validation failures.
 - 2026-06-25: Implemented the smallest high-value candidate for this round by
   adding the status file to the repository docs index.
+- 2026-06-25: Added `validate-docs` and regression coverage for this file's
+  positioning and inventory facts.
+- 2026-06-25: Added a maintainer troubleshooting fast failure map that routes
+  common validation signals to the smallest focused command and boundary.
+- 2026-06-25: Ran `npm run validate:maintainer` for the accumulated validator
+  and docs changes: `failed=0 skipped=0`; Bash hook syntax and runtime smoke
+  ran locally. Warnings were limited to missing local Claude CLI live validation
+  and the existing allowlisted `nova-produce-plan` surface budget notice.
+- 2026-06-25: Added `validate-docs` and regression coverage for the maintainer
+  troubleshooting fast failure map.
+- 2026-06-25: Re-ran `npm run validate:maintainer` after the fast-failure-map
+  contract coverage; the final four-file diff still passed with
+  `failed=0 skipped=0`. Warnings remained limited to missing local Claude CLI
+  live validation and the existing allowlisted `nova-produce-plan` surface
+  budget notice.
+- 2026-06-25: Split the maintainer troubleshooting fast-failure-map validator
+  into row-level checks so future failures identify the missing shortcut.
+- 2026-06-25: Re-ran `npm run validate:maintainer` after row-level diagnostic
+  splitting; the four-file diff passed with `failed=0 skipped=0`. Bash hook
+  syntax and runtime smoke ran locally; warnings remained the missing local
+  Claude CLI live validation and the existing allowlisted `nova-produce-plan`
+  surface budget notice.
 
 ## Next Round Candidates
 
-- Focus on one P0 trust boundary: inspect staged GitHub workflow and security
-  setting changes, then run `npm run validate:github-workflows`.
-- Focus on one P1 drift guard: teach `scripts/validate-docs.mjs` to validate
-  this status file's positioning and inventory facts.
-- Focus on one P2 maintainer experience gap: improve troubleshooting guidance
-  for a single high-frequency validation failure, then run docs validation.
+- Focus on one P0 trust boundary: commit and push the final four-file diff if
+  the scope is acceptable.
+- Focus on one P2 maintainer experience gap: improve one specific validation
+  failure message only if a real failure remains confusing.
