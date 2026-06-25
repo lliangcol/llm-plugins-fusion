@@ -14,7 +14,7 @@ jobs:
     name: Verify Agents
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - run: bash scripts/verify-agents.sh
 
   validate-schemas:
@@ -57,7 +57,7 @@ jobs:
     name: Validate Hooks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -111,7 +111,7 @@ jobs:
     name: Windows Node Smoke
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
