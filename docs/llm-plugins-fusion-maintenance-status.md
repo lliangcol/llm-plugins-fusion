@@ -146,9 +146,9 @@ for CI or isolated test-user environments.
 
 ## Known Risks
 
-- The current worktree contains a broad staged change set across documentation,
-  GitHub workflows, scripts, package metadata, and tests. Future rounds should
-  inspect staged scope before editing the same files.
+- The current worktree was clean after the latest small-step maintenance push.
+  Future rounds should still inspect `git status --short --branch` before
+  editing and handle any existing diff first.
 - `docs/README.md`, `CLAUDE.md`, `AGENTS.md`, `README.md`, `ROADMAP.md`, and
   `docs/project-optimization-plan.md` repeat project-positioning facts. Drift
   checks are essential when any inventory or release fact changes.
@@ -160,12 +160,12 @@ for CI or isolated test-user environments.
 
 ## Backlog
 
-1. Add or strengthen validator coverage for this maintenance status file so
-   future positioning or inventory drift is caught automatically.
-2. Review staged GitHub workflow and security-setting changes as a single P0
-   release-trust unit before publication.
-3. Add a compact maintainer handoff note that maps common failure output to the
-   smallest focused validation command.
+1. Keep this status file current after each pushed small-step round so the next
+   operator does not chase stale candidates.
+2. For any future GitHub workflow or security-setting edit, review the change
+   as a P0 release-trust unit before publication.
+3. Continue improving one maintainer diagnostic row at a time only when current
+   gate output shows a confusing or overly broad failure signal.
 
 ## Recently Observed
 
@@ -201,10 +201,18 @@ for CI or isolated test-user environments.
   syntax and runtime smoke ran locally; warnings remained the missing local
   Claude CLI live validation and the existing allowlisted `nova-produce-plan`
   surface budget notice.
+- 2026-06-25: Clarified the maintainer troubleshooting map by separating Bash
+  hook syntax checks from Codex runtime helper smoke checks; commit `ffe46d3`
+  was pushed to `origin/main` after `npm run validate:maintainer` passed with
+  `failed=0 skipped=0`.
+- 2026-06-25: Aligned the generated registry drift troubleshooting signal with
+  the actual `validate-maintainer` gate label; commit `676eccd` was pushed to
+  `origin/main` after `npm run validate:maintainer` passed with
+  `failed=0 skipped=0`.
 
 ## Next Round Candidates
 
-- Focus on one P0 trust boundary: commit and push the final four-file diff if
-  the scope is acceptable.
-- Focus on one P2 maintainer experience gap: improve one specific validation
-  failure message only if a real failure remains confusing.
+- Refresh this status file again if a future pushed round makes any candidate
+  or known-risk statement stale.
+- Focus on one P2 maintainer experience gap only when current validation output
+  shows a concrete mismatch with the troubleshooting map.
