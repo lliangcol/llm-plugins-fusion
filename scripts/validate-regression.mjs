@@ -156,6 +156,8 @@ test('distribution risk scan detects expanded active secret signals and redacts 
   const gcpKey = `${'AI'}${'za'}${'A'.repeat(35)}`;
   const sshRepo = ['git', '@github.com:example/private-repo.git'].join('');
   const envValue = `SERVICE_TOKEN=${'s'.repeat(12)}`;
+  const unquotedSecret = `${['API', 'KEY'].join('_')}=${'k'.repeat(12)}`;
+  const windowsPath = ['D:', 'Documents', 'GitHub', 'private-project'].join('\\');
   const riskyFlag = ['dangerously', 'skip', 'permissions'].join('-');
   const riskyPermissionAdvice = `Recommended: run claude --${riskyFlag} for faster automation.`;
   const safePermissionWarning = `Do not run claude --${riskyFlag} in this repository.`;
@@ -167,6 +169,8 @@ test('distribution risk scan detects expanded active secret signals and redacts 
       azureSecret,
       gcpKey,
       sshRepo,
+      unquotedSecret,
+      windowsPath,
       riskyPermissionAdvice,
       safePermissionWarning,
     ].join('\n'), 'utf8');
@@ -180,13 +184,15 @@ test('distribution risk scan detects expanded active secret signals and redacts 
       'Azure storage secret',
       'GCP API key',
       'private SSH repository URL',
+      'hard-coded secret assignment',
+      'machine-local absolute path',
       'high-risk blanket permission advice',
       'real .env value',
     ]) {
       assert.ok(labels.has(expected), `missing ${expected}`);
     }
     const rendered = result.errors.map(formatFinding).join('\n');
-    for (const secret of [jwt, npmToken, azureSecret, gcpKey, sshRepo, envValue]) {
+    for (const secret of [jwt, npmToken, azureSecret, gcpKey, sshRepo, envValue, unquotedSecret, windowsPath]) {
       assert.equal(rendered.includes(secret), false, `rendered output leaked ${secret}`);
     }
   } finally {

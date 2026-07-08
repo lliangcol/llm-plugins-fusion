@@ -102,11 +102,11 @@ export const checks = [
   },
   {
     label: 'hard-coded secret assignment',
-    pattern: /\b(?:password|secret|api[_-]?key|access[_-]?token|private[_-]?key)\b\s*[:=]\s*["'][^"']{6,}["']/gi,
+    pattern: /\b(?:password|secret|api[_-]?key|access[_-]?token|private[_-]?key)\b\s*[:=]\s*(?:"[^"\r\n]{6,}"|'[^'\r\n]{6,}'|[^\s#'"][^\r\n#]{5,})/gi,
   },
   {
     label: 'machine-local absolute path',
-    pattern: /\b[A-Za-z]:\\(?!Path\\To\\)(?:Users|Projects|Work|Repos|Source|dev|Code|workspace|Downloads|Desktop)\\[^\s`"')<>]+/g,
+    pattern: /\b[A-Za-z]:\\(?!Path\\To\\)(?:Users|Documents|Projects|Repositories|GitHub|Workbench|Work|Repos|Source|dev|Code|workspace|Downloads|Desktop)\\[^\s`"')<>]+/g,
   },
   {
     label: 'private network address',
