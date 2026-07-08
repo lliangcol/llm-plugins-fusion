@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-07-08
+
 ### Added
 - 新增 `scripts/doctor.mjs` 与 `npm run doctor`，以只读方式汇总 Node/Git/Bash/
   Claude/Codex、版本、exact tag、工作区状态和 generated registry 漂移状态。
@@ -514,7 +516,8 @@ must not replace the exact release tag as stable evidence.
 - MIT 开源协议
 - 中英双语 README 文档
 
-[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.9...v2.0.0

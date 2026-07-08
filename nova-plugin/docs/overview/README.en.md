@@ -8,7 +8,7 @@ English | [中文](../../../README.md)
 
 [![CI](https://github.com/lliangcol/llm-plugins-fusion/actions/workflows/ci.yml/badge.svg)](https://github.com/lliangcol/llm-plugins-fusion/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/lliangcol/llm-plugins-fusion?label=release)](https://github.com/lliangcol/llm-plugins-fusion/releases/latest)
-[![Version](https://img.shields.io/badge/version-2.2.0-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion/releases/tag/v2.2.0)
+[![Version](https://img.shields.io/badge/version-2.3.0-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion/releases/tag/v2.3.0)
 [![License](https://img.shields.io/github/license/lliangcol/llm-plugins-fusion)](../../../LICENSE)
 
 </div>
@@ -74,7 +74,7 @@ Demo capture guidance lives in [docs/assets/README.md](../../../docs/assets/READ
 <table>
 <tr>
 <td><strong>Plugin version</strong></td>
-<td>2.2.0</td>
+<td>2.3.0</td>
 </tr>
 <tr>
 <td><strong>Main plugin</strong></td>
@@ -104,7 +104,7 @@ On Windows without Bash, `validate-all` warns and skips local Bash-dependent hoo
 
 ## Stable Promotion Boundary
 
-Promote formal release tags such as `v2.2.0`, not a moving `main` branch.
+Promote formal release tags such as `v2.3.0`, not a moving `main` branch.
 Current `main` may contain follow-up work under `CHANGELOG.md` `Unreleased`,
 so it should be described as an unreleased development snapshot until tagged.
 
