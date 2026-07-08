@@ -69,6 +69,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   并确保 Claude/Codex CLI 缺失仍作为 warning 而非硬失败处理。
 
 ### Changed
+- Release validation now writes a CI-only validation evidence artifact with
+  maintainer-gate timing data, and plugin install smoke uploads context for
+  successful runs as well as failures.
 - Codex verify 现在与 review 的未跟踪文件内容边界保持一致：默认只列出未跟踪
   文件名，只有显式 `INCLUDE_UNTRACKED_CONTENT=true` / `--include-untracked-content`
   且通过安全检查后才会把内容写入 verify patch；同时同步 Codex command / skill

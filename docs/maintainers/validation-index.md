@@ -17,7 +17,10 @@ gate is added, renamed, removed, or moved.
   generated registry drift and `git diff --check`.
 - `.github/workflows/ci.yml` owns merge-required check names.
 - `.github/workflows/plugin-install-smoke.yml` owns isolated mutating install
-  smoke evidence and is not a default merge blocker.
+  smoke evidence and is not a default merge blocker. It uploads smoke context
+  for both passing and failing runs.
+- `.github/workflows/release.yml` uploads release validation evidence from the
+  pre-release validation job.
 - Do not report a skipped local Bash-dependent check as passed. Use CI/Linux or
   CI/Windows Bash evidence when local Bash is unavailable.
 
