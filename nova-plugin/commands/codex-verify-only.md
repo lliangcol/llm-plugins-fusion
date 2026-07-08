@@ -18,6 +18,6 @@ This is the Codex verify-only slash entry. The skill is the source of truth for 
 Entry semantics:
 
 - Requires explicit `REVIEW_FILE` before verification.
-- Accepts optional `CHECKS_FILE`, `BASE`, and `OUTPUT_DIR` when supported by the verify script.
+- Accepts optional `CHECKS_FILE`, `BASE`, `OUTPUT_DIR`, and explicit `INCLUDE_UNTRACKED_CONTENT=true` when untracked file content should be included after guards.
 - Must not perform new implementation work.
 - Declares low artifact risk because it runs Bash and writes `.codex` verification artifacts.

@@ -18,6 +18,8 @@
 
 - `CHECKS_FILE`: checks 文件路径
 - `BASE`: 基线分支
+- `OUTPUT_DIR`: verify artifact 输出目录
+- `INCLUDE_UNTRACKED_CONTENT`: 默认 false；显式允许未跟踪文件内容进入 verify patch，且需通过大小、二进制、路径和 secret 检查
 
 ## 详细执行步骤
 

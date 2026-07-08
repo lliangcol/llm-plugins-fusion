@@ -14,6 +14,7 @@
 | --- | --- | --- | --- |
 | `BASE` | No | 基线分支 | `main` |
 | `REVIEW_MODE` | No | `branch` / `staged` / `full` | `staged` |
+| `OUTPUT_DIR` | No | review artifact 输出目录 | `.codex/codex-review-fix/custom` |
 
 ## 示例
 

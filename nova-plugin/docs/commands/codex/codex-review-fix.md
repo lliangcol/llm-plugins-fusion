@@ -15,7 +15,9 @@
 - `BASE`: 基线分支，默认自动识别
 - `GOAL`: 本轮修复目标
 - `REVIEW_MODE`: `branch` / `staged` / `full`
-- `INCLUDE_UNTRACKED_CONTENT`: 仅与 `REVIEW_MODE=full` 搭配；显式允许未跟踪文件内容进入 review patch，且需通过大小、二进制、路径和 secret 检查
+- `OUTPUT_DIR`: 可选，review/verify artifact 输出目录
+- `FIX_SCOPE`: 可选，修复选择策略；不改变脚本行为
+- `INCLUDE_UNTRACKED_CONTENT`: 仅与 `REVIEW_MODE=full` 搭配；显式允许未跟踪文件内容进入 review/verify patch，且需通过大小、二进制、路径和 secret 检查
 
 ## 行为准则（Do/Don't）
 

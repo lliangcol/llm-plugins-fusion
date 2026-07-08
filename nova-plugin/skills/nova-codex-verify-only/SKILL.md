@@ -20,6 +20,7 @@ metadata:
 | `CHECKS_FILE` | No | Auto-detect when safe | Local checks output passed as --checks-file when provided. |
 | `BASE` | No | Auto-detect | Baseline branch passed as --base. |
 | `OUTPUT_DIR` | No | Review directory | Verification artifact directory passed as --output-dir. |
+| `INCLUDE_UNTRACKED_CONTENT` | No | false | When true, adds `--include-untracked-content`; otherwise verify lists untracked file names but does not write untracked file content into the patch. |
 
 ## Parameter Resolution
 
@@ -46,6 +47,7 @@ metadata:
 - `CHECKS_FILE`, when provided, is passed as `--checks-file <CHECKS_FILE>`.
 - `BASE`, when provided, is passed as `--base <BASE>`.
 - `OUTPUT_DIR`, when provided, is passed as `--output-dir <OUTPUT_DIR>`.
+- `INCLUDE_UNTRACKED_CONTENT=true` is passed as `--include-untracked-content`; the script rejects likely secrets, sensitive paths, binary files, and oversized untracked files before writing content into the verify patch.
 - Do not run open-ended review or implementation from this verify-only entry.
 
 ## Outputs
@@ -146,6 +148,8 @@ Migrated from the pre-thin slash command contract for `/codex-verify-only` (`nov
 - `REVIEW_FILE`：必填，上一轮 `review.md`
 - `CHECKS_FILE`：可选，本地 checks 输出文件
 - `BASE`：可选，默认自动识别
+- `OUTPUT_DIR`：可选，verify artifact 输出目录
+- `INCLUDE_UNTRACKED_CONTENT`：可选，默认为 false；只在显式为 true 时允许未跟踪文件内容进入 verify patch
 
 如果缺少 `REVIEW_FILE`，必须停止并要求补充。
 
@@ -159,7 +163,9 @@ Migrated from the pre-thin slash command contract for `/codex-verify-only` (`nov
    `bash "${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-fix/scripts/codex-verify.sh" --review-file <REVIEW_FILE>`
 2. 如有 `BASE`，追加 `--base <BASE>`
 3. 如有 `CHECKS_FILE`，追加 `--checks-file <CHECKS_FILE>`
-4. 输出 verify 文件路径与结论摘要
+4. 如有 `OUTPUT_DIR`，追加 `--output-dir <OUTPUT_DIR>`
+5. 仅当 `INCLUDE_UNTRACKED_CONTENT=true` 时追加 `--include-untracked-content`
+6. 输出 verify 文件路径与结论摘要
 
 ---
 

@@ -112,7 +112,7 @@ await run('codex-review.sh --help', [
 await run('codex-verify.sh --help', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/codex-verify.sh',
   '--help',
-], { outputPattern: /Usage: codex-verify\.sh/ });
+], { outputPattern: /--include-untracked-content/ });
 
 await run('run-project-checks.sh --help', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh',
@@ -144,6 +144,16 @@ await run('codex-verify.sh requires option values', [
   '--review-file',
   '--base',
 ], { expectFailure: true, outputPattern: /--review-file 需要参数值/ });
+
+assertFileContainsAll(
+  'codex-verify.sh keeps untracked content opt-in',
+  'nova-plugin/skills/nova-codex-review-fix/scripts/codex-verify.sh',
+  [
+    /INCLUDE_UNTRACKED_CONTENT=false/,
+    /--include-untracked-content/,
+    /未跟踪文件内容默认不写入 verify patch/,
+  ],
+);
 
 await run('run-project-checks.sh rejects unknown args', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh',
