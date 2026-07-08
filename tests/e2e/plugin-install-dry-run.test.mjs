@@ -21,3 +21,20 @@ test('plugin install dry run does not invoke Claude CLI commands', async () => {
   assert.match(result.stdout, /No Claude CLI commands were run/);
   assert.doesNotMatch(result.stdout, /^== claude/m);
 });
+
+test('plugin install dry run can preview isolated home mode without mutation', async () => {
+  const result = await runProcess('plugin install isolated dry run', process.execPath, [
+    'scripts/validate-plugin-install.mjs',
+    '--dry-run',
+    '--isolated-home',
+  ], {
+    cwd: repoRoot,
+    timeoutMs: 30_000,
+  });
+
+  assert.equal(result.ok, true);
+  assert.match(result.stdout, /Isolated home: enabled/);
+  assert.match(result.stdout, /temporary HOME, USERPROFILE, XDG_CONFIG_HOME, XDG_DATA_HOME, and XDG_STATE_HOME/);
+  assert.match(result.stdout, /No Claude CLI commands were run/);
+  assert.doesNotMatch(result.stdout, /^== claude/m);
+});

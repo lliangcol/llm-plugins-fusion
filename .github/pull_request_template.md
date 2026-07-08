@@ -47,5 +47,5 @@ If a check was skipped, explain the concrete reason.
 
 Plugin install smoke (`node scripts/validate-plugin-install.mjs --dry-run`) is
 safe to preview. Run `node scripts/validate-plugin-install.mjs
---accept-user-scope-mutation` only in CI or an isolated test-user environment,
-or record it as pending/skipped with that reason.
+--accept-user-scope-mutation --isolated-home` only in CI or an isolated
+test-user environment, or record it as pending/skipped with that reason.

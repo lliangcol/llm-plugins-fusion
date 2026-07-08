@@ -141,6 +141,7 @@ docs/
 | Document | Purpose |
 | --- | --- |
 | [maintainers/quickstart.md](maintainers/quickstart.md) | Maintainer change paths, default checks, timing evidence, and install smoke boundary. |
+| [maintainers/validation-index.md](maintainers/validation-index.md) | Maintainer validation command, CI check, and change-routing inventory. |
 | [maintainers/troubleshooting.md](maintainers/troubleshooting.md) | Common local validation, Bash, Claude CLI, hooks, audit log, and registry drift troubleshooting. |
 | [maintainers/github-security-settings.md](maintainers/github-security-settings.md) | Branch protection, ruleset, CodeQL, secret scanning, Dependabot, and required-check guidance. |
 

@@ -10,6 +10,7 @@ BASE_BRANCH=""
 OUTPUT_DIR=""
 ONLY_STAGED=false
 FULL_MODE=false
+INCLUDE_UNTRACKED_CONTENT=false
 
 require_option_value() {
   local option="$1"
@@ -39,14 +40,20 @@ while [[ $# -gt 0 ]]; do
       FULL_MODE=true
       shift
       ;;
+    --include-untracked-content)
+      INCLUDE_UNTRACKED_CONTENT=true
+      shift
+      ;;
     -h|--help)
       cat <<'EOF'
-Usage: codex-review.sh [--base <branch>] [--output-dir <dir>] [--only-staged] [--full]
+Usage: codex-review.sh [--base <branch>] [--output-dir <dir>] [--only-staged] [--full] [--include-untracked-content]
 
   --base         基线分支，默认自动识别
   --output-dir   输出目录，默认 .codex/codex-review-fix/<timestamp>
   --only-staged  仅审查暂存区改动
-  --full         在分支 diff 基础上额外包含未提交改动与未跟踪文件内容
+  --full         在分支 diff 基础上额外包含未提交改动，并列出未跟踪文件
+  --include-untracked-content
+                 与 --full 配合使用；通过安全检查后才包含未跟踪文件内容
 EOF
       exit 0
       ;;
@@ -58,6 +65,10 @@ done
 
 if [[ "$ONLY_STAGED" == true && "$FULL_MODE" == true ]]; then
   die "--only-staged 与 --full 不能同时使用。"
+fi
+
+if [[ "$INCLUDE_UNTRACKED_CONTENT" == true && "$FULL_MODE" != true ]]; then
+  die "--include-untracked-content 必须与 --full 一起使用。"
 fi
 
 ensure_git_repo
@@ -100,14 +111,21 @@ elif [[ "$FULL_MODE" == true ]]; then
     printf '\n### staged and unstaged worktree diff\n'
     git diff --binary --find-renames HEAD || true
   } > "${PATCH_FILE}"
-  write_untracked_diff "${PATCH_FILE}"
+  if [[ "$INCLUDE_UNTRACKED_CONTENT" == true ]]; then
+    write_untracked_diff "${PATCH_FILE}"
+  else
+    warn "未跟踪文件内容默认不写入 review patch；如需包含内容，请显式使用 --include-untracked-content。"
+  fi
   {
     git diff --name-only "${BASE_BRANCH}...HEAD" || true
     git diff --name-only HEAD || true
     git ls-files --others --exclude-standard || true
   } | sort -u > "${FILES_FILE}"
   git ls-files --others --exclude-standard > "${UNTRACKED_FILE}" || true
-  printf '%s\n' "scope=branch-plus-worktree" "base_branch=${BASE_BRANCH}" > "${SCOPE_FILE}"
+  printf '%s\n' \
+    "scope=branch-plus-worktree" \
+    "base_branch=${BASE_BRANCH}" \
+    "include_untracked_content=${INCLUDE_UNTRACKED_CONTENT}" > "${SCOPE_FILE}"
 else
   git_has_changes_against_base "$BASE_BRANCH" || die "当前分支相对 ${BASE_BRANCH} 没有可审查差异。可改用 --only-staged 或 --full。"
   git diff --binary --find-renames "${BASE_BRANCH}...HEAD" > "${PATCH_FILE}"

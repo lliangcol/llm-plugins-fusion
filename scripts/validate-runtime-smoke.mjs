@@ -130,6 +130,11 @@ await run('codex-review.sh requires option values', [
   '--full',
 ], { expectFailure: true, outputPattern: /--base 需要参数值/ });
 
+await run('codex-review.sh requires full mode for untracked content', [
+  'nova-plugin/skills/nova-codex-review-fix/scripts/codex-review.sh',
+  '--include-untracked-content',
+], { expectFailure: true, outputPattern: /--include-untracked-content 必须与 --full 一起使用/ });
+
 await run('codex-verify.sh requires review file', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/codex-verify.sh',
 ], { expectFailure: true, outputPattern: /--review-file|review\.md/ });
@@ -236,6 +241,20 @@ source "$helper"
 write_untracked_diff "$diff_file"
 grep -q 'untracked smoke content' "$diff_file"
 `);
+
+await runTempBash('write_untracked_diff rejects untracked secrets', `
+helper="$PWD/nova-plugin/skills/nova-codex-review-fix/scripts/codex-common.sh"
+tmp_repo="$(dirname "$0")/repo"
+mkdir "$tmp_repo"
+git init -q "$tmp_repo"
+cd "$tmp_repo"
+tmp_file="untracked-secret.txt"
+diff_file="untracked.diff"
+secret_tail="cccccccccccccccccccccccc"
+printf '%s\\n' "OPENAI_API_KEY=sk-proj-\${secret_tail}" > "$tmp_file"
+source "$helper"
+write_untracked_diff "$diff_file"
+`, { expectFailure: true, outputPattern: /疑似包含敏感信息/ });
 
 await runTempBash('resolve_output_path allows missing parent directory', `
 helper="$PWD/nova-plugin/skills/nova-codex-review-fix/scripts/codex-common.sh"

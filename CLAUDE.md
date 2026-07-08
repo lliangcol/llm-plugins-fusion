@@ -53,7 +53,8 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
   `check`/`build` script names)
 - Repository validation scripts require Node.js 20+. Hook shell syntax and
   runtime smoke checks require Bash; Windows without Bash may warning-skip
-  local Bash-dependent checks, while CI/Linux must run them.
+  local Bash-dependent checks, while CI/Linux and CI/Windows Bash smoke must
+  run them.
 
 ## Sources of Truth
 
@@ -196,7 +197,7 @@ should run only in CI or an isolated test-user environment:
 
 ```bash
 node scripts/validate-plugin-install.mjs --dry-run
-node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
+node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home
 ```
 
 Consumer profile scaffolding is dry-run by default:
@@ -434,11 +435,12 @@ validate-registry-fixtures, validate-claude-compat, plugin install dry run,
 lint-frontmatter, validate-hooks, GitHub workflow permission, inventory, and
 required-check validation, hook `bash -n`, runtime smoke, surface budget,
 distribution risk scan, validation regression checks, workflow fixture
-validation, validate-docs, CodeQL, and a Windows non-Bash smoke job for schemas,
-docs, frontmatter, and `scripts/verify-agents.ps1`. Repeated Node jobs route through
-`.github/workflows/reusable-node-check.yml`. Real user-scope plugin install
-smoke is isolated in `.github/workflows/plugin-install-smoke.yml` and is not a
-default merge or release blocker.
+validation, validate-docs, CodeQL, a Windows Node/PowerShell smoke job for
+schemas, docs, frontmatter, and `scripts/verify-agents.ps1`, and a Windows Bash
+smoke job for hook syntax and Codex runtime smoke. Repeated Node jobs route
+through `.github/workflows/reusable-node-check.yml`. Real user-scope plugin
+install smoke is isolated in `.github/workflows/plugin-install-smoke.yml` and is
+not a default merge or release blocker.
 
 ## Do Not Edit
 

@@ -80,3 +80,16 @@ is a consumer-owned workspace outside this public repository checkout. The
 script refuses `--write` targets inside `llm-plugins-fusion`; use dry-run output
 for preview only. Generated files contain placeholders only; fill private facts
 inside that consumer workspace, not in this public repository.
+
+Dry-run output has this shape:
+
+```text
+Dry run. File that would be written:
+  - <absolute-consumer-workspace>/AGENTS.md
+
+Use --write to create the file.
+```
+
+The `java-backend` and `frontend` profiles target `AGENTS.md`. The `workbench`
+profile targets `workbench/README.md`. Treat the displayed path as a preview;
+do not paste a real private workspace path into public issues, PRs, or docs.

@@ -95,6 +95,7 @@ Claude Code 在使用主技能时应遵循：
 - 生成 review 上下文工件
 - 读取 `prompts/codex-review.prompt.md`
 - 调 `codex exec` 输出 `review.md`
+- `--full` 会包含分支 diff 与已跟踪工作区 diff，并列出未跟踪文件名；未跟踪文件内容只有在显式传入 `--include-untracked-content` 且通过大小、二进制、路径和 secret 检查后才会写入 patch。
 
 ### `codex-verify.sh`
 
@@ -193,7 +194,8 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-fix/scripts/codex-verify.sh
 
 - 检查当前分支是否相对 base 有变更
 - 若只想 review 暂存区，使用 `--only-staged`
-- 若要包含工作区未提交改动，使用 `--full`
+- 若要包含工作区已跟踪的未提交改动，使用 `--full`
+- 若确实需要把未跟踪文件内容交给 Codex，使用 `--full --include-untracked-content`；脚本会拒绝疑似 secret、敏感路径、二进制或超大未跟踪文件。
 
 ### `run-project-checks.sh` 没跑到预期脚本
 

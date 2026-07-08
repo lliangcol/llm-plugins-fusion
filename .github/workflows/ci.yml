@@ -120,3 +120,16 @@ jobs:
       - run: node scripts/lint-frontmatter.mjs
       - run: .\scripts\verify-agents.ps1
         shell: pwsh
+
+  windows-bash-smoke:
+    name: Windows Bash Smoke
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+      - run: bash --version
+      - run: bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+      - run: bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+      - run: node scripts/validate-runtime-smoke.mjs

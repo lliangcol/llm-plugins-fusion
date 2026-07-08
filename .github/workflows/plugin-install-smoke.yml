@@ -20,7 +20,7 @@ jobs:
       - name: Install Claude CLI
         run: npm install -g @anthropic-ai/claude-code
       - name: Validate user-scope install path
-        run: node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
+        run: node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home
       - name: Record smoke context
         if: always()
         run: |
@@ -31,6 +31,7 @@ jobs:
             echo "runner=${RUNNER_NAME}"
             echo "mutates_user_scope=true"
             echo "scope=disposable GitHub-hosted runner"
+            echo "isolated_home=true"
             date -u +"completed_at=%Y-%m-%dT%H:%M:%SZ"
           } > .metrics/plugin-install-smoke/context.txt
       - name: Upload failure context

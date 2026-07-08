@@ -46,7 +46,8 @@ Operating system:
 ## Validation Results
 
 ```text
-node scripts/generate-registry.mjs --write:
+node scripts/generate-registry.mjs --write (only if sources changed):
+node scripts/generate-registry.mjs (no-drift verification):
 node scripts/validate-all.mjs:
 node scripts/validate-github-workflows.mjs:
 node scripts/validate-runtime-smoke.mjs:
@@ -57,7 +58,8 @@ node scripts/validate-plugin-install.mjs:
 git diff --check:
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh:
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh:
-Windows CI non-Bash smoke:
+Windows CI Node/PowerShell smoke:
+Windows CI Bash smoke:
 ```
 
 ## Skipped Checks
@@ -66,19 +68,20 @@ Windows CI non-Bash smoke:
 Skipped count:
 Skipped checks:
 Reason:
-CI/Linux replacement evidence:
+CI/Linux or CI/Windows replacement evidence:
 ```
 
 If Windows local validation reports skipped checks because Bash is unavailable,
 do not describe hook shell syntax or runtime smoke as locally passed. Promotion
-requires CI/Linux evidence that both hook `bash -n` checks and runtime smoke
-passed.
+requires CI/Linux or CI/Windows Bash evidence that both hook `bash -n` checks
+and runtime smoke passed.
 
 ## Release Notes Evidence
 
 ```text
 CHANGELOG section:
-Generated marketplace outputs current:
+Generated marketplace outputs regenerated:
+Generated marketplace outputs no-drift verification:
 README badge/version current:
 Catalog current:
 Deferred v3/public portal wording checked:

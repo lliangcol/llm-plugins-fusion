@@ -2,9 +2,47 @@ import { spawn } from 'node:child_process';
 
 export const DEFAULT_TIMEOUT_MS = 120_000;
 export const DEFAULT_PROBE_TIMEOUT_MS = 10_000;
+export const DEFAULT_MAX_OUTPUT_BYTES = 1_048_576;
 
 export function formatCommand(command, args = []) {
   return [command, ...args].join(' ');
+}
+
+function normalizeOutputLimit(value) {
+  if (value === null || value === false || value === Number.POSITIVE_INFINITY) {
+    return Number.POSITIVE_INFINITY;
+  }
+  return Number.isFinite(value) && value >= 0 ? value : DEFAULT_MAX_OUTPUT_BYTES;
+}
+
+function appendCapturedChunk(current, chunk, state, maxBytes) {
+  const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk));
+  if (maxBytes === Number.POSITIVE_INFINITY) {
+    state.bytes += buffer.length;
+    return current + buffer.toString('utf8');
+  }
+
+  const remaining = maxBytes - state.bytes;
+  if (remaining <= 0) {
+    state.truncated = true;
+    state.omittedBytes += buffer.length;
+    return current;
+  }
+
+  if (buffer.length <= remaining) {
+    state.bytes += buffer.length;
+    return current + buffer.toString('utf8');
+  }
+
+  state.bytes += remaining;
+  state.truncated = true;
+  state.omittedBytes += buffer.length - remaining;
+  return current + buffer.subarray(0, remaining).toString('utf8');
+}
+
+function capturedOutput(value, state, maxBytes) {
+  if (!state.truncated) return value;
+  return `${value}\n[output truncated after ${maxBytes} bytes; ${state.omittedBytes} bytes omitted]\n`;
 }
 
 export function runProcess(label, command, args = [], options = {}) {
@@ -15,9 +53,13 @@ export function runProcess(label, command, args = [], options = {}) {
     shell = false,
     timeoutMs = DEFAULT_TIMEOUT_MS,
     capture = true,
+    maxOutputBytes = DEFAULT_MAX_OUTPUT_BYTES,
   } = options;
 
   const startedAt = Date.now();
+  const outputLimit = normalizeOutputLimit(maxOutputBytes);
+  const stdoutState = { bytes: 0, omittedBytes: 0, truncated: false };
+  const stderrState = { bytes: 0, omittedBytes: 0, truncated: false };
   let stdout = '';
   let stderr = '';
   let spawnError = null;
@@ -55,8 +97,10 @@ export function runProcess(label, command, args = [], options = {}) {
         timedOut: false,
         error,
         errorMessage: error.message,
-        stdout,
-        stderr,
+        stdout: capturedOutput(stdout, stdoutState, outputLimit),
+        stderr: capturedOutput(stderr, stderrState, outputLimit),
+        stdoutTruncated: stdoutState.truncated,
+        stderrTruncated: stderrState.truncated,
         ms: Date.now() - startedAt,
       });
       return;
@@ -82,18 +126,20 @@ export function runProcess(label, command, args = [], options = {}) {
         timedOut,
         error,
         errorMessage: error.message,
-        stdout,
-        stderr,
+        stdout: capturedOutput(stdout, stdoutState, outputLimit),
+        stderr: capturedOutput(stderr, stderrState, outputLimit),
+        stdoutTruncated: stdoutState.truncated,
+        stderrTruncated: stderrState.truncated,
         ms: Date.now() - startedAt,
       });
     });
 
     if (capture) {
       child.stdout?.on('data', (chunk) => {
-        stdout += chunk;
+        stdout = appendCapturedChunk(stdout, chunk, stdoutState, outputLimit);
       });
       child.stderr?.on('data', (chunk) => {
-        stderr += chunk;
+        stderr = appendCapturedChunk(stderr, chunk, stderrState, outputLimit);
       });
     }
 
@@ -116,8 +162,10 @@ export function runProcess(label, command, args = [], options = {}) {
         timedOut,
         error: spawnError,
         errorMessage,
-        stdout,
-        stderr,
+        stdout: capturedOutput(stdout, stdoutState, outputLimit),
+        stderr: capturedOutput(stderr, stderrState, outputLimit),
+        stdoutTruncated: stdoutState.truncated,
+        stderrTruncated: stderrState.truncated,
         ms: Date.now() - startedAt,
       });
     });

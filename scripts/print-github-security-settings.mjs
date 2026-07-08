@@ -23,6 +23,7 @@ const requiredChecks = [
   'Validate Workflow Fixtures',
   'Validate Docs',
   'Windows Node Smoke',
+  'Windows Bash Smoke',
   'Dependency Review',
   'CodeQL / Analyze JavaScript',
 ];

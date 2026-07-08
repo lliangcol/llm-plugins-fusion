@@ -16,6 +16,7 @@
 | `BASE` | No | 基线分支 | `main` |
 | `GOAL` | No | 本轮目标 | `修到可合并` |
 | `REVIEW_MODE` | No | `branch` / `staged` / `full` | `full` |
+| `INCLUDE_UNTRACKED_CONTENT` | No | 仅与 `REVIEW_MODE=full` 搭配；显式允许未跟踪文件内容进入 review patch，且必须通过大小、二进制、路径和 secret 检查 | `true` |
 
 ## 资源说明
 
