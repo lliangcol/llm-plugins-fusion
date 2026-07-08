@@ -38,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   当前文档清单、归档边界和文档维护规则。
 - 新增 `docs/getting-started.md` 极简上手文档，聚焦安装、`/route`、五主命令、
   Codex 前置条件和常见失败处理。
+- 新增 Cline、Aider 和 OpenHands consumer setup 文档，补齐 multi-assistant
+  Markdown skill consumption 的 public-safe 指引与验证边界。
 - 新增无第三方依赖的 `package.json` 维护者便捷入口，提供 `validate`、
   `validate:docs`、`validate:schemas`、`validate:runtime`、
   `validate:regression`、`scan:distribution`、`lint`、`test` 和

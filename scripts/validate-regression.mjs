@@ -1312,6 +1312,42 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
+    const clineSetupPath = resolve(fixtureRoot, 'docs/consumers/cline-setup.md');
+    const clineSetup = readFileSync(clineSetupPath, 'utf8');
+    assert.match(clineSetup, /broadening permissions or sandbox settings/);
+    writeFileSync(
+      clineSetupPath,
+      clineSetup.replace(
+        /## Public-Safe Boundaries[\s\S]*?## Fallback Notes\r?\n/,
+        '## Fallback Notes\n',
+      ),
+      'utf8',
+    );
+
+    const aiderSetupPath = resolve(fixtureRoot, 'docs/consumers/aider-setup.md');
+    const aiderSetup = readFileSync(aiderSetupPath, 'utf8');
+    assert.match(aiderSetup, /treating the check as passed/);
+    writeFileSync(
+      aiderSetupPath,
+      aiderSetup.replace(
+        /## Public-Safe Boundaries[\s\S]*?## Fallback Notes\r?\n/,
+        '## Fallback Notes\n',
+      ),
+      'utf8',
+    );
+
+    const openHandsSetupPath = resolve(fixtureRoot, 'docs/consumers/openhands-setup.md');
+    const openHandsSetup = readFileSync(openHandsSetupPath, 'utf8');
+    assert.match(openHandsSetup, /sandbox or workflow permissions/);
+    writeFileSync(
+      openHandsSetupPath,
+      openHandsSetup.replace(
+        /## Public-Safe Boundaries[\s\S]*?## Fallback Notes\r?\n/,
+        '## Fallback Notes\n',
+      ),
+      'utf8',
+    );
+
     const geminiSetupPath = resolve(fixtureRoot, 'docs/consumers/gemini-cli-setup.md');
     const geminiSetup = readFileSync(geminiSetupPath, 'utf8');
     assert.match(geminiSetup, /global tool permissions/);
