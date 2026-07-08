@@ -115,6 +115,7 @@ npm run lint
 npm run ci:quick
 npm run ci:full
 npm run validate
+npm run validate:drift
 npm run validate:maintainer
 npm run validate:docs
 npm run validate:schemas

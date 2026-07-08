@@ -39,6 +39,7 @@ Use the live GitHub check names if they differ, but keep the coverage equivalent
 Verify Agents
 Validate Schemas
 Validate Registry Fixtures
+Validate Generated Drift
 Validate Capability Packs
 Validate Claude Compatibility
 Plugin Install Dry Run
@@ -74,7 +75,8 @@ Before a release:
 1. Confirm `main` protection exists and references the current check names.
 2. Confirm code scanning, secret scanning, Dependabot alerts, and dependency
    graph are enabled.
-3. Confirm release validation uses `npm run ci:full` and install smoke dry-run.
+3. Confirm release validation uses `npm run validate:maintainer` and install
+   smoke dry-run.
 4. Record any unavailable GitHub platform checks in the release evidence.
 
 For a local read-only checklist printout:

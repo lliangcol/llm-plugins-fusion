@@ -14,6 +14,7 @@
     "ci:quick": "node scripts/validate-schemas.mjs && node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs && node scripts/validate-hooks.mjs",
     "ci:full": "node scripts/validate-all.mjs",
     "validate": "node scripts/validate-all.mjs",
+    "validate:drift": "node scripts/generate-registry.mjs",
     "validate:maintainer": "node scripts/validate-maintainer.mjs",
     "validate:schemas": "node scripts/validate-schemas.mjs",
     "validate:docs": "node scripts/validate-docs.mjs",

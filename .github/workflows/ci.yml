@@ -29,6 +29,12 @@ jobs:
       label: Validate Registry Fixtures
       command: node scripts/validate-registry-fixtures.mjs
 
+  validate-generated-drift:
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Validate Generated Drift
+      command: npm run validate:drift
+
   validate-packs:
     uses: ./.github/workflows/reusable-node-check.yml
     with:

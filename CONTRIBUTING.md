@@ -41,6 +41,7 @@
    `lint` 和 `test` 入口，仍不声明 `check` / `build` 脚本名。
    ```bash
    npm run validate
+   npm run validate:drift
    npm run validate:docs
    npm run validate:schemas
    npm run validate:github-workflows
@@ -99,7 +100,7 @@
 2. marketplace 展示字段和 repository-local metadata 写在 `.claude-plugin/registry.source.json`。
 3. 每个 entry 都必须声明 maintainer、trust/risk/deprecated/last-updated、compatibility evidence 和 review policy 链接。
 4. 运行 `node scripts/generate-registry.mjs --write` 生成 marketplace、metadata 和 catalog。
-5. 运行 `node scripts/validate-schemas.mjs`、`node scripts/validate-registry-fixtures.mjs`、`node scripts/validate-claude-compat.mjs`、`node scripts/scan-distribution-risk.mjs` 和 `node scripts/validate-docs.mjs`。
+5. 运行 `npm run validate:drift`、`node scripts/validate-schemas.mjs`、`node scripts/validate-registry-fixtures.mjs`、`node scripts/validate-claude-compat.mjs`、`node scripts/scan-distribution-risk.mjs` 和 `node scripts/validate-docs.mjs`。
 
 PR 需要说明 metadata rationale、安全影响、维护 owner 和本地校验输出；仓库模板见 [`.github/pull_request_template.md`](./.github/pull_request_template.md)。
 

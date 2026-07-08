@@ -47,10 +47,10 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 - Release evidence template: `docs/releases/release-evidence-template.md`
 - Maintainer npm shortcuts: `package.json` (`doctor`, `validate`,
   `test`, `lint`, `ci:quick`, `ci:full`, `validate:maintainer`,
-  `validate:docs`, `validate:schemas`, `validate:github-workflows`,
-  `validate:runtime`, `validate:regression`, `validate:surface`,
-  `validate:workflow`, `scan:distribution`, `scaffold:consumer`; no
-  `check`/`build` script names)
+  `validate:drift`, `validate:docs`, `validate:schemas`,
+  `validate:github-workflows`, `validate:runtime`, `validate:regression`,
+  `validate:surface`, `validate:workflow`, `scan:distribution`,
+  `scaffold:consumer`; no `check`/`build` script names)
 - Repository validation scripts require Node.js 20+. Hook shell syntax and
   runtime smoke checks require Bash; Windows without Bash may warning-skip
   local Bash-dependent checks, while CI/Linux and CI/Windows Bash smoke must
@@ -167,6 +167,7 @@ npm run test
 npm run lint
 npm run ci:quick
 npm run ci:full
+npm run validate:drift
 npm run validate
 npm run validate:maintainer
 npm run validate:docs

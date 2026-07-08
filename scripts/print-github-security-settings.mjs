@@ -10,6 +10,7 @@ const requiredChecks = [
   'Verify Agents',
   'Validate Schemas',
   'Validate Registry Fixtures',
+  'Validate Generated Drift',
   'Validate Capability Packs',
   'Validate Claude Compatibility',
   'Plugin Install Dry Run',

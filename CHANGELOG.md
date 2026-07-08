@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   Claude/Codex、版本、exact tag、工作区状态和 generated registry 漂移状态。
 - 新增 `scripts/validate-maintainer.mjs` 与 `npm run validate:maintainer`，把
   默认质量门、registry 生成漂移检查和 `git diff --check` 收敛为维护者发布前入口。
+- 新增 `npm run validate:drift`，作为 generated marketplace、metadata 和 catalog
+  漂移的聚焦检查，并接入 CI required-check 清单。
 - 新增 `scripts/validate-workflow-fixtures.mjs` 与 `npm run validate:workflow`，
   自动校验 `fixtures/workflow/invoice-sync/` 的 public-safe fixture 合约、
   ordering bug 信号、approved plan 边界和 workflow rubric 覆盖。
@@ -78,7 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   layout 的同步关系；README、`CLAUDE.md` 和项目优化计划中的质量门覆盖叙述
   也同步说明权限、库存和 required-check 合约，维护者 quickstart、
   troubleshooting、marketplace trust policy、security review route、registry
-  author workflow 与 compatibility matrix 入口同步描述完整验证范围，release
+  author workflow 与 compatibility matrix 入口同步描述完整验证范围；release
+  workflow 收敛到维护者验证入口并对空 release notes fail-closed；release
   hygiene、runbook 和 evidence template 也把 `validate-github-workflows` 作为
   独立发布证据项记录。
 - GitHub Actions workflow 依赖升级到当前 major line：`actions/checkout@v7`、

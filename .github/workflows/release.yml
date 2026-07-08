@@ -17,8 +17,8 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '20'
-      - name: Full validation
-        run: npm run ci:full
+      - name: Maintainer validation
+        run: npm run validate:maintainer
       - name: Plugin install dry run
         run: node scripts/validate-plugin-install.mjs --dry-run
 
@@ -52,6 +52,10 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           # Extract the section between ## [VERSION] and the next ## [
           NOTES=$(awk "/^## \[$VERSION\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md)
+          if [ -z "$(printf '%s' "$NOTES" | tr -d '[:space:]')" ]; then
+            echo "CHANGELOG.md has no release notes for $VERSION" >&2
+            exit 1
+          fi
           # Write to file to handle multiline
           echo "$NOTES" > /tmp/release-notes.md
           echo "notes_file=/tmp/release-notes.md" >> $GITHUB_OUTPUT
