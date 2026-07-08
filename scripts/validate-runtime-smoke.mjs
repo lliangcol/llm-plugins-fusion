@@ -6,7 +6,7 @@
  * does not run review/verify against a real branch and does not write .codex.
  */
 
-import { chmodSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { commandExists, runProcess } from './lib/process-runner.mjs';
@@ -20,6 +20,7 @@ let skipped = 0;
 async function run(label, args, options = {}) {
   const result = await runProcess(label, 'bash', args, {
     cwd: root,
+    input: options.input,
     timeoutMs: 60_000,
   });
 
@@ -45,18 +46,18 @@ async function run(label, args, options = {}) {
 }
 
 async function runTempBash(label, body, options = {}) {
-  const dirName = `.runtime-smoke-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  const dirAbs = resolve(root, dirName);
-  const scriptRel = `${dirName}/case.sh`;
-  const scriptAbs = resolve(root, scriptRel);
-  mkdirSync(dirAbs);
-  writeFileSync(scriptAbs, `#!/usr/bin/env bash\nset -euo pipefail\n${body}\n`);
-  chmodSync(scriptAbs, 0o755);
-  try {
-    await run(label, [scriptRel], options);
-  } finally {
-    rmSync(dirAbs, { recursive: true, force: true });
-  }
+  const script = `#!/usr/bin/env bash\nset -euo pipefail\n${body}\n`;
+  await run(label, [
+    '-lc',
+    [
+      'tmp_dir=\\$(mktemp -d \\${TMPDIR:-/tmp}/nova-runtime-smoke-XXXXXX)',
+      'trap \'rm -rf "\\$tmp_dir"\' EXIT',
+      'script="\\$tmp_dir/case.sh"',
+      'cat > "\\$script"',
+      'chmod +x "\\$script"',
+      '"\\$script"',
+    ].join('; '),
+  ], { ...options, input: script });
 }
 
 function assertFileDoesNotMatch(label, relPath, pattern) {
