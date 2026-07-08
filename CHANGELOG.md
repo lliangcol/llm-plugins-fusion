@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   默认质量门、registry 生成漂移检查和 `git diff --check` 收敛为维护者发布前入口。
 - 新增 `npm run validate:drift`，作为 generated marketplace、metadata 和 catalog
   漂移的聚焦检查，并接入 CI required-check 清单。
+- 新增 `npm run scan:secrets` 与 `Secret Scan` CI check，复用 source-owned
+  distribution-risk scanner，为 PR 页面提供独立的 secret/private-data 扫描信号。
 - 新增 `scripts/validate-workflow-fixtures.mjs` 与 `npm run validate:workflow`，
   自动校验 `fixtures/workflow/invoice-sync/` 的 public-safe fixture 合约、
   ordering bug 信号、approved plan 边界和 workflow rubric 覆盖。

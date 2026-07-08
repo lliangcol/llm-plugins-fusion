@@ -124,6 +124,7 @@ npm run validate:runtime
 npm run validate:regression
 npm run validate:surface
 npm run validate:workflow
+npm run scan:secrets
 npm run scan:distribution
 ```
 

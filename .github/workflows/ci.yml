@@ -95,6 +95,12 @@ jobs:
       label: Scan Distribution Risk
       command: node scripts/scan-distribution-risk.mjs
 
+  secret-scan:
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Secret Scan
+      command: npm run scan:secrets
+
   validate-regression:
     uses: ./.github/workflows/reusable-node-check.yml
     with:

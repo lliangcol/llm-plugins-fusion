@@ -20,6 +20,7 @@ const requiredChecks = [
   'Validate Runtime Smoke',
   'Validate Surface Budget',
   'Scan Distribution Risk',
+  'Secret Scan',
   'Validate Regression',
   'Validate Workflow Fixtures',
   'Validate Docs',

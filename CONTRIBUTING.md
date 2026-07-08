@@ -47,6 +47,7 @@
    npm run validate:github-workflows
    npm run validate:runtime
    npm run validate:regression
+   npm run scan:secrets
    npm run scan:distribution
    ```
 

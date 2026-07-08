@@ -49,7 +49,7 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
   `test`, `lint`, `ci:quick`, `ci:full`, `validate:maintainer`,
   `validate:drift`, `validate:docs`, `validate:schemas`,
   `validate:github-workflows`, `validate:runtime`, `validate:regression`,
-  `validate:surface`, `validate:workflow`, `scan:distribution`,
+  `validate:surface`, `validate:workflow`, `scan:secrets`, `scan:distribution`,
   `scaffold:consumer`; no `check`/`build` script names)
 - Repository validation scripts require Node.js 20+. Hook shell syntax and
   runtime smoke checks require Bash; Windows without Bash may warning-skip

@@ -39,6 +39,7 @@ gate is added, renamed, removed, or moved.
 | `npm run validate:github-workflows` | GitHub workflow contract gate. | Run after workflow, required-check, or release CI changes. |
 | `npm run validate:runtime` | Bash runtime smoke. | Requires Bash locally. |
 | `npm run validate:regression` | Regression tests. | Run after validator, scanner, docs-contract, or scaffold behavior changes. |
+| `npm run scan:secrets` | Source-owned secret scan gate. | Alias for `node scripts/scan-distribution-risk.mjs`; exposes a named PR check for secret/private-data signals. |
 | `npm run scan:distribution` | Public distribution risk scan. | Redacts findings and blocks tracked private/Codex runtime artifacts. |
 
 ## CI Check Map
@@ -58,6 +59,7 @@ gate is added, renamed, removed, or moved.
 | Validate Runtime Smoke | `node scripts/validate-runtime-smoke.mjs` | Codex loop Bash script syntax, guards, and safe failure paths. |
 | Validate Surface Budget | `node scripts/validate-surface-budget.mjs` | Prompt-surface size guardrails and allowlist discipline. |
 | Scan Distribution Risk | `node scripts/scan-distribution-risk.mjs` | Public/private boundary and tracked runtime artifact scan. |
+| Secret Scan | `npm run scan:secrets` | Source-owned PR signal for secret-like tokens, real `.env` values, private endpoints, and machine-local paths. |
 | Validate Regression | `node scripts/validate-regression.mjs` | Contract regression suite for validators, docs, scaffold, and scans. |
 | Validate Workflow Fixtures | `node scripts/validate-workflow-fixtures.mjs` | Workflow fixture integrity and redaction boundaries. |
 | Validate Docs | `node scripts/validate-docs.mjs` | Documentation contracts, links, navigation, and public-safe wording. |

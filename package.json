@@ -23,6 +23,7 @@
     "validate:regression": "node scripts/validate-regression.mjs",
     "validate:surface": "node scripts/validate-surface-budget.mjs",
     "validate:workflow": "node scripts/validate-workflow-fixtures.mjs",
+    "scan:secrets": "node scripts/scan-distribution-risk.mjs",
     "scan:distribution": "node scripts/scan-distribution-risk.mjs",
     "scaffold:consumer": "node scripts/scaffold-consumer-profile.mjs"
   }
