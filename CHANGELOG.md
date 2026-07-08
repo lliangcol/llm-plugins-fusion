@@ -9,11 +9,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-07-08
+
 ### Added
 - 新增 `scripts/doctor.mjs` 与 `npm run doctor`，以只读方式汇总 Node/Git/Bash/
   Claude/Codex、版本、exact tag、工作区状态和 generated registry 漂移状态。
 - 新增 `scripts/validate-maintainer.mjs` 与 `npm run validate:maintainer`，把
   默认质量门、registry 生成漂移检查和 `git diff --check` 收敛为维护者发布前入口。
+- 新增 `npm run validate:drift`，作为 generated marketplace、metadata 和 catalog
+  漂移的聚焦检查，并接入 CI required-check 清单。
+- 新增 `npm run scan:secrets` 与 `Secret Scan` CI check，复用 source-owned
+  distribution-risk scanner，为 PR 页面提供独立的 secret/private-data 扫描信号。
 - 新增 `scripts/validate-workflow-fixtures.mjs` 与 `npm run validate:workflow`，
   自动校验 `fixtures/workflow/invoice-sync/` 的 public-safe fixture 合约、
   ordering bug 信号、approved plan 边界和 workflow rubric 覆盖。
@@ -34,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   当前文档清单、归档边界和文档维护规则。
 - 新增 `docs/getting-started.md` 极简上手文档，聚焦安装、`/route`、五主命令、
   Codex 前置条件和常见失败处理。
+- 新增 Cline、Aider 和 OpenHands consumer setup 文档，补齐 multi-assistant
+  Markdown skill consumption 的 public-safe 指引与验证边界。
 - 新增无第三方依赖的 `package.json` 维护者便捷入口，提供 `validate`、
   `validate:docs`、`validate:schemas`、`validate:runtime`、
   `validate:regression`、`scan:distribution`、`lint`、`test` 和
@@ -67,6 +75,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   并确保 Claude/Codex CLI 缺失仍作为 warning 而非硬失败处理。
 
 ### Changed
+- Release validation now writes a CI-only validation evidence artifact with
+  maintainer-gate timing data, and plugin install smoke uploads context for
+  successful runs as well as failures.
+- Codex verify 现在与 review 的未跟踪文件内容边界保持一致：默认只列出未跟踪
+  文件名，只有显式 `INCLUDE_UNTRACKED_CONTENT=true` / `--include-untracked-content`
+  且通过安全检查后才会把内容写入 verify patch；同时同步 Codex command / skill
+  参数文档。
 - 扩展 `scripts/validate-docs.mjs` 与 regression 覆盖，校验公开定位、
   exact release tag 推广边界和 maintainer diagnostic warning 语义，防止
   moving `main`、public portal 或 skipped Bash check 被误报为稳定发布证据。
@@ -78,7 +93,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   layout 的同步关系；README、`CLAUDE.md` 和项目优化计划中的质量门覆盖叙述
   也同步说明权限、库存和 required-check 合约，维护者 quickstart、
   troubleshooting、marketplace trust policy、security review route、registry
-  author workflow 与 compatibility matrix 入口同步描述完整验证范围，release
+  author workflow 与 compatibility matrix 入口同步描述完整验证范围；release
+  workflow 收敛到维护者验证入口并对空 release notes fail-closed；release
   hygiene、runbook 和 evidence template 也把 `validate-github-workflows` 作为
   独立发布证据项记录。
 - GitHub Actions workflow 依赖升级到当前 major line：`actions/checkout@v7`、
@@ -500,7 +516,8 @@ must not replace the exact release tag as stable evidence.
 - MIT 开源协议
 - 中英双语 README 文档
 
-[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.0.0...v2.1.0
 [2.0.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.9...v2.0.0

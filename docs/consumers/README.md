@@ -20,6 +20,9 @@ workflow details into this public repository.
 | [frontend-project-template.md](frontend-project-template.md) | Redacted template for a private frontend application. |
 | [workbench-template.md](workbench-template.md) | Public-safe template for organizing private requirements, plans, reviews, checkpoints, prompts, and handoff artifacts. |
 | [cursor-setup.md](cursor-setup.md) | Public-safe guidance for consuming nova skills from Cursor rules. |
+| [cline-setup.md](cline-setup.md) | Public-safe guidance for consuming nova skills from Cline project instructions. |
+| [aider-setup.md](aider-setup.md) | Public-safe guidance for applying nova skills through Aider edit workflows. |
+| [openhands-setup.md](openhands-setup.md) | Public-safe guidance for OpenHands workspace routing to nova skills. |
 | [gemini-cli-setup.md](gemini-cli-setup.md) | Public-safe guidance for consuming nova skills from Gemini CLI context or skills. |
 | [opencode-setup.md](opencode-setup.md) | Public-safe guidance for OpenCode intent-to-skill routing. |
 | [copilot-setup.md](copilot-setup.md) | Public-safe guidance for GitHub Copilot instructions and persona mapping. |
@@ -35,8 +38,9 @@ This repository may describe:
 - General pack guidance that applies across projects.
 - Generic workbench structure and prompt-template guidance for private
   consumer artifacts.
-- Generic cross-tool setup guidance for Cursor, Gemini CLI, OpenCode, Copilot,
-  Codex, and other agents that consume Markdown instructions.
+- Generic cross-tool setup guidance for Cursor, Cline, Aider, OpenHands,
+  Gemini CLI, OpenCode, Copilot, Codex, and other agents that consume Markdown
+  instructions.
 
 This repository must not describe:
 

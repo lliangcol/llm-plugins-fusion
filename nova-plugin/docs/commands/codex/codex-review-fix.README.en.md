@@ -16,6 +16,9 @@
 | `BASE` | No | Base branch for review / verify | `main` |
 | `GOAL` | No | Goal for this fix loop | `make branch mergeable` |
 | `REVIEW_MODE` | No | `branch` / `staged` / `full` | `staged` |
+| `OUTPUT_DIR` | No | Review / verify artifact directory | `.codex/codex-review-fix/custom` |
+| `FIX_SCOPE` | No | Fix-selection policy; does not change script behavior | `high-confidence` |
+| `INCLUDE_UNTRACKED_CONTENT` | No | Only with `REVIEW_MODE=full`; explicitly allows guarded untracked file content into review / verify patches | `true` |
 
 ## Examples
 
@@ -39,4 +42,3 @@
 - `/codex-review-only`: generate a review report only.
 - `/codex-verify-only`: verify against an existing review.
 - `/review-only`: Claude Code review only, without external Codex scripts.
-

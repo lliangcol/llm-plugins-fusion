@@ -21,7 +21,7 @@ metadata:
 | `OUTPUT_DIR` | No | Script default | Review/verify artifact directory passed to Codex scripts as --output-dir. |
 | `GOAL` | No | Fix high-confidence blockers | Natural-language goal for the closure loop. |
 | `FIX_SCOPE` | No | high-confidence | Policy scope for selecting review findings to fix; does not widen script behavior. |
-| `INCLUDE_UNTRACKED_CONTENT` | No | false | When true with `REVIEW_MODE=full`, adds `--include-untracked-content`; untracked files must pass size, binary, path, and secret guards before content is included. |
+| `INCLUDE_UNTRACKED_CONTENT` | No | false | When true with `REVIEW_MODE=full`, adds `--include-untracked-content` to review and verify; untracked files must pass size, binary, path, and secret guards before content is included. |
 
 ## Parameter Resolution
 
@@ -47,7 +47,7 @@ metadata:
 - `REVIEW_MODE=branch` runs `codex-review.sh` without scope flags.
 - `REVIEW_MODE=staged` adds `--only-staged`; `REVIEW_MODE=full` adds `--full`.
 - `REVIEW_MODE=full` lists untracked file names but does not include untracked file content unless `INCLUDE_UNTRACKED_CONTENT=true`.
-- `INCLUDE_UNTRACKED_CONTENT=true` adds `--include-untracked-content`; the scripts reject likely secrets, sensitive paths, binary files, and oversized untracked files before writing content into the review patch.
+- `INCLUDE_UNTRACKED_CONTENT=true` adds `--include-untracked-content` to review and verify; the scripts reject likely secrets, sensitive paths, binary files, and oversized untracked files before writing content into review or verify patches.
 - `BASE` is passed as `--base <BASE>` to both review and verify scripts.
 - `OUTPUT_DIR`, when provided, is passed as `--output-dir <OUTPUT_DIR>` to review and verify.
 - If `OUTPUT_DIR` is provided, use `<OUTPUT_DIR>/review.md` for the fix step and write local checks to `<OUTPUT_DIR>/artifacts/checks.txt` so `codex-verify.sh` can auto-detect them when `--checks-file` is not passed.
@@ -198,6 +198,9 @@ Migrated from the pre-thin slash command contract for `/codex-review-fix` (`nova
 - `BASE`：可选，review/verify 基线分支，默认自动识别
 - `GOAL`：可选，本轮修复目标，例如“修到可合并”
 - `REVIEW_MODE`：可选，`branch` / `staged` / `full`
+- `OUTPUT_DIR`：可选，review/verify artifact 输出目录
+- `FIX_SCOPE`：可选，修复选择策略；不改变脚本行为
+- `INCLUDE_UNTRACKED_CONTENT`：可选，默认为 false；仅与 `REVIEW_MODE=full` 搭配，显式允许未跟踪文件内容进入 review/verify patch
 
 如果未提供，按当前仓库状态做最保守且最合理的选择。
 
@@ -219,6 +222,7 @@ Migrated from the pre-thin slash command contract for `/codex-review-fix` (`nova
 - `--only-staged`
 - `--full`
 - `--include-untracked-content` only when `REVIEW_MODE=full` and `INCLUDE_UNTRACKED_CONTENT=true`
+- `--output-dir <OUTPUT_DIR>`
 
 ##### 第二步：读取 review 结果
 
@@ -246,6 +250,9 @@ review 脚本会把结果写入 `.codex/codex-review-fix/latest-artifacts/review
 执行：
 
 `bash "${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-fix/scripts/codex-verify.sh" --review-file .codex/codex-review-fix/latest-artifacts/review.md --checks-file .codex/codex-review-fix/latest-artifacts/checks.txt`
+
+Append `--include-untracked-content` to verify only when `REVIEW_MODE=full` and
+`INCLUDE_UNTRACKED_CONTENT=true`.
 
 ##### 第六步：输出总结
 

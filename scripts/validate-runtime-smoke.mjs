@@ -6,7 +6,7 @@
  * does not run review/verify against a real branch and does not write .codex.
  */
 
-import { chmodSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { commandExists, runProcess } from './lib/process-runner.mjs';
@@ -20,6 +20,7 @@ let skipped = 0;
 async function run(label, args, options = {}) {
   const result = await runProcess(label, 'bash', args, {
     cwd: root,
+    input: options.input,
     timeoutMs: 60_000,
   });
 
@@ -45,18 +46,20 @@ async function run(label, args, options = {}) {
 }
 
 async function runTempBash(label, body, options = {}) {
-  const dirName = `.runtime-smoke-${process.pid}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-  const dirAbs = resolve(root, dirName);
-  const scriptRel = `${dirName}/case.sh`;
-  const scriptAbs = resolve(root, scriptRel);
-  mkdirSync(dirAbs);
-  writeFileSync(scriptAbs, `#!/usr/bin/env bash\nset -euo pipefail\n${body}\n`);
-  chmodSync(scriptAbs, 0o755);
-  try {
-    await run(label, [scriptRel], options);
-  } finally {
-    rmSync(dirAbs, { recursive: true, force: true });
-  }
+  const script = `#!/usr/bin/env bash\nset -euo pipefail\n${body}\n`;
+  const wrapper = [
+    'set -euo pipefail',
+    'tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/nova-runtime-smoke-XXXXXX")"',
+    'trap \'rm -rf "$tmp_dir"\' EXIT',
+    'script="$tmp_dir/case.sh"',
+    'cat > "$script" <<\'NOVA_RUNTIME_SMOKE_SCRIPT\'',
+    script,
+    'NOVA_RUNTIME_SMOKE_SCRIPT',
+    'chmod +x "$script"',
+    '"$script"',
+    '',
+  ].join('\n');
+  await run(label, ['-s'], { ...options, input: wrapper });
 }
 
 function assertFileDoesNotMatch(label, relPath, pattern) {
@@ -112,7 +115,7 @@ await run('codex-review.sh --help', [
 await run('codex-verify.sh --help', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/codex-verify.sh',
   '--help',
-], { outputPattern: /Usage: codex-verify\.sh/ });
+], { outputPattern: /--include-untracked-content/ });
 
 await run('run-project-checks.sh --help', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh',
@@ -144,6 +147,16 @@ await run('codex-verify.sh requires option values', [
   '--review-file',
   '--base',
 ], { expectFailure: true, outputPattern: /--review-file 需要参数值/ });
+
+assertFileContainsAll(
+  'codex-verify.sh keeps untracked content opt-in',
+  'nova-plugin/skills/nova-codex-review-fix/scripts/codex-verify.sh',
+  [
+    /INCLUDE_UNTRACKED_CONTENT=false/,
+    /--include-untracked-content/,
+    /未跟踪文件内容默认不写入 verify patch/,
+  ],
+);
 
 await run('run-project-checks.sh rejects unknown args', [
   'nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh',

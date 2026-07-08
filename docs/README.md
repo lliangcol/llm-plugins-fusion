@@ -109,6 +109,9 @@ docs/
 | [consumers/frontend-project-template.md](consumers/frontend-project-template.md) | Redacted frontend project profile template. |
 | [consumers/workbench-template.md](consumers/workbench-template.md) | Private workbench structure for requirements, plans, reviews, prompts, and handoffs. |
 | [consumers/cursor-setup.md](consumers/cursor-setup.md) | Cursor setup for consuming nova skills. |
+| [consumers/cline-setup.md](consumers/cline-setup.md) | Cline setup for consuming nova skills. |
+| [consumers/aider-setup.md](consumers/aider-setup.md) | Aider setup for consuming nova skills. |
+| [consumers/openhands-setup.md](consumers/openhands-setup.md) | OpenHands setup for consuming nova skills. |
 | [consumers/gemini-cli-setup.md](consumers/gemini-cli-setup.md) | Gemini CLI setup for consuming nova workflows. |
 | [consumers/opencode-setup.md](consumers/opencode-setup.md) | OpenCode intent-to-skill routing notes. |
 | [consumers/copilot-setup.md](consumers/copilot-setup.md) | GitHub Copilot instruction mapping. |

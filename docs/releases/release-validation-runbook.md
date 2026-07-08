@@ -54,6 +54,11 @@ Maintainers can use the dependency-free wrapper for the last three local checks:
 npm run validate:maintainer
 ```
 
+The tag release workflow also writes `.codex/release-validation-evidence.md`
+and uploads it with `.metrics/validation-timings.json` as the
+`release-validation-evidence` artifact. Treat that artifact as CI evidence, not
+as a tracked repository file.
+
 Expected conditions:
 
 - `git status --short` is empty, or every change is intentionally part of the

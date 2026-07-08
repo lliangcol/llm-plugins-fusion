@@ -10,6 +10,7 @@ REVIEW_FILE=""
 BASE_BRANCH=""
 OUTPUT_DIR=""
 CHECKS_FILE=""
+INCLUDE_UNTRACKED_CONTENT=false
 
 require_option_value() {
   local option="$1"
@@ -41,14 +42,20 @@ while [[ $# -gt 0 ]]; do
       CHECKS_FILE="${2:-}"
       shift 2
       ;;
+    --include-untracked-content)
+      INCLUDE_UNTRACKED_CONTENT=true
+      shift
+      ;;
     -h|--help)
       cat <<'EOF'
-Usage: codex-verify.sh --review-file <path> [--base <branch>] [--output-dir <dir>] [--checks-file <path>]
+Usage: codex-verify.sh --review-file <path> [--base <branch>] [--output-dir <dir>] [--checks-file <path>] [--include-untracked-content]
 
   --review-file  上一轮 review.md 路径
   --base         基线分支，默认自动识别
   --output-dir   输出目录，默认复用 review 所在目录
   --checks-file  本地 checks 输出文件，可选
+  --include-untracked-content
+                 显式允许未跟踪文件内容进入 verify patch，且需通过安全检查
 EOF
       exit 0
       ;;
@@ -103,7 +110,11 @@ git status --short > "${STATUS_FILE}"
   printf '\n### worktree diff\n'
   git diff --binary --find-renames HEAD || true
 } > "${PATCH_FILE}"
-write_untracked_diff "${PATCH_FILE}"
+if [[ "$INCLUDE_UNTRACKED_CONTENT" == true ]]; then
+  write_untracked_diff "${PATCH_FILE}"
+else
+  warn "未跟踪文件内容默认不写入 verify patch；如需包含内容，请显式使用 --include-untracked-content。"
+fi
 {
   git diff --name-only "${BASE_BRANCH}...HEAD" || true
   git diff --name-only HEAD || true

@@ -17,10 +17,48 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: '20'
-      - name: Full validation
-        run: npm run ci:full
+      - name: Maintainer validation
+        env:
+          NOVA_VALIDATE_WRITE_TIMINGS: '1'
+        run: npm run validate:maintainer
       - name: Plugin install dry run
         run: node scripts/validate-plugin-install.mjs --dry-run
+      - name: Write release validation evidence
+        if: always()
+        run: |
+          mkdir -p .codex .metrics/release-validation
+          {
+            echo "# Release Validation Evidence"
+            echo
+            echo "- workflow: ${GITHUB_WORKFLOW}"
+            echo "- run_id: ${GITHUB_RUN_ID}"
+            echo "- ref: ${GITHUB_REF}"
+            echo "- sha: ${GITHUB_SHA}"
+            echo "- generated_at: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+            echo
+            echo "## Commands"
+            echo
+            echo '```text'
+            echo "NOVA_VALIDATE_WRITE_TIMINGS=1 npm run validate:maintainer"
+            echo "node scripts/validate-plugin-install.mjs --dry-run"
+            echo '```'
+            if [ -f .metrics/validation-timings.json ]; then
+              echo
+              echo "## Validation Timings"
+              echo
+              echo '```json'
+              cat .metrics/validation-timings.json
+              echo '```'
+            fi
+          } > .codex/release-validation-evidence.md
+      - name: Upload release validation evidence
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-validation-evidence
+          path: |
+            .codex/release-validation-evidence.md
+            .metrics/validation-timings.json
 
   release:
     name: Create GitHub Release
@@ -52,6 +90,10 @@ jobs:
           VERSION="${{ steps.version.outputs.version }}"
           # Extract the section between ## [VERSION] and the next ## [
           NOTES=$(awk "/^## \[$VERSION\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md)
+          if [ -z "$(printf '%s' "$NOTES" | tr -d '[:space:]')" ]; then
+            echo "CHANGELOG.md has no release notes for $VERSION" >&2
+            exit 1
+          fi
           # Write to file to handle multiline
           echo "$NOTES" > /tmp/release-notes.md
           echo "notes_file=/tmp/release-notes.md" >> $GITHUB_OUTPUT

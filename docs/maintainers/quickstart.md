@@ -15,7 +15,7 @@ see [validation-index.md](validation-index.md).
 | Documentation only | `README.md`, `docs/**`, `nova-plugin/docs/**`, `CLAUDE.md`, `AGENTS.md` | `npm run validate:docs`, `git diff --check` |
 | Command or skill behavior | `nova-plugin/commands/**`, `nova-plugin/skills/**`, command docs | `node scripts/lint-frontmatter.mjs`, `node scripts/validate-docs.mjs`, `node scripts/validate-surface-budget.mjs` |
 | Hooks or guardrails | `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, runtime scripts | `node scripts/validate-hooks.mjs`, `bash -n nova-plugin/hooks/scripts/pre-write-check.sh`, `bash -n nova-plugin/hooks/scripts/post-audit-log.sh`, `node scripts/validate-runtime-smoke.mjs` |
-| Registry or marketplace metadata | `.claude-plugin/registry.source.json`, `nova-plugin/.claude-plugin/plugin.json` | `node scripts/generate-registry.mjs --write`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs`, `node scripts/validate-claude-compat.mjs` |
+| Registry or marketplace metadata | `.claude-plugin/registry.source.json`, `nova-plugin/.claude-plugin/plugin.json` | `node scripts/generate-registry.mjs --write`, `npm run validate:drift`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs`, `node scripts/validate-claude-compat.mjs` |
 | CI or release workflow | `.github/workflows/**`, release docs | `npm run validate:github-workflows`, `npm run ci:quick`, `npm run validate:maintainer`, review changed workflow trigger, permissions, workflow inventory, and required-check list |
 | Release preparation | version sources, `CHANGELOG.md`, generated marketplace outputs | `npm run validate:maintainer`, `node scripts/validate-plugin-install.mjs --dry-run`, isolated install smoke when promotion evidence requires it |
 
@@ -27,6 +27,7 @@ npm run test
 npm run lint
 npm run ci:quick
 npm run ci:full
+npm run validate:drift
 npm run validate:maintainer
 npm run validate:github-workflows
 ```
@@ -40,6 +41,13 @@ node scripts/validate-all.mjs --write-timings
 
 The timing file is written under `.metrics/`, which is ignored and must not be
 committed.
+
+Run the focused generated-output gate when registry source, plugin metadata, or
+marketplace catalog files are in scope:
+
+```bash
+npm run validate:drift
+```
 
 ## Diagnostic Result Semantics
 

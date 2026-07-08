@@ -13,7 +13,7 @@
 | Agent routing | [../../docs/agents/ROUTING.md](../../docs/agents/ROUTING.md) | 当前 6 个 core agents 与 capability packs 路由 |
 | Capability packs | [../packs/README.md](../packs/README.md) | 8 个领域能力包与 enhanced / fallback mode |
 | Consumer profiles | [../../docs/consumers/README.md](../../docs/consumers/README.md) | 多项目 consumer profile 契约与脱敏模板 |
-| Cross-tool setup | [../../docs/consumers/README.md](../../docs/consumers/README.md) | Cursor、Gemini CLI、OpenCode、Copilot、Codex 等工具消费 nova skills 的入口 |
+| Cross-tool setup | [../../docs/consumers/README.md](../../docs/consumers/README.md) | Cursor、Cline、Aider、OpenHands、Gemini CLI、OpenCode、Copilot、Codex 等工具消费 nova skills 的入口 |
 | Context-safe workflows | [../../docs/workflows/context-safe-agent-workflows.md](../../docs/workflows/context-safe-agent-workflows.md) | 大任务拆分、checkpoint、review/fix/verify 交付闭环 |
 | Thin harness, fat skills | [../../docs/workflows/thin-harness-fat-skills.md](../../docs/workflows/thin-harness-fat-skills.md) | 脚本、skill、prompt、pack 和 consumer profile 的沉淀边界 |
 | Prompt templates | [../../docs/prompts/README.md](../../docs/prompts/README.md) | Codex、Claude Code 和通用交付文档 prompt 模板 |
@@ -103,6 +103,9 @@ Core agents use documentation-only capability packs for domain routing. Packs do
 - [仓库文档总索引](../../docs/README.md)
 - [Consumer profile templates](../../docs/consumers/README.md)
 - [Cursor setup for nova skills](../../docs/consumers/cursor-setup.md)
+- [Cline setup for nova skills](../../docs/consumers/cline-setup.md)
+- [Aider setup for nova skills](../../docs/consumers/aider-setup.md)
+- [OpenHands setup for nova skills](../../docs/consumers/openhands-setup.md)
 - [Gemini CLI setup for nova skills](../../docs/consumers/gemini-cli-setup.md)
 - [OpenCode setup for nova skills](../../docs/consumers/opencode-setup.md)
 - [Copilot setup for nova skills](../../docs/consumers/copilot-setup.md)

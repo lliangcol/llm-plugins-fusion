@@ -1441,6 +1441,36 @@ function validateConsumerProfileContracts() {
       label: 'consumer Cursor setup no permission bypass boundary',
     },
     {
+      file: 'docs/consumers/cline-setup.md',
+      pattern: /Keep Cline rules in the consumer repository[\s\S]*Do not copy private paths,[\s\S]*repository addresses,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private knowledge base content,[\s\S]*consumer-specific commands into this public repository/,
+      label: 'consumer Cline setup private config boundary',
+    },
+    {
+      file: 'docs/consumers/cline-setup.md',
+      pattern: /If Cline cannot run a selected validator,[\s\S]*instead of broadening permissions or sandbox settings to hide the gap/,
+      label: 'consumer Cline setup no permission bypass boundary',
+    },
+    {
+      file: 'docs/consumers/aider-setup.md',
+      pattern: /Keep private repository names,[\s\S]*local paths,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*runtime\s+flags,[\s\S]*business rules,[\s\S]*private knowledge base content,[\s\S]*real project\s+prompts in the consumer workspace/,
+      label: 'consumer Aider setup private config boundary',
+    },
+    {
+      file: 'docs/consumers/aider-setup.md',
+      pattern: /If Aider cannot run a validator,[\s\S]*instead of\s+treating the check as passed/,
+      label: 'consumer Aider setup no false pass boundary',
+    },
+    {
+      file: 'docs/consumers/openhands-setup.md',
+      pattern: /The consumer project should own any OpenHands workspace setup,[\s\S]*Keep consumer-specific repository addresses,[\s\S]*paths,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private knowledge base content,[\s\S]*local\s+OpenHands configuration in the consumer repository/,
+      label: 'consumer OpenHands setup private config boundary',
+    },
+    {
+      file: 'docs/consumers/openhands-setup.md',
+      pattern: /Do not broaden sandbox or workflow permissions merely to convert a missing\s+tool into a passing check/,
+      label: 'consumer OpenHands setup no permission bypass boundary',
+    },
+    {
       file: 'docs/consumers/gemini-cli-setup.md',
       pattern: /Keep Gemini skill or context files that contain consumer facts in the\s+private consumer project[\s\S]*Do not copy private paths,[\s\S]*repository addresses,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private knowledge\s+base content,[\s\S]*consumer-specific commands into public templates or examples/,
       label: 'consumer Gemini setup private config boundary',

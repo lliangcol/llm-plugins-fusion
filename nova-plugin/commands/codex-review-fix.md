@@ -18,5 +18,5 @@ This is the Codex review -> Claude Code fix -> local checks -> Codex verify loop
 Entry semantics:
 
 - Runs a bounded closure loop for high-confidence review findings.
-- Supports `REVIEW_MODE=branch|staged|full`, optional `BASE`, optional `OUTPUT_DIR`, optional `GOAL`, and `FIX_SCOPE` policy.
+- Supports `REVIEW_MODE=branch|staged|full`, optional `BASE`, optional `OUTPUT_DIR`, optional `GOAL`, `FIX_SCOPE` policy, and `INCLUDE_UNTRACKED_CONTENT=true` only for explicit full-scope untracked content.
 - Only this Codex command may modify project files, and only within the selected fix scope.

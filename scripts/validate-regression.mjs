@@ -156,6 +156,8 @@ test('distribution risk scan detects expanded active secret signals and redacts 
   const gcpKey = `${'AI'}${'za'}${'A'.repeat(35)}`;
   const sshRepo = ['git', '@github.com:example/private-repo.git'].join('');
   const envValue = `SERVICE_TOKEN=${'s'.repeat(12)}`;
+  const unquotedSecret = `${['API', 'KEY'].join('_')}=${'k'.repeat(12)}`;
+  const windowsPath = ['D:', 'Documents', 'GitHub', 'private-project'].join('\\');
   const riskyFlag = ['dangerously', 'skip', 'permissions'].join('-');
   const riskyPermissionAdvice = `Recommended: run claude --${riskyFlag} for faster automation.`;
   const safePermissionWarning = `Do not run claude --${riskyFlag} in this repository.`;
@@ -167,6 +169,8 @@ test('distribution risk scan detects expanded active secret signals and redacts 
       azureSecret,
       gcpKey,
       sshRepo,
+      unquotedSecret,
+      windowsPath,
       riskyPermissionAdvice,
       safePermissionWarning,
     ].join('\n'), 'utf8');
@@ -180,13 +184,15 @@ test('distribution risk scan detects expanded active secret signals and redacts 
       'Azure storage secret',
       'GCP API key',
       'private SSH repository URL',
+      'hard-coded secret assignment',
+      'machine-local absolute path',
       'high-risk blanket permission advice',
       'real .env value',
     ]) {
       assert.ok(labels.has(expected), `missing ${expected}`);
     }
     const rendered = result.errors.map(formatFinding).join('\n');
-    for (const secret of [jwt, npmToken, azureSecret, gcpKey, sshRepo, envValue]) {
+    for (const secret of [jwt, npmToken, azureSecret, gcpKey, sshRepo, envValue, unquotedSecret, windowsPath]) {
       assert.equal(rendered.includes(secret), false, `rendered output leaked ${secret}`);
     }
   } finally {
@@ -1300,6 +1306,42 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     writeFileSync(
       cursorSetupPath,
       cursorSetup.replace(
+        /## Public-Safe Boundaries[\s\S]*?## Fallback Notes\r?\n/,
+        '## Fallback Notes\n',
+      ),
+      'utf8',
+    );
+
+    const clineSetupPath = resolve(fixtureRoot, 'docs/consumers/cline-setup.md');
+    const clineSetup = readFileSync(clineSetupPath, 'utf8');
+    assert.match(clineSetup, /broadening permissions or sandbox settings/);
+    writeFileSync(
+      clineSetupPath,
+      clineSetup.replace(
+        /## Public-Safe Boundaries[\s\S]*?## Fallback Notes\r?\n/,
+        '## Fallback Notes\n',
+      ),
+      'utf8',
+    );
+
+    const aiderSetupPath = resolve(fixtureRoot, 'docs/consumers/aider-setup.md');
+    const aiderSetup = readFileSync(aiderSetupPath, 'utf8');
+    assert.match(aiderSetup, /treating the check as passed/);
+    writeFileSync(
+      aiderSetupPath,
+      aiderSetup.replace(
+        /## Public-Safe Boundaries[\s\S]*?## Fallback Notes\r?\n/,
+        '## Fallback Notes\n',
+      ),
+      'utf8',
+    );
+
+    const openHandsSetupPath = resolve(fixtureRoot, 'docs/consumers/openhands-setup.md');
+    const openHandsSetup = readFileSync(openHandsSetupPath, 'utf8');
+    assert.match(openHandsSetup, /sandbox or workflow permissions/);
+    writeFileSync(
+      openHandsSetupPath,
+      openHandsSetup.replace(
         /## Public-Safe Boundaries[\s\S]*?## Fallback Notes\r?\n/,
         '## Fallback Notes\n',
       ),

@@ -14,6 +14,7 @@
 | --- | --- | --- | --- |
 | `BASE` | No | Base branch | `main` |
 | `REVIEW_MODE` | No | `branch` / `staged` / `full` | `staged` |
+| `OUTPUT_DIR` | No | Review artifact directory | `.codex/codex-review-fix/custom` |
 
 ## Examples
 

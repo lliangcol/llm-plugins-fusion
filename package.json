@@ -1,6 +1,6 @@
 {
   "name": "llm-plugins-fusion-maintenance",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "private": true,
   "description": "Maintainer shortcuts for validating the llm-plugins-fusion repository.",
   "type": "module",
@@ -14,6 +14,7 @@
     "ci:quick": "node scripts/validate-schemas.mjs && node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs && node scripts/validate-hooks.mjs",
     "ci:full": "node scripts/validate-all.mjs",
     "validate": "node scripts/validate-all.mjs",
+    "validate:drift": "node scripts/generate-registry.mjs",
     "validate:maintainer": "node scripts/validate-maintainer.mjs",
     "validate:schemas": "node scripts/validate-schemas.mjs",
     "validate:docs": "node scripts/validate-docs.mjs",
@@ -22,6 +23,7 @@
     "validate:regression": "node scripts/validate-regression.mjs",
     "validate:surface": "node scripts/validate-surface-budget.mjs",
     "validate:workflow": "node scripts/validate-workflow-fixtures.mjs",
+    "scan:secrets": "node scripts/scan-distribution-risk.mjs",
     "scan:distribution": "node scripts/scan-distribution-risk.mjs",
     "scaffold:consumer": "node scripts/scaffold-consumer-profile.mjs"
   }
