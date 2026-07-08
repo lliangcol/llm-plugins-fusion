@@ -5,7 +5,8 @@ Date: 2026-06-24
 
 Use this page for the shortest maintainer path from a planned change to the
 right validation evidence. Keep repository facts in [CLAUDE.md](../../CLAUDE.md)
-and use this document as an operational checklist.
+and use this document as an operational checklist. For the full gate inventory,
+see [validation-index.md](validation-index.md).
 
 ## Common Change Paths
 
@@ -70,8 +71,9 @@ node scripts/validate-plugin-install.mjs --dry-run
 Run the mutation path only in CI or an isolated test-user environment:
 
 ```bash
-node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
+node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home
 ```
 
 The scheduled/manual `Plugin Install Smoke` workflow runs on a disposable
-GitHub-hosted runner and is the preferred place for this evidence.
+GitHub-hosted runner with temporary HOME/XDG directories and is the preferred
+place for this evidence.

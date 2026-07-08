@@ -25,7 +25,8 @@ A snapshot is promotable only when all required evidence exists.
 | GitHub workflow contracts | Automated | `node scripts/validate-github-workflows.mjs` passes; this proves workflow permissions, workflow inventory, and required-check list synchronization. |
 | Distribution risk | Automated | `node scripts/scan-distribution-risk.mjs` passes with no active findings. |
 | Workflow fixture contract | Automated | `node scripts/validate-workflow-fixtures.mjs` passes; this proves fixture integrity, not slash-command output quality. |
-| Windows non-Bash smoke | Automated / CI | Schema, docs, frontmatter, and PowerShell agent verification pass on Windows without relying on Bash. |
+| Windows Node/PowerShell smoke | Automated / CI | Schema, docs, frontmatter, and PowerShell agent verification pass on Windows without relying on Bash. |
+| Windows Bash smoke | Automated / CI | Hook `bash -n` and `node scripts/validate-runtime-smoke.mjs` pass on a Windows runner with Bash available. |
 | Exact release target | Manual | `git describe --tags --exact-match HEAD` returns `v<plugin-version>`. |
 | Plugin install path | Manual / CI | `node scripts/validate-plugin-install.mjs --accept-user-scope-mutation` passes in CI or an isolated test-user environment. |
 | Workflow output quality | Manual | Five primary commands are evaluated and recorded, or an explicit not-applicable reason is accepted. |
@@ -57,7 +58,10 @@ Expected conditions:
 
 - `git status --short` is empty, or every change is intentionally part of the
   release commit.
-- `node scripts/generate-registry.mjs` reports current generated outputs.
+- If registry or plugin metadata sources changed,
+  `node scripts/generate-registry.mjs --write` regenerated the derived outputs.
+- `node scripts/generate-registry.mjs` reports current generated outputs after
+  any regeneration.
 - `node scripts/validate-all.mjs` reports `failed=0`.
 - `node scripts/validate-surface-budget.mjs` reports pass; any allowlist
   warning has an explicit rationale and split plan.
@@ -82,7 +86,7 @@ bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 
 On Windows without Bash, record Bash-dependent checks as skipped locally and
-use CI/Linux evidence before promotion.
+use CI/Linux or CI/Windows Bash evidence before promotion.
 
 ## Version And Generated Output Check
 
@@ -174,7 +178,7 @@ claude --version
 git describe --tags --exact-match HEAD
 NODE_BIN="${NODE_BIN:-node}"
 command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
-"$NODE_BIN" scripts/validate-plugin-install.mjs --accept-user-scope-mutation </dev/null
+"$NODE_BIN" scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home </dev/null
 ```
 
 Expected script behavior:
@@ -187,6 +191,9 @@ Expected script behavior:
 - Reads `claude plugin list --json`.
 - Confirms the installed user-scope version equals
   `nova-plugin/.claude-plugin/plugin.json`.
+- When `--isolated-home` is used, runs Claude CLI with temporary `HOME`,
+  `USERPROFILE`, `XDG_CONFIG_HOME`, `XDG_DATA_HOME`, and `XDG_STATE_HOME` and
+  removes that temporary profile when the script exits.
 
 Record the final success line and the installed version in release evidence.
 
@@ -262,7 +269,8 @@ include:
 - Environment summary from `node scripts/validate-all.mjs`.
 - Outputs or summaries for all required checks.
 - Prompt-surface budget status and any override rationale.
-- Windows non-Bash smoke status or the CI run that supplies it.
+- Windows Node/PowerShell smoke and Windows Bash smoke status, or the CI runs
+  that supply them.
 - Skipped checks and replacement evidence.
 - Plugin install smoke result from CI or isolated test-user execution.
 - Manual workflow evaluation record path or an accepted not-applicable reason.

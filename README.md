@@ -72,7 +72,7 @@ release tag 作为稳定发布证据。
 - 公开仓库不存放真实 consumer profile、endpoint、凭据、私有仓库地址、业务规则或私有知识库。
 - 本地默认质量门是 `node scripts/validate-all.mjs`；Windows 无 Bash 时，Bash-dependent 检查只能报告为 skipped，不能报告为 passed。
 - 维护者发布前检查使用 `npm run validate:maintainer`，它在默认质量门之外还检查 generated registry 漂移和 `git diff --check`。
-- Claude 插件安装 smoke 的安全预览路径是 `node scripts/validate-plugin-install.mjs --dry-run`；真实 user-scope 安装/更新只应在隔离用户或 CI profile 中显式运行 `--accept-user-scope-mutation`。
+- Claude 插件安装 smoke 的安全预览路径是 `node scripts/validate-plugin-install.mjs --dry-run`；真实 user-scope 安装/更新只应在隔离用户或 CI profile 中显式运行 `--accept-user-scope-mutation --isolated-home`。
 - 安全问题请按 [SECURITY.md](./SECURITY.md) 私下披露，不要在公开 issue 中暴露漏洞细节。
 
 ## 当前状态
@@ -351,7 +351,7 @@ Claude 插件安装 smoke 的 dry run 不会调用 Claude CLI，也不会修改 
 
 ```bash
 node scripts/validate-plugin-install.mjs --dry-run
-node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
+node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home
 ```
 
 默认 CI 和 release validation 只运行 dry run；真实 user-scope smoke 由手动或定时的 `.github/workflows/plugin-install-smoke.yml` 在 disposable runner 上执行。

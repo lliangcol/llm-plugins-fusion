@@ -34,8 +34,8 @@ knowledge-base content.
 | Repository validation | Node.js 20+ | `node scripts/validate-all.mjs`, including `node scripts/validate-runtime-smoke.mjs` and `node scripts/scan-distribution-risk.mjs` | Validation scripts use built-in Node.js APIs and repository files. |
 | GitHub workflow contracts | Node.js 20+ | `node scripts/validate-github-workflows.mjs` | Covers least-privilege workflow token scope, `.github/workflows/` inventory, required-check docs/read-only print output synchronization, and isolated mutating install smoke boundaries. |
 | Prompt-surface budgets | Node.js 20+ | `node scripts/validate-surface-budget.mjs` | Budget checks are a prompt bloat guard, not a feature-quality metric. |
-| Hook syntax checks | Bash on PATH | `bash -n nova-plugin/hooks/scripts/pre-write-check.sh` and `bash -n nova-plugin/hooks/scripts/post-audit-log.sh` | Windows without Bash may warning-skip local syntax checks; CI/Linux must run them. |
-| Windows maintenance smoke | Windows runner with Node.js 20 and PowerShell | CI `windows-node-smoke` job | Runs non-Bash checks only: schemas, docs, frontmatter, and `scripts/verify-agents.ps1`. Bash-dependent checks remain CI/Linux evidence. |
+| Hook syntax checks | Bash on PATH | `bash -n nova-plugin/hooks/scripts/pre-write-check.sh` and `bash -n nova-plugin/hooks/scripts/post-audit-log.sh` | Windows without Bash may warning-skip local syntax checks; CI/Linux and CI/Windows Bash smoke must run them. |
+| Windows maintenance smoke | Windows runner with Node.js 20, PowerShell, and Git Bash | CI `windows-node-smoke` and `windows-bash-smoke` jobs | Node/PowerShell checks run separately from Bash hook syntax and Codex runtime smoke so skipped local Bash checks have CI evidence. |
 | Optional enhanced tools | Installed plugins or tools named by capability packs | `docs/agents/PLUGIN_AWARE_ROUTING.md` and `nova-plugin/packs/` | Enhanced mode is optional; fallback mode must remain documented. |
 
 ## Current Plugin Evidence

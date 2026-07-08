@@ -62,8 +62,13 @@ node scripts/validate-plugin-install.mjs --dry-run
 Use real install smoke only in CI or an isolated test-user environment:
 
 ```bash
-node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
+node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home
 ```
+
+`--isolated-home` sets temporary `HOME`, `USERPROFILE`, `XDG_CONFIG_HOME`,
+`XDG_DATA_HOME`, and `XDG_STATE_HOME` for Claude CLI commands, then removes the
+temporary profile when the script exits. Without it, the mutation path must run
+only in a disposable CI runner or test OS user.
 
 ## Hooks Fail Before Writing
 

@@ -52,6 +52,7 @@ Validate Regression
 Validate Workflow Fixtures
 Validate Docs
 Windows Node Smoke
+Windows Bash Smoke
 Dependency Review
 CodeQL / Analyze JavaScript
 ```
@@ -59,6 +60,12 @@ CodeQL / Analyze JavaScript
 The mutating `Plugin Install Smoke` workflow is not a default required check.
 It is release or promotion evidence for disposable CI runners or isolated
 test-user environments.
+
+`Dependency Review` is fail-closed for same-repository pull requests when the
+dependency graph preflight returns 403 or 404. Fork pull requests may emit a
+warning skip when GitHub cannot expose dependency graph comparison data to the
+workflow token; maintainers must confirm equivalent dependency review coverage
+before merge instead of treating that warning as a passed security check.
 
 ## Maintainer Audit
 

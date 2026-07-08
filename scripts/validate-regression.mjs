@@ -71,7 +71,7 @@ function readGeneratedJson(relPath) {
 }
 
 function copyRepositoryFixture(destination) {
-  const listed = spawnSync('git', ['ls-files', '-z'], {
+  const listed = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
     cwd: root,
     encoding: 'buffer',
     shell: false,

@@ -81,6 +81,37 @@ test('validateHooksConfig rejects unsupported fields and events', () => {
   assert(errors.some((error) => /contains unsupported field "extraHook"/.test(error)));
 });
 
+test('validateHooksConfig rejects future hook events until fixtures define support', () => {
+  for (const event of ['Stop', 'Notification']) {
+    const config = validConfig();
+    config.hooks[event] = [
+      {
+        matcher: 'Write',
+        hooks: [
+          {
+            type: 'command',
+            command: 'bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.sh"',
+          },
+        ],
+      },
+    ];
+
+    const errors = validateHooksConfig(config, { pluginRootDir });
+    assert(
+      errors.some((error) => error.includes(`${event} is not a supported nova-plugin hook event`)),
+      `${event} should stay unsupported until nova-plugin adds fixture-backed behavior`,
+    );
+  }
+});
+
+test('validateHooksConfig rejects non-command hook types', () => {
+  const errors = validateHooksConfig(validConfig({
+    type: 'http',
+  }), { pluginRootDir });
+
+  assert(errors.some((error) => /type must be "command"/.test(error)));
+});
+
 test('validateHooksJsonText reports invalid JSON', () => {
   const errors = validateHooksJsonText('{bad json');
   assert(errors.some((error) => /not valid JSON/.test(error)));

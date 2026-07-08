@@ -20,6 +20,8 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           REPOSITORY: ${{ github.repository }}
+          BASE_REPOSITORY: ${{ github.event.pull_request.base.repo.full_name }}
+          HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
         run: |
           set -euo pipefail
 
@@ -41,8 +43,13 @@ jobs:
 
           if [ "$status" = "403" ] || [ "$status" = "404" ]; then
             echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::Dependency graph is unavailable for ${REPOSITORY} (HTTP ${status}); skipping dependency review. Enable Dependency graph in repository security settings to run this check."
-            exit 0
+            if [ "${HEAD_REPOSITORY}" != "${BASE_REPOSITORY}" ]; then
+              echo "::warning::Dependency graph is unavailable for fork PR ${HEAD_REPOSITORY} -> ${BASE_REPOSITORY} (HTTP ${status}); skipping dependency review. Maintainers must confirm Dependency Review coverage before merge."
+              exit 0
+            fi
+            cat "$response_file"
+            echo "Dependency graph is unavailable for protected same-repository PR ${REPOSITORY} (HTTP ${status}). Enable Dependency graph in repository security settings instead of silently skipping this required check."
+            exit 1
           fi
 
           cat "$response_file"

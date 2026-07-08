@@ -61,7 +61,8 @@ Primary optimization sequence:
   IA contracts, and v3 readiness evidence contracts.
 - On Windows without Bash, `node scripts/validate-all.mjs` may report
   skipped Bash-dependent checks for local hook shell syntax and runtime smoke.
-  CI/Linux must still run the Bash gates before release or promotion.
+  CI/Linux and CI/Windows Bash smoke must still run the Bash gates before
+  release or promotion.
 
 ## Optimization Tracks
 
@@ -232,14 +233,15 @@ Completed Work:
   validation output; skipped count remains in the validation summary.
 - Kept Bash as the authoritative hook syntax runtime; did not add a PowerShell
   substitute unless the hook runtime changes.
-- Added a Windows non-Bash CI smoke lane for schema, docs, frontmatter, and
-  PowerShell agent verification evidence.
+- Added Windows CI smoke lanes for schema/docs/frontmatter/PowerShell agent
+  verification and for Bash hook/runtime smoke evidence.
 
 Acceptance Criteria:
 
 - Release evidence cannot confuse skipped Bash-dependent checks with a full
   local pass.
-- CI/Linux remains the authoritative Bash syntax and runtime smoke gate.
+- CI/Linux and CI/Windows Bash smoke remain authoritative Bash syntax and
+  runtime smoke gates.
 - Operators can tell whether they validated an exact tag or unreleased `main`.
 
 ### 6. Retired Archive Cleanup
@@ -286,7 +288,7 @@ Completed Work:
 - Strengthened `/route` as the read-only first-stage router.
 - Added a checkpoint artifact contract for private consumer workbenches.
 - Added `node scripts/validate-surface-budget.mjs` as a prompt bloat guard.
-- Added Windows non-Bash CI smoke evidence.
+- Added Windows Node/PowerShell and Bash CI smoke evidence.
 - Expanded distribution risk scanning for high-risk blanket permission advice
   and tracked `.codex/` runtime artifacts.
 

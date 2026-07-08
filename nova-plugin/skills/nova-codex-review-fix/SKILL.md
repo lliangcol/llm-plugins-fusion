@@ -21,6 +21,7 @@ metadata:
 | `OUTPUT_DIR` | No | Script default | Review/verify artifact directory passed to Codex scripts as --output-dir. |
 | `GOAL` | No | Fix high-confidence blockers | Natural-language goal for the closure loop. |
 | `FIX_SCOPE` | No | high-confidence | Policy scope for selecting review findings to fix; does not widen script behavior. |
+| `INCLUDE_UNTRACKED_CONTENT` | No | false | When true with `REVIEW_MODE=full`, adds `--include-untracked-content`; untracked files must pass size, binary, path, and secret guards before content is included. |
 
 ## Parameter Resolution
 
@@ -45,6 +46,8 @@ metadata:
 
 - `REVIEW_MODE=branch` runs `codex-review.sh` without scope flags.
 - `REVIEW_MODE=staged` adds `--only-staged`; `REVIEW_MODE=full` adds `--full`.
+- `REVIEW_MODE=full` lists untracked file names but does not include untracked file content unless `INCLUDE_UNTRACKED_CONTENT=true`.
+- `INCLUDE_UNTRACKED_CONTENT=true` adds `--include-untracked-content`; the scripts reject likely secrets, sensitive paths, binary files, and oversized untracked files before writing content into the review patch.
 - `BASE` is passed as `--base <BASE>` to both review and verify scripts.
 - `OUTPUT_DIR`, when provided, is passed as `--output-dir <OUTPUT_DIR>` to review and verify.
 - If `OUTPUT_DIR` is provided, use `<OUTPUT_DIR>/review.md` for the fix step and write local checks to `<OUTPUT_DIR>/artifacts/checks.txt` so `codex-verify.sh` can auto-detect them when `--checks-file` is not passed.
@@ -215,6 +218,7 @@ Migrated from the pre-thin slash command contract for `/codex-review-fix` (`nova
 - `--base <BASE>`
 - `--only-staged`
 - `--full`
+- `--include-untracked-content` only when `REVIEW_MODE=full` and `INCLUDE_UNTRACKED_CONTENT=true`
 
 ##### 第二步：读取 review 结果
 

@@ -135,9 +135,11 @@ Windows agent verification uses:
 `node scripts/validate-plugin-install.mjs --dry-run` is the safe preview path.
 Run `node scripts/validate-plugin-install.mjs --accept-user-scope-mutation`
 only in CI or an isolated test-user environment because it may install or
-update a user-scope Claude Code plugin. Default CI and release validation should
-prefer the dry-run path unless the job is explicitly isolated for mutation. The
-mutating GitHub Actions path is `.github/workflows/plugin-install-smoke.yml`.
+update a user-scope Claude Code plugin. Prefer adding `--isolated-home` so the
+script uses temporary HOME/XDG directories for Claude CLI state. Default CI and
+release validation should prefer the dry-run path unless the job is explicitly
+isolated for mutation. The mutating GitHub Actions path is
+`.github/workflows/plugin-install-smoke.yml`.
 
 ## Change Boundaries
 

@@ -337,12 +337,72 @@ git_has_worktree_changes() {
   ! git diff --quiet || [[ -n "$(git ls-files --others --exclude-standard)" ]]
 }
 
+untracked_content_max_bytes() {
+  printf '%s\n' "${CODEX_UNTRACKED_CONTENT_MAX_BYTES:-262144}"
+}
+
+untracked_path_is_sensitive() {
+  local file="$1"
+  local base=""
+  base="$(basename "$file")"
+  case "$base" in
+    .env|.env.*|*.pem|*.key|id_rsa|id_rsa.*|id_ed25519|id_ed25519.*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+content_has_sensitive_value() {
+  local file="$1"
+  local assignment_pattern
+  assignment_pattern="(password|secret|api[_-]?key|access[_-]?token|auth[_-]?token|bearer[_-]?token|refresh[_-]?token|client[_-]?secret|private[_-]?key|npm[_-]?token|github[_-]?token|openai[_-]?api[_-]?key)[[:space:]]*[:=][[:space:]]*([\"'][^\"']{6,}[\"']?|[^[:space:]#\"']{16,})"
+
+  grep -Eiq "$assignment_pattern" "$file" && return 0
+  grep -Eq '\bsk-(proj-)?[A-Za-z0-9_-]{20,}\b' "$file" && return 0
+  grep -Eq '\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{20,}\b' "$file" && return 0
+  grep -Eq '\bxox[baprs]-[A-Za-z0-9-]{20,}\b' "$file" && return 0
+  grep -Eq '\bnpm_[A-Za-z0-9]{36,}\b' "$file" && return 0
+  grep -Eq '\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b' "$file" && return 0
+  grep -Eiq 'Authorization:[[:space:]]*Bearer[[:space:]]+[^[:space:]]{10,}' "$file" && return 0
+  return 1
+}
+
+validate_untracked_content_file() {
+  local file="$1"
+  local max_bytes=""
+  local size_bytes=""
+
+  [[ -f "$file" ]] || return 1
+
+  if untracked_path_is_sensitive "$file"; then
+    die "未跟踪文件路径疑似敏感，拒绝写入 review patch: ${file}"
+  fi
+
+  if [[ -s "$file" ]] && ! grep -Iq . "$file"; then
+    die "未跟踪文件疑似二进制，拒绝写入 review patch: ${file}"
+  fi
+
+  max_bytes="$(untracked_content_max_bytes)"
+  size_bytes="$(wc -c < "$file" | tr -d '[:space:]')"
+  if [[ "$size_bytes" -gt "$max_bytes" ]]; then
+    die "未跟踪文件超过 ${max_bytes} bytes，拒绝写入 review patch: ${file}"
+  fi
+
+  if content_has_sensitive_value "$file"; then
+    die "未跟踪文件疑似包含敏感信息，拒绝写入 review patch: ${file}"
+  fi
+}
+
 write_untracked_diff() {
   local output_file="$1"
   local file=""
 
   while IFS= read -r -d '' file; do
     [[ -f "$file" ]] || continue
+    validate_untracked_content_file "$file"
     {
       printf '\n### untracked file: %s\n' "$file"
       git diff --no-index --binary -- /dev/null "$file" 2>&1 || true

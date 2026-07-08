@@ -65,8 +65,8 @@ bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 
 If Bash is not available on Windows, `node scripts/validate-all.mjs` may report
 skipped Bash-dependent checks; do not describe hook syntax or runtime smoke as
-locally passed in that case. CI/Linux must run the Bash syntax and runtime smoke
-checks.
+locally passed in that case. CI/Linux and CI/Windows Bash smoke must run the
+Bash syntax and runtime smoke checks.
 
 Run `node scripts/validate-plugin-install.mjs` only in CI or an isolated
 test-user environment. It may install or update user-scope Claude plugin state,

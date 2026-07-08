@@ -436,8 +436,30 @@ function validateWorkflowContracts() {
   if (!/node scripts\/validate-plugin-install\.mjs --accept-user-scope-mutation/.test(smokeSrc)) {
     recordError(smokeFile, 'plugin install smoke isolation contract requires explicit user-scope mutation opt-in');
   }
+  if (!/node scripts\/validate-plugin-install\.mjs --accept-user-scope-mutation --isolated-home/.test(smokeSrc)) {
+    recordError(smokeFile, 'plugin install smoke isolation contract requires isolated home mode');
+  }
   if (!/disposable runner/i.test(smokeSrc)) {
     recordError(smokeFile, 'plugin install smoke isolation contract requires disposable runner wording');
+  }
+
+  const dependencyReviewFile = '.github/workflows/dependency-review.yml';
+  const dependencyReviewSrc = readWorkflow(dependencyReviewFile);
+  if (!dependencyReviewSrc) return;
+  if (!/BASE_REPOSITORY:\s*\$\{\{\s*github\.event\.pull_request\.base\.repo\.full_name\s*\}\}/.test(dependencyReviewSrc)) {
+    recordError(dependencyReviewFile, 'dependency review fail-closed contract requires base repository identity');
+  }
+  if (!/HEAD_REPOSITORY:\s*\$\{\{\s*github\.event\.pull_request\.head\.repo\.full_name\s*\}\}/.test(dependencyReviewSrc)) {
+    recordError(dependencyReviewFile, 'dependency review fail-closed contract requires head repository identity');
+  }
+  if (!/\[\s*"\$\{HEAD_REPOSITORY\}"\s*!=\s*"\$\{BASE_REPOSITORY\}"\s*\]/.test(dependencyReviewSrc)) {
+    recordError(dependencyReviewFile, 'dependency review fail-closed contract may warning-skip only fork PRs');
+  }
+  if (!/Dependency graph is unavailable for protected same-repository PR/.test(dependencyReviewSrc)) {
+    recordError(dependencyReviewFile, 'dependency review fail-closed contract requires same-repository PR failure text');
+  }
+  if (!/Maintainers must confirm Dependency Review coverage before merge/.test(dependencyReviewSrc)) {
+    recordError(dependencyReviewFile, 'dependency review fail-closed contract requires fork skip maintainer follow-up text');
   }
 }
 

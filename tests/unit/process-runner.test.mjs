@@ -30,6 +30,21 @@ test('runProcess reports non-zero exits without throwing', async () => {
   assert.equal(result.timedOut, false);
 });
 
+test('runProcess caps captured output with an explicit truncation marker', async () => {
+  const result = await runProcess('large output sample', process.execPath, [
+    '-e',
+    'process.stdout.write("x".repeat(256));',
+  ], {
+    maxOutputBytes: 32,
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.stdoutTruncated, true);
+  assert.match(result.stdout, /^x{32}/);
+  assert.match(result.stdout, /output truncated after 32 bytes; 224 bytes omitted/);
+  assert.equal(result.stderrTruncated, false);
+});
+
 test('runProcess terminates commands that exceed the timeout', async () => {
   const result = await runProcess('timeout sample', process.execPath, [
     '-e',

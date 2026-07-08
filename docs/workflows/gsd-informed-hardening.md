@@ -29,7 +29,7 @@ and release confidence without weakening the repository's permission posture.
 | Verification evidence contract | Shared output contracts, Codex verification prompt, workflow docs | Require validation claims to map back to behavior, repository facts, review findings, or change goals. |
 | Prompt-surface budgets | `scripts/validate-surface-budget.mjs`, CI, npm shortcut, release evidence | Keep public command, skill, agent, and pack surfaces small enough to audit. |
 | Distribution-risk expansion | `scripts/scan-distribution-risk.mjs`, regression tests, trust/security docs | Block high-risk blanket permission advice and tracked `.codex/` runtime artifacts from public distribution. |
-| Windows non-Bash smoke evidence | CI and release evidence docs | Prevent Windows local skipped Bash checks from being mistaken for a complete local pass. |
+| Windows CI smoke evidence | CI and release evidence docs | Prevent Windows local skipped Bash checks from being mistaken for a complete pass by separating Node/PowerShell and Bash smoke evidence. |
 
 ## Deliberately Not Adopted
 

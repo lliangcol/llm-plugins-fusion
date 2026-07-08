@@ -2,8 +2,9 @@
 
 ## 概述
 
-本文档描述 nova-plugin 的 hook 设计，基于 Claude Code Hooks 官方规范。
-实现文件：`nova-plugin/hooks/hooks.json` + `nova-plugin/hooks/scripts/`
+本文档描述 nova-plugin 的 hook 设计，基于 Claude Code Hooks 官方规范中的
+命令型 hook 子集。实现文件：`nova-plugin/hooks/hooks.json` +
+`nova-plugin/hooks/scripts/`
 
 ---
 
@@ -75,6 +76,24 @@ PostToolUse 额外包含：
 ---
 
 ## nova-plugin Hook 设计
+
+### 当前分发契约
+
+`nova-plugin/hooks/scripts/hooks-schema.mjs` 是 nova-plugin 当前分发
+`hooks.json` 的白名单校验器，不是 Claude Code hooks 全量 schema。当前
+只允许：
+
+| 维度 | 当前允许值 |
+|------|------------|
+| 事件 | `PreToolUse`, `PostToolUse` |
+| Entry 字段 | `matcher`, `hooks` |
+| Hook 类型 | `type: "command"` |
+| Hook 字段 | `type`, `command`, `timeout`, `statusMessage`, `async` |
+| Shell 调用 | `.sh` 脚本必须通过 `bash "${CLAUDE_PLUGIN_ROOT}/..."` 调用 |
+
+`Stop`、`Notification`、非 command hook 类型、额外字段或其它 Claude Code
+未来 schema 字段必须先补 fixture、脚本行为和文档，再放开校验。不要为了兼容
+未知字段而把校验器改成 pass-through。
 
 ### Hook 1：PreToolUse — 写入前检查
 

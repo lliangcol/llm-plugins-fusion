@@ -21,6 +21,11 @@ Minute 1: add the marketplace and install the plugin:
 /plugin install nova-plugin@llm-plugins-fusion
 ```
 
+These commands install through the current marketplace resolution path. Stable
+promotion evidence is separate: maintainers prove a release with an exact
+`v<plugin-version>` tag and release evidence, not by treating moving `main` as
+stable.
+
 Minute 2: confirm it is installed:
 
 ```text
