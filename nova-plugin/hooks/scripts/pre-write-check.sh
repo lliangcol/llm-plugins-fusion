@@ -25,6 +25,42 @@ node_command() {
   return 1
 }
 
+node_command_is_windows() {
+  local candidate="$1"
+  local platform=""
+
+  platform="$("$candidate" -e 'process.stdout.write(process.platform)' 2>/dev/null || true)"
+  [ "$platform" = "win32" ]
+}
+
+path_for_node_command() {
+  local path="$1"
+  local node_bin="$2"
+  local drive=""
+  local rest=""
+
+  if ! node_command_is_windows "$node_bin"; then
+    printf '%s\n' "$path"
+    return 0
+  fi
+
+  case "$path" in
+    /mnt/[A-Za-z]/*)
+      rest="${path#/mnt/}"
+      drive="${rest%%/*}"
+      rest="${rest#*/}"
+      printf '%s:/%s\n' "${drive^^}" "$rest"
+      ;;
+    *)
+      if command -v cygpath >/dev/null 2>&1; then
+        cygpath -m "$path"
+        return 0
+      fi
+      printf '%s\n' "$path"
+      ;;
+  esac
+}
+
 json_read() {
   local field="$1"
   local jq_expr
@@ -124,9 +160,13 @@ try {
 validate_hooks_json_schema() {
   local content="$1"
   local node_bin=""
+  local node_plugin_root=""
+  local node_validator_path=""
 
   if node_bin="$(node_command)" && [ -f "$PLUGIN_ROOT/hooks/scripts/validate-hooks-json.mjs" ]; then
-    printf '%s' "$content" | CLAUDE_PLUGIN_ROOT="$PLUGIN_ROOT" "$node_bin" "$PLUGIN_ROOT/hooks/scripts/validate-hooks-json.mjs"
+    node_plugin_root="$(path_for_node_command "$PLUGIN_ROOT" "$node_bin")"
+    node_validator_path="$(path_for_node_command "$PLUGIN_ROOT/hooks/scripts/validate-hooks-json.mjs" "$node_bin")"
+    printf '%s' "$content" | CLAUDE_PLUGIN_ROOT="$node_plugin_root" "$node_bin" "$node_validator_path"
     return
   fi
 

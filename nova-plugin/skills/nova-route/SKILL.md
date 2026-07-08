@@ -103,6 +103,23 @@ Use this as the first-stage keyword router before selecting the specific command
 | Codex review/fix/verify loop | `/codex-review-fix` | `nova-codex-review-fix` | `reviewer` then `builder` then `verifier` | Domain packs from diff |
 | Delivery summary or handoff | `/finalize-work` | `nova-finalize-work` | `publisher` | `release`, `docs`, `marketplace` when metadata changed |
 
+Specialized and compatibility commands are still valid routes. Use them only
+when their narrower contract fits better than the primary command.
+
+| Specialized signal | Command | Skill | Core agent | Pack hints |
+| --- | --- | --- | --- | --- |
+| Need only a route recommendation | `/route` | `nova-route` | `orchestrator` | Packs implied by request context |
+| Lightweight fact gathering | `/explore-lite` | `nova-explore-lite` | `orchestrator` | Domain packs from context |
+| Exploration scoped to review readiness | `/explore-review` | `nova-explore-review` | `reviewer` | `security`, `dependency`, or domain packs |
+| Review an implementation plan before edits | `/plan-review` | `nova-plan-review` | `reviewer` | `docs`, `security`, or domain packs |
+| Java/Spring backend plan | `/backend-plan` | `nova-backend-plan` | `architect` | `java`, `security`, `dependency` |
+| Fast review with bounded depth | `/review-lite` | `nova-review-lite` | `reviewer` | Domain packs from diff |
+| Review-only artifact or findings | `/review-only` | `nova-review-only` | `reviewer` | `security`, `dependency`, or domain packs |
+| Strict/high-risk review | `/review-strict` | `nova-review-strict` | `reviewer` | `security`, `dependency`, plus domain packs |
+| Codex read-only review artifact | `/codex-review-only` | `nova-codex-review-only` | `reviewer` | Domain packs from diff |
+| Codex verification of existing review | `/codex-verify-only` | `nova-codex-verify-only` | `verifier` | Domain packs from review scope |
+| Lightweight closeout | `/finalize-lite` | `nova-finalize-lite` | `publisher` | `docs` or `release` when relevant |
+
 ### Output Format
 
 ```markdown
