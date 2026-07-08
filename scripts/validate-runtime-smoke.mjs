@@ -47,17 +47,19 @@ async function run(label, args, options = {}) {
 
 async function runTempBash(label, body, options = {}) {
   const script = `#!/usr/bin/env bash\nset -euo pipefail\n${body}\n`;
-  await run(label, [
-    '-lc',
-    [
-      'tmp_dir=\\$(mktemp -d \\${TMPDIR:-/tmp}/nova-runtime-smoke-XXXXXX)',
-      'trap \'rm -rf "\\$tmp_dir"\' EXIT',
-      'script="\\$tmp_dir/case.sh"',
-      'cat > "\\$script"',
-      'chmod +x "\\$script"',
-      '"\\$script"',
-    ].join('; '),
-  ], { ...options, input: script });
+  const wrapper = [
+    'set -euo pipefail',
+    'tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/nova-runtime-smoke-XXXXXX")"',
+    'trap \'rm -rf "$tmp_dir"\' EXIT',
+    'script="$tmp_dir/case.sh"',
+    'cat > "$script" <<\'NOVA_RUNTIME_SMOKE_SCRIPT\'',
+    script,
+    'NOVA_RUNTIME_SMOKE_SCRIPT',
+    'chmod +x "$script"',
+    '"$script"',
+    '',
+  ].join('\n');
+  await run(label, ['-s'], { ...options, input: wrapper });
 }
 
 function assertFileDoesNotMatch(label, relPath, pattern) {
