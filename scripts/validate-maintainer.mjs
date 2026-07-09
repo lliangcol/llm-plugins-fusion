@@ -34,6 +34,7 @@ async function run(label, command, args) {
   return true;
 }
 
+await run('npm test', process.execPath, ['--test', 'tests/**/*.test.mjs']);
 await run('validate all', process.execPath, ['scripts/validate-all.mjs']);
 await run('generated registry drift check', process.execPath, ['scripts/generate-registry.mjs']);
 await run('git diff --check', 'git', ['diff', '--check']);

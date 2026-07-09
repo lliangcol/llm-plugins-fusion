@@ -9,6 +9,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+- 新增 generated surface inventory：`scripts/generate-surface-inventory.mjs`
+  生成并校验 `docs/generated/surface-inventory.json` 与 `.md`，覆盖
+  command、skill、active agent、capability pack 和 generated marketplace
+  output 清单，并接入 `validate-all`、CI 和集成测试。
+- 新增 CI required checks：`NPM Test`、`ShellCheck`、`PSScriptAnalyzer`、
+  `macOS Smoke` 和 `Validate Surface Inventory`，补齐测试门禁、shell/
+  PowerShell 静态分析、macOS 平台 smoke 和 surface inventory 漂移信号。
+- Release workflow 新增 exact-tag isolated install smoke job，上传
+  `release-install-smoke-evidence` artifact，并在 GitHub Release 创建前阻断
+  真实安装路径失败。
+
+### Changed
+- GitHub Actions 外部 action 引用改为 full commit SHA pin，并由
+  `scripts/validate-github-workflows.mjs` 校验 SHA pin、tag 注释、`NPM Test`
+  gate、required-check 文档和 print 输出同步。
+- `npm run validate:maintainer` 现在显式运行 `npm test`，再执行默认质量门、
+  registry drift 和 whitespace checks。
+- 贡献、维护者、release 和 adapter 文档同步说明开放受控 issue intake、
+  action pinning、isolated release install smoke、surface inventory 和新增 CI
+  checks。
+
 ## [2.3.0] - 2026-07-08
 
 ### Added

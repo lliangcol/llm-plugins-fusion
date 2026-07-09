@@ -16,8 +16,9 @@ see [validation-index.md](validation-index.md).
 | Command or skill behavior | `nova-plugin/commands/**`, `nova-plugin/skills/**`, command docs | `node scripts/lint-frontmatter.mjs`, `node scripts/validate-docs.mjs`, `node scripts/validate-surface-budget.mjs` |
 | Hooks or guardrails | `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, runtime scripts | `node scripts/validate-hooks.mjs`, `bash -n nova-plugin/hooks/scripts/pre-write-check.sh`, `bash -n nova-plugin/hooks/scripts/post-audit-log.sh`, `node scripts/validate-runtime-smoke.mjs` |
 | Registry or marketplace metadata | `.claude-plugin/registry.source.json`, `nova-plugin/.claude-plugin/plugin.json` | `node scripts/generate-registry.mjs --write`, `npm run validate:drift`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs`, `node scripts/validate-claude-compat.mjs` |
-| CI or release workflow | `.github/workflows/**`, release docs | `npm run validate:github-workflows`, `npm run ci:quick`, `npm run validate:maintainer`, review changed workflow trigger, permissions, workflow inventory, and required-check list |
+| CI or release workflow | `.github/workflows/**`, release docs | `npm run validate:github-workflows`, `npm run ci:quick`, `npm run validate:maintainer`, review changed workflow trigger, permissions, workflow inventory, and required-check list, plus action SHA pins |
 | Release preparation | version sources, `CHANGELOG.md`, generated marketplace outputs | `npm run validate:maintainer`, `node scripts/validate-plugin-install.mjs --dry-run`, isolated install smoke when promotion evidence requires it |
+| Surface inventory | `scripts/generate-surface-inventory.mjs`, `docs/generated/surface-inventory.*` | `node scripts/generate-surface-inventory.mjs --write`, `node scripts/generate-surface-inventory.mjs`, `npm test` |
 
 ## Default Commands
 
@@ -30,6 +31,7 @@ npm run ci:full
 npm run validate:drift
 npm run validate:maintainer
 npm run validate:github-workflows
+node scripts/generate-surface-inventory.mjs
 ```
 
 `npm run ci:full` maps to `node scripts/validate-all.mjs`, which prints

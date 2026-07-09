@@ -9,8 +9,17 @@
 ## 提交 Issue
 
 - **Bug 报告**：请提供可复现步骤、Claude Code / 插件版本、平台（Windows / macOS / Linux）、相关命令或 skill 名。
+- **Docs / contract drift**：请指出不一致的公开表面，例如 command / skill
+  映射、agent 或 pack 数量、generated inventory、marketplace metadata、CI
+  check 名称、release evidence 或 validation 文档。
 - **功能建议**：说明场景、当前痛点、预期行为。优先参考 [ROADMAP.md](./ROADMAP.md) 判断是否已在计划内。
+- **Showcase 或增长反馈**：只提交 public-safe 示例、采用反馈或生态建议；不要包含真实 consumer 资料。
 - **安全问题**：请**不要**在公开 issue 中披露，改用 [SECURITY.md](./SECURITY.md) 描述的私下渠道。
+
+仓库 issue creation 应保持开放，但 blank issues 保持关闭；请使用跟踪的
+issue forms。若 GitHub UI 暂时限制 issue creation，维护者需要在 release 或
+PR evidence 中记录该 owner-side 设置状态，而不是把公开安全问题引导到普通
+issue。
 
 ## 公开贡献边界
 
@@ -71,6 +80,10 @@
 - **Runtime smoke**：Codex Bash helper 脚本或其调用方式变更后运行 `node scripts/validate-runtime-smoke.mjs`；它只校验语法、help 输出和安全失败路径，不调用 Codex，也不写 `.codex/`。
 - **分发风险扫描**：发布、文档、模板或 marketplace 变更后运行 `node scripts/scan-distribution-risk.mjs`，确认活跃分发内容不含真实密钥、JWT、npm token、云厂商 key、机器本地路径、私网地址、内部 endpoint、私有 SSH repo URL 或真实 `.env` 值。历史归档发现只能作为 redacted warning 或 `scripts/distribution-risk.allowlist.json` 中的 allowlisted warning。
 - **回归校验**：验证脚本、registry 生成、分发风险扫描或 command/docs drift 规则变更后运行 `node scripts/validate-regression.mjs`。
+- **Surface inventory**：command、skill、agent、pack 或 generated marketplace
+  output 清单规则变更后运行
+  `node scripts/generate-surface-inventory.mjs --write`，再运行
+  `node scripts/generate-surface-inventory.mjs`。
 - **文档校验**：用户文档、命令文档、版本日期、安全支持范围、活跃规划文字或报告归档改动后运行 `node scripts/validate-docs.mjs`；它会校验 Markdown 本地链接与锚点、命令文档 stage 位置、版本日期同步、`SECURITY.md` 当前 MINOR 支持范围、活跃文档中的陈旧规划标签和非归档报告状态。
 - **Pack 校验**：capability pack 或 plugin-aware routing 改动后运行 `node scripts/validate-packs.mjs`；每个 pack 必须包含 enhanced mode 和 fallback mode。
 - **命令文档组织**：常规命令文档按工作流 stage 放在 `nova-plugin/docs/commands/<stage>/`；Codex 三个命令文档集中放在 `nova-plugin/docs/commands/codex/`，这是维护规则的明确例外。

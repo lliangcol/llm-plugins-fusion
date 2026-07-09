@@ -1,0 +1,400 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "pluginName": "nova-plugin",
+    "pluginVersion": "2.3.0",
+    "registrySource": ".claude-plugin/registry.source.json",
+    "registryPluginCount": 1
+  },
+  "counts": {
+    "commands": 21,
+    "skills": 21,
+    "activeAgents": 6,
+    "capabilityPacks": 8,
+    "generatedMarketplaceOutputs": 3
+  },
+  "commands": [
+    {
+      "id": "backend-plan",
+      "stage": "plan",
+      "destructiveActions": "low",
+      "invokesSkill": "nova-backend-plan",
+      "path": "nova-plugin/commands/backend-plan.md"
+    },
+    {
+      "id": "codex-review-fix",
+      "stage": "implement",
+      "destructiveActions": "medium",
+      "invokesSkill": "nova-codex-review-fix",
+      "path": "nova-plugin/commands/codex-review-fix.md"
+    },
+    {
+      "id": "codex-review-only",
+      "stage": "review",
+      "destructiveActions": "low",
+      "invokesSkill": "nova-codex-review-only",
+      "path": "nova-plugin/commands/codex-review-only.md"
+    },
+    {
+      "id": "codex-verify-only",
+      "stage": "review",
+      "destructiveActions": "low",
+      "invokesSkill": "nova-codex-verify-only",
+      "path": "nova-plugin/commands/codex-verify-only.md"
+    },
+    {
+      "id": "explore",
+      "stage": "explore",
+      "destructiveActions": "none",
+      "invokesSkill": "nova-explore",
+      "path": "nova-plugin/commands/explore.md"
+    },
+    {
+      "id": "explore-lite",
+      "stage": "explore",
+      "destructiveActions": "none",
+      "invokesSkill": "nova-explore-lite",
+      "path": "nova-plugin/commands/explore-lite.md"
+    },
+    {
+      "id": "explore-review",
+      "stage": "explore",
+      "destructiveActions": "none",
+      "invokesSkill": "nova-explore-review",
+      "path": "nova-plugin/commands/explore-review.md"
+    },
+    {
+      "id": "finalize-lite",
+      "stage": "finalize",
+      "destructiveActions": "none",
+      "invokesSkill": "nova-finalize-lite",
+      "path": "nova-plugin/commands/finalize-lite.md"
+    },
+    {
+      "id": "finalize-work",
+      "stage": "finalize",
+      "destructiveActions": "none",
+      "invokesSkill": "nova-finalize-work",
+      "path": "nova-plugin/commands/finalize-work.md"
+    },
+    {
+      "id": "implement-lite",
+      "stage": "implement",
+      "destructiveActions": "medium",
+      "invokesSkill": "nova-implement-lite",
+      "path": "nova-plugin/commands/implement-lite.md"
+    },
+    {
+      "id": "implement-plan",
+      "stage": "implement",
+      "destructiveActions": "medium",
+      "invokesSkill": "nova-implement-plan",
+      "path": "nova-plugin/commands/implement-plan.md"
+    },
+    {
+      "id": "implement-standard",
+      "stage": "implement",
+      "destructiveActions": "medium",
+      "invokesSkill": "nova-implement-standard",
+      "path": "nova-plugin/commands/implement-standard.md"
+    },
+    {
+      "id": "plan-lite",
+      "stage": "plan",
+      "destructiveActions": "none",
+      "invokesSkill": "nova-plan-lite",
+      "path": "nova-plugin/commands/plan-lite.md"
+    },
+    {
+      "id": "plan-review",
+      "stage": "plan",
+      "destructiveActions": "none",
+      "invokesSkill": "nova-plan-review",
+      "path": "nova-plugin/commands/plan-review.md"
+    },
+    {
+      "id": "produce-plan",
+      "stage": "plan",
+      "destructiveActions": "low",
+      "invokesSkill": "nova-produce-plan",
+      "path": "nova-plugin/commands/produce-plan.md"
+    },
+    {
+      "id": "review",
+      "stage": "review",
+      "destructiveActions": "none",
+      "invokesSkill": "nova-review",
+      "path": "nova-plugin/commands/review.md"
+    },
+    {
+      "id": "review-lite",
+      "stage": "review",
+      "destructiveActions": "none",
+      "invokesSkill": "nova-review-lite",
+      "path": "nova-plugin/commands/review-lite.md"
+    },
+    {
+      "id": "review-only",
+      "stage": "review",
+      "destructiveActions": "none",
+      "invokesSkill": "nova-review-only",
+      "path": "nova-plugin/commands/review-only.md"
+    },
+    {
+      "id": "review-strict",
+      "stage": "review",
+      "destructiveActions": "none",
+      "invokesSkill": "nova-review-strict",
+      "path": "nova-plugin/commands/review-strict.md"
+    },
+    {
+      "id": "route",
+      "stage": "explore",
+      "destructiveActions": "none",
+      "invokesSkill": "nova-route",
+      "path": "nova-plugin/commands/route.md"
+    },
+    {
+      "id": "senior-explore",
+      "stage": "explore",
+      "destructiveActions": "low",
+      "invokesSkill": "nova-senior-explore",
+      "path": "nova-plugin/commands/senior-explore.md"
+    }
+  ],
+  "skills": [
+    {
+      "name": "nova-backend-plan",
+      "commandId": "backend-plan",
+      "subagentSafe": true,
+      "destructiveActions": "low",
+      "path": "nova-plugin/skills/nova-backend-plan/SKILL.md"
+    },
+    {
+      "name": "nova-codex-review-fix",
+      "commandId": "codex-review-fix",
+      "subagentSafe": false,
+      "destructiveActions": "medium",
+      "path": "nova-plugin/skills/nova-codex-review-fix/SKILL.md"
+    },
+    {
+      "name": "nova-codex-review-only",
+      "commandId": "codex-review-only",
+      "subagentSafe": true,
+      "destructiveActions": "low",
+      "path": "nova-plugin/skills/nova-codex-review-only/SKILL.md"
+    },
+    {
+      "name": "nova-codex-verify-only",
+      "commandId": "codex-verify-only",
+      "subagentSafe": true,
+      "destructiveActions": "low",
+      "path": "nova-plugin/skills/nova-codex-verify-only/SKILL.md"
+    },
+    {
+      "name": "nova-explore",
+      "commandId": "explore",
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "path": "nova-plugin/skills/nova-explore/SKILL.md"
+    },
+    {
+      "name": "nova-explore-lite",
+      "commandId": "explore-lite",
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "path": "nova-plugin/skills/nova-explore-lite/SKILL.md"
+    },
+    {
+      "name": "nova-explore-review",
+      "commandId": "explore-review",
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "path": "nova-plugin/skills/nova-explore-review/SKILL.md"
+    },
+    {
+      "name": "nova-finalize-lite",
+      "commandId": "finalize-lite",
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "path": "nova-plugin/skills/nova-finalize-lite/SKILL.md"
+    },
+    {
+      "name": "nova-finalize-work",
+      "commandId": "finalize-work",
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "path": "nova-plugin/skills/nova-finalize-work/SKILL.md"
+    },
+    {
+      "name": "nova-implement-lite",
+      "commandId": "implement-lite",
+      "subagentSafe": true,
+      "destructiveActions": "medium",
+      "path": "nova-plugin/skills/nova-implement-lite/SKILL.md"
+    },
+    {
+      "name": "nova-implement-plan",
+      "commandId": "implement-plan",
+      "subagentSafe": true,
+      "destructiveActions": "medium",
+      "path": "nova-plugin/skills/nova-implement-plan/SKILL.md"
+    },
+    {
+      "name": "nova-implement-standard",
+      "commandId": "implement-standard",
+      "subagentSafe": true,
+      "destructiveActions": "medium",
+      "path": "nova-plugin/skills/nova-implement-standard/SKILL.md"
+    },
+    {
+      "name": "nova-plan-lite",
+      "commandId": "plan-lite",
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "path": "nova-plugin/skills/nova-plan-lite/SKILL.md"
+    },
+    {
+      "name": "nova-plan-review",
+      "commandId": "plan-review",
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "path": "nova-plugin/skills/nova-plan-review/SKILL.md"
+    },
+    {
+      "name": "nova-produce-plan",
+      "commandId": "produce-plan",
+      "subagentSafe": true,
+      "destructiveActions": "low",
+      "path": "nova-plugin/skills/nova-produce-plan/SKILL.md"
+    },
+    {
+      "name": "nova-review",
+      "commandId": "review",
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "path": "nova-plugin/skills/nova-review/SKILL.md"
+    },
+    {
+      "name": "nova-review-lite",
+      "commandId": "review-lite",
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "path": "nova-plugin/skills/nova-review-lite/SKILL.md"
+    },
+    {
+      "name": "nova-review-only",
+      "commandId": "review-only",
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "path": "nova-plugin/skills/nova-review-only/SKILL.md"
+    },
+    {
+      "name": "nova-review-strict",
+      "commandId": "review-strict",
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "path": "nova-plugin/skills/nova-review-strict/SKILL.md"
+    },
+    {
+      "name": "nova-route",
+      "commandId": "route",
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "path": "nova-plugin/skills/nova-route/SKILL.md"
+    },
+    {
+      "name": "nova-senior-explore",
+      "commandId": "senior-explore",
+      "subagentSafe": true,
+      "destructiveActions": "low",
+      "path": "nova-plugin/skills/nova-senior-explore/SKILL.md"
+    }
+  ],
+  "activeAgents": [
+    {
+      "id": "architect",
+      "path": "nova-plugin/agents/architect.md"
+    },
+    {
+      "id": "builder",
+      "path": "nova-plugin/agents/builder.md"
+    },
+    {
+      "id": "orchestrator",
+      "path": "nova-plugin/agents/orchestrator.md"
+    },
+    {
+      "id": "publisher",
+      "path": "nova-plugin/agents/publisher.md"
+    },
+    {
+      "id": "reviewer",
+      "path": "nova-plugin/agents/reviewer.md"
+    },
+    {
+      "id": "verifier",
+      "path": "nova-plugin/agents/verifier.md"
+    }
+  ],
+  "capabilityPacks": [
+    {
+      "id": "dependency",
+      "path": "nova-plugin/packs/dependency/README.md"
+    },
+    {
+      "id": "docs",
+      "path": "nova-plugin/packs/docs/README.md"
+    },
+    {
+      "id": "frontend",
+      "path": "nova-plugin/packs/frontend/README.md"
+    },
+    {
+      "id": "java",
+      "path": "nova-plugin/packs/java/README.md"
+    },
+    {
+      "id": "marketplace",
+      "path": "nova-plugin/packs/marketplace/README.md"
+    },
+    {
+      "id": "mcp",
+      "path": "nova-plugin/packs/mcp/README.md"
+    },
+    {
+      "id": "release",
+      "path": "nova-plugin/packs/release/README.md"
+    },
+    {
+      "id": "security",
+      "path": "nova-plugin/packs/security/README.md"
+    }
+  ],
+  "generatedMarketplaceOutputs": [
+    {
+      "path": ".claude-plugin/marketplace.json",
+      "generated": true,
+      "pluginCount": 1,
+      "pluginVersions": [
+        "nova-plugin@2.3.0"
+      ]
+    },
+    {
+      "path": ".claude-plugin/marketplace.metadata.json",
+      "generated": true,
+      "pluginCount": 1,
+      "pluginVersions": [
+        "nova-plugin@2.3.0"
+      ]
+    },
+    {
+      "path": "docs/marketplace/catalog.md",
+      "generated": true,
+      "pluginCount": 1,
+      "pluginVersions": [
+        "nova-plugin@2.3.0"
+      ]
+    }
+  ]
+}

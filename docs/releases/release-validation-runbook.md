@@ -20,6 +20,7 @@ A snapshot is promotable only when all required evidence exists.
 | --- | --- | --- |
 | Repository structure and docs | Automated | `node scripts/validate-all.mjs` passes with skipped checks explained. |
 | Generated marketplace outputs | Automated | `node scripts/generate-registry.mjs` reports no drift, or `--write` was run before validation. |
+| Generated surface inventory | Automated | `node scripts/generate-surface-inventory.mjs` reports no drift, or `--write` was run before validation. |
 | Formatting | Automated | `git diff --check` passes. |
 | Prompt-surface budget | Automated | `node scripts/validate-surface-budget.mjs` passes, and every allowlist entry has a reason and split plan. |
 | GitHub workflow contracts | Automated | `node scripts/validate-github-workflows.mjs` passes; this proves workflow permissions, workflow inventory, and required-check list synchronization. |
@@ -28,7 +29,7 @@ A snapshot is promotable only when all required evidence exists.
 | Windows Node/PowerShell smoke | Automated / CI | Schema, docs, frontmatter, and PowerShell agent verification pass on Windows without relying on Bash. |
 | Windows Bash smoke | Automated / CI | Hook `bash -n` and `node scripts/validate-runtime-smoke.mjs` pass on a Windows runner with Bash available. |
 | Exact release target | Manual | `git describe --tags --exact-match HEAD` returns `v<plugin-version>`. |
-| Plugin install path | Manual / CI | `node scripts/validate-plugin-install.mjs --accept-user-scope-mutation` passes in CI or an isolated test-user environment. |
+| Plugin install path | CI / isolated | `node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home` passes in CI or an isolated test-user environment. |
 | Workflow output quality | Manual | Five primary commands are evaluated and recorded, or an explicit not-applicable reason is accepted. |
 | Release publication | Manual / CI | GitHub release workflow completes for the pushed `v<plugin-version>` tag. |
 
@@ -44,6 +45,7 @@ NODE_BIN="${NODE_BIN:-node}"
 command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
 git status --short
 "$NODE_BIN" scripts/generate-registry.mjs </dev/null
+"$NODE_BIN" scripts/generate-surface-inventory.mjs </dev/null
 "$NODE_BIN" scripts/validate-all.mjs </dev/null
 git diff --check
 ```
@@ -56,8 +58,10 @@ npm run validate:maintainer
 
 The tag release workflow also writes `.codex/release-validation-evidence.md`
 and uploads it with `.metrics/validation-timings.json` as the
-`release-validation-evidence` artifact. Treat that artifact as CI evidence, not
-as a tracked repository file.
+`release-validation-evidence` artifact. Its isolated install smoke job uploads
+`.metrics/release-install-smoke/context.txt` as the
+`release-install-smoke-evidence` artifact. Treat both artifacts as CI evidence,
+not as tracked repository files.
 
 Expected conditions:
 
@@ -67,6 +71,8 @@ Expected conditions:
   `node scripts/generate-registry.mjs --write` regenerated the derived outputs.
 - `node scripts/generate-registry.mjs` reports current generated outputs after
   any regeneration.
+- `node scripts/generate-surface-inventory.mjs` reports current generated
+  inventory after any regeneration.
 - `node scripts/validate-all.mjs` reports `failed=0`.
 - `node scripts/validate-surface-budget.mjs` reports pass; any allowlist
   warning has an explicit rationale and split plan.
@@ -83,6 +89,7 @@ command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
 "$NODE_BIN" scripts/validate-runtime-smoke.mjs </dev/null
 "$NODE_BIN" scripts/validate-github-workflows.mjs </dev/null
 "$NODE_BIN" scripts/validate-surface-budget.mjs </dev/null
+"$NODE_BIN" scripts/generate-surface-inventory.mjs </dev/null
 "$NODE_BIN" scripts/scan-distribution-risk.mjs </dev/null
 "$NODE_BIN" scripts/validate-regression.mjs </dev/null
 "$NODE_BIN" scripts/validate-workflow-fixtures.mjs </dev/null
@@ -146,9 +153,11 @@ validation evidence are correct:
 git push origin "v${PLUGIN_VERSION}"
 ```
 
-The release workflow listens for `v*.*.*` tags. Do not use `claude plugin tag`
-for this repository release unless the release policy changes, because that CLI
-creates plugin-scoped tags that do not match the current GitHub release trigger.
+The release workflow listens for `v*.*.*` tags. It blocks GitHub Release
+creation on pre-release validation and isolated install smoke for the exact
+tag. Do not use `claude plugin tag` for this repository release unless the
+release policy changes, because that CLI creates plugin-scoped tags that do not
+match the current GitHub release trigger.
 
 After pushing, record:
 
@@ -156,6 +165,8 @@ After pushing, record:
 - Commit SHA.
 - GitHub Actions release workflow URL or run id.
 - Whether the workflow reached the release creation step.
+- The `release-validation-evidence` and `release-install-smoke-evidence`
+  artifact names or URLs.
 - The published GitHub Release URL when available.
 
 ## Isolated Plugin Install Smoke
@@ -170,7 +181,7 @@ Preview the planned steps without mutation:
 node scripts/validate-plugin-install.mjs --dry-run
 ```
 
-Recommended setup:
+Recommended setup for manual fallback or the dedicated smoke workflow:
 
 1. Use GitHub Actions, a disposable OS user, a VM, or a container-like test
    environment with a separate Claude Code configuration directory.
@@ -201,6 +212,9 @@ Expected script behavior:
   removes that temporary profile when the script exits.
 
 Record the final success line and the installed version in release evidence.
+For normal tag publication, prefer the `release-install-smoke-evidence`
+artifact from `.github/workflows/release.yml` because it binds the smoke result
+to the release tag and commit.
 
 Optional cleanup in the isolated environment:
 
@@ -312,6 +326,7 @@ PLUGIN_VERSION="${PLUGIN_VERSION%$'\r'}"
 "$NODE_BIN" scripts/validate-all.mjs </dev/null
 git diff --check
 "$NODE_BIN" scripts/generate-registry.mjs </dev/null
+"$NODE_BIN" scripts/generate-surface-inventory.mjs </dev/null
 "$NODE_BIN" scripts/validate-github-workflows.mjs </dev/null
 "$NODE_BIN" scripts/validate-surface-budget.mjs </dev/null
 "$NODE_BIN" scripts/validate-workflow-fixtures.mjs </dev/null

@@ -14,7 +14,7 @@ jobs:
     name: Verify Agents
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - run: bash scripts/verify-agents.sh
 
   validate-schemas:
@@ -47,6 +47,12 @@ jobs:
       label: Validate Claude Compatibility
       command: node scripts/validate-claude-compat.mjs
 
+  npm-test:
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: NPM Test
+      command: npm test
+
   plugin-install-dry-run:
     uses: ./.github/workflows/reusable-node-check.yml
     with:
@@ -63,13 +69,33 @@ jobs:
     name: Validate Hooks
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '20'
       - run: node scripts/validate-hooks.mjs
       - run: bash -n nova-plugin/hooks/scripts/pre-write-check.sh
       - run: bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - name: Install ShellCheck
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y shellcheck
+      - name: Run ShellCheck
+        run: |
+          shellcheck \
+            scripts/verify-agents.sh \
+            nova-plugin/hooks/scripts/pre-write-check.sh \
+            nova-plugin/hooks/scripts/post-audit-log.sh \
+            nova-plugin/skills/nova-codex-review-fix/scripts/codex-common.sh \
+            nova-plugin/skills/nova-codex-review-fix/scripts/codex-review.sh \
+            nova-plugin/skills/nova-codex-review-fix/scripts/codex-verify.sh \
+            nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh
 
   validate-github-workflows:
     uses: ./.github/workflows/reusable-node-check.yml
@@ -88,6 +114,12 @@ jobs:
     with:
       label: Validate Surface Budget
       command: node scripts/validate-surface-budget.mjs
+
+  validate-surface-inventory:
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Validate Surface Inventory
+      command: node scripts/generate-surface-inventory.mjs
 
   scan-distribution-risk:
     uses: ./.github/workflows/reusable-node-check.yml
@@ -123,8 +155,8 @@ jobs:
     name: Windows Node Smoke
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '20'
       - run: node scripts/validate-schemas.mjs
@@ -133,15 +165,43 @@ jobs:
       - run: .\scripts\verify-agents.ps1
         shell: pwsh
 
+  psscriptanalyzer:
+    name: PSScriptAnalyzer
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - name: Install PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module -Name PSScriptAnalyzer -Scope CurrentUser -Force
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: Invoke-ScriptAnalyzer -Path .\scripts\verify-agents.ps1 -Severity Warning,Error -EnableExit
+
   windows-bash-smoke:
     name: Windows Bash Smoke
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v6
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '20'
       - run: bash --version
       - run: bash -n nova-plugin/hooks/scripts/pre-write-check.sh
       - run: bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+      - run: node scripts/validate-runtime-smoke.mjs
+
+  macos-smoke:
+    name: macOS Smoke
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '20'
+      - run: node scripts/validate-schemas.mjs
+      - run: node scripts/lint-frontmatter.mjs
+      - run: node scripts/validate-docs.mjs
+      - run: bash scripts/verify-agents.sh
       - run: node scripts/validate-runtime-smoke.mjs

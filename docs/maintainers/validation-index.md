@@ -14,13 +14,14 @@ gate is added, renamed, removed, or moved.
 - `npm run validate:drift` is the focused generated marketplace/catalog drift
   gate.
 - `scripts/validate-maintainer.mjs` adds release-maintainer checks such as
-  generated registry drift and `git diff --check`.
+  `npm test`, generated registry drift, and `git diff --check`.
 - `.github/workflows/ci.yml` owns merge-required check names.
 - `.github/workflows/plugin-install-smoke.yml` owns isolated mutating install
   smoke evidence and is not a default merge blocker. It uploads smoke context
   for both passing and failing runs.
 - `.github/workflows/release.yml` uploads release validation evidence from the
-  pre-release validation job.
+  pre-release validation job and blocks release publication on isolated install
+  smoke for the exact tag.
 - Do not report a skipped local Bash-dependent check as passed. Use CI/Linux or
   CI/Windows Bash evidence when local Bash is unavailable.
 
@@ -35,7 +36,7 @@ gate is added, renamed, removed, or moved.
 | `npm run ci:full` | Full default validation. | Alias for `node scripts/validate-all.mjs`. |
 | `npm run validate` | Full default validation. | Alias for `node scripts/validate-all.mjs`. |
 | `npm run validate:drift` | Generated marketplace/catalog drift gate. | Alias for `node scripts/generate-registry.mjs`. |
-| `npm run validate:maintainer` | Maintainer release gate. | Adds generated registry drift and whitespace checks. |
+| `npm run validate:maintainer` | Maintainer release gate. | Adds `npm test`, generated registry drift, and whitespace checks. |
 | `npm run validate:github-workflows` | GitHub workflow contract gate. | Run after workflow, required-check, or release CI changes. |
 | `npm run validate:runtime` | Bash runtime smoke. | Requires Bash locally. |
 | `npm run validate:regression` | Regression tests. | Run after validator, scanner, docs-contract, or scaffold behavior changes. |
@@ -52,19 +53,24 @@ gate is added, renamed, removed, or moved.
 | Validate Generated Drift | `npm run validate:drift` | Generated marketplace, metadata, and catalog outputs match source. |
 | Validate Capability Packs | `node scripts/validate-packs.mjs` | Pack documentation, enhanced/fallback boundaries, and inventory. |
 | Validate Claude Compatibility | `node scripts/validate-claude-compat.mjs` | Claude marketplace manifest compatibility. |
+| NPM Test | `npm test` | Node unit, integration, and e2e test suite. |
 | Plugin Install Dry Run | `node scripts/validate-plugin-install.mjs --dry-run` | Safe install-path preview without user-scope mutation. |
 | Lint Frontmatter | `node scripts/lint-frontmatter.mjs` | Command and skill frontmatter contracts. |
 | Validate Hooks | `node scripts/validate-hooks.mjs` plus hook `bash -n` | Hook config structure and Bash syntax. |
-| Validate GitHub Workflows | `node scripts/validate-github-workflows.mjs` | Workflow permissions, inventory, required checks, and smoke boundaries. |
+| ShellCheck | `.github/workflows/ci.yml` | Static analysis for tracked shell scripts. |
+| Validate GitHub Workflows | `node scripts/validate-github-workflows.mjs` | Workflow permissions, inventory, action SHA pinning, required checks, NPM Test gate, and smoke boundaries. |
 | Validate Runtime Smoke | `node scripts/validate-runtime-smoke.mjs` | Codex loop Bash script syntax, guards, and safe failure paths. |
 | Validate Surface Budget | `node scripts/validate-surface-budget.mjs` | Prompt-surface size guardrails and allowlist discipline. |
+| Validate Surface Inventory | `node scripts/generate-surface-inventory.mjs` | Generated public surface inventory drift for commands, skills, agents, packs, and marketplace outputs. |
 | Scan Distribution Risk | `node scripts/scan-distribution-risk.mjs` | Public/private boundary and tracked runtime artifact scan. |
 | Secret Scan | `npm run scan:secrets` | Source-owned PR signal for secret-like tokens, real `.env` values, private endpoints, and machine-local paths. |
 | Validate Regression | `node scripts/validate-regression.mjs` | Contract regression suite for validators, docs, scaffold, and scans. |
 | Validate Workflow Fixtures | `node scripts/validate-workflow-fixtures.mjs` | Workflow fixture integrity and redaction boundaries. |
 | Validate Docs | `node scripts/validate-docs.mjs` | Documentation contracts, links, navigation, and public-safe wording. |
 | Windows Node Smoke | `.github/workflows/ci.yml` | Windows schemas, docs, frontmatter, and PowerShell agent verification. |
+| PSScriptAnalyzer | `.github/workflows/ci.yml` | Static analysis for tracked PowerShell scripts. |
 | Windows Bash Smoke | `.github/workflows/ci.yml` | Windows Bash syntax and runtime smoke evidence. |
+| macOS Smoke | `.github/workflows/ci.yml` | macOS schemas, frontmatter, docs, agent verification, and runtime smoke evidence. |
 | Dependency Review | `.github/workflows/dependency-review.yml` | Dependency graph comparison and dependency-review action. |
 | CodeQL / Analyze JavaScript | `.github/workflows/codeql.yml` | Code scanning for JavaScript. |
 
@@ -78,3 +84,4 @@ gate is added, renamed, removed, or moved.
 | GitHub workflows | `node scripts/validate-github-workflows.mjs`, `npm run validate:maintainer` |
 | Registry or plugin metadata | `node scripts/generate-registry.mjs --write`, `npm run validate:drift`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs` |
 | Release evidence | `npm run validate:maintainer`, install smoke dry-run, and isolated install smoke when promotion evidence requires it |
+| Public surface inventory | `node scripts/generate-surface-inventory.mjs --write`, `node scripts/generate-surface-inventory.mjs`, `npm test` |

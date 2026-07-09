@@ -18,7 +18,7 @@ For the step-by-step manual operation sequence, use
 - For minor releases, attach the manual five-command workflow evaluation record or explain why it is not applicable.
 - Treat `node scripts/validate-plugin-install.mjs` as a separate CI or isolated
   test-user check because it may install or update user-scope Claude plugin
-  state.
+  state when run with mutation flags.
 
 ## Release Target
 
@@ -49,17 +49,21 @@ Operating system:
 node scripts/generate-registry.mjs --write (only if sources changed):
 node scripts/generate-registry.mjs (no-drift verification):
 node scripts/validate-all.mjs:
+npm test:
 node scripts/validate-github-workflows.mjs:
 node scripts/validate-runtime-smoke.mjs:
 node scripts/validate-surface-budget.mjs:
+node scripts/generate-surface-inventory.mjs:
 node scripts/scan-distribution-risk.mjs:
 node scripts/validate-regression.mjs:
-node scripts/validate-plugin-install.mjs:
+node scripts/validate-plugin-install.mjs --dry-run:
+isolated install smoke artifact/run:
 git diff --check:
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh:
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh:
 Windows CI Node/PowerShell smoke:
 Windows CI Bash smoke:
+macOS CI smoke:
 ```
 
 ## Skipped Checks
@@ -82,6 +86,7 @@ and runtime smoke passed.
 CHANGELOG section:
 Generated marketplace outputs regenerated:
 Generated marketplace outputs no-drift verification:
+Surface inventory current:
 README badge/version current:
 Catalog current:
 Deferred v3/public portal wording checked:

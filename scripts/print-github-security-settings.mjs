@@ -13,19 +13,24 @@ const requiredChecks = [
   'Validate Generated Drift',
   'Validate Capability Packs',
   'Validate Claude Compatibility',
+  'NPM Test',
   'Plugin Install Dry Run',
   'Lint Frontmatter',
   'Validate Hooks',
+  'ShellCheck',
   'Validate GitHub Workflows',
   'Validate Runtime Smoke',
   'Validate Surface Budget',
+  'Validate Surface Inventory',
   'Scan Distribution Risk',
   'Secret Scan',
   'Validate Regression',
   'Validate Workflow Fixtures',
   'Validate Docs',
   'Windows Node Smoke',
+  'PSScriptAnalyzer',
   'Windows Bash Smoke',
+  'macOS Smoke',
   'Dependency Review',
   'CodeQL / Analyze JavaScript',
 ];
@@ -43,6 +48,7 @@ console.log('');
 console.log('- Protect main with pull requests, stale approval dismissal, and no force pushes.');
 console.log('- Keep default Actions token permissions read-only unless a workflow needs write access.');
 console.log('- Enable Dependency graph, Dependabot alerts, Dependabot security updates, CodeQL, and secret scanning.');
+console.log('- Enable public issue creation while keeping blank issues disabled and security reports private.');
 console.log('- Require equivalent status-check coverage before merge:');
 for (const check of requiredChecks) {
   console.log(`  - ${check}`);

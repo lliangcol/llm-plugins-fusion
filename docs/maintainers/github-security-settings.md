@@ -30,6 +30,7 @@ promoting a release.
 | Secret scanning | Enable secret scanning and push protection where available. |
 | Dependency graph | Enable Dependency graph, Dependabot alerts, and Dependabot security updates. |
 | Workflow permissions | Default Actions token permission should be read-only unless a workflow explicitly needs write permission. |
+| Issue intake | Issues are enabled, blank issues are disabled, and public issue forms are scoped to public-safe bug, feature, and showcase feedback. |
 
 ## Suggested Required Checks
 
@@ -42,19 +43,24 @@ Validate Registry Fixtures
 Validate Generated Drift
 Validate Capability Packs
 Validate Claude Compatibility
+NPM Test
 Plugin Install Dry Run
 Lint Frontmatter
 Validate Hooks
+ShellCheck
 Validate GitHub Workflows
 Validate Runtime Smoke
 Validate Surface Budget
+Validate Surface Inventory
 Scan Distribution Risk
 Secret Scan
 Validate Regression
 Validate Workflow Fixtures
 Validate Docs
 Windows Node Smoke
+PSScriptAnalyzer
 Windows Bash Smoke
+macOS Smoke
 Dependency Review
 CodeQL / Analyze JavaScript
 ```
@@ -78,7 +84,9 @@ Before a release:
    graph are enabled.
 3. Confirm release validation uses `npm run validate:maintainer` and install
    smoke dry-run.
-4. Record any unavailable GitHub platform checks in the release evidence.
+4. Confirm issue creation is enabled, blank issues are disabled, and the
+   tracked issue forms remain public-safe.
+5. Record any unavailable GitHub platform checks in the release evidence.
 
 For a local read-only checklist printout:
 

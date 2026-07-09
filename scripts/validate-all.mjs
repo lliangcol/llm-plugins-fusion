@@ -296,6 +296,7 @@ async function main() {
   await runTaskGroup([
     runtimeSmokeTask,
     nodeTask('validate surface budget', 'scripts/validate-surface-budget.mjs'),
+    nodeTask('validate surface inventory', 'scripts/generate-surface-inventory.mjs'),
     nodeTask('scan distribution risk', 'scripts/scan-distribution-risk.mjs'),
     nodeTask('validate regression', 'scripts/validate-regression.mjs'),
     nodeTask('validate workflow fixtures', 'scripts/validate-workflow-fixtures.mjs'),

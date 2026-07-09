@@ -29,6 +29,7 @@ knowledge-base content in the consumer-owned workspace.
 | See scenario-based workflow examples | [showcase/README.md](showcase/README.md) |
 | Prepare social preview and demo capture assets | [assets/README.md](assets/README.md) |
 | Track growth metrics and manual promotion channels | [growth/README.md](growth/README.md) |
+| Inspect generated public surface inventory | [generated/surface-inventory.md](generated/surface-inventory.md) |
 | Adopt `nova-plugin` in a private project | [consumers/README.md](consumers/README.md) |
 | Maintain repository checks and release gates | [maintainers/quickstart.md](maintainers/quickstart.md) |
 | Understand public compatibility boundaries | [compatibility/public-api.md](compatibility/public-api.md) |
@@ -57,6 +58,7 @@ docs/
 |-- consumers/                    # public-safe consumer profile contracts and setup templates
 |-- compatibility/                # public API and compatibility surface
 |-- examples/                     # redacted workflow examples and evaluation templates
+|-- generated/                    # generated public surface inventory
 |-- growth/                       # growth metric definitions and collection cadence
 |-- maintainers/                  # maintainer quickstart, troubleshooting, and GitHub settings
 |-- marketplace/                  # generated catalog, registry workflow, trust, compatibility, and review docs
@@ -76,6 +78,7 @@ docs/
 | [consumers/](consumers/) | Public-safe consumer profile contracts, redacted project templates, and cross-tool setup notes. |
 | [compatibility/](compatibility/) | Public API and compatibility boundaries. |
 | [examples/](examples/) | Redacted Java backend/frontend examples and workflow evaluation templates. |
+| [generated/](generated/) | Generated public surface inventory for commands, skills, agents, packs, and marketplace outputs. |
 | [growth/](growth/) | Growth metrics, traffic collection cadence, and manual channel record format. |
 | [maintainers/](maintainers/) | Maintainer checks, troubleshooting, and GitHub security settings. |
 | [marketplace/](marketplace/) | Marketplace catalog output, registry author workflow, compatibility, trust, security review, and v3 readiness evidence. |
@@ -132,6 +135,13 @@ docs/
 | Document | Purpose |
 | --- | --- |
 | [growth/README.md](growth/README.md) | Stars, forks, issues, PRs, releases, traffic metrics, collection cadence, and manual channel record. |
+
+### Generated
+
+| Document | Purpose |
+| --- | --- |
+| [generated/surface-inventory.md](generated/surface-inventory.md) | Generated public surface inventory. |
+| [generated/surface-inventory.json](generated/surface-inventory.json) | Machine-readable generated public surface inventory. |
 
 ### Compatibility
 
@@ -214,7 +224,9 @@ docs/
 - Add or update a row here when an active document under `docs/` is added,
   moved, or retired.
 - Keep generated files generated. `docs/marketplace/catalog.md` must be
-  regenerated from `.claude-plugin/registry.source.json`.
+  regenerated from `.claude-plugin/registry.source.json`, and
+  `docs/generated/surface-inventory.*` must be regenerated with
+  `node scripts/generate-surface-inventory.mjs --write`.
 - Keep private consumer names, local paths, endpoints, credentials, repository
   addresses, and business rules out of public docs and prompts.
 - For documentation-only edits, run:

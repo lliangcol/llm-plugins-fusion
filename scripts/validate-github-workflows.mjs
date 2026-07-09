@@ -208,6 +208,41 @@ function stripYamlScalar(value) {
   return quoted ? quoted[2] : trimmed;
 }
 
+function parseUsesReference(line) {
+  const match = line.match(/^\s*(?:-\s*)?uses:\s*(.*?)\s*(?:#(.*))?$/);
+  if (!match) return null;
+  return {
+    ref: stripYamlScalar(match[1]),
+    comment: match[2]?.trim() ?? '',
+  };
+}
+
+function validatePinnedExternalActions(file, src) {
+  const lines = src.split(/\r?\n/);
+  for (const [index, line] of lines.entries()) {
+    const parsed = parseUsesReference(line);
+    if (!parsed) continue;
+
+    if (parsed.ref.startsWith('./')) continue;
+
+    const match = parsed.ref.match(/^([A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\/[A-Za-z0-9_.-]+)*)@(.+)$/);
+    if (!match) {
+      recordError(file, `line ${index + 1} external action reference "${parsed.ref}" must include an explicit commit SHA`);
+      continue;
+    }
+
+    const [, action, ref] = match;
+    if (!/^[a-f0-9]{40}$/i.test(ref)) {
+      recordError(file, `line ${index + 1} external action "${action}" must pin a full 40-character commit SHA instead of "${ref}"`);
+      continue;
+    }
+
+    if (!/^v[0-9][A-Za-z0-9._-]*\b/.test(parsed.comment)) {
+      recordError(file, `line ${index + 1} external action "${action}" must preserve the upstream tag comment, for example "# v1"`);
+    }
+  }
+}
+
 function findYamlScalar(lines, key, indent) {
   const pattern = new RegExp(`^ {${indent}}${escapeRegExp(key)}:\\s*(.*?)\\s*$`);
   for (const line of lines) {
@@ -270,6 +305,59 @@ function extractCiRequiredChecks() {
   }
 
   return checks;
+}
+
+function extractCiJobLines(jobId) {
+  const file = '.github/workflows/ci.yml';
+  const src = readWorkflow(file);
+  if (!src) return null;
+
+  const jobsBlock = extractYamlBlock(file, src, 'jobs', 0, 'CI jobs block');
+  if (!jobsBlock) return null;
+
+  const lines = jobsBlock.lines;
+  for (let index = 0; index < lines.length;) {
+    const jobMatch = lines[index].match(/^ {2}([A-Za-z0-9_-]+):\s*$/);
+    if (!jobMatch) {
+      index += 1;
+      continue;
+    }
+
+    let jobEnd = index + 1;
+    while (jobEnd < lines.length) {
+      const line = lines[jobEnd];
+      if (line.trim() !== '' && lineIndent(line) <= 2) break;
+      jobEnd += 1;
+    }
+
+    if (jobMatch[1] === jobId) {
+      return lines.slice(index + 1, jobEnd);
+    }
+    index = jobEnd;
+  }
+
+  recordError(file, `missing required CI job "${jobId}"`);
+  return null;
+}
+
+function validateNpmTestGate() {
+  const file = '.github/workflows/ci.yml';
+  const jobLines = extractCiJobLines('npm-test');
+  if (!jobLines) return;
+
+  const uses = findYamlScalar(jobLines, 'uses', 4);
+  const label = findYamlScalar(jobLines, 'label', 6);
+  const command = findYamlScalar(jobLines, 'command', 6);
+
+  if (uses !== './.github/workflows/reusable-node-check.yml') {
+    recordError(file, `NPM Test gate must use reusable-node-check.yml; got "${uses ?? 'none'}"`);
+  }
+  if (label !== 'NPM Test') {
+    recordError(file, `NPM Test gate label must be "NPM Test"; got "${label ?? 'none'}"`);
+  }
+  if (!['npm test', 'npm run test'].includes(command)) {
+    recordError(file, `NPM Test gate command must be "npm test" or "npm run test"; got "${command ?? 'none'}"`);
+  }
 }
 
 function parseSuggestedRequiredChecks() {
@@ -387,6 +475,7 @@ function validateWorkflowContracts() {
   for (const workflow of WORKFLOW_CONTRACTS) {
     const src = readWorkflow(workflow.file);
     if (!src) continue;
+    validatePinnedExternalActions(workflow.file, src);
     if (/^\s*pull_request_target\s*:/m.test(src)) {
       recordError(workflow.file, 'workflow trigger safety contract forbids pull_request_target');
     }
@@ -466,6 +555,8 @@ function validateWorkflowContracts() {
 function validateRequiredCheckContracts() {
   const ciChecks = extractCiRequiredChecks();
   if (!ciChecks) return;
+
+  validateNpmTestGate();
 
   const expectedRequiredChecks = [
     ...ciChecks,

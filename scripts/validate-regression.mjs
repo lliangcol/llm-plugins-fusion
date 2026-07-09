@@ -485,6 +485,62 @@ test('validate-github-workflows enforces least-privilege workflow contracts', ()
   }
 });
 
+test('validate-github-workflows rejects unpinned actions and missing NPM Test gate', () => {
+  const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-workflow-pinning-'));
+  const fixtureRoot = resolve(tempRoot, 'repo');
+  try {
+    copyRepositoryFixture(fixtureRoot);
+
+    const clean = spawnSync(process.execPath, [
+      'scripts/validate-github-workflows.mjs',
+      '--root',
+      fixtureRoot,
+    ], {
+      cwd: root,
+      encoding: 'utf8',
+      shell: false,
+    });
+    assert.equal(clean.status, 0, clean.stderr || clean.stdout);
+
+    const reusableWorkflowPath = resolve(fixtureRoot, '.github/workflows/reusable-node-check.yml');
+    const reusableWorkflow = readFileSync(reusableWorkflowPath, 'utf8');
+    assert.match(reusableWorkflow, /actions\/checkout@[a-f0-9]{40} # v7/);
+    writeFileSync(
+      reusableWorkflowPath,
+      reusableWorkflow.replace(/actions\/checkout@[a-f0-9]{40} # v7/, 'actions/checkout@v7'),
+      'utf8',
+    );
+
+    const ciWorkflowPath = resolve(fixtureRoot, '.github/workflows/ci.yml');
+    const ciWorkflow = readFileSync(ciWorkflowPath, 'utf8');
+    assert.match(ciWorkflow, /\n  npm-test:\r?\n/);
+    writeFileSync(
+      ciWorkflowPath,
+      ciWorkflow.replace(
+        /\r?\n  npm-test:\r?\n    uses: \.\/\.github\/workflows\/reusable-node-check\.yml\r?\n    with:\r?\n      label: NPM Test\r?\n      command: npm test\r?\n/,
+        '\n',
+      ),
+      'utf8',
+    );
+
+    const drifted = spawnSync(process.execPath, [
+      'scripts/validate-github-workflows.mjs',
+      '--root',
+      fixtureRoot,
+    ], {
+      cwd: root,
+      encoding: 'utf8',
+      shell: false,
+    });
+    assert.notEqual(drifted.status, 0, 'validate-github-workflows should reject unpinned actions and missing npm test gate');
+    const output = `${drifted.stdout}${drifted.stderr}`;
+    assert.match(output, /external action "actions\/checkout" must pin a full 40-character commit SHA instead of "v7"/);
+    assert.match(output, /missing required CI job "npm-test"/);
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test('validate-github-workflows syncs required-check docs and print output with CI labels', () => {
   const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-workflow-checks-'));
   const fixtureRoot = resolve(tempRoot, 'repo');
@@ -709,7 +765,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
           '',
         )
         .replace(
-          /- Treat `node scripts\/validate-plugin-install\.mjs` as a separate CI or isolated[\s\S]*?state\.\r?\n/,
+          /- Treat `node scripts\/validate-plugin-install\.mjs` as a separate CI or isolated[\s\S]*?mutation flags\.\r?\n/,
           '',
         ),
       'utf8',
@@ -760,7 +816,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       releaseHygiene
         .replace(/node scripts\/validate-github-workflows\.mjs\r?\n/, '')
         .replace(
-          /Run `node scripts\/validate-plugin-install\.mjs` only in CI or an isolated[\s\S]*?running it by default\.\r?\n/,
+          /Run `node scripts\/validate-plugin-install\.mjs` only in CI or an isolated[\s\S]*?dry-run install preview\.\r?\n/,
           '',
         ),
       'utf8',

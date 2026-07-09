@@ -128,6 +128,12 @@ npm run scan:secrets
 npm run scan:distribution
 ```
 
+Generated surface inventory is checked by the default full validation:
+
+```bash
+node scripts/generate-surface-inventory.mjs
+```
+
 Windows agent verification uses:
 
 ```powershell
@@ -138,10 +144,11 @@ Windows agent verification uses:
 Run `node scripts/validate-plugin-install.mjs --accept-user-scope-mutation`
 only in CI or an isolated test-user environment because it may install or
 update a user-scope Claude Code plugin. Prefer adding `--isolated-home` so the
-script uses temporary HOME/XDG directories for Claude CLI state. Default CI and
-release validation should prefer the dry-run path unless the job is explicitly
-isolated for mutation. The mutating GitHub Actions path is
-`.github/workflows/plugin-install-smoke.yml`.
+script uses temporary HOME/XDG directories for Claude CLI state. Default PR CI
+should prefer the dry-run path unless the job is explicitly isolated for
+mutation. The manual/scheduled mutating GitHub Actions path is
+`.github/workflows/plugin-install-smoke.yml`; exact-tag release publication is
+also blocked by an isolated install smoke job in `.github/workflows/release.yml`.
 
 ## Change Boundaries
 

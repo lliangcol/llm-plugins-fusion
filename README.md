@@ -72,7 +72,8 @@ release tag 作为稳定发布证据。
 - 公开仓库不存放真实 consumer profile、endpoint、凭据、私有仓库地址、业务规则或私有知识库。
 - 本地默认质量门是 `node scripts/validate-all.mjs`；Windows 无 Bash 时，Bash-dependent 检查只能报告为 skipped，不能报告为 passed。
 - 生成物漂移的聚焦检查是 `npm run validate:drift`，它确认 marketplace metadata 和 catalog 与 source-of-truth 一致。
-- 维护者发布前检查使用 `npm run validate:maintainer`，它在默认质量门之外还检查 generated registry 漂移和 `git diff --check`。
+- Surface inventory 漂移检查是 `node scripts/generate-surface-inventory.mjs`，它确认 command、skill、agent、pack 和 generated marketplace output 的派生清单是最新的。
+- 维护者发布前检查使用 `npm run validate:maintainer`，它在默认质量门之外还运行 `npm test`，并检查 generated registry 漂移和 `git diff --check`。
 - Claude 插件安装 smoke 的安全预览路径是 `node scripts/validate-plugin-install.mjs --dry-run`；真实 user-scope 安装/更新只应在隔离用户或 CI profile 中显式运行 `--accept-user-scope-mutation --isolated-home`。
 - 安全问题请按 [SECURITY.md](./SECURITY.md) 私下披露，不要在公开 issue 中暴露漏洞细节。
 
@@ -107,7 +108,7 @@ release tag 作为稳定发布证据。
 node scripts/validate-all.mjs
 ```
 
-该入口覆盖 schema、registry fixtures、Claude 兼容性、command / skill frontmatter、core agent 集合、capability pack 结构、hooks、GitHub workflow 权限、库存和 required-check 合约、Codex runtime smoke、分发风险扫描、核心回归检查、workflow fixture 合约、Markdown 链接和命令文档覆盖。
+该入口覆盖 schema、registry fixtures、Claude 兼容性、command / skill frontmatter、core agent 集合、capability pack 结构、hooks、GitHub workflow 权限、库存和 required-check 合约（包括 action SHA pinning 和 NPM Test gate）、Codex runtime smoke、surface inventory 漂移、分发风险扫描、核心回归检查、workflow fixture 合约、Markdown 链接和命令文档覆盖。
 
 生成 marketplace、metadata 和 catalog 漂移的聚焦检查是：
 
@@ -121,7 +122,7 @@ npm run validate:drift
 npm run validate:maintainer
 ```
 
-该入口会运行默认质量门、生成 registry 漂移检查和 `git diff --check`。
+该入口会运行默认质量门、`npm test`、生成 registry 漂移检查和 `git diff --check`。
 运行环境诊断可用：
 
 ```bash
@@ -214,6 +215,7 @@ llm-plugins-fusion/
 |   |-- docs/                         # 用户文档、命令文档和当前架构说明
 |   `-- hooks/                        # Claude Code hook 配置和脚本
 |-- docs/                             # 仓库文档、consumer 契约、示例、prompt、release 与 marketplace 指南
+|   `-- generated/                    # 派生 surface inventory，不手工编辑
 |-- fixtures/                         # registry 多 entry fixture
 |-- schemas/                          # registry source / marketplace / metadata / plugin schemas
 |-- scripts/                          # 本地和 CI 校验脚本
@@ -331,6 +333,7 @@ node scripts/validate-packs.mjs
 node scripts/validate-hooks.mjs
 node scripts/validate-github-workflows.mjs
 node scripts/validate-runtime-smoke.mjs
+node scripts/generate-surface-inventory.mjs
 node scripts/scan-distribution-risk.mjs
 node scripts/validate-regression.mjs
 node scripts/validate-workflow-fixtures.mjs
@@ -363,7 +366,7 @@ node scripts/validate-plugin-install.mjs --dry-run
 node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home
 ```
 
-默认 CI 和 release validation 只运行 dry run；真实 user-scope smoke 由手动或定时的 `.github/workflows/plugin-install-smoke.yml` 在 disposable runner 上执行。
+默认 PR CI 只运行 dry run；tag release workflow 会在 disposable runner 上运行 isolated user-scope install smoke 并阻断发布，手动或定时的 `.github/workflows/plugin-install-smoke.yml` 继续提供独立安装 smoke 证据。
 
 ## Contributing
 

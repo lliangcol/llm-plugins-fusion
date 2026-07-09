@@ -103,6 +103,7 @@ llm-plugins-fusion/
 |   |-- agents/
 |   |-- consumers/
 |   |-- examples/
+|   |-- generated/
 |   |-- marketplace/
 |   |-- prompts/
 |   |-- releases/
@@ -153,6 +154,7 @@ bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 node scripts/validate-runtime-smoke.mjs
 node scripts/validate-surface-budget.mjs
+node scripts/generate-surface-inventory.mjs
 node scripts/scan-distribution-risk.mjs
 node scripts/validate-regression.mjs
 node scripts/validate-workflow-fixtures.mjs
@@ -177,6 +179,7 @@ npm run validate:runtime
 npm run validate:regression
 npm run validate:surface
 npm run validate:workflow
+npm run scan:secrets
 npm run scan:distribution
 ```
 
@@ -410,7 +413,7 @@ broad workflow, release, metadata, or cross-layer changes.
 | --- | --- | --- |
 | Memory and docs | `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/**`, `nova-plugin/docs/**` | `node scripts/validate-docs.mjs` |
 | Skills and commands | `nova-plugin/commands/**`, `nova-plugin/skills/**` | `node scripts/lint-frontmatter.mjs` |
-| Guardrails | `.github/workflows/**`, `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, distributed Bash scripts | `node scripts/validate-github-workflows.mjs`, `node scripts/validate-hooks.mjs`, hook `bash -n`, changed script validation, `node scripts/validate-surface-budget.mjs` when prompt surfaces change, `node scripts/validate-regression.mjs` when validator behavior changes |
+| Guardrails | `.github/workflows/**`, `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, distributed Bash scripts | `node scripts/validate-github-workflows.mjs`, `node scripts/validate-hooks.mjs`, hook `bash -n`, changed script validation, `node scripts/validate-surface-budget.mjs` when prompt surfaces change, `node scripts/generate-surface-inventory.mjs` when public surfaces change, `node scripts/validate-regression.mjs` when validator behavior changes |
 | Delegation | `nova-plugin/agents/**`, `nova-plugin/packs/**`, `docs/agents/**` | `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`, plus `node scripts/validate-packs.mjs` |
 | Distribution | `.claude-plugin/registry.source.json`, `nova-plugin/.claude-plugin/plugin.json`, generated marketplace outputs | `node scripts/generate-registry.mjs --write`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs`, `node scripts/validate-claude-compat.mjs`; `node scripts/validate-plugin-install.mjs` when install smoke is required |
 
@@ -432,16 +435,20 @@ Prompt-surface budget checks are a bloat guard, not a quality metric. Run
 surfaces change.
 
 Current CI includes verify-agents, validate-packs, validate-schemas,
-validate-registry-fixtures, validate-claude-compat, plugin install dry run,
-lint-frontmatter, validate-hooks, GitHub workflow permission, inventory, and
-required-check validation, hook `bash -n`, runtime smoke, surface budget,
+validate-registry-fixtures, validate-claude-compat, NPM Test, plugin install
+dry run, lint-frontmatter, validate-hooks, ShellCheck, GitHub workflow permission, inventory, and required-check validation, including action SHA
+pinning and the NPM Test gate, hook `bash -n`, runtime smoke, surface budget,
+surface inventory,
 distribution risk scan, validation regression checks, workflow fixture
 validation, validate-docs, CodeQL, a Windows Node/PowerShell smoke job for
-schemas, docs, frontmatter, and `scripts/verify-agents.ps1`, and a Windows Bash
-smoke job for hook syntax and Codex runtime smoke. Repeated Node jobs route
-through `.github/workflows/reusable-node-check.yml`. Real user-scope plugin
-install smoke is isolated in `.github/workflows/plugin-install-smoke.yml` and is
-not a default merge or release blocker.
+schemas, docs, frontmatter, and `scripts/verify-agents.ps1`, PSScriptAnalyzer,
+a Windows Bash smoke job for hook syntax and Codex runtime smoke, and a macOS
+smoke job for schemas, frontmatter, docs, agent verification, and runtime
+smoke. Repeated Node jobs route through
+`.github/workflows/reusable-node-check.yml`. Real user-scope plugin install
+smoke is isolated in `.github/workflows/plugin-install-smoke.yml` for manual or
+scheduled evidence and in `.github/workflows/release.yml` as an exact-tag
+release blocker; it is not a default merge blocker.
 
 ## Do Not Edit
 

@@ -32,10 +32,13 @@ tag or publishing release notes.
 node scripts/generate-registry.mjs --write
 ```
 
-- Generated outputs currently include:
+- Generated marketplace outputs currently include:
   `.claude-plugin/marketplace.json`,
   `.claude-plugin/marketplace.metadata.json`, and
   `docs/marketplace/catalog.md`.
+- Generated surface inventory outputs include:
+  `docs/generated/surface-inventory.json` and
+  `docs/generated/surface-inventory.md`.
 - Do not hand-edit generated outputs to make validation pass.
 
 ## Required Checks
@@ -45,8 +48,10 @@ For broad release or workflow changes:
 ```bash
 node scripts/generate-registry.mjs --write
 node scripts/validate-all.mjs
+npm test
 node scripts/validate-github-workflows.mjs
 node scripts/validate-runtime-smoke.mjs
+node scripts/generate-surface-inventory.mjs
 node scripts/scan-distribution-risk.mjs
 node scripts/validate-regression.mjs
 git diff --check
@@ -69,9 +74,10 @@ locally passed in that case. CI/Linux and CI/Windows Bash smoke must run the
 Bash syntax and runtime smoke checks.
 
 Run `node scripts/validate-plugin-install.mjs` only in CI or an isolated
-test-user environment. It may install or update user-scope Claude plugin state,
-so unattended local release evidence should record it as pending instead of
-running it by default.
+test-user environment when mutation flags are used. It may install or update
+user-scope Claude plugin state, so unattended local release evidence should record it as pending instead of running it by default. Exact-tag release
+workflow publication is blocked by isolated install smoke; PR CI still uses
+only the dry-run install preview.
 
 For the full manual sequence, including exact tag creation, isolated install
 smoke cleanup, workflow evaluation recording, and final promotion decisions, use
@@ -87,7 +93,8 @@ Before tagging, search for:
 - Command, skill, agent, or pack counts that no longer match repository facts.
 - Dead local links or anchors.
 - Changelog/date/version drift.
-- Generated marketplace, metadata, or catalog drift.
+- Generated marketplace, metadata, catalog, or surface inventory drift.
+- GitHub Actions external references that are not pinned to full commit SHAs.
 - `.codex/` runtime artifacts.
 - Runtime smoke coverage for distributed Bash/Codex helper scripts.
 - Distribution risk scan output for active private paths, credentials, JWTs,
@@ -96,8 +103,9 @@ Before tagging, search for:
 - Regression coverage for registry generation, distribution risk scanning, and
   command/skill/docs drift.
 - Plugin install smoke evidence from CI or an isolated test-user environment,
-  never from an unattended run that may mutate the operator's user-scope
-  Claude plugin installation.
+  including the exact-tag release workflow artifact when publishing a tag, never
+  from an unattended run that may mutate the operator's user-scope Claude
+  plugin installation.
 - For minor releases, whether the five primary commands were manually evaluated
   with `docs/examples/workflow-evaluation.md` and recorded with
   `docs/examples/workflow-evaluation-record-template.md`, or why that evidence
