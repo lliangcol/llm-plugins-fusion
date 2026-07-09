@@ -17,10 +17,15 @@ assertNodeVersion({ label: 'workflow fixture validation' });
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
 const fixtureRoot = 'fixtures/workflow/invoice-sync';
+const demoRoot = 'fixtures/demo';
 let failed = 0;
 
 function read(relPath) {
   return readFileSync(resolve(root, relPath), 'utf8');
+}
+
+function readJson(relPath) {
+  return JSON.parse(read(relPath));
 }
 
 function assertContainsAll(relPath, fragments) {
@@ -56,11 +61,64 @@ test('fixture files exist', () => {
     `${fixtureRoot}/inputs/planning-brief.md`,
     `${fixtureRoot}/inputs/review-diff.patch`,
     `${fixtureRoot}/plans/approved-implementation-plan.md`,
+    `${demoRoot}/route-basic.json`,
+    `${demoRoot}/review-signal.json`,
+    `${demoRoot}/verification-evidence.json`,
     'docs/examples/workflow-evaluation.md',
     'docs/examples/workflow-evaluation-record-template.md',
   ]) {
     assert.equal(existsSync(resolve(root, relPath)), true, `missing ${relPath}`);
   }
+});
+
+test('headless demo fixtures are deterministic and public-safe', () => {
+  const fixtures = [
+    readJson(`${demoRoot}/route-basic.json`),
+    readJson(`${demoRoot}/review-signal.json`),
+    readJson(`${demoRoot}/verification-evidence.json`),
+  ];
+
+  for (const fixture of fixtures) {
+    assert.match(fixture.id, /^[a-z0-9-]+$/);
+    assert.ok(['route', 'review', 'verification'].includes(fixture.mode), `${fixture.id} has unexpected mode`);
+    assert.equal(typeof fixture.request, 'string', `${fixture.id} missing request`);
+    assert.ok(fixture.expected && typeof fixture.expected === 'object', `${fixture.id} missing expected object`);
+    assert.ok(Array.isArray(fixture.expected.outputSignals), `${fixture.id} missing outputSignals`);
+    assert.ok(Array.isArray(fixture.expected.failureSignals), `${fixture.id} missing failureSignals`);
+    assert.ok(fixture.expected.outputSignals.length > 0, `${fixture.id} outputSignals empty`);
+    assert.ok(fixture.expected.failureSignals.length > 0, `${fixture.id} failureSignals empty`);
+    const boundaryText = fixture.boundaries.join(' ');
+    assert.match(boundaryText, /fictional public-safe fixture/i);
+    assert.match(boundaryText, /does not (?:call|execute)/i);
+    assert.match(boundaryText, /private consumer names/i);
+    assert.doesNotMatch(JSON.stringify(fixture), /D:\\|https:\/\/[^"\s]*internal|customer|prod|token=/i);
+  }
+});
+
+test('headless demo docs and scripts stay linked', () => {
+  for (const relPath of [
+    'scripts/demo-route.mjs',
+    'scripts/demo-review.mjs',
+  ]) {
+    assert.equal(existsSync(resolve(root, relPath)), true, `missing ${relPath}`);
+  }
+  assertContainsAll('docs/getting-started.md', [
+    'No-Credential Headless Demo',
+    'npm run demo:route',
+    'npm run demo:review',
+    'They do not execute slash commands',
+  ]);
+  assertContainsAll('docs/examples/README.md', [
+    'Headless Demo Fixtures',
+    'fixtures/demo',
+    'not an LLM execution',
+  ]);
+  assertContainsAll('docs/workflows/source-controlled-checks.md', [
+    'fixtures/demo',
+    'scripts/demo-route.mjs',
+    'scripts/demo-review.mjs',
+    'They do not call Claude Code',
+  ]);
 });
 
 test('workflow examples preserve public-safe redaction boundaries', () => {

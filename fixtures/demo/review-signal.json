@@ -1,0 +1,34 @@
+{
+  "id": "review-ordering-signal",
+  "mode": "review",
+  "title": "Review a fictional ordering bug",
+  "request": "Review a patch that marks a record complete before the external send succeeds.",
+  "expected": {
+    "command": "/review LEVEL=standard",
+    "primaryFinding": {
+      "severity": "P1",
+      "signal": "state is marked complete before the external side effect succeeds",
+      "expectedFixDirection": "move completion after successful send and keep failure retryable"
+    },
+    "requiredInputs": [
+      "diff or patch",
+      "intended behavior",
+      "available tests or skipped-test reason"
+    ],
+    "outputSignals": [
+      "prioritizes the behavioral regression",
+      "names the failure mode before style concerns",
+      "keeps remediation scoped to the fictional fixture"
+    ],
+    "failureSignals": [
+      "treats the bug as a formatting issue",
+      "claims tests passed without evidence",
+      "adds private project context"
+    ]
+  },
+  "boundaries": [
+    "fictional public-safe fixture",
+    "does not execute an LLM review",
+    "does not include private consumer names, endpoints, credentials, local paths, or repository addresses"
+  ]
+}

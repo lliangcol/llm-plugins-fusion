@@ -50,6 +50,10 @@ node scripts/generate-registry.mjs --write (only if sources changed):
 node scripts/generate-registry.mjs (no-drift verification):
 node scripts/validate-all.mjs:
 npm test:
+npm run test:coverage:check:
+coverage artifact:
+node scripts/generate-release-checksums.mjs:
+checksum artifact:
 node scripts/validate-github-workflows.mjs:
 node scripts/validate-runtime-smoke.mjs:
 node scripts/validate-surface-budget.mjs:
@@ -87,6 +91,7 @@ CHANGELOG section:
 Generated marketplace outputs regenerated:
 Generated marketplace outputs no-drift verification:
 Surface inventory current:
+Release checksums current:
 README badge/version current:
 Catalog current:
 Deferred v3/public portal wording checked:

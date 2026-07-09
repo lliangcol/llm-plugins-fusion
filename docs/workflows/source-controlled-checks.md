@@ -17,6 +17,17 @@ That validator checks public-safe fixture contracts and expected failure
 signals. It does not execute Claude Code slash commands and does not replace
 manual workflow-quality records.
 
+For a no-credential demonstration of the same public-safe boundaries, use:
+
+```bash
+npm run demo:route
+npm run demo:review
+```
+
+These scripts read `fixtures/demo/*.json` and print expected route, review, and
+verification signals. They do not call Claude Code, Codex, network tools,
+marketplace installation, or private consumer workspaces.
+
 ## Why This Exists
 
 High-signal AI engineering projects increasingly keep review rules, workflow
@@ -29,9 +40,11 @@ and public-safe.
 
 | Surface | Role |
 | --- | --- |
+| `fixtures/demo/` | Public-safe headless demo inputs for route, review, and verification signals. |
 | `fixtures/workflow/invoice-sync/` | Public-safe scenario inputs and approved plan. |
 | `docs/examples/workflow-evaluation.md` | Manual rubric for five primary commands. |
 | `docs/examples/workflow-evaluation-record-template.md` | Human record for output-quality evidence. |
+| `scripts/demo-route.mjs`, `scripts/demo-review.mjs` | Deterministic local demos that print expected fixture signals without LLM execution. |
 | `scripts/validate-workflow-fixtures.mjs` | Deterministic fixture integrity and expected-signal check. |
 | `docs/releases/release-validation-runbook.md` | Promotion rule that separates automated fixture checks from manual quality evidence. |
 
@@ -74,6 +87,8 @@ For changes to public workflow checks or fixtures:
 
 ```bash
 node scripts/validate-workflow-fixtures.mjs
+npm run demo:route
+npm run demo:review
 node scripts/validate-docs.mjs
 git diff --check
 ```

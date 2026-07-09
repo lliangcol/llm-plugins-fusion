@@ -1,0 +1,31 @@
+{
+  "id": "route-docs-maintenance",
+  "mode": "route",
+  "title": "Route a documentation maintenance task",
+  "request": "I need to update public docs, verify links, and summarize validation for a small workflow change.",
+  "expected": {
+    "nextCommand": "/explore",
+    "stage": "Explore",
+    "packs": ["docs"],
+    "requiredInputs": [
+      "changed documentation paths",
+      "source-of-truth files such as CLAUDE.md or AGENTS.md",
+      "intended validation commands"
+    ],
+    "outputSignals": [
+      "separates facts from assumptions",
+      "keeps the task read-only until an implementation command is chosen",
+      "names focused documentation checks before broad maintainer gates"
+    ],
+    "failureSignals": [
+      "pretends to execute a slash command",
+      "recommends editing generated marketplace files by hand",
+      "omits skipped-check reporting"
+    ]
+  },
+  "boundaries": [
+    "fictional public-safe fixture",
+    "does not call Claude Code, Codex, network tools, or marketplace install paths",
+    "does not include private consumer names, endpoints, credentials, local paths, or repository addresses"
+  ]
+}

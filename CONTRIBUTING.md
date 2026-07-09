@@ -21,6 +21,24 @@ issue forms。若 GitHub UI 暂时限制 issue creation，维护者需要在 rel
 PR evidence 中记录该 owner-side 设置状态，而不是把公开安全问题引导到普通
 issue。
 
+## 第一次贡献路径
+
+适合首次贡献者的改动应当小、可审查、可本地验证，并保持 public-safe：
+
+| 任务类型 | 合适的改动 | 最小验证 |
+| --- | --- | --- |
+| Docs clarification | 修正含糊说明、链接上下文、跳过检查解释或 release evidence wording。 | `npm run validate:docs`, `git diff --check` |
+| Fixture update | 改进 `fixtures/demo/` 或 `fixtures/workflow/` 的 fictional 输入、expected signals 或 redaction wording。 | `npm run demo:route`, `npm run demo:review`, `node scripts/validate-workflow-fixtures.mjs` |
+| Validator message improvement | 让失败消息更具体，但不放宽现有规则。 | `node scripts/validate-regression.mjs`, affected focused check |
+| Public-safe example | 增加或澄清 redacted examples、prompt templates 或 consumer profile contracts。 | `node scripts/validate-docs.mjs`, `node scripts/scan-distribution-risk.mjs` |
+
+维护者会在 GitHub 上手动使用 `good first issue` 和 `help wanted` 标签；本仓库
+当前没有 source-controlled label sync automation。若你想提议一个适合首次贡献的
+任务，请使用 feature request 表单，并说明建议的文件范围和最小验证命令。
+
+问题咨询、bug、功能建议和 showcase feedback 都应走现有 issue forms。不要记录
+不存在的论坛、聊天室或 public portal 作为支持渠道。
+
 ## 公开贡献边界
 
 - 本仓库只接收可公开维护的 workflow、consumer profile 契约、脱敏模板、

@@ -6,7 +6,7 @@
  * checks should still run with `bash -n` in Bash-capable environments.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { validateHooksConfig } from '../nova-plugin/hooks/scripts/hooks-schema.mjs';
@@ -14,6 +14,10 @@ import { validateHooksConfig } from '../nova-plugin/hooks/scripts/hooks-schema.m
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
 const hooksPath = resolve(root, 'nova-plugin/hooks/hooks.json');
+const compatibilityHelpers = [
+  'nova-plugin/hooks/scripts/pre-write-check.mjs',
+  'nova-plugin/hooks/scripts/post-audit-log.mjs',
+];
 
 const errors = [];
 
@@ -24,6 +28,12 @@ try {
   }));
 } catch (error) {
   errors.push(`  - hooks.json is not valid JSON: ${error.message}`);
+}
+
+for (const helper of compatibilityHelpers) {
+  if (!existsSync(resolve(root, helper))) {
+    errors.push(`  - missing hook compatibility helper: ${helper}`);
+  }
 }
 
 if (errors.length) {

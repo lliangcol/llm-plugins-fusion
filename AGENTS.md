@@ -110,7 +110,11 @@ Maintainer validation npm shortcuts in `package.json` are dependency-free:
 
 ```bash
 npm run doctor
+npm run demo:route
+npm run demo:review
 npm run test
+npm run test:coverage
+npm run test:coverage:check
 npm run test:unit
 npm run test:integration
 npm run test:e2e

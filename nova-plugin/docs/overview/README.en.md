@@ -43,13 +43,27 @@ Confirm installation:
 
 After the first install, start with read-only `/route`. It should recommend the next command, skill, core agent, capability packs, required inputs, validation path, and fallback mode.
 
+Without a Claude Code environment, inspect the workflow contract through the
+headless local demos:
+
+```bash
+npm run demo:route
+npm run demo:review
+```
+
+Non-Claude users can consume command and skill Markdown as readable contracts;
+do not assume Claude slash-command runtime behavior exists automatically in
+other coding assistants.
+
 ## Who It Helps
 
 | Audience | Start here | Goal |
 | --- | --- | --- |
 | Claude Code users | [Getting Started](../../../docs/getting-started.md) | Install `nova-plugin` and complete the first `/route` workflow in minutes. |
+| Non-Claude users | `npm run demo:route` / [Consumer setup](../../../docs/consumers/README.md) | Understand the workflow with headless fixtures and Markdown contracts without assuming slash-command runtime support. |
 | Consumer maintainers | [Consumer profiles](../../../docs/consumers/README.md) | Keep private project context local while reusing the public workflow contract. |
 | Plugin authors | [CONTRIBUTING.md](../../../CONTRIBUTING.md) | Change commands or skills after reading the [skill-first design](../architecture/dual-track-design.md). |
+| First-time contributors | [First contribution path](../../../CONTRIBUTING.md#第一次贡献路径) | Start with docs clarification, fixture updates, validator messages, or public-safe examples. |
 | Maintainers | [Quality Gates](#quality-gates) | Run validation by change scope and record release evidence. |
 
 ## Showcase

@@ -21,6 +21,10 @@ jobs:
         env:
           NOVA_VALIDATE_WRITE_TIMINGS: '1'
         run: npm run validate:maintainer
+      - name: Test coverage evidence
+        run: npm run test:coverage:check
+      - name: Release checksum evidence
+        run: node scripts/generate-release-checksums.mjs
       - name: Plugin install dry run
         run: node scripts/validate-plugin-install.mjs --dry-run
       - name: Write release validation evidence
@@ -40,6 +44,8 @@ jobs:
             echo
             echo '```text'
             echo "NOVA_VALIDATE_WRITE_TIMINGS=1 npm run validate:maintainer"
+            echo "npm run test:coverage:check"
+            echo "node scripts/generate-release-checksums.mjs"
             echo "node scripts/validate-plugin-install.mjs --dry-run"
             echo '```'
             if [ -f .metrics/validation-timings.json ]; then
@@ -48,6 +54,22 @@ jobs:
               echo
               echo '```json'
               cat .metrics/validation-timings.json
+              echo '```'
+            fi
+            if [ -f .metrics/coverage/coverage-summary.txt ]; then
+              echo
+              echo "## Test Coverage"
+              echo
+              echo '```text'
+              cat .metrics/coverage/coverage-summary.txt
+              echo '```'
+            fi
+            if [ -f .metrics/release-checksums/SHA256SUMS.txt ]; then
+              echo
+              echo "## Release Checksums"
+              echo
+              echo '```text'
+              cat .metrics/release-checksums/SHA256SUMS.txt
               echo '```'
             fi
           } > .codex/release-validation-evidence.md
@@ -59,6 +81,8 @@ jobs:
           path: |
             .codex/release-validation-evidence.md
             .metrics/validation-timings.json
+            .metrics/coverage/
+            .metrics/release-checksums/
 
   isolated-install-smoke:
     name: Isolated Install Smoke
@@ -136,10 +160,13 @@ jobs:
           # Write to file to handle multiline
           echo "$NOTES" > /tmp/release-notes.md
           echo "notes_file=/tmp/release-notes.md" >> $GITHUB_OUTPUT
+      - name: Generate release checksums
+        run: node scripts/generate-release-checksums.mjs
       - name: Create GitHub Release
         uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d # v3
         with:
           name: "nova-plugin v${{ steps.version.outputs.version }}"
           body_path: ${{ steps.changelog.outputs.notes_file }}
+          files: .metrics/release-checksums/SHA256SUMS.txt
           draft: false
           prerelease: ${{ contains(github.ref_name, '-') }}

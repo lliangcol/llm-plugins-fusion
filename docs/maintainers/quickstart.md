@@ -17,14 +17,18 @@ see [validation-index.md](validation-index.md).
 | Hooks or guardrails | `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, runtime scripts | `node scripts/validate-hooks.mjs`, `bash -n nova-plugin/hooks/scripts/pre-write-check.sh`, `bash -n nova-plugin/hooks/scripts/post-audit-log.sh`, `node scripts/validate-runtime-smoke.mjs` |
 | Registry or marketplace metadata | `.claude-plugin/registry.source.json`, `nova-plugin/.claude-plugin/plugin.json` | `node scripts/generate-registry.mjs --write`, `npm run validate:drift`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs`, `node scripts/validate-claude-compat.mjs` |
 | CI or release workflow | `.github/workflows/**`, release docs | `npm run validate:github-workflows`, `npm run ci:quick`, `npm run validate:maintainer`, review changed workflow trigger, permissions, workflow inventory, and required-check list, plus action SHA pins |
-| Release preparation | version sources, `CHANGELOG.md`, generated marketplace outputs | `npm run validate:maintainer`, `node scripts/validate-plugin-install.mjs --dry-run`, isolated install smoke when promotion evidence requires it |
+| Release preparation | version sources, `CHANGELOG.md`, generated marketplace outputs | `npm run validate:maintainer`, `node scripts/generate-release-checksums.mjs`, `node scripts/validate-plugin-install.mjs --dry-run`, isolated install smoke when promotion evidence requires it |
 | Surface inventory | `scripts/generate-surface-inventory.mjs`, `docs/generated/surface-inventory.*` | `node scripts/generate-surface-inventory.mjs --write`, `node scripts/generate-surface-inventory.mjs`, `npm test` |
 
 ## Default Commands
 
 ```bash
 npm run doctor
+npm run demo:route
+npm run demo:review
 npm run test
+npm run test:coverage
+npm run test:coverage:check
 npm run test:unit
 npm run test:integration
 npm run test:e2e
@@ -47,12 +51,38 @@ node scripts/validate-all.mjs --write-timings
 The timing file is written under `.metrics/`, which is ignored and must not be
 committed.
 
+`.node-version` records the intended Node major for local maintainers. Treat
+`package.json` `engines.node` as the canonical support contract when the two
+ever need reconciliation.
+
+To collect dependency-free test coverage evidence on the local Node runtime:
+
+```bash
+npm run test:coverage:check
+```
+
+This uses Node's built-in test coverage support and writes raw V8 coverage plus
+a text summary under `.metrics/coverage/`. The current default is
+collection-only: percentage thresholds are not enforced unless a maintainer
+sets `NOVA_COVERAGE_LINES`, `NOVA_COVERAGE_BRANCHES`, or
+`NOVA_COVERAGE_FUNCTIONS` after a CI baseline is known.
+
 Run the focused generated-output gate when registry source, plugin metadata, or
 marketplace catalog files are in scope:
 
 ```bash
 npm run validate:drift
 ```
+
+For release evidence, generate checksums for the selected source-controlled
+release artifacts:
+
+```bash
+node scripts/generate-release-checksums.mjs
+```
+
+The checksum file is written under `.metrics/release-checksums/`, which is
+ignored locally and uploaded by the release workflow.
 
 ## Diagnostic Result Semantics
 

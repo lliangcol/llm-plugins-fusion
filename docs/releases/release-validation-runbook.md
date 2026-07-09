@@ -19,8 +19,10 @@ A snapshot is promotable only when all required evidence exists.
 | Gate | Automated or manual | Required evidence |
 | --- | --- | --- |
 | Repository structure and docs | Automated | `node scripts/validate-all.mjs` passes with skipped checks explained. |
+| Test coverage evidence | Automated / CI | `npm run test:coverage:check` collects Node built-in coverage and uploads `.metrics/coverage/`; thresholds are collection-only unless explicitly configured after a CI baseline. |
 | Generated marketplace outputs | Automated | `node scripts/generate-registry.mjs` reports no drift, or `--write` was run before validation. |
 | Generated surface inventory | Automated | `node scripts/generate-surface-inventory.mjs` reports no drift, or `--write` was run before validation. |
+| Release checksums | Automated / CI | `node scripts/generate-release-checksums.mjs` writes SHA-256 checksums for selected source-controlled release artifacts and uploads them with release evidence. |
 | Formatting | Automated | `git diff --check` passes. |
 | Prompt-surface budget | Automated | `node scripts/validate-surface-budget.mjs` passes, and every allowlist entry has a reason and split plan. |
 | GitHub workflow contracts | Automated | `node scripts/validate-github-workflows.mjs` passes; this proves workflow permissions, workflow inventory, and required-check list synchronization. |
@@ -44,24 +46,29 @@ Run these checks before any tag or release operation:
 NODE_BIN="${NODE_BIN:-node}"
 command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
 git status --short
+npm run test:coverage:check
+node scripts/generate-release-checksums.mjs
 "$NODE_BIN" scripts/generate-registry.mjs </dev/null
 "$NODE_BIN" scripts/generate-surface-inventory.mjs </dev/null
 "$NODE_BIN" scripts/validate-all.mjs </dev/null
 git diff --check
 ```
 
-Maintainers can use the dependency-free wrapper for the last three local checks:
+Maintainers can use the dependency-free wrapper for default validation,
+generated registry drift, and whitespace checks. Run coverage separately until
+maintainers decide to fold coverage into the maintainer gate:
 
 ```bash
 npm run validate:maintainer
 ```
 
 The tag release workflow also writes `.codex/release-validation-evidence.md`
-and uploads it with `.metrics/validation-timings.json` as the
-`release-validation-evidence` artifact. Its isolated install smoke job uploads
+and uploads it with `.metrics/validation-timings.json`, `.metrics/coverage/`,
+and `.metrics/release-checksums/` as the `release-validation-evidence`
+artifact. Its isolated install smoke job uploads
 `.metrics/release-install-smoke/context.txt` as the
-`release-install-smoke-evidence` artifact. Treat both artifacts as CI evidence,
-not as tracked repository files.
+`release-install-smoke-evidence` artifact. Treat these artifacts as CI
+evidence, not as tracked repository files.
 
 Expected conditions:
 
@@ -69,6 +76,13 @@ Expected conditions:
   release commit.
 - If registry or plugin metadata sources changed,
   `node scripts/generate-registry.mjs --write` regenerated the derived outputs.
+- `npm run test:coverage:check` reports pass and leaves coverage evidence under
+  ignored `.metrics/coverage/`; percentage thresholds are not release blockers
+  unless maintainers explicitly configured them for the run.
+- `node scripts/generate-release-checksums.mjs` writes
+  `.metrics/release-checksums/SHA256SUMS.txt` for the selected release
+  artifacts. SBOM, signing, and attestations remain deferred until maintainers
+  explicitly promote them.
 - `node scripts/generate-registry.mjs` reports current generated outputs after
   any regeneration.
 - `node scripts/generate-surface-inventory.mjs` reports current generated
@@ -287,6 +301,8 @@ include:
   operator, and date.
 - Environment summary from `node scripts/validate-all.mjs`.
 - Outputs or summaries for all required checks.
+- Coverage summary path or CI artifact name.
+- Release checksum artifact name and selected artifact list.
 - Prompt-surface budget status and any override rationale.
 - Windows Node/PowerShell smoke and Windows Bash smoke status, or the CI runs
   that supply them.

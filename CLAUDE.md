@@ -45,8 +45,10 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 - Repository docs index: `docs/README.md`
 - Project optimization plan: `docs/project-optimization-plan.md`
 - Release evidence template: `docs/releases/release-evidence-template.md`
-- Maintainer npm shortcuts: `package.json` (`doctor`, `validate`,
-  `test`, `test:unit`, `test:integration`, `test:e2e`, `lint`,
+- Maintainer npm shortcuts: `package.json` (`doctor`, `demo:route`,
+  `demo:review`, `validate`,
+  `test`, `test:coverage`, `test:coverage:check`, `test:unit`,
+  `test:integration`, `test:e2e`, `lint`,
   `ci:quick`, `ci:full`, `validate:maintainer`,
   `validate:drift`, `validate:docs`, `validate:schemas`,
   `validate:github-workflows`, `validate:runtime`, `validate:regression`,
@@ -56,6 +58,8 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
   runtime smoke checks require Bash; Windows without Bash may warning-skip
   local Bash-dependent checks, while CI/Linux and CI/Windows Bash smoke must
   run them.
+- `.node-version` records the intended local Node major for maintainers;
+  `package.json` `engines.node` remains the canonical support contract.
 
 ## Sources of Truth
 
@@ -157,6 +161,7 @@ node scripts/validate-runtime-smoke.mjs
 node scripts/validate-surface-budget.mjs
 node scripts/generate-surface-inventory.mjs
 node scripts/scan-distribution-risk.mjs
+node scripts/generate-release-checksums.mjs
 node scripts/validate-regression.mjs
 node scripts/validate-workflow-fixtures.mjs
 node scripts/validate-docs.mjs
@@ -166,7 +171,11 @@ Maintainer npm shortcuts are optional and dependency-free:
 
 ```bash
 npm run doctor
+npm run demo:route
+npm run demo:review
 npm run test
+npm run test:coverage
+npm run test:coverage:check
 npm run test:unit
 npm run test:integration
 npm run test:e2e
@@ -439,8 +448,8 @@ Prompt-surface budget checks are a bloat guard, not a quality metric. Run
 surfaces change.
 
 Current CI includes verify-agents, validate-packs, validate-schemas,
-validate-registry-fixtures, validate-claude-compat, NPM Test, plugin install
-dry run, lint-frontmatter, validate-hooks, ShellCheck, GitHub workflow permission, inventory, and required-check validation, including action SHA
+validate-registry-fixtures, validate-claude-compat, NPM Test, Test Coverage,
+plugin install dry run, lint-frontmatter, validate-hooks, ShellCheck, GitHub workflow permission, inventory, and required-check validation, including action SHA
 pinning and the NPM Test gate, hook `bash -n`, runtime smoke, surface budget,
 surface inventory,
 distribution risk scan, validation regression checks, workflow fixture

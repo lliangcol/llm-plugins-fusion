@@ -5,7 +5,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Use this form for feature proposals that can be discussed publicly. Keep examples generic and redacted.
+        Use this form for feature proposals that can be discussed publicly. Keep examples generic and redacted. Small docs, fixture, validator-message, and public-safe example improvements may be proposed as first-contribution candidates.
 
         Do not include credentials, private endpoints, private repository addresses, local machine paths, consumer-specific business rules, or private knowledge-base content.
 
@@ -21,6 +21,7 @@ body:
         - Marketplace metadata or packaging
         - Hooks, scripts, or validation
         - Documentation, examples, or templates
+        - First-contribution candidate
         - GitHub workflows
         - Other
     validations:

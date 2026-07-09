@@ -47,13 +47,25 @@ release tag 作为稳定发布证据。
 
 第一次安装后先运行只读 `/route`。它会推荐下一步 command、skill、core agent、capability packs、必要输入、验证路径和 fallback mode。
 
+没有 Claude Code 环境时，可以先用本地 headless demo 理解 workflow contract：
+
+```bash
+npm run demo:route
+npm run demo:review
+```
+
+非 Claude 用户可以把 command / skill Markdown 当作可读契约消费；不要假设
+Claude slash-command runtime 行为会在其它 coding assistant 中自动存在。
+
 ## 适用人群
 
 | 你是 | 先读 | 目标 |
 | --- | --- | --- |
 | Claude Code 用户 | [Getting Started](./docs/getting-started.md) | 5 分钟内安装 `nova-plugin`，并用 `/route` 完成第一次路由。 |
+| 非 Claude 用户 | `npm run demo:route` / [Consumer setup](./docs/consumers/README.md) | 用 headless fixtures 和 Markdown contracts 理解 workflow，不假设 slash-command runtime。 |
 | Consumer 项目维护者 | [Consumer profiles](./docs/consumers/README.md) | 在私有项目维护 profile，把公开仓库只当作通用 workflow 和模板来源。 |
 | 插件作者 | [CONTRIBUTING.md](./CONTRIBUTING.md) | 修改 command / skill 前确认 [Skill-first 设计](./nova-plugin/docs/architecture/dual-track-design.md)。 |
+| 首次贡献者 | [第一次贡献路径](./CONTRIBUTING.md#第一次贡献路径) | 从 docs clarification、fixture update、validator message 或 public-safe example 开始。 |
 | 维护者 | [Quality Gates](#quality-gates) | 按变更范围运行校验，并用 [release evidence template](./docs/releases/release-evidence-template.md) 记录证据。 |
 
 ## Showcase
@@ -74,6 +86,8 @@ release tag 作为稳定发布证据。
 - 生成物漂移的聚焦检查是 `npm run validate:drift`，它确认 marketplace metadata 和 catalog 与 source-of-truth 一致。
 - Surface inventory 漂移检查是 `node scripts/generate-surface-inventory.mjs`，它确认 command、skill、agent、pack 和 generated marketplace output 的派生清单是最新的。
 - 维护者发布前检查使用 `npm run validate:maintainer`，它在默认质量门之外还运行 `npm test`，并检查 generated registry 漂移和 `git diff --check`。
+- 测试覆盖率证据使用 `npm run test:coverage:check`，它通过 Node 内置 coverage 写入 `.metrics/coverage/`；当前默认只采集，不把百分比阈值作为本地 release blocker。
+- Release checksum 证据使用 `node scripts/generate-release-checksums.mjs`，它通过 Node 内置 crypto 为选定 source-controlled release artifacts 生成 SHA-256 清单。
 - Claude 插件安装 smoke 的安全预览路径是 `node scripts/validate-plugin-install.mjs --dry-run`；真实 user-scope 安装/更新只应在隔离用户或 CI profile 中显式运行 `--accept-user-scope-mutation --isolated-home`。
 - 安全问题请按 [SECURITY.md](./SECURITY.md) 私下披露，不要在公开 issue 中暴露漏洞细节。
 
@@ -108,7 +122,7 @@ release tag 作为稳定发布证据。
 node scripts/validate-all.mjs
 ```
 
-该入口覆盖 schema、registry fixtures、Claude 兼容性、command / skill frontmatter、core agent 集合、capability pack 结构、hooks、GitHub workflow 权限、库存和 required-check 合约（包括 action SHA pinning 和 NPM Test gate）、Codex runtime smoke、surface inventory 漂移、分发风险扫描、核心回归检查、workflow fixture 合约、Markdown 链接和命令文档覆盖。
+该入口覆盖 schema、registry fixtures、Claude 兼容性、command / skill frontmatter、core agent 集合、capability pack 结构、hooks、GitHub workflow 权限、库存和 required-check 合约（包括 action SHA pinning、NPM Test gate 和 Test Coverage evidence）、Codex runtime smoke、surface inventory 漂移、分发风险扫描、核心回归检查、workflow fixture 合约、Markdown 链接和命令文档覆盖。
 
 生成 marketplace、metadata 和 catalog 漂移的聚焦检查是：
 
@@ -303,7 +317,11 @@ git diff --check
 
 ```bash
 npm run doctor
+npm run demo:route
+npm run demo:review
 npm run test
+npm run test:coverage
+npm run test:coverage:check
 npm run test:unit
 npm run test:integration
 npm run test:e2e

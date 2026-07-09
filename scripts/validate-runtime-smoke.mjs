@@ -8,8 +8,9 @@
  * then removed on normal exit without deleting pre-existing .codex directories.
  */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { commandExists, runProcess } from './lib/process-runner.mjs';
 
@@ -74,6 +75,70 @@ async function runTempBash(label, body, options = {}) {
   await run(label, ['-s'], { ...options, input: wrapper });
 }
 
+async function runNode(label, args, options = {}) {
+  const result = await runProcess(label, process.execPath, args, {
+    cwd: root,
+    env: options.env ? { ...process.env, ...options.env } : process.env,
+    input: options.input,
+    timeoutMs: 60_000,
+  });
+
+  const output = `${result.stdout ?? ''}${result.stderr ?? ''}`;
+  const expectFailure = Boolean(options.expectFailure);
+  const statusOk = expectFailure ? result.code !== 0 : result.code === 0;
+  const outputOk = options.outputPattern ? options.outputPattern.test(output) : true;
+
+  if (result.error || result.timedOut || !statusOk || !outputOk) {
+    failed += 1;
+    console.error(`ERROR ${label}`);
+    if (result.errorMessage) console.error(`  ${result.errorMessage}`);
+    console.error(`  status=${result.code}`);
+    if (options.outputPattern && !outputOk) {
+      console.error(`  output did not match ${options.outputPattern}`);
+    }
+    const excerpt = output.split(/\r?\n/).filter(Boolean).slice(0, 8).join('\n');
+    if (excerpt) console.error(excerpt);
+    return;
+  }
+
+  console.log(`OK ${label}`);
+}
+
+async function runNodePostAuditSmoke() {
+  const tmpRoot = mkdtempSync(resolve(tmpdir(), 'nova-node-hook-'));
+  const token = `sk-proj-${'f'.repeat(24)}`;
+  const payload = JSON.stringify({
+    tool_name: 'Bash',
+    tool_input: {
+      command: `curl -H Authorization: Bearer ${token} https://example.test`,
+    },
+    tool_response: { success: true },
+  });
+
+  try {
+    const result = await runProcess('node post-audit hook redacts command secrets', process.execPath, [
+      'nova-plugin/hooks/scripts/post-audit-log.mjs',
+    ], {
+      cwd: root,
+      env: { ...process.env, CLAUDE_PLUGIN_DATA: tmpRoot },
+      input: payload,
+      timeoutMs: 60_000,
+    });
+    const logPath = resolve(tmpRoot, 'audit.log');
+    const log = existsSync(logPath) ? readFileSync(logPath, 'utf8') : '';
+    if (result.code !== 0 || !log.includes('<redacted>') || log.includes(token)) {
+      failed += 1;
+      console.error('ERROR node post-audit hook redacts command secrets');
+      console.error(`  status=${result.code}`);
+      console.error(log.split(/\r?\n/).filter(Boolean).slice(0, 4).join('\n'));
+      return;
+    }
+    console.log('OK node post-audit hook redacts command secrets');
+  } finally {
+    rmSync(tmpRoot, { recursive: true, force: true });
+  }
+}
+
 function assertFileDoesNotMatch(label, relPath, pattern) {
   const src = readFileSync(resolve(root, relPath), 'utf8');
   if (pattern.test(src)) {
@@ -96,6 +161,32 @@ function assertFileContainsAll(label, relPath, patterns) {
   }
   console.log(`OK ${label}`);
 }
+
+await runNode('node pre-write hook rejects common token shapes', [
+  'nova-plugin/hooks/scripts/pre-write-check.mjs',
+], {
+  input: JSON.stringify({
+    tool_input: {
+      file_path: 'src/example.js',
+      content: `OPENAI_API_KEY=sk-proj-${'e'.repeat(24)}`,
+    },
+  }),
+  expectFailure: true,
+  outputPattern: /敏感信息/,
+});
+
+await runNode('node pre-write hook validates hooks.json structure', [
+  'nova-plugin/hooks/scripts/pre-write-check.mjs',
+], {
+  input: JSON.stringify({
+    tool_input: {
+      file_path: 'nova-plugin/hooks/hooks.json',
+      content: readFileSync(resolve(root, 'nova-plugin/hooks/hooks.json'), 'utf8'),
+    },
+  }),
+});
+
+await runNodePostAuditSmoke();
 
 if (!(await commandExists('bash', ['--version'], { cwd: root }))) {
   if (process.platform === 'win32') {

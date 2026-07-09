@@ -16,3 +16,17 @@ knowledge base content, or real project workflow details.
 | [workflow-evaluation-record-template.md](workflow-evaluation-record-template.md) | Manual record template for release or promotion workflow-quality evidence. |
 | [java-backend/redacted-feature.md](java-backend/redacted-feature.md) | Generic Java/Spring backend workflow example. |
 | [frontend/basic-feature.md](frontend/basic-feature.md) | Generic frontend feature workflow example. |
+
+## Headless Demo Fixtures
+
+The deterministic demo path uses [fixtures/demo/](../../fixtures/demo/) and can
+be run without Claude Code, Codex CLI, marketplace installation, network access,
+or private consumer context:
+
+```bash
+npm run demo:route
+npm run demo:review
+```
+
+The output shows expected route, review, and verification signals. It is a
+public-safe fixture demonstration, not an LLM execution or golden-output test.

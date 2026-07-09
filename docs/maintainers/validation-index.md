@@ -1,7 +1,7 @@
 # Validation Index
 
 Status: active
-Date: 2026-07-08
+Date: 2026-07-09
 
 This index maps repository validation surfaces to npm shortcuts and CI checks.
 It is the maintainer-facing inventory for validation coverage. Runtime behavior
@@ -11,17 +11,25 @@ gate is added, renamed, removed, or moved.
 ## Boundary
 
 - `scripts/validate-all.mjs` is the default local quality gate.
+- `scripts/validate-docs.mjs` is the stable documentation validation CLI; its
+  runner and extracted rule modules live under `scripts/validate-docs/`.
+- `.node-version` records the intended local Node major for maintainers;
+  `package.json` `engines.node` remains the canonical support contract.
 - `npm run validate:drift` is the focused generated marketplace/catalog drift
   gate.
 - `scripts/validate-maintainer.mjs` adds release-maintainer checks such as
   `npm test`, generated registry drift, and `git diff --check`.
+- `scripts/run-test-coverage.mjs` collects dependency-free Node test coverage
+  evidence under `.metrics/coverage/`; thresholds remain opt-in until CI
+  records a stable baseline.
 - `.github/workflows/ci.yml` owns merge-required check names.
 - `.github/workflows/plugin-install-smoke.yml` owns isolated mutating install
   smoke evidence and is not a default merge blocker. It uploads smoke context
   for both passing and failing runs.
 - `.github/workflows/release.yml` uploads release validation evidence from the
   pre-release validation job and blocks release publication on isolated install
-  smoke for the exact tag.
+  smoke for the exact tag. It also publishes SHA-256 checksums for selected
+  source-controlled release artifacts.
 - Do not report a skipped local Bash-dependent check as passed. Use CI/Linux or
   CI/Windows Bash evidence when local Bash is unavailable.
 
@@ -30,7 +38,11 @@ gate is added, renamed, removed, or moved.
 | Command | Purpose | Notes |
 | --- | --- | --- |
 | `npm run doctor` | Read-only environment preflight. | Warnings can be acceptable for optional CLIs or non-release snapshots. |
+| `npm run demo:route` | Headless route demo fixture. | Deterministic public-safe output; does not call Claude Code, Codex, network tools, or install paths. |
+| `npm run demo:review` | Headless review and verification demo fixture. | Deterministic public-safe output; does not execute an LLM review or mutate repository state. |
 | `npm run test` | Node test suite. | Runs unit, integration, and e2e suites sequentially for clearer CI logs. |
+| `npm run test:coverage` | Node built-in coverage collection. | Writes raw V8 coverage and a text summary under `.metrics/coverage/`; no thresholds by default. |
+| `npm run test:coverage:check` | Coverage collection health check. | Fails on test failures or missing coverage output; percentage thresholds are opt-in through `NOVA_COVERAGE_*` environment variables. |
 | `npm run test:unit` | Unit test suite. | Runs `tests/unit/**/*.test.mjs`. |
 | `npm run test:integration` | Integration test suite. | Runs `tests/integration/**/*.test.mjs`. |
 | `npm run test:e2e` | E2E smoke suite. | Runs `tests/e2e/**/*.test.mjs`, including the aggregate validation smoke. |
@@ -57,6 +69,7 @@ gate is added, renamed, removed, or moved.
 | Validate Capability Packs | `node scripts/validate-packs.mjs` | Pack documentation, enhanced/fallback boundaries, and inventory. |
 | Validate Claude Compatibility | `node scripts/validate-claude-compat.mjs` | Claude marketplace manifest compatibility. |
 | NPM Test | `npm test` | Node unit, integration, and e2e test suite. |
+| Test Coverage | `npm run test:coverage:check` | Node built-in coverage collection on the Node 20 lane; uploads `.metrics/coverage/` as `test-coverage-evidence`. |
 | Plugin Install Dry Run | `node scripts/validate-plugin-install.mjs --dry-run` | Safe install-path preview without user-scope mutation. |
 | Lint Frontmatter | `node scripts/lint-frontmatter.mjs` | Command and skill frontmatter contracts. |
 | Validate Hooks | `node scripts/validate-hooks.mjs` plus hook `bash -n` | Hook config structure and Bash syntax. |
@@ -85,6 +98,7 @@ gate is added, renamed, removed, or moved.
 | Command or skill behavior | `node scripts/lint-frontmatter.mjs`, `node scripts/validate-docs.mjs`, `node scripts/validate-surface-budget.mjs` |
 | Hook scripts or config | `node scripts/validate-hooks.mjs`, hook `bash -n`, `node scripts/validate-runtime-smoke.mjs` |
 | GitHub workflows | `node scripts/validate-github-workflows.mjs`, `npm run validate:maintainer` |
+| Test coverage evidence | `npm run test:coverage:check`, `node scripts/validate-github-workflows.mjs` when CI upload wiring changes |
 | Registry or plugin metadata | `node scripts/generate-registry.mjs --write`, `npm run validate:drift`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs` |
-| Release evidence | `npm run validate:maintainer`, install smoke dry-run, and isolated install smoke when promotion evidence requires it |
+| Release evidence | `npm run validate:maintainer`, `node scripts/generate-release-checksums.mjs`, install smoke dry-run, and isolated install smoke when promotion evidence requires it |
 | Public surface inventory | `node scripts/generate-surface-inventory.mjs --write`, `node scripts/generate-surface-inventory.mjs`, `npm test` |

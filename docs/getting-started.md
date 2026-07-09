@@ -48,6 +48,21 @@ your intent. For example, a docs-only task will usually start with `/explore` or
 Minute 5: finish with explicit validation and handoff. If validation was not
 available, record it as `skipped` or `not run` with the reason.
 
+## No-Credential Headless Demo
+
+If you only want to inspect the workflow shape without Claude Code, Codex CLI,
+marketplace installation, network access, or private consumer context, run the
+deterministic fixture demos from a clean Node.js 20+ checkout:
+
+```bash
+npm run demo:route
+npm run demo:review
+```
+
+These scripts read `fixtures/demo/*.json` and print expected route, review, and
+verification signals. They do not execute slash commands or prove model output
+quality; they only show the public-safe contract a command output should satisfy.
+
 ## Five Main Commands
 
 Use the primary workflow path for routine work:

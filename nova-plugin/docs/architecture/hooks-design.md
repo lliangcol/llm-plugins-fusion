@@ -90,6 +90,7 @@ PostToolUse 额外包含：
 | Hook 类型 | `type: "command"` |
 | Hook 字段 | `type`, `command`, `timeout`, `statusMessage`, `async` |
 | Shell 调用 | `.sh` 脚本必须通过 `bash "${CLAUDE_PLUGIN_ROOT}/..."` 调用 |
+| Node helper | `.mjs` hook helpers may exist as compatibility targets, but they are not active unless `hooks.json` switches to them in a reviewed release package. |
 
 `Stop`、`Notification`、非 command hook 类型、额外字段或其它 Claude Code
 未来 schema 字段必须先补 fixture、脚本行为和文档，再放开校验。不要为了兼容
@@ -104,10 +105,16 @@ PostToolUse 额外包含：
 | 敏感信息检测 | 内容含 `password|secret|token|api_key`（硬编码模式）| exit 2 阻断 |
 | hooks.json 结构校验 | 写入 `hooks/hooks.json` 时验证 JSON 格式 | exit 2 阻断 |
 
-**实现：** `nova-plugin/hooks/scripts/pre-write-check.sh`
+**Active implementation:** `nova-plugin/hooks/scripts/pre-write-check.sh`
 
 敏感信息检测规则由 `nova-plugin/runtime/secret-rules.mjs` 统一维护，Bash
 脚本只负责 hook payload I/O 与阻断反馈。
+
+**Compatibility helper:** `nova-plugin/hooks/scripts/pre-write-check.mjs`
+mirrors the same stdin JSON parsing, shared secret rules, and `hooks.json`
+schema validation for a future Node-active runtime decision. It is validated by
+`node scripts/validate-runtime-smoke.mjs`, but `hooks.json` does not currently
+invoke it.
 
 ### Hook 2：PostToolUse — 审计日志
 
@@ -122,7 +129,11 @@ PostToolUse 额外包含：
 权限、轮转、禁用方式与 best-effort redaction 边界见
 [`docs/privacy/data-handling.md`](../../../docs/privacy/data-handling.md)。
 
-**实现：** `nova-plugin/hooks/scripts/post-audit-log.sh`
+**Active implementation:** `nova-plugin/hooks/scripts/post-audit-log.sh`
+
+**Compatibility helper:** `nova-plugin/hooks/scripts/post-audit-log.mjs`
+mirrors the same local audit log, redaction, rotation, and disable behavior for
+future portability review. It is not the active distributed hook command.
 
 ---
 
@@ -133,7 +144,9 @@ nova-plugin/hooks/
 ├── hooks.json                    ← hook 主配置
 └── scripts/
     ├── pre-write-check.sh        ← PreToolUse 检查脚本
-    └── post-audit-log.sh         ← PostToolUse 审计日志脚本
+    ├── pre-write-check.mjs       ← Node compatibility helper, inactive
+    ├── post-audit-log.sh         ← PostToolUse 审计日志脚本
+    └── post-audit-log.mjs        ← Node compatibility helper, inactive
 ```
 
 ---
@@ -150,10 +163,15 @@ nova-plugin/hooks/
 
 ## Windows 前置条件
 
-`hooks.json` 通过 `bash "<script>.sh"` 调用脚本。Windows PowerShell 默认不提供
-Bash，因此在 Windows 上需要安装 Git Bash、WSL，或其他可在 PATH 中解析为
-`bash` 的兼容运行时。缺少 Bash 时，PowerShell 下的 `bash -n` 语法检查和
-Claude Code hook 执行都会失败。
+`hooks.json` 当前仍通过 `bash "<script>.sh"` 调用 active hook 脚本。Windows
+PowerShell 默认不提供 Bash，因此在 Windows 上需要安装 Git Bash、WSL，或其他
+可在 PATH 中解析为 `bash` 的兼容运行时。缺少 Bash 时，PowerShell 下的
+`bash -n` 语法检查和 Claude Code hook 执行都会失败。
+
+Node `.mjs` helpers reduce future portability risk, but they do not remove the
+current Bash prerequisite until `hooks.json` is explicitly changed and the
+compatibility matrix, release notes, validators, and semver assessment are
+updated in the same release package.
 
 ---
 

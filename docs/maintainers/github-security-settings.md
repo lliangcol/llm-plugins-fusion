@@ -44,6 +44,7 @@ Validate Generated Drift
 Validate Capability Packs
 Validate Claude Compatibility
 NPM Test
+Test Coverage
 Plugin Install Dry Run
 Lint Frontmatter
 Validate Hooks

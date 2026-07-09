@@ -1,0 +1,38 @@
+{
+  "id": "verification-handoff-evidence",
+  "mode": "verification",
+  "title": "Summarize verification evidence for a public-safe fixture",
+  "request": "Summarize what changed, which checks ran, what was skipped, and what risk remains.",
+  "expected": {
+    "command": "/finalize-work",
+    "changedFiles": [
+      "fixtures/workflow/example/handler.js",
+      "fixtures/workflow/example/handler.test.js"
+    ],
+    "validation": [
+      "npm test: passed",
+      "node scripts/validate-workflow-fixtures.mjs: passed"
+    ],
+    "skippedChecks": [
+      "manual slash-command quality evaluation: not run in headless demo"
+    ],
+    "residualRisk": [
+      "demo proves deterministic fixture signals, not model output quality"
+    ],
+    "outputSignals": [
+      "keeps passed, skipped, and residual risk separate",
+      "states that fixture validation is not an LLM execution",
+      "does not promote moving main as stable release evidence"
+    ],
+    "failureSignals": [
+      "describes the demo as a live Claude Code run",
+      "hides skipped manual evaluation",
+      "publishes private paths or project names"
+    ]
+  },
+  "boundaries": [
+    "fictional public-safe fixture",
+    "does not call Claude Code, Codex, network tools, or marketplace install paths",
+    "does not include private consumer names, endpoints, credentials, local paths, or repository addresses"
+  ]
+}
