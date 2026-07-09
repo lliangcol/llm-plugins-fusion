@@ -114,6 +114,9 @@ Focused validation shortcuts currently declared in `package.json`:
 
 ```bash
 npm run test
+npm run test:unit
+npm run test:integration
+npm run test:e2e
 npm run lint
 npm run ci:quick
 npm run ci:full

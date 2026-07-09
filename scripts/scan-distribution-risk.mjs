@@ -10,6 +10,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { basename, dirname, extname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { secretChecks } from '../nova-plugin/runtime/secret-rules.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
@@ -63,34 +64,22 @@ const historicalSegments = [
   ['nova-plugin', 'docs', 'history'],
 ];
 
+const runtimeSecretChecks = secretChecks
+  .filter((check) => !['Authorization bearer', 'secret assignment'].includes(check.label))
+  .map((check) => ({
+    label: check.label,
+    pattern: new RegExp(check.pattern.source, check.pattern.flags),
+  }));
+
 export const checks = [
   {
     label: 'private key block',
     pattern: /-----BEGIN (?:RSA |OPENSSH |EC |DSA )?PRIVATE KEY-----/g,
   },
-  {
-    label: 'OpenAI API key',
-    pattern: /\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b/g,
-  },
-  {
-    label: 'GitHub token',
-    pattern: /\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{20,}\b/g,
-  },
+  ...runtimeSecretChecks,
   {
     label: 'AWS access key',
     pattern: /\bAKIA[0-9A-Z]{16}\b/g,
-  },
-  {
-    label: 'Slack token',
-    pattern: /\bxox[baprs]-[A-Za-z0-9-]{20,}\b/g,
-  },
-  {
-    label: 'JWT',
-    pattern: /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g,
-  },
-  {
-    label: 'npm token',
-    pattern: /\bnpm_[A-Za-z0-9]{36,}\b/g,
   },
   {
     label: 'Azure storage secret',
@@ -99,6 +88,10 @@ export const checks = [
   {
     label: 'GCP API key',
     pattern: /\bAIza[0-9A-Za-z_-]{35}\b/g,
+  },
+  {
+    label: 'Authorization bearer',
+    pattern: /(Authorization:\s*Bearer\s+)[A-Za-z0-9._~+/-]{20,}/gi,
   },
   {
     label: 'hard-coded secret assignment',

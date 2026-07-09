@@ -111,6 +111,11 @@ The directory is created with `700`, the log file with `600`, and logs rotate
 to `audit.log.1` after 5 MB. Set `NOVA_AUDIT_DISABLED=1` to disable local audit
 logging for an environment.
 
+The public data handling and best-effort redaction boundary is documented in
+[../privacy/data-handling.md](../privacy/data-handling.md). Do not commit local
+audit logs or treat redaction as a guarantee that private data is safe to paste
+into public artifacts.
+
 ## CodeQL And Dependency Graph
 
 CodeQL runs from `.github/workflows/codeql.yml`. Dependency review may skip when

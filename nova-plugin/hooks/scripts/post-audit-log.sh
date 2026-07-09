@@ -10,17 +10,10 @@
 set -euo pipefail
 
 INPUT=$(cat)
-
-node_command() {
-  local candidate=""
-  for candidate in node node.exe; do
-    if command -v "$candidate" >/dev/null 2>&1 && "$candidate" --version >/dev/null 2>&1; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  return 1
-}
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd -- "$SCRIPT_DIR/../.." >/dev/null 2>&1 && pwd -P)}"
+# shellcheck source=../../runtime/bash-common.sh
+source "$PLUGIN_ROOT/runtime/bash-common.sh"
 
 json_read() {
   local field="$1"
@@ -41,7 +34,7 @@ json_read() {
     return 0
   fi
 
-  if node_bin="$(node_command)"; then
+  if node_bin="$(nova_node_command)"; then
     printf '%s' "$INPUT" | "$node_bin" -e '
 const fs = require("fs");
 const field = process.argv[1];
@@ -70,35 +63,16 @@ process.stdout.write(value == null ? "" : String(value));
 redact_sensitive_text() {
   local text="$1"
   local node_bin=""
+  local rules_path=""
+  local node_rules_path=""
 
-  if node_bin="$(node_command)"; then
-    printf '%s' "$text" | "$node_bin" -e '
-const fs = require("fs");
-let value = fs.readFileSync(0, "utf8");
-const patterns = [
-  [/\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b/g, "<redacted>"],
-  [/\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{20,}\b/g, "<redacted>"],
-  [/\bxox[baprs]-[A-Za-z0-9-]{20,}\b/g, "<redacted>"],
-  [/\bnpm_[A-Za-z0-9]{36,}\b/g, "<redacted>"],
-  [/\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g, "<redacted>"],
-  [/(Authorization:\s*Bearer\s+)[^\s]+/gi, "$1<redacted>"],
-  [/\b(password|secret|api[_-]?key|access[_-]?token|auth[_-]?token|bearer[_-]?token|refresh[_-]?token|client[_-]?secret|private[_-]?key|npm[_-]?token|github[_-]?token|openai[_-]?api[_-]?key)\b\s*[:=]\s*(?:"[^"]{6,}"|\x27[^\x27]{6,}\x27|[^\s#"\x27=]{16,})/gi, "$1=<redacted>"],
-];
-for (const [pattern, replacement] of patterns) {
-  value = value.replace(pattern, replacement);
-}
-process.stdout.write(value);
-' 2>/dev/null || printf '%s' "$text"
+  if node_bin="$(nova_node_command)" && rules_path="$(nova_secret_rules_path)" && [ -f "$rules_path" ]; then
+    node_rules_path="$(nova_secret_rules_path_for_node "$node_bin")"
+    printf '%s' "$text" | "$node_bin" "$node_rules_path" redact-text 2>/dev/null || printf '<redaction-unavailable>'
     return 0
   fi
 
-  printf '%s' "$text" \
-    | sed -E \
-      -e 's/sk-(proj-)?[A-Za-z0-9_-]{20,}/<redacted>/g' \
-      -e 's/(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{20,}/<redacted>/g' \
-      -e 's/xox[baprs]-[A-Za-z0-9-]{20,}/<redacted>/g' \
-      -e 's/npm_[A-Za-z0-9]{36,}/<redacted>/g' \
-      -e 's/eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/<redacted>/g'
+  printf '<redaction-unavailable>'
 }
 
 TOOL_NAME=$(json_read tool_name)

@@ -56,9 +56,10 @@ Primary optimization sequence:
   trust, author workflow, compatibility, and security review contracts,
   contribution and issue intake contracts, docs index navigation contracts,
   consumer profile privacy contracts, prompt template privacy contracts,
-  workflow evidence contracts, showcase public-safety contracts, growth
-  metrics privacy contracts, assets capture privacy contracts, deferred portal
-  IA contracts, and v3 readiness evidence contracts.
+  local data handling privacy contracts, workflow evidence contracts, showcase
+  public-safety contracts, growth metrics privacy contracts, assets capture
+  privacy contracts, deferred portal IA contracts, and v3 readiness evidence
+  contracts.
 - On Windows without Bash, `node scripts/validate-all.mjs` may report
   skipped Bash-dependent checks for local hook shell syntax and runtime smoke.
   CI/Linux and CI/Windows Bash smoke must still run the Bash gates before
@@ -182,10 +183,10 @@ Existing Coverage:
   semantics, public API compatibility contracts, marketplace trust, author
   workflow, compatibility, and security review contracts, contribution and
   issue intake contracts, docs index navigation contracts, consumer profile
-  privacy contracts, prompt template privacy contracts, workflow evidence
-  contracts, showcase public-safety contracts, growth metrics privacy
-  contracts, assets capture privacy contracts, deferred portal IA contracts,
-  and v3 readiness evidence contracts.
+  privacy contracts, prompt template privacy contracts, local data handling
+  privacy contracts, workflow evidence contracts, showcase public-safety
+  contracts, growth metrics privacy contracts, assets capture privacy
+  contracts, deferred portal IA contracts, and v3 readiness evidence contracts.
 - `validate-github-workflows` checks GitHub workflow token scope, workflow file
   inventory, required-check docs and print output, forbids `pull_request_target`,
   keeps release write permission scoped to the release job, and keeps mutating

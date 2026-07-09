@@ -7,7 +7,8 @@
  * setting semantics, public API compatibility contracts, marketplace trust,
  * author workflow, compatibility, and security review contracts, contribution
  * and issue intake contracts, docs index navigation contracts, consumer
- * profile privacy contracts, prompt template privacy contracts, workflow
+ * profile privacy contracts, prompt template privacy contracts, local data
+ * handling privacy contracts, workflow
  * evidence contracts, showcase
  * public-safety contracts, growth metrics privacy contracts, assets capture
  * privacy contracts, deferred portal IA contracts, v3 readiness evidence
@@ -1317,6 +1318,85 @@ function validateDocsIndexContracts() {
       pattern: /Keep consumer-specific profiles,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*local\s+paths,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private\s+repository addresses,[\s\S]*private\s+knowledge-base content[\s\S]*consumer-owned workspace/,
       label: 'docs index private consumer workspace boundary',
     },
+    {
+      file: 'docs/README.md',
+      pattern: /Understand local audit logs and data handling[\s\S]*\(privacy\/data-handling\.md\)/,
+      label: 'docs index data handling start-here link',
+    },
+    {
+      file: 'docs/README.md',
+      pattern: /\|-- privacy\/\s+# local audit log and public data handling boundaries/,
+      label: 'docs index privacy directory map',
+    },
+    {
+      file: 'docs/README.md',
+      pattern: /\[privacy\/\]\(privacy\/\)[\s\S]*Local audit log behavior, redaction boundary, and public data handling rules/,
+      label: 'docs index privacy responsibility',
+    },
+    {
+      file: 'docs/README.md',
+      pattern: /### Privacy[\s\S]*\[privacy\/data-handling\.md\]\(privacy\/data-handling\.md\)[\s\S]*Local audit log behavior, best-effort redaction boundary, disable switch, and public data handling rules/,
+      label: 'docs index privacy current document',
+    },
+  ];
+
+  for (const check of checks) {
+    expectContentRegex(check.file, check.pattern, check.label);
+  }
+}
+
+function validateDataHandlingContracts() {
+  const checks = [
+    {
+      file: 'docs/privacy/data-handling.md',
+      pattern: /must not contain real consumer profiles,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*private\s+repository addresses,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*customer data,[\s\S]*local\s+machine paths,[\s\S]*private knowledge-base content/,
+      label: 'data handling public repository boundary',
+    },
+    {
+      file: 'docs/privacy/data-handling.md',
+      pattern: /\$\{CLAUDE_PLUGIN_DATA:-\$\{XDG_STATE_HOME:-\$HOME\/\.local\/state\}\/nova-plugin\}\/audit\.log/,
+      label: 'data handling default audit log path',
+    },
+    {
+      file: 'docs/privacy/data-handling.md',
+      pattern: /directory with `700`[\s\S]*log file with\s+`600`[\s\S]*rotates to\s+`audit\.log\.1` after 5 MB/,
+      label: 'data handling permissions and rotation',
+    },
+    {
+      file: 'docs/privacy/data-handling.md',
+      pattern: /NOVA_AUDIT_DISABLED=1/,
+      label: 'data handling audit disable switch',
+    },
+    {
+      file: 'docs/privacy/data-handling.md',
+      pattern: /best-effort redaction[\s\S]*Redaction is a guardrail, not a guarantee/,
+      label: 'data handling best-effort redaction boundary',
+    },
+    {
+      file: 'docs/privacy/data-handling.md',
+      pattern: /If the redaction helper is unavailable,[\s\S]*records a placeholder\s+summary rather than echoing command text/,
+      label: 'data handling unavailable redaction fallback',
+    },
+    {
+      file: 'docs/privacy/data-handling.md',
+      pattern: /Public docs must not include:[\s\S]*Real consumer names[\s\S]*Local machine paths,[\s\S]*private repository URLs,[\s\S]*endpoints[\s\S]*Credentials,[\s\S]*tokens,[\s\S]*private keys,[\s\S]*raw authorization headers/,
+      label: 'data handling public docs private-data boundary',
+    },
+    {
+      file: 'SECURITY.md',
+      pattern: /本地审计日志、脱敏边界和 public-safe 数据处理规则见[\s\S]*\.\/docs\/privacy\/data-handling\.md/,
+      label: 'security policy data handling route',
+    },
+    {
+      file: 'docs/maintainers/troubleshooting.md',
+      pattern: /## Audit Log Location[\s\S]*NOVA_AUDIT_DISABLED=1[\s\S]*\.\.\/privacy\/data-handling\.md[\s\S]*Do not commit local\s+audit logs or treat redaction as a guarantee/,
+      label: 'maintainer troubleshooting data handling route',
+    },
+    {
+      file: 'nova-plugin/docs/architecture/hooks-design.md',
+      pattern: /PreToolUse[\s\S]*runtime\/secret-rules\.mjs[\s\S]*PostToolUse[\s\S]*docs\/privacy\/data-handling\.md/,
+      label: 'hooks design shared secret rules and data handling route',
+    },
   ];
 
   for (const check of checks) {
@@ -1328,7 +1408,7 @@ function validateValidatorCoverageNarrative() {
   const checks = [
     {
       file: 'CLAUDE.md',
-      pattern: /`node scripts\/validate-docs\.mjs` validates[\s\S]*project\s+positioning\s+contracts,[\s\S]*exact-tag\s+release\s+promotion\s+boundaries,[\s\S]*maintainer\s+diagnostic\s+and\s+security\s+setting\s+semantics,[\s\S]*public\s+API\s+compatibility\s+contracts,[\s\S]*marketplace\s+trust,[\s\S]*author\s+workflow,[\s\S]*compatibility,[\s\S]*security\s+review\s+contracts,[\s\S]*contribution\s+and\s+issue\s+intake\s+contracts,[\s\S]*docs\s+index\s+navigation\s+contracts,[\s\S]*consumer\s+profile\s+privacy\s+contracts,[\s\S]*prompt\s+template\s+privacy\s+contracts,[\s\S]*workflow\s+evidence\s+contracts,[\s\S]*showcase\s+public-safety\s+contracts,[\s\S]*growth\s+metrics\s+privacy\s+contracts,[\s\S]*assets\s+capture\s+privacy\s+contracts,[\s\S]*deferred\s+portal\s+IA\s+contracts,[\s\S]*v3\s+readiness\s+evidence\s+contracts/,
+      pattern: /`node scripts\/validate-docs\.mjs` validates[\s\S]*project\s+positioning\s+contracts,[\s\S]*exact-tag\s+release\s+promotion\s+boundaries,[\s\S]*maintainer\s+diagnostic\s+and\s+security\s+setting\s+semantics,[\s\S]*public\s+API\s+compatibility\s+contracts,[\s\S]*marketplace\s+trust,[\s\S]*author\s+workflow,[\s\S]*compatibility,[\s\S]*security\s+review\s+contracts,[\s\S]*contribution\s+and\s+issue\s+intake\s+contracts,[\s\S]*docs\s+index\s+navigation\s+contracts,[\s\S]*consumer\s+profile\s+privacy\s+contracts,[\s\S]*prompt\s+template\s+privacy\s+contracts,[\s\S]*local\s+data\s+handling\s+privacy\s+contracts,[\s\S]*workflow\s+evidence\s+contracts,[\s\S]*showcase\s+public-safety\s+contracts,[\s\S]*growth\s+metrics\s+privacy\s+contracts,[\s\S]*assets\s+capture\s+privacy\s+contracts,[\s\S]*deferred\s+portal\s+IA\s+contracts,[\s\S]*v3\s+readiness\s+evidence\s+contracts/,
       label: 'CLAUDE validate-docs coverage narrative',
     },
     {
@@ -1343,7 +1423,7 @@ function validateValidatorCoverageNarrative() {
     },
     {
       file: 'docs/project-optimization-plan.md',
-      pattern: /`validate-docs` checks[\s\S]*project\s+positioning\s+contracts,[\s\S]*exact-tag\s+release\s+promotion\s+boundaries,[\s\S]*maintainer\s+diagnostic\s+and\s+security\s+setting\s+semantics,[\s\S]*public\s+API\s+compatibility\s+contracts,[\s\S]*marketplace\s+trust,[\s\S]*author\s+workflow,[\s\S]*compatibility,[\s\S]*security\s+review\s+contracts,[\s\S]*contribution\s+and\s+issue\s+intake\s+contracts,[\s\S]*docs\s+index\s+navigation\s+contracts,[\s\S]*consumer\s+profile\s+privacy\s+contracts,[\s\S]*prompt\s+template\s+privacy\s+contracts,[\s\S]*workflow\s+evidence\s+contracts,[\s\S]*showcase\s+public-safety\s+contracts,[\s\S]*growth\s+metrics\s+privacy\s+contracts,[\s\S]*assets\s+capture\s+privacy\s+contracts,[\s\S]*deferred\s+portal\s+IA\s+contracts,[\s\S]*v3\s+readiness\s+evidence\s+contracts/,
+      pattern: /`validate-docs` checks[\s\S]*project\s+positioning\s+contracts,[\s\S]*exact-tag\s+release\s+promotion\s+boundaries,[\s\S]*maintainer\s+diagnostic\s+and\s+security\s+setting\s+semantics,[\s\S]*public\s+API\s+compatibility\s+contracts,[\s\S]*marketplace\s+trust,[\s\S]*author\s+workflow,[\s\S]*compatibility,[\s\S]*security\s+review\s+contracts,[\s\S]*contribution\s+and\s+issue\s+intake\s+contracts,[\s\S]*docs\s+index\s+navigation\s+contracts,[\s\S]*consumer\s+profile\s+privacy\s+contracts,[\s\S]*prompt\s+template\s+privacy\s+contracts,[\s\S]*local\s+data\s+handling\s+privacy\s+contracts,[\s\S]*workflow\s+evidence\s+contracts,[\s\S]*showcase\s+public-safety\s+contracts,[\s\S]*growth\s+metrics\s+privacy\s+contracts,[\s\S]*assets\s+capture\s+privacy\s+contracts,[\s\S]*deferred\s+portal\s+IA\s+contracts,[\s\S]*v3\s+readiness\s+evidence\s+contracts/,
       label: 'optimization plan validate-docs coverage narrative',
     },
     {
@@ -1923,6 +2003,7 @@ validateDocsIndexContracts();
 validateValidatorCoverageNarrative();
 validateConsumerProfileContracts();
 validatePromptTemplateContracts();
+validateDataHandlingContracts();
 validateWorkflowEvidenceContracts();
 validateShowcaseContracts();
 validateGrowthMetricsContracts();

@@ -91,13 +91,7 @@ manager_for_dir() {
 
 path_for_node() {
   local input="$1"
-  if [[ "${NODE_BIN:-}" == *.exe ]] && command -v wslpath >/dev/null 2>&1; then
-    wslpath -w "$input"
-  elif [[ "${NODE_BIN:-}" == *.exe ]] && command -v cygpath >/dev/null 2>&1; then
-    cygpath -w "$input"
-  else
-    printf '%s\n' "$input"
-  fi
+  nova_path_for_node_command "$input" "${NODE_BIN:-node}"
 }
 
 package_has_script() {

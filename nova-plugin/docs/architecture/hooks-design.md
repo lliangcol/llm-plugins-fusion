@@ -106,6 +106,9 @@ PostToolUse 额外包含：
 
 **实现：** `nova-plugin/hooks/scripts/pre-write-check.sh`
 
+敏感信息检测规则由 `nova-plugin/runtime/secret-rules.mjs` 统一维护，Bash
+脚本只负责 hook payload I/O 与阻断反馈。
+
 ### Hook 2：PostToolUse — 审计日志
 
 **目标：** 记录所有 Write / Edit / MultiEdit / Bash 操作的审计日志，格式：
@@ -115,7 +118,9 @@ PostToolUse 额外包含：
 [2026-03-18T07:00:01Z] Bash  node scripts/validate-schemas.mjs SUCCESS
 ```
 
-日志写入：`${CLAUDE_PLUGIN_DATA}/audit.log`（本地，不提交 git）
+日志写入：`${CLAUDE_PLUGIN_DATA}/audit.log`（本地，不提交 git）。日志位置、
+权限、轮转、禁用方式与 best-effort redaction 边界见
+[`docs/privacy/data-handling.md`](../../../docs/privacy/data-handling.md)。
 
 **实现：** `nova-plugin/hooks/scripts/post-audit-log.sh`
 

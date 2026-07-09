@@ -46,7 +46,8 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 - Project optimization plan: `docs/project-optimization-plan.md`
 - Release evidence template: `docs/releases/release-evidence-template.md`
 - Maintainer npm shortcuts: `package.json` (`doctor`, `validate`,
-  `test`, `lint`, `ci:quick`, `ci:full`, `validate:maintainer`,
+  `test`, `test:unit`, `test:integration`, `test:e2e`, `lint`,
+  `ci:quick`, `ci:full`, `validate:maintainer`,
   `validate:drift`, `validate:docs`, `validate:schemas`,
   `validate:github-workflows`, `validate:runtime`, `validate:regression`,
   `validate:surface`, `validate:workflow`, `scan:secrets`, `scan:distribution`,
@@ -166,6 +167,9 @@ Maintainer npm shortcuts are optional and dependency-free:
 ```bash
 npm run doctor
 npm run test
+npm run test:unit
+npm run test:integration
+npm run test:e2e
 npm run lint
 npm run ci:quick
 npm run ci:full
@@ -424,7 +428,7 @@ maintainer diagnostic and security setting semantics, public API compatibility
 contracts, marketplace trust, author workflow, compatibility, and security
 review contracts, contribution and issue intake contracts, docs index
 navigation contracts, consumer profile privacy contracts, prompt template
-privacy contracts, workflow evidence contracts, showcase public-safety
+privacy contracts, local data handling privacy contracts, workflow evidence contracts, showcase public-safety
 contracts, growth metrics privacy contracts, assets capture privacy contracts,
 deferred portal IA contracts, v3 readiness evidence contracts, security support
 range, stale active planning labels, and

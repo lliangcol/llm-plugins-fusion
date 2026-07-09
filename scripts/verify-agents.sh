@@ -30,7 +30,10 @@ required_sections=(
 )
 
 echo "== Active agents =="
-mapfile -t actual < <(find "$active_dir" -maxdepth 1 -type f -name "*.md" -exec basename {} \; 2>/dev/null | sort)
+actual=()
+while IFS= read -r file_name; do
+  actual+=("$file_name")
+done < <(find "$active_dir" -maxdepth 1 -type f -name "*.md" -exec basename {} \; 2>/dev/null | LC_ALL=C sort)
 echo "Count: ${#actual[@]}"
 printf -- "- %s\n" "${actual[@]}"
 
