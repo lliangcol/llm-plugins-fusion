@@ -9,6 +9,9 @@ set -o pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SKILL_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 PROMPTS_DIR="${SKILL_DIR}/prompts"
+RUNTIME_DIR="$(cd "${SCRIPT_DIR}/../../../runtime" && pwd)"
+# shellcheck source=../../../runtime/bash-common.sh
+source "${RUNTIME_DIR}/bash-common.sh"
 
 timestamp() {
   date +"%Y%m%d-%H%M%S"
@@ -245,14 +248,7 @@ command_usable_with_version() {
 }
 
 node_executable() {
-  local candidate=""
-  for candidate in node node.exe; do
-    if command_usable_with_version "$candidate" --version; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  return 1
+  nova_node_command
 }
 
 codex_executable() {
@@ -343,31 +339,30 @@ untracked_content_max_bytes() {
 
 untracked_path_is_sensitive() {
   local file="$1"
-  local base=""
-  base="$(basename "$file")"
-  case "$base" in
-    .env|.env.*|*.pem|*.key|id_rsa|id_rsa.*|id_ed25519|id_ed25519.*)
-      return 0
-      ;;
-    *)
-      return 1
-      ;;
-  esac
+  local node_bin=""
+  local rules_path=""
+  local node_rules_path=""
+
+  node_bin="$(nova_node_command)" || return 0
+  rules_path="$(nova_secret_rules_path)"
+  [ -f "$rules_path" ] || return 0
+  node_rules_path="$(nova_secret_rules_path_for_node "$node_bin")"
+  "$node_bin" "$node_rules_path" sensitive-path "$file"
 }
 
 content_has_sensitive_value() {
   local file="$1"
-  local assignment_pattern
-  assignment_pattern="(password|secret|api[_-]?key|access[_-]?token|auth[_-]?token|bearer[_-]?token|refresh[_-]?token|client[_-]?secret|private[_-]?key|npm[_-]?token|github[_-]?token|openai[_-]?api[_-]?key)[[:space:]]*[:=][[:space:]]*([\"'][^\"']{6,}[\"']?|[^[:space:]#\"']{16,})"
+  local node_bin=""
+  local rules_path=""
+  local node_rules_path=""
+  local node_file=""
 
-  grep -Eiq "$assignment_pattern" "$file" && return 0
-  grep -Eq '\bsk-(proj-)?[A-Za-z0-9_-]{20,}\b' "$file" && return 0
-  grep -Eq '\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{20,}\b' "$file" && return 0
-  grep -Eq '\bxox[baprs]-[A-Za-z0-9-]{20,}\b' "$file" && return 0
-  grep -Eq '\bnpm_[A-Za-z0-9]{36,}\b' "$file" && return 0
-  grep -Eq '\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b' "$file" && return 0
-  grep -Eiq 'Authorization:[[:space:]]*Bearer[[:space:]]+[^[:space:]]{10,}' "$file" && return 0
-  return 1
+  node_bin="$(nova_node_command)" || return 0
+  rules_path="$(nova_secret_rules_path)"
+  [ -f "$rules_path" ] || return 0
+  node_rules_path="$(nova_secret_rules_path_for_node "$node_bin")"
+  node_file="$(nova_path_for_node_command "$file" "$node_bin")"
+  "$node_bin" "$node_rules_path" detect-file "$node_file"
 }
 
 validate_untracked_content_file() {

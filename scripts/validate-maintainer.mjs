@@ -17,11 +17,12 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
 let failed = 0;
 
-async function run(label, command, args) {
+async function run(label, command, args = [], options = {}) {
   console.log(`\n== ${label} ==`);
   const result = await runProcess(label, command, args, {
     cwd: root,
     capture: false,
+    shell: Boolean(options.shell),
     timeoutMs: 180_000,
   });
   if (!result.ok) {
@@ -34,7 +35,9 @@ async function run(label, command, args) {
   return true;
 }
 
-await run('npm test', process.execPath, ['--test', 'tests/**/*.test.mjs']);
+await run('npm run test:unit', 'npm run test:unit', [], { shell: true });
+await run('npm run test:integration', 'npm run test:integration', [], { shell: true });
+await run('npm run test:e2e', 'npm run test:e2e', [], { shell: true });
 await run('validate all', process.execPath, ['scripts/validate-all.mjs']);
 await run('generated registry drift check', process.execPath, ['scripts/generate-registry.mjs']);
 await run('git diff --check', 'git', ['diff', '--check']);

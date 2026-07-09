@@ -30,7 +30,10 @@ gate is added, renamed, removed, or moved.
 | Command | Purpose | Notes |
 | --- | --- | --- |
 | `npm run doctor` | Read-only environment preflight. | Warnings can be acceptable for optional CLIs or non-release snapshots. |
-| `npm run test` | Node test suite. | Covers unit, integration, e2e, and regression tests. |
+| `npm run test` | Node test suite. | Runs unit, integration, and e2e suites sequentially for clearer CI logs. |
+| `npm run test:unit` | Unit test suite. | Runs `tests/unit/**/*.test.mjs`. |
+| `npm run test:integration` | Integration test suite. | Runs `tests/integration/**/*.test.mjs`. |
+| `npm run test:e2e` | E2E smoke suite. | Runs `tests/e2e/**/*.test.mjs`, including the aggregate validation smoke. |
 | `npm run lint` | Frontmatter and docs validation. | Shortcut for prompt/docs surface checks. |
 | `npm run ci:quick` | Fast structural gate. | Schemas, frontmatter, docs, and hooks. |
 | `npm run ci:full` | Full default validation. | Alias for `node scripts/validate-all.mjs`. |

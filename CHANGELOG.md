@@ -20,13 +20,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - Release workflow 新增 exact-tag isolated install smoke job，上传
   `release-install-smoke-evidence` artifact，并在 GitHub Release 创建前阻断
   真实安装路径失败。
+- 新增 `nova-plugin/runtime/secret-rules.mjs` 与 `bash-common.sh`，为 hook、
+  Codex helper 和 distribution scan 提供共享的 secret detection / redaction
+  runtime。
+- 新增 `docs/privacy/data-handling.md`，记录本地 audit log 位置、权限、轮转、
+  禁用方式和 public-safe 数据处理边界。
 
 ### Changed
 - GitHub Actions 外部 action 引用改为 full commit SHA pin，并由
   `scripts/validate-github-workflows.mjs` 校验 SHA pin、tag 注释、`NPM Test`
   gate、required-check 文档和 print 输出同步。
-- `npm run validate:maintainer` 现在显式运行 `npm test`，再执行默认质量门、
-  registry drift 和 whitespace checks。
+- `npm test` 拆分为 `test:unit`、`test:integration` 和 `test:e2e`，并由
+  `npm run validate:maintainer` 逐项运行后再执行默认质量门、registry drift
+  和 whitespace checks。
+- Hook audit logging、pre-write secret blocking、Codex review helpers 和
+  distribution risk scan 现在复用同一组 token / secret 规则；redaction helper
+  不可用时 audit log 记录占位摘要而不是回显 command text。
 - 贡献、维护者、release 和 adapter 文档同步说明开放受控 issue intake、
   action pinning、isolated release install smoke、surface inventory 和新增 CI
   checks。

@@ -3,7 +3,9 @@
  * Smoke-test distributed Bash runtime helpers without invoking Codex.
  *
  * This check verifies script syntax, help output, and safe failure paths. It
- * does not run review/verify against a real branch and does not write .codex.
+ * does not run review/verify against a real branch. Temporary scripts are
+ * created under .codex/tmp so Windows-hosted node.exe can read Git Bash paths,
+ * then removed on normal exit without deleting pre-existing .codex directories.
  */
 
 import { readFileSync } from 'node:fs';
@@ -46,11 +48,21 @@ async function run(label, args, options = {}) {
 }
 
 async function runTempBash(label, body, options = {}) {
+  const tmpRootName = `runtime-smoke-${process.pid}`;
   const script = `#!/usr/bin/env bash\nset -euo pipefail\n${body}\n`;
   const wrapper = [
     'set -euo pipefail',
-    'tmp_dir="$(mktemp -d "${TMPDIR:-/tmp}/nova-runtime-smoke-XXXXXX")"',
-    'trap \'rm -rf "$tmp_dir"\' EXIT',
+    'codex_dir="$PWD/.codex"',
+    'codex_tmp_dir="$codex_dir/tmp"',
+    'created_codex_dir=0',
+    'created_codex_tmp_dir=0',
+    '[ -d "$codex_dir" ] || created_codex_dir=1',
+    '[ -d "$codex_tmp_dir" ] || created_codex_tmp_dir=1',
+    `tmp_root="$codex_tmp_dir/${tmpRootName}"`,
+    'mkdir -p "$tmp_root"',
+    'tmp_dir="$(mktemp -d "$tmp_root/case.XXXXXX")"',
+    'cleanup() { rm -rf "$tmp_dir"; rmdir "$tmp_root" 2>/dev/null || true; if [ "$created_codex_tmp_dir" = "1" ]; then rmdir "$codex_tmp_dir" 2>/dev/null || true; fi; if [ "$created_codex_dir" = "1" ]; then rmdir "$codex_dir" 2>/dev/null || true; fi; }',
+    'trap cleanup EXIT',
     'script="$tmp_dir/case.sh"',
     'cat > "$script" <<\'NOVA_RUNTIME_SMOKE_SCRIPT\'',
     script,
@@ -184,6 +196,35 @@ assertFileContainsAll(
   ],
 );
 
+await runTempBash('secret-rules detects common token text', `
+source nova-plugin/runtime/bash-common.sh
+node_bin="$(nova_node_command)"
+rules_path="$(nova_secret_rules_path_for_node "$node_bin")"
+secret_tail="dddddddddddddddddddddddd"
+token="sk-proj-\${secret_tail}"
+printf '%s\\n' "OPENAI_API_KEY=\${token}" | "$node_bin" "$rules_path" detect-text
+`);
+
+await runTempBash('secret-rules redacts command secrets', `
+source nova-plugin/runtime/bash-common.sh
+node_bin="$(nova_node_command)"
+rules_path="$(nova_secret_rules_path_for_node "$node_bin")"
+secret_tail="eeeeeeeeeeeeeeeeeeeeeeee"
+token="sk-proj-\${secret_tail}"
+auth_name="Authorization:"
+auth_type="Bearer"
+redacted="$(printf '%s\\n' "curl -H \${auth_name} \${auth_type} \${token}" | "$node_bin" "$rules_path" redact-text)"
+printf '%s\\n' "$redacted" | grep -q '<redacted>'
+! printf '%s\\n' "$redacted" | grep -q "$token"
+`);
+
+await runTempBash('secret-rules ignores ordinary text', `
+source nova-plugin/runtime/bash-common.sh
+node_bin="$(nova_node_command)"
+rules_path="$(nova_secret_rules_path_for_node "$node_bin")"
+printf '%s\\n' 'ordinary public documentation text' | "$node_bin" "$rules_path" detect-text
+`, { expectFailure: true });
+
 await runTempBash('pre-write hook rejects common token shapes', `
 secret_tail="aaaaaaaaaaaaaaaaaaaaaaaa"
 token="sk-proj-\${secret_tail}"
@@ -203,7 +244,9 @@ token="sk-proj-\${secret_tail}"
 log_dir="$(dirname "$0")/hook-data"
 mkdir "$log_dir"
 export CLAUDE_PLUGIN_DATA="$log_dir"
-payload="$(printf '{"tool_name":"Bash","tool_input":{"command":"curl -H Authorization: Bearer %s https://example.test"},"tool_response":{"success":true}}' "$token")"
+auth_name="Authorization:"
+auth_type="Bearer"
+payload="$(printf '{"tool_name":"Bash","tool_input":{"command":"curl -H %s %s %s https://example.test"},"tool_response":{"success":true}}' "$auth_name" "$auth_type" "$token")"
 printf '%s' "$payload" | bash nova-plugin/hooks/scripts/post-audit-log.sh
 grep -q '<redacted>' "$log_dir/audit.log"
 ! grep -q "$token" "$log_dir/audit.log"

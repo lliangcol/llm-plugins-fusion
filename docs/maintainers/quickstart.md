@@ -25,6 +25,9 @@ see [validation-index.md](validation-index.md).
 ```bash
 npm run doctor
 npm run test
+npm run test:unit
+npm run test:integration
+npm run test:e2e
 npm run lint
 npm run ci:quick
 npm run ci:full

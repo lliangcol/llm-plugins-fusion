@@ -200,6 +200,21 @@ test('distribution risk scan detects expanded active secret signals and redacts 
   }
 });
 
+test('runtime secret rules are shared by hooks, Codex helpers, and distribution scan', () => {
+  const preWrite = readFileSync(resolve(root, 'nova-plugin/hooks/scripts/pre-write-check.sh'), 'utf8');
+  const postAudit = readFileSync(resolve(root, 'nova-plugin/hooks/scripts/post-audit-log.sh'), 'utf8');
+  const codexCommon = readFileSync(resolve(root, 'nova-plugin/skills/nova-codex-review-fix/scripts/codex-common.sh'), 'utf8');
+  const distributionScan = readFileSync(resolve(root, 'scripts/scan-distribution-risk.mjs'), 'utf8');
+
+  for (const source of [preWrite, postAudit, codexCommon]) {
+    assert.match(source, /runtime\/secret-rules\.mjs|nova_secret_rules_path/);
+    assert.doesNotMatch(source, /assignment_pattern=/);
+    assert.doesNotMatch(source, /sk-\(proj-\)\?/);
+    assert.doesNotMatch(source, /npm_\[A-Za-z0-9\]/);
+  }
+  assert.match(distributionScan, /secretChecks/);
+});
+
 test('distribution risk scan detects tracked Codex runtime artifacts', () => {
   const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-risk-codex-'));
   try {

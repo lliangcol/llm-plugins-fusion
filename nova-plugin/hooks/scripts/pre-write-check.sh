@@ -13,53 +13,8 @@ set -euo pipefail
 INPUT=$(cat)
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd -- "$SCRIPT_DIR/../.." >/dev/null 2>&1 && pwd -P)}"
-
-node_command() {
-  local candidate=""
-  for candidate in node node.exe; do
-    if command -v "$candidate" >/dev/null 2>&1 && "$candidate" --version >/dev/null 2>&1; then
-      printf '%s\n' "$candidate"
-      return 0
-    fi
-  done
-  return 1
-}
-
-node_command_is_windows() {
-  local candidate="$1"
-  local platform=""
-
-  platform="$("$candidate" -e 'process.stdout.write(process.platform)' 2>/dev/null || true)"
-  [ "$platform" = "win32" ]
-}
-
-path_for_node_command() {
-  local path="$1"
-  local node_bin="$2"
-  local drive=""
-  local rest=""
-
-  if ! node_command_is_windows "$node_bin"; then
-    printf '%s\n' "$path"
-    return 0
-  fi
-
-  case "$path" in
-    /mnt/[A-Za-z]/*)
-      rest="${path#/mnt/}"
-      drive="${rest%%/*}"
-      rest="${rest#*/}"
-      printf '%s:/%s\n' "${drive^^}" "$rest"
-      ;;
-    *)
-      if command -v cygpath >/dev/null 2>&1; then
-        cygpath -m "$path"
-        return 0
-      fi
-      printf '%s\n' "$path"
-      ;;
-  esac
-}
+# shellcheck source=../../runtime/bash-common.sh
+source "$PLUGIN_ROOT/runtime/bash-common.sh"
 
 json_read() {
   local field="$1"
@@ -77,7 +32,7 @@ json_read() {
     return 0
   fi
 
-  if node_bin="$(node_command)"; then
+  if node_bin="$(nova_node_command)"; then
     printf '%s' "$INPUT" | "$node_bin" -e '
 const fs = require("fs");
 const field = process.argv[1];
@@ -118,7 +73,7 @@ json_valid() {
     return
   fi
 
-  if node_bin="$(node_command)"; then
+  if node_bin="$(nova_node_command)"; then
     printf '%s' "$1" | "$node_bin" -e '
 const fs = require("fs");
 try {
@@ -141,7 +96,7 @@ json_has_hooks() {
     return
   fi
 
-  if node_bin="$(node_command)"; then
+  if node_bin="$(nova_node_command)"; then
     printf '%s' "$1" | "$node_bin" -e '
 const fs = require("fs");
 try {
@@ -163,9 +118,9 @@ validate_hooks_json_schema() {
   local node_plugin_root=""
   local node_validator_path=""
 
-  if node_bin="$(node_command)" && [ -f "$PLUGIN_ROOT/hooks/scripts/validate-hooks-json.mjs" ]; then
-    node_plugin_root="$(path_for_node_command "$PLUGIN_ROOT" "$node_bin")"
-    node_validator_path="$(path_for_node_command "$PLUGIN_ROOT/hooks/scripts/validate-hooks-json.mjs" "$node_bin")"
+  if node_bin="$(nova_node_command)" && [ -f "$PLUGIN_ROOT/hooks/scripts/validate-hooks-json.mjs" ]; then
+    node_plugin_root="$(nova_path_for_node_command "$PLUGIN_ROOT" "$node_bin")"
+    node_validator_path="$(nova_path_for_node_command "$PLUGIN_ROOT/hooks/scripts/validate-hooks-json.mjs" "$node_bin")"
     printf '%s' "$content" | CLAUDE_PLUGIN_ROOT="$node_plugin_root" "$node_bin" "$node_validator_path"
     return
   fi
@@ -178,17 +133,15 @@ CONTENT=$(json_read content)
 
 content_has_sensitive_value() {
   local content="$1"
-  local assignment_pattern
-  assignment_pattern="(password|secret|api[_-]?key|access[_-]?token|auth[_-]?token|bearer[_-]?token|refresh[_-]?token|client[_-]?secret|private[_-]?key|npm[_-]?token|github[_-]?token|openai[_-]?api[_-]?key)[[:space:]]*[:=][[:space:]]*([\"'][^\"']{6,}[\"']?|[^[:space:]#\"']{16,})"
+  local node_bin=""
+  local rules_path=""
+  local node_rules_path=""
 
-  printf '%s' "$content" | grep -Eiq "$assignment_pattern" && return 0
-  printf '%s' "$content" | grep -Eq '\bsk-(proj-)?[A-Za-z0-9_-]{20,}\b' && return 0
-  printf '%s' "$content" | grep -Eq '\b(ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{20,}\b' && return 0
-  printf '%s' "$content" | grep -Eq '\bxox[baprs]-[A-Za-z0-9-]{20,}\b' && return 0
-  printf '%s' "$content" | grep -Eq '\bnpm_[A-Za-z0-9]{36,}\b' && return 0
-  printf '%s' "$content" | grep -Eq '\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b' && return 0
-  printf '%s' "$content" | grep -Eiq 'Authorization:[[:space:]]*Bearer[[:space:]]+[^[:space:]]{10,}' && return 0
-  return 1
+  node_bin="$(nova_node_command)" || return 1
+  rules_path="$(nova_secret_rules_path)"
+  [ -f "$rules_path" ] || return 1
+  node_rules_path="$(nova_secret_rules_path_for_node "$node_bin")"
+  printf '%s' "$content" | "$node_bin" "$node_rules_path" detect-text
 }
 
 # ── 检查 1：敏感信息硬编码检测 ────────────────────────────────────
@@ -200,7 +153,7 @@ if [ -n "$CONTENT" ] && content_has_sensitive_value "$CONTENT"; then
 fi
 
 # ── 检查 2：hooks.json JSON 格式校验 ─────────────────────────────
-if echo "$FILE_PATH" | grep -q 'hooks\.json$' && [ -n "$CONTENT" ]; then
+if [[ -n "$CONTENT" && "$FILE_PATH" == *hooks.json ]]; then
   if ! json_valid "$CONTENT"; then
     echo "[nova-plugin] hooks.json JSON 格式无效，写入已阻止。" >&2
     echo "  建议: 修复 JSON 语法后运行 node scripts/validate-hooks.mjs。" >&2

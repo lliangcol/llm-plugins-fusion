@@ -29,13 +29,13 @@ $requiredSections = @(
   'Pack hints:'
 )
 
-Write-Host "== Active agents =="
+Write-Output "== Active agents =="
 $actual = @()
 if (Test-Path $activeDir) {
   $actual = Get-ChildItem -File $activeDir -Filter *.md | Select-Object -ExpandProperty Name | Sort-Object
 }
-Write-Host ("Count: {0}" -f $actual.Count)
-$actual | ForEach-Object { Write-Host ("- {0}" -f $_) }
+Write-Output ("Count: {0}" -f $actual.Count)
+$actual | ForEach-Object { Write-Output ("- {0}" -f $_) }
 
 if ($actual.Count -ne 6) {
   Write-Error "Active agents count must be exactly 6 (got $($actual.Count))."
@@ -47,13 +47,13 @@ if (-not ($actual -contains 'orchestrator.md')) {
 $missing = @($expected | Where-Object { $actual -notcontains $_ })
 $extra = @($actual | Where-Object { $expected -notcontains $_ })
 if ($missing.Count -ne 0 -or $extra.Count -ne 0) {
-  if ($missing.Count) { Write-Host "Missing expected:"; $missing | ForEach-Object { Write-Host ("- {0}" -f $_) } }
-  if ($extra.Count) { Write-Host "Unexpected extra:"; $extra | ForEach-Object { Write-Host ("- {0}" -f $_) } }
+  if ($missing.Count) { Write-Output "Missing expected:"; $missing | ForEach-Object { Write-Output ("- {0}" -f $_) } }
+  if ($extra.Count) { Write-Output "Unexpected extra:"; $extra | ForEach-Object { Write-Output ("- {0}" -f $_) } }
   throw "Active agent set mismatch. Expected exactly the 6 core-agent files."
 }
 
-Write-Host ""
-Write-Host "== Agent contract =="
+Write-Output ""
+Write-Output "== Agent contract =="
 foreach ($fileName in $actual) {
   $path = Join-Path $activeDir $fileName
   $content = Get-Content -Raw $path
@@ -78,27 +78,27 @@ foreach ($fileName in $actual) {
       throw "$fileName body missing required label: $section"
     }
   }
-  Write-Host ("- {0}: ok" -f $fileName)
+  Write-Output ("- {0}: ok" -f $fileName)
 }
 
-Write-Host ""
-Write-Host "== Retired active-agent surfaces =="
+Write-Output ""
+Write-Output "== Retired active-agent surfaces =="
 foreach ($retiredDir in $retiredSurfaceDirs) {
   $retiredPath = Join-Path $repoRoot $retiredDir
   if (Test-Path $retiredPath) {
     throw "Retired active-agent path must not exist in the current public surface: $retiredDir. Active agents live only in nova-plugin/agents; do not recreate retired archive/history paths without a documented policy change."
   }
-  Write-Host ("- {0}: absent (ok)" -f $retiredDir)
+  Write-Output ("- {0}: absent (ok)" -f $retiredDir)
 }
 
-Write-Host ""
-Write-Host "== Manual acceptance checklist =="
-Write-Host "1) In Claude Code, run `/context` BEFORE and note: Custom agents tokens = ____"
-Write-Host "2) Run `/context` AFTER and note:  Custom agents tokens = ____"
-Write-Host "3) Target: tokens drop >= 50%."
+Write-Output ""
+Write-Output "== Manual acceptance checklist =="
+Write-Output "1) In Claude Code, run `/context` BEFORE and note: Custom agents tokens = ____"
+Write-Output "2) Run `/context` AFTER and note:  Custom agents tokens = ____"
+Write-Output "3) Target: tokens drop >= 50%."
 
-Write-Host ""
-Write-Host "== Routing test prompts (paste into Claude Code) =="
+Write-Output ""
+Write-Output "== Routing test prompts (paste into Claude Code) =="
 $prompts = @(
   "Route this task: 'CI pipeline failing after dependency upgrade; lockfile conflicts.'",
   "Route this task: 'Spring Boot add a new REST endpoint + OpenAPI docs.'",
@@ -113,7 +113,7 @@ $prompts = @(
   "Route this task: 'Host-project registry UI layout has accessibility regressions.'",
   "Route this task: 'Unclear owner: mixed app bug + CI + docs mismatch; coordinate core agents and packs.'"
 )
-$prompts | ForEach-Object { Write-Host ("- {0}" -f $_) }
+$prompts | ForEach-Object { Write-Output ("- {0}" -f $_) }
 
-Write-Host ""
-Write-Host "OK"
+Write-Output ""
+Write-Output "OK"

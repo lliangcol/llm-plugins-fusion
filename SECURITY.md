@@ -44,6 +44,8 @@
 
 安全敏感的插件、registry、hook、脚本或 write-capable command 变更应按
 [Security Review Route](./docs/marketplace/security-review-route.md) 执行评审。
+本地审计日志、脱敏边界和 public-safe 数据处理规则见
+[Data Handling And Local Audit Logs](./docs/privacy/data-handling.md)。
 
 ## 披露策略
 

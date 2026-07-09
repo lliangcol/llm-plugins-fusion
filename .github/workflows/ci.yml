@@ -88,7 +88,7 @@ jobs:
           sudo apt-get install -y shellcheck
       - name: Run ShellCheck
         run: |
-          shellcheck \
+          shellcheck -x -P nova-plugin/skills/nova-codex-review-fix/scripts \
             scripts/verify-agents.sh \
             nova-plugin/hooks/scripts/pre-write-check.sh \
             nova-plugin/hooks/scripts/post-audit-log.sh \

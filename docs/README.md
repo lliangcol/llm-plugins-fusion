@@ -29,6 +29,7 @@ knowledge-base content in the consumer-owned workspace.
 | See scenario-based workflow examples | [showcase/README.md](showcase/README.md) |
 | Prepare social preview and demo capture assets | [assets/README.md](assets/README.md) |
 | Track growth metrics and manual promotion channels | [growth/README.md](growth/README.md) |
+| Understand local audit logs and data handling | [privacy/data-handling.md](privacy/data-handling.md) |
 | Inspect generated public surface inventory | [generated/surface-inventory.md](generated/surface-inventory.md) |
 | Adopt `nova-plugin` in a private project | [consumers/README.md](consumers/README.md) |
 | Maintain repository checks and release gates | [maintainers/quickstart.md](maintainers/quickstart.md) |
@@ -62,6 +63,7 @@ docs/
 |-- growth/                       # growth metric definitions and collection cadence
 |-- maintainers/                  # maintainer quickstart, troubleshooting, and GitHub settings
 |-- marketplace/                  # generated catalog, registry workflow, trust, compatibility, and review docs
+|-- privacy/                      # local audit log and public data handling boundaries
 |-- prompts/                      # reusable public-safe prompt templates
 |-- releases/                     # release evidence templates, runbooks, and hygiene docs
 |-- showcase/                     # scenario-based public workflow examples
@@ -82,6 +84,7 @@ docs/
 | [growth/](growth/) | Growth metrics, traffic collection cadence, and manual channel record format. |
 | [maintainers/](maintainers/) | Maintainer checks, troubleshooting, and GitHub security settings. |
 | [marketplace/](marketplace/) | Marketplace catalog output, registry author workflow, compatibility, trust, security review, and v3 readiness evidence. |
+| [privacy/](privacy/) | Local audit log behavior, redaction boundary, and public data handling rules. |
 | [prompts/](prompts/) | Copyable prompt templates for Codex, Claude Code, delivery docs, HTML artifacts, and workbench cleanup. |
 | [releases/](releases/) | Release evidence templates, validation runbooks, and release hygiene rules. |
 | [showcase/](showcase/) | Scenario-based public workflow examples for first-time visitors. |
@@ -169,6 +172,12 @@ docs/
 | [marketplace/security-review-route.md](marketplace/security-review-route.md) | Security-sensitive marketplace change review route. |
 | [marketplace/portal-information-architecture.md](marketplace/portal-information-architecture.md) | Deferred public portal information architecture. |
 | [marketplace/v3-readiness-evidence.md](marketplace/v3-readiness-evidence.md) | Evidence ledger for whether v3 multi-plugin or portal work should start. |
+
+### Privacy
+
+| Document | Purpose |
+| --- | --- |
+| [privacy/data-handling.md](privacy/data-handling.md) | Local audit log behavior, best-effort redaction boundary, disable switch, and public data handling rules. |
 
 ### Prompts
 
