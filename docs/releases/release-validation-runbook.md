@@ -120,6 +120,11 @@ Expected conditions:
   warning has an explicit rationale and split plan.
 - If `skipped` is non-zero, each skipped check has replacement CI/Linux
   evidence before promotion.
+- 自动聚合器仅接受一个精确替代场景：Node.js 20 pre-release job 中标签为
+  `validate Claude compatibility` 的唯一 skip，必须由 exact-tag Node.js 22
+  live install evidence 同时记录 marketplace 和 plugin 的
+  `claude plugin validate` 成功结果。任何其他 skip、多个 skip、计数不一致或
+  缺少任一 manifest validation 证明都继续阻断发布。
 - `git diff --check` reports no whitespace errors.
 
 For a release branch or final candidate, also run the focused checks directly
@@ -346,6 +351,10 @@ include:
 - Windows Node/PowerShell smoke and Windows Bash smoke status, or the CI runs
   that supply them.
 - Skipped checks and replacement evidence.
+- 对自动聚合的 Claude compatibility replacement，inventory evidence 必须包含
+  `manifestValidation.marketplace=true` 和 `manifestValidation.plugin=true`；
+  聚合后的 gate 状态为 `passed`，并保留 exact-tag live replacement 标记，不能
+  把该规则扩展为通用 skip allowance。
 - Plugin install smoke result from CI or isolated test-user execution.
 - Manual workflow evaluation record path or an accepted not-applicable reason.
 - Promotion decision and known limitations.

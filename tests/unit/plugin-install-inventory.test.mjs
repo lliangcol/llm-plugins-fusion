@@ -5,12 +5,41 @@ import { tmpdir } from 'node:os';
 import test from 'node:test';
 import {
   assertMarketplaceRef,
+  buildInstallEvidence,
   diffInventory,
   parseArgs,
   parsePluginDetails,
   normalizeMarketplaceSource,
   treeDigest,
 } from '../../scripts/validate-plugin-install.mjs';
+
+test('install evidence records both successful live manifest validations', () => {
+  const evidence = buildInstallEvidence({
+    generatedAt: '2026-07-12T00:00:00.000Z',
+    claudeVersion: '2.1.205 (Claude Code)',
+    knownGoodClaudeCli: '2.1.205',
+    manifestValidation: { marketplace: true, plugin: true },
+    marketplace: { name: 'llm-plugins-fusion', source: 'owner/repo@v2.4.1', ref: 'v2.4.1' },
+    plugin: { id: 'nova-plugin@llm-plugins-fusion', version: '2.4.1', installPath: '/tmp/plugin' },
+    inventory: { count: 42, skills: [] },
+    inventoryDiff: { matches: true },
+    primaryEntrypoints: ['/nova-plugin:route'],
+    sourceTreeDigest: 'a'.repeat(64),
+    installedTreeDigest: 'a'.repeat(64),
+    routeSmoke: null,
+    validationErrors: [],
+  });
+  assert.deepEqual(evidence.manifestValidation, { marketplace: true, plugin: true });
+  assert.equal(evidence.validation.passed, true);
+  assert.deepEqual(evidence.installedTreeIgnoredPaths, ['.in_use/**']);
+
+  const incomplete = buildInstallEvidence({
+    ...evidence,
+    manifestValidation: { marketplace: true, plugin: false },
+  });
+  assert.equal(incomplete.validation.passed, false);
+  assert.deepEqual(incomplete.validation.errors, ['plugin manifest validation did not pass']);
+});
 
 test('plugin install options accept exact source/ref and evidence output', () => {
   assert.deepEqual(parseArgs([

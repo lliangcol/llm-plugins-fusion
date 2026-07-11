@@ -11,11 +11,11 @@ import {
 } from '../../scripts/generate-release-evidence.mjs';
 import { routeSystemPromptSha256 } from '../../scripts/validate-plugin-route-live.mjs';
 
-const coverageSummary = `ℹ tests 80
-ℹ pass 80
-ℹ fail 0
-ℹ start of coverage report
-ℹ all files | 88.05 | 70.01 | 92.89 |
+const coverageSummary = `# tests 80
+# pass 80
+# fail 0
+# start of coverage report
+# all files | 88.05 | 70.01 | 92.89 |
 `;
 
 const digest = 'a'.repeat(64);
@@ -40,6 +40,7 @@ function fixtureInput() {
     install: {
       claudeVersion: '2.1.205 (Claude Code)',
       knownGoodClaudeCli: '2.1.205',
+      manifestValidation: { marketplace: true, plugin: true },
       marketplace: { source: 'owner/repo@v2.4.1', ref: 'v2.4.1' },
       plugin: { id: 'nova-plugin@marketplace', version: '2.4.1' },
       inventory: { count: 42, skills: [...installedSkills] },
@@ -88,6 +89,7 @@ test('release evidence aggregates machine facts without raw model output', () =>
   assert.equal(evidence.release.pluginVersion, '2.4.1');
   assert.equal(evidence.install.skillsCount, 42);
   assert.deepEqual(evidence.install.installedTreeIgnoredPaths, ['.in_use/**']);
+  assert.deepEqual(evidence.install.manifestValidation, { marketplace: true, plugin: true });
   assert.equal(evidence.route.projectChanged, false);
   assert.deepEqual(evidence.tests.coverage, { lines: 88.05, branches: 70.01, functions: 92.89 });
   assert.doesNotMatch(JSON.stringify(evidence), /Recommended Route/);
@@ -98,6 +100,12 @@ test('release evidence aggregates machine facts without raw model output', () =>
   assert.match(evidence.route.systemPromptSha256, /^[a-f0-9]{64}$/);
   assert.equal(evidence.route.maxTurns, 5);
   assert.match(renderReleaseEvidenceMarkdown(evidence), /OAuth route: passed with temporary-home isolation and zero project writes/);
+});
+
+test('release evidence also accepts interactive Node test summary markers', () => {
+  const input = fixtureInput();
+  input.coverageSummary = coverageSummary.replaceAll('# ', 'ℹ ');
+  assert.equal(buildReleaseEvidence(input).tests.passed, 80);
 });
 
 test('release evidence rejects ambiguous route authentication evidence', () => {
@@ -118,7 +126,7 @@ test('release evidence rejects skipped gates and inconsistent live inputs', () =
   const skipped = fixtureInput();
   skipped.timings.skipped = 1;
   skipped.timings.timings = [{ label: 'required gate', status: 'skipped', ms: 0 }];
-  assert.throws(() => buildReleaseEvidence(skipped), /failure or skipped gates/);
+  assert.throws(() => buildReleaseEvidence(skipped), /unsupported skipped validation timing gates/);
 
   for (const mutate of [
     (input) => { input.install.marketplace.ref = 'wrong'; },
@@ -142,6 +150,54 @@ test('release evidence rejects skipped gates and inconsistent live inputs', () =
     (input) => { input.timings.timings = []; },
   ]) {
     const input = fixtureInput();
+    mutate(input);
+    assert.throws(() => buildReleaseEvidence(input));
+  }
+});
+
+test('release evidence accepts only the Claude compatibility skip with exact live replacement proof', () => {
+  const input = fixtureInput();
+  input.timings = {
+    failed: 0,
+    skipped: 1,
+    timings: [
+      { label: 'validate docs', status: 'passed', ms: 25 },
+      { label: 'validate Claude compatibility', status: 'skipped', ms: 39 },
+    ],
+  };
+  const evidence = buildReleaseEvidence(input);
+  assert.deepEqual(evidence.gates[1], {
+    name: 'validate Claude compatibility',
+    status: 'passed',
+    durationMs: 39,
+    replacementEvidence: 'exact-tag live claude plugin validate',
+  });
+  assert.match(renderReleaseEvidenceMarkdown(evidence), /exact-tag live claude plugin validate/);
+});
+
+test('release evidence rejects incomplete or ambiguous skipped timing replacement proof', () => {
+  const rejected = [
+    (input) => { input.install.manifestValidation.marketplace = false; },
+    (input) => { input.install.manifestValidation.plugin = false; },
+    (input) => { delete input.install.manifestValidation; },
+    (input) => {
+      input.timings.skipped = 2;
+      input.timings.timings.push({ label: 'another gate', status: 'skipped', ms: 1 });
+    },
+    (input) => { input.timings.skipped = 0; },
+    (input) => { input.requireLive = false; },
+    (input) => {
+      input.timings.failed = 1;
+      input.timings.timings.push({ label: 'failed gate', status: 'failed', ms: 1 });
+    },
+  ];
+  for (const mutate of rejected) {
+    const input = fixtureInput();
+    input.timings = {
+      failed: 0,
+      skipped: 1,
+      timings: [{ label: 'validate Claude compatibility', status: 'skipped', ms: 39 }],
+    };
     mutate(input);
     assert.throws(() => buildReleaseEvidence(input));
   }
