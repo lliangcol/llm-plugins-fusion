@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
-## [2.4.0-rc.1] - 2026-07-11
+## [2.4.0] - 2026-07-11
 
 ### Added
 - 新增依赖为零的 SemVer 2.0.0 解析与安全 release metadata 准备脚本，
@@ -85,6 +85,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   注入伪造日志记录。
 - 修正文档当前版本漂移、失效 v1 GitHub 链接、不可获取的 schema `$id` 和
   `nova-senior-explore` 内部契约冲突，并为这些事实增加防漂移验证。
+
+## [2.4.0-rc.1] - 2026-07-11
+
+### Changed
+- 发布 `2.4.0` 的候选版本；稳定版保留同一能力与兼容边界，并在 RC 的精确
+  提交上完成维护者门禁、覆盖率、CodeQL、隔离安装和五阶段 workflow 质量验收。
 
 ## [2.3.0] - 2026-07-08
 
@@ -593,7 +599,8 @@ must not replace the exact release tag as stable evidence.
 - MIT 开源协议
 - 中英双语 README 文档
 
-[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.4.0-rc.1...HEAD
+[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.4.0-rc.1...v2.4.0
 [2.4.0-rc.1]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.3.0...v2.4.0-rc.1
 [2.3.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.1.0...v2.2.0

@@ -96,6 +96,6 @@ The JSON form is [surface-inventory.json](surface-inventory.json).
 
 | Path | Plugin versions |
 | --- | --- |
-| `.claude-plugin/marketplace.json` | `nova-plugin@2.4.0-rc.1` |
-| `.claude-plugin/marketplace.metadata.json` | `nova-plugin@2.4.0-rc.1` |
-| `docs/marketplace/catalog.md` | `nova-plugin@2.4.0-rc.1` |
+| `.claude-plugin/marketplace.json` | `nova-plugin@2.4.0` |
+| `.claude-plugin/marketplace.metadata.json` | `nova-plugin@2.4.0` |
+| `docs/marketplace/catalog.md` | `nova-plugin@2.4.0` |
