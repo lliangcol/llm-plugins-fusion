@@ -55,6 +55,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - OAuth route smoke 在稳定 command wrapper 与 canonical headless system
   prompt 中重复固定 `## Recommended Route` 七字段契约；release evidence 绑定
   contract ID、prompt digest 与 turn limit，失败日志仅记录隐私安全的结构摘要。
+- release evidence 仅在 exact-tag live job 同时证明 marketplace 与 plugin
+  manifest 校验通过时，才以该证据替代 Node.js 20 静态 job 唯一的 Claude
+  compatibility skip；其他 skip 仍然阻断发布，并兼容 CI 捕获输出中的
+  `# tests/pass/fail` TAP 汇总标记。
 
 ## [2.4.0] - 2026-07-11
 

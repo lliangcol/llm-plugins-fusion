@@ -45,6 +45,7 @@ test('2.4.1 release notes include every post-tag release blocker fix', async () 
   assert.match(notes, /\.in_use\/\*\*/);
   assert.match(notes, /Skill\(nova-plugin:route\)/);
   assert.match(notes, /recommended-route-v1|七字段契约/);
+  assert.match(notes, /manifest validation|manifest 校验/);
 });
 
 test('prepareRelease rejects malformed, mismatched, missing, and empty releases', async (t) => {

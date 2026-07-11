@@ -144,6 +144,47 @@ export function diffInventory(actualSkills, expectedSkills) {
   };
 }
 
+export function buildInstallEvidence({
+  generatedAt,
+  claudeVersion,
+  knownGoodClaudeCli,
+  manifestValidation,
+  marketplace,
+  plugin,
+  inventory,
+  inventoryDiff,
+  primaryEntrypoints,
+  sourceTreeDigest,
+  installedTreeDigest,
+  routeSmoke,
+  validationErrors = [],
+}) {
+  const errors = [...validationErrors];
+  if (manifestValidation?.marketplace !== true) {
+    errors.push('marketplace manifest validation did not pass');
+  }
+  if (manifestValidation?.plugin !== true) {
+    errors.push('plugin manifest validation did not pass');
+  }
+  return {
+    schemaVersion: 1,
+    generatedAt,
+    claudeVersion,
+    knownGoodClaudeCli,
+    manifestValidation,
+    marketplace,
+    plugin,
+    inventory,
+    inventoryDiff,
+    primaryEntrypoints,
+    sourceTreeDigest,
+    installedTreeDigest,
+    installedTreeIgnoredPaths: ['.in_use/**'],
+    routeSmoke,
+    validation: { passed: errors.length === 0, errors },
+  };
+}
+
 async function run(label, command, args, env) {
   console.log(`\n== ${label} ==`);
   const result = await runProcess(label, command, args, {
@@ -274,8 +315,11 @@ export async function main(args = process.argv.slice(2)) {
   const isolated = configureIsolatedHome();
   try {
     const claudeVersion = (await capture('claude --version', 'claude', ['--version'], isolated.env)).trim();
+    const manifestValidation = { marketplace: false, plugin: false };
     await run('claude plugin validate .', 'claude', ['plugin', 'validate', '.'], isolated.env);
+    manifestValidation.marketplace = true;
     await run('claude plugin validate nova-plugin', 'claude', ['plugin', 'validate', 'nova-plugin'], isolated.env);
+    manifestValidation.plugin = true;
     await run('add marketplace', 'claude', ['plugin', 'marketplace', 'add', marketplaceSource], isolated.env);
 
     const marketplaces = await captureJson(
@@ -338,11 +382,11 @@ export async function main(args = process.argv.slice(2)) {
     const routeSmoke = options.routeSmokeOut && validationErrors.length === 0
       ? await runRouteSmoke({ pluginDir: installed.installPath, outPath: options.routeSmokeOut, env: isolated.env })
       : null;
-    const evidence = {
-      schemaVersion: 1,
+    const evidence = buildInstallEvidence({
       generatedAt: new Date().toISOString(),
       claudeVersion,
       knownGoodClaudeCli: permissionSpec.knownGoodClaudeCli,
+      manifestValidation,
       marketplace: { name: marketplaceName, source: marketplaceSource, ref: addedMarketplace.ref ?? null },
       plugin: { id: pluginId, version: installed.version, installPath: installed.installPath },
       inventory,
@@ -350,10 +394,9 @@ export async function main(args = process.argv.slice(2)) {
       primaryEntrypoints: permissionSpec.primaryEntrypoints.map((id) => `/${permissionSpec.pluginNamespace}:${id}`),
       sourceTreeDigest,
       installedTreeDigest,
-      installedTreeIgnoredPaths: ['.in_use/**'],
       routeSmoke,
-      validation: { passed: validationErrors.length === 0, errors: validationErrors },
-    };
+      validationErrors,
+    });
     if (options.inventoryOut) {
       const outPath = resolve(root, options.inventoryOut);
       mkdirSync(dirname(outPath), { recursive: true });
