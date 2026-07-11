@@ -530,6 +530,12 @@ function validateWorkflowContracts() {
     if (/ANTHROPIC_API_KEY/.test(releaseSrc)) {
       recordError(releaseFile, 'release live route gate must not use ANTHROPIC_API_KEY when OAuth CI is required');
     }
+    if (!/id:\s*release-files[\s\S]*archives=\(\.metrics\/release-inputs\/release-artifacts\/nova-plugin-\*\.tar\.gz\)[\s\S]*sboms=\(\.metrics\/release-inputs\/release-artifacts\/nova-plugin-\*\.tar\.gz\.cdx\.json\)[\s\S]*test "\$\{#archives\[@\]\}" -eq 1[\s\S]*test "\$\{#sboms\[@\]\}" -eq 1/.test(releaseSrc)) {
+      recordError(releaseFile, 'release workflow must resolve exactly one archive and SBOM before attestation');
+    }
+    if (!/subject-path:\s*\$\{\{\s*steps\.release-files\.outputs\.archive\s*\}\}[\s\S]*sbom-path:\s*\$\{\{\s*steps\.release-files\.outputs\.sbom\s*\}\}/.test(releaseSrc)) {
+      recordError(releaseFile, 'release attestation must use exact resolved archive and SBOM paths');
+    }
     const releaseJob = extractYamlBlock(
       releaseFile,
       releaseSrc,

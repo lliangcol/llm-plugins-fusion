@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "recordedAt": "2026-07-12T02:38:38+08:00",
   "executionMode": "local-live-public-safe",
-  "releaseVersion": "3.0.0",
+  "releaseVersion": "3.0.1",
   "baseCommit": "31aaa3915075640c87c83cc2869fab87fa536c4c",
   "sourceState": "pre-release working tree; exact release commit remains release-gated",
   "sourceDigests": {

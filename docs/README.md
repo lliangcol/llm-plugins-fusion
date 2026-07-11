@@ -206,6 +206,7 @@ docs/
 | [releases/release-evidence-template.md](releases/release-evidence-template.md) | Release or promotion evidence template. |
 | [releases/release-validation-runbook.md](releases/release-validation-runbook.md) | Manual runbook for exact tag, isolated install smoke, workflow evaluation, and promotion decisions. |
 | [releases/3.0.0-notes.md](releases/3.0.0-notes.md) | Prepared release notes and transparent v2.4.1 tag-history disclosure. |
+| [releases/3.0.1-notes.md](releases/3.0.1-notes.md) | Immutable recovery release for the exact SBOM attestation path contract. |
 | [releases/3.0.0-audit-closure.md](releases/3.0.0-audit-closure.md) | Audit finding closure matrix, intentional hook exception, and remaining external publication gates. |
 | [releases/release-hygiene.md](releases/release-hygiene.md) | Version, tag, generated artifact, and pre-release hygiene rules. |
 

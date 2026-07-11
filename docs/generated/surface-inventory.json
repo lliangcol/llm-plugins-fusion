@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": {
     "pluginName": "nova-plugin",
-    "pluginVersion": "3.0.0",
+    "pluginVersion": "3.0.1",
     "registrySource": ".claude-plugin/registry.source.json",
     "registryPluginCount": 1
   },
@@ -686,7 +686,7 @@
       "generated": true,
       "pluginCount": 1,
       "pluginVersions": [
-        "nova-plugin@3.0.0"
+        "nova-plugin@3.0.1"
       ]
     },
     {
@@ -694,7 +694,7 @@
       "generated": true,
       "pluginCount": 1,
       "pluginVersions": [
-        "nova-plugin@3.0.0"
+        "nova-plugin@3.0.1"
       ]
     },
     {
@@ -702,7 +702,7 @@
       "generated": true,
       "pluginCount": 1,
       "pluginVersions": [
-        "nova-plugin@3.0.0"
+        "nova-plugin@3.0.1"
       ]
     }
   ],

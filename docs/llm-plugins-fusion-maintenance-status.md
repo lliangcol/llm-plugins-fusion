@@ -47,8 +47,8 @@ and update this file after the source is corrected.
 - Skills: 21 files under `nova-plugin/skills/nova-*/SKILL.md`.
 - Active agents: 6 core files under `nova-plugin/agents/*.md`.
 - Capability packs: 8 documentation packs under `nova-plugin/packs/*/README.md`.
-- Main plugin version: `3.0.0`.
-- Prepared promotion baseline: exact release tag `v3.0.0`; moving `main` is not
+- Main plugin version: `3.0.1`.
+- Prepared promotion baseline: exact release tag `v3.0.1`; moving `main` is not
   stable release evidence.
 
 ## Key Directories
