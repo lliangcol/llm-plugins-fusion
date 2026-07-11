@@ -28,6 +28,7 @@ import {
 import { basename, dirname, extname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { requireOptionValue } from '../lib/cli-args.mjs';
+import { parseSemVer } from '../lib/semver.mjs';
 import { validateActivePlanningAndReports } from './rules/active-planning-and-reports.mjs';
 import { validateLinksAndCommandDocs } from './rules/links-and-command-docs.mjs';
 
@@ -227,50 +228,44 @@ function validateVersionReferences() {
   }
 
   const version = plugin.version;
+  const versionPattern = escapeRegExp(version);
   const updated = metadataEntry['last-updated'];
 
-  expectRegex('README.md', /version-(\d+\.\d+\.\d+)-blue\.svg/, version, 'version badge');
-  expectRegex('README.md', /<td>(\d+\.\d+\.\d+)<\/td>/, version, 'plugin version table value');
-  expectRegex(
+  expectContentRegex('README.md', new RegExp(`version-${versionPattern}-blue\\.svg`), 'version badge');
+  expectContentRegex('README.md', new RegExp(`<td>${versionPattern}<\\/td>`), 'plugin version table value');
+  expectContentRegex(
     'nova-plugin/docs/overview/README.en.md',
-    /version-(\d+\.\d+\.\d+)-blue\.svg/,
-    version,
+    new RegExp(`version-${versionPattern}-blue\\.svg`),
     'version badge',
   );
-  expectRegex(
+  expectContentRegex(
     'nova-plugin/docs/overview/README.en.md',
-    /<td>(\d+\.\d+\.\d+)<\/td>/,
-    version,
+    new RegExp(`<td>${versionPattern}<\\/td>`),
     'plugin version table value',
   );
-  expectRegex(
+  expectContentRegex(
     'nova-plugin/docs/guides/commands-reference-guide.md',
-    /\*\*版本\*\*:\s*(\d+\.\d+\.\d+)/,
-    version,
+    new RegExp(`\\*\\*版本\\*\\*:\\s*${versionPattern}`),
     'command reference version',
   );
-  expectRegex(
+  expectContentRegex(
     'nova-plugin/docs/guides/commands-reference-guide.en.md',
-    /\*\*Version\*\*:\s*(\d+\.\d+\.\d+)/,
-    version,
+    new RegExp(`\\*\\*Version\\*\\*:\\s*${versionPattern}`),
     'command reference version',
   );
-  expectRegex(
+  expectContentRegex(
     'docs/marketplace/portal-information-architecture.md',
-    /remains the current `v(\d+\.\d+\.\d+)` marketplace state/,
-    version,
+    new RegExp(`remains the current \`v${versionPattern}\` marketplace state`),
     'current portal boundary version',
   );
-  expectRegex(
+  expectContentRegex(
     'nova-plugin/docs/overview/README.en.md',
-    /current `v(\d+\.\d+\.\d+)` single-plugin boundary/,
-    version,
+    new RegExp(`current \`v${versionPattern}\` single-plugin boundary`),
     'English overview current portal version',
   );
-  expectRegex(
+  expectContentRegex(
     'nova-plugin/docs/architecture/hooks-design.md',
-    /当前 `(\d+\.\d+\.\d+)` 中仍未发布/,
-    version,
+    new RegExp(`当前 \`${versionPattern}\` 中仍未发布`),
     'hooks design current version',
   );
 
@@ -608,7 +603,15 @@ function validateProjectPositioningContracts() {
 
 function validateReleasePromotionContracts() {
   const plugin = readJson('nova-plugin/.claude-plugin/plugin.json');
-  const tag = `v${plugin.version}`;
+  const changelog = readFileSync(resolve(root, 'CHANGELOG.md'), 'utf8');
+  const latestStable = [...changelog.matchAll(/^## \[([^\]]+)\] - \d{4}-\d{2}-\d{2}$/gm)]
+    .map((match) => parseSemVer(match[1]))
+    .find((version) => version && !version.isPrerelease);
+  if (!latestStable) {
+    recordError('CHANGELOG.md', 'missing a stable SemVer release section for promotion baseline checks');
+    return;
+  }
+  const tag = `v${latestStable.version}`;
   const tagPattern = escapeRegExp(tag);
   const checks = [
     {
@@ -1630,6 +1633,9 @@ function validateAssetsContracts() {
 }
 
 function validateDeferredPortalIaContracts() {
+  const pluginVersionPattern = escapeRegExp(
+    readJson('nova-plugin/.claude-plugin/plugin.json').version,
+  );
   const checks = [
     {
       file: 'docs/marketplace/portal-information-architecture.md',
@@ -1648,7 +1654,9 @@ function validateDeferredPortalIaContracts() {
     },
     {
       file: 'docs/marketplace/portal-information-architecture.md',
-      pattern: /single-plugin portal preparation boundary was introduced in `v2\.2\.0`[\s\S]*remains the current `v\d+\.\d+\.\d+` marketplace state[\s\S]*does not require\s+a plugin path move or a public portal implementation[\s\S]*breaking multi-plugin\s+repository layout remains a future `v3\.0\.0` candidate/,
+      pattern: new RegExp('single-plugin portal preparation boundary was introduced in `v2\\.2\\.0`[\\s\\S]*remains the current `v'
+        + pluginVersionPattern
+        + '` marketplace state[\\s\\S]*does not require\\s+a plugin path move or a public portal implementation[\\s\\S]*breaking multi-plugin\\s+repository layout remains a future `v3\\.0\\.0` candidate'),
       label: 'portal IA historical and current single-plugin boundary',
     },
     {

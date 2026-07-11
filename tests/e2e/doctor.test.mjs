@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { runProcess } from '../../scripts/lib/process-runner.mjs';
+import { parseSemVer } from '../../scripts/lib/semver.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dir, '../..');
@@ -22,7 +23,10 @@ test('doctor reports stable maintainer diagnostics without hard-requiring option
   assert.match(result.stdout, /^(OK|WARN) Bash: /m);
   assert.match(result.stdout, /^(OK|WARN) Claude CLI: /m);
   assert.match(result.stdout, /^(OK|WARN) Codex CLI: /m);
-  assert.match(result.stdout, /^OK Package\/plugin version: package=\d+\.\d+\.\d+; plugin=\d+\.\d+\.\d+$/m);
+  const versionLine = result.stdout.match(/^OK Package\/plugin version: package=([^;]+); plugin=(\S+)$/m);
+  assert.ok(versionLine, 'doctor must report package and plugin versions');
+  assert.ok(parseSemVer(versionLine[1]), `invalid package SemVer: ${versionLine[1]}`);
+  assert.equal(versionLine[2], versionLine[1]);
   assert.match(result.stdout, /^(OK|WARN) Git working tree: /m);
   assert.match(result.stdout, /^(OK|WARN) Exact release tag: /m);
   assert.match(result.stdout, /^OK Generated registry drift: generated outputs are current$/m);

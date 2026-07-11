@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.4.0-rc.1] - 2026-07-11
+
 ### Added
 - 新增依赖为零的 SemVer 2.0.0 解析与安全 release metadata 准备脚本，
   支持 prerelease/build metadata，并避免 tag 或 step output 直接进入 shell。
@@ -582,7 +584,8 @@ must not replace the exact release tag as stable evidence.
 - MIT 开源协议
 - 中英双语 README 文档
 
-[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.4.0-rc.1...HEAD
+[2.4.0-rc.1]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.3.0...v2.4.0-rc.1
 [2.3.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.0.0...v2.1.0
