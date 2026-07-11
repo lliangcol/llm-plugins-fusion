@@ -9,13 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
-- Fix the OAuth release route smoke to pre-approve only the exact read-only
-  `Skill(nova-plugin:route)` wrapper and `Skill(nova-plugin:nova-route)`
-  compatibility implementation required under `dontAsk`, while continuing to
-  deny file edits and Bash. Release evidence now verifies the exact permission
-  policy, and failed route calls report safe structured diagnostics without
-  logging model transcripts or request arguments.
-
 ## [2.4.1] - 2026-07-11
 
 ### Added
@@ -56,6 +49,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - exact-tag 安装树 digest 仅在 installed tree 侧忽略 Claude 运行时生成的
   `.in_use/**` 锁标记，避免进程号导致跨平台误报；Claude 2.1.205 live smoke
   改用其声明支持的 Node.js 22。
+- OAuth route smoke 仅预授权只读的 `Skill(nova-plugin:route)` wrapper 和
+  `Skill(nova-plugin:nova-route)` 兼容实现，继续禁止文件编辑与 Bash；release
+  evidence 会拒绝偏离该权限策略的结果。
+- OAuth route smoke 在稳定 command wrapper 与 canonical headless system
+  prompt 中重复固定 `## Recommended Route` 七字段契约；release evidence 绑定
+  contract ID、prompt digest 与 turn limit，失败日志仅记录隐私安全的结构摘要。
 
 ## [2.4.0] - 2026-07-11
 

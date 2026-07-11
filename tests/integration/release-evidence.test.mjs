@@ -9,6 +9,7 @@ import {
   generateReleaseEvidence,
   renderReleaseEvidenceMarkdown,
 } from '../../scripts/generate-release-evidence.mjs';
+import { routeSystemPromptSha256 } from '../../scripts/validate-plugin-route-live.mjs';
 
 const coverageSummary = `ℹ tests 80
 ℹ pass 80
@@ -55,6 +56,9 @@ function fixtureInput() {
       permissionMode: 'dontAsk',
       allowedTools: ['Skill(nova-plugin:route)', 'Skill(nova-plugin:nova-route)'],
       disallowedTools: ['Write', 'Edit', 'NotebookEdit', 'Bash'],
+      outputContract: 'recommended-route-v1',
+      systemPromptSha256: routeSystemPromptSha256,
+      maxTurns: 5,
       outputStructureValid: true,
       projectChanged: false,
       gitStatus: '',
@@ -90,6 +94,9 @@ test('release evidence aggregates machine facts without raw model output', () =>
   assert.equal(evidence.route.authenticationMode, 'claude-code-oauth-token');
   assert.deepEqual(evidence.route.allowedTools, ['Skill(nova-plugin:route)', 'Skill(nova-plugin:nova-route)']);
   assert.deepEqual(evidence.route.disallowedTools, ['Write', 'Edit', 'NotebookEdit', 'Bash']);
+  assert.equal(evidence.route.outputContract, 'recommended-route-v1');
+  assert.match(evidence.route.systemPromptSha256, /^[a-f0-9]{64}$/);
+  assert.equal(evidence.route.maxTurns, 5);
   assert.match(renderReleaseEvidenceMarkdown(evidence), /OAuth route: passed with temporary-home isolation and zero project writes/);
 });
 
@@ -123,6 +130,9 @@ test('release evidence rejects skipped gates and inconsistent live inputs', () =
     (input) => { input.route.permissionMode = 'default'; },
     (input) => { input.route.allowedTools = ['Skill']; },
     (input) => { input.route.disallowedTools = ['Write']; },
+    (input) => { input.route.outputContract = 'wrong'; },
+    (input) => { input.route.systemPromptSha256 = 'd'.repeat(64); },
+    (input) => { input.route.maxTurns = 3; },
     (input) => { input.route.resultSha256 = ''; },
     (input) => { input.route.afterProjectDigest = 'd'.repeat(64); },
     (input) => { input.install.inventory.skills[2] = 'invented-skill'; },

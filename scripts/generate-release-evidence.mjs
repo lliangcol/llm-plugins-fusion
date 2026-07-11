@@ -11,6 +11,9 @@ import {
   loadRouteInventory,
   routeAllowedTools,
   routeDisallowedTools,
+  routeMaxTurns,
+  routeOutputContract,
+  routeSystemPromptSha256,
 } from './validate-plugin-route-live.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -166,6 +169,13 @@ export function buildReleaseEvidence({
     if (JSON.stringify(route.disallowedTools) !== JSON.stringify(routeDisallowedTools)) {
       throw new Error('route smoke does not use the exact write-tool deny policy');
     }
+    if (
+      route.outputContract !== routeOutputContract.id
+      || route.systemPromptSha256 !== routeSystemPromptSha256
+      || route.maxTurns !== routeMaxTurns
+    ) {
+      throw new Error('route smoke does not prove the canonical output contract configuration');
+    }
     if (route.invocation !== '/nova-plugin:route' || route.outputStructureValid !== true) {
       throw new Error('route smoke does not prove the required namespaced output structure');
     }
@@ -251,6 +261,9 @@ export function buildReleaseEvidence({
       permissionMode: route.permissionMode,
       allowedTools: route.allowedTools,
       disallowedTools: route.disallowedTools,
+      outputContract: route.outputContract,
+      systemPromptSha256: route.systemPromptSha256,
+      maxTurns: route.maxTurns,
       outputStructureValid: route.outputStructureValid,
       projectChanged: route.projectChanged,
       gitStatus: route.gitStatus,

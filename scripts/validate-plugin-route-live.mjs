@@ -19,6 +19,22 @@ import { captureProcess, runProcess } from './lib/process-runner.mjs';
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
 const fixedPrompt = '/nova-plugin:route REQUEST="Review a public README change before editing and recommend the next workflow." DEPTH=brief';
+export const routeOutputContract = Object.freeze({
+  id: 'recommended-route-v1',
+  heading: '## Recommended Route',
+  requiredFields: Object.freeze([
+    'Command:',
+    'Skill:',
+    'Core agent:',
+    'Capability packs:',
+    'Required inputs:',
+    'Validation expectations:',
+    'Fallback path:',
+  ]),
+});
+export const routeSystemPrompt = `This is an automated contract validation of an explicitly invoked /nova-plugin:route command. Follow the loaded route command and nova-route skill. The final response MUST start with exactly "${routeOutputContract.heading}" and then contain exactly these seven Markdown bullet labels in this order: ${routeOutputContract.requiredFields.join(' ')} Use no preface, alternate heading level, table, renamed field, or closing text. Fill every value using only the installed nova inventory.`;
+export const routeSystemPromptSha256 = sha256(routeSystemPrompt);
+export const routeMaxTurns = 5;
 export const routeAllowedTools = Object.freeze([
   'Skill(nova-plugin:route)',
   'Skill(nova-plugin:nova-route)',
@@ -71,20 +87,23 @@ export function loadRouteInventory(pluginDir, permissionSpec) {
 }
 
 export function validateRouteResult(result, routeInventory) {
-  const requiredFields = [
-    'Command:',
-    'Skill:',
-    'Core agent:',
-    'Capability packs:',
-    'Required inputs:',
-    'Validation expectations:',
-    'Fallback path:',
-  ];
-  if (!/## Recommended Route/.test(result)) {
-    throw new Error('route output is missing "## Recommended Route"');
+  const requiredFields = routeOutputContract.requiredFields;
+  const nonEmptyLines = result.split(/\r?\n/).filter((line) => line.trim());
+  if (nonEmptyLines[0] !== routeOutputContract.heading) {
+    throw new Error(`route output does not start with "${routeOutputContract.heading}"`);
   }
   for (const field of requiredFields) {
     if (!result.includes(field)) throw new Error(`route output is missing ${field}`);
+  }
+  if (nonEmptyLines.length !== requiredFields.length + 1) {
+    throw new Error('route output does not contain exactly the heading and seven field lines');
+  }
+  for (let index = 0; index < requiredFields.length; index += 1) {
+    const field = requiredFields[index];
+    const prefix = `- ${field}`;
+    const line = nonEmptyLines[index + 1].trim();
+    if (!line.startsWith(prefix)) throw new Error(`route output field order or label differs at ${field}`);
+    if (!line.slice(prefix.length).trim()) throw new Error(`route output ${field} value is empty`);
   }
   const commandField = fieldValue(result, 'Command:');
   const skillField = fieldValue(result, 'Skill:');
@@ -110,6 +129,34 @@ export function validateRouteResult(result, routeInventory) {
     packs,
     requiredFields,
   };
+}
+
+export function routeOutputShape(result) {
+  const text = typeof result === 'string' ? result : '';
+  return {
+    bytes: Buffer.byteLength(text, 'utf8'),
+    lines: text ? text.split(/\r?\n/).length : 0,
+    sha256: sha256(text),
+    startsWithRequiredHeading: text.startsWith(routeOutputContract.heading),
+    requiredFieldsPresent: routeOutputContract.requiredFields.filter((field) => text.includes(field)),
+    namespacedCommandCount: [...text.matchAll(/\/nova-plugin:[a-z0-9]+(?:-[a-z0-9]+)*/g)].length,
+  };
+}
+
+export function routeValidationFailureCode(error) {
+  const message = String(error?.message ?? error);
+  if (message.includes('does not start with')) return 'heading';
+  if (message.includes('exactly the heading and seven field lines')) return 'line-count';
+  if (message.includes('field order or label differs')) return 'field-layout';
+  if (message.includes('value is empty')) return 'empty-field-value';
+  if (message.includes('is missing')) return 'required-field';
+  if (message.includes('namespaced nova-plugin command')) return 'command-format';
+  if (message.includes('invented command')) return 'command-inventory';
+  if (message.includes('invented skill')) return 'skill-inventory';
+  if (message.includes('invented core agent')) return 'agent-inventory';
+  if (message.includes('invented capability pack')) return 'pack-inventory';
+  if (message.includes(' is empty')) return 'empty-inventory-field';
+  return 'unknown';
 }
 
 function snapshotEntries(rootDir, current = rootDir) {
@@ -176,8 +223,10 @@ export function routeInvocationArgs(pluginDir) {
     fixedPrompt,
     '--output-format',
     'json',
+    '--append-system-prompt',
+    routeSystemPrompt,
     '--max-turns',
-    '3',
+    String(routeMaxTurns),
     '--permission-mode',
     'dontAsk',
     '--allowedTools',
@@ -258,7 +307,12 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       throw new Error(`route output was not JSON: ${error.message}`);
     }
     if (typeof response.result !== 'string') throw new Error('route JSON output is missing result text');
-    const validation = validateRouteResult(response.result, routeInventory);
+    let validation;
+    try {
+      validation = validateRouteResult(response.result, routeInventory);
+    } catch (error) {
+      throw new Error(`route output failed ${routeValidationFailureCode(error)} validation; outputShape=${JSON.stringify(routeOutputShape(response.result))}`);
+    }
     const afterStatus = await gitStatus(project, routeEnv);
     const afterProject = projectSnapshot(project);
     const afterDigest = sha256(readFileSync(resolve(project, 'README.md')));
@@ -279,6 +333,9 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       permissionMode: 'dontAsk',
       allowedTools: routeAllowedTools,
       disallowedTools: routeDisallowedTools,
+      outputContract: routeOutputContract.id,
+      systemPromptSha256: routeSystemPromptSha256,
+      maxTurns: routeMaxTurns,
       outputStructureValid: true,
       commands: validation.commandMatches,
       skills: validation.skills,
