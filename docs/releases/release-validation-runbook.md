@@ -80,6 +80,12 @@ an explicit installed `--plugin-dir`. The gate fails when `ANTHROPIC_API_KEY`,
 `ANTHROPIC_AUTH_TOKEN`, or a Bedrock, Vertex, or Foundry selection variable is
 also present, so release evidence cannot silently use a higher-precedence
 credential.
+With `dontAsk`, the gate pre-approves only the exact read-only pair
+`Skill(nova-plugin:route)` and `Skill(nova-plugin:nova-route)`: the stable
+command wrapper and its compatibility implementation. `Write`, `Edit`,
+`NotebookEdit`, and `Bash` remain explicitly denied. Release evidence records
+and validates this exact allow/deny policy instead of treating `dontAsk` as
+sufficient by itself.
 The route evidence compares the complete temporary worktree inventory, including
 file content hashes, symlinks, and directories outside `.git`, before and after
 the model call. It also requires an unchanged Git status and validates every

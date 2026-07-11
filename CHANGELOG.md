@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+- Fix the OAuth release route smoke to pre-approve only the exact read-only
+  `Skill(nova-plugin:route)` wrapper and `Skill(nova-plugin:nova-route)`
+  compatibility implementation required under `dontAsk`, while continuing to
+  deny file edits and Bash. Release evidence now verifies the exact permission
+  policy, and failed route calls report safe structured diagnostics without
+  logging model transcripts or request arguments.
+
 ## [2.4.1] - 2026-07-11
 
 ### Added

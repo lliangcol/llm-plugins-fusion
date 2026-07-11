@@ -7,7 +7,11 @@ import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseCoverageSummary } from './lib/coverage-thresholds.mjs';
 import { requireOptionValue } from './lib/cli-args.mjs';
-import { loadRouteInventory } from './validate-plugin-route-live.mjs';
+import {
+  loadRouteInventory,
+  routeAllowedTools,
+  routeDisallowedTools,
+} from './validate-plugin-route-live.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
@@ -153,6 +157,15 @@ export function buildReleaseEvidence({
     if (route.configurationIsolation !== 'temporary-home') {
       throw new Error('route smoke does not prove temporary-home configuration isolation');
     }
+    if (route.permissionMode !== 'dontAsk') {
+      throw new Error('route smoke does not prove dontAsk permission mode');
+    }
+    if (JSON.stringify(route.allowedTools) !== JSON.stringify(routeAllowedTools)) {
+      throw new Error('route smoke does not use the exact route Skill preapprovals');
+    }
+    if (JSON.stringify(route.disallowedTools) !== JSON.stringify(routeDisallowedTools)) {
+      throw new Error('route smoke does not use the exact write-tool deny policy');
+    }
     if (route.invocation !== '/nova-plugin:route' || route.outputStructureValid !== true) {
       throw new Error('route smoke does not prove the required namespaced output structure');
     }
@@ -235,6 +248,9 @@ export function buildReleaseEvidence({
       invocation: route.invocation,
       authenticationMode: route.authenticationMode,
       configurationIsolation: route.configurationIsolation,
+      permissionMode: route.permissionMode,
+      allowedTools: route.allowedTools,
+      disallowedTools: route.disallowedTools,
       outputStructureValid: route.outputStructureValid,
       projectChanged: route.projectChanged,
       gitStatus: route.gitStatus,
