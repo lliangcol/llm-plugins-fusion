@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "source": "nova-plugin/runtime/workflow-permissions.json",
+  "source": "workflow-specs/workflows.json",
   "pluginNamespace": "nova-plugin",
   "knownGoodClaudeCli": "2.1.205",
   "expectedCombinedSkillCount": 42,
@@ -70,7 +70,7 @@
       "permissionPromptTools": [
         "Bash"
       ],
-      "compatibility": "Requires Node.js 20+, Bash 3.2+, an authenticated Codex CLI, and network access for the external review/fix/verify loop."
+      "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access for the external review/fix/verify loop."
     },
     {
       "surface": "skill",
@@ -93,7 +93,7 @@
       "permissionPromptTools": [
         "Bash"
       ],
-      "compatibility": "Requires Node.js 20+, Bash 3.2+, an authenticated Codex CLI, and network access for the external review/fix/verify loop."
+      "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access for the external review/fix/verify loop."
     },
     {
       "surface": "command",
@@ -116,7 +116,7 @@
       "permissionPromptTools": [
         "Bash"
       ],
-      "compatibility": "Requires Node.js 20+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved."
+      "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved."
     },
     {
       "surface": "skill",
@@ -139,7 +139,7 @@
       "permissionPromptTools": [
         "Bash"
       ],
-      "compatibility": "Requires Node.js 20+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved."
+      "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved."
     },
     {
       "surface": "command",
@@ -162,7 +162,7 @@
       "permissionPromptTools": [
         "Bash"
       ],
-      "compatibility": "Requires Node.js 20+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved."
+      "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved."
     },
     {
       "surface": "skill",
@@ -185,7 +185,7 @@
       "permissionPromptTools": [
         "Bash"
       ],
-      "compatibility": "Requires Node.js 20+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved."
+      "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved."
     },
     {
       "surface": "command",

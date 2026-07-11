@@ -1,0 +1,6 @@
+{
+  "workflow": "review-only",
+  "requiredInputs": ["REVIEW_SCOPE"],
+  "workspaceWrite": false,
+  "shell": "denied"
+}

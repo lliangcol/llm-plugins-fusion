@@ -8,19 +8,19 @@ allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash
 user-invocable: true
 disable-model-invocation: false
-invokes:
-  skill: nova-explore
 ---
 
 # /nova-plugin:explore
 
-Invoke `nova-explore` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-explore` through the Skill tool.
 
-This is the unified exploration slash entry. The skill is the source of truth for parameter resolution, execution rules, output format, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-explore/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: explore
+- Owner agents: orchestrator, reviewer
+- Required inputs: `INPUT`
+- Output contract: `exploration-v2`
+- Risk: none
+- Recommended packs: None
 
-- Use `PERSPECTIVE=observer|reviewer` to route the exploration style.
-- Use `DEPTH=normal|deep` when depth needs to be explicit.
-- Compatibility entries remain available: `/nova-plugin:explore-lite`, `/nova-plugin:explore-review`, and `/nova-plugin:senior-explore`.
-- Exploration is read-only and must not design or implement fixes.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

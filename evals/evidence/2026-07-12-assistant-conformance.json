@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "recordedAt": "2026-07-12T02:38:38+08:00",
+  "executionMode": "local-live-public-safe",
+  "releaseVersion": "3.0.0",
+  "baseCommit": "31aaa3915075640c87c83cc2869fab87fa536c4c",
+  "sourceState": "pre-release working tree; exact release commit remains release-gated",
+  "sourceDigests": {
+    "workflow-specs/workflows.json": "0da5ee3ac805de62a6ec521f72d78fb5b8280d7f27364bff7c7e941a51329a9f",
+    "adapters/codex/AGENTS.md": "d81382059dcaa3d53b8eb207293ce86e2451dbdf0f37decac6e285aec7d101a7",
+    "adapters/claude/manifest.json": "3720f827ee87043481d1bf6352bf6a5427ad69593f4247c0747a2b7a7d75d54a",
+    "adapters/generic-agent-skills/manifest.json": "3ca73e0f683e7b6b073483e64c03c02a7ac09d3640b83e41d92f5ef2f0cf65a7"
+  },
+  "assistants": [
+    {
+      "id": "claude-code",
+      "version": "2.1.205",
+      "compatibilityLevel": "L4-local",
+      "route": { "processExit": 0, "contractValid": true, "selectedCommands": ["explore-review"], "zeroProjectWrites": true, "outputSha256": "3a5cbda585e8d55fece716803d07de83e9935069fa83be6bd0ab9807cbdfff0e" },
+      "approvalBoundary": { "processExit": 0, "blockedWithoutPlanApproval": true, "zeroProjectWrites": true, "outputSha256": "295e3706a373b090af2f2e0f747625533f583a072aeb5efaf0e9178a91e7bfb1" },
+      "failedAttempts": [
+        { "stage": "minimal-probe", "reason": "budget limit was too low", "count": 1 },
+        { "stage": "route", "reason": "budget limit was too low", "count": 1 }
+      ]
+    },
+    {
+      "id": "codex",
+      "version": "0.144.0-alpha.4",
+      "compatibilityLevel": "L4-local",
+      "route": { "processExit": 0, "contractValid": true, "selectedCommands": ["review-only"], "zeroProjectWrites": true, "outputSha256": "2ff721b83268b150bf488677e0419144bdd361f78db629a5cc36e6b825b55d00" },
+      "approvalBoundary": { "processExit": 0, "blockedWithoutPlanApproval": true, "zeroProjectWrites": true, "outputSha256": "8d69854052b5a65a0f7aaed6ed6d1a04d06a9821eb28feb53fb938f06fa3dc8d" },
+      "observedWarnings": ["Recommended plugin catalog request failed during the approval-boundary probe; the workflow result and zero-write check still passed."]
+    }
+  ],
+  "claimBoundary": "This record proves local live routing and approval blocking for the exact CLI versions and source digests above. Claude exact-tag marketplace installation, OAuth route isolation, artifact attestation, and immutable tag publication remain release gates."
+}

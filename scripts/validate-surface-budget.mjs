@@ -19,7 +19,7 @@ const SURFACES = [
   {
     label: 'command',
     dir: 'nova-plugin/commands',
-    budget: 120,
+    budget: { lines: 120, bytes: 12_000, tokens: 3_000, maxParagraph: 3_000, duplicateRatio: 0.2 },
     files: (dir) => readdirSync(dir)
       .filter((file) => file.endsWith('.md'))
       .map((file) => resolve(dir, file)),
@@ -27,7 +27,7 @@ const SURFACES = [
   {
     label: 'skill',
     dir: 'nova-plugin/skills',
-    budget: 300,
+    budget: { lines: 300, bytes: 14_000, tokens: 3_500, maxParagraph: 4_000, duplicateRatio: 0.3 },
     files: (dir) => readdirSync(dir, { withFileTypes: true })
       .filter((entry) => entry.isDirectory() && entry.name.startsWith('nova-'))
       .map((entry) => resolve(dir, entry.name, 'SKILL.md'))
@@ -36,7 +36,7 @@ const SURFACES = [
   {
     label: 'agent',
     dir: 'nova-plugin/agents',
-    budget: 250,
+    budget: { lines: 250, bytes: 16_000, tokens: 4_000, maxParagraph: 4_000, duplicateRatio: 0.3 },
     files: (dir) => readdirSync(dir)
       .filter((file) => file.endsWith('.md'))
       .map((file) => resolve(dir, file)),
@@ -44,7 +44,7 @@ const SURFACES = [
   {
     label: 'pack',
     dir: 'nova-plugin/packs',
-    budget: 220,
+    budget: { lines: 220, bytes: 18_000, tokens: 4_500, maxParagraph: 5_000, duplicateRatio: 0.35 },
     files: (dir) => [
       resolve(dir, 'README.md'),
       ...readdirSync(dir, { withFileTypes: true })
@@ -58,10 +58,21 @@ function rel(absPath) {
   return relative(root, absPath).split(sep).join('/');
 }
 
-function lineCount(absPath) {
+function surfaceMetrics(absPath) {
   const content = readFileSync(absPath, 'utf8');
-  if (!content) return 0;
-  return content.replace(/\r\n/g, '\n').split('\n').length - (content.endsWith('\n') ? 1 : 0);
+  const paragraphs = content.split(/\r?\n\s*\r?\n/)
+    .map((value) => value.replace(/\s+/g, ' ').trim())
+    .filter((value) => value.length >= 40);
+  const counts = new Map();
+  for (const paragraph of paragraphs) counts.set(paragraph, (counts.get(paragraph) ?? 0) + 1);
+  const duplicateCount = [...counts.values()].reduce((sum, count) => sum + Math.max(0, count - 1), 0);
+  return {
+    lines: content ? content.replace(/\r\n/g, '\n').split('\n').length - (content.endsWith('\n') ? 1 : 0) : 0,
+    bytes: Buffer.byteLength(content),
+    tokens: Math.ceil(content.length / 4),
+    maxParagraph: paragraphs.reduce((max, value) => Math.max(max, value.length), 0),
+    duplicateRatio: paragraphs.length ? duplicateCount / paragraphs.length : 0,
+  };
 }
 
 function loadAllowlist() {
@@ -73,14 +84,25 @@ function loadAllowlist() {
   for (const entry of entries) {
     if (
       typeof entry?.path !== 'string'
-      || !Number.isInteger(entry?.limit)
-      || entry.limit <= 0
+      || typeof entry?.limits !== 'object'
       || typeof entry?.reason !== 'string'
       || !entry.reason.trim()
       || typeof entry?.splitPlan !== 'string'
       || !entry.splitPlan.trim()
+      || typeof entry?.owner !== 'string'
+      || !entry.owner.trim()
+      || typeof entry?.issue !== 'string'
+      || !entry.issue.trim()
+      || !/^\d{4}-\d{2}-\d{2}$/.test(entry?.reviewDate ?? '')
+      || !/^\d{4}-\d{2}-\d{2}$/.test(entry?.expiresAt ?? '')
     ) {
-      throw new Error('surface-budget allowlist entries require path, positive integer limit, reason, and splitPlan');
+      throw new Error('surface-budget allowlist entries require path, limits, reason, splitPlan, owner, issue, reviewDate, and expiresAt');
+    }
+    if (Date.parse(`${entry.expiresAt}T23:59:59Z`) < Date.now()) throw new Error(`${entry.path}: surface-budget override expired ${entry.expiresAt}`);
+    for (const [metric, limit] of Object.entries(entry.limits)) {
+      if (!(metric in SURFACES[0].budget) || typeof limit !== 'number' || limit <= 0) {
+        throw new Error(`${entry.path}: invalid surface-budget override ${metric}`);
+      }
     }
     map.set(entry.path.replace(/\\/g, '/'), entry);
   }
@@ -101,15 +123,18 @@ function validate() {
     }
     for (const file of surface.files(dir)) {
       const path = rel(file);
-      const lines = lineCount(file);
+      const metrics = surfaceMetrics(file);
       const override = allowlist.get(path);
-      const limit = override?.limit ?? surface.budget;
+      const limits = { ...surface.budget, ...(override?.limits ?? {}) };
       checked += 1;
 
-      if (lines > limit) {
-        errors.push(`${path}: ${lines} lines exceeds ${surface.label} budget ${limit}`);
-      } else if (override && lines > surface.budget) {
-        warnings.push(`${path}: ${lines} lines exceeds default ${surface.budget} but is allowlisted to ${limit} (${override.reason})`);
+      for (const [metric, limit] of Object.entries(limits)) {
+        if (metrics[metric] > limit) {
+          const actual = metric === 'duplicateRatio' ? metrics[metric].toFixed(3) : metrics[metric];
+          errors.push(`${path}: ${metric} ${actual} exceeds ${surface.label} budget ${limit}`);
+        } else if (override?.limits?.[metric] && metrics[metric] > surface.budget[metric]) {
+          warnings.push(`${path}: ${metric} exceeds the default but is temporarily allowlisted (${override.owner}, ${override.issue}, expires ${override.expiresAt})`);
+        }
       }
     }
   }

@@ -17,8 +17,11 @@ tag or publishing release notes.
 - Stable promotion targets must be exact release tags. A moving `main` branch,
   especially one with `CHANGELOG.md` `Unreleased` content, is an unreleased
   development snapshot rather than stable release material.
-- Do not create, overwrite, delete, or push public tags without explicit
-  maintainer approval.
+- Public SemVer tags are immutable. Never overwrite, delete, reuse, or move an
+  existing `v*` tag, including with maintainer approval; publish a new patch
+  version instead.
+- Release tags must be signed annotated tags created by the designated release
+  actor and verified against `.github/release-signers`.
 - A changelog release section is required before publishing a release.
 - Unreleased local work may stay under `CHANGELOG.md` `Unreleased` until the
   maintainer decides the release version and date.

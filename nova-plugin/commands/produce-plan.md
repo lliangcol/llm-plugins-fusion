@@ -8,18 +8,19 @@ allowed-tools: Read Glob Grep Write Edit
 disallowed-tools: NotebookEdit Bash
 user-invocable: true
 disable-model-invocation: true
-invokes:
-  skill: nova-produce-plan
 ---
 
 # /nova-plugin:produce-plan
 
-Invoke `nova-produce-plan` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-produce-plan` through the Skill tool.
 
-This is the formal plan artifact entry. The skill is the source of truth for parameter resolution, execution rules, output format, artifact policy, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-produce-plan/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: plan
+- Owner agents: architect
+- Required inputs: `REQUEST`, `PLAN_OUTPUT_PATH`
+- Output contract: `produce-plan-v2`
+- Risk: low
+- Recommended packs: docs
 
-- Requires explicit `PLAN_OUTPUT_PATH` before writing.
-- Uses `PLAN_PROFILE=general` by default; `PLAN_PROFILE=java-backend` selects the backend profile.
-- `/nova-plugin:backend-plan` remains the Java/Spring compatibility shortcut.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

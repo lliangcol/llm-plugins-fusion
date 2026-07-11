@@ -8,19 +8,19 @@ allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit
 user-invocable: true
 disable-model-invocation: true
-invokes:
-  skill: nova-codex-review-only
 ---
 
 # /nova-plugin:codex-review-only
 
-Invoke `nova-codex-review-only` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-codex-review-only` through the Skill tool.
 
-This is the Codex review-only slash entry. The skill is the source of truth for parameter resolution, script invocation, artifact policy, output format, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-only/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: review
+- Owner agents: reviewer
+- Required inputs: `REVIEW_SCOPE`
+- Output contract: `codex-review-only-v2`
+- Risk: low
+- Recommended packs: None
 
-- Runs the review script only and writes review artifacts.
-- Supports `REVIEW_MODE=branch|staged|full`, optional `BASE`, and optional `OUTPUT_DIR`.
-- Must not modify project code or enter the fix loop.
-- Declares low artifact risk because it runs Bash and writes `.codex` review artifacts.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

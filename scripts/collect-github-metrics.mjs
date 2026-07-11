@@ -57,7 +57,7 @@ responses are recorded as skipped and do not fail the script.`);
 function assertNode20() {
   const major = Number(process.versions.node.split('.')[0]);
   if (!Number.isInteger(major) || major < 20) {
-    throw new Error(`Node.js 20+ is required; current version is ${process.versions.node}`);
+    throw new Error(`Node.js 22+ is required; current version is ${process.versions.node}`);
   }
 }
 

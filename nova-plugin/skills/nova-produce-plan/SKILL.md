@@ -14,65 +14,23 @@ metadata:
 argument-hint: "Example: produce-plan PLAN_OUTPUT_PATH=docs/plans/refund.md PLAN_INTENT=Fix idempotency PLAN_PROFILE=general"
 ---
 
-## Inputs
+## Shared Execution Policy
 
-| Parameter | Required | Default | Notes |
-| --- | --- | --- | --- |
-| `PLAN_OUTPUT_PATH` | Yes | None | Safety-boundary output file for the plan. |
-| `PLAN_INTENT` | Yes | Remaining payload | Goal the plan is intended to achieve. |
-| `PLAN_PROFILE` | No | general | general or java-backend. |
-| `ANALYSIS_INPUTS` | Recommended | None | Prior exploration or analysis artifacts. |
-| `CONSTRAINTS` | No | None | Technical, delivery, compatibility, or operational boundaries. |
+This file is the supporting behavioral contract for `/nova-plugin:produce-plan` and the deprecated `/nova-plugin:nova-produce-plan` compatibility entrypoint. Prefer the direct command; the compatibility name remains only for the current major-version migration window.
 
-## Parameter Resolution
+- Resolve natural-language and explicit `KEY=value` inputs using `../_shared/parameter-resolution.md`; explicit non-conflicting values take precedence.
+- Apply `../_shared/safety-preflight.md` before side effects. Never infer approval, destructive scope, credentials, or output destinations.
+- Follow `../_shared/output-contracts.md` and `../_shared/artifact-policy.md`; report completed, skipped, and blocked validation truthfully.
+- Respect the frontmatter tool boundary. Missing inputs, unavailable dependencies, overlapping user changes, or repository-policy conflicts are blockers rather than permission to broaden scope.
 
-- Parse natural-language payload, explicit `KEY=value`, `--flag value`, and `--flag=value` forms from `$ARGUMENTS`.
-- Normalize parameter names to uppercase snake case and map known mode words before assigning remaining text to `PLAN_INTENT`.
-- Explicit values win over inferred values only when they do not conflict with another explicit value.
-- Apply documented defaults only when unambiguous; probe Git status, base branches, and latest artifacts only for context parameters.
-- Safety-boundary parameters for this skill: `PLAN_OUTPUT_PATH`.
-- In non-interactive mode, fail before side effects when required or safety-boundary parameters are missing.
-- Full policy: `nova-plugin/skills/_shared/parameter-resolution.md`.
+## Execution
 
-## Safety Preflight
+1. Parse `$ARGUMENTS` against the workflow-specific inputs below.
+2. Read only the context required for the requested scope.
+3. Apply the workflow contract and its strict output format.
+4. Stop before unauthorized side effects; otherwise validate in proportion to risk and report residual risk.
 
-- This skill declares side-effect-capable tools: `Write`, `Edit`.
-- Resolve parameters and present a preflight card before writing artifacts, editing project files, or running Bash.
-- Show files or artifacts that may be written, scripts or commands that may run, disallowed operations, and the proceed condition.
-- Do not infer missing safety-boundary values; ask once in interactive mode or fail in non-interactive mode.
-- Preserve repository constraints: no destructive Git cleanup, no branch deletion, no push/merge/rebase, no editing archived agents as active agents.
-- Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.
-
-## Outputs
-
-- Follow the skill-specific output rules below and the shared output contract.
-- For written artifacts, report the path and a short executive summary instead of pasting the full artifact into chat.
-- For reviews and verification, lead with findings or verdicts and state residual risk.
-- Full policy: `nova-plugin/skills/_shared/output-contracts.md`.
-- Artifact policy: `nova-plugin/skills/_shared/artifact-policy.md`.
-
-## Workflow
-
-1. Resolve parameters using the shared policy and this skill's input table.
-2. Read only the context needed for the requested scope.
-3. Apply the skill-specific guidance and migrated slash command contract below.
-4. Respect safety preflight before any side effects.
-5. Produce the required output and report validation or skipped validation honestly.
-
-## Failure Modes
-
-- Required payload is missing or ambiguous.
-- A safety-boundary parameter is missing, conflicting, or unsafe to infer.
-- Required files, scripts, CLIs, credentials, or runtime dependencies are unavailable.
-- Existing user changes overlap the intended write scope and cannot be merged safely.
-- Repository policy conflicts with the requested action.
-
-## Examples
-
-- Use `/nova-plugin:produce-plan` to write a formal plan artifact.
-- Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
-
-## Skill-Specific Guidance
+## Workflow Contract
 
 ### Purpose
 
@@ -110,9 +68,7 @@ Generate review-ready design/plan documentation based on intent and constraints.
 - Design only, no code change.
 - Stop when required fields are missing.
 
-## Migrated Slash Command Contract
-
-Migrated from the pre-thin slash command contract for `/nova-plugin:produce-plan` (`nova-plugin/commands/produce-plan.md`).
+## Detailed Contract
 
 ### DESIGN CHECKPOINT
 
@@ -142,7 +98,7 @@ From `$ARGUMENTS`, extract the following:
 #### 1. Plan Output Path (Required)
 
 PLAN_OUTPUT_PATH:
-$PLAN_OUTPUT_PATH
+<PLAN_OUTPUT_PATH>
 
 If `PLAN_OUTPUT_PATH` is missing:
 
@@ -162,7 +118,7 @@ Choose the plan document profile/template:
 If not specified, use `general` profile.
 
 PLAN_PROFILE:
-$PLAN_PROFILE
+<PLAN_PROFILE>
 
 ---
 
@@ -178,7 +134,7 @@ Examples:
 - Introduce a new technical capability
 
 PLAN_INTENT:
-$PLAN_INTENT
+<PLAN_INTENT>
 
 ---
 
@@ -188,7 +144,7 @@ Reference one or more prior analysis artifacts
 (e.g. produced by `/nova-plugin:senior-explore`).
 
 ANALYSIS_INPUTS:
-$ANALYSIS_INPUTS
+<ANALYSIS_INPUTS>
 
 If no analysis is provided:
 
@@ -209,7 +165,7 @@ Examples:
 - Operational or compliance constraints
 
 CONSTRAINTS:
-$CONSTRAINTS
+<CONSTRAINTS>
 
 ---
 

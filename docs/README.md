@@ -34,6 +34,7 @@ knowledge-base content in the consumer-owned workspace.
 | Adopt `nova-plugin` in a private project | [consumers/README.md](consumers/README.md) |
 | Maintain repository checks and release gates | [maintainers/quickstart.md](maintainers/quickstart.md) |
 | Understand public compatibility boundaries | [compatibility/public-api.md](compatibility/public-api.md) |
+| Understand assistant L1-L4 evidence claims | [compatibility/assistant-levels.md](compatibility/assistant-levels.md) |
 | Choose a nova command or inspect plugin docs | [../nova-plugin/docs/README.md](../nova-plugin/docs/README.md) |
 | Understand core agents and capability pack routing | [agents/ROUTING.md](agents/ROUTING.md) |
 | Reuse public-safe workflow prompts | [prompts/README.md](prompts/README.md) |
@@ -151,6 +152,7 @@ docs/
 | Document | Purpose |
 | --- | --- |
 | [compatibility/public-api.md](compatibility/public-api.md) | Stable commands, plugin identifiers, validation CLIs, generated file contracts, and breaking-change triggers. |
+| [compatibility/assistant-levels.md](compatibility/assistant-levels.md) | Evidence definitions for parseable, invocable, enforced, and verified assistant adapters. |
 
 ### Maintainers
 
@@ -169,6 +171,7 @@ docs/
 | [marketplace/registry-author-workflow.md](marketplace/registry-author-workflow.md) | Author workflow for registry and marketplace entry maintenance. |
 | [marketplace/compatibility-matrix.md](marketplace/compatibility-matrix.md) | Compatibility matrix for Claude Code, Codex CLI, Bash, Node.js, and optional tools. |
 | [migrations/2.4.1-command-namespace.md](migrations/2.4.1-command-namespace.md) | 2.4.1 namespaced invocation and 42-item dual-surface migration. |
+| [migrations/3.0.0-adapters-and-direct-commands.md](migrations/3.0.0-adapters-and-direct-commands.md) | Node.js 22, direct command adapters, canonical workflow generation, and compatibility alias migration. |
 | [marketplace/trust-policy.md](marketplace/trust-policy.md) | Trust, risk, deprecation, freshness, maintainer, and review metadata policy. |
 | [marketplace/security-review-route.md](marketplace/security-review-route.md) | Security-sensitive marketplace change review route. |
 | [marketplace/portal-information-architecture.md](marketplace/portal-information-architecture.md) | Deferred public portal information architecture. |
@@ -202,6 +205,8 @@ docs/
 | --- | --- |
 | [releases/release-evidence-template.md](releases/release-evidence-template.md) | Release or promotion evidence template. |
 | [releases/release-validation-runbook.md](releases/release-validation-runbook.md) | Manual runbook for exact tag, isolated install smoke, workflow evaluation, and promotion decisions. |
+| [releases/3.0.0-notes.md](releases/3.0.0-notes.md) | Prepared release notes and transparent v2.4.1 tag-history disclosure. |
+| [releases/3.0.0-audit-closure.md](releases/3.0.0-audit-closure.md) | Audit finding closure matrix, intentional hook exception, and remaining external publication gates. |
 | [releases/release-hygiene.md](releases/release-hygiene.md) | Version, tag, generated artifact, and pre-release hygiene rules. |
 
 ### Showcase

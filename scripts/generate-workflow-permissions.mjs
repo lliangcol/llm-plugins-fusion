@@ -7,9 +7,13 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
-const sourcePath = 'nova-plugin/runtime/workflow-permissions.json';
+const sourcePath = 'workflow-specs/workflows.json';
+const runtimePath = 'nova-plugin/runtime/workflow-permissions.json';
+const routeContractPath = 'nova-plugin/runtime/route-output-contract.json';
 const generatedJson = 'docs/generated/effective-permissions.json';
 const generatedMarkdown = 'docs/generated/effective-permissions.md';
+const workflowCatalogJson = 'docs/generated/workflow-catalog.json';
+const workflowCatalogMarkdown = 'docs/generated/workflow-catalog.md';
 const managedFields = new Set([
   'allowed-tools',
   'disallowed-tools',
@@ -17,6 +21,7 @@ const managedFields = new Set([
   'disable-model-invocation',
   'compatibility',
   'metadata',
+  'invokes',
 ]);
 
 function usage() {
@@ -25,6 +30,37 @@ function usage() {
 
 function loadSpec(root) {
   return JSON.parse(readFileSync(resolve(root, sourcePath), 'utf8'));
+}
+
+export function buildRuntimePermissionSpec(spec) {
+  const commandIds = spec.workflows.map((workflow) => workflow.id).sort();
+  return {
+    $schema: '../../schemas/workflow-permissions.schema.json',
+    schemaVersion: 1,
+    pluginNamespace: spec.pluginNamespace,
+    knownGoodClaudeCli: spec.knownGoodClaudeCli,
+    primaryEntrypoints: spec.primaryEntrypoints,
+    toolVocabulary: spec.toolVocabulary,
+    expectedInventory: {
+      combinedSkillCount: commandIds.length * 2,
+      commandIds,
+      skillNames: commandIds.map((id) => `nova-${id}`),
+    },
+    workflows: spec.workflows.map((workflow) => {
+      const profile = spec.permissionProfiles[workflow.permissionProfile];
+      if (!profile) throw new Error(`unknown permission profile ${workflow.permissionProfile} for ${workflow.id}`);
+      return {
+        id: workflow.id,
+        destructiveActions: workflow.risk,
+        modelInvocable: workflow.modelInvocable,
+        subagentSafe: workflow.subagentSafe,
+        allowedTools: profile.allowedTools,
+        disallowedTools: profile.disallowedTools,
+        capabilities: profile.capabilities,
+        ...(workflow.compatibility ? { compatibility: workflow.compatibility } : {}),
+      };
+    }),
+  };
 }
 
 function splitFrontmatter(source, relPath) {
@@ -77,7 +113,12 @@ function managedLines(workflow, kind) {
   return lines;
 }
 
-function renderSurface(root, workflow, kind) {
+function commandBody(spec, workflow) {
+  const requiredInputs = workflow.requiredInputs.length ? workflow.requiredInputs.map((input) => `\`${input}\``).join(', ') : 'None';
+  return `\n# /${spec.pluginNamespace}:${workflow.id}\n\nExecute this workflow directly from \`$ARGUMENTS\`. Do not invoke the compatibility skill \`${workflow.legacyAlias}\` through the Skill tool.\n\nBefore answering, use Read to load \`\${CLAUDE_PLUGIN_ROOT}/${workflow.contractPath}\` as the supporting behavioral contract, then apply it directly.\n\n- Stage: ${workflow.stage}\n- Owner agents: ${workflow.ownerAgents.join(', ')}\n- Required inputs: ${requiredInputs}\n- Output contract: \`${workflow.outputContract}\`\n- Risk: ${workflow.risk}\n- Recommended packs: ${workflow.recommendedPacks.join(', ') || 'None'}\n\nPreserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.\n`;
+}
+
+function renderSurface(root, spec, workflow, kind) {
   const relPath = kind === 'command'
     ? `nova-plugin/commands/${workflow.id}.md`
     : `nova-plugin/skills/nova-${workflow.id}/SKILL.md`;
@@ -85,7 +126,7 @@ function renderSurface(root, workflow, kind) {
   const { frontmatter, body } = splitFrontmatter(source, relPath);
   let lines = removeManagedFields(frontmatter);
   lines = insertAfter(lines, kind === 'command' ? 'destructive-actions' : 'license', managedLines(workflow, kind));
-  return { relPath, content: `---\n${lines.join('\n')}\n---\n${body}` };
+  return { relPath, content: `---\n${lines.join('\n')}\n---\n${kind === 'command' ? commandBody(spec, workflow) : body}` };
 }
 
 function invocation(namespace, workflow, kind) {
@@ -129,8 +170,51 @@ function renderMarkdown(report) {
   return `# Effective Permissions\n\nStatus: generated\n\nGenerated from \`${sourcePath}\` by \`node scripts/generate-workflow-permissions.mjs --write\`. \`allowed-tools\` are pre-approvals, not a complete whitelist.\n\n- Known-good Claude CLI: \`${report.knownGoodClaudeCli}\`\n- Expected installed Skills: ${report.expectedCombinedSkillCount}\n\n| Invocation | Visibility | Risk | Model invocable | Pre-approved | Disallowed | Permission prompt |\n| --- | --- | --- | --- | --- | --- | --- |\n${rows.join('\n')}\n`;
 }
 
+function buildRouteContract(spec) {
+  return {
+    schemaVersion: 2,
+    id: spec.workflows.find((workflow) => workflow.id === 'route')?.outputContract ?? 'recommended-route-v2',
+    heading: '## Recommended Route',
+    fields: [
+      { id: 'command', label: 'Command:' },
+      { id: 'skill', label: 'Skill:' },
+      { id: 'coreAgent', label: 'Core agent:' },
+      { id: 'capabilityPacks', label: 'Capability packs:' },
+      { id: 'requiredInputs', label: 'Required inputs:' },
+      { id: 'validationExpectations', label: 'Validation expectations:' },
+      { id: 'fallbackPath', label: 'Fallback path:' },
+    ],
+    ownerAgents: Object.fromEntries(spec.workflows.map((workflow) => [workflow.id, workflow.ownerAgents])),
+  };
+}
+
+function workflowCatalog(spec) {
+  return {
+    schemaVersion: 1,
+    source: sourcePath,
+    workflows: spec.workflows.map((workflow) => ({
+      id: workflow.id,
+      stage: workflow.stage,
+      ownerAgents: workflow.ownerAgents,
+      recommendedPacks: workflow.recommendedPacks,
+      requiredInputs: workflow.requiredInputs,
+      outputContract: workflow.outputContract,
+      risk: workflow.risk,
+      primary: spec.primaryEntrypoints.includes(workflow.id),
+      legacyAlias: workflow.legacyAlias,
+      runtimeDelegation: false,
+    })),
+  };
+}
+
+function renderWorkflowCatalog(report) {
+  const rows = report.workflows.map((workflow) => `| \`${workflow.id}\` | ${workflow.stage} | ${workflow.ownerAgents.join(', ')} | ${workflow.risk} | ${workflow.primary} | \`${workflow.outputContract}\` | \`${workflow.legacyAlias}\` |`).join('\n');
+  return `# Workflow Catalog\n\nStatus: generated\n\nGenerated from \`${sourcePath}\`. Runtime command adapters execute directly and do not delegate through the compatibility alias.\n\n| Workflow | Stage | Owner agents | Risk | Primary | Output contract | Legacy alias |\n| --- | --- | --- | --- | --- | --- | --- |\n${rows}\n`;
+}
+
 export function generateWorkflowPermissionFiles(root = defaultRoot) {
-  const spec = loadSpec(root);
+  const canonicalSpec = loadSpec(root);
+  const spec = buildRuntimePermissionSpec(canonicalSpec);
   const workflowIds = spec.workflows.map((workflow) => workflow.id).sort();
   const commandIds = [...spec.expectedInventory.commandIds].sort();
   const skillNames = [...spec.expectedInventory.skillNames].sort();
@@ -141,16 +225,26 @@ export function generateWorkflowPermissionFiles(root = defaultRoot) {
     throw new Error('expected skill inventory must map one-to-one to command ids');
   }
   const report = buildEffectivePermissions(spec);
+  const catalog = workflowCatalog(canonicalSpec);
   if (report.entries.length !== spec.expectedInventory.combinedSkillCount) {
     throw new Error(`effective permission count ${report.entries.length} does not match expected ${spec.expectedInventory.combinedSkillCount}`);
   }
   return [
-    ...spec.workflows.flatMap((workflow) => [
-      renderSurface(root, workflow, 'command'),
-      renderSurface(root, workflow, 'skill'),
-    ]),
+    { relPath: runtimePath, content: `${JSON.stringify(spec, null, 2)}\n` },
+    ...canonicalSpec.workflows.flatMap((workflow) => {
+      const runtimeWorkflow = spec.workflows.find((entry) => entry.id === workflow.id);
+      if (!runtimeWorkflow) throw new Error(`missing runtime workflow ${workflow.id}`);
+      const surfaceWorkflow = { ...workflow, ...runtimeWorkflow };
+      return [
+        renderSurface(root, canonicalSpec, surfaceWorkflow, 'command'),
+        renderSurface(root, canonicalSpec, surfaceWorkflow, 'skill'),
+      ];
+    }),
+    { relPath: routeContractPath, content: `${JSON.stringify(buildRouteContract(canonicalSpec), null, 2)}\n` },
     { relPath: generatedJson, content: `${JSON.stringify(report, null, 2)}\n` },
     { relPath: generatedMarkdown, content: renderMarkdown(report) },
+    { relPath: workflowCatalogJson, content: `${JSON.stringify(catalog, null, 2)}\n` },
+    { relPath: workflowCatalogMarkdown, content: renderWorkflowCatalog(catalog) },
   ];
 }
 

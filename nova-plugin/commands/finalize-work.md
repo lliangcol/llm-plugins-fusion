@@ -8,18 +8,19 @@ allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit
 user-invocable: true
 disable-model-invocation: false
-invokes:
-  skill: nova-finalize-work
 ---
 
 # /nova-plugin:finalize-work
 
-Invoke `nova-finalize-work` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-finalize-work` through the Skill tool.
 
-This is the full finalization and handoff entry. The skill is the source of truth for parameter resolution, Git/environment probing, output format, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-finalize-work/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: finalize
+- Owner agents: publisher
+- Required inputs: `WORK_SUMMARY`
+- Output contract: `finalize-work-v2`
+- Risk: none
+- Recommended packs: release, docs
 
-- Produces validation-aware handoff, commit text, and PR/MR-ready summary content when applicable.
-- May inspect Git state, but must not commit, push, merge, rebase, or delete branches unless the user explicitly asks in the current turn.
-- `/nova-plugin:finalize-lite` remains the compact compatibility entry.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

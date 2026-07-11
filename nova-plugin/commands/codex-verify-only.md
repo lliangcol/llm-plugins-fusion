@@ -8,19 +8,19 @@ allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit
 user-invocable: true
 disable-model-invocation: true
-invokes:
-  skill: nova-codex-verify-only
 ---
 
 # /nova-plugin:codex-verify-only
 
-Invoke `nova-codex-verify-only` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-codex-verify-only` through the Skill tool.
 
-This is the Codex verify-only slash entry. The skill is the source of truth for parameter resolution, script invocation, artifact policy, output format, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-verify-only/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: review
+- Owner agents: verifier
+- Required inputs: `REVIEW_FILE`
+- Output contract: `codex-verify-only-v2`
+- Risk: low
+- Recommended packs: None
 
-- Requires explicit `REVIEW_FILE` before verification.
-- Accepts optional `CHECKS_FILE`, `BASE`, `OUTPUT_DIR`, and explicit `INCLUDE_UNTRACKED_CONTENT=true` when untracked file content should be included after guards.
-- Must not perform new implementation work.
-- Declares low artifact risk because it runs Bash and writes `.codex` verification artifacts.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

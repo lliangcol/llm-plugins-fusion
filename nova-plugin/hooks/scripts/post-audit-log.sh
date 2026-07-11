@@ -14,7 +14,7 @@ PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd -- "$SCRIPT_DIR/../.." >/dev/null 2>&1 &
 source "$PLUGIN_ROOT/runtime/bash-common.sh"
 
 if ! NODE_BIN="$(nova_node_command)"; then
-  echo "[nova-plugin] WARNING: audit logger skipped because Node.js 20+ is unavailable." >&2
+  echo "[nova-plugin] WARNING: audit logger skipped because Node.js 22+ is unavailable." >&2
   exit 0
 fi
 

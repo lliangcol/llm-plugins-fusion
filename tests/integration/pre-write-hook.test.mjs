@@ -84,6 +84,53 @@ test('write guard enforces Edit matching and replace_all semantics', async (t) =
   assert.match(missing.stderr, /未在目标文件中命中/);
 });
 
+test('write guard detects secrets formed across Edit boundaries', async (t) => {
+  const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-secret-boundary-'));
+  t.after(() => rm(temp, { recursive: true, force: true }));
+  const target = join(temp, 'file.txt');
+
+  await writeFile(target, `token=sk-proj-${'a'.repeat(16)}`);
+  const openAi = await runGuard(editPayload(target, 'a'.repeat(16), 'a'.repeat(24)));
+  assert.equal(openAi.code, 2);
+  assert.match(openAi.stderr, /openai-api-key/);
+
+  await writeFile(target, `token=github_pat_${'b'.repeat(16)}`);
+  const github = await runGuard(editPayload(target, 'b'.repeat(16), 'b'.repeat(24)));
+  assert.equal(github.code, 2);
+  assert.match(github.stderr, /github-token/);
+});
+
+test('write guard allows removing or preserving an existing secret without adding one', async (t) => {
+  const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-existing-secret-'));
+  t.after(() => rm(temp, { recursive: true, force: true }));
+  const target = join(temp, 'file.txt');
+  const token = `sk-proj-${'a'.repeat(24)}`;
+
+  await writeFile(target, `prefix\n${token}\nsuffix\n`);
+  const unrelated = await runGuard(editPayload(target, 'prefix', 'public prefix'));
+  assert.equal(unrelated.ok, true, unrelated.stderr);
+
+  const removed = await runGuard(editPayload(target, token, '<redacted>'));
+  assert.equal(removed.ok, true, removed.stderr);
+});
+
+test('write guard fails closed for oversized and binary Edit targets', async (t) => {
+  const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-file-boundary-'));
+  t.after(() => rm(temp, { recursive: true, force: true }));
+  const binary = join(temp, 'binary.dat');
+  const oversized = join(temp, 'oversized.txt');
+  await writeFile(binary, Buffer.from([0, 1, 2, 3]));
+  await writeFile(oversized, Buffer.alloc(10 * 1024 * 1024 + 1, 'x'));
+
+  const binaryResult = await runGuard(editPayload(binary, '\u0000', 'x'));
+  assert.equal(binaryResult.code, 2);
+  assert.match(binaryResult.stderr, /二进制/);
+
+  const oversizedResult = await runGuard(editPayload(oversized, 'x', 'y', true));
+  assert.equal(oversizedResult.code, 2);
+  assert.match(oversizedResult.stderr, /大小上限/);
+});
+
 test('write guard rejects missing and symlink Edit targets', async (t) => {
   const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-target-'));
   t.after(() => rm(temp, { recursive: true, force: true }));
@@ -148,7 +195,7 @@ test('Bash launcher fails closed without Node and honors explicit opt-out', asyn
   const noNode = await runGuard(undefined, { command: '/bin/bash', args: [script], env });
   if (!noNode.ok) {
     assert.equal(noNode.code, 2);
-    assert.match(noNode.stderr, /Node\.js 20\+/);
+    assert.match(noNode.stderr, /Node\.js 22\+/);
   }
 
   const disabled = await runGuard(undefined, {

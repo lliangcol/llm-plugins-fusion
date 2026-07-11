@@ -8,6 +8,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: plugin-install-smoke-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   known-good-install-smoke:
     name: Known-good Claude 2.1.205 install inventory on disposable runner
@@ -46,14 +50,19 @@ jobs:
     name: Claude Latest Drift
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    continue-on-error: true
+    permissions:
+      contents: read
+      issues: write
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
       - name: Install latest Claude CLI
-        run: npm install -g @anthropic-ai/claude-code@latest
+        run: |
+          npm install -g @anthropic-ai/claude-code@latest
+          mkdir -p .metrics/plugin-latest-drift
+          claude --version | tee .metrics/plugin-latest-drift/claude-version.txt
       - name: Record latest inventory drift
         run: |
           mkdir -p .metrics/plugin-latest-drift
@@ -66,3 +75,19 @@ jobs:
           name: claude-latest-drift
           path: .metrics/plugin-latest-drift/
           include-hidden-files: true
+      - name: Create or update compatibility drift issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Claude latest compatibility drift"
+          issue="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')"
+          body="Scheduled compatibility validation failed in workflow run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Response SLO: 7 days."
+          if [ -n "${issue}" ]; then gh issue comment "${issue}" --body "${body}"; else gh issue create --title "${title}" --body "${body}"; fi
+      - name: Close recovered compatibility drift issue
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          issue="$(gh issue list --state open --search 'Claude latest compatibility drift in:title' --json number --jq '.[0].number // empty')"
+          if [ -n "${issue}" ]; then gh issue close "${issue}" --comment "Compatibility recovered in run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."; fi

@@ -19,25 +19,22 @@ import { captureProcess, runProcess } from './lib/process-runner.mjs';
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
 const fixedPrompt = '/nova-plugin:route REQUEST="Review a public README change before editing and recommend the next workflow." DEPTH=brief';
+const routeContractSource = JSON.parse(readFileSync(resolve(root, 'nova-plugin/runtime/route-output-contract.json'), 'utf8'));
+const routePermissionSource = JSON.parse(readFileSync(resolve(root, 'nova-plugin/runtime/workflow-permissions.json'), 'utf8'));
+const routePermission = routePermissionSource.workflows.find((workflow) => workflow.id === 'route');
+if (!routePermission) throw new Error('route workflow permission is missing');
 export const routeOutputContract = Object.freeze({
-  id: 'recommended-route-v1',
-  heading: '## Recommended Route',
-  requiredFields: Object.freeze([
-    'Command:',
-    'Skill:',
-    'Core agent:',
-    'Capability packs:',
-    'Required inputs:',
-    'Validation expectations:',
-    'Fallback path:',
-  ]),
+  ...routeContractSource,
+  fields: Object.freeze(routeContractSource.fields.map((field) => Object.freeze(field))),
+  requiredFields: Object.freeze(routeContractSource.fields.map((field) => field.label)),
+  ownerAgents: Object.freeze(Object.fromEntries(Object.entries(routeContractSource.ownerAgents).map(([id, agents]) => [id, Object.freeze(agents)]))),
 });
 export const routeSystemPrompt = `This is an automated contract validation of an explicitly invoked /nova-plugin:route command. Follow the loaded route command and nova-route skill. The final response MUST start with exactly "${routeOutputContract.heading}" and then contain exactly these seven Markdown bullet labels in this order: ${routeOutputContract.requiredFields.join(' ')} Use no preface, alternate heading level, table, renamed field, or closing text. Fill every value using only the installed nova inventory.`;
 export const routeSystemPromptSha256 = sha256(routeSystemPrompt);
 export const routeMaxTurns = 5;
 export const routeAllowedTools = Object.freeze([
   'Skill(nova-plugin:route)',
-  'Skill(nova-plugin:nova-route)',
+  ...routePermission.allowedTools,
 ]);
 export const routeDisallowedTools = Object.freeze(['Write', 'Edit', 'NotebookEdit', 'Bash']);
 const competingCredentialVariables = [
@@ -109,21 +106,33 @@ export function validateRouteResult(result, routeInventory) {
   const skillField = fieldValue(result, 'Skill:');
   const agentField = fieldValue(result, 'Core agent:');
   const packField = fieldValue(result, 'Capability packs:');
-  const commandMatches = [...result.matchAll(/\/nova-plugin:([a-z0-9]+(?:-[a-z0-9]+)*)/g)]
+  const allCommandMatches = [...result.matchAll(/\/nova-plugin:([a-z0-9]+(?:-[a-z0-9]+)*)/g)]
+    .map((match) => match[1]);
+  const commandMatches = [...commandField.matchAll(/\/nova-plugin:([a-z0-9]+(?:-[a-z0-9]+)*)/g)]
     .map((match) => match[1]);
   if (commandMatches.length === 0) throw new Error('route output did not contain a namespaced nova-plugin command');
   if (!/\/nova-plugin:[a-z0-9]+(?:-[a-z0-9]+)*/.test(commandField)) {
     throw new Error('route output Command field did not contain a namespaced nova-plugin command');
   }
   const commandIds = new Set(routeInventory.commandIds);
-  for (const command of commandMatches) {
+  for (const command of allCommandMatches) {
     if (!commandIds.has(command)) throw new Error(`route output invented command ${command}`);
   }
   const skills = validateInventoryField(skillField, new Set(routeInventory.skillNames), 'skill');
   const agents = validateInventoryField(agentField, new Set(routeInventory.agents), 'core agent');
   const packs = validateInventoryField(packField, new Set(routeInventory.packs), 'capability pack');
+  const uniqueCommands = [...new Set(commandMatches)].sort();
+  const expectedSkills = uniqueCommands.map((command) => `nova-${command}`).sort();
+  if (JSON.stringify(skills) !== JSON.stringify(expectedSkills)) {
+    throw new Error(`route output command-skill relationship differs: expected ${expectedSkills.join(', ')}`);
+  }
+  const allowedAgents = new Set(uniqueCommands.flatMap((command) => routeOutputContract.ownerAgents[command] ?? []));
+  const invalidOwners = agents.filter((agent) => !allowedAgents.has(agent));
+  if (invalidOwners.length > 0) {
+    throw new Error(`route output command-agent relationship differs: ${invalidOwners.join(', ')}`);
+  }
   return {
-    commandMatches: [...new Set(commandMatches)].sort(),
+    commandMatches: uniqueCommands,
     skills,
     agents,
     packs,
@@ -155,6 +164,8 @@ export function routeValidationFailureCode(error) {
   if (message.includes('invented skill')) return 'skill-inventory';
   if (message.includes('invented core agent')) return 'agent-inventory';
   if (message.includes('invented capability pack')) return 'pack-inventory';
+  if (message.includes('command-skill relationship')) return 'command-skill-relationship';
+  if (message.includes('command-agent relationship')) return 'command-agent-relationship';
   if (message.includes(' is empty')) return 'empty-inventory-field';
   return 'unknown';
 }

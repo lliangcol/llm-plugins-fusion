@@ -7,12 +7,19 @@ permissions:
   contents: read
   pull-requests: read
 
+concurrency:
+  group: dependency-review-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
       - name: Check dependency graph availability
         id: dependency-graph
         env:
@@ -44,8 +51,14 @@ jobs:
           if [ "$status" = "403" ] || [ "$status" = "404" ]; then
             echo "available=false" >> "$GITHUB_OUTPUT"
             if [ "${HEAD_REPOSITORY}" != "${BASE_REPOSITORY}" ]; then
-              echo "::warning::Dependency graph is unavailable for fork PR ${HEAD_REPOSITORY} -> ${BASE_REPOSITORY} (HTTP ${status}); skipping dependency review. Maintainers must confirm Dependency Review coverage before merge."
-              exit 0
+              changed_dependency_surfaces="$(git diff --name-only "${BASE_SHA}...${HEAD_SHA}" | grep -E '(^|/)(package(-lock)?\.json|npm-shrinkwrap\.json|pnpm-lock\.yaml|yarn\.lock|requirements[^/]*\.txt|poetry\.lock|Cargo\.lock|go\.(mod|sum))$|^\.github/workflows/' || true)"
+              if [ -z "${changed_dependency_surfaces}" ]; then
+                echo "::notice::Dependency graph unavailable for fork PR, but no dependency-bearing surface changed; status=not_applicable."
+                exit 0
+              fi
+              echo "${changed_dependency_surfaces}"
+              echo "Dependency review is blocked for this fork PR because the dependency graph is unavailable and dependency-bearing surfaces changed. A maintainer security approval is required."
+              exit 1
             fi
             cat "$response_file"
             echo "Dependency graph is unavailable for protected same-repository PR ${REPOSITORY} (HTTP ${status}). Enable Dependency graph in repository security settings instead of silently skipping this required check."

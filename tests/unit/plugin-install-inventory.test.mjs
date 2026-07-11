@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import test from 'node:test';
@@ -11,6 +11,7 @@ import {
   parsePluginDetails,
   normalizeMarketplaceSource,
   treeDigest,
+  treeManifest,
 } from '../../scripts/validate-plugin-install.mjs';
 
 test('install evidence records both successful live manifest validations', () => {
@@ -131,4 +132,21 @@ test('tree digest is deterministic and content-sensitive', async (t) => {
   await writeFile(join(right, 'nested', 'file.txt'), 'changed');
   assert.notEqual(treeDigest(left), treeDigest(right));
   assert.notEqual(treeDigest(left), treeDigest(right, { ignoreClaudeRuntimeMarkers: true }));
+});
+
+test('tree manifest covers directories, modes, and symlink targets', { skip: process.platform === 'win32' }, async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'nova-tree-manifest-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(join(root, 'empty'));
+  await writeFile(join(root, 'tool'), '#!/bin/sh\n');
+  await chmod(join(root, 'tool'), 0o755);
+  await symlink('tool', join(root, 'current'));
+  const manifest = treeManifest(root);
+  assert.deepEqual(manifest.map((entry) => [entry.path, entry.type]), [
+    ['current', 'symlink'],
+    ['empty', 'directory'],
+    ['tool', 'file'],
+  ]);
+  assert.equal(manifest.find((entry) => entry.path === 'tool').mode, '100755');
+  assert.equal(manifest.find((entry) => entry.path === 'current').target, 'tool');
 });

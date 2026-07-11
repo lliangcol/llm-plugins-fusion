@@ -8,8 +8,9 @@ Scope: post-`v2.3.0` optimization roadmap for `llm-plugins-fusion`
 
 Continue the project as a `nova-plugin` centered AI engineering workflow
 framework. Promote released tags, not unreleased `main` snapshots. Keep
-`v3.0.0`, public portal work, and production multi-plugin directory migration
-deferred until real maintenance pressure appears.
+Public portal work and production multi-plugin directory migration remain
+deferred until real maintenance pressure appears; the `v3.0.0` workflow and
+security hardening does not activate either deferred product surface.
 
 This document is the active optimization record. Tracks 1 through 5 have been
 implemented for the `v2.2.0` release-ready work. Track 6 has been resolved by
@@ -17,7 +18,7 @@ removing stale archive documentation from the public working tree rather than
 keeping a second active archive surface. The 2026-05-12 unattended P0-P2 pass
 added maintainer npm shortcuts, consumer profile scaffolding, regression
 checks, workflow evaluation fixtures, and expanded distribution-risk scanning.
-The exact `v2.4.1` tag and GitHub release now provide the stable promotion
+The exact `v3.0.0` tag and GitHub release provide the current stable promotion
 baseline; later `main` commits remain development snapshots until the next
 release tag.
 
@@ -618,7 +619,7 @@ validation commands, expected output artifacts, and residual risk format.
 
 - `nova-plugin` is the only production plugin. Multi-plugin behavior is covered
   by registry fixtures, not by production plugin directories.
-- Exact `v2.4.1` is the current stable promotion baseline. Moving `main` may
+- Exact `v3.0.0` is the current stable promotion baseline. Moving `main` may
   contain later unreleased maintenance work and must not be promoted as stable
   release content.
 - README already presents the main workflow path:

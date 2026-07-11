@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-07-12
+
+### Added
+- 新增 canonical workflow spec、具体 capability profiles、生成的 workflow catalog、Claude/Codex/通用 Agent Skills 适配层，以及公开 route 与 workflow-quality eval 数据集。
+- 新增结构化 validation/release evidence schema、deterministic plugin archive、CycloneDX SBOM、provenance、GitHub artifact attestation 与签名 tag 验证链路。
+- 新增 secret finding 差分、tracked-first distribution scan、SARIF、完整安装树 type/mode/symlink manifest、进程树终止和失败/拒绝 audit 事件覆盖。
+
+### Changed
+- 最低维护运行时提升为 Node.js 22，并增加 Node.js 24 阻断兼容 lane；CI 工具、超时、并发取消和 fork dependency-review 状态语义收紧。
+- `/nova-plugin:<id>` 改为直接执行 supporting contract，不再通过模型进行第二次 `nova-*` Skill tool 调用；兼容别名保留一个迁移窗口并标记弃用。
+- 21 个 skill 的共享 prompt 规则去重，伪 `$NAME` 变量改为逻辑 `<NAME>`，surface budget 同时检查 lines、bytes、粗略 tokens、最大段落和重复率。
+- 公开 SemVer tag 政策改为签名、annotated、不可移动；release job 只接受来自受保护 main 且 required checks 成功的可信 commit，并使用受 reviewer 保护的 release environment。
+
+### Fixed
+- 阻止跨多次 Edit 拼接 token、历史目录凭据 warning 降级、tracked hidden files 漏扫、route 多阶段格式漂移、未知 audit 结果误记为成功、超时遗留 descendant process 等问题。
+- validation 聚合改用稳定 gate ID，不再依赖可读 label；release evidence 绑定 archive、SBOM、provenance 和 attestation 输入。
+- `v2.4.1` 在发布修复期间曾发生 ref 更新；该 tag 不再移动，3.0.0 起按新的不可变 tag 政策发布。
+
 ## [2.4.1] - 2026-07-11
 
 ### Added

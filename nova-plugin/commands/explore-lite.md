@@ -8,18 +8,19 @@ allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash
 user-invocable: true
 disable-model-invocation: false
-invokes:
-  skill: nova-explore-lite
 ---
 
 # /nova-plugin:explore-lite
 
-Invoke `nova-explore-lite` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-explore-lite` through the Skill tool.
 
-This is a compatibility shortcut for lightweight observer-style exploration. The skill is the source of truth for parameter resolution, execution rules, output format, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-explore-lite/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: explore
+- Owner agents: orchestrator
+- Required inputs: `INPUT`
+- Output contract: `exploration-lite-v2`
+- Risk: none
+- Recommended packs: None
 
-- Equivalent in intent to `/nova-plugin:explore PERSPECTIVE=observer` for quick understanding alignment.
-- Keeps the legacy slash entry available.
-- Read-only; no design or implementation work.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

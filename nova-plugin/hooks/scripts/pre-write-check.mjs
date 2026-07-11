@@ -4,11 +4,12 @@
 import { lstatSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { hasSensitiveText } from '../../runtime/secret-rules.mjs';
+import { findSensitiveText, newSensitiveFindings } from '../../runtime/secret-rules.mjs';
 import { validateHooksJsonText } from './hooks-schema.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const pluginRoot = resolve(process.env.CLAUDE_PLUGIN_ROOT || resolve(__dir, '..', '..'));
+const MAX_GUARDED_TEXT_BYTES = 10 * 1024 * 1024;
 
 function block(message, details = []) {
   console.error(`[nova-plugin] ${message}`);
@@ -59,6 +60,26 @@ function countOccurrences(source, target) {
   }
 }
 
+function readGuardedText(target, displayPath) {
+  let data;
+  try {
+    data = readFileSync(target);
+  } catch {
+    block('Edit 目标无法读取。', [`目标: ${displayPath}`]);
+  }
+  if (data.length > MAX_GUARDED_TEXT_BYTES) {
+    block('Edit 目标超过安全扫描大小上限。', [`目标: ${displayPath}`]);
+  }
+  if (data.subarray(0, Math.min(data.length, 8192)).includes(0)) {
+    block('Edit 目标疑似二进制文件，无法可靠扫描。', [`目标: ${displayPath}`]);
+  }
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(data);
+  } catch {
+    block('Edit 目标不是有效 UTF-8 文本。', [`目标: ${displayPath}`]);
+  }
+}
+
 function proposedEditContent(input) {
   if (typeof input.old_string !== 'string' || input.old_string.length === 0) {
     block('Edit payload 的 old_string 必须是非空字符串。');
@@ -78,12 +99,7 @@ function proposedEditContent(input) {
     block('Edit 目标必须是普通文件且不能是符号链接。', [`目标: ${input.file_path}`]);
   }
 
-  let current;
-  try {
-    current = readFileSync(target, 'utf8');
-  } catch {
-    block('Edit 目标无法按 UTF-8 读取。', [`目标: ${input.file_path}`]);
-  }
+  const current = readGuardedText(target, input.file_path);
   const occurrences = countOccurrences(current, input.old_string);
   if (occurrences === 0) {
     block('Edit old_string 未在目标文件中命中。', [`目标: ${input.file_path}`]);
@@ -91,9 +107,10 @@ function proposedEditContent(input) {
   if (input.replace_all !== true && occurrences !== 1) {
     block('Edit old_string 命中不唯一；请扩大上下文或显式使用 replace_all。', [`命中数: ${occurrences}`]);
   }
-  return input.replace_all === true
+  const proposed = input.replace_all === true
     ? current.split(input.old_string).join(input.new_string)
     : current.replace(input.old_string, input.new_string);
+  return { current, proposed };
 }
 
 function validateWriteTarget(input) {
@@ -116,28 +133,33 @@ function isHooksJson(filePath) {
 }
 
 const major = Number.parseInt(process.versions.node.split('.')[0], 10);
-if (!Number.isInteger(major) || major < 20) {
-  block(`Node.js 20+ is required by the write guard; found ${process.version}.`);
+if (!Number.isInteger(major) || major < 22) {
+  block(`Node.js 22+ is required by the write guard; found ${process.version}.`);
 }
 
 const payload = parsePayload();
 const input = payload.tool_input;
 let proposedContent;
-let insertedContent;
+let beforeFindings = [];
 
 if (payload.tool_name === 'Write') {
   if (typeof input.content !== 'string') block('Write payload 的 content 必须是字符串。');
   validateWriteTarget(input);
   proposedContent = input.content;
-  insertedContent = input.content;
 } else {
-  proposedContent = proposedEditContent(input);
-  insertedContent = input.new_string;
+  const edit = proposedEditContent(input);
+  proposedContent = edit.proposed;
+  beforeFindings = findSensitiveText(edit.current);
 }
 
-if (insertedContent && hasSensitiveText(insertedContent)) {
+const afterFindings = findSensitiveText(proposedContent);
+const introducedFindings = payload.tool_name === 'Write'
+  ? afterFindings
+  : newSensitiveFindings(beforeFindings, afterFindings);
+if (introducedFindings.length > 0) {
   block('疑似硬编码敏感信息，请使用环境变量替代。', [
     `匹配文件: ${input.file_path}`,
+    `规则: ${[...new Set(introducedFindings.map((finding) => finding.ruleId))].join(', ')}`,
     '建议: 使用环境变量、占位符或私有 consumer profile，不要写入公开仓库内容。',
   ]);
 }

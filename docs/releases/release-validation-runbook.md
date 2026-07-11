@@ -80,15 +80,15 @@ an explicit installed `--plugin-dir`. The gate fails when `ANTHROPIC_API_KEY`,
 `ANTHROPIC_AUTH_TOKEN`, or a Bedrock, Vertex, or Foundry selection variable is
 also present, so release evidence cannot silently use a higher-precedence
 credential.
-With `dontAsk`, the gate pre-approves only the exact read-only pair
-`Skill(nova-plugin:route)` and `Skill(nova-plugin:nova-route)`: the stable
-command wrapper and its compatibility implementation. `Write`, `Edit`,
+With `dontAsk`, the gate pre-approves only the exact read-only set
+`Skill(nova-plugin:route)` plus the canonical route profile's `Read`, `Glob`,
+and `Grep`: the direct command surface and its supporting contract. `Write`, `Edit`,
 `NotebookEdit`, and `Bash` remain explicitly denied. Release evidence records
 and validates this exact allow/deny policy instead of treating `dontAsk` as
 sufficient by itself.
 The headless gate also appends a canonical system-level output contract and
 records its contract ID, prompt SHA-256, and maximum turn count in release
-evidence. The stable command wrapper repeats the same heading and seven-field
+evidence. The supporting contract preserves the same heading and seven-field
 boundary. When validation fails, logs contain only output length, digest, field
 presence, and namespaced-command count; they do not contain the model response.
 The route evidence compares the complete temporary worktree inventory, including

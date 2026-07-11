@@ -72,7 +72,8 @@ only in a disposable CI runner or test OS user.
 
 ## Hooks Fail Before Writing
 
-`pre-write-check.sh` is the thin launcher for the Node.js 20+ write guard. It
+`pre-write-check.mjs` is the direct Node.js 22+ write guard. The retained shell
+launcher is compatibility-only. It
 blocks malformed payloads, unavailable Node, likely hardcoded secrets, unsafe
 Write/Edit targets, unsafe Edit reconstruction, unsupported NotebookEdit, and
 invalid proposed `hooks.json` content. Exit 0 means
@@ -87,7 +88,7 @@ bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 
 For hook schema failures, compare against `nova-plugin/hooks/hooks.json`.
 
-If Node.js 20+ is unavailable, Write/Edit/NotebookEdit fails closed. An operator may set
+If Node.js 22+ is unavailable, Write/Edit/NotebookEdit must fail closed. An operator may set
 `NOVA_WRITE_GUARD_DISABLED=1` for an explicit temporary bypass, but must record
 that the guard was disabled; such a run is not release evidence. Bash file
 redirection is outside the PreToolUse matcher and remains governed by normal

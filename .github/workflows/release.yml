@@ -8,21 +8,78 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
+  preflight:
+    name: Trusted Release Ref
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      checks: read
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+      - name: Verify immutable signed tag and protected main ancestry
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          test "$(git cat-file -t "refs/tags/${RELEASE_TAG}")" = "tag"
+          git config gpg.format ssh
+          git config gpg.ssh.allowedSignersFile .github/release-signers
+          git verify-tag "${RELEASE_TAG}"
+          release_commit="$(git rev-list -n 1 "${RELEASE_TAG}")"
+          git fetch origin main
+          git merge-base --is-ancestor "${release_commit}" origin/main
+          test "${release_commit}" = "${GITHUB_SHA}"
+          ruleset_id="$(gh api "repos/${GITHUB_REPOSITORY}/rulesets" --jq '.[] | select(.name == "main-branch-protection").id')"
+          test -n "${ruleset_id}"
+          gh api "repos/${GITHUB_REPOSITORY}/rulesets/${ruleset_id}" \
+            --jq '.rules[] | select(.type == "required_status_checks") | .parameters.required_status_checks[].context' \
+            > required-checks.txt
+          gh api "repos/${GITHUB_REPOSITORY}/commits/${release_commit}/check-runs?per_page=100" \
+            > check-runs.json
+          while IFS= read -r required_check; do
+            jq -e --arg name "${required_check}" \
+              '.check_runs | any(.name == $name and .status == "completed" and .conclusion == "success")' \
+              check-runs.json >/dev/null || {
+                echo "Required check is not successful on ${release_commit}: ${required_check}"
+                exit 1
+              }
+          done < required-checks.txt
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo "Release ${RELEASE_TAG} already exists; immutable promotion refused."
+            exit 1
+          fi
+          node scripts/prepare-release.mjs
+
   validate:
     name: Pre-release Validation
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    needs: preflight
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: '20'
+          node-version: '22'
       - name: Maintainer validation
         env:
           NOVA_VALIDATE_WRITE_TIMINGS: '1'
         run: npm run validate:maintainer
       - name: Test coverage evidence
         run: npm run test:coverage:check
+      - name: Build deterministic archive, SBOM, and provenance
+        run: npm run release:artifacts
       - name: Release checksum evidence
         run: node scripts/generate-release-checksums.mjs
       - name: Plugin install dry run
@@ -34,6 +91,7 @@ jobs:
           cp .metrics/coverage/coverage-summary.txt .metrics/release-inputs/coverage-summary.txt
           cp .metrics/coverage/metadata.json .metrics/release-inputs/coverage-metadata.json
           cp .metrics/release-checksums/SHA256SUMS.txt .metrics/release-inputs/SHA256SUMS.txt
+          cp -R .metrics/release-artifacts .metrics/release-inputs/release-artifacts
       - name: Upload release validation inputs
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -43,8 +101,10 @@ jobs:
 
   claude-live-validation:
     name: Claude Live Validation / known-good 2.1.205
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
+    needs: preflight
+    environment: release
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
@@ -91,7 +151,8 @@ jobs:
 
   assemble-release-evidence:
     name: Assemble Release Evidence
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     needs:
       - validate
       - claude-live-validation
@@ -99,7 +160,7 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: '20'
+          node-version: '22'
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: release-validation-inputs
@@ -115,6 +176,7 @@ jobs:
           --coverage-metadata .metrics/aggregate/validation/coverage-metadata.json
           --timings .metrics/aggregate/validation/validation-timings.json
           --checksums .metrics/aggregate/validation/SHA256SUMS.txt
+          --artifact-dir .metrics/aggregate/validation/release-artifacts
           --install .metrics/aggregate/live/inventory.json
           --route .metrics/aggregate/live/route-smoke.json
           --out-dir .metrics/release-evidence
@@ -130,36 +192,48 @@ jobs:
 
   release:
     name: Create GitHub Release
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment: release
     needs:
       - assemble-release-evidence
     permissions:
       contents: write
+      id-token: write
+      attestations: write
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
-          node-version: '20'
+          node-version: '22'
       - name: Prepare validated release metadata
         id: release
         env:
           RELEASE_TAG: ${{ github.ref_name }}
         run: node scripts/prepare-release.mjs
-      - name: Generate release checksums
-        run: node scripts/generate-release-checksums.mjs
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: release-validation-inputs
+          path: .metrics/release-inputs
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: release-evidence
           path: .metrics/release-evidence
+      - name: Attest archive provenance and SBOM
+        uses: actions/attest@f6bf1532d7d6793fce74eac584813a8eee607999 # v4
+        with:
+          subject-path: .metrics/release-inputs/release-artifacts/nova-plugin-*.tar.gz
+          sbom-path: .metrics/release-inputs/release-artifacts/nova-plugin-*.cdx.json
       - name: Create GitHub Release
         uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d # v3
         with:
           name: "nova-plugin v${{ steps.release.outputs.version }}"
           body_path: ${{ steps.release.outputs.notes_file }}
           files: |
-            .metrics/release-checksums/SHA256SUMS.txt
+            .metrics/release-inputs/SHA256SUMS.txt
+            .metrics/release-inputs/release-artifacts/*
             .metrics/release-evidence/release-evidence.json
             .metrics/release-evidence/release-evidence.md
           draft: false

@@ -6,7 +6,7 @@
  */
 
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
@@ -53,7 +53,15 @@ function checksum(root, relPath) {
 
 export function generateReleaseChecksums({ root = defaultRoot, args = [] } = {}) {
   const outPath = parseArgs(args, root);
-  const lines = releaseArtifacts.map((relPath) => `${checksum(root, relPath)}  ${relPath}`);
+  const generatedDir = resolve(root, '.metrics/release-artifacts');
+  const plugin = JSON.parse(readFileSync(resolve(root, 'nova-plugin/.claude-plugin/plugin.json'), 'utf8'));
+  const archiveName = `nova-plugin-${plugin.version}.tar.gz`;
+  const expectedNames = [archiveName, `${archiveName}.cdx.json`, `${archiveName}.provenance.json`];
+  const present = new Set(existsSync(generatedDir) ? readdirSync(generatedDir) : []);
+  const missing = expectedNames.filter((name) => !present.has(name));
+  if (missing.length) throw new Error(`release artifacts missing for ${plugin.version}: ${missing.join(', ')}`);
+  const generatedArtifacts = expectedNames.map((name) => `.metrics/release-artifacts/${name}`);
+  const lines = [...releaseArtifacts, ...generatedArtifacts].map((relPath) => `${checksum(root, relPath)}  ${relPath}`);
   mkdirSync(dirname(outPath), { recursive: true });
   writeFileSync(outPath, `${lines.join('\n')}\n`, 'utf8');
   return { outPath, lines };

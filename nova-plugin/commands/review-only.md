@@ -8,18 +8,19 @@ allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash
 user-invocable: true
 disable-model-invocation: false
-invokes:
-  skill: nova-review-only
 ---
 
 # /nova-plugin:review-only
 
-Invoke `nova-review-only` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-review-only` through the Skill tool.
 
-This is a compatibility shortcut for standard-depth review. The skill is the source of truth for parameter resolution, execution rules, output format, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-review-only/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: review
+- Owner agents: reviewer
+- Required inputs: `REVIEW_SCOPE`
+- Output contract: `review-only-v2`
+- Risk: none
+- Recommended packs: security, dependency
 
-- Equivalent in intent to `/nova-plugin:review LEVEL=standard`.
-- Reviews correctness, failure modes, tests, and maintainability.
-- Read-only; no fixes or code edits.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

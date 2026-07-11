@@ -14,60 +14,23 @@ metadata:
 argument-hint: "Example: review-lite INPUT='small PR diff'"
 ---
 
-## Inputs
+## Shared Execution Policy
 
-| Parameter | Required | Default | Notes |
-| --- | --- | --- | --- |
-| `INPUT` | Yes | Remaining payload | Small diff, code area, or artifact to review quickly. |
+This file is the supporting behavioral contract for `/nova-plugin:review-lite` and the deprecated `/nova-plugin:nova-review-lite` compatibility entrypoint. Prefer the direct command; the compatibility name remains only for the current major-version migration window.
 
-## Parameter Resolution
+- Resolve natural-language and explicit `KEY=value` inputs using `../_shared/parameter-resolution.md`; explicit non-conflicting values take precedence.
+- Apply `../_shared/safety-preflight.md` before side effects. Never infer approval, destructive scope, credentials, or output destinations.
+- Follow `../_shared/output-contracts.md` and `../_shared/artifact-policy.md`; report completed, skipped, and blocked validation truthfully.
+- Respect the frontmatter tool boundary. Missing inputs, unavailable dependencies, overlapping user changes, or repository-policy conflicts are blockers rather than permission to broaden scope.
 
-- Parse natural-language payload, explicit `KEY=value`, `--flag value`, and `--flag=value` forms from `$ARGUMENTS`.
-- Normalize parameter names to uppercase snake case and map known mode words before assigning remaining text to `INPUT`.
-- Explicit values win over inferred values only when they do not conflict with another explicit value.
-- Apply documented defaults only when unambiguous; probe Git status, base branches, and latest artifacts only for context parameters.
-- Safety-boundary parameters for this skill: none for this skill.
-- In non-interactive mode, fail before side effects when required or safety-boundary parameters are missing.
-- Full policy: `nova-plugin/skills/_shared/parameter-resolution.md`.
+## Execution
 
-## Safety Preflight
+1. Parse `$ARGUMENTS` against the workflow-specific inputs below.
+2. Read only the context required for the requested scope.
+3. Apply the workflow contract and its strict output format.
+4. Stop before unauthorized side effects; otherwise validate in proportion to risk and report residual risk.
 
-- This skill is read-only for project files and must not modify code.
-- No interrupting preflight is required for ordinary Read/Glob/Grep usage.
-- This invocation has no implicit export mode; a future write-capable variant must declare an explicit output path and run shared preflight before writing artifacts or invoking Bash.
-- Do not infer safety-boundary values for artifact exports or latest artifact selection.
-- Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.
-
-## Outputs
-
-- Follow the skill-specific output rules below and the shared output contract.
-- Use chat output only unless the command's input table declares an explicit output path; when allowed, report the path and a short summary instead of pasting the full artifact into chat.
-- For reviews and verification, lead with findings or verdicts and state residual risk.
-- Full policy: `nova-plugin/skills/_shared/output-contracts.md`.
-- Artifact policy: `nova-plugin/skills/_shared/artifact-policy.md`.
-
-## Workflow
-
-1. Resolve parameters using the shared policy and this skill's input table.
-2. Read only the context needed for the requested scope.
-3. Apply the skill-specific guidance and migrated slash command contract below.
-4. Respect safety preflight before any side effects.
-5. Produce the required output and report validation or skipped validation honestly.
-
-## Failure Modes
-
-- Required payload is missing or ambiguous.
-- A safety-boundary parameter is missing, conflicting, or unsafe to infer.
-- Required files, scripts, CLIs, credentials, or runtime dependencies are unavailable.
-- Existing user changes overlap the intended write scope and cannot be merged safely.
-- Repository policy conflicts with the requested action.
-
-## Examples
-
-- Use `/nova-plugin:review-lite` as a compatibility shortcut for fast review.
-- Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
-
-## Skill-Specific Guidance
+## Workflow Contract
 
 ### Purpose
 
@@ -100,9 +63,7 @@ Deliver concise daily-review feedback with high signal and low friction.
 - No code edits.
 - Scope is limited to provided input.
 
-## Migrated Slash Command Contract
-
-Migrated from the pre-thin slash command contract for `/nova-plugin:review-lite` (`nova-plugin/commands/review-lite.md`).
+## Detailed Contract
 
 ### LIGHTWEIGHT REVIEW
 

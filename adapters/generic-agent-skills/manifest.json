@@ -1,0 +1,432 @@
+{
+  "schemaVersion": 1,
+  "source": "workflow-specs/workflows.json",
+  "compatibilityLevel": "L1-parseable",
+  "claimBoundary": "Invocation and enforcement require an assistant-specific adapter and conformance evidence.",
+  "workflows": [
+    {
+      "id": "backend-plan",
+      "contract": "../../nova-plugin/skills/nova-backend-plan/SKILL.md",
+      "stage": "plan",
+      "risk": "low",
+      "requiredInputs": [
+        "REQUEST",
+        "PLAN_OUTPUT_PATH"
+      ],
+      "outputContract": "backend-plan-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": true,
+        "shell": "denied",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "codex-review-fix",
+      "contract": "../../nova-plugin/skills/nova-codex-review-fix/SKILL.md",
+      "stage": "implement",
+      "risk": "medium",
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "codex-review-fix-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": true,
+        "shell": "prompt",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "codex-review-only",
+      "contract": "../../nova-plugin/skills/nova-codex-review-only/SKILL.md",
+      "stage": "review",
+      "risk": "low",
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "codex-review-only-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": false,
+        "shell": "prompt",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "codex-verify-only",
+      "contract": "../../nova-plugin/skills/nova-codex-verify-only/SKILL.md",
+      "stage": "review",
+      "risk": "low",
+      "requiredInputs": [
+        "REVIEW_FILE"
+      ],
+      "outputContract": "codex-verify-only-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": false,
+        "shell": "prompt",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "explore",
+      "contract": "../../nova-plugin/skills/nova-explore/SKILL.md",
+      "stage": "explore",
+      "risk": "none",
+      "requiredInputs": [
+        "INPUT"
+      ],
+      "outputContract": "exploration-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": false,
+        "shell": "denied",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "explore-lite",
+      "contract": "../../nova-plugin/skills/nova-explore-lite/SKILL.md",
+      "stage": "explore",
+      "risk": "none",
+      "requiredInputs": [
+        "INPUT"
+      ],
+      "outputContract": "exploration-lite-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": false,
+        "shell": "denied",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "explore-review",
+      "contract": "../../nova-plugin/skills/nova-explore-review/SKILL.md",
+      "stage": "explore",
+      "risk": "none",
+      "requiredInputs": [
+        "INPUT"
+      ],
+      "outputContract": "exploration-review-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": false,
+        "shell": "denied",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "finalize-lite",
+      "contract": "../../nova-plugin/skills/nova-finalize-lite/SKILL.md",
+      "stage": "finalize",
+      "risk": "none",
+      "requiredInputs": [
+        "WORK_SUMMARY"
+      ],
+      "outputContract": "finalize-lite-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": false,
+        "shell": "denied",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "finalize-work",
+      "contract": "../../nova-plugin/skills/nova-finalize-work/SKILL.md",
+      "stage": "finalize",
+      "risk": "none",
+      "requiredInputs": [
+        "WORK_SUMMARY"
+      ],
+      "outputContract": "finalize-work-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": false,
+        "shell": "prompt",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "implement-lite",
+      "contract": "../../nova-plugin/skills/nova-implement-lite/SKILL.md",
+      "stage": "implement",
+      "risk": "medium",
+      "requiredInputs": [
+        "REQUEST"
+      ],
+      "outputContract": "implementation-lite-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": true,
+        "shell": "prompt",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "implement-plan",
+      "contract": "../../nova-plugin/skills/nova-implement-plan/SKILL.md",
+      "stage": "implement",
+      "risk": "medium",
+      "requiredInputs": [
+        "PLAN_INPUT_PATH",
+        "PLAN_APPROVED"
+      ],
+      "outputContract": "implementation-plan-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": true,
+        "shell": "prompt",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "implement-standard",
+      "contract": "../../nova-plugin/skills/nova-implement-standard/SKILL.md",
+      "stage": "implement",
+      "risk": "medium",
+      "requiredInputs": [
+        "REQUEST"
+      ],
+      "outputContract": "implementation-standard-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": true,
+        "shell": "prompt",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "plan-lite",
+      "contract": "../../nova-plugin/skills/nova-plan-lite/SKILL.md",
+      "stage": "plan",
+      "risk": "none",
+      "requiredInputs": [
+        "REQUEST"
+      ],
+      "outputContract": "plan-lite-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": false,
+        "shell": "denied",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "plan-review",
+      "contract": "../../nova-plugin/skills/nova-plan-review/SKILL.md",
+      "stage": "review",
+      "risk": "none",
+      "requiredInputs": [
+        "PLAN_INPUT_PATH"
+      ],
+      "outputContract": "plan-review-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": false,
+        "shell": "denied",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "produce-plan",
+      "contract": "../../nova-plugin/skills/nova-produce-plan/SKILL.md",
+      "stage": "plan",
+      "risk": "low",
+      "requiredInputs": [
+        "REQUEST",
+        "PLAN_OUTPUT_PATH"
+      ],
+      "outputContract": "produce-plan-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": true,
+        "shell": "denied",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "review",
+      "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
+      "stage": "review",
+      "risk": "none",
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "review-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": false,
+        "shell": "denied",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "review-lite",
+      "contract": "../../nova-plugin/skills/nova-review-lite/SKILL.md",
+      "stage": "review",
+      "risk": "none",
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "review-lite-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": false,
+        "shell": "denied",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "review-only",
+      "contract": "../../nova-plugin/skills/nova-review-only/SKILL.md",
+      "stage": "review",
+      "risk": "none",
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "review-only-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": false,
+        "shell": "denied",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "review-strict",
+      "contract": "../../nova-plugin/skills/nova-review-strict/SKILL.md",
+      "stage": "review",
+      "risk": "none",
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "review-strict-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": false,
+        "shell": "denied",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "route",
+      "contract": "../../nova-plugin/skills/nova-route/SKILL.md",
+      "stage": "explore",
+      "risk": "none",
+      "requiredInputs": [
+        "REQUEST"
+      ],
+      "outputContract": "recommended-route-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": false,
+        "shell": "denied",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    },
+    {
+      "id": "senior-explore",
+      "contract": "../../nova-plugin/skills/nova-senior-explore/SKILL.md",
+      "stage": "explore",
+      "risk": "low",
+      "requiredInputs": [
+        "INTENT",
+        "CONTEXT"
+      ],
+      "outputContract": "senior-exploration-v2",
+      "capabilities": {
+        "workspaceRead": true,
+        "workspaceWrite": true,
+        "shell": "denied",
+        "network": false,
+        "credentials": false,
+        "userScopeMutation": false,
+        "externalPublish": false,
+        "gitHistoryMutation": false
+      }
+    }
+  ]
+}

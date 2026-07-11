@@ -13,7 +13,10 @@ import {
   readFileSync,
   readSync,
   readdirSync,
+  lstatSync,
+  mkdirSync,
   statSync,
+  writeFileSync,
 } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { basename, dirname, extname, relative, resolve, sep } from 'node:path';
@@ -96,6 +99,21 @@ const historicalSegments = [
   ['docs', 'reports', 'archive'],
   ['nova-plugin', 'docs', 'history'],
 ];
+
+const fatalCredentialLabels = new Set([
+  'private key block',
+  'OpenAI API key',
+  'GitHub token',
+  'Slack token',
+  'npm token',
+  'JWT',
+  'AWS access key',
+  'Azure storage secret',
+  'GCP API key',
+  'Authorization bearer',
+  'hard-coded secret assignment',
+  'real .env value',
+]);
 
 const runtimeSecretChecks = secretChecks
   .filter((check) => !['Authorization bearer', 'secret assignment'].includes(check.label))
@@ -187,9 +205,10 @@ function trackedFiles(rootDir) {
     encoding: 'utf8',
     shell: false,
   });
-  const files = result.error || result.status !== 0 || !result.stdout
-    ? []
-    : result.stdout.split('\0').filter(Boolean).map((path) => path.replace(/\\/g, '/'));
+  if (result.error || result.status !== 0) {
+    throw new Error(result.error?.message || result.stderr || 'git ls-files failed');
+  }
+  const files = result.stdout.split('\0').filter(Boolean).map((path) => path.replace(/\\/g, '/'));
   trackedFilesByRoot.set(rootDir, files);
   return files;
 }
@@ -257,9 +276,24 @@ function loadAllowlist(rootDir, relPath = DEFAULT_ALLOWLIST_PATH) {
   if (!existsSync(fullPath)) return new Set();
   const raw = JSON.parse(readFileSync(fullPath, 'utf8'));
   const entries = Array.isArray(raw.warnings) ? raw.warnings : [];
-  return new Set(entries
-    .filter((entry) => typeof entry?.path === 'string' && typeof entry?.label === 'string')
-    .map((entry) => `${entry.path.replace(/\\/g, '/')}::${entry.label}`));
+  const now = Date.now();
+  return new Set(entries.map((entry) => {
+    for (const field of ['path', 'label', 'owner', 'reason', 'createdAt', 'expiresAt', 'issue']) {
+      if (typeof entry?.[field] !== 'string' || !entry[field].trim()) {
+        throw new Error(`distribution risk allowlist entry requires ${field}`);
+      }
+    }
+    const createdAt = Date.parse(entry.createdAt);
+    const expiresAt = Date.parse(entry.expiresAt);
+    if (!Number.isFinite(createdAt) || !Number.isFinite(expiresAt) || expiresAt <= createdAt) {
+      throw new Error(`distribution risk allowlist entry has invalid dates: ${entry.path}`);
+    }
+    if (expiresAt <= now) throw new Error(`distribution risk allowlist entry expired: ${entry.path}`);
+    if (fatalCredentialLabels.has(entry.label)) {
+      throw new Error(`credential findings cannot be allowlisted: ${entry.path}::${entry.label}`);
+    }
+    return `${entry.path.replace(/\\/g, '/')}::${entry.label}`;
+  }));
 }
 
 function isAllowlistedWarning(rootDir, absPath, label, allowlist) {
@@ -285,10 +319,10 @@ function recordFinding({ rootDir, absPath, src, match, label, allowlist, errors,
   const historical = isHistorical(rootDir, absPath);
   const allowlisted = historical && isAllowlistedWarning(rootDir, absPath, label, allowlist);
 
-  if (historical) {
-    warnings.push({ ...item, scope: allowlisted ? 'allowlisted historical' : 'historical' });
+  if (historical && allowlisted && !fatalCredentialLabels.has(label)) {
+    warnings.push({ ...item, scope: 'allowlisted historical' });
   } else {
-    errors.push({ ...item, scope: 'active' });
+    errors.push({ ...item, scope: historical ? 'historical' : 'active' });
   }
 }
 
@@ -319,6 +353,8 @@ function trackedCodexArtifacts(rootDir) {
 
 export function scanDistributionRisk(options = {}) {
   const rootDir = resolve(options.rootDir ?? defaultRoot);
+  const mode = options.mode ?? 'workspace';
+  if (!['workspace', 'release'].includes(mode)) throw new Error(`unsupported scan mode: ${mode}`);
   const allowlist = loadAllowlist(rootDir, options.allowlistPath ?? DEFAULT_ALLOWLIST_PATH);
   const errors = [];
   const warnings = [];
@@ -332,9 +368,23 @@ export function scanDistributionRisk(options = {}) {
     });
   }
 
-  for (const file of walk(rootDir, rootDir)) {
+  const files = mode === 'release'
+    ? trackedFiles(rootDir).map((path) => resolve(rootDir, path))
+    : walk(rootDir, rootDir);
+  for (const file of files) {
     let src;
     try {
+      const lstat = lstatSync(file);
+      if (lstat.isSymbolicLink()) {
+        recordPathFinding({
+          rootDir,
+          relPath: rel(rootDir, file),
+          label: 'tracked symbolic link requires distribution review',
+          errors,
+        });
+        continue;
+      }
+      if (!lstat.isFile()) continue;
       const stats = statSync(file);
       if (!isTextCandidate(file, basename(file), stats.size)) continue;
       if (stats.size > MAX_TEXT_FILE_BYTES) {
@@ -375,8 +425,50 @@ export function scanDistributionRisk(options = {}) {
   return { errors, warnings };
 }
 
-function runCli() {
-  const { errors, warnings } = scanDistributionRisk({ rootDir: defaultRoot });
+export function distributionRiskSarif({ errors, warnings }) {
+  const findings = [...errors.map((finding) => ({ ...finding, level: 'error' })), ...warnings.map((finding) => ({ ...finding, level: 'warning' }))];
+  const rules = [...new Set(findings.map((finding) => finding.label))].sort().map((label) => ({
+    id: label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+    name: label,
+    shortDescription: { text: label },
+  }));
+  const ruleIds = new Map(rules.map((rule) => [rule.name, rule.id]));
+  return {
+    version: '2.1.0',
+    $schema: 'https://json.schemastore.org/sarif-2.1.0.json',
+    runs: [{
+      tool: { driver: { name: 'nova-distribution-risk', rules } },
+      results: findings.map((finding) => ({
+        ruleId: ruleIds.get(finding.label),
+        level: finding.level,
+        message: { text: `${finding.scope} ${finding.label}` },
+        locations: [{ physicalLocation: { artifactLocation: { uri: finding.path }, region: { startLine: finding.line } } }],
+      })),
+    }],
+  };
+}
+
+function runCli(args = process.argv.slice(2)) {
+  let mode = 'release';
+  let sarifPath = null;
+  for (let index = 0; index < args.length; index += 1) {
+    if (args[index] === '--workspace') mode = 'workspace';
+    else if (args[index] === '--sarif') sarifPath = args[++index];
+    else {
+      console.error('Usage: node scripts/scan-distribution-risk.mjs [--workspace] [--sarif <path>]');
+      return 2;
+    }
+  }
+  if (sarifPath == null && args.includes('--sarif')) {
+    console.error('ERROR --sarif requires a path');
+    return 2;
+  }
+  const { errors, warnings } = scanDistributionRisk({ rootDir: defaultRoot, mode });
+  if (sarifPath) {
+    const resolvedSarifPath = resolve(defaultRoot, sarifPath);
+    mkdirSync(dirname(resolvedSarifPath), { recursive: true });
+    writeFileSync(resolvedSarifPath, `${JSON.stringify(distributionRiskSarif({ errors, warnings }), null, 2)}\n`, 'utf8');
+  }
 
   if (warnings.length) {
     console.warn('Distribution risk warnings:');
@@ -394,5 +486,5 @@ function runCli() {
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === scriptPath) {
-  process.exitCode = runCli();
+  process.exitCode = runCli(process.argv.slice(2));
 }

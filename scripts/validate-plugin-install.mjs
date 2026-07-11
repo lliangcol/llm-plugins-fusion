@@ -6,7 +6,9 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  lstatSync,
   readFileSync,
+  readlinkSync,
   readdirSync,
   rmSync,
   statSync,
@@ -95,29 +97,42 @@ export function assertMarketplaceRef(entry, expectedRef, localSource) {
   }
 }
 
-function relativeFiles(rootDir, current = rootDir) {
-  const files = [];
-  for (const entry of readdirSync(current, { withFileTypes: true })) {
-    const abs = resolve(current, entry.name);
-    if (entry.isDirectory()) files.push(...relativeFiles(rootDir, abs));
-    else if (entry.isFile()) files.push(relative(rootDir, abs).replaceAll('\\', '/'));
-  }
-  return files.sort();
+function manifestMode(stat, type) {
+  if (type === 'symlink') return '120000';
+  const permissions = (stat.mode & 0o777).toString(8).padStart(3, '0');
+  return `${type === 'directory' ? '040' : '100'}${permissions}`;
 }
 
-export function treeDigest(rootDir, { ignoreClaudeRuntimeMarkers = false } = {}) {
-  const hash = createHash('sha256');
-  for (const relPath of relativeFiles(rootDir)) {
-    if (
-      ignoreClaudeRuntimeMarkers
-      && (relPath === '.in_use' || relPath.startsWith('.in_use/'))
-    ) continue;
-    hash.update(relPath);
-    hash.update('\0');
-    hash.update(readFileSync(resolve(rootDir, relPath)));
-    hash.update('\0');
+export function treeManifest(rootDir, { ignoreClaudeRuntimeMarkers = false } = {}, current = rootDir) {
+  const entries = [];
+  for (const entry of readdirSync(current, { withFileTypes: true })) {
+    const abs = resolve(current, entry.name);
+    const relPath = relative(rootDir, abs).replaceAll('\\', '/');
+    if (ignoreClaudeRuntimeMarkers && (relPath === '.in_use' || relPath.startsWith('.in_use/'))) continue;
+    const stat = lstatSync(abs);
+    if (stat.isDirectory()) {
+      entries.push({ path: relPath, type: 'directory', mode: manifestMode(stat, 'directory') });
+      entries.push(...treeManifest(rootDir, { ignoreClaudeRuntimeMarkers }, abs));
+    } else if (stat.isFile()) {
+      const content = readFileSync(abs);
+      entries.push({
+        path: relPath,
+        type: 'file',
+        mode: manifestMode(stat, 'file'),
+        bytes: content.length,
+        sha256: createHash('sha256').update(content).digest('hex'),
+      });
+    } else if (stat.isSymbolicLink()) {
+      entries.push({ path: relPath, type: 'symlink', mode: manifestMode(stat, 'symlink'), target: readlinkSync(abs) });
+    } else {
+      throw new Error(`unsupported install tree entry: ${relPath}`);
+    }
   }
-  return hash.digest('hex');
+  return entries.sort((left, right) => left.path.localeCompare(right.path));
+}
+
+export function treeDigest(rootDir, options = {}) {
+  return createHash('sha256').update(JSON.stringify(treeManifest(rootDir, options))).digest('hex');
 }
 
 function readJson(relPath) {
@@ -167,7 +182,7 @@ export function buildInstallEvidence({
     errors.push('plugin manifest validation did not pass');
   }
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     generatedAt,
     claudeVersion,
     knownGoodClaudeCli,
@@ -180,6 +195,7 @@ export function buildInstallEvidence({
     sourceTreeDigest,
     installedTreeDigest,
     installedTreeIgnoredPaths: ['.in_use/**'],
+    treeManifestVersion: 2,
     routeSmoke,
     validation: { passed: errors.length === 0, errors },
   };

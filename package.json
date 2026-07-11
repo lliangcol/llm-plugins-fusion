@@ -1,16 +1,21 @@
 {
   "name": "llm-plugins-fusion-maintenance",
-  "version": "2.4.1",
+  "version": "3.0.0",
   "private": true,
   "description": "Maintainer shortcuts for validating the llm-plugins-fusion repository.",
   "type": "module",
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "scripts": {
     "doctor": "node scripts/doctor.mjs",
     "demo:route": "node scripts/demo-route.mjs",
     "demo:review": "node scripts/demo-review.mjs",
+    "eval:route": "node scripts/validate-route-conformance.mjs",
+    "eval:surfaces": "node scripts/evaluate-workflow-surfaces.mjs",
+    "eval:adapters": "node scripts/validate-adapter-conformance.mjs",
+    "eval:quality": "node scripts/validate-workflow-quality-evals.mjs",
+    "eval:evidence": "node scripts/validate-assistant-evidence.mjs",
     "test:unit": "node scripts/run-node-tests.mjs --suite unit",
     "test:integration": "node scripts/run-node-tests.mjs --suite integration",
     "test:e2e": "node scripts/run-node-tests.mjs --suite e2e",
@@ -20,6 +25,11 @@
     "lint": "node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs",
     "ci:quick": "node scripts/validate-schemas.mjs && node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs && node scripts/validate-hooks.mjs",
     "ci:full": "node scripts/validate-all.mjs",
+    "check:contracts": "node scripts/validate-all.mjs",
+    "check:tests": "npm test",
+    "check:coverage": "npm run test:coverage:check",
+    "check:release": "npm run validate:maintainer && npm run test:coverage:check && node scripts/validate-plugin-install.mjs --dry-run",
+    "check": "npm run validate:maintainer && npm run test:coverage:check",
     "validate": "node scripts/validate-all.mjs",
     "validate:drift": "node scripts/generate-registry.mjs",
     "validate:maintainer": "node scripts/validate-maintainer.mjs",
@@ -31,9 +41,12 @@
     "validate:surface": "node scripts/validate-surface-budget.mjs",
     "validate:workflow": "node scripts/validate-workflow-fixtures.mjs",
     "validate:permissions": "node scripts/generate-workflow-permissions.mjs",
+    "normalize:surfaces": "node scripts/normalize-workflow-surfaces.mjs --write",
+    "generate:adapters": "node scripts/generate-adapters.mjs --write",
     "scan:secrets": "node scripts/scan-distribution-risk.mjs",
     "scan:distribution": "node scripts/scan-distribution-risk.mjs",
     "release:evidence": "node scripts/generate-release-evidence.mjs",
+    "release:artifacts": "node scripts/build-release-artifacts.mjs",
     "scaffold:consumer": "node scripts/scaffold-consumer-profile.mjs"
   }
 }

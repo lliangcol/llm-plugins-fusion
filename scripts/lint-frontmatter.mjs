@@ -11,7 +11,7 @@
  *     - destructive-actions (enum: none|low|medium|high)
  *     - allowed-tools / disallowed-tools (space-separated strings)
  *     - native user-invocable / disable-model-invocation fields
- *     - invokes.skill (string matching nova-<id>)
+ *     - direct supporting-contract adapter body with no runtime Skill delegation
  *
  *   skills/nova-*\/SKILL.md required:
  *     - name (string, matches folder)
@@ -38,17 +38,15 @@ const permissionSpec = JSON.parse(readFileSync(
   'utf8',
 ));
 const permissionById = new Map(permissionSpec.workflows.map((workflow) => [workflow.id, workflow]));
+const workflowSpec = JSON.parse(readFileSync(resolve(root, 'workflow-specs/workflows.json'), 'utf8'));
+const workflowById = new Map(workflowSpec.workflows.map((workflow) => [workflow.id, workflow]));
 
 const STAGES = new Set(['explore', 'plan', 'implement', 'review', 'finalize']);
 const DESTRUCTIVE = new Set(['none', 'low', 'medium', 'high']);
 const STANDARD_SKILL_HEADINGS = [
-  'Inputs',
-  'Parameter Resolution',
-  'Safety Preflight',
-  'Outputs',
-  'Workflow',
-  'Failure Modes',
-  'Examples',
+  'Shared Execution Policy',
+  'Execution',
+  'Workflow Contract',
 ];
 
 const errors = [];
@@ -248,18 +246,19 @@ function lintCommands() {
     lintToolRisk(rel, obj['allowed-tools'], obj['destructive-actions'], src);
     lintNativePermissions(rel, obj, permissionById.get(expectedId));
 
-    if (!obj.invokes || typeof obj.invokes !== 'object') {
-      recordError(rel, 'missing invokes.skill');
-    } else {
-      const expectSkill = `nova-${expectedId}`;
-      if (!obj.invokes.skill) recordError(rel, 'missing invokes.skill');
-      else if (obj.invokes.skill !== expectSkill) recordError(rel, `invokes.skill "${obj.invokes.skill}" expected "${expectSkill}"`);
+    if (obj.invokes !== undefined) recordError(rel, 'runtime invokes delegation is forbidden');
+    const workflow = workflowById.get(expectedId);
+    if (!workflow) recordError(rel, 'missing canonical workflow spec entry');
+    else {
+      if (!src.includes('Execute this workflow directly from `$ARGUMENTS`')) recordError(rel, 'missing direct execution adapter contract');
+      if (!src.includes(`\${CLAUDE_PLUGIN_ROOT}/${workflow.contractPath}`)) recordError(rel, `missing supporting contract ${workflow.contractPath}`);
+      if (!src.includes(`Do not invoke the compatibility skill \`${workflow.legacyAlias}\``)) recordError(rel, 'missing no-delegation compatibility boundary');
     }
 
     commandContracts.set(expectedId, {
       rel,
       id: expectedId,
-      skill: obj.invokes?.skill,
+      skill: `nova-${expectedId}`,
       allowedTools: obj['allowed-tools'],
       disallowedTools: obj['disallowed-tools'],
       modelInvocable: !obj['disable-model-invocation'],
@@ -329,7 +328,7 @@ function lintSkills() {
       }
     }
     if (hasSideEffectTool(obj['allowed-tools'])) {
-      if (!src.includes('nova-plugin/skills/_shared/safety-preflight.md')) {
+      if (!src.includes('../_shared/safety-preflight.md') && !src.includes('nova-plugin/skills/_shared/safety-preflight.md')) {
         recordError(rel, 'side-effect-capable skill must reference nova-plugin/skills/_shared/safety-preflight.md');
       }
     }

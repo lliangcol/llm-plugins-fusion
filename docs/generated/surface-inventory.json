@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": {
     "pluginName": "nova-plugin",
-    "pluginVersion": "2.4.1",
+    "pluginVersion": "3.0.0",
     "registrySource": ".claude-plugin/registry.source.json",
     "registryPluginCount": 1
   },
@@ -19,147 +19,189 @@
       "id": "backend-plan",
       "stage": "plan",
       "destructiveActions": "low",
-      "invokesSkill": "nova-backend-plan",
+      "supportingContract": "nova-plugin/skills/nova-backend-plan/SKILL.md",
+      "compatibilitySkill": "nova-backend-plan",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/backend-plan.md"
     },
     {
       "id": "codex-review-fix",
       "stage": "implement",
       "destructiveActions": "medium",
-      "invokesSkill": "nova-codex-review-fix",
+      "supportingContract": "nova-plugin/skills/nova-codex-review-fix/SKILL.md",
+      "compatibilitySkill": "nova-codex-review-fix",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/codex-review-fix.md"
     },
     {
       "id": "codex-review-only",
       "stage": "review",
       "destructiveActions": "low",
-      "invokesSkill": "nova-codex-review-only",
+      "supportingContract": "nova-plugin/skills/nova-codex-review-only/SKILL.md",
+      "compatibilitySkill": "nova-codex-review-only",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/codex-review-only.md"
     },
     {
       "id": "codex-verify-only",
       "stage": "review",
       "destructiveActions": "low",
-      "invokesSkill": "nova-codex-verify-only",
+      "supportingContract": "nova-plugin/skills/nova-codex-verify-only/SKILL.md",
+      "compatibilitySkill": "nova-codex-verify-only",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/codex-verify-only.md"
     },
     {
       "id": "explore",
       "stage": "explore",
       "destructiveActions": "none",
-      "invokesSkill": "nova-explore",
+      "supportingContract": "nova-plugin/skills/nova-explore/SKILL.md",
+      "compatibilitySkill": "nova-explore",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/explore.md"
     },
     {
       "id": "explore-lite",
       "stage": "explore",
       "destructiveActions": "none",
-      "invokesSkill": "nova-explore-lite",
+      "supportingContract": "nova-plugin/skills/nova-explore-lite/SKILL.md",
+      "compatibilitySkill": "nova-explore-lite",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/explore-lite.md"
     },
     {
       "id": "explore-review",
       "stage": "explore",
       "destructiveActions": "none",
-      "invokesSkill": "nova-explore-review",
+      "supportingContract": "nova-plugin/skills/nova-explore-review/SKILL.md",
+      "compatibilitySkill": "nova-explore-review",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/explore-review.md"
     },
     {
       "id": "finalize-lite",
       "stage": "finalize",
       "destructiveActions": "none",
-      "invokesSkill": "nova-finalize-lite",
+      "supportingContract": "nova-plugin/skills/nova-finalize-lite/SKILL.md",
+      "compatibilitySkill": "nova-finalize-lite",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/finalize-lite.md"
     },
     {
       "id": "finalize-work",
       "stage": "finalize",
       "destructiveActions": "none",
-      "invokesSkill": "nova-finalize-work",
+      "supportingContract": "nova-plugin/skills/nova-finalize-work/SKILL.md",
+      "compatibilitySkill": "nova-finalize-work",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/finalize-work.md"
     },
     {
       "id": "implement-lite",
       "stage": "implement",
       "destructiveActions": "medium",
-      "invokesSkill": "nova-implement-lite",
+      "supportingContract": "nova-plugin/skills/nova-implement-lite/SKILL.md",
+      "compatibilitySkill": "nova-implement-lite",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/implement-lite.md"
     },
     {
       "id": "implement-plan",
       "stage": "implement",
       "destructiveActions": "medium",
-      "invokesSkill": "nova-implement-plan",
+      "supportingContract": "nova-plugin/skills/nova-implement-plan/SKILL.md",
+      "compatibilitySkill": "nova-implement-plan",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/implement-plan.md"
     },
     {
       "id": "implement-standard",
       "stage": "implement",
       "destructiveActions": "medium",
-      "invokesSkill": "nova-implement-standard",
+      "supportingContract": "nova-plugin/skills/nova-implement-standard/SKILL.md",
+      "compatibilitySkill": "nova-implement-standard",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/implement-standard.md"
     },
     {
       "id": "plan-lite",
       "stage": "plan",
       "destructiveActions": "none",
-      "invokesSkill": "nova-plan-lite",
+      "supportingContract": "nova-plugin/skills/nova-plan-lite/SKILL.md",
+      "compatibilitySkill": "nova-plan-lite",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/plan-lite.md"
     },
     {
       "id": "plan-review",
       "stage": "plan",
       "destructiveActions": "none",
-      "invokesSkill": "nova-plan-review",
+      "supportingContract": "nova-plugin/skills/nova-plan-review/SKILL.md",
+      "compatibilitySkill": "nova-plan-review",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/plan-review.md"
     },
     {
       "id": "produce-plan",
       "stage": "plan",
       "destructiveActions": "low",
-      "invokesSkill": "nova-produce-plan",
+      "supportingContract": "nova-plugin/skills/nova-produce-plan/SKILL.md",
+      "compatibilitySkill": "nova-produce-plan",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/produce-plan.md"
     },
     {
       "id": "review",
       "stage": "review",
       "destructiveActions": "none",
-      "invokesSkill": "nova-review",
+      "supportingContract": "nova-plugin/skills/nova-review/SKILL.md",
+      "compatibilitySkill": "nova-review",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/review.md"
     },
     {
       "id": "review-lite",
       "stage": "review",
       "destructiveActions": "none",
-      "invokesSkill": "nova-review-lite",
+      "supportingContract": "nova-plugin/skills/nova-review-lite/SKILL.md",
+      "compatibilitySkill": "nova-review-lite",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/review-lite.md"
     },
     {
       "id": "review-only",
       "stage": "review",
       "destructiveActions": "none",
-      "invokesSkill": "nova-review-only",
+      "supportingContract": "nova-plugin/skills/nova-review-only/SKILL.md",
+      "compatibilitySkill": "nova-review-only",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/review-only.md"
     },
     {
       "id": "review-strict",
       "stage": "review",
       "destructiveActions": "none",
-      "invokesSkill": "nova-review-strict",
+      "supportingContract": "nova-plugin/skills/nova-review-strict/SKILL.md",
+      "compatibilitySkill": "nova-review-strict",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/review-strict.md"
     },
     {
       "id": "route",
       "stage": "explore",
       "destructiveActions": "none",
-      "invokesSkill": "nova-route",
+      "supportingContract": "nova-plugin/skills/nova-route/SKILL.md",
+      "compatibilitySkill": "nova-route",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/route.md"
     },
     {
       "id": "senior-explore",
       "stage": "explore",
       "destructiveActions": "low",
-      "invokesSkill": "nova-senior-explore",
+      "supportingContract": "nova-plugin/skills/nova-senior-explore/SKILL.md",
+      "compatibilitySkill": "nova-senior-explore",
+      "runtimeDelegation": false,
       "path": "nova-plugin/commands/senior-explore.md"
     }
   ],
@@ -644,7 +686,7 @@
       "generated": true,
       "pluginCount": 1,
       "pluginVersions": [
-        "nova-plugin@2.4.1"
+        "nova-plugin@3.0.0"
       ]
     },
     {
@@ -652,7 +694,7 @@
       "generated": true,
       "pluginCount": 1,
       "pluginVersions": [
-        "nova-plugin@2.4.1"
+        "nova-plugin@3.0.0"
       ]
     },
     {
@@ -660,7 +702,7 @@
       "generated": true,
       "pluginCount": 1,
       "pluginVersions": [
-        "nova-plugin@2.4.1"
+        "nova-plugin@3.0.0"
       ]
     }
   ],

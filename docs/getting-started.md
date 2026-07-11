@@ -11,14 +11,14 @@ capability pack internals first.
 Prerequisites:
 
 - Claude Code with third-party marketplace support.
-- Node.js 20+ and Bash 3.2+ for Write/Edit workflows protected by the active write guard.
-- Node.js 20+ when maintaining this repository or running local validators.
+- Node.js 22+ for Write/Edit workflows protected by the active write guard.
+- Node.js 22+ when maintaining this repository or running local validators; Bash 3.2+ remains required for compatibility launchers and Codex helpers.
 - Codex CLI and Bash 3.2+ only for Codex loop commands such as `/nova-plugin:codex-review-fix`.
 
 Minute 1: add the marketplace and install the plugin:
 
 ```text
-/plugin marketplace add lliangcol/llm-plugins-fusion@v2.4.1
+/plugin marketplace add lliangcol/llm-plugins-fusion@v3.0.0
 /plugin install nova-plugin@llm-plugins-fusion
 ```
 
@@ -51,7 +51,7 @@ available, record it as `skipped` or `not run` with the reason.
 
 If you only want to inspect the workflow shape without Claude Code, Codex CLI,
 marketplace installation, network access, or private consumer context, run the
-deterministic fixture demos from a clean Node.js 20+ checkout:
+deterministic fixture demos from a clean Node.js 22+ checkout:
 
 ```bash
 npm run demo:route

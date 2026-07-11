@@ -543,7 +543,7 @@ function validateWorkflowContracts() {
         releaseSrc,
         'permissions',
         4,
-        [['contents', 'write']],
+        [['contents', 'write'], ['id-token', 'write'], ['attestations', 'write']],
         'release job scoped write permission',
         releaseJob.start + 1,
         releaseJob.end,
@@ -600,8 +600,8 @@ function validateWorkflowContracts() {
   if (!/Dependency graph is unavailable for protected same-repository PR/.test(dependencyReviewSrc)) {
     recordError(dependencyReviewFile, 'dependency review fail-closed contract requires same-repository PR failure text');
   }
-  if (!/Maintainers must confirm Dependency Review coverage before merge/.test(dependencyReviewSrc)) {
-    recordError(dependencyReviewFile, 'dependency review fail-closed contract requires fork skip maintainer follow-up text');
+  if (!/Dependency review is blocked for this fork PR[\s\S]*maintainer security approval is required/.test(dependencyReviewSrc)) {
+    recordError(dependencyReviewFile, 'dependency review fail-closed contract requires fork blocked maintainer approval text');
   }
 }
 
@@ -638,8 +638,8 @@ function validateCiRuntimeEvidenceContracts() {
   const coverageLines = extractCiJobLines('test-coverage');
   if (coverageLines) {
     const coverage = coverageLines.join('\n');
-    if (!/node-version:\s*['"]20['"]/.test(coverage)) {
-      recordError(file, 'Test Coverage must run on the minimum supported Node 20 lane');
+    if (!/node-version:\s*['"]22['"]/.test(coverage)) {
+      recordError(file, 'Test Coverage must run on the minimum supported Node 22 lane');
     }
     if (!/run:\s*npm run test:coverage:check/.test(coverage)) {
       recordError(file, 'Test Coverage must run npm run test:coverage:check');

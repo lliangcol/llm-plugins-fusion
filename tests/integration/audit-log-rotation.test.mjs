@@ -7,10 +7,19 @@ import test from 'node:test';
 import { runProcess } from '../../scripts/lib/process-runner.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
-const payload = JSON.stringify({ tool_name: 'Write', tool_input: { file_path: 'README.md' } });
+const payload = JSON.stringify({
+  hook_event_name: 'PostToolUse',
+  session_id: 'session-1',
+  tool_use_id: 'tool-1',
+  tool_name: 'Write',
+  tool_input: { file_path: 'README.md' },
+  tool_response: { success: true },
+});
 const notebookPayload = JSON.stringify({
+  hook_event_name: 'PostToolUse',
   tool_name: 'NotebookEdit',
   tool_input: { notebook_path: 'analysis.ipynb', cell_id: 'cell-1', new_source: 'print("changed")' },
+  tool_response: { success: true },
 });
 
 async function blockedRotationRoot(t) {
@@ -46,7 +55,11 @@ for (const [label, command, args] of [
     });
     assert.equal(result.ok, true, result.stderr);
     assert.equal((await stat(join(root, 'audit.log.1'))).size, before);
-    assert.match(await readFile(join(root, 'audit.log'), 'utf8'), /Write\s+SUCCESS\s+README\.md/);
+    const record = JSON.parse((await readFile(join(root, 'audit.log'), 'utf8')).trim());
+    assert.equal(record.schemaVersion, 2);
+    assert.equal(record.tool, 'Write');
+    assert.equal(record.outcome, 'success');
+    assert.equal(record.summary, 'README.md');
   });
 
   test(`${label} audit rotation preserves the active log when the target is a directory`, async (t) => {
@@ -71,7 +84,29 @@ for (const [label, command, args] of [
       input: notebookPayload,
     });
     assert.equal(result.ok, true, result.stderr);
-    assert.match(await readFile(join(root, 'audit.log'), 'utf8'), /NotebookEdit\s+SUCCESS\s+analysis\.ipynb/);
+    const record = JSON.parse((await readFile(join(root, 'audit.log'), 'utf8')).trim());
+    assert.equal(record.tool, 'NotebookEdit');
+    assert.equal(record.outcome, 'success');
+    assert.equal(record.summary, 'analysis.ipynb');
   });
 
 }
+
+test('audit logger distinguishes failed, denied, and unknown outcomes', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'nova-audit-outcomes-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  for (const [event, outcome] of [
+    ['PostToolUseFailure', 'failed'],
+    ['PermissionDenied', 'denied'],
+    ['UnexpectedEvent', 'unknown'],
+  ]) {
+    const result = await runProcess(`Node ${outcome} audit`, process.execPath, ['nova-plugin/hooks/scripts/post-audit-log.mjs'], {
+      cwd: repoRoot,
+      env: { ...process.env, CLAUDE_PLUGIN_DATA: root },
+      input: JSON.stringify({ hook_event_name: event, tool_name: 'Bash', tool_input: { command: 'false' } }),
+    });
+    assert.equal(result.ok, true, result.stderr);
+  }
+  const records = (await readFile(join(root, 'audit.log'), 'utf8')).trim().split('\n').map(JSON.parse);
+  assert.deepEqual(records.map((record) => record.outcome), ['failed', 'denied', 'unknown']);
+});
