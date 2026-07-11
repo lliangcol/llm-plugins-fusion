@@ -72,6 +72,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   ShellCheck 诊断。
 - 修复 `verify-agents.sh` 在 `pipefail` 下因 `grep -q` 提前退出触发 broken
   pipe、进而在 macOS runner 误判合法 agent 文件的问题。
+- `verify-agents.sh` 现在在 `awk` 内先规范化行尾 `\r`，使 CRLF agent 的
+  frontmatter 与正文分隔符和 LF 文件保持同样的验证行为。
 - 回归测试的 prompt 文档负向 fixture 改为按 Markdown heading 边界确定性
   变异并立即校验，避免平台文本差异导致预期错误集合偶发缺项。
 - 补齐 workflow evaluation 的依赖为零 runnable fixture，使

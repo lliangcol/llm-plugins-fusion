@@ -88,7 +88,7 @@ for file_name in "${actual[@]}"; do
     echo "ERROR: $file_name is missing YAML frontmatter." >&2
     exit 1
   fi
-  frontmatter="$(awk 'NR==1 && $0=="---"{in_fm=1; next} in_fm && $0=="---"{exit} in_fm{print}' "$file_path" | tr -d '\r')"
+  frontmatter="$(awk '{sub(/\r$/, "")} NR==1 && $0=="---"{in_fm=1; next} in_fm && $0=="---"{exit} in_fm{print}' "$file_path")"
   for field in name description tools; do
     if ! grep -Eq "^${field}:[[:space:]]*[^[:space:]]" <<< "$frontmatter"; then
       echo "ERROR: $file_name frontmatter missing required field: $field" >&2
@@ -101,7 +101,7 @@ for file_name in "${actual[@]}"; do
     echo "ERROR: $file_name frontmatter name must equal basename '$expected_name'." >&2
     exit 1
   fi
-  body="$(awk 'BEGIN{delims=0} /^---\r?$/{delims++; next} delims>=2{print}' "$file_path" | tr -d '\r')"
+  body="$(awk 'BEGIN{delims=0} {sub(/\r$/, "")} /^---$/{delims++; next} delims>=2{print}' "$file_path")"
   for section in "${required_sections[@]}"; do
     if ! grep -Fq "$section" <<< "$body"; then
       echo "ERROR: $file_name body missing required label: $section" >&2
