@@ -8,18 +8,19 @@ allowed-tools: Read Glob Grep Write Edit
 disallowed-tools: NotebookEdit
 user-invocable: true
 disable-model-invocation: true
-invokes:
-  skill: nova-implement-standard
 ---
 
 # /nova-plugin:implement-standard
 
-Invoke `nova-implement-standard` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-implement-standard` through the Skill tool.
 
-This is the controlled standard implementation entry. The skill is the source of truth for parameter resolution, execution rules, validation expectations, output format, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-implement-standard/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: implement
+- Owner agents: builder
+- Required inputs: `REQUEST`
+- Output contract: `implementation-standard-v2`
+- Risk: medium
+- Recommended packs: None
 
-- Uses `EXECUTION_BASIS` from confirmed steps, context, or a plan excerpt.
-- Allows minor corrective adjustments while preserving scope.
-- `/nova-plugin:implement-lite` remains available for smaller tasks.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

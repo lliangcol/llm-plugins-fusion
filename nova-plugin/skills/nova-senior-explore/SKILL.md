@@ -14,65 +14,23 @@ metadata:
 argument-hint: "Example: senior-explore INTENT=incident DEPTH=deep EXPORT_PATH=docs/analysis/incident.md"
 ---
 
-## Inputs
+## Shared Execution Policy
 
-| Parameter | Required | Default | Notes |
-| --- | --- | --- | --- |
-| `INTENT` | Yes | Remaining payload | Analysis intent, incident, requirement, or code area. |
-| `CONTEXT` | No | Probe from environment | Relevant files, symptoms, logs, or prior artifacts. |
-| `CONSTRAINTS` | No | None | Known limits or boundaries. |
-| `DEPTH` | No | normal | quick, normal, or deep. |
-| `EXPORT_PATH` | No | None | Safety-boundary analysis artifact path when export is requested. |
+This file is the supporting behavioral contract for `/nova-plugin:senior-explore` and the deprecated `/nova-plugin:nova-senior-explore` compatibility entrypoint. Prefer the direct command; the compatibility name remains only for the current major-version migration window.
 
-## Parameter Resolution
+- Resolve natural-language and explicit `KEY=value` inputs using `../_shared/parameter-resolution.md`; explicit non-conflicting values take precedence.
+- Apply `../_shared/safety-preflight.md` before side effects. Never infer approval, destructive scope, credentials, or output destinations.
+- Follow `../_shared/output-contracts.md` and `../_shared/artifact-policy.md`; report completed, skipped, and blocked validation truthfully.
+- Respect the frontmatter tool boundary. Missing inputs, unavailable dependencies, overlapping user changes, or repository-policy conflicts are blockers rather than permission to broaden scope.
 
-- Parse natural-language payload, explicit `KEY=value`, `--flag value`, and `--flag=value` forms from `$ARGUMENTS`.
-- Normalize parameter names to uppercase snake case and map known mode words before assigning remaining text to `INTENT`.
-- Explicit values win over inferred values only when they do not conflict with another explicit value.
-- Apply documented defaults only when unambiguous; probe Git status, base branches, and latest artifacts only for context parameters.
-- Safety-boundary parameters for this skill: `EXPORT_PATH`.
-- In non-interactive mode, fail before side effects when required or safety-boundary parameters are missing.
-- Full policy: `nova-plugin/skills/_shared/parameter-resolution.md`.
+## Execution
 
-## Safety Preflight
+1. Parse `$ARGUMENTS` against the workflow-specific inputs below.
+2. Read only the context required for the requested scope.
+3. Apply the workflow contract and its strict output format.
+4. Stop before unauthorized side effects; otherwise validate in proportion to risk and report residual risk.
 
-- This skill declares side-effect-capable tools: `Write`.
-- Resolve parameters and present a preflight card before writing artifacts, editing project files, or running Bash.
-- Show files or artifacts that may be written, scripts or commands that may run, disallowed operations, and the proceed condition.
-- Do not infer missing safety-boundary values; ask once in interactive mode or fail in non-interactive mode.
-- Preserve repository constraints: no destructive Git cleanup, no branch deletion, no push/merge/rebase, no editing archived agents as active agents.
-- Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.
-
-## Outputs
-
-- Follow the skill-specific output rules below and the shared output contract.
-- For written artifacts, report the path and a short executive summary instead of pasting the full artifact into chat.
-- For reviews and verification, lead with findings or verdicts and state residual risk.
-- Full policy: `nova-plugin/skills/_shared/output-contracts.md`.
-- Artifact policy: `nova-plugin/skills/_shared/artifact-policy.md`.
-
-## Workflow
-
-1. Resolve parameters using the shared policy and this skill's input table.
-2. Read only the context needed for the requested scope.
-3. Apply the skill-specific guidance and migrated slash command contract below.
-4. Respect safety preflight before any side effects.
-5. Produce the required output and report validation or skipped validation honestly.
-
-## Failure Modes
-
-- Required payload is missing or ambiguous.
-- A safety-boundary parameter is missing, conflicting, or unsafe to infer.
-- Required files, scripts, CLIs, credentials, or runtime dependencies are unavailable.
-- Existing user changes overlap the intended write scope and cannot be merged safely.
-- Repository policy conflicts with the requested action.
-
-## Examples
-
-- Use `/nova-plugin:senior-explore` for deep fact gathering and optional exported analysis.
-- Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
-
-## Skill-Specific Guidance
+## Workflow Contract
 
 ### Purpose
 
@@ -110,9 +68,7 @@ Conduct systematic analysis and surface findings/open questions/risks.
 - Analysis only, no solutioning.
 - Export must match chat output exactly.
 
-## Migrated Slash Command Contract
-
-Migrated from the pre-thin slash command contract for `/nova-plugin:senior-explore` (`nova-plugin/commands/senior-explore.md`).
+## Detailed Contract
 
 ### EXPLORE ONLY
 
@@ -154,7 +110,7 @@ Examples:
 - Understand a complex data / domain model
 
 Intent:
-$INTENT
+<INTENT>
 
 ---
 
@@ -171,7 +127,7 @@ You may include:
 - URLs or internal documents
 
 Context:
-$CONTEXT
+<CONTEXT>
 
 ---
 
@@ -188,7 +144,7 @@ Examples:
 - Assume current production behavior
 
 Constraints:
-$CONSTRAINTS
+<CONSTRAINTS>
 
 ---
 
@@ -201,7 +157,7 @@ Control how deep the analysis should go.
 - deep → systematic breakdown, edge cases, assumptions, unknowns
 
 Depth:
-$DEPTH
+<DEPTH>
 
 ---
 
@@ -214,7 +170,7 @@ If specified, export the analysis result as an **analysis artifact**.
 - The artifact represents a point-in-time analytical snapshot
 
 Export target (if any):
-$EXPORT_PATH
+<EXPORT_PATH>
 
 ---
 

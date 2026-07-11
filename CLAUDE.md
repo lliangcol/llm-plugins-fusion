@@ -54,7 +54,7 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
   `validate:github-workflows`, `validate:runtime`, `validate:regression`,
   `validate:surface`, `validate:workflow`, `scan:secrets`, `scan:distribution`,
   `scaffold:consumer`; no `check`/`build` script names)
-- Repository validation scripts require Node.js 20+. Distributed shell helpers
+- Repository validation scripts require Node.js 22+. Distributed shell helpers
   support Bash 3.2+. Hook shell syntax and runtime smoke checks require Bash;
   Windows without Bash may warning-skip
   local Bash-dependent checks, while CI/Linux and CI/Windows Bash smoke must
@@ -70,6 +70,9 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 | Registry-owned marketplace fields | `.claude-plugin/registry.source.json` |
 | Generated marketplace outputs | `.claude-plugin/marketplace.json`, `.claude-plugin/marketplace.metadata.json`, `docs/marketplace/catalog.md` |
 | Marketplace and plugin schemas | `schemas/registry-source.schema.json`, `schemas/marketplace.schema.json`, `schemas/marketplace-metadata.schema.json`, `schemas/plugin.schema.json` |
+| Canonical workflow, capability, ownership, input, and output contracts | `workflow-specs/workflows.json` |
+| Generated runtime permissions and workflow catalogs | `nova-plugin/runtime/workflow-permissions.json`, `nova-plugin/runtime/route-output-contract.json`, `docs/generated/workflow-catalog.*` |
+| Assistant adapters and evaluation datasets | `adapters/`, `evals/` |
 | Commands | `nova-plugin/commands/*.md` |
 | Skills | `nova-plugin/skills/nova-*/SKILL.md` |
 | Shared skill policies | `nova-plugin/skills/_shared/` |
@@ -87,6 +90,14 @@ Generated marketplace files must be updated from their sources with:
 
 ```bash
 node scripts/generate-registry.mjs --write
+```
+
+Workflow surfaces, runtime permissions, route ownership, catalogs, and adapters
+must be regenerated from `workflow-specs/workflows.json` with:
+
+```bash
+node scripts/generate-workflow-permissions.mjs --write
+node scripts/generate-adapters.mjs --write
 ```
 
 ## Repository Layout
@@ -340,14 +351,16 @@ routing docs, migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
 `nova-plugin/hooks/hooks.json` enables:
 
 - `PreToolUse`: matches `Write|Edit|NotebookEdit` and runs the thin
-  `hooks/scripts/pre-write-check.sh` Bash launcher. Node.js 20+ performs the
+  fail-closed Bash launcher. Node.js 22+ performs the
   fail-closed payload, target-type, secret, proposed Edit, and `hooks.json`
   validation. NotebookEdit fails closed because complete proposed notebook
   content cannot be reconstructed reliably.
 - `PostToolUse`: matches `Write|Edit|NotebookEdit|Bash` and asynchronously runs the thin
   `hooks/scripts/post-audit-log.sh` launcher backed by the Node audit logger.
 
-Hook scripts rely on `CLAUDE_PLUGIN_ROOT`, Bash 3.2+, and Node.js 20+. Exit 0
+Post-use audit hooks use exec-form Node.js 22+ with `CLAUDE_PLUGIN_ROOT`.
+PreToolUse retains a Bash 3.2+ launcher because a missing exec-form Node command
+is non-blocking in the supported Claude runtime; Codex helpers also use Bash. Exit 0
 means that the hook made no blocking decision; it is not a permission grant.
 `NOVA_WRITE_GUARD_DISABLED=1` is an explicit bypass and is not valid release
 evidence.

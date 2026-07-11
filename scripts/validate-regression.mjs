@@ -135,7 +135,11 @@ test('package maintainer shortcuts include the GitHub workflow validator', () =>
     packageJson.scripts['validate:workflow'],
     'node scripts/validate-workflow-fixtures.mjs',
   );
-  assert.equal(Object.hasOwn(packageJson.scripts, 'check'), false, 'package scripts must not define check');
+  assert.equal(packageJson.scripts['check:contracts'], 'node scripts/validate-all.mjs');
+  assert.equal(packageJson.scripts['check:tests'], 'npm test');
+  assert.equal(packageJson.scripts['check:coverage'], 'npm run test:coverage:check');
+  assert.match(packageJson.scripts['check:release'], /validate:maintainer/);
+  assert.match(packageJson.scripts.check, /validate:maintainer/);
   assert.equal(Object.hasOwn(packageJson.scripts, 'build'), false, 'package scripts must not define build');
 });
 
@@ -344,7 +348,11 @@ test('distribution risk allowlist only annotates historical warnings', () => {
           {
             path: 'docs/reports/archive/old.md',
             label: 'machine-local absolute path',
+            owner: 'security-maintainers',
             reason: 'historical regression fixture',
+            createdAt: '2026-01-01',
+            expiresAt: '2099-01-01',
+            issue: 'https://example.invalid/issues/1',
           },
         ],
       }, null, 2),
@@ -355,6 +363,38 @@ test('distribution risk allowlist only annotates historical warnings', () => {
     assert.equal(result.errors.length, 0);
     assert.equal(result.warnings.length, 1);
     assert.equal(result.warnings[0].scope, 'allowlisted historical');
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test('distribution risk keeps credentials fatal in historical paths', () => {
+  const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-risk-historical-credential-'));
+  try {
+    const archiveDir = resolve(tempRoot, 'docs/reports/archive');
+    mkdirSync(archiveDir, { recursive: true });
+    const privateKeyMarker = ['-----BEGIN', 'PRIVATE KEY-----'].join(' ');
+    writeFileSync(resolve(archiveDir, 'old.md'), `${privateKeyMarker}\nfixture\n`, 'utf8');
+    const result = scanDistributionRisk({ rootDir: tempRoot });
+    assert.equal(result.warnings.length, 0);
+    assert.equal(result.errors.some((finding) => finding.label === 'private key block'), true);
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test('release distribution risk uses tracked files and includes tracked IDE files', () => {
+  const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-risk-release-inventory-'));
+  try {
+    assert.equal(spawnSync('git', ['init'], { cwd: tempRoot, encoding: 'utf8', shell: false }).status, 0);
+    mkdirSync(resolve(tempRoot, '.vscode'), { recursive: true });
+    writeFileSync(resolve(tempRoot, '.vscode/settings.json'), `github_pat_${'a'.repeat(24)}\n`, 'utf8');
+    writeFileSync(resolve(tempRoot, 'untracked.md'), `npm_${'b'.repeat(36)}\n`, 'utf8');
+    assert.equal(spawnSync('git', ['add', '.vscode/settings.json'], { cwd: tempRoot, encoding: 'utf8', shell: false }).status, 0);
+
+    const result = scanDistributionRisk({ rootDir: tempRoot, mode: 'release' });
+    assert.equal(result.errors.some((finding) => finding.path === '.vscode/settings.json' && finding.label === 'GitHub token'), true);
+    assert.equal(result.errors.some((finding) => finding.path === 'untracked.md'), false);
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }
@@ -776,7 +816,7 @@ test('validate-docs enforces the deferred portal implementation boundary', () =>
     const portalIaPath = resolve(fixtureRoot, 'docs/marketplace/portal-information-architecture.md');
     const portalIa = readFileSync(portalIaPath, 'utf8');
     const driftedPortalIa = portalIa.replace(
-      /It is not an implemented public portal,[\s\S]*?activation evidence for `v3\.0\.0`\./,
+      /It is not an implemented public portal,[\s\S]*?evidence that a public portal is active\./,
       '',
     );
     assert.notEqual(driftedPortalIa, portalIa, 'portal boundary fixture mutation must apply');

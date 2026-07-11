@@ -8,18 +8,19 @@ allowed-tools: Read Glob Grep Write Edit
 disallowed-tools: NotebookEdit
 user-invocable: true
 disable-model-invocation: true
-invokes:
-  skill: nova-codex-review-fix
 ---
 
 # /nova-plugin:codex-review-fix
 
-Invoke `nova-codex-review-fix` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-codex-review-fix` through the Skill tool.
 
-This is the Codex review -> Claude Code fix -> local checks -> Codex verify loop. The skill is the source of truth for parameter resolution, script invocation, artifact policy, output format, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-fix/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: implement
+- Owner agents: reviewer, builder, verifier
+- Required inputs: `REVIEW_SCOPE`
+- Output contract: `codex-review-fix-v2`
+- Risk: medium
+- Recommended packs: None
 
-- Runs a bounded closure loop for high-confidence review findings.
-- Supports `REVIEW_MODE=branch|staged|full`, optional `BASE`, optional `OUTPUT_DIR`, optional `GOAL`, `FIX_SCOPE` policy, and `INCLUDE_UNTRACKED_CONTENT=true` only for explicit full-scope untracked content.
-- Only this Codex command may modify project files, and only within the selected fix scope.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

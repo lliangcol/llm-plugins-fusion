@@ -8,17 +8,19 @@ allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash
 user-invocable: true
 disable-model-invocation: false
-invokes:
-  skill: nova-plan-lite
 ---
 
 # /nova-plugin:plan-lite
 
-Invoke `nova-plan-lite` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-plan-lite` through the Skill tool.
 
-This is the lightweight planning slash entry. The skill is the source of truth for parameter resolution, execution rules, output format, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-plan-lite/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: plan
+- Owner agents: architect
+- Required inputs: `REQUEST`
+- Output contract: `plan-lite-v2`
+- Risk: none
+- Recommended packs: None
 
-- Produces quick execution alignment from `INPUT` and optional `CONSTRAINTS`.
-- Does not write formal artifacts or project code.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

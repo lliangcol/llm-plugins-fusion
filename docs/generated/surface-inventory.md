@@ -21,27 +21,27 @@ The JSON form is [surface-inventory.json](surface-inventory.json).
 
 | ID | Stage | Destructive actions | Invoked skill |
 | --- | --- | --- | --- |
-| `backend-plan` | plan | low | `nova-backend-plan` |
-| `codex-review-fix` | implement | medium | `nova-codex-review-fix` |
-| `codex-review-only` | review | low | `nova-codex-review-only` |
-| `codex-verify-only` | review | low | `nova-codex-verify-only` |
-| `explore` | explore | none | `nova-explore` |
-| `explore-lite` | explore | none | `nova-explore-lite` |
-| `explore-review` | explore | none | `nova-explore-review` |
-| `finalize-lite` | finalize | none | `nova-finalize-lite` |
-| `finalize-work` | finalize | none | `nova-finalize-work` |
-| `implement-lite` | implement | medium | `nova-implement-lite` |
-| `implement-plan` | implement | medium | `nova-implement-plan` |
-| `implement-standard` | implement | medium | `nova-implement-standard` |
-| `plan-lite` | plan | none | `nova-plan-lite` |
-| `plan-review` | plan | none | `nova-plan-review` |
-| `produce-plan` | plan | low | `nova-produce-plan` |
-| `review` | review | none | `nova-review` |
-| `review-lite` | review | none | `nova-review-lite` |
-| `review-only` | review | none | `nova-review-only` |
-| `review-strict` | review | none | `nova-review-strict` |
-| `route` | explore | none | `nova-route` |
-| `senior-explore` | explore | low | `nova-senior-explore` |
+| `backend-plan` | plan | low | `undefined` |
+| `codex-review-fix` | implement | medium | `undefined` |
+| `codex-review-only` | review | low | `undefined` |
+| `codex-verify-only` | review | low | `undefined` |
+| `explore` | explore | none | `undefined` |
+| `explore-lite` | explore | none | `undefined` |
+| `explore-review` | explore | none | `undefined` |
+| `finalize-lite` | finalize | none | `undefined` |
+| `finalize-work` | finalize | none | `undefined` |
+| `implement-lite` | implement | medium | `undefined` |
+| `implement-plan` | implement | medium | `undefined` |
+| `implement-standard` | implement | medium | `undefined` |
+| `plan-lite` | plan | none | `undefined` |
+| `plan-review` | plan | none | `undefined` |
+| `produce-plan` | plan | low | `undefined` |
+| `review` | review | none | `undefined` |
+| `review-lite` | review | none | `undefined` |
+| `review-only` | review | none | `undefined` |
+| `review-strict` | review | none | `undefined` |
+| `route` | explore | none | `undefined` |
+| `senior-explore` | explore | low | `undefined` |
 
 ## Skills
 
@@ -103,6 +103,6 @@ The JSON form is [surface-inventory.json](surface-inventory.json).
 
 | Path | Plugin versions |
 | --- | --- |
-| `.claude-plugin/marketplace.json` | `nova-plugin@2.4.1` |
-| `.claude-plugin/marketplace.metadata.json` | `nova-plugin@2.4.1` |
-| `docs/marketplace/catalog.md` | `nova-plugin@2.4.1` |
+| `.claude-plugin/marketplace.json` | `nova-plugin@3.0.0` |
+| `.claude-plugin/marketplace.metadata.json` | `nova-plugin@3.0.0` |
+| `docs/marketplace/catalog.md` | `nova-plugin@3.0.0` |

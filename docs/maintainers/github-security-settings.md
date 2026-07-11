@@ -64,6 +64,7 @@ Windows Node Smoke
 PSScriptAnalyzer
 Windows Bash Smoke
 macOS Smoke
+Node 24 Compatibility
 Dependency Review
 CodeQL / Analyze JavaScript
 ```
@@ -73,10 +74,10 @@ It is release or promotion evidence for disposable CI runners or isolated
 test-user environments.
 
 `Dependency Review` is fail-closed for same-repository pull requests when the
-dependency graph preflight returns 403 or 404. Fork pull requests may emit a
-warning skip when GitHub cannot expose dependency graph comparison data to the
-workflow token; maintainers must confirm equivalent dependency review coverage
-before merge instead of treating that warning as a passed security check.
+dependency graph preflight returns 403 or 404. For fork pull requests, the
+fallback reports `not_applicable` only when no dependency-bearing surface
+changed; otherwise the check is blocked and requires maintainer security
+approval. An unavailable control is never reported as passed.
 
 ## Maintainer Audit
 

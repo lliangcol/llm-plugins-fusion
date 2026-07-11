@@ -2,7 +2,7 @@
 /** Aggregate release gates into machine-readable JSON and derived Markdown. */
 
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseCoverageSummary } from './lib/coverage-thresholds.mjs';
@@ -20,7 +20,7 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
 
 function usage() {
-  return 'Usage: node scripts/generate-release-evidence.mjs [--coverage-summary <path>] [--coverage-metadata <path>] [--timings <path>] [--install <path>] [--route <path>] [--checksums <path>] [--out-dir <path>] [--require-live]';
+  return 'Usage: node scripts/generate-release-evidence.mjs [--coverage-summary <path>] [--coverage-metadata <path>] [--timings <path>] [--install <path>] [--route <path>] [--checksums <path>] [--artifact-dir <path>] [--out-dir <path>] [--require-live]';
 }
 
 export function parseArgs(args, root = defaultRoot) {
@@ -32,6 +32,7 @@ export function parseArgs(args, root = defaultRoot) {
     route: resolve(root, '.metrics/release-install-smoke/route-smoke.json'),
     checksums: resolve(root, '.metrics/release-checksums/SHA256SUMS.txt'),
     outDir: resolve(root, '.metrics/release-evidence'),
+    artifactDir: null,
     requireLive: false,
     help: false,
   };
@@ -43,6 +44,7 @@ export function parseArgs(args, root = defaultRoot) {
     ['--route', 'route'],
     ['--checksums', 'checksums'],
     ['--out-dir', 'outDir'],
+    ['--artifact-dir', 'artifactDir'],
   ]);
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -72,34 +74,42 @@ function testCounts(summary) {
   return { tests: value('tests'), passed: value('pass'), failed: value('fail') };
 }
 
-const claudeCompatibilityTimingLabel = 'validate Claude compatibility';
-const claudeCompatibilityReplacement = 'exact-tag live claude plugin validate';
+const claudeCompatibilityGateId = 'claude.manifest.static';
+const claudeCompatibilityReplacementGateId = 'claude.manifest.exact_tag_live';
 
 export function normalizeValidationTimings(timings, install = null, { requireLive = false } = {}) {
-  if (!Array.isArray(timings?.timings)) {
+  const inputGates = timings?.gates ?? timings?.timings;
+  if (!Array.isArray(inputGates)) {
     throw new Error('validation timing entries must be an array');
   }
   if (timings.failed !== 0) {
     throw new Error('validation timing input reports failed gates');
   }
 
-  const skipped = timings.timings.filter((timing) => timing.status === 'skipped');
+  const gates = inputGates.map((gate) => ({
+    ...gate,
+    id: gate.id ?? `legacy.${String(gate.label ?? 'unknown').toLowerCase().replace(/[^a-z0-9]+/g, '.')}`,
+    label: gate.label ?? gate.name ?? gate.id,
+    durationMs: gate.durationMs ?? gate.ms ?? 0,
+  }));
+  const skipped = gates.filter((gate) => gate.status === 'skipped');
   if (timings.skipped !== skipped.length) {
     throw new Error(`validation timing skipped count ${timings.skipped} does not match ${skipped.length} skipped entries`);
   }
-  const nonPassed = timings.timings.filter((timing) => timing.status !== 'passed' && timing.status !== 'skipped');
+  const nonPassed = gates.filter((gate) => gate.status !== 'passed' && gate.status !== 'skipped');
   if (nonPassed.length > 0) {
     throw new Error(`validation timing gates are not passed: ${nonPassed.map((timing) => timing.label).join(', ')}`);
   }
   if (skipped.length === 0) {
-    return timings.timings.map((timing) => ({
-      name: timing.label,
+    return gates.map((gate) => ({
+      id: gate.id,
+      name: gate.label,
       status: 'passed',
-      durationMs: timing.ms,
+      durationMs: gate.durationMs,
     }));
   }
-  if (skipped.length !== 1 || skipped[0].label !== claudeCompatibilityTimingLabel) {
-    throw new Error(`unsupported skipped validation timing gates: ${skipped.map((timing) => timing.label).join(', ')}`);
+  if (skipped.length !== 1 || skipped[0].id !== claudeCompatibilityGateId) {
+    throw new Error(`unsupported skipped validation timing gates: ${skipped.map((gate) => gate.id).join(', ')}`);
   }
   if (!requireLive) {
     throw new Error('skipped Claude compatibility timing requires exact-tag live release evidence');
@@ -111,17 +121,19 @@ export function normalizeValidationTimings(timings, install = null, { requireLiv
     throw new Error('skipped Claude compatibility timing requires live marketplace and plugin manifest validation evidence');
   }
 
-  return timings.timings.map((timing) => timing.status === 'skipped'
+  return gates.map((gate) => gate.status === 'skipped'
     ? {
-        name: timing.label,
+        id: gate.id,
+        name: gate.label,
         status: 'passed',
-        durationMs: timing.ms,
-        replacementEvidence: claudeCompatibilityReplacement,
+        durationMs: gate.durationMs,
+        replacementGateId: claudeCompatibilityReplacementGateId,
       }
     : {
-        name: timing.label,
+        id: gate.id,
+        name: gate.label,
         status: 'passed',
-        durationMs: timing.ms,
+        durationMs: gate.durationMs,
       });
 }
 
@@ -160,7 +172,7 @@ export function buildReleaseEvidence({
   const sha256Pattern = /^[a-f0-9]{64}$/;
   if (requireLive && (!install || !route)) throw new Error('live release evidence requires install and route inputs');
   if (requireLive && !expectedRouteInventory) throw new Error('live release evidence requires canonical runtime inventory');
-  if (requireLive && timings.timings.length === 0) throw new Error('live release evidence requires validation timing gates');
+  if (requireLive && (timings.gates ?? timings.timings ?? []).length === 0) throw new Error('live release evidence requires validation timing gates');
   if (requireLive && tag !== expectedTag) throw new Error(`release tag ${tag} does not match ${expectedTag}`);
   if (requireLive && !/^[a-f0-9]{40}$/.test(commit)) throw new Error('release commit is not a full Git SHA');
 
@@ -296,9 +308,9 @@ export function buildReleaseEvidence({
     },
     gates: [
       ...validationGates,
-      { name: 'coverage', status: coverageMetadata.exitCode === 0 ? 'passed' : 'failed' },
-      { name: 'exact-tag install inventory', status: exactTagInstallPassed ? 'passed' : 'not-run' },
-      { name: 'OAuth namespaced route', status: route ? 'passed' : 'not-run' },
+      { id: 'coverage.thresholds', name: 'coverage', status: coverageMetadata.exitCode === 0 ? 'passed' : 'failed' },
+      { id: 'claude.install.exact_tag', name: 'exact-tag install inventory', status: exactTagInstallPassed ? 'passed' : 'not-run' },
+      { id: 'claude.route.oauth', name: 'OAuth namespaced route', status: route ? 'passed' : 'not-run' },
     ],
     install: install ? {
       source: install.marketplace,
@@ -338,8 +350,8 @@ export function buildReleaseEvidence({
 }
 
 export function renderReleaseEvidenceMarkdown(evidence) {
-  const gates = evidence.gates.map((gate) => `| ${gate.name} | ${gate.status} | ${gate.durationMs ?? ''} | ${gate.replacementEvidence ?? ''} |`).join('\n');
-  return `# Release Evidence\n\nStatus: generated\n\n- Tag: \`${evidence.release.tag}\`\n- Commit: \`${evidence.release.commit}\`\n- Plugin version: \`${evidence.release.pluginVersion}\`\n- Node: \`${evidence.runtime.node}\`\n- Claude CLI: \`${evidence.runtime.claude}\`\n- Tests: ${evidence.tests.passed ?? 'unknown'} passed, ${evidence.tests.failed ?? 'unknown'} failed\n- Coverage: lines ${evidence.tests.coverage.lines}%, branches ${evidence.tests.coverage.branches}%, functions ${evidence.tests.coverage.functions}%\n- Installed Skills: ${evidence.install?.skillsCount ?? 'not run'}\n- OAuth route: ${evidence.route ? 'passed with temporary-home isolation and zero project writes' : 'not run'}\n\n## Gates\n\n| Gate | Status | Duration ms | Replacement evidence |\n| --- | --- | --- | --- |\n${gates}\n`;
+  const gates = evidence.gates.map((gate) => `| ${gate.id} | ${gate.name} | ${gate.status} | ${gate.durationMs ?? ''} | ${gate.replacementGateId ?? ''} |`).join('\n');
+  return `# Release Evidence\n\nStatus: generated\n\n- Tag: \`${evidence.release.tag}\`\n- Commit: \`${evidence.release.commit}\`\n- Plugin version: \`${evidence.release.pluginVersion}\`\n- Node: \`${evidence.runtime.node}\`\n- Claude CLI: \`${evidence.runtime.claude}\`\n- Tests: ${evidence.tests.passed ?? 'unknown'} passed, ${evidence.tests.failed ?? 'unknown'} failed\n- Coverage: lines ${evidence.tests.coverage.lines}%, branches ${evidence.tests.coverage.branches}%, functions ${evidence.tests.coverage.functions}%\n- Installed Skills: ${evidence.install?.skillsCount ?? 'not run'}\n- OAuth route: ${evidence.route ? 'passed with temporary-home isolation and zero project writes' : 'not run'}\n\n## Gates\n\n| Gate ID | Gate | Status | Duration ms | Replacement gate ID |\n| --- | --- | --- | --- | --- |\n${gates}\n`;
 }
 
 export function generateReleaseEvidence({ root = defaultRoot, args = [], env = process.env, now } = {}) {
@@ -351,6 +363,15 @@ export function generateReleaseEvidence({ root = defaultRoot, args = [], env = p
     if (!existsSync(path)) throw new Error(`required evidence input is missing: ${relative(root, path)}`);
   }
   const artifactPaths = required.filter(existsSync);
+  if (options.artifactDir) {
+    if (!existsSync(options.artifactDir) || !statSync(options.artifactDir).isDirectory()) {
+      throw new Error(`artifact directory is missing: ${relative(root, options.artifactDir)}`);
+    }
+    artifactPaths.push(...readdirSync(options.artifactDir)
+      .map((name) => resolve(options.artifactDir, name))
+      .filter((path) => statSync(path).isFile())
+      .sort());
+  }
   const hasInstallEvidence = existsSync(options.install);
   const hasRouteEvidence = existsSync(options.route);
   let expectedRouteInventory = null;

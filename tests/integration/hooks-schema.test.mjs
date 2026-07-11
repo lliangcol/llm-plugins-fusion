@@ -18,4 +18,11 @@ test('distributed hooks.json satisfies the shared hook schema', async () => {
   assert.deepEqual(errors, []);
   assert.equal(config.hooks.PreToolUse[0].matcher, 'Write|Edit|NotebookEdit');
   assert.equal(config.hooks.PostToolUse[0].matcher, 'Write|Edit|NotebookEdit|Bash');
+  assert.equal(config.hooks.PostToolUseFailure[0].matcher, 'Write|Edit|NotebookEdit|Bash');
+  assert.equal(config.hooks.PermissionDenied[0].matcher, 'Write|Edit|NotebookEdit|Bash');
+  assert.match(config.hooks.PreToolUse[0].hooks[0].command, /^bash /);
+  for (const event of ['PostToolUse', 'PostToolUseFailure', 'PermissionDenied']) {
+    assert.equal(config.hooks[event][0].hooks[0].command, 'node');
+    assert.equal(Array.isArray(config.hooks[event][0].hooks[0].args), true);
+  }
 });

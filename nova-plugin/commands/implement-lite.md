@@ -8,18 +8,19 @@ allowed-tools: Read Glob Grep Write Edit
 disallowed-tools: NotebookEdit
 user-invocable: true
 disable-model-invocation: true
-invokes:
-  skill: nova-implement-lite
 ---
 
 # /nova-plugin:implement-lite
 
-Invoke `nova-implement-lite` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-implement-lite` through the Skill tool.
 
-This is the small-task implementation entry. The skill is the source of truth for parameter resolution, execution rules, validation expectations, output format, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-implement-lite/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: implement
+- Owner agents: builder
+- Required inputs: `REQUEST`
+- Output contract: `implementation-lite-v2`
+- Risk: medium
+- Recommended packs: None
 
-- Uses `TASK` plus optional `CONSTRAINTS`.
-- Allows bounded code edits and checks.
-- Avoids unrelated refactors and scope expansion.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

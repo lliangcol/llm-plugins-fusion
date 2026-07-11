@@ -8,18 +8,19 @@ allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash
 user-invocable: true
 disable-model-invocation: false
-invokes:
-  skill: nova-finalize-lite
 ---
 
 # /nova-plugin:finalize-lite
 
-Invoke `nova-finalize-lite` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-finalize-lite` through the Skill tool.
 
-This is the compact finalization entry. The skill is the source of truth for parameter resolution, output format, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-finalize-lite/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: finalize
+- Owner agents: publisher
+- Required inputs: `WORK_SUMMARY`
+- Output contract: `finalize-lite-v2`
+- Risk: none
+- Recommended packs: docs
 
-- Summarizes completed work, rationale, and limitations.
-- Does not run release, Git, or deployment actions.
-- `/nova-plugin:finalize-work` remains available for full handoff packaging.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

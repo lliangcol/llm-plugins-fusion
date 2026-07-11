@@ -58,7 +58,7 @@ issue。
 ### 准备工作
 
 1. Fork 本仓库，从 `main` 切出特性分支：`git checkout -b feat/<topic>`。
-2. 准备 Node.js 20+，用于运行仓库级 schema、Claude 兼容性、frontmatter、pack、hooks 与 docs 校验脚本。
+2. 准备 Node.js 22+，用于运行仓库级 schema、Claude 兼容性、frontmatter、pack、hooks 与 docs 校验脚本。
 3. 若要验证 active agents，在 macOS / Linux / Git Bash 中运行 Bash 脚本，或在 Windows PowerShell 中运行对应 `.ps1` 脚本。
 4. 若要执行 hook 脚本语法检查和 Codex runtime smoke，需要 Bash（macOS/Linux、Git Bash、WSL 或其他 PATH 中可用的 `bash`）。Windows 本地没有 Bash 时，`node scripts/validate-all.mjs` 会 warning 跳过本地 Bash-dependent 检查；CI/Linux 仍必须执行并通过。
    ```bash

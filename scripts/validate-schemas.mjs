@@ -148,6 +148,11 @@ const targets = [
     label: '.claude-plugin/marketplace.metadata.json',
   },
   {
+    schema: loadJson('schemas/workflow-spec.schema.json'),
+    data: loadJson('workflow-specs/workflows.json'),
+    label: 'workflow-specs/workflows.json',
+  },
+  {
     schema: loadJson('schemas/workflow-permissions.schema.json'),
     data: loadJson('nova-plugin/runtime/workflow-permissions.json'),
     label: 'nova-plugin/runtime/workflow-permissions.json',
@@ -173,6 +178,9 @@ for (const schemaPath of [
   'schemas/marketplace.schema.json',
   'schemas/marketplace-metadata.schema.json',
   'schemas/workflow-permissions.schema.json',
+  'schemas/workflow-spec.schema.json',
+  'schemas/validation-report.schema.json',
+  'schemas/release-evidence.schema.json',
 ]) {
   const schema = loadJson(schemaPath);
   const fileName = schemaPath.split('/').at(-1);

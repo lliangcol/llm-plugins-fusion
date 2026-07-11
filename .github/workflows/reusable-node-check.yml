@@ -16,15 +16,20 @@ on:
       node-version:
         required: false
         type: string
-        default: '20'
+        default: '22'
 
 permissions:
   contents: read
+
+concurrency:
+  group: reusable-node-${{ github.workflow }}-${{ github.ref }}-${{ inputs.label }}
+  cancel-in-progress: true
 
 jobs:
   node-check:
     name: ${{ inputs.label }}
     runs-on: ${{ inputs.runner }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6

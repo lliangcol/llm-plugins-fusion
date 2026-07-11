@@ -567,8 +567,8 @@ function validateProjectPositioningContracts() {
     },
     {
       file: 'docs/project-optimization-plan.md',
-      pattern: /Keep\s+`v3\.0\.0`, public portal work, and production multi-plugin directory migration\s+deferred/,
-      label: 'optimization plan deferred v3 public portal boundary',
+      pattern: /Public portal work and production multi-plugin directory migration remain\s+deferred[\s\S]*`v3\.0\.0` workflow and\s+security hardening does not activate either deferred product surface/,
+      label: 'optimization plan deferred portal and multi-plugin boundary',
     },
     {
       file: 'nova-plugin/docs/overview/README.en.md',
@@ -984,7 +984,7 @@ function validateMarketplaceContracts() {
     },
     {
       file: 'docs/marketplace/compatibility-matrix.md',
-      pattern: /GitHub workflow contracts \| Node\.js 20\+ \| `node scripts\/validate-github-workflows\.mjs`[\s\S]*least-privilege workflow token scope,[\s\S]*`\.github\/workflows\/` inventory,[\s\S]*required-check docs\/read-only print output synchronization,[\s\S]*isolated mutating install smoke boundaries[\s\S]*GitHub workflow evidence should include `node scripts\/validate-github-workflows\.mjs`[\s\S]*CI\/release workflows,[\s\S]*workflow inventory,[\s\S]*required-check guidance/,
+      pattern: /GitHub workflow contracts \| Node\.js 22\+ \| `node scripts\/validate-github-workflows\.mjs`[\s\S]*least-privilege workflow token scope,[\s\S]*`\.github\/workflows\/` inventory,[\s\S]*required-check docs\/read-only print output synchronization,[\s\S]*isolated mutating install smoke boundaries[\s\S]*GitHub workflow evidence should include `node scripts\/validate-github-workflows\.mjs`[\s\S]*CI\/release workflows,[\s\S]*workflow inventory,[\s\S]*required-check guidance/,
       label: 'compatibility matrix GitHub workflow evidence boundary',
     },
     {
@@ -1645,7 +1645,7 @@ function validateDeferredPortalIaContracts() {
     },
     {
       file: 'docs/marketplace/portal-information-architecture.md',
-      pattern: /not an implemented public portal,[\s\S]*hosted marketplace,[\s\S]*frontend app,[\s\S]*deployment plan,[\s\S]*activation evidence for `v3\.0\.0`/,
+      pattern: /not an implemented public portal,[\s\S]*hosted marketplace,[\s\S]*frontend app,[\s\S]*deployment plan,[\s\S]*evidence that a public portal is active/,
       label: 'portal IA no implemented portal boundary',
     },
     {
@@ -1657,7 +1657,7 @@ function validateDeferredPortalIaContracts() {
       file: 'docs/marketplace/portal-information-architecture.md',
       pattern: new RegExp('single-plugin portal preparation boundary was introduced in `v2\\.2\\.0`[\\s\\S]*remains the current `v'
         + pluginVersionPattern
-        + '` marketplace state[\\s\\S]*does not require\\s+a plugin path move or a public portal implementation[\\s\\S]*breaking multi-plugin\\s+repository layout remains a future `v3\\.0\\.0` candidate'),
+        + '` marketplace state[\\s\\S]*does not require\\s+a plugin path move or a public portal implementation[\\s\\S]*breaking multi-plugin\\s+repository layout remains a future major-version candidate'),
       label: 'portal IA historical and current single-plugin boundary',
     },
     {
@@ -1704,7 +1704,6 @@ function validateV3ReadinessEvidenceContracts() {
 function validateReviewLevelLiteContract() {
   const activeFiles = [
     'nova-plugin/skills/nova-review/SKILL.md',
-    'nova-plugin/commands/review.md',
     'nova-plugin/docs/commands/review/review.md',
     'nova-plugin/docs/commands/review/review.README.md',
     'nova-plugin/docs/commands/review/review.README.en.md',

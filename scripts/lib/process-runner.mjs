@@ -1,11 +1,39 @@
 import { spawn } from 'node:child_process';
+import { sanitizeAuditField } from '../../nova-plugin/runtime/secret-rules.mjs';
 
 export const DEFAULT_TIMEOUT_MS = 120_000;
 export const DEFAULT_PROBE_TIMEOUT_MS = 10_000;
 export const DEFAULT_MAX_OUTPUT_BYTES = 1_048_576;
 
 export function formatCommand(command, args = []) {
-  return [command, ...args].join(' ');
+  return sanitizeAuditField([command, ...args].join(' '), 500);
+}
+
+function sanitizedArgs(args) {
+  return args.map((arg) => sanitizeAuditField(arg, 300));
+}
+
+export function terminateProcessTree(child, signal = 'SIGTERM', platform = process.platform) {
+  if (!child?.pid) return false;
+  if (platform === 'win32') {
+    try {
+      const killer = spawn('taskkill', ['/PID', String(child.pid), '/T', '/F'], {
+        shell: false,
+        windowsHide: true,
+        stdio: 'ignore',
+      });
+      killer.unref();
+      return true;
+    } catch {
+      return child.kill(signal);
+    }
+  }
+  try {
+    process.kill(-child.pid, signal);
+    return true;
+  } catch {
+    return child.kill(signal);
+  }
 }
 
 function normalizeOutputLimit(value) {
@@ -86,13 +114,14 @@ export function runProcess(label, command, args = [], options = {}) {
         env,
         shell: false,
         windowsHide: true,
+        detached: process.platform !== 'win32',
         stdio: capture ? ['pipe', 'pipe', 'pipe'] : ['ignore', 'inherit', 'inherit'],
       });
     } catch (error) {
       resolve({
         label,
         command,
-        args,
+        args: sanitizedArgs(args),
         ok: false,
         code: null,
         signal: null,
@@ -110,9 +139,9 @@ export function runProcess(label, command, args = [], options = {}) {
 
     timer = setTimeout(() => {
       timedOut = true;
-      child.kill('SIGTERM');
+      terminateProcessTree(child, 'SIGTERM');
       forceKillTimer = setTimeout(() => {
-        child.kill('SIGKILL');
+        terminateProcessTree(child, 'SIGKILL');
       }, 5_000);
     }, timeoutMs);
 
@@ -121,7 +150,7 @@ export function runProcess(label, command, args = [], options = {}) {
       settle({
         label,
         command,
-        args,
+        args: sanitizedArgs(args),
         ok: false,
         code: null,
         signal: null,
@@ -157,7 +186,7 @@ export function runProcess(label, command, args = [], options = {}) {
       settle({
         label,
         command,
-        args,
+        args: sanitizedArgs(args),
         ok: !spawnError && !timedOut && code === 0,
         code,
         signal,

@@ -8,18 +8,19 @@ allowed-tools: Read Glob Grep Write Edit
 disallowed-tools: NotebookEdit
 user-invocable: true
 disable-model-invocation: true
-invokes:
-  skill: nova-implement-plan
 ---
 
 # /nova-plugin:implement-plan
 
-Invoke `nova-implement-plan` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-implement-plan` through the Skill tool.
 
-This is the approved-plan implementation entry. The skill is the source of truth for parameter resolution, execution rules, validation expectations, output format, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-implement-plan/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: implement
+- Owner agents: builder
+- Required inputs: `PLAN_INPUT_PATH`, `PLAN_APPROVED`
+- Output contract: `implementation-plan-v2`
+- Risk: medium
+- Recommended packs: None
 
-- Requires explicit `PLAN_INPUT_PATH`.
-- Requires `PLAN_APPROVED=true` before project edits.
-- The approved plan is the execution authority; non-trivial deviations must stop for plan revision.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

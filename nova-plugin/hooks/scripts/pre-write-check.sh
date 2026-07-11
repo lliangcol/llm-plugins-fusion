@@ -15,7 +15,7 @@ PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd -- "$SCRIPT_DIR/../.." >/dev/null 2>&1 &
 source "$PLUGIN_ROOT/runtime/bash-common.sh"
 
 if ! NODE_BIN="$(nova_node_command)"; then
-  echo "[nova-plugin] Node.js 20+ is required by the active write guard; write blocked." >&2
+  echo "[nova-plugin] Node.js 22+ is required by the active write guard; write blocked." >&2
   echo "  Set NOVA_WRITE_GUARD_DISABLED=1 only for an explicit, temporary bypass." >&2
   exit 2
 fi

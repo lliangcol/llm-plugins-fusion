@@ -8,17 +8,19 @@ allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash
 user-invocable: true
 disable-model-invocation: false
-invokes:
-  skill: nova-plan-review
 ---
 
 # /nova-plugin:plan-review
 
-Invoke `nova-plan-review` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-plan-review` through the Skill tool.
 
-This is the read-only plan review entry. The skill is the source of truth for parameter resolution, execution rules, output format, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-plan-review/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: review
+- Owner agents: reviewer
+- Required inputs: `PLAN_INPUT_PATH`
+- Output contract: `plan-review-v2`
+- Risk: none
+- Recommended packs: docs, security
 
-- Reviews an existing plan for clarity, assumptions, risks, and missing decisions.
-- Does not rewrite the plan or implement changes.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

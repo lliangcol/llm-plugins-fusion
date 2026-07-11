@@ -6,7 +6,7 @@ allowed-tools: Read Glob Grep Write Edit
 disallowed-tools: NotebookEdit
 user-invocable: true
 disable-model-invocation: true
-compatibility: "Requires Node.js 20+, Bash 3.2+, an authenticated Codex CLI, and network access for the external review/fix/verify loop."
+compatibility: "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access for the external review/fix/verify loop."
 metadata:
   nova-user-invocable: "true"
   nova-model-invocable: "false"
@@ -15,103 +15,23 @@ metadata:
 argument-hint: "Example: codex-review-fix BASE=main GOAL='fix current branch until merge-ready'"
 ---
 
-## Inputs
+## Shared Execution Policy
 
-| Parameter | Required | Default | Notes |
-| --- | --- | --- | --- |
-| `REVIEW_MODE` | No | branch | Review scope: branch, staged, or full. Maps to default, --only-staged, or --full. |
-| `BASE` | No | Auto-detect | Baseline branch passed to review/verify scripts as --base. |
-| `OUTPUT_DIR` | No | Script default | Review/verify artifact directory passed to Codex scripts as --output-dir. |
-| `GOAL` | No | Fix high-confidence blockers | Natural-language goal for the closure loop. |
-| `FIX_SCOPE` | No | high-confidence | Policy scope for selecting review findings to fix; does not widen script behavior. |
-| `INCLUDE_UNTRACKED_CONTENT` | No | false | When true with `REVIEW_MODE=full`, adds `--include-untracked-content` to review and verify; untracked files must pass size, binary, path, and secret guards before content is included. |
+This file is the supporting behavioral contract for `/nova-plugin:codex-review-fix` and the deprecated `/nova-plugin:nova-codex-review-fix` compatibility entrypoint. Prefer the direct command; the compatibility name remains only for the current major-version migration window.
 
-## Parameter Resolution
+- Resolve natural-language and explicit `KEY=value` inputs using `../_shared/parameter-resolution.md`; explicit non-conflicting values take precedence.
+- Apply `../_shared/safety-preflight.md` before side effects. Never infer approval, destructive scope, credentials, or output destinations.
+- Follow `../_shared/output-contracts.md` and `../_shared/artifact-policy.md`; report completed, skipped, and blocked validation truthfully.
+- Respect the frontmatter tool boundary. Missing inputs, unavailable dependencies, overlapping user changes, or repository-policy conflicts are blockers rather than permission to broaden scope.
 
-- Parse natural-language payload, explicit `KEY=value`, `--flag value`, and `--flag=value` forms from `$ARGUMENTS`.
-- Normalize parameter names to uppercase snake case and map known mode words before assigning remaining text to `GOAL`.
-- Explicit values win over inferred values only when they do not conflict with another explicit value.
-- Apply documented defaults only when unambiguous; probe Git status, base branches, and latest artifacts only for context parameters.
-- Safety-boundary parameters for this skill: none for this skill.
-- In non-interactive mode, fail before side effects when required or safety-boundary parameters are missing.
-- Full policy: `nova-plugin/skills/_shared/parameter-resolution.md`.
+## Execution
 
-## Safety Preflight
+1. Parse `$ARGUMENTS` against the workflow-specific inputs below.
+2. Read only the context required for the requested scope.
+3. Apply the workflow contract and its strict output format.
+4. Stop before unauthorized side effects; otherwise validate in proportion to risk and report residual risk.
 
-- This skill declares side-effect-capable tools: `Bash`, `Edit`, `Write`.
-- Resolve parameters and present a preflight card before writing artifacts, editing project files, or running Bash.
-- Show files or artifacts that may be written, scripts or commands that may run, disallowed operations, and the proceed condition.
-- Do not infer missing safety-boundary values; ask once in interactive mode or fail in non-interactive mode.
-- Preserve repository constraints: no destructive Git cleanup, no branch deletion, no push/merge/rebase, no editing archived agents as active agents.
-- Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.
-
-## Codex Script Argument Mapping
-
-- `REVIEW_MODE=branch` runs `codex-review.sh` without scope flags.
-- `REVIEW_MODE=staged` adds `--only-staged`; `REVIEW_MODE=full` adds `--full`.
-- `REVIEW_MODE=full` lists untracked file names but does not include untracked file content unless `INCLUDE_UNTRACKED_CONTENT=true`.
-- `INCLUDE_UNTRACKED_CONTENT=true` adds `--include-untracked-content` to review and verify; the scripts reject likely secrets, sensitive paths, binary files, and oversized untracked files before writing content into review or verify patches.
-- `BASE` is passed as `--base <BASE>` to both review and verify scripts.
-- `OUTPUT_DIR`, when provided, is passed as `--output-dir <OUTPUT_DIR>` to review and verify.
-- If `OUTPUT_DIR` is provided, use `<OUTPUT_DIR>/nova-plugin:review.md` for the fix step and write local checks to `<OUTPUT_DIR>/artifacts/checks.txt` so `codex-verify.sh` can auto-detect them when `--checks-file` is not passed.
-- If `OUTPUT_DIR` is not provided, use the script's latest artifacts paths under `.codex/codex-review-fix/latest-artifacts/`.
-- `GOAL` and `FIX_SCOPE` guide Claude Code's fix selection and summary; they are not script flags.
-
-## Outputs
-
-- Follow the skill-specific output rules below and the shared output contract.
-- For written artifacts, report the path and a short executive summary instead of pasting the full artifact into chat.
-- For reviews and verification, lead with findings or verdicts and state residual risk.
-- Full policy: `nova-plugin/skills/_shared/output-contracts.md`.
-- Artifact policy: `nova-plugin/skills/_shared/artifact-policy.md`.
-
-## Workflow
-
-1. Resolve parameters using the shared policy and this skill's input table.
-2. Read only the context needed for the requested scope.
-3. Apply the skill-specific guidance and migrated slash command contract below.
-4. Respect safety preflight before any side effects.
-5. Produce the required output and report validation or skipped validation honestly.
-
-## Failure Modes
-
-- Required payload is missing or ambiguous.
-- A safety-boundary parameter is missing, conflicting, or unsafe to infer.
-- Required files, scripts, CLIs, credentials, or runtime dependencies are unavailable.
-- Existing user changes overlap the intended write scope and cannot be merged safely.
-- Repository policy conflicts with the requested action.
-
-## Examples
-
-- Use `/nova-plugin:codex-review-fix` as the full Codex review -> Claude Code fix -> checks -> verify loop.
-- Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
-
-## Common Rationalizations
-
-| Rationalization | Required Response |
-| --- | --- |
-| "This is small enough to skip validation." | Run the focused check or state why it is unavailable. |
-| "The existing output contract is obvious." | Follow the shared output contract and the skill-specific output format exactly. |
-| "The nearby cleanup is harmless." | Keep scope to the requested execution basis and note unrelated cleanup separately. |
-| "A plausible result is enough." | Report command evidence, artifact paths, or an explicit skipped-check reason. |
-
-## Red Flags
-
-- Scope expands beyond the requested execution basis.
-- Validation is claimed without command evidence, artifact evidence, or a skipped-check reason.
-- Existing user changes are overwritten, normalized, or reformatted without being part of the task.
-- The output omits required residual risk, deviations, or follow-up notes.
-- The skill uses tools outside its declared safety boundary.
-
-## Verification
-
-- [ ] Inputs were resolved through the shared parameter policy.
-- [ ] Safety preflight was respected before side effects.
-- [ ] Relevant checks were run or explicitly skipped with reason.
-- [ ] Existing user changes were preserved unless explicitly in scope.
-- [ ] Output follows the shared output contract and skill-specific format.
-
-## Skill-Specific Guidance
+## Workflow Contract
 
 ### 目的
 
@@ -175,9 +95,7 @@ argument-hint: "Example: codex-review-fix BASE=main GOAL='fix current branch unt
 - `nova-codex-review-only`：只做 review，不进入修复闭环。
 - `nova-codex-verify-only`：基于已有 `review.md` 做 verify。
 
-## Migrated Slash Command Contract
-
-Migrated from the pre-thin slash command contract for `/nova-plugin:codex-review-fix` (`nova-plugin/commands/codex-review-fix.md`).
+## Detailed Contract
 
 ### CODEX REVIEW -> FIX -> VERIFY LOOP
 

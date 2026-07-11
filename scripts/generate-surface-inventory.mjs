@@ -133,15 +133,20 @@ function directories(root, relDir, predicate = () => true) {
     .sort();
 }
 
-function commandInventory(root) {
+function commandInventory(root, workflowSpec) {
+  const workflows = new Map(workflowSpec.workflows.map((workflow) => [workflow.id, workflow]));
   return markdownFiles(root, 'nova-plugin/commands').map((file) => {
     const relPath = `nova-plugin/commands/${file}`;
     const frontmatter = parseFrontmatter(readFileSync(resolve(root, relPath), 'utf8'), relPath);
+    const workflow = workflows.get(frontmatter.id);
+    if (!workflow) throw new Error(`${relPath} is missing from the canonical workflow spec`);
     return {
       id: frontmatter.id,
       stage: frontmatter.stage,
       destructiveActions: frontmatter['destructive-actions'],
-      invokesSkill: frontmatter.invokes?.skill,
+      supportingContract: `nova-plugin/${workflow.contractPath}`,
+      compatibilitySkill: workflow.legacyAlias,
+      runtimeDelegation: false,
       path: relPath,
     };
   }).sort((a, b) => a.id.localeCompare(b.id));
@@ -207,7 +212,8 @@ function marketplaceOutputs(root) {
 export function buildSurfaceInventory(root = defaultRoot) {
   const plugin = readJson(root, 'nova-plugin/.claude-plugin/plugin.json');
   const registry = readJson(root, '.claude-plugin/registry.source.json');
-  const commands = commandInventory(root);
+  const workflowSpec = readJson(root, 'workflow-specs/workflows.json');
+  const commands = commandInventory(root, workflowSpec);
   const skills = skillInventory(root);
   const agents = agentInventory(root);
   const packs = packInventory(root);

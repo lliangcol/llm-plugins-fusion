@@ -16,14 +16,14 @@ Source data:
 
 ## nova-plugin
 
-- Version: `2.4.1`
+- Version: `3.0.0`
 - Source: [./nova-plugin](../../nova-plugin)
 - Category: `workflow`
 - Tags: `workflow`, `ai-coding`, `claude-code`, `codex-review`
 - Trust: `author-verified`
 - Risk: `medium`
 - Deprecated: `false`
-- Last updated: `2026-07-11`
+- Last updated: `2026-07-12`
 - Maintainer: liu liang / [https://github.com/lliangcol](https://github.com/lliangcol) / `lliangcoder@gmail.com`
 - Description: nova-plugin is a Claude Code compatible workflow plugin for AI coding assistants. It provides Explore, Plan, Review, Implement, and Finalize command/skill contracts, consumer profile guidance, and validation-aware handoff patterns for multi-project engineering work.
 

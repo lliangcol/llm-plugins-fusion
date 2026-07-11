@@ -1,4 +1,4 @@
-export const REQUIRED_NODE_MAJOR = 20;
+export const REQUIRED_NODE_MAJOR = 22;
 
 export function nodeMajorVersion(version = process.versions.node) {
   const major = Number.parseInt(String(version).split('.')[0], 10);

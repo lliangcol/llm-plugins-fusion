@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 2,
+  "id": "recommended-route-v2",
+  "heading": "## Recommended Route",
+  "fields": [
+    {
+      "id": "command",
+      "label": "Command:"
+    },
+    {
+      "id": "skill",
+      "label": "Skill:"
+    },
+    {
+      "id": "coreAgent",
+      "label": "Core agent:"
+    },
+    {
+      "id": "capabilityPacks",
+      "label": "Capability packs:"
+    },
+    {
+      "id": "requiredInputs",
+      "label": "Required inputs:"
+    },
+    {
+      "id": "validationExpectations",
+      "label": "Validation expectations:"
+    },
+    {
+      "id": "fallbackPath",
+      "label": "Fallback path:"
+    }
+  ],
+  "ownerAgents": {
+    "backend-plan": [
+      "architect"
+    ],
+    "codex-review-fix": [
+      "reviewer",
+      "builder",
+      "verifier"
+    ],
+    "codex-review-only": [
+      "reviewer"
+    ],
+    "codex-verify-only": [
+      "verifier"
+    ],
+    "explore": [
+      "orchestrator",
+      "reviewer"
+    ],
+    "explore-lite": [
+      "orchestrator"
+    ],
+    "explore-review": [
+      "reviewer"
+    ],
+    "finalize-lite": [
+      "publisher"
+    ],
+    "finalize-work": [
+      "publisher"
+    ],
+    "implement-lite": [
+      "builder"
+    ],
+    "implement-plan": [
+      "builder"
+    ],
+    "implement-standard": [
+      "builder"
+    ],
+    "plan-lite": [
+      "architect"
+    ],
+    "plan-review": [
+      "reviewer"
+    ],
+    "produce-plan": [
+      "architect"
+    ],
+    "review": [
+      "reviewer"
+    ],
+    "review-lite": [
+      "reviewer"
+    ],
+    "review-only": [
+      "reviewer"
+    ],
+    "review-strict": [
+      "reviewer"
+    ],
+    "route": [
+      "orchestrator"
+    ],
+    "senior-explore": [
+      "architect",
+      "reviewer"
+    ]
+  }
+}

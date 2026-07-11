@@ -336,6 +336,7 @@ printf '%s' "$payload" | bash nova-plugin/hooks/scripts/pre-write-check.sh
 await runTempBash('pre-write hook validates hooks.json structure', `
 payload='{"tool_name":"Write","tool_input":{"file_path":"nova-plugin/hooks/hooks.json","content":"{\\"hooks\\":{\\"PreToolUse\\":[{\\"matcher\\":\\"Write\\",\\"hooks\\":[{\\"type\\":\\"command\\",\\"command\\":\\"bash \\\\\\"\${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh\\\\\\"\\",\\"timeout\\":10}]}]}}"}}'
 plugin_root="$(pwd -W 2>/dev/null || pwd)/nova-plugin"
+payload="$(node -e 'const fs=require("fs"); const file="nova-plugin/hooks/hooks.json"; process.stdout.write(JSON.stringify({tool_name:"Write",tool_input:{file_path:file,content:fs.readFileSync(file,"utf8")}}))')"
 printf '%s' "$payload" | CLAUDE_PLUGIN_ROOT="$plugin_root" bash nova-plugin/hooks/scripts/pre-write-check.sh
 `);
 

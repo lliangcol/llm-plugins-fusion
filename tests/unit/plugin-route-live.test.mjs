@@ -44,10 +44,31 @@ test('live route result validator accepts fixed structure and real inventory', a
 - Fallback path: /nova-plugin:explore
 `;
   const validation = validateRouteResult(result, inventory);
-  assert.deepEqual(validation.commandMatches, ['explore', 'review']);
+  assert.deepEqual(validation.commandMatches, ['review']);
   assert.deepEqual(validation.skills, ['nova-review']);
   assert.deepEqual(validation.agents, ['reviewer']);
   assert.deepEqual(validation.packs, ['docs']);
+});
+
+test('live route result validator enforces command relationships', async () => {
+  const inventory = await routeInventory();
+  const valid = `## Recommended Route
+- Command: /nova-plugin:review
+- Skill: nova-review
+- Core agent: reviewer
+- Capability packs: docs
+- Required inputs: diff
+- Validation expectations: docs
+- Fallback path: none
+`;
+  assert.throws(
+    () => validateRouteResult(valid.replace('nova-review', 'nova-explore'), inventory),
+    /command-skill relationship differs/,
+  );
+  assert.throws(
+    () => validateRouteResult(valid.replace('reviewer', 'builder'), inventory),
+    /command-agent relationship differs/,
+  );
 });
 
 test('live route result validator rejects bare, invented, or incomplete output', async () => {
@@ -176,11 +197,14 @@ test('route output shape diagnostics expose structure without response text', ()
   assert.doesNotMatch(JSON.stringify(shape), /private response text|nova-review/);
 });
 
-test('stable route command repeats the strict output boundary', async () => {
+test('stable route command executes directly and preserves the strict output boundary', async () => {
   const command = await readFile(resolve(root, 'nova-plugin/commands/route.md'), 'utf8');
-  assert.match(command, /Invoke `nova-route` with `\$ARGUMENTS` before answering/);
-  assert.ok(command.includes(routeOutputContract.heading));
-  for (const field of routeOutputContract.requiredFields) assert.ok(command.includes(field));
+  assert.match(command, /Execute this workflow directly from `\$ARGUMENTS`/);
+  assert.match(command, /Do not invoke the compatibility skill `nova-route`/);
+  assert.doesNotMatch(command, /Skill\(nova-plugin:nova-route\)/);
+  const contract = await readFile(resolve(root, 'nova-plugin/skills/nova-route/SKILL.md'), 'utf8');
+  assert.ok(contract.includes(routeOutputContract.heading));
+  for (const field of routeOutputContract.requiredFields) assert.ok(contract.includes(field));
 });
 
 test('route validation diagnostics classify failures without output values', () => {
@@ -194,6 +218,8 @@ test('route validation diagnostics classify failures without output values', () 
     ['route output invented skill private-value', 'skill-inventory'],
     ['route output invented core agent private-value', 'agent-inventory'],
     ['route output invented capability pack private-value', 'pack-inventory'],
+    ['route output command-skill relationship differs', 'command-skill-relationship'],
+    ['route output command-agent relationship differs', 'command-agent-relationship'],
   ]) assert.equal(routeValidationFailureCode(new Error(message)), code);
 });
 

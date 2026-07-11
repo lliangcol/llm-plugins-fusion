@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -12,24 +13,9 @@ const repoRoot = resolve(__dir, '../..');
 const pluginRootDir = resolve(repoRoot, 'nova-plugin');
 
 function validConfig(overrides = {}) {
-  return {
-    hooks: {
-      PreToolUse: [
-        {
-          matcher: 'Write|Edit',
-          hooks: [
-            {
-              type: 'command',
-              command: 'bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"',
-              timeout: 10,
-              statusMessage: 'checking write',
-              ...overrides,
-            },
-          ],
-        },
-      ],
-    },
-  };
+  const config = JSON.parse(readFileSync(resolve(pluginRootDir, 'hooks/hooks.json'), 'utf8'));
+  Object.assign(config.hooks.PreToolUse[0].hooks[0], overrides);
+  return config;
 }
 
 test('validateHooksConfig accepts the distributed hook shape', () => {
@@ -50,15 +36,15 @@ test('validateHooksConfig rejects missing matcher and invalid timeout', () => {
 test('validateHooksConfig rejects shell scripts not invoked through explicit bash', () => {
   const errors = validateHooksConfig(validConfig({
     command: '"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"',
+    args: [],
   }), { pluginRootDir });
 
   assert(errors.some((error) => /without explicit bash/.test(error)));
 });
 
 test('validateHooksConfig rejects unsupported fields and events', () => {
-  const config = {
-    hooks: {
-      UnsupportedEvent: [
+  const config = validConfig();
+  config.hooks.UnsupportedEvent = [
         {
           matcher: 'Write',
           extraEntry: true,
@@ -70,9 +56,7 @@ test('validateHooksConfig rejects unsupported fields and events', () => {
             },
           ],
         },
-      ],
-    },
-  };
+      ];
 
   const errors = validateHooksConfig(config, { pluginRootDir });
 

@@ -1,8 +1,12 @@
 import assert from 'node:assert/strict';
+import { access, mkdtemp, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import test from 'node:test';
 import {
   commandDetails,
   commandExists,
+  formatCommand,
   runProcess,
 } from '../../scripts/lib/process-runner.mjs';
 
@@ -63,6 +67,26 @@ test('runProcess terminates commands that exceed the timeout', async () => {
   assert.equal(result.ok, false);
   assert.equal(result.timedOut, true);
   assert.match(result.errorMessage, /timed out/);
+});
+
+test('runProcess timeout terminates spawned descendants', { skip: process.platform === 'win32' }, async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'nova-process-tree-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const marker = join(root, 'orphan.txt');
+  const grandchild = `setTimeout(() => require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'orphan'), 600); setInterval(() => {}, 1000);`;
+  const parent = `require('node:child_process').spawn(process.execPath, ['-e', ${JSON.stringify(grandchild)}], { stdio: 'ignore' }); setInterval(() => {}, 1000);`;
+  const result = await runProcess('process tree timeout', process.execPath, ['-e', parent], { timeoutMs: 100 });
+  assert.equal(result.timedOut, true);
+  await new Promise((resolvePromise) => setTimeout(resolvePromise, 900));
+  await assert.rejects(access(marker));
+});
+
+test('runProcess redacts sensitive arguments in returned diagnostics', async () => {
+  const token = `sk-proj-${'a'.repeat(24)}`;
+  const result = await runProcess('redacted args', process.execPath, ['-e', 'process.exit(0)', token]);
+  assert.equal(result.ok, true);
+  assert.equal(JSON.stringify(result).includes(token), false);
+  assert.equal(formatCommand('tool', [token]).includes(token), false);
 });
 
 test('command probes report available and missing commands', async () => {

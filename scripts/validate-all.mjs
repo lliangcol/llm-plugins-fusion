@@ -22,6 +22,7 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
 const maxConcurrency = Number.parseInt(process.env.NOVA_VALIDATE_CONCURRENCY ?? '3', 10);
 const writeTimings = process.argv.includes('--write-timings') || process.env.NOVA_VALIDATE_WRITE_TIMINGS === '1';
+const runId = process.env.GITHUB_RUN_ID ?? `local-${process.pid}-${Date.now()}`;
 
 assertNodeVersion({ label: 'repository validation' });
 
@@ -64,8 +65,9 @@ async function environmentSummary() {
   return Object.fromEntries(tools.map(([label, detail]) => [label, detail.available]));
 }
 
-function nodeTask(label, script, timeoutMs = 120_000, options = {}) {
+function nodeTask(id, label, script, timeoutMs = 120_000, options = {}) {
   return {
+    id,
     label,
     run: async () => {
       const result = await runProcess(label, process.execPath, [script], {
@@ -76,29 +78,32 @@ function nodeTask(label, script, timeoutMs = 120_000, options = {}) {
       if (result.ok && options.skippedPattern?.test(output)) {
         return {
           ...result,
+          id,
           skipped: true,
         };
       }
-      return result;
+      return { ...result, id };
     },
   };
 }
 
-function commandTask(label, command, args, timeoutMs = 120_000) {
+function commandTask(id, label, command, args, timeoutMs = 120_000) {
   return {
+    id,
     label,
-    run: () => runProcess(label, command, args, {
+    run: async () => ({ ...await runProcess(label, command, args, {
       cwd: root,
       timeoutMs,
-    }),
+    }), id }),
   };
 }
 
-function skippedTask(label, message) {
+function skippedTask(id, label, message) {
   return {
     label,
     run: async () => ({
       label,
+      id,
       ok: true,
       skipped: true,
       warning: message,
@@ -109,11 +114,12 @@ function skippedTask(label, message) {
   };
 }
 
-function failedTask(label, message) {
+function failedTask(id, label, message) {
   return {
     label,
     run: async () => ({
       label,
+      id,
       ok: false,
       errorMessage: message,
       stdout: '',
@@ -125,7 +131,7 @@ function failedTask(label, message) {
 
 async function buildAgentVerificationTask() {
   if (process.platform !== 'win32') {
-    return commandTask('verify agents', 'bash', ['scripts/verify-agents.sh']);
+    return commandTask('agents.verify', 'verify agents', 'bash', ['scripts/verify-agents.sh']);
   }
 
   const powershellAvailable = await commandExists('powershell', [
@@ -141,10 +147,10 @@ async function buildAgentVerificationTask() {
   const shell = powershellAvailable ? 'powershell' : (pwshAvailable ? 'pwsh' : null);
 
   if (!shell) {
-    return failedTask('verify agents', 'neither powershell nor pwsh was found');
+    return failedTask('agents.verify', 'verify agents', 'neither powershell nor pwsh was found');
   }
 
-  return commandTask('verify agents', shell, [
+  return commandTask('agents.verify', 'verify agents', shell, [
     '-NoProfile',
     '-ExecutionPolicy',
     'Bypass',
@@ -157,20 +163,20 @@ function buildHookSyntaxTasks(hasBash) {
   if (!hasBash) {
     if (process.platform === 'win32') {
       return [
-        skippedTask('hook shell syntax', 'WARNING hook shell syntax: bash not found; skipping local bash -n checks'),
+        skippedTask('hooks.syntax.all', 'hook shell syntax', 'WARNING hook shell syntax: bash not found; skipping local bash -n checks'),
       ];
     }
     return [
-      failedTask('hook shell syntax', 'bash not found; bash -n checks are required outside Windows'),
+      failedTask('hooks.syntax.all', 'hook shell syntax', 'bash not found; bash -n checks are required outside Windows'),
     ];
   }
 
   return [
-    commandTask('hook shell syntax nova-plugin/hooks/scripts/pre-write-check.sh', 'bash', [
+    commandTask('hooks.syntax.prewrite', 'hook shell syntax nova-plugin/hooks/scripts/pre-write-check.sh', 'bash', [
       '-n',
       'nova-plugin/hooks/scripts/pre-write-check.sh',
     ], 30_000),
-    commandTask('hook shell syntax nova-plugin/hooks/scripts/post-audit-log.sh', 'bash', [
+    commandTask('hooks.syntax.audit', 'hook shell syntax nova-plugin/hooks/scripts/post-audit-log.sh', 'bash', [
       '-n',
       'nova-plugin/hooks/scripts/post-audit-log.sh',
     ], 30_000),
@@ -179,12 +185,12 @@ function buildHookSyntaxTasks(hasBash) {
 
 function buildRuntimeSmokeTask(hasBash) {
   if (hasBash) {
-    return nodeTask('validate runtime smoke', 'scripts/validate-runtime-smoke.mjs');
+    return nodeTask('runtime.smoke', 'validate runtime smoke', 'scripts/validate-runtime-smoke.mjs');
   }
   if (process.platform === 'win32') {
-    return skippedTask('validate runtime smoke', 'WARNING runtime smoke: bash not found; skipping local Bash runtime smoke checks');
+    return skippedTask('runtime.smoke', 'validate runtime smoke', 'WARNING runtime smoke: bash not found; skipping local Bash runtime smoke checks');
   }
-  return failedTask('validate runtime smoke', 'bash not found; Bash runtime smoke is required outside Windows');
+  return failedTask('runtime.smoke', 'validate runtime smoke', 'bash not found; Bash runtime smoke is required outside Windows');
 }
 
 function printResult(result) {
@@ -199,7 +205,7 @@ function printResult(result) {
 
   if (result.skipped) {
     skipped += 1;
-    timings.push({ label: result.label, status: 'skipped', ms: result.ms });
+    timings.push({ id: result.id, label: result.label, status: 'skipped', durationMs: result.ms, reasonCode: 'LOCAL_RUNTIME_UNAVAILABLE' });
     return;
   }
 
@@ -211,9 +217,10 @@ function printResult(result) {
   }
 
   timings.push({
+    id: result.id,
     label: result.label,
     status: result.ok ? 'passed' : 'failed',
-    ms: result.ms,
+    durationMs: result.ms,
   });
 }
 
@@ -244,7 +251,7 @@ async function runTaskGroup(tasks) {
 function printTimingSummary() {
   console.log('\n== validation timings ==');
   for (const timing of timings) {
-    const seconds = (timing.ms / 1000).toFixed(2);
+    const seconds = (timing.durationMs / 1000).toFixed(2);
     console.log(`${timing.status.padEnd(7)} ${seconds.padStart(7)}s  ${timing.label}`);
   }
 }
@@ -256,10 +263,12 @@ async function maybeWriteTimings() {
   await writeFile(
     resolve(metricsDir, 'validation-timings.json'),
     `${JSON.stringify({
+      schemaVersion: 1,
+      runId,
       generatedAt: new Date().toISOString(),
       failed,
       skipped,
-      timings,
+      gates: timings,
     }, null, 2)}\n`,
     'utf8',
   );
@@ -274,34 +283,41 @@ async function main() {
   const runtimeSmokeTask = buildRuntimeSmokeTask(hasBash);
 
   await runTaskGroup([
-    nodeTask('validate schemas', 'scripts/validate-schemas.mjs'),
-    nodeTask('validate registry fixtures', 'scripts/validate-registry-fixtures.mjs'),
+    nodeTask('schema.validate', 'validate schemas', 'scripts/validate-schemas.mjs'),
+    nodeTask('registry.fixtures', 'validate registry fixtures', 'scripts/validate-registry-fixtures.mjs'),
     nodeTask(
+      'claude.manifest.static',
       'validate Claude compatibility',
       'scripts/validate-claude-compat.mjs',
       120_000,
       { skippedPattern: /skipping live claude plugin validate checks/i },
     ),
-    nodeTask('lint frontmatter', 'scripts/lint-frontmatter.mjs'),
-    nodeTask('validate workflow permissions', 'scripts/generate-workflow-permissions.mjs'),
+    nodeTask('frontmatter.lint', 'lint frontmatter', 'scripts/lint-frontmatter.mjs'),
+    nodeTask('workflow.permissions', 'validate workflow permissions', 'scripts/generate-workflow-permissions.mjs'),
+    nodeTask('workflow.surface.normalization', 'validate normalized workflow surfaces', 'scripts/normalize-workflow-surfaces.mjs'),
   ]);
 
   await runTaskGroup([
     agentTask,
-    nodeTask('validate packs', 'scripts/validate-packs.mjs'),
-    nodeTask('validate hooks', 'scripts/validate-hooks.mjs'),
-    nodeTask('validate GitHub workflows', 'scripts/validate-github-workflows.mjs'),
+    nodeTask('packs.validate', 'validate packs', 'scripts/validate-packs.mjs'),
+    nodeTask('hooks.policy', 'validate hooks', 'scripts/validate-hooks.mjs'),
+    nodeTask('github.workflows', 'validate GitHub workflows', 'scripts/validate-github-workflows.mjs'),
     ...hookSyntaxTasks,
   ]);
 
   await runTaskGroup([
     runtimeSmokeTask,
-    nodeTask('validate surface budget', 'scripts/validate-surface-budget.mjs'),
-    nodeTask('validate surface inventory', 'scripts/generate-surface-inventory.mjs'),
-    nodeTask('scan distribution risk', 'scripts/scan-distribution-risk.mjs'),
-    nodeTask('validate regression', 'scripts/validate-regression.mjs'),
-    nodeTask('validate workflow fixtures', 'scripts/validate-workflow-fixtures.mjs'),
-    nodeTask('validate docs', 'scripts/validate-docs.mjs'),
+    nodeTask('surface.budget', 'validate surface budget', 'scripts/validate-surface-budget.mjs'),
+    nodeTask('surface.inventory', 'validate surface inventory', 'scripts/generate-surface-inventory.mjs'),
+    nodeTask('distribution.risk', 'scan distribution risk', 'scripts/scan-distribution-risk.mjs'),
+    nodeTask('regression.validate', 'validate regression', 'scripts/validate-regression.mjs'),
+    nodeTask('workflow.fixtures', 'validate workflow fixtures', 'scripts/validate-workflow-fixtures.mjs'),
+    nodeTask('workflow.route.conformance', 'validate route conformance cases', 'scripts/validate-route-conformance.mjs'),
+    nodeTask('workflow.surface.ab', 'validate workflow surface A/B evidence', 'scripts/evaluate-workflow-surfaces.mjs'),
+    nodeTask('assistant.adapters', 'validate assistant adapter conformance', 'scripts/validate-adapter-conformance.mjs'),
+    nodeTask('workflow.quality.dataset', 'validate workflow quality dataset', 'scripts/validate-workflow-quality-evals.mjs'),
+    nodeTask('assistant.live.evidence', 'validate assistant live evidence', 'scripts/validate-assistant-evidence.mjs'),
+    nodeTask('docs.validate', 'validate docs', 'scripts/validate-docs.mjs'),
   ]);
 
   printTimingSummary();

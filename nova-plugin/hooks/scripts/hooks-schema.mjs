@@ -4,6 +4,8 @@ import { isAbsolute, relative, resolve } from 'node:path';
 const SUPPORTED_EVENTS = new Set([
   'PreToolUse',
   'PostToolUse',
+  'PostToolUseFailure',
+  'PermissionDenied',
 ]);
 
 const ENTRY_KEYS = new Set([
@@ -14,6 +16,7 @@ const ENTRY_KEYS = new Set([
 const HOOK_KEYS = new Set([
   'type',
   'command',
+  'args',
   'timeout',
   'statusMessage',
   'async',
@@ -27,12 +30,21 @@ function record(errors, message) {
   errors.push(`  - ${message}`);
 }
 
-function referencedHookScript(command) {
-  const match = command.match(/\$\{CLAUDE_PLUGIN_ROOT\}\/([^"]+\.sh)/);
+function referencedHookScript(hook) {
+  const candidates = [hook.command, ...(Array.isArray(hook.args) ? hook.args : [])];
+  const value = candidates.find((candidate) => typeof candidate === 'string' && candidate.includes('${CLAUDE_PLUGIN_ROOT}/'));
+  const match = value?.match(/\$\{CLAUDE_PLUGIN_ROOT\}\/([^"\s]+\.(?:mjs|sh))/);
   return match?.[1] ?? null;
 }
 
-export function validateHooksConfig(config, options = {}) {
+const REQUIRED_NOVA_EVENTS = new Map([
+  ['PreToolUse', { matcher: 'Write|Edit|NotebookEdit', script: 'hooks/scripts/pre-write-check.sh', command: 'bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"' }],
+  ['PostToolUse', { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/post-audit-log.mjs', command: 'node' }],
+  ['PostToolUseFailure', { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/post-audit-log.mjs', command: 'node' }],
+  ['PermissionDenied', { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/post-audit-log.mjs', command: 'node' }],
+]);
+
+export function validateUpstreamHooksConfig(config, options = {}) {
   const { pluginRootDir } = options;
   const errors = [];
 
@@ -93,13 +105,16 @@ export function validateHooksConfig(config, options = {}) {
           record(errors, `${hookLabel} missing command string`);
           return;
         }
+        if (hook.args !== undefined && (!Array.isArray(hook.args) || hook.args.some((arg) => typeof arg !== 'string'))) {
+          record(errors, `${hookLabel} args must be an array of strings`);
+        }
         if (/\.sh/.test(hook.command) && !/^bash\s+"/.test(hook.command)) {
           record(errors, `${hookLabel} invokes a .sh script without explicit bash`);
         }
 
-        const scriptPath = referencedHookScript(hook.command);
+        const scriptPath = referencedHookScript(hook);
         if (!scriptPath) {
-          record(errors, `${hookLabel} command must reference a .sh script under CLAUDE_PLUGIN_ROOT`);
+          record(errors, `${hookLabel} command or args must reference a script under CLAUDE_PLUGIN_ROOT`);
         } else if (pluginRootDir) {
           const rootAbs = resolve(pluginRootDir);
           const abs = resolve(rootAbs, scriptPath);
@@ -123,6 +138,35 @@ export function validateHooksConfig(config, options = {}) {
   }
 
   return errors;
+}
+
+export function validateNovaHooksPolicy(config) {
+  const errors = [];
+  for (const [event, expected] of REQUIRED_NOVA_EVENTS) {
+    const entries = config?.hooks?.[event];
+    if (!Array.isArray(entries) || entries.length !== 1 || entries[0]?.matcher !== expected.matcher) {
+      record(errors, `${event} must contain exactly one entry with matcher ${expected.matcher}`);
+      continue;
+    }
+    const hooks = entries[0].hooks;
+    if (!Array.isArray(hooks) || hooks.length !== 1) continue;
+    const hook = hooks[0];
+    if (hook.command !== expected.command) record(errors, `${event} must use the required command form`);
+    if (expected.command === 'node' && (!Array.isArray(hook.args) || hook.args.length !== 1 || hook.args[0] !== `\${CLAUDE_PLUGIN_ROOT}/${expected.script}`)) {
+      record(errors, `${event} must pass ${expected.script} as the only Node argument`);
+    }
+    if (expected.command !== 'node' && hook.args !== undefined) {
+      record(errors, `${event} compatibility launcher must not declare exec args`);
+    }
+  }
+  return errors;
+}
+
+export function validateHooksConfig(config, options = {}) {
+  return [
+    ...validateUpstreamHooksConfig(config, options),
+    ...validateNovaHooksPolicy(config),
+  ];
 }
 
 export function validateHooksJsonText(source, options = {}) {

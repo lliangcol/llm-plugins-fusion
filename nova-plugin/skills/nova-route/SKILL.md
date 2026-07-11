@@ -14,66 +14,23 @@ metadata:
 argument-hint: "Example: route this request to the right nova command and packs."
 ---
 
-## Inputs
+## Shared Execution Policy
 
-| Parameter | Required | Default | Notes |
-| --- | --- | --- | --- |
-| `REQUEST` | Yes | Remaining payload | User request, task summary, issue, diff context, or unclear workflow intent. |
-| `CONTEXT` | No | None | Optional repository, file, branch, or artifact context. |
-| `DEPTH` | No | normal | `normal` or `brief`; use `brief` for a single route recommendation. |
+This file is the supporting behavioral contract for `/nova-plugin:route` and the deprecated `/nova-plugin:nova-route` compatibility entrypoint. Prefer the direct command; the compatibility name remains only for the current major-version migration window.
 
-## Parameter Resolution
+- Resolve natural-language and explicit `KEY=value` inputs using `../_shared/parameter-resolution.md`; explicit non-conflicting values take precedence.
+- Apply `../_shared/safety-preflight.md` before side effects. Never infer approval, destructive scope, credentials, or output destinations.
+- Follow `../_shared/output-contracts.md` and `../_shared/artifact-policy.md`; report completed, skipped, and blocked validation truthfully.
+- Respect the frontmatter tool boundary. Missing inputs, unavailable dependencies, overlapping user changes, or repository-policy conflicts are blockers rather than permission to broaden scope.
 
-- Parse natural-language payload, explicit `KEY=value`, `--flag value`, and `--flag=value` forms from `$ARGUMENTS`.
-- Normalize parameter names to uppercase snake case and map known mode words before assigning remaining text to `REQUEST`.
-- Explicit values win over inferred values only when they do not conflict with another explicit value.
-- Apply documented defaults only when unambiguous; use only Read/Glob/Grep for local context discovery.
-- Do not run Git, Bash, install, network, test, or external review commands from this skill.
-- Safety-boundary parameters for this skill: none for this skill.
-- In non-interactive mode, fail before side effects when required or safety-boundary parameters are missing.
-- Full policy: `nova-plugin/skills/_shared/parameter-resolution.md`.
+## Execution
 
-## Safety Preflight
+1. Parse `$ARGUMENTS` against the workflow-specific inputs below.
+2. Read only the context required for the requested scope.
+3. Apply the workflow contract and its strict output format.
+4. Stop before unauthorized side effects; otherwise validate in proportion to risk and report residual risk.
 
-- This skill is read-only for project files and must not modify code or write route artifacts.
-- No interrupting preflight is required for ordinary Read/Glob/Grep usage.
-- This skill has no export mode; a future write-capable route variant must be a separate command with explicit output parameters and shared preflight.
-- Do not infer safety-boundary values for artifact exports, project edits, branch changes, or external tool invocation.
-- Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.
-
-## Outputs
-
-- Follow the skill-specific output rules below and the shared output contract.
-- Chat output only; this skill must not write artifacts.
-- Route reviews and verification requests to the appropriate downstream command instead of performing them.
-- Full policy: `nova-plugin/skills/_shared/output-contracts.md`.
-- Artifact policy: `nova-plugin/skills/_shared/artifact-policy.md`.
-
-## Workflow
-
-1. Resolve `REQUEST`, `CONTEXT`, and `DEPTH`.
-2. Classify the request by workflow stage: Explore, Plan, Review, Implement, Finalize, or Codex loop.
-3. Select the smallest suitable nova command and its one-to-one skill.
-4. Select the owning core agent and any existing capability packs.
-5. Identify required inputs that block safe execution.
-6. State validation expectations and fallback mode.
-7. Output the route recommendation only.
-
-## Failure Modes
-
-- Required payload is missing or too vague to route safely.
-- The request asks for direct implementation, but approval, plan, branch, or safety-boundary inputs are missing.
-- The request maps to multiple stages and needs a sequence rather than one command.
-- A requested domain has no dedicated pack; route to the closest existing pack and state the fallback evidence.
-- Existing user changes or missing local context prevent confident ownership selection.
-
-## Examples
-
-- Use `/nova-plugin:route` before a large or ambiguous task to choose the next nova command.
-- Use `/nova-plugin:route` when consuming nova skills from Cursor, Gemini CLI, OpenCode, Copilot, Codex, or another agent without Claude slash commands.
-- Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
-
-## Skill-Specific Guidance
+## Workflow Contract
 
 ### Purpose
 
@@ -136,8 +93,9 @@ when their narrower contract fits better than the primary command.
 - Fallback path:
 ```
 
-For `DEPTH=normal`, add a one-sentence rationale after the fixed fields. For
-`DEPTH=brief`, output only the fixed fields.
+For `DEPTH=normal`, include a one-sentence rationale inside the appropriate
+fixed field. For `DEPTH=brief`, keep every field concise. Do not add content
+outside the heading and seven fixed bullets.
 
 If the work requires a sequence, output the shortest safe sequence and keep the
 same fixed fields for the immediate next step:
@@ -145,9 +103,13 @@ same fixed fields for the immediate next step:
 ```markdown
 ## Recommended Route
 
-1. `/nova-plugin:explore` -> `nova-explore`
-2. `/nova-plugin:produce-plan` -> `nova-produce-plan`
-3. `/nova-plugin:review` -> `nova-review`
+- Command: `/nova-plugin:explore` -> `/nova-plugin:produce-plan` -> `/nova-plugin:review`
+- Skill: `nova-explore` -> `nova-produce-plan` -> `nova-review`
+- Core agent: `orchestrator` -> `architect` -> `reviewer`
+- Capability packs: packs implied by request context
+- Required inputs: request context, then approved exploration evidence and plan target
+- Validation expectations: each stage validates its artifact before the next stage
+- Fallback path: stop at the first blocked stage and report the missing input
 ```
 
 ### Routing Rules

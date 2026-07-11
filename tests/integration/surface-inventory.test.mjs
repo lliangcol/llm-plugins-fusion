@@ -27,7 +27,9 @@ test('surface inventory captures current public repository surfaces', () => {
   const skillsByName = new Map(inventory.skills.map((skill) => [skill.name, skill]));
 
   assert.equal(commandsById.get('review')?.stage, 'review');
-  assert.equal(commandsById.get('review')?.invokesSkill, 'nova-review');
+  assert.equal(commandsById.get('review')?.compatibilitySkill, 'nova-review');
+  assert.equal(commandsById.get('review')?.runtimeDelegation, false);
+  assert.equal(commandsById.get('review')?.supportingContract, 'nova-plugin/skills/nova-review/SKILL.md');
   assert.equal(skillsByName.get('nova-review')?.commandId, 'review');
   assert.equal(skillsByName.get('nova-review')?.subagentSafe, true);
   assert.equal(skillsByName.get('nova-review')?.modelInvocable, true);
@@ -42,9 +44,10 @@ test('surface inventory captures current public repository surfaces', () => {
   ]);
 
   for (const command of inventory.commands) {
-    const skill = skillsByName.get(command.invokesSkill);
-    assert.ok(skill, `${command.id} invokes missing skill ${command.invokesSkill}`);
+    const skill = skillsByName.get(command.compatibilitySkill);
+    assert.ok(skill, `${command.id} has missing compatibility skill ${command.compatibilitySkill}`);
     assert.equal(skill.commandId, command.id);
+    assert.equal(command.runtimeDelegation, false);
   }
 
   assert.deepEqual(

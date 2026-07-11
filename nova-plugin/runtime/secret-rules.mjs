@@ -5,53 +5,95 @@
  * on top of these token and assignment patterns.
  */
 
+import { createHash } from 'node:crypto';
 import { basename, resolve } from 'node:path';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
 export const secretChecks = [
   {
+    id: 'openai-api-key',
     label: 'OpenAI API key',
     pattern: /\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b/g,
     replacement: '<redacted>',
   },
   {
+    id: 'github-token',
     label: 'GitHub token',
-    pattern: /\b(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{20,}\b/g,
+    pattern: /\b(?:(?:ghp|gho|ghu|ghs|ghr)_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,})\b/g,
     replacement: '<redacted>',
   },
   {
+    id: 'slack-token',
     label: 'Slack token',
     pattern: /\bxox[baprs]-[A-Za-z0-9-]{20,}\b/g,
     replacement: '<redacted>',
   },
   {
+    id: 'npm-token',
     label: 'npm token',
     pattern: /\bnpm_[A-Za-z0-9]{36,}\b/g,
     replacement: '<redacted>',
   },
   {
+    id: 'jwt',
     label: 'JWT',
     pattern: /\beyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}\b/g,
     replacement: '<redacted>',
   },
   {
+    id: 'authorization-bearer',
     label: 'Authorization bearer',
     pattern: /(Authorization:\s*Bearer\s+)[^\s]+/gi,
     replacement: '$1<redacted>',
   },
   {
+    id: 'secret-assignment',
     label: 'secret assignment',
     pattern: /\b(password|secret|api[_-]?key|access[_-]?token|auth[_-]?token|bearer[_-]?token|refresh[_-]?token|client[_-]?secret|private[_-]?key|npm[_-]?token|github[_-]?token|openai[_-]?api[_-]?key)\b\s*[:=]\s*(?:"[^"]{6,}"|'[^']{6,}'|[^\s#"'=]{16,})/gi,
     replacement: '$1=<redacted>',
   },
 ];
 
-export function hasSensitiveText(value) {
-  return secretChecks.some((check) => {
+function findingFingerprint(ruleId, value) {
+  return createHash('sha256').update(`${ruleId}\0${value}`).digest('hex');
+}
+
+export function findSensitiveText(value) {
+  const text = String(value ?? '');
+  const findings = [];
+  for (const check of secretChecks) {
     check.pattern.lastIndex = 0;
-    return check.pattern.test(value);
+    for (const match of text.matchAll(check.pattern)) {
+      const matched = match[0] ?? '';
+      const start = match.index ?? 0;
+      findings.push({
+        ruleId: check.id,
+        label: check.label,
+        start,
+        end: start + matched.length,
+        fingerprint: findingFingerprint(check.id, matched),
+      });
+    }
+  }
+  return findings;
+}
+
+export function newSensitiveFindings(before, after) {
+  const remaining = new Map();
+  for (const finding of before) {
+    remaining.set(finding.fingerprint, (remaining.get(finding.fingerprint) ?? 0) + 1);
+  }
+  return after.filter((finding) => {
+    const count = remaining.get(finding.fingerprint) ?? 0;
+    if (count === 0) return true;
+    remaining.set(finding.fingerprint, count - 1);
+    return false;
   });
+}
+
+export function hasSensitiveText(value) {
+  return findSensitiveText(value).length > 0;
 }
 
 export function redactSensitiveText(value) {

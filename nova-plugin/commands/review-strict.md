@@ -8,18 +8,19 @@ allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash
 user-invocable: true
 disable-model-invocation: false
-invokes:
-  skill: nova-review-strict
 ---
 
 # /nova-plugin:review-strict
 
-Invoke `nova-review-strict` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-review-strict` through the Skill tool.
 
-This is a compatibility shortcut for strict production-critical review. The skill is the source of truth for parameter resolution, execution rules, output format, agent-routing policy, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-review-strict/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: review
+- Owner agents: reviewer
+- Required inputs: `REVIEW_SCOPE`
+- Output contract: `review-strict-v2`
+- Risk: none
+- Recommended packs: security, dependency
 
-- Equivalent in intent to `/nova-plugin:review LEVEL=strict`.
-- May use strict review lanes when the invoking environment supports them.
-- Read-only; no fixes or code edits.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

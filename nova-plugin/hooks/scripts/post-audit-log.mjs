@@ -45,8 +45,12 @@ function appendLine(path, line) {
   writeFileSync(path, line, { flag: 'a', encoding: 'utf8' });
 }
 
-function formatRow(timestamp, toolName, status, summary) {
-  return `${timestamp.padEnd(24)} ${toolName.padEnd(16)} ${status.padEnd(8)} ${summary}\n`;
+function auditOutcome(payload, response) {
+  if (payload.hook_event_name === 'PostToolUseFailure') return 'failed';
+  if (payload.hook_event_name === 'PermissionDenied') return 'denied';
+  if (response.success === true) return 'success';
+  if (response.success === false) return 'failed';
+  return 'unknown';
 }
 
 if (process.env.NOVA_AUDIT_DISABLED === '1') {
@@ -59,8 +63,9 @@ const response = payload.tool_response || {};
 const toolName = sanitizeAuditField(payload.tool_name || 'unknown', 32) || 'unknown';
 const filePath = input.file_path || input.notebook_path || response.filePath || '';
 const command = input.command || '';
-const success = response.success == null ? true : response.success;
 const timestamp = isoTimestamp();
+const event = sanitizeAuditField(payload.hook_event_name || 'unknown', 48) || 'unknown';
+const outcome = auditOutcome(payload, response);
 
 let summary = '';
 if (filePath) {
@@ -97,7 +102,19 @@ try {
     }
   }
 
-  appendLine(logFile, formatRow(timestamp, toolName, success === false ? 'FAILED' : 'SUCCESS', summary));
+  const record = {
+    schemaVersion: 2,
+    timestamp,
+    sessionId: sanitizeAuditField(payload.session_id || 'unknown', 96) || 'unknown',
+    event,
+    tool: toolName,
+    outcome,
+    summary,
+    sequence: Number(process.hrtime.bigint() % 9_000_000_000_000_000n),
+    toolUseId: sanitizeAuditField(payload.tool_use_id || 'unknown', 96) || 'unknown',
+    durationMs: Number.isFinite(payload.duration_ms) ? payload.duration_ms : null,
+  };
+  appendLine(logFile, `${JSON.stringify(record)}\n`);
 } catch {
   process.exit(0);
 }

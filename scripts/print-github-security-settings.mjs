@@ -33,6 +33,7 @@ const requiredChecks = [
   'PSScriptAnalyzer',
   'Windows Bash Smoke',
   'macOS Smoke',
+  'Node 24 Compatibility',
   'Dependency Review',
   'CodeQL / Analyze JavaScript',
 ];

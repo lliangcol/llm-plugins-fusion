@@ -34,6 +34,8 @@ try {
 for (const [event, expectedMatcher] of [
   ['PreToolUse', 'Write|Edit|NotebookEdit'],
   ['PostToolUse', 'Write|Edit|NotebookEdit|Bash'],
+  ['PostToolUseFailure', 'Write|Edit|NotebookEdit|Bash'],
+  ['PermissionDenied', 'Write|Edit|NotebookEdit|Bash'],
 ]) {
   const entries = config?.hooks?.[event];
   if (!Array.isArray(entries) || entries.length !== 1 || entries[0]?.matcher !== expectedMatcher) {

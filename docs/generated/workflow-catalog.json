@@ -1,0 +1,376 @@
+{
+  "schemaVersion": 1,
+  "source": "workflow-specs/workflows.json",
+  "workflows": [
+    {
+      "id": "backend-plan",
+      "stage": "plan",
+      "ownerAgents": [
+        "architect"
+      ],
+      "recommendedPacks": [
+        "java",
+        "security",
+        "dependency"
+      ],
+      "requiredInputs": [
+        "REQUEST",
+        "PLAN_OUTPUT_PATH"
+      ],
+      "outputContract": "backend-plan-v2",
+      "risk": "low",
+      "primary": false,
+      "legacyAlias": "nova-backend-plan",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "codex-review-fix",
+      "stage": "implement",
+      "ownerAgents": [
+        "reviewer",
+        "builder",
+        "verifier"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "codex-review-fix-v2",
+      "risk": "medium",
+      "primary": false,
+      "legacyAlias": "nova-codex-review-fix",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "codex-review-only",
+      "stage": "review",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "codex-review-only-v2",
+      "risk": "low",
+      "primary": false,
+      "legacyAlias": "nova-codex-review-only",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "codex-verify-only",
+      "stage": "review",
+      "ownerAgents": [
+        "verifier"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REVIEW_FILE"
+      ],
+      "outputContract": "codex-verify-only-v2",
+      "risk": "low",
+      "primary": false,
+      "legacyAlias": "nova-codex-verify-only",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "explore",
+      "stage": "explore",
+      "ownerAgents": [
+        "orchestrator",
+        "reviewer"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "INPUT"
+      ],
+      "outputContract": "exploration-v2",
+      "risk": "none",
+      "primary": true,
+      "legacyAlias": "nova-explore",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "explore-lite",
+      "stage": "explore",
+      "ownerAgents": [
+        "orchestrator"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "INPUT"
+      ],
+      "outputContract": "exploration-lite-v2",
+      "risk": "none",
+      "primary": false,
+      "legacyAlias": "nova-explore-lite",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "explore-review",
+      "stage": "explore",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "security",
+        "dependency"
+      ],
+      "requiredInputs": [
+        "INPUT"
+      ],
+      "outputContract": "exploration-review-v2",
+      "risk": "none",
+      "primary": false,
+      "legacyAlias": "nova-explore-review",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "finalize-lite",
+      "stage": "finalize",
+      "ownerAgents": [
+        "publisher"
+      ],
+      "recommendedPacks": [
+        "docs"
+      ],
+      "requiredInputs": [
+        "WORK_SUMMARY"
+      ],
+      "outputContract": "finalize-lite-v2",
+      "risk": "none",
+      "primary": false,
+      "legacyAlias": "nova-finalize-lite",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "finalize-work",
+      "stage": "finalize",
+      "ownerAgents": [
+        "publisher"
+      ],
+      "recommendedPacks": [
+        "release",
+        "docs"
+      ],
+      "requiredInputs": [
+        "WORK_SUMMARY"
+      ],
+      "outputContract": "finalize-work-v2",
+      "risk": "none",
+      "primary": true,
+      "legacyAlias": "nova-finalize-work",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "implement-lite",
+      "stage": "implement",
+      "ownerAgents": [
+        "builder"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REQUEST"
+      ],
+      "outputContract": "implementation-lite-v2",
+      "risk": "medium",
+      "primary": false,
+      "legacyAlias": "nova-implement-lite",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "implement-plan",
+      "stage": "implement",
+      "ownerAgents": [
+        "builder"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "PLAN_INPUT_PATH",
+        "PLAN_APPROVED"
+      ],
+      "outputContract": "implementation-plan-v2",
+      "risk": "medium",
+      "primary": true,
+      "legacyAlias": "nova-implement-plan",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "implement-standard",
+      "stage": "implement",
+      "ownerAgents": [
+        "builder"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REQUEST"
+      ],
+      "outputContract": "implementation-standard-v2",
+      "risk": "medium",
+      "primary": false,
+      "legacyAlias": "nova-implement-standard",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "plan-lite",
+      "stage": "plan",
+      "ownerAgents": [
+        "architect"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REQUEST"
+      ],
+      "outputContract": "plan-lite-v2",
+      "risk": "none",
+      "primary": false,
+      "legacyAlias": "nova-plan-lite",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "plan-review",
+      "stage": "review",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "docs",
+        "security"
+      ],
+      "requiredInputs": [
+        "PLAN_INPUT_PATH"
+      ],
+      "outputContract": "plan-review-v2",
+      "risk": "none",
+      "primary": false,
+      "legacyAlias": "nova-plan-review",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "produce-plan",
+      "stage": "plan",
+      "ownerAgents": [
+        "architect"
+      ],
+      "recommendedPacks": [
+        "docs"
+      ],
+      "requiredInputs": [
+        "REQUEST",
+        "PLAN_OUTPUT_PATH"
+      ],
+      "outputContract": "produce-plan-v2",
+      "risk": "low",
+      "primary": true,
+      "legacyAlias": "nova-produce-plan",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "review",
+      "stage": "review",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "security",
+        "dependency"
+      ],
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "review-v2",
+      "risk": "none",
+      "primary": true,
+      "legacyAlias": "nova-review",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "review-lite",
+      "stage": "review",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "review-lite-v2",
+      "risk": "none",
+      "primary": false,
+      "legacyAlias": "nova-review-lite",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "review-only",
+      "stage": "review",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "security",
+        "dependency"
+      ],
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "review-only-v2",
+      "risk": "none",
+      "primary": false,
+      "legacyAlias": "nova-review-only",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "review-strict",
+      "stage": "review",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "security",
+        "dependency"
+      ],
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "review-strict-v2",
+      "risk": "none",
+      "primary": false,
+      "legacyAlias": "nova-review-strict",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "route",
+      "stage": "explore",
+      "ownerAgents": [
+        "orchestrator"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REQUEST"
+      ],
+      "outputContract": "recommended-route-v2",
+      "risk": "none",
+      "primary": true,
+      "legacyAlias": "nova-route",
+      "runtimeDelegation": false
+    },
+    {
+      "id": "senior-explore",
+      "stage": "explore",
+      "ownerAgents": [
+        "architect",
+        "reviewer"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "INTENT",
+        "CONTEXT"
+      ],
+      "outputContract": "senior-exploration-v2",
+      "risk": "low",
+      "primary": false,
+      "legacyAlias": "nova-senior-explore",
+      "runtimeDelegation": false
+    }
+  ]
+}

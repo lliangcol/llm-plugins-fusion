@@ -8,18 +8,19 @@ allowed-tools: Read Glob Grep Write Edit
 disallowed-tools: NotebookEdit Bash
 user-invocable: true
 disable-model-invocation: true
-invokes:
-  skill: nova-senior-explore
 ---
 
 # /nova-plugin:senior-explore
 
-Invoke `nova-senior-explore` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-senior-explore` through the Skill tool.
 
-This is the deep exploration entry for complex requirements, incidents, or cross-cutting codebase analysis. The skill is the source of truth for parameter resolution, execution rules, output format, artifact policy, and safety boundaries.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-senior-explore/SKILL.md` as the supporting behavioral contract, then apply it directly.
 
-Entry semantics:
+- Stage: explore
+- Owner agents: architect, reviewer
+- Required inputs: `INTENT`, `CONTEXT`
+- Output contract: `senior-exploration-v2`
+- Risk: low
+- Recommended packs: None
 
-- Use `INTENT`, `CONTEXT`, `CONSTRAINTS`, and `DEPTH` to shape analysis.
-- `EXPORT_PATH` is optional but must be explicit when writing an analysis artifact.
-- Exploration remains analysis-only; it must not implement or redesign.
+Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

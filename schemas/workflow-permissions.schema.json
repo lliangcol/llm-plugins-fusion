@@ -38,7 +38,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "destructiveActions", "modelInvocable", "subagentSafe", "allowedTools", "disallowedTools"],
+        "required": ["id", "destructiveActions", "modelInvocable", "subagentSafe", "allowedTools", "disallowedTools", "capabilities"],
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
           "destructiveActions": { "enum": ["none", "low", "medium", "high"] },
@@ -46,6 +46,21 @@
           "subagentSafe": { "type": "boolean" },
           "allowedTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
           "disallowedTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+          "capabilities": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["workspaceRead", "workspaceWrite", "shell", "network", "credentials", "userScopeMutation", "externalPublish", "gitHistoryMutation"],
+            "properties": {
+              "workspaceRead": { "type": "boolean" },
+              "workspaceWrite": { "type": "boolean" },
+              "shell": { "enum": ["denied", "prompt", "allowed"] },
+              "network": { "type": "boolean" },
+              "credentials": { "type": "boolean" },
+              "userScopeMutation": { "type": "boolean" },
+              "externalPublish": { "type": "boolean" },
+              "gitHistoryMutation": { "type": "boolean" }
+            }
+          },
           "compatibility": { "type": "string", "minLength": 1 }
         }
       }
