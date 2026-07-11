@@ -14,7 +14,15 @@ invokes:
 
 # /nova-plugin:route
 
-Invoke `nova-route` with `$ARGUMENTS`.
+Invoke `nova-route` with `$ARGUMENTS` before answering. Do not return a wrapper
+summary or stop after acknowledging the delegation.
+
+The final response must start with exactly `## Recommended Route`, followed by
+these seven Markdown bullet labels in this order: `Command:`, `Skill:`,
+`Core agent:`, `Capability packs:`, `Required inputs:`,
+`Validation expectations:`, and `Fallback path:`. Do not add a preface, use an
+alternate heading level, rename fields, or replace the fixed fields with a
+table. The `nova-route` skill remains the source of truth for every field value.
 
 This is the read-only first-stage routing entry. The skill is the source of truth for selecting the next nova command, one-to-one skill, core agent, capability packs, required inputs, validation expectations, and fallback path.
 

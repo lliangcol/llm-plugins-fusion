@@ -86,6 +86,11 @@ command wrapper and its compatibility implementation. `Write`, `Edit`,
 `NotebookEdit`, and `Bash` remain explicitly denied. Release evidence records
 and validates this exact allow/deny policy instead of treating `dontAsk` as
 sufficient by itself.
+The headless gate also appends a canonical system-level output contract and
+records its contract ID, prompt SHA-256, and maximum turn count in release
+evidence. The stable command wrapper repeats the same heading and seven-field
+boundary. When validation fails, logs contain only output length, digest, field
+presence, and namespaced-command count; they do not contain the model response.
 The route evidence compares the complete temporary worktree inventory, including
 file content hashes, symlinks, and directories outside `.git`, before and after
 the model call. It also requires an unchanged Git status and validates every

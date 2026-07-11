@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { extractReleaseNotes, prepareRelease } from '../../scripts/prepare-release.mjs';
+
+const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
 async function releaseRoot(t, version, changelog = null) {
   const root = await mkdtemp(join(tmpdir(), 'nova-release-'));
@@ -34,6 +37,14 @@ test('prepareRelease writes safe prerelease outputs and exact notes', async (t) 
 test('prepareRelease treats build-only versions as stable', async (t) => {
   const root = await releaseRoot(t, '2.4.0+build-7');
   assert.equal(prepareRelease({ root, releaseTag: 'v2.4.0+build-7' }).prerelease, false);
+});
+
+test('2.4.1 release notes include every post-tag release blocker fix', async () => {
+  const changelog = await readFile(resolve(repositoryRoot, 'CHANGELOG.md'), 'utf8');
+  const notes = extractReleaseNotes(changelog, '2.4.1');
+  assert.match(notes, /\.in_use\/\*\*/);
+  assert.match(notes, /Skill\(nova-plugin:route\)/);
+  assert.match(notes, /recommended-route-v1|七字段契约/);
 });
 
 test('prepareRelease rejects malformed, mismatched, missing, and empty releases', async (t) => {

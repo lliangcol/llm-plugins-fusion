@@ -12,6 +12,11 @@ import {
   routeAllowedTools,
   routeFailureDetails,
   routeInvocationArgs,
+  routeMaxTurns,
+  routeOutputContract,
+  routeOutputShape,
+  routeSystemPrompt,
+  routeValidationFailureCode,
   validateRouteResult,
 } from '../../scripts/validate-plugin-route-live.mjs';
 
@@ -58,6 +63,28 @@ test('live route result validator rejects bare, invented, or incomplete output',
 - Fallback path: none
 `;
   assert.throws(() => validateRouteResult(invented, inventory), /invented command/);
+
+  const valid = `## Recommended Route
+- Command: /nova-plugin:review
+- Skill: nova-review
+- Core agent: reviewer
+- Capability packs: docs
+- Required inputs: diff
+- Validation expectations: docs
+- Fallback path: /nova-plugin:explore
+`;
+  assert.throws(
+    () => validateRouteResult(`${valid}- Closing: extra\n`, inventory),
+    /exactly the heading and seven field lines/,
+  );
+  assert.throws(
+    () => validateRouteResult(valid.replace('- Command:', '- Skill:').replace('- Skill: nova-review', '- Command: /nova-plugin:review'), inventory),
+    /field order or label differs/,
+  );
+  assert.throws(
+    () => validateRouteResult(valid.replace('- Required inputs: diff', '- Required inputs:'), inventory),
+    /value is empty/,
+  );
 
   for (const [field, value, message] of [
     ['Skill', 'nova-does-not-exist', /invented skill/],
@@ -128,7 +155,46 @@ test('OAuth route invocation isolates configuration without bare mode', (t) => {
     args.slice(args.indexOf('--allowedTools'), args.indexOf('--allowedTools') + 2),
     ['--allowedTools', routeAllowedTools.join(',')],
   );
+  assert.deepEqual(
+    args.slice(args.indexOf('--append-system-prompt'), args.indexOf('--append-system-prompt') + 2),
+    ['--append-system-prompt', routeSystemPrompt],
+  );
+  assert.deepEqual(
+    args.slice(args.indexOf('--max-turns'), args.indexOf('--max-turns') + 2),
+    ['--max-turns', String(routeMaxTurns)],
+  );
   assert.ok(args.includes('Write,Edit,NotebookEdit,Bash'));
+});
+
+test('route output shape diagnostics expose structure without response text', () => {
+  const result = `Alternate heading\n- Command: /nova-plugin:review\n- Skill: nova-review\nprivate response text`;
+  const shape = routeOutputShape(result);
+  assert.equal(shape.startsWithRequiredHeading, false);
+  assert.deepEqual(shape.requiredFieldsPresent, ['Command:', 'Skill:']);
+  assert.equal(shape.namespacedCommandCount, 1);
+  assert.match(shape.sha256, /^[a-f0-9]{64}$/);
+  assert.doesNotMatch(JSON.stringify(shape), /private response text|nova-review/);
+});
+
+test('stable route command repeats the strict output boundary', async () => {
+  const command = await readFile(resolve(root, 'nova-plugin/commands/route.md'), 'utf8');
+  assert.match(command, /Invoke `nova-route` with `\$ARGUMENTS` before answering/);
+  assert.ok(command.includes(routeOutputContract.heading));
+  for (const field of routeOutputContract.requiredFields) assert.ok(command.includes(field));
+});
+
+test('route validation diagnostics classify failures without output values', () => {
+  for (const [message, code] of [
+    ['route output does not start with heading', 'heading'],
+    ['route output does not contain exactly the heading and seven field lines', 'line-count'],
+    ['route output field order or label differs at Command:', 'field-layout'],
+    ['route output Command: value is empty', 'empty-field-value'],
+    ['route output is missing Command:', 'required-field'],
+    ['route output invented command private-value', 'command-inventory'],
+    ['route output invented skill private-value', 'skill-inventory'],
+    ['route output invented core agent private-value', 'agent-inventory'],
+    ['route output invented capability pack private-value', 'pack-inventory'],
+  ]) assert.equal(routeValidationFailureCode(new Error(message)), code);
 });
 
 test('OAuth route failures report safe permission diagnostics without model output', () => {
