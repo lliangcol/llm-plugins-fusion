@@ -31,7 +31,14 @@ function fixture() {
       sourceTreeDigest: 'a',
       installedTreeDigest: 'a',
     },
-    route: { invocation: '/nova-plugin:route', outputStructureValid: true, projectChanged: false, resultSha256: 'b' },
+    route: {
+      invocation: '/nova-plugin:route',
+      authenticationMode: 'claude-code-oauth-token',
+      configurationIsolation: 'temporary-home',
+      outputStructureValid: true,
+      projectChanged: false,
+      resultSha256: 'b',
+    },
     checksums: 'abc  file\n',
     env: { GITHUB_SHA: 'commit', GITHUB_REF_NAME: 'v2.4.1' },
     now: () => new Date('2026-07-11T00:00:00Z'),
@@ -45,7 +52,22 @@ test('release evidence aggregates machine facts without raw model output', () =>
   assert.equal(evidence.route.projectChanged, false);
   assert.deepEqual(evidence.tests.coverage, { lines: 88.05, branches: 70.01, functions: 92.89 });
   assert.doesNotMatch(JSON.stringify(evidence), /Recommended Route/);
-  assert.match(renderReleaseEvidenceMarkdown(evidence), /Credentialed route: passed with zero project writes/);
+  assert.equal(evidence.route.authenticationMode, 'claude-code-oauth-token');
+  assert.match(renderReleaseEvidenceMarkdown(evidence), /OAuth route: passed with temporary-home isolation and zero project writes/);
+});
+
+test('release evidence rejects ambiguous route authentication evidence', () => {
+  assert.throws(
+    () => buildReleaseEvidence({
+      plugin: { version: '2.4.1' },
+      coverageSummary,
+      coverageMetadata: { exitCode: 0, node: 'v20', thresholds: {} },
+      timings: { failed: 0, timings: [] },
+      route: { projectChanged: false, authenticationMode: 'api-key', configurationIsolation: 'temporary-home' },
+      checksums: 'abc  file\n',
+    }),
+    /does not prove Claude Code OAuth authentication/,
+  );
 });
 
 test('release evidence CLI requires live inputs when requested', async (t) => {

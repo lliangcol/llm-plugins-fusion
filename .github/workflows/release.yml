@@ -54,7 +54,7 @@ jobs:
         run: npm install -g @anthropic-ai/claude-code@2.1.205
       - name: Validate exact-tag install, inventory, and route
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: >-
           node scripts/validate-plugin-install.mjs
           --accept-user-scope-mutation

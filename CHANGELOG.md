@@ -29,6 +29,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   调用回到正常权限流程。
 - PreToolUse 和 PostToolUse Bash 文件收敛为薄启动器，Node.js 20+ 成为唯一
   hook 业务实现；write guard 的 `exit 0` 明确表示无决定而不是授权。
+- 真实 route 发布门禁改用 `claude setup-token` 生成的
+  `CLAUDE_CODE_OAUTH_TOKEN`，通过临时 HOME/XDG/Claude 配置目录保持隔离，且
+  拒绝会抢占 OAuth 的 API key、Bearer token 或云厂商认证配置。
 
 ### Fixed
 - write guard 在 Node 缺失、payload 非法或 Edit 无法可靠重构时不再静默放行。

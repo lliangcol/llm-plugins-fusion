@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** Run one credentialed, read-only namespaced route invocation. */
+/** Run one OAuth-authenticated, read-only namespaced route invocation. */
 
 import { createHash } from 'node:crypto';
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -11,6 +11,13 @@ import { captureProcess, runProcess } from './lib/process-runner.mjs';
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
 const fixedPrompt = '/nova-plugin:route REQUEST="Review a public README change before editing and recommend the next workflow." DEPTH=brief';
+const competingCredentialVariables = [
+  'ANTHROPIC_API_KEY',
+  'ANTHROPIC_AUTH_TOKEN',
+  'CLAUDE_CODE_USE_BEDROCK',
+  'CLAUDE_CODE_USE_VERTEX',
+  'CLAUDE_CODE_USE_FOUNDRY',
+];
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -44,6 +51,52 @@ export function validateRouteResult(result, permissionSpec) {
   return { commandMatches: [...new Set(commandMatches)].sort(), requiredFields };
 }
 
+export function buildOAuthRouteEnvironment(env, isolatedHome) {
+  if (typeof env.CLAUDE_CODE_OAUTH_TOKEN !== 'string' || !env.CLAUDE_CODE_OAUTH_TOKEN.trim()) {
+    throw new Error('CLAUDE_CODE_OAUTH_TOKEN is required for the OAuth live route gate');
+  }
+  const competing = competingCredentialVariables.filter((name) => {
+    const value = env[name];
+    return typeof value === 'string' && value.trim();
+  });
+  if (competing.length) {
+    throw new Error(`OAuth live route gate forbids competing credentials: ${competing.join(', ')}`);
+  }
+  const configHome = resolve(isolatedHome, '.config');
+  const dataHome = resolve(isolatedHome, '.local', 'share');
+  const stateHome = resolve(isolatedHome, '.local', 'state');
+  const claudeConfigDir = resolve(isolatedHome, '.claude');
+  for (const directory of [configHome, dataHome, stateHome, claudeConfigDir]) {
+    mkdirSync(directory, { recursive: true });
+  }
+  return {
+    ...env,
+    HOME: isolatedHome,
+    USERPROFILE: isolatedHome,
+    XDG_CONFIG_HOME: configHome,
+    XDG_DATA_HOME: dataHome,
+    XDG_STATE_HOME: stateHome,
+    CLAUDE_CONFIG_DIR: claudeConfigDir,
+  };
+}
+
+export function routeInvocationArgs(pluginDir) {
+  return [
+    '--plugin-dir',
+    pluginDir,
+    '-p',
+    fixedPrompt,
+    '--output-format',
+    'json',
+    '--max-turns',
+    '3',
+    '--permission-mode',
+    'dontAsk',
+    '--disallowedTools',
+    'Write,Edit,NotebookEdit,Bash',
+  ];
+}
+
 async function gitStatus(cwd, env) {
   const result = await captureProcess('route smoke git status', 'git', ['status', '--short'], {
     cwd,
@@ -55,16 +108,15 @@ async function gitStatus(cwd, env) {
 }
 
 export async function runRouteSmoke({ pluginDir, outPath = null, env = process.env } = {}) {
-  if (!env.ANTHROPIC_API_KEY) {
-    throw new Error('ANTHROPIC_API_KEY is required for the credentialed live route gate');
-  }
   const resolvedPluginDir = resolve(pluginDir ?? '');
   const permissionSpec = JSON.parse(readFileSync(
     resolve(resolvedPluginDir, 'runtime/workflow-permissions.json'),
     'utf8',
   ));
   const project = mkdtempSync(resolve(tmpdir(), 'nova-route-live-'));
+  const oauthHome = mkdtempSync(resolve(tmpdir(), 'nova-route-oauth-home-'));
   try {
+    const routeEnv = buildOAuthRouteEnvironment(env, oauthHome);
     writeFileSync(resolve(project, 'README.md'), '# Route Smoke Fixture\n', 'utf8');
     for (const args of [
       ['init', '-q'],
@@ -73,32 +125,18 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       ['add', 'README.md'],
       ['commit', '-qm', 'fixture'],
     ]) {
-      const result = await runProcess(`git ${args[0]}`, 'git', args, { cwd: project, env, timeoutMs: 30_000 });
+      const result = await runProcess(`git ${args[0]}`, 'git', args, { cwd: project, env: routeEnv, timeoutMs: 30_000 });
       if (!result.ok) throw new Error(`failed to initialize route smoke fixture: ${result.stderr || result.errorMessage}`);
     }
-    const beforeStatus = await gitStatus(project, env);
+    const beforeStatus = await gitStatus(project, routeEnv);
     const beforeDigest = sha256(readFileSync(resolve(project, 'README.md')));
-    const invocation = await captureProcess('credentialed route smoke', 'claude', [
-      '--bare',
-      '--plugin-dir',
-      resolvedPluginDir,
-      '-p',
-      fixedPrompt,
-      '--output-format',
-      'json',
-      '--max-turns',
-      '3',
-      '--permission-mode',
-      'dontAsk',
-      '--disallowedTools',
-      'Write,Edit,NotebookEdit,Bash',
-    ], {
+    const invocation = await captureProcess('OAuth route smoke', 'claude', routeInvocationArgs(resolvedPluginDir), {
       cwd: project,
-      env,
+      env: routeEnv,
       timeoutMs: 300_000,
     });
     if (!invocation.ok) {
-      throw new Error(`credentialed route invocation failed: ${invocation.errorMessage ?? invocation.stderr}`);
+      throw new Error(`OAuth route invocation failed: ${invocation.errorMessage ?? invocation.stderr}`);
     }
     let response;
     try {
@@ -108,7 +146,7 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
     }
     if (typeof response.result !== 'string') throw new Error('route JSON output is missing result text');
     const validation = validateRouteResult(response.result, permissionSpec);
-    const afterStatus = await gitStatus(project, env);
+    const afterStatus = await gitStatus(project, routeEnv);
     const afterDigest = sha256(readFileSync(resolve(project, 'README.md')));
     if (beforeDigest !== afterDigest || beforeStatus !== afterStatus || afterStatus !== '') {
       throw new Error('route invocation changed the fixture project');
@@ -117,6 +155,8 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       schemaVersion: 1,
       generatedAt: new Date().toISOString(),
       invocation: '/nova-plugin:route',
+      authenticationMode: 'claude-code-oauth-token',
+      configurationIsolation: 'temporary-home',
       permissionMode: 'dontAsk',
       disallowedTools: ['Write', 'Edit', 'NotebookEdit', 'Bash'],
       outputStructureValid: true,
@@ -133,10 +173,11 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       writeFileSync(resolvedOut, `${JSON.stringify(evidence, null, 2)}\n`, 'utf8');
       console.log(`Wrote route smoke evidence to ${relative(root, resolvedOut).replaceAll('\\', '/')}`);
     }
-    console.log(`OK credentialed /nova-plugin:route smoke; projectChanged=false; resultSha256=${evidence.resultSha256}`);
+    console.log(`OK OAuth /nova-plugin:route smoke; projectChanged=false; resultSha256=${evidence.resultSha256}`);
     return evidence;
   } finally {
     rmSync(project, { recursive: true, force: true });
+    rmSync(oauthHome, { recursive: true, force: true });
   }
 }
 

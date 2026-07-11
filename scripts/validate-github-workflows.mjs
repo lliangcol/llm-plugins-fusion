@@ -524,6 +524,12 @@ function validateWorkflowContracts() {
     if (!/prerelease:\s*\$\{\{\s*steps\.release\.outputs\.prerelease\s*\}\}/.test(releaseSrc)) {
       recordError(releaseFile, 'release action must use the validated prerelease output');
     }
+    if (!/CLAUDE_CODE_OAUTH_TOKEN:\s*\$\{\{\s*secrets\.CLAUDE_CODE_OAUTH_TOKEN\s*\}\}/.test(releaseSrc)) {
+      recordError(releaseFile, 'release live route gate must receive CLAUDE_CODE_OAUTH_TOKEN from repository secrets');
+    }
+    if (/ANTHROPIC_API_KEY/.test(releaseSrc)) {
+      recordError(releaseFile, 'release live route gate must not use ANTHROPIC_API_KEY when OAuth CI is required');
+    }
     const releaseJob = extractYamlBlock(
       releaseFile,
       releaseSrc,
@@ -542,6 +548,17 @@ function validateWorkflowContracts() {
         releaseJob.start + 1,
         releaseJob.end,
       );
+    }
+  }
+
+  const routeSmokeFile = 'scripts/validate-plugin-route-live.mjs';
+  const routeSmokeSrc = readRequiredFile(routeSmokeFile);
+  if (routeSmokeSrc) {
+    if (!/CLAUDE_CODE_OAUTH_TOKEN/.test(routeSmokeSrc)) {
+      recordError(routeSmokeFile, 'live route gate must require CLAUDE_CODE_OAUTH_TOKEN');
+    }
+    if (/['"]--bare['"]/.test(routeSmokeSrc)) {
+      recordError(routeSmokeFile, 'OAuth live route gate must not invoke Claude with --bare');
     }
   }
 

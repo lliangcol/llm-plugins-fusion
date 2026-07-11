@@ -83,6 +83,12 @@ export function buildReleaseEvidence({
     throw new Error('coverage or validation timing input reports failure');
   }
   if (route && route.projectChanged !== false) throw new Error('route smoke reports project changes');
+  if (route && route.authenticationMode !== 'claude-code-oauth-token') {
+    throw new Error('route smoke does not prove Claude Code OAuth authentication');
+  }
+  if (route && route.configurationIsolation !== 'temporary-home') {
+    throw new Error('route smoke does not prove temporary-home configuration isolation');
+  }
   if (install && install.inventory?.count !== 42) throw new Error('install evidence does not report 42 Skills');
 
   return {
@@ -108,7 +114,7 @@ export function buildReleaseEvidence({
       ...timings.timings.map((timing) => ({ name: timing.label, status: timing.status, durationMs: timing.ms })),
       { name: 'coverage', status: coverageMetadata.exitCode === 0 ? 'passed' : 'failed' },
       { name: 'exact-tag install inventory', status: install ? 'passed' : 'not-run' },
-      { name: 'credentialed namespaced route', status: route ? 'passed' : 'not-run' },
+      { name: 'OAuth namespaced route', status: route ? 'passed' : 'not-run' },
     ],
     install: install ? {
       source: install.marketplace,
@@ -120,6 +126,8 @@ export function buildReleaseEvidence({
     } : null,
     route: route ? {
       invocation: route.invocation,
+      authenticationMode: route.authenticationMode,
+      configurationIsolation: route.configurationIsolation,
       outputStructureValid: route.outputStructureValid,
       projectChanged: route.projectChanged,
       resultSha256: route.resultSha256,
@@ -131,7 +139,7 @@ export function buildReleaseEvidence({
 
 export function renderReleaseEvidenceMarkdown(evidence) {
   const gates = evidence.gates.map((gate) => `| ${gate.name} | ${gate.status} | ${gate.durationMs ?? ''} |`).join('\n');
-  return `# Release Evidence\n\nStatus: generated\n\n- Tag: \`${evidence.release.tag}\`\n- Commit: \`${evidence.release.commit}\`\n- Plugin version: \`${evidence.release.pluginVersion}\`\n- Node: \`${evidence.runtime.node}\`\n- Claude CLI: \`${evidence.runtime.claude}\`\n- Tests: ${evidence.tests.passed ?? 'unknown'} passed, ${evidence.tests.failed ?? 'unknown'} failed\n- Coverage: lines ${evidence.tests.coverage.lines}%, branches ${evidence.tests.coverage.branches}%, functions ${evidence.tests.coverage.functions}%\n- Installed Skills: ${evidence.install?.skillsCount ?? 'not run'}\n- Credentialed route: ${evidence.route ? 'passed with zero project writes' : 'not run'}\n\n## Gates\n\n| Gate | Status | Duration ms |\n| --- | --- | --- |\n${gates}\n`;
+  return `# Release Evidence\n\nStatus: generated\n\n- Tag: \`${evidence.release.tag}\`\n- Commit: \`${evidence.release.commit}\`\n- Plugin version: \`${evidence.release.pluginVersion}\`\n- Node: \`${evidence.runtime.node}\`\n- Claude CLI: \`${evidence.runtime.claude}\`\n- Tests: ${evidence.tests.passed ?? 'unknown'} passed, ${evidence.tests.failed ?? 'unknown'} failed\n- Coverage: lines ${evidence.tests.coverage.lines}%, branches ${evidence.tests.coverage.branches}%, functions ${evidence.tests.coverage.functions}%\n- Installed Skills: ${evidence.install?.skillsCount ?? 'not run'}\n- OAuth route: ${evidence.route ? 'passed with temporary-home isolation and zero project writes' : 'not run'}\n\n## Gates\n\n| Gate | Status | Duration ms |\n| --- | --- | --- |\n${gates}\n`;
 }
 
 export function generateReleaseEvidence({ root = defaultRoot, args = [], env = process.env, now } = {}) {
