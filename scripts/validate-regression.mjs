@@ -768,6 +768,36 @@ test('validate-docs rejects duplicate tool vocabulary prose', () => {
   }
 });
 
+test('validate-docs enforces the deferred portal implementation boundary', () => {
+  const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-docs-portal-boundary-'));
+  const fixtureRoot = resolve(tempRoot, 'repo');
+  try {
+    copyRepositoryFixture(fixtureRoot);
+    const portalIaPath = resolve(fixtureRoot, 'docs/marketplace/portal-information-architecture.md');
+    const portalIa = readFileSync(portalIaPath, 'utf8');
+    const driftedPortalIa = portalIa.replace(
+      /It is not an implemented public portal,[\s\S]*?activation evidence for `v3\.0\.0`\./,
+      '',
+    );
+    assert.notEqual(driftedPortalIa, portalIa, 'portal boundary fixture mutation must apply');
+    writeFileSync(portalIaPath, driftedPortalIa, 'utf8');
+
+    const drifted = spawnSync(process.execPath, [
+      'scripts/validate-docs.mjs',
+      '--root',
+      fixtureRoot,
+    ], {
+      cwd: root,
+      encoding: 'utf8',
+      shell: false,
+    });
+    assert.notEqual(drifted.status, 0, 'validate-docs should reject the missing portal boundary');
+    assert.match(`${drifted.stdout}${drifted.stderr}`, /portal IA no implemented portal boundary/);
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test('validate-docs enforces positioning, maintenance status, release, maintainer, public API, marketplace, contribution/issue intake, docs-index, consumer setup, prompt template, workflow evidence, showcase, growth, assets, portal, and v3 contracts', () => {
   const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-docs-contract-'));
   const fixtureRoot = resolve(tempRoot, 'repo');
@@ -1533,18 +1563,6 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const portalIaPath = resolve(fixtureRoot, 'docs/marketplace/portal-information-architecture.md');
-    const portalIa = readFileSync(portalIaPath, 'utf8');
-    assert.match(portalIa, /not an implemented public portal/);
-    writeFileSync(
-      portalIaPath,
-      portalIa.replace(
-        / It is not an implemented public portal,[\s\S]*?activation evidence for `v3\.0\.0`\./,
-        '',
-      ),
-      'utf8',
-    );
-
     const copilotSetupPath = resolve(fixtureRoot, 'docs/consumers/copilot-setup.md');
     const copilotSetup = readFileSync(copilotSetupPath, 'utf8');
     assert.match(copilotSetup, /agent permissions/);
@@ -1743,7 +1761,6 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     assert.match(output, /showcase README private consumer boundary/);
     assert.match(output, /growth metrics no portal automation boundary/);
     assert.match(output, /assets no portal automation boundary/);
-    assert.match(output, /portal IA no implemented portal boundary/);
     assert.match(output, /v3 readiness fixture-only evidence boundary/);
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
