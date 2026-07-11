@@ -72,6 +72,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   ShellCheck 诊断。
 - 修复 `verify-agents.sh` 在 `pipefail` 下因 `grep -q` 提前退出触发 broken
   pipe、进而在 macOS runner 误判合法 agent 文件的问题。
+- 补齐 workflow evaluation 的依赖为零 runnable fixture，使
+  `/implement-plan` 人工门禁能够真实修复顺序缺陷并运行聚焦测试，而不是因
+  只有局部 patch、缺少源码和测试入口而停止。
 - distribution risk scan 现在覆盖 patch、常见源码/配置和未知文本扩展，扫描
   1 MiB 以上文本，并对超过 10 MiB 的文本 fail closed。
 - Bash 与 Node audit hook 现在把不可信字段脱敏、单行化并限制长度，阻止换行

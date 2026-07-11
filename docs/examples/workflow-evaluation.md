@@ -11,6 +11,8 @@ credentials, runtime flags, or proprietary workflows.
 The disposable fixture for these scenarios is
 [fixtures/workflow/invoice-sync/](../../fixtures/workflow/invoice-sync/).
 Use a throwaway branch or copy when running implementation commands.
+It contains an intentionally defective, dependency-free source/test baseline so
+the implementation stage can make a real scoped edit and run `npm test`.
 
 The fixture contract is also checked by:
 

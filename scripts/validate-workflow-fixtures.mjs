@@ -9,6 +9,7 @@
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
 
@@ -61,6 +62,9 @@ test('fixture files exist', () => {
     `${fixtureRoot}/inputs/planning-brief.md`,
     `${fixtureRoot}/inputs/review-diff.patch`,
     `${fixtureRoot}/plans/approved-implementation-plan.md`,
+    `${fixtureRoot}/package.json`,
+    `${fixtureRoot}/src/invoice-sync.js`,
+    `${fixtureRoot}/test/invoice-sync.test.js`,
     `${demoRoot}/route-basic.json`,
     `${demoRoot}/review-signal.json`,
     `${demoRoot}/verification-evidence.json`,
@@ -179,6 +183,33 @@ test('review scenario preserves the ordering bug signal', () => {
   assert.ok(sendInvoice >= 0, 'patch must include accounting send call');
   assert.ok(markSynced < sendInvoice, 'premature markSynced must appear before sendInvoice');
   assert.match(patch, /logs external failures/);
+});
+
+test('implementation fixture is runnable and preserves the defect to fix', () => {
+  const packageJson = readJson(`${fixtureRoot}/package.json`);
+  assert.equal(packageJson.private, true);
+  assert.equal(packageJson.type, 'module');
+  assert.equal(packageJson.scripts?.test, 'node --test test/invoice-sync.test.js');
+  assert.equal(packageJson.dependencies, undefined);
+  assert.equal(packageJson.devDependencies, undefined);
+
+  const source = read(`${fixtureRoot}/src/invoice-sync.js`);
+  const markSynced = source.indexOf('await store.markSynced(invoice.id);');
+  const sendInvoice = source.indexOf('await accountingClient.sendInvoice(invoice);');
+  assert.ok(markSynced >= 0 && sendInvoice >= 0);
+  assert.ok(markSynced < sendInvoice, 'baseline source must retain the ordering defect');
+
+  const tests = read(`${fixtureRoot}/test/invoice-sync.test.js`);
+  assert.match(tests, /marks invoice synced after successful send/);
+  assert.match(tests, /logs external failures/);
+  assert.doesNotMatch(tests, /external failure does not mark synced/);
+
+  const baseline = spawnSync(process.execPath, ['--test', 'test/invoice-sync.test.js'], {
+    cwd: resolve(root, fixtureRoot),
+    encoding: 'utf8',
+    shell: false,
+  });
+  assert.equal(baseline.status, 0, baseline.stderr || baseline.stdout);
 });
 
 test('approved implementation plan keeps bounded scope', () => {

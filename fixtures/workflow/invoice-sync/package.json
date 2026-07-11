@@ -1,0 +1,8 @@
+{
+  "name": "nova-invoice-sync-workflow-fixture",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/invoice-sync.test.js"
+  }
+}
