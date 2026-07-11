@@ -57,7 +57,7 @@ const payload = parsePayload(readStdin());
 const input = payload.tool_input || {};
 const response = payload.tool_response || {};
 const toolName = sanitizeAuditField(payload.tool_name || 'unknown', 32) || 'unknown';
-const filePath = input.file_path || response.filePath || '';
+const filePath = input.file_path || input.notebook_path || response.filePath || '';
 const command = input.command || '';
 const success = response.success == null ? true : response.success;
 const timestamp = isoTimestamp();

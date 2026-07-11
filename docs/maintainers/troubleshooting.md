@@ -74,7 +74,8 @@ only in a disposable CI runner or test OS user.
 
 `pre-write-check.sh` is the thin launcher for the Node.js 20+ write guard. It
 blocks malformed payloads, unavailable Node, likely hardcoded secrets, unsafe
-Edit reconstruction, and invalid proposed `hooks.json` content. Exit 0 means
+Write/Edit targets, unsafe Edit reconstruction, unsupported NotebookEdit, and
+invalid proposed `hooks.json` content. Exit 0 means
 no blocking decision, not permission approval.
 
 Run:
@@ -86,7 +87,7 @@ bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 
 For hook schema failures, compare against `nova-plugin/hooks/hooks.json`.
 
-If Node.js 20+ is unavailable, Write/Edit fails closed. An operator may set
+If Node.js 20+ is unavailable, Write/Edit/NotebookEdit fails closed. An operator may set
 `NOVA_WRITE_GUARD_DISABLED=1` for an explicit temporary bypass, but must record
 that the guard was disabled; such a run is not release evidence. Bash file
 redirection is outside the PreToolUse matcher and remains governed by normal

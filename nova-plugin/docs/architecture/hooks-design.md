@@ -58,7 +58,7 @@ PostToolUse 额外包含：
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Write|Edit",
+        "matcher": "Write|Edit|NotebookEdit",
             "hooks": [
               {
                 "type": "command",
@@ -98,12 +98,14 @@ PostToolUse 额外包含：
 
 ### Hook 1：PreToolUse — 写入前检查
 
-**目标：** 在 Write / Edit 操作前检查以下规则：
+**目标：** 在 Write / Edit / NotebookEdit 操作前检查以下规则：
 
 | 检查项 | 规则 | 处理 |
 |--------|------|------|
 | 敏感信息检测 | 内容含 `password|secret|token|api_key`（硬编码模式）| exit 2 阻断 |
 | payload/runtime 校验 | Node 缺失、payload 非法或 Edit 无法可靠重构 | exit 2 阻断 |
+| 目标类型检查 | 已存在的 Write/Edit 目标是符号链接或非普通文件 | exit 2 阻断 |
+| NotebookEdit | 无法从 payload 可靠重构完整 notebook proposed content | exit 2 阻断 |
 | hooks.json 结构校验 | 对 Write 内容或 Edit proposed content 验证 JSON/schema | exit 2 阻断 |
 
 **Active launcher:** `nova-plugin/hooks/scripts/pre-write-check.sh`
@@ -117,7 +119,7 @@ bypass，不得作为 release evidence。
 
 ### Hook 2：PostToolUse — 审计日志
 
-**目标：** 记录所有 Write / Edit / Bash 操作的审计日志，格式：
+**目标：** 记录所有 Write / Edit / NotebookEdit / Bash 操作的审计日志，格式：
 
 ```
 [2026-03-18T07:00:00Z] Write /path/to/file.ts SUCCESS

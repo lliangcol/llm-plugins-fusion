@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -25,6 +25,13 @@ function editPayload(filePath, oldString, newString, replaceAll = false) {
   return {
     tool_name: 'Edit',
     tool_input: { file_path: filePath, old_string: oldString, new_string: newString, replace_all: replaceAll },
+  };
+}
+
+function notebookEditPayload(notebookPath) {
+  return {
+    tool_name: 'NotebookEdit',
+    tool_input: { notebook_path: notebookPath, cell_id: 'cell-1', new_source: 'print("changed")' },
   };
 }
 
@@ -92,6 +99,41 @@ test('write guard rejects missing and symlink Edit targets', async (t) => {
   const linked = await runGuard(editPayload(link, 'old', 'new'));
   assert.equal(linked.code, 2);
   assert.match(linked.stderr, /符号链接/);
+});
+
+test('write guard rejects unsafe existing Write targets', async (t) => {
+  const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-target-'));
+  t.after(() => rm(temp, { recursive: true, force: true }));
+  const target = join(temp, 'target.txt');
+  const link = join(temp, 'link.txt');
+  const directory = join(temp, 'directory');
+  await writeFile(target, 'old');
+  await symlink(target, link);
+  await mkdir(directory);
+
+  const linked = await runGuard(writePayload(link, 'new'));
+  assert.equal(linked.code, 2);
+  assert.match(linked.stderr, /符号链接/);
+
+  const nonFile = await runGuard(writePayload(directory, 'new'));
+  assert.equal(nonFile.code, 2);
+  assert.match(nonFile.stderr, /普通文件/);
+
+  const regular = await runGuard(writePayload(target, 'new'));
+  assert.equal(regular.ok, true, regular.stderr);
+
+  const missing = await runGuard(writePayload(join(temp, 'new.txt'), 'new'));
+  assert.equal(missing.ok, true, missing.stderr);
+});
+
+test('write guard fails closed for NotebookEdit', async () => {
+  const blocked = await runGuard(notebookEditPayload('analysis.ipynb'));
+  assert.equal(blocked.code, 2);
+  assert.match(blocked.stderr, /无法可靠重构完整 proposed content/);
+
+  const malformed = await runGuard(notebookEditPayload(''));
+  assert.equal(malformed.code, 2);
+  assert.match(malformed.stderr, /缺少 notebook_path/);
 });
 
 test('write guard recognizes Windows hooks.json paths for full Write payloads', async () => {

@@ -105,7 +105,7 @@ await runCheck('Write guard', async () => {
   const major = nodeMajorVersion();
   const hooks = readJson('nova-plugin/hooks/hooks.json');
   const matcher = hooks.hooks?.PreToolUse?.[0]?.matcher;
-  if (matcher !== 'Write|Edit') {
+  if (matcher !== 'Write|Edit|NotebookEdit') {
     return { status: 'ERROR', detail: `unexpected PreToolUse matcher: ${matcher ?? 'missing'}` };
   }
   if (!bash.ok || major === null || major < REQUIRED_NODE_MAJOR) {
@@ -114,7 +114,7 @@ await runCheck('Write guard', async () => {
       detail: `unavailable; requires Bash and Node.js ${REQUIRED_NODE_MAJOR}+`,
     };
   }
-  return { status: 'OK', detail: 'active and fail-closed for Write|Edit' };
+  return { status: 'OK', detail: 'active for Write/Edit; NotebookEdit fails closed' };
 });
 
 await runCheck('Package/plugin version', () => ({

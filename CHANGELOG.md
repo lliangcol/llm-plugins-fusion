@@ -41,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   只由仓库内部 validator 间接推断。
 - route smoke 现在逐项校验 command、skill、core agent 和 capability pack，
   并比较完整临时 worktree inventory，而不是只比较 README 与 Git status。
+- Write guard 现在拒绝已有符号链接或非普通文件目标；NotebookEdit 纳入
+  Pre/Post hook matcher，并因无法可靠重构完整 notebook 内容而 fail closed。
 - release evidence 现在拒绝 skipped gate、错误 tag/version、inventory 漂移、
   不一致 tree digest 和不完整 route 证据；weekly latest-drift 在失败前保留
   missing/unexpected Skills 的结构化差异。

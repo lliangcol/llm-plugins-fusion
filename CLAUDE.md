@@ -339,10 +339,12 @@ routing docs, migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
 
 `nova-plugin/hooks/hooks.json` enables:
 
-- `PreToolUse`: matches `Write|Edit` and runs the thin
+- `PreToolUse`: matches `Write|Edit|NotebookEdit` and runs the thin
   `hooks/scripts/pre-write-check.sh` Bash launcher. Node.js 20+ performs the
-  fail-closed payload, secret, proposed Edit, and `hooks.json` validation.
-- `PostToolUse`: matches `Write|Edit|Bash` and asynchronously runs the thin
+  fail-closed payload, target-type, secret, proposed Edit, and `hooks.json`
+  validation. NotebookEdit fails closed because complete proposed notebook
+  content cannot be reconstructed reliably.
+- `PostToolUse`: matches `Write|Edit|NotebookEdit|Bash` and asynchronously runs the thin
   `hooks/scripts/post-audit-log.sh` launcher backed by the Node audit logger.
 
 Hook scripts rely on `CLAUDE_PLUGIN_ROOT`, Bash 3.2+, and Node.js 20+. Exit 0

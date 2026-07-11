@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** Fail-closed PreToolUse write guard for Write and Edit. */
+/** Fail-closed PreToolUse write guard for Write, Edit, and unsupported NotebookEdit. */
 
 import { lstatSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
@@ -30,8 +30,17 @@ function parsePayload() {
   if (!plainObject(payload) || !plainObject(payload.tool_input)) {
     block('hook payload 缺少 tool_input，写入已阻止。');
   }
-  if (!['Write', 'Edit'].includes(payload.tool_name)) {
+  if (!['Write', 'Edit', 'NotebookEdit'].includes(payload.tool_name)) {
     block(`不支持的写入工具 ${JSON.stringify(payload.tool_name)}，写入已阻止。`);
+  }
+  if (payload.tool_name === 'NotebookEdit') {
+    if (typeof payload.tool_input.notebook_path !== 'string' || payload.tool_input.notebook_path.trim() === '') {
+      block('NotebookEdit payload 缺少 notebook_path，写入已阻止。');
+    }
+    block('NotebookEdit 无法可靠重构完整 proposed content，写入已阻止。', [
+      `目标: ${payload.tool_input.notebook_path}`,
+      '建议: 当前 nova workflows 禁止 NotebookEdit；请改用受保护的 Write/Edit 流程。',
+    ]);
   }
   if (typeof payload.tool_input.file_path !== 'string' || payload.tool_input.file_path.trim() === '') {
     block('hook payload 缺少 file_path，写入已阻止。');
@@ -87,6 +96,20 @@ function proposedEditContent(input) {
     : current.replace(input.old_string, input.new_string);
 }
 
+function validateWriteTarget(input) {
+  const target = resolve(input.file_path);
+  let stat;
+  try {
+    stat = lstatSync(target);
+  } catch (error) {
+    if (error?.code === 'ENOENT') return;
+    block('Write 目标无法可靠检查。', [`目标: ${input.file_path}`]);
+  }
+  if (stat.isSymbolicLink() || !stat.isFile()) {
+    block('已存在的 Write 目标必须是普通文件且不能是符号链接。', [`目标: ${input.file_path}`]);
+  }
+}
+
 function isHooksJson(filePath) {
   const normalized = filePath.replaceAll('\\', '/');
   return normalized === 'hooks.json' || normalized.endsWith('/hooks.json');
@@ -104,6 +127,7 @@ let insertedContent;
 
 if (payload.tool_name === 'Write') {
   if (typeof input.content !== 'string') block('Write payload 的 content 必须是字符串。');
+  validateWriteTarget(input);
   proposedContent = input.content;
   insertedContent = input.content;
 } else {
