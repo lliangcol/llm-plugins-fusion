@@ -2,7 +2,15 @@
 /** Run one OAuth-authenticated, read-only namespaced route invocation. */
 
 import { createHash } from 'node:crypto';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  readdirSync,
+  readlinkSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,7 +31,41 @@ function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
 }
 
-export function validateRouteResult(result, permissionSpec) {
+function fieldValue(result, label) {
+  const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const match = result.match(new RegExp(`^\\s*(?:[-*]\\s*)?${escaped}\\s*(.+?)\\s*$`, 'mi'));
+  if (!match) throw new Error(`route output is missing ${label}`);
+  return match[1].replaceAll('`', '').trim();
+}
+
+function validateInventoryField(value, allowedValues, label) {
+  const connectors = new Set(['and', 'or', 'then', 'plus']);
+  const tokens = (value.toLowerCase().match(/[a-z0-9]+(?:-[a-z0-9]+)*/g) ?? [])
+    .filter((token) => !connectors.has(token));
+  if (tokens.length === 0) throw new Error(`route output ${label} is empty`);
+  const invalid = tokens.filter((token) => !allowedValues.has(token));
+  if (invalid.length) throw new Error(`route output invented ${label}: ${[...new Set(invalid)].join(', ')}`);
+  return [...new Set(tokens)].sort();
+}
+
+export function loadRouteInventory(pluginDir, permissionSpec) {
+  const agents = readdirSync(resolve(pluginDir, 'agents'), { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.md'))
+    .map((entry) => entry.name.slice(0, -3))
+    .sort();
+  const packs = readdirSync(resolve(pluginDir, 'packs'), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+  return {
+    commandIds: [...permissionSpec.expectedInventory.commandIds],
+    skillNames: [...permissionSpec.expectedInventory.skillNames],
+    agents,
+    packs,
+  };
+}
+
+export function validateRouteResult(result, routeInventory) {
   const requiredFields = [
     'Command:',
     'Skill:',
@@ -39,16 +81,57 @@ export function validateRouteResult(result, permissionSpec) {
   for (const field of requiredFields) {
     if (!result.includes(field)) throw new Error(`route output is missing ${field}`);
   }
+  const commandField = fieldValue(result, 'Command:');
+  const skillField = fieldValue(result, 'Skill:');
+  const agentField = fieldValue(result, 'Core agent:');
+  const packField = fieldValue(result, 'Capability packs:');
   const commandMatches = [...result.matchAll(/\/nova-plugin:([a-z0-9]+(?:-[a-z0-9]+)*)/g)]
     .map((match) => match[1]);
   if (commandMatches.length === 0) throw new Error('route output did not contain a namespaced nova-plugin command');
-  const commandIds = new Set(permissionSpec.expectedInventory.commandIds);
+  if (!/\/nova-plugin:[a-z0-9]+(?:-[a-z0-9]+)*/.test(commandField)) {
+    throw new Error('route output Command field did not contain a namespaced nova-plugin command');
+  }
+  const commandIds = new Set(routeInventory.commandIds);
   for (const command of commandMatches) {
     if (!commandIds.has(command)) throw new Error(`route output invented command ${command}`);
   }
-  const agents = ['orchestrator', 'architect', 'builder', 'reviewer', 'verifier', 'publisher'];
-  if (!agents.some((agent) => result.includes(agent))) throw new Error('route output did not contain a known core agent');
-  return { commandMatches: [...new Set(commandMatches)].sort(), requiredFields };
+  const skills = validateInventoryField(skillField, new Set(routeInventory.skillNames), 'skill');
+  const agents = validateInventoryField(agentField, new Set(routeInventory.agents), 'core agent');
+  const packs = validateInventoryField(packField, new Set(routeInventory.packs), 'capability pack');
+  return {
+    commandMatches: [...new Set(commandMatches)].sort(),
+    skills,
+    agents,
+    packs,
+    requiredFields,
+  };
+}
+
+function snapshotEntries(rootDir, current = rootDir) {
+  const entries = [];
+  for (const entry of readdirSync(current, { withFileTypes: true })) {
+    if (current === rootDir && entry.name === '.git') continue;
+    const absolute = resolve(current, entry.name);
+    const relativePath = absolute.slice(rootDir.length + 1).replaceAll('\\', '/');
+    if (entry.isDirectory()) {
+      entries.push({ path: relativePath, type: 'directory' });
+      entries.push(...snapshotEntries(rootDir, absolute));
+    }
+    else if (entry.isFile()) {
+      const content = readFileSync(absolute);
+      entries.push({ path: relativePath, type: 'file', bytes: content.length, sha256: sha256(content) });
+    } else if (entry.isSymbolicLink()) {
+      entries.push({ path: relativePath, type: 'symlink', target: readlinkSync(absolute) });
+    } else {
+      entries.push({ path: relativePath, type: 'other' });
+    }
+  }
+  return entries.sort((left, right) => left.path.localeCompare(right.path));
+}
+
+export function projectSnapshot(rootDir) {
+  const files = snapshotEntries(rootDir);
+  return { files, digest: sha256(JSON.stringify(files)) };
 }
 
 export function buildOAuthRouteEnvironment(env, isolatedHome) {
@@ -113,6 +196,7 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
     resolve(resolvedPluginDir, 'runtime/workflow-permissions.json'),
     'utf8',
   ));
+  const routeInventory = loadRouteInventory(resolvedPluginDir, permissionSpec);
   const project = mkdtempSync(resolve(tmpdir(), 'nova-route-live-'));
   const oauthHome = mkdtempSync(resolve(tmpdir(), 'nova-route-oauth-home-'));
   try {
@@ -129,6 +213,7 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       if (!result.ok) throw new Error(`failed to initialize route smoke fixture: ${result.stderr || result.errorMessage}`);
     }
     const beforeStatus = await gitStatus(project, routeEnv);
+    const beforeProject = projectSnapshot(project);
     const beforeDigest = sha256(readFileSync(resolve(project, 'README.md')));
     const invocation = await captureProcess('OAuth route smoke', 'claude', routeInvocationArgs(resolvedPluginDir), {
       cwd: project,
@@ -145,10 +230,16 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       throw new Error(`route output was not JSON: ${error.message}`);
     }
     if (typeof response.result !== 'string') throw new Error('route JSON output is missing result text');
-    const validation = validateRouteResult(response.result, permissionSpec);
+    const validation = validateRouteResult(response.result, routeInventory);
     const afterStatus = await gitStatus(project, routeEnv);
+    const afterProject = projectSnapshot(project);
     const afterDigest = sha256(readFileSync(resolve(project, 'README.md')));
-    if (beforeDigest !== afterDigest || beforeStatus !== afterStatus || afterStatus !== '') {
+    if (
+      beforeDigest !== afterDigest
+      || beforeProject.digest !== afterProject.digest
+      || beforeStatus !== afterStatus
+      || afterStatus !== ''
+    ) {
       throw new Error('route invocation changed the fixture project');
     }
     const evidence = {
@@ -161,9 +252,15 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       disallowedTools: ['Write', 'Edit', 'NotebookEdit', 'Bash'],
       outputStructureValid: true,
       commands: validation.commandMatches,
+      skills: validation.skills,
+      agents: validation.agents,
+      packs: validation.packs,
       projectChanged: false,
       beforeDigest,
       afterDigest,
+      beforeProjectDigest: beforeProject.digest,
+      afterProjectDigest: afterProject.digest,
+      projectFileInventory: beforeProject.files,
       gitStatus: afterStatus,
       resultSha256: sha256(response.result),
     };

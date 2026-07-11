@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - command/skill frontmatter 改用 Claude 原生 `user-invocable`、
   `disable-model-invocation`、`allowed-tools` 和 `disallowed-tools`，并将自定义
   metadata 收敛为 Agent Skills 兼容的字符串键值。
-- 移除活动 runtime surface 中的 `Glob`、`Edit` 和广泛 Bash 预授权；Bash
+- 移除活动 runtime surface 中的 `LS`、`MultiEdit` 和广泛 Bash 预授权；Bash
   调用回到正常权限流程。
 - PreToolUse 和 PostToolUse Bash 文件收敛为薄启动器，Node.js 20+ 成为唯一
   hook 业务实现；write guard 的 `exit 0` 明确表示无决定而不是授权。
@@ -39,6 +39,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   校验完整 proposed `hooks.json`，避免把 replacement fragment 当作完整 JSON。
 - Stable 安装、实际 42 项组件 surface、首次 namespaced route 和发布证据不再
   只由仓库内部 validator 间接推断。
+- route smoke 现在逐项校验 command、skill、core agent 和 capability pack，
+  并比较完整临时 worktree inventory，而不是只比较 README 与 Git status。
+- release evidence 现在拒绝 skipped gate、错误 tag/version、inventory 漂移、
+  不一致 tree digest 和不完整 route 证据；weekly latest-drift 在失败前保留
+  missing/unexpected Skills 的结构化差异。
 
 ## [2.4.0] - 2026-07-11
 

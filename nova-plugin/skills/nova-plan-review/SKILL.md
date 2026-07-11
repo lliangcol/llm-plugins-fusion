@@ -33,7 +33,7 @@ argument-hint: "Example: plan-review INPUT=docs/plans/order.md"
 ## Safety Preflight
 
 - This skill is read-only for project files and must not modify code.
-- No interrupting preflight is required for ordinary Read/Glob/Grep/Glob usage.
+- No interrupting preflight is required for ordinary Read/Glob/Grep usage.
 - This invocation has no implicit export mode; a future write-capable variant must declare an explicit output path and run shared preflight before writing artifacts or invoking Bash.
 - Do not infer safety-boundary values for artifact exports or latest artifact selection.
 - Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.

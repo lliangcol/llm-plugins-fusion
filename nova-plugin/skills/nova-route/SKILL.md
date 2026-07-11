@@ -27,7 +27,7 @@ argument-hint: "Example: route this request to the right nova command and packs.
 - Parse natural-language payload, explicit `KEY=value`, `--flag value`, and `--flag=value` forms from `$ARGUMENTS`.
 - Normalize parameter names to uppercase snake case and map known mode words before assigning remaining text to `REQUEST`.
 - Explicit values win over inferred values only when they do not conflict with another explicit value.
-- Apply documented defaults only when unambiguous; use only Read/Glob/Grep/Glob for local context discovery.
+- Apply documented defaults only when unambiguous; use only Read/Glob/Grep for local context discovery.
 - Do not run Git, Bash, install, network, test, or external review commands from this skill.
 - Safety-boundary parameters for this skill: none for this skill.
 - In non-interactive mode, fail before side effects when required or safety-boundary parameters are missing.
@@ -36,7 +36,7 @@ argument-hint: "Example: route this request to the right nova command and packs.
 ## Safety Preflight
 
 - This skill is read-only for project files and must not modify code or write route artifacts.
-- No interrupting preflight is required for ordinary Read/Glob/Grep/Glob usage.
+- No interrupting preflight is required for ordinary Read/Glob/Grep usage.
 - This skill has no export mode; a future write-capable route variant must be a separate command with explicit output parameters and shared preflight.
 - Do not infer safety-boundary values for artifact exports, project edits, branch changes, or external tool invocation.
 - Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.

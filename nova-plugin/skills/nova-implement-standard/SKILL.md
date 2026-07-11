@@ -35,7 +35,7 @@ argument-hint: "Example: implement-standard STEPS='A,B,C'"
 
 ## Safety Preflight
 
-- This skill declares side-effect-capable tools: `Write`, `Edit`, `Edit`, `Bash`.
+- This skill declares side-effect-capable tools: `Write`, `Edit`, `Bash`.
 - Resolve parameters and present a preflight card before writing artifacts, editing project files, or running Bash.
 - Show files or artifacts that may be written, scripts or commands that may run, disallowed operations, and the proceed condition.
 - Do not infer missing safety-boundary values; ask once in interactive mode or fail in non-interactive mode.

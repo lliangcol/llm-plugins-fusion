@@ -1771,6 +1771,26 @@ function validateNamespacedCommandInvocations() {
   }
 }
 
+function validateToolVocabularyProse() {
+  const invalidPatterns = [
+    { pattern: /Read\/Glob\/Grep\/Glob/, message: 'duplicate Glob in prose tool vocabulary' },
+    { pattern: /Read Glob Grep Glob/, message: 'duplicate Glob in space-separated tool vocabulary' },
+    { pattern: /`Write`, `Edit`, `Edit`/, message: 'duplicate Edit in prose tool vocabulary' },
+    {
+      pattern: /移除活动 runtime surface 中的 `Glob`、`Edit`/,
+      message: 'release notes must identify retired LS and MultiEdit, not active Glob and Edit',
+    },
+  ];
+  for (const file of walkFiles(root, (entry) => extname(entry) === '.md')) {
+    if (isArchivePath(file) || hasPathSegments(file, HISTORY_SEGMENTS)) continue;
+    const source = readFileSync(file, 'utf8');
+    for (const invalid of invalidPatterns) {
+      const match = invalid.pattern.exec(source);
+      if (match) recordError(rel(file), `${invalid.message} at line ${lineNumberAt(source, match.index)}`);
+    }
+  }
+}
+
 validateLinksAndCommandDocs({
   root,
   CODEX_COMMAND_IDS,
@@ -1803,6 +1823,7 @@ validateDeferredPortalIaContracts();
 validateV3ReadinessEvidenceContracts();
 validateReviewLevelLiteContract();
 validateNamespacedCommandInvocations();
+validateToolVocabularyProse();
 validateActivePlanningAndReports({
   root,
   HISTORY_SEGMENTS,

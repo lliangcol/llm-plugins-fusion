@@ -124,6 +124,22 @@ function normalizeExpectedInventory(permissionSpec) {
   return [...permissionSpec.expectedInventory.commandIds, ...permissionSpec.expectedInventory.skillNames].sort();
 }
 
+export function diffInventory(actualSkills, expectedSkills) {
+  const actual = [...actualSkills].sort();
+  const expected = [...expectedSkills].sort();
+  const actualSet = new Set(actual);
+  const expectedSet = new Set(expected);
+  return {
+    matches: JSON.stringify(actual) === JSON.stringify(expected),
+    actualCount: actual.length,
+    expectedCount: expected.length,
+    missing: expected.filter((skill) => !actualSet.has(skill)),
+    unexpected: actual.filter((skill) => !expectedSet.has(skill)),
+    actualSha256: createHash('sha256').update(JSON.stringify(actual)).digest('hex'),
+    expectedSha256: createHash('sha256').update(JSON.stringify(expected)).digest('hex'),
+  };
+}
+
 async function run(label, command, args, env) {
   console.log(`\n== ${label} ==`);
   const result = await runProcess(label, command, args, {
@@ -292,26 +308,28 @@ export async function main(args = process.argv.slice(2)) {
       isolated.env,
     );
     const inventory = parsePluginDetails(details);
+    const inventoryDiff = diffInventory(inventory.skills, expectedSkills);
+    const validationErrors = [];
     if (inventory.count !== permissionSpec.expectedInventory.combinedSkillCount) {
-      throw new Error(`installed Skills count ${inventory.count} does not match expected ${permissionSpec.expectedInventory.combinedSkillCount}`);
+      validationErrors.push(`installed Skills count ${inventory.count} does not match expected ${permissionSpec.expectedInventory.combinedSkillCount}`);
     }
-    if (JSON.stringify(inventory.skills) !== JSON.stringify(expectedSkills)) {
-      throw new Error('installed Skills inventory differs from canonical expected inventory');
+    if (!inventoryDiff.matches) {
+      validationErrors.push(`installed Skills inventory differs: missing=[${inventoryDiff.missing.join(', ')}] unexpected=[${inventoryDiff.unexpected.join(', ')}]`);
     }
     if (!inventory.skills.includes('route') || !inventory.skills.includes('nova-route')) {
-      throw new Error('installed inventory must include route and nova-route');
+      validationErrors.push('installed inventory must include route and nova-route');
     }
     if (!permissionSpec.primaryEntrypoints.includes('route') || permissionSpec.primaryEntrypoints.includes('nova-route')) {
-      throw new Error('only route may be the primary entrypoint; nova-route is compatibility-only');
+      validationErrors.push('only route may be the primary entrypoint; nova-route is compatibility-only');
     }
 
     const sourceTreeDigest = treeDigest(resolve(root, 'nova-plugin'));
     const installedTreeDigest = treeDigest(installed.installPath);
     if (sourceTreeDigest !== installedTreeDigest) {
-      throw new Error(`installed tree digest ${installedTreeDigest} differs from checkout ${sourceTreeDigest}`);
+      validationErrors.push(`installed tree digest ${installedTreeDigest} differs from checkout ${sourceTreeDigest}`);
     }
 
-    const routeSmoke = options.routeSmokeOut
+    const routeSmoke = options.routeSmokeOut && validationErrors.length === 0
       ? await runRouteSmoke({ pluginDir: installed.installPath, outPath: options.routeSmokeOut, env: isolated.env })
       : null;
     const evidence = {
@@ -322,10 +340,12 @@ export async function main(args = process.argv.slice(2)) {
       marketplace: { name: marketplaceName, source: marketplaceSource, ref: addedMarketplace.ref ?? null },
       plugin: { id: pluginId, version: installed.version, installPath: installed.installPath },
       inventory,
+      inventoryDiff,
       primaryEntrypoints: permissionSpec.primaryEntrypoints.map((id) => `/${permissionSpec.pluginNamespace}:${id}`),
       sourceTreeDigest,
       installedTreeDigest,
       routeSmoke,
+      validation: { passed: validationErrors.length === 0, errors: validationErrors },
     };
     if (options.inventoryOut) {
       const outPath = resolve(root, options.inventoryOut);
@@ -333,6 +353,7 @@ export async function main(args = process.argv.slice(2)) {
       writeFileSync(outPath, `${JSON.stringify(evidence, null, 2)}\n`, 'utf8');
       console.log(`Wrote inventory evidence to ${relative(root, outPath).replaceAll('\\', '/')}`);
     }
+    if (validationErrors.length) throw new Error(validationErrors.join('; '));
     console.log(`\nOK installed ${pluginId} ${installed.version}; Skills=${inventory.count}; digest=${installedTreeDigest}`);
     return 0;
   } catch (error) {

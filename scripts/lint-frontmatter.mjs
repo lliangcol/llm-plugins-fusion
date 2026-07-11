@@ -278,6 +278,12 @@ function lintSkills() {
     try { if (!statSync(skillMd).isFile()) continue; } catch { continue; }
     const rel = `skills/${entry}/SKILL.md`;
     const src = readFileSync(skillMd, 'utf8').replace(/\r\n/g, '\n');
+    for (const [pattern, message] of [
+      [/Read\/Glob\/Grep\/Glob/, 'duplicate Glob in prose tool vocabulary'],
+      [/`Write`, `Edit`, `Edit`/, 'duplicate Edit in prose tool vocabulary'],
+    ]) {
+      if (pattern.test(src)) recordError(rel, message);
+    }
     if (entry === 'nova-senior-explore') {
       if (/normal or deep\./.test(src) || !/quick(?:,|`\/`|\/).*normal(?:,|`\/`|\/).*deep/i.test(src)) {
         recordError(rel, 'DEPTH must consistently allow quick, normal, and deep');

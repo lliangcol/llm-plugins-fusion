@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import test from 'node:test';
 import {
   assertMarketplaceRef,
+  diffInventory,
   parseArgs,
   parsePluginDetails,
   normalizeMarketplaceSource,
@@ -31,6 +32,15 @@ test('plugin install options accept exact source/ref and evidence output', () =>
     routeSmokeOut: null,
     help: false,
   });
+});
+
+test('inventory diff preserves missing and unexpected Skills for drift artifacts', () => {
+  const diff = diffInventory(['route', 'nova-route', 'unexpected'], ['route', 'nova-route', 'review']);
+  assert.equal(diff.matches, false);
+  assert.deepEqual(diff.missing, ['review']);
+  assert.deepEqual(diff.unexpected, ['unexpected']);
+  assert.match(diff.actualSha256, /^[a-f0-9]{64}$/);
+  assert.match(diff.expectedSha256, /^[a-f0-9]{64}$/);
 });
 
 test('marketplace ref assertions distinguish local sources from exact remote refs', () => {

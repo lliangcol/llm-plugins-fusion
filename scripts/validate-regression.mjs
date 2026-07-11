@@ -772,6 +772,9 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
         /GitHub workflow permission, inventory, and\s+required-check validation/,
         'GitHub workflow permission validation',
       ).replace(
+        'Read-only commands normally pre-approve `Read Glob Grep`',
+        'Read-only commands normally pre-approve `Read Glob Grep Glob`',
+      ).replace(
         /maintainer diagnostic and security setting semantics, /,
         '',
       ).replace(
@@ -1606,6 +1609,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     assert.match(output, /CLAUDE mature ecosystem and public portal boundary/);
     assert.match(output, /CLAUDE validate-docs coverage narrative/);
     assert.match(output, /CLAUDE CI GitHub workflow coverage narrative/);
+    assert.match(output, /duplicate Glob in space-separated tool vocabulary/);
     assert.match(output, /README exact release tag promotion boundary/);
     assert.match(output, /README validate-all GitHub workflow coverage narrative/);
     assert.match(output, /release evidence skipped checks replacement boundary/);

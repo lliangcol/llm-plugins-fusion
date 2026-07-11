@@ -282,8 +282,9 @@ metadata:
     destructiveActions: none|low|medium|high
 ```
 
-Read-only commands normally use `allowed-tools: Read Glob Grep Glob`. Write-capable
-implementation commands may also use `Write Edit Bash`.
+Read-only commands normally pre-approve `Read Glob Grep`. Write-capable
+commands may also pre-approve `Write Edit`; Bash follows the normal permission
+flow unless it is explicitly disallowed.
 
 Command documentation normally lives under `nova-plugin/docs/commands/<stage>/`.
 Codex commands are the explicit exception: `codex-review-fix`,

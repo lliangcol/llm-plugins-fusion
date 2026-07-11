@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -16,8 +17,21 @@ const coverageSummary = `ℹ tests 80
 ℹ all files | 88.05 | 70.01 | 92.89 |
 `;
 
-function fixture() {
-  return buildReleaseEvidence({
+const digest = 'a'.repeat(64);
+const commandIds = ['route', 'review', ...Array.from({ length: 19 }, (_, index) => `command-${index}`)];
+const skillNames = ['nova-route', 'nova-review', ...Array.from({ length: 19 }, (_, index) => `nova-skill-${index}`)];
+const installedSkills = [...commandIds, ...skillNames];
+const projectFileInventory = [{ path: 'README.md', type: 'file', bytes: 1, sha256: digest }];
+const projectDigest = createHash('sha256').update(JSON.stringify(projectFileInventory)).digest('hex');
+const expectedRouteInventory = {
+  commandIds,
+  skillNames,
+  agents: ['reviewer'],
+  packs: ['docs'],
+};
+
+function fixtureInput() {
+  return {
     plugin: { version: '2.4.1' },
     coverageSummary,
     coverageMetadata: { exitCode: 0, node: 'v20.19.0', thresholds: { lines: 85, branches: 60, functions: 90 } },
@@ -27,9 +41,11 @@ function fixture() {
       knownGoodClaudeCli: '2.1.205',
       marketplace: { source: 'owner/repo@v2.4.1', ref: 'v2.4.1' },
       plugin: { id: 'nova-plugin@marketplace', version: '2.4.1' },
-      inventory: { count: 42, skills: ['route', 'nova-route'] },
-      sourceTreeDigest: 'a',
-      installedTreeDigest: 'a',
+      inventory: { count: 42, skills: [...installedSkills] },
+      inventoryDiff: { matches: true },
+      sourceTreeDigest: digest,
+      installedTreeDigest: digest,
+      validation: { passed: true, errors: [] },
     },
     route: {
       invocation: '/nova-plugin:route',
@@ -37,12 +53,26 @@ function fixture() {
       configurationIsolation: 'temporary-home',
       outputStructureValid: true,
       projectChanged: false,
-      resultSha256: 'b',
+      gitStatus: '',
+      commands: ['review'],
+      skills: ['nova-review'],
+      agents: ['reviewer'],
+      packs: ['docs'],
+      beforeProjectDigest: projectDigest,
+      afterProjectDigest: projectDigest,
+      projectFileInventory,
+      resultSha256: 'b'.repeat(64),
     },
     checksums: 'abc  file\n',
-    env: { GITHUB_SHA: 'commit', GITHUB_REF_NAME: 'v2.4.1' },
+    env: { GITHUB_SHA: 'c'.repeat(40), GITHUB_REF_NAME: 'v2.4.1' },
     now: () => new Date('2026-07-11T00:00:00Z'),
-  });
+    requireLive: true,
+    expectedRouteInventory,
+  };
+}
+
+function fixture() {
+  return buildReleaseEvidence(fixtureInput());
 }
 
 test('release evidence aggregates machine facts without raw model output', () => {
@@ -62,12 +92,38 @@ test('release evidence rejects ambiguous route authentication evidence', () => {
       plugin: { version: '2.4.1' },
       coverageSummary,
       coverageMetadata: { exitCode: 0, node: 'v20', thresholds: {} },
-      timings: { failed: 0, timings: [] },
-      route: { projectChanged: false, authenticationMode: 'api-key', configurationIsolation: 'temporary-home' },
+      timings: { failed: 0, skipped: 0, timings: [] },
+      route: { projectChanged: false, gitStatus: '', authenticationMode: 'api-key', configurationIsolation: 'temporary-home' },
       checksums: 'abc  file\n',
     }),
     /does not prove Claude Code OAuth authentication/,
   );
+});
+
+test('release evidence rejects skipped gates and inconsistent live inputs', () => {
+  const skipped = fixtureInput();
+  skipped.timings.skipped = 1;
+  skipped.timings.timings = [{ label: 'required gate', status: 'skipped', ms: 0 }];
+  assert.throws(() => buildReleaseEvidence(skipped), /failure or skipped gates/);
+
+  for (const mutate of [
+    (input) => { input.install.marketplace.ref = 'wrong'; },
+    (input) => { input.install.plugin.version = '0.0.0'; },
+    (input) => { input.install.installedTreeDigest = 'd'.repeat(64); },
+    (input) => { input.route.invocation = '/wrong:route'; },
+    (input) => { input.route.outputStructureValid = false; },
+    (input) => { input.route.resultSha256 = ''; },
+    (input) => { input.route.afterProjectDigest = 'd'.repeat(64); },
+    (input) => { input.install.inventory.skills[2] = 'invented-skill'; },
+    (input) => { input.route.agents = ['invented-agent']; },
+    (input) => { input.route.packs = ['invented-pack']; },
+    (input) => { input.expectedRouteInventory = null; },
+    (input) => { input.timings.timings = []; },
+  ]) {
+    const input = fixtureInput();
+    mutate(input);
+    assert.throws(() => buildReleaseEvidence(input));
+  }
 });
 
 test('release evidence CLI requires live inputs when requested', async (t) => {
@@ -79,7 +135,7 @@ test('release evidence CLI requires live inputs when requested', async (t) => {
   await writeFile(resolve(root, 'nova-plugin/.claude-plugin/plugin.json'), '{"version":"2.4.1"}\n');
   await writeFile(resolve(root, '.metrics/coverage/coverage-summary.txt'), coverageSummary);
   await writeFile(resolve(root, '.metrics/coverage/metadata.json'), '{"exitCode":0,"node":"v20","thresholds":{}}\n');
-  await writeFile(resolve(root, '.metrics/validation-timings.json'), '{"failed":0,"timings":[]}\n');
+  await writeFile(resolve(root, '.metrics/validation-timings.json'), '{"failed":0,"skipped":0,"timings":[]}\n');
   await writeFile(resolve(root, '.metrics/release-checksums/SHA256SUMS.txt'), 'abc  file\n');
   assert.throws(() => generateReleaseEvidence({ root, args: ['--require-live'] }), /required evidence input is missing/);
 

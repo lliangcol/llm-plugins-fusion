@@ -80,6 +80,11 @@ an explicit installed `--plugin-dir`. The gate fails when `ANTHROPIC_API_KEY`,
 `ANTHROPIC_AUTH_TOKEN`, or a Bedrock, Vertex, or Foundry selection variable is
 also present, so release evidence cannot silently use a higher-precedence
 credential.
+The route evidence compares the complete temporary worktree inventory, including
+file content hashes, symlinks, and directories outside `.git`, before and after
+the model call. It also requires an unchanged Git status and validates every
+reported command, skill, core agent, and capability pack against the installed
+plugin inventory.
 
 Expected conditions:
 
@@ -243,6 +248,12 @@ Record the final success line and the installed version in release evidence.
 For normal tag publication, require the `release-evidence` artifact from
 `.github/workflows/release.yml`; it binds exact-tag installation, 42-item
 inventory, OAuth-authenticated `/nova-plugin:route`, coverage, tag, and commit.
+
+The scheduled `Claude Latest Drift` job intentionally fails its validation step
+when the latest CLI inventory changes, but it must still write
+`inventory.json`. The `inventoryDiff` object records missing and unexpected
+Skills plus actual and expected digests before the job uploads both the JSON
+and the command log.
 
 Optional cleanup in the isolated environment:
 
