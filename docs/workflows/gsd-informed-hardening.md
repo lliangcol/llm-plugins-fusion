@@ -24,7 +24,7 @@ and release confidence without weakening the repository's permission posture.
 
 | Control | Repository surface | Reason |
 | --- | --- | --- |
-| First-stage routing | `/route`, `nova-route`, command docs, routing docs | Keep the first answer to ambiguous work as a read-only route recommendation, not an implementation plan. |
+| First-stage routing | `/nova-plugin:route`, `nova-route`, command docs, routing docs | Keep the first answer to ambiguous work as a read-only route recommendation, not an implementation plan. |
 | Checkpoint artifact contract | `docs/prompts/common/checkpoint-artifact.md`, workbench template, artifact policy | Make long private consumer tasks resumable without depending on chat history. |
 | Verification evidence contract | Shared output contracts, Codex verification prompt, workflow docs | Require validation claims to map back to behavior, repository facts, review findings, or change goals. |
 | Prompt-surface budgets | `scripts/validate-surface-budget.mjs`, CI, npm shortcut, release evidence | Keep public command, skill, agent, and pack surfaces small enough to audit. |
@@ -51,7 +51,7 @@ public/private boundary described in [CLAUDE.md](../../CLAUDE.md) and
 
 When changing these controls:
 
-- Keep `/route` read-only and first-stage.
+- Keep `/nova-plugin:route` read-only and first-stage.
 - Preserve the command/skill one-to-one mapping.
 - Update user-facing docs when command behavior, validation expectations, or
   safety boundaries change.

@@ -1,4 +1,4 @@
-# /route
+# /nova-plugin:route
 
 - 来源：`nova-plugin/commands/route.md`
 
@@ -19,28 +19,28 @@
 ## 完整示例
 
 ```text
-/route
+/nova-plugin:route
 这个任务涉及 README、marketplace metadata 和 release evidence，我应该从哪个 nova 命令开始？
 ```
 
 ```text
-/route CONTEXT="Cursor 消费 nova skills"
+/nova-plugin:route CONTEXT="Cursor 消费 nova skills"
 用户让我实现一个中等风险功能，但没有批准的 plan。
 ```
 
 ## 与相近命令的对比
 
-- `/explore` 负责理解事实、未知点和风险，不选择完整工作流路线。
-- `/produce-plan` 负责写正式计划，需要更明确的计划意图和输出路径。
-- `/route` 只选择下一步命令和输入要求，不替代计划、评审或实现。
+- `/nova-plugin:explore` 负责理解事实、未知点和风险，不选择完整工作流路线。
+- `/nova-plugin:produce-plan` 负责写正式计划，需要更明确的计划意图和输出路径。
+- `/nova-plugin:route` 只选择下一步命令和输入要求，不替代计划、评审或实现。
 
 ## 路由家族
 
 | 意图 | 默认路线 |
 | --- | --- |
-| 理解事实、风险、未知点 | `/explore` 或 `/senior-explore` |
-| 生成计划或设计 | `/produce-plan`、`/plan-lite` 或 `/backend-plan` |
-| 审查代码、计划或风险 | `/review`、`/plan-review`、`/codex-review-only` 或 `/codex-verify-only` |
-| 修改项目文件 | `/implement-plan`、`/implement-standard` 或 `/implement-lite` |
-| 交付总结或发布说明 | `/finalize-work` 或 `/finalize-lite` |
-| Codex review/fix/verify 闭环 | `/codex-review-fix`、`/codex-review-only` 或 `/codex-verify-only` |
+| 理解事实、风险、未知点 | `/nova-plugin:explore` 或 `/nova-plugin:senior-explore` |
+| 生成计划或设计 | `/nova-plugin:produce-plan`、`/nova-plugin:plan-lite` 或 `/nova-plugin:backend-plan` |
+| 审查代码、计划或风险 | `/nova-plugin:review`、`/nova-plugin:plan-review`、`/nova-plugin:codex-review-only` 或 `/nova-plugin:codex-verify-only` |
+| 修改项目文件 | `/nova-plugin:implement-plan`、`/nova-plugin:implement-standard` 或 `/nova-plugin:implement-lite` |
+| 交付总结或发布说明 | `/nova-plugin:finalize-work` 或 `/nova-plugin:finalize-lite` |
+| Codex review/fix/verify 闭环 | `/nova-plugin:codex-review-fix`、`/nova-plugin:codex-review-only` 或 `/nova-plugin:codex-verify-only` |

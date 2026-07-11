@@ -9,6 +9,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-07-11
+
+### Added
+- 新增 canonical workflow permission source、原生 Claude invocation/tool
+  frontmatter 生成器和 42 项 effective-permissions 报告。
+- 新增 Claude Code 2.1.205 隔离安装 inventory、exact-tag 安装参数、真实只读
+  route smoke 契约和机器可读 release evidence 聚合入口。
+- 新增 namespaced command 迁移说明，保留 21 commands + 21 `nova-*` skills
+  双 surface，不在补丁版本删除兼容入口。
+
+### Changed
+- 所有活动用户文档与 workflow prompt 统一使用 `/nova-plugin:<command>`；Stable
+  marketplace 固定到 `@v2.4.1`，`@main` 明确为 Edge。
+- command/skill frontmatter 改用 Claude 原生 `user-invocable`、
+  `disable-model-invocation`、`allowed-tools` 和 `disallowed-tools`，并将自定义
+  metadata 收敛为 Agent Skills 兼容的字符串键值。
+- 移除活动 runtime surface 中的 `LS`、`MultiEdit` 和广泛 Bash 预授权；Bash
+  调用回到正常权限流程。
+- PreToolUse 和 PostToolUse Bash 文件收敛为薄启动器，Node.js 20+ 成为唯一
+  hook 业务实现；write guard 的 `exit 0` 明确表示无决定而不是授权。
+- 真实 route 发布门禁改用 `claude setup-token` 生成的
+  `CLAUDE_CODE_OAUTH_TOKEN`，通过临时 HOME/XDG/Claude 配置目录保持隔离，且
+  拒绝会抢占 OAuth 的 API key、Bearer token 或云厂商认证配置。
+
+### Fixed
+- write guard 在 Node 缺失、payload 非法或 Edit 无法可靠重构时不再静默放行。
+- Edit hook 现在读取当前普通文件、应用 `old_string/new_string/replace_all` 后
+  校验完整 proposed `hooks.json`，避免把 replacement fragment 当作完整 JSON。
+- Stable 安装、实际 42 项组件 surface、首次 namespaced route 和发布证据不再
+  只由仓库内部 validator 间接推断。
+- route smoke 现在逐项校验 command、skill、core agent 和 capability pack，
+  并比较完整临时 worktree inventory，而不是只比较 README 与 Git status。
+- Write guard 现在拒绝已有符号链接或非普通文件目标；NotebookEdit 纳入
+  Pre/Post hook matcher，并因无法可靠重构完整 notebook 内容而 fail closed。
+- release evidence 现在拒绝 skipped gate、错误 tag/version、inventory 漂移、
+  不一致 tree digest 和不完整 route 证据；weekly latest-drift 在失败前保留
+  missing/unexpected Skills 的结构化差异。
+
 ## [2.4.0] - 2026-07-11
 
 ### Added
@@ -57,7 +95,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - Coverage evidence 清理范围收敛为 runner 自有的 `v8/` 子目录，不再递归
   删除整个 `--coverage-dir`；SemVer 核心数字段保持字符串精度。
 - Codex helper 的兼容边界明确为 Bash 3.2+，migration CLI、read-only Bash
-  scaffold 和 `/senior-explore` 参数/导出契约同步收敛。
+  scaffold 和 `/nova-plugin:senior-explore` 参数/导出契约同步收敛。
 
 ### Fixed
 - Bash 与 Node audit log 只有在轮转重命名成功后才创建新日志；轮转失败时
@@ -77,7 +115,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 回归测试的 prompt 文档负向 fixture 改为按 Markdown heading 边界确定性
   变异并立即校验，避免平台文本差异导致预期错误集合偶发缺项。
 - 补齐 workflow evaluation 的依赖为零 runnable fixture，使
-  `/implement-plan` 人工门禁能够真实修复顺序缺陷并运行聚焦测试，而不是因
+  `/nova-plugin:implement-plan` 人工门禁能够真实修复顺序缺陷并运行聚焦测试，而不是因
   只有局部 patch、缺少源码和测试入口而停止。
 - distribution risk scan 现在覆盖 patch、常见源码/配置和未知文本扩展，扫描
   1 MiB 以上文本，并对超过 10 MiB 的文本 fail closed。
@@ -117,11 +155,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   plugin install smoke、人工 workflow evaluation、release evidence 组装和
   promotion 决策的维护者操作步骤。
 - 新增 `fixtures/workflow/invoice-sync/` 公开安全五阶段 workflow evaluation
-  fixture，为 `/explore`、`/produce-plan`、`/review`、`/implement-plan`、
-  `/finalize-work` 提供脱敏输入、buggy review diff 和 approved plan。
+  fixture，为 `/nova-plugin:explore`、`/nova-plugin:produce-plan`、`/nova-plugin:review`、`/nova-plugin:implement-plan`、
+  `/nova-plugin:finalize-work` 提供脱敏输入、buggy review diff 和 approved plan。
 - 新增 `docs/README.md` 仓库级文档总索引，集中维护 `docs/` 目录结构、
   当前文档清单、归档边界和文档维护规则。
-- 新增 `docs/getting-started.md` 极简上手文档，聚焦安装、`/route`、五主命令、
+- 新增 `docs/getting-started.md` 极简上手文档，聚焦安装、`/nova-plugin:route`、五主命令、
   Codex 前置条件和常见失败处理。
 - 新增 Cline、Aider 和 OpenHands consumer setup 文档，补齐 multi-assistant
   Markdown skill consumption 的 public-safe 指引与验证边界。
@@ -141,7 +179,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   `validate-all`、CI、npm shortcut 与 release evidence。
 - 新增 `docs/prompts/common/checkpoint-artifact.md`，为私有 consumer workbench
   中的长任务恢复点提供公共安全 prompt 模板。
-- 新增 `docs/workflows/routing-validation-guardrails.md`，说明 `/route`、
+- 新增 `docs/workflows/routing-validation-guardrails.md`，说明 `/nova-plugin:route`、
   checkpoint evidence、surface budget 和 distribution-risk guardrails 的维护方式。
 - 新增 `docs/workflows/verification-evidence-contract.md`，说明验证声明如何映射
   到行为、仓库事实、review finding 或变更目标。
@@ -288,7 +326,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   exact `v2.2.0` 作为稳定推广基线，同时继续区分 moving `main` 与 release。
 - 收紧 checkpoint 与 verification 输出契约：验证证据必须对应预期行为、
   仓库事实、review finding 或变更目标，不能只用测试通过替代行为或事实确认。
-- 明确 `/route` / `nova-route` 是只读第一阶段路由器，先做 intent family
+- 明确 `/nova-plugin:route` / `nova-route` 是只读第一阶段路由器，先做 intent family
   分类，再推荐最小可执行下一步和必要验证建议。
 - 扩展分发风险扫描与回归测试，拦截高风险 blanket permission 建议和已跟踪
   `.codex/` 运行时制品。
@@ -316,7 +354,7 @@ as promotion evidence; moving `main` may contain later `Unreleased` changes and
 must not replace the exact release tag as stable evidence.
 
 ### Added
-- 新增 `/route` 与 `nova-route` 只读路由入口，用于在非 Claude slash
+- 新增 `/nova-plugin:route` 与 `nova-route` 只读路由入口，用于在非 Claude slash
   command 场景或任务意图不明确时选择下一步 nova command、skill、core
   agent、capability packs、必需输入和验证路径。
 - 新增 `scripts/validate-plugin-install.mjs` 与 CI 安装 smoke test，覆盖
@@ -370,8 +408,8 @@ must not replace the exact release tag as stable evidence.
 - 新增 Cursor、Gemini CLI、OpenCode、Copilot 和 Codex 的跨工具消费说明，
   明确非 Claude Code 环境如何引用 `nova-route` 和 `nova-*` skills。
 - 将公开定位收敛为多项目 AI 工程工作流框架，保留 marketplace 作为安装/分发
-  形式，并优先展示 `/explore`、`/produce-plan`、`/review`、
-  `/implement-plan`、`/finalize-work` 五个主入口。
+  形式，并优先展示 `/nova-plugin:explore`、`/nova-plugin:produce-plan`、`/nova-plugin:review`、
+  `/nova-plugin:implement-plan`、`/nova-plugin:finalize-work` 五个主入口。
 - 收敛 `nova-plugin` marketplace 描述，强调 workflow plugin、command/skill
   契约、consumer profile guidance 和 validation-aware handoff。
 - 强化 README、英文 overview 和命令手册中的默认五命令上手路径，并将
@@ -403,7 +441,7 @@ must not replace the exact release tag as stable evidence.
   artifact 风险，明确它们会运行 Bash 并写入 `.codex` review/verify artifact，
   但不得修改项目代码。
 - `scripts/lint-frontmatter.mjs` 现在会识别显式只读 Bash guard，避免
-  `/finalize-work` 这类只读 Git/环境探测命令产生误报，同时继续提示未声明边界
+  `/nova-plugin:finalize-work` 这类只读 Git/环境探测命令产生误报，同时继续提示未声明边界
   的 `Bash` + `none` 组合。
 
 ### Removed
@@ -450,7 +488,7 @@ must not replace the exact release tag as stable evidence.
 - Active-agent surface 改为固定 6-core model：`orchestrator`、`architect`、`builder`、`reviewer`、`verifier`、`publisher`。旧 active specialist agent 文件不再作为公开 active set 提供；需要通过 core agents 与 capability packs 的迁移映射承接旧角色。
 
 ### Compatibility
-- Commands 兼容：20 个 Claude Code command 文件继续保留，`/review-lite`、`/review-only`、`/review-strict` 等兼容入口仍可使用。
+- Commands 兼容：20 个 Claude Code command 文件继续保留，`/nova-plugin:review-lite`、`/nova-plugin:review-only`、`/nova-plugin:review-strict` 等兼容入口仍可使用。
 - Skills 兼容：20 个 `nova-*` skills 继续与 commands 保持一对一映射，并继续使用 Agent Skills frontmatter 契约。
 
 ### Added
@@ -478,8 +516,8 @@ must not replace the exact release tag as stable evidence.
 - 将 2026-04-28 项目状态审计报告移入 `docs/reports/archive/`，并在维护文档中明确历史报告状态。
 - 将 `trust-level`、`risk-level`、`deprecated`、`last-updated` 从官方 marketplace manifest 拆分到 repository-local metadata，保持 `claude plugin validate .` 兼容。
 - `.claude-plugin/marketplace.json` 与 `.claude-plugin/marketplace.metadata.json` 改为由 registry source 和 `plugin.json` 生成，并由 `validate-schemas` 检测手工漂移。
-- `/review` 统一入口现在明确支持 `LEVEL=lite|standard|strict`，并将 `lite` 路由到 `nova-review-lite`。
-- CI、release 与 `validate-all` 接入 Claude 兼容校验，并增加 `/review LEVEL=lite` 文档契约防回归检查。
+- `/nova-plugin:review` 统一入口现在明确支持 `LEVEL=lite|standard|strict`，并将 `lite` 路由到 `nova-review-lite`。
+- CI、release 与 `validate-all` 接入 Claude 兼容校验，并增加 `/nova-plugin:review LEVEL=lite` 文档契约防回归检查。
 - 清理历史优化总结与 archive notice 中会误导 active agent 位置或历史文件路径的说明。
 - 记录 `2.0.0` 正式发布前的本地全量校验结果，明确 hook Bash 语法检查已实际执行且无 skipped 项。
 
@@ -490,7 +528,7 @@ must not replace the exact release tag as stable evidence.
 - 修复 docs 锚点校验中同一标题 slug 候选重复计数的问题，避免不存在的重复标题锚点被误判为有效。
 - 收紧 schema 校验：`format: date` 现在校验真实日历日期，并检测 registry / marketplace / metadata 插件条目的重复 source 或 name。
 - release workflow 现在校验 tag 版本必须匹配 `nova-plugin/.claude-plugin/plugin.json` 中的插件版本，避免错误 tag 生成不一致 release。
-- 修复 Codex 闭环本地检查未覆盖 Claude 兼容性与 capability pack 校验的问题，避免 `/codex-review-fix` 的本地验证范围弱于仓库质量门。
+- 修复 Codex 闭环本地检查未覆盖 Claude 兼容性与 capability pack 校验的问题，避免 `/nova-plugin:codex-review-fix` 的本地验证范围弱于仓库质量门。
 - 新一轮 Codex review 成功后同步清理旧 `verify.md` 与 `checks.txt`，防止 verify 自动读取上一轮检查产物。
 - 修正路线图与贡献清单中 schema 扩展边界、Claude 兼容性校验和 `validate-all` 覆盖范围的过期描述。
 
@@ -599,7 +637,8 @@ must not replace the exact release tag as stable evidence.
 - MIT 开源协议
 - 中英双语 README 文档
 
-[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.4.1...HEAD
+[2.4.1]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.4.0-rc.1...v2.4.0
 [2.4.0-rc.1]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.3.0...v2.4.0-rc.1
 [2.3.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.2.0...v2.3.0

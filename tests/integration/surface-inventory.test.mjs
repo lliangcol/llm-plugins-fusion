@@ -20,6 +20,7 @@ test('surface inventory captures current public repository surfaces', () => {
     activeAgents: 6,
     capabilityPacks: 8,
     generatedMarketplaceOutputs: 3,
+    installedSkills: 42,
   });
 
   const commandsById = new Map(inventory.commands.map((command) => [command.id, command]));
@@ -29,6 +30,16 @@ test('surface inventory captures current public repository surfaces', () => {
   assert.equal(commandsById.get('review')?.invokesSkill, 'nova-review');
   assert.equal(skillsByName.get('nova-review')?.commandId, 'review');
   assert.equal(skillsByName.get('nova-review')?.subagentSafe, true);
+  assert.equal(skillsByName.get('nova-review')?.modelInvocable, true);
+  assert.equal(skillsByName.get('nova-implement-plan')?.modelInvocable, false);
+  assert.deepEqual(inventory.runtimeCompatibility.primaryEntrypoints, [
+    '/nova-plugin:route',
+    '/nova-plugin:explore',
+    '/nova-plugin:produce-plan',
+    '/nova-plugin:review',
+    '/nova-plugin:implement-plan',
+    '/nova-plugin:finalize-work',
+  ]);
 
   for (const command of inventory.commands) {
     const skill = skillsByName.get(command.invokesSkill);

@@ -1,4 +1,4 @@
-﻿# Skill: /senior-explore
+﻿# Skill: /nova-plugin:senior-explore
 
 - 来源：`nova-plugin/commands/senior-explore.md`
 
@@ -47,13 +47,13 @@
 ## 典型示例
 
 ```text
-/senior-explore
+/nova-plugin:senior-explore
 INTENT: Analyze a new feature requirement
 CONTEXT: 需求文档与现有模块概述
 ```
 
 ```text
-/senior-explore
+/nova-plugin:senior-explore
 INTENT: Investigate a production issue or bug
 CONTEXT: 日志与相关模块
 DEPTH: deep
@@ -61,7 +61,7 @@ EXPORT_PATH: docs/analysis/payment-issue.md
 ```
 
 ```text
-/senior-explore
+/nova-plugin:senior-explore
 CONTEXT: 只有上下文，没有提供 INTENT
 ```
 

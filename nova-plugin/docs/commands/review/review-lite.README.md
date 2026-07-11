@@ -1,4 +1,4 @@
-﻿# /review-lite
+﻿# /nova-plugin:review-lite
 
 - 来源：`nova-plugin/commands/review-lite.md`
 
@@ -29,17 +29,17 @@ No obvious issues found in this review scope.
 ## 完整示例
 
 ```text
-/review-lite
+/nova-plugin:review-lite
 请快速审查这段 PR diff：...
 ```
 
 ```text
-/review-lite
+/nova-plugin:review-lite
 这段逻辑描述是否有明显风险？
 ```
 
 ```text
-/review-lite
+/nova-plugin:review-lite
 请给出完整重构方案。
 ```
 
@@ -50,5 +50,5 @@ No obvious issues found in this review scope.
 
 ## 与相近命令的对比
 
-- `/review-only` 更系统分级审查。
-- `/review-strict` 高风险全面审查。
+- `/nova-plugin:review-only` 更系统分级审查。
+- `/nova-plugin:review-strict` 高风险全面审查。

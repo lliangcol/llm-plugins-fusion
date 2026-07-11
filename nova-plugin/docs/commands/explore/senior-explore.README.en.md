@@ -1,4 +1,4 @@
-﻿# /senior-explore
+﻿# /nova-plugin:senior-explore
 
 - Source: `nova-plugin/commands/senior-explore.md`
 
@@ -37,20 +37,20 @@
 ## Full Examples
 
 ```text
-/senior-explore
+/nova-plugin:senior-explore
 INTENT: Analyze a new feature requirement
 CONTEXT: Requirement doc and modules
 ```
 
 ```text
-/senior-explore
+/nova-plugin:senior-explore
 INTENT: Investigate a production issue or bug
 DEPTH: deep
 EXPORT_PATH: docs/analysis/payment-issue.md
 ```
 
 ```text
-/senior-explore
+/nova-plugin:senior-explore
 CONTEXT: Context only, no INTENT provided
 ```
 
@@ -61,5 +61,5 @@ CONTEXT: Context only, no INTENT provided
 
 ## Comparison with Similar Commands
 
-- `/explore-lite` is faster and lighter for quick alignment.
-- `/explore-review` focuses on review questions and risk signals.
+- `/nova-plugin:explore-lite` is faster and lighter for quick alignment.
+- `/nova-plugin:explore-review` focuses on review questions and risk signals.

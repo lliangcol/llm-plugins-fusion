@@ -1,15 +1,18 @@
 ---
 id: codex-verify-only
 stage: review
-title: /codex-verify-only
+title: /nova-plugin:codex-verify-only
 description: "Run Codex verification against an existing review artifact and optional checks output."
 destructive-actions: low
-allowed-tools: Bash Read Glob Grep LS
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit
+user-invocable: true
+disable-model-invocation: true
 invokes:
   skill: nova-codex-verify-only
 ---
 
-# /codex-verify-only
+# /nova-plugin:codex-verify-only
 
 Invoke `nova-codex-verify-only` with `$ARGUMENTS`.
 

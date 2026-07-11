@@ -1,4 +1,4 @@
-﻿# /plan-lite
+﻿# /nova-plugin:plan-lite
 
 - Source: `nova-plugin/commands/plan-lite.md`
 
@@ -42,18 +42,18 @@
 ## Full Examples
 
 ```text
-/plan-lite
+/nova-plugin:plan-lite
 Goal: add points transfer
 Constraint: no payment changes
 ```
 
 ```text
-/plan-lite
+/nova-plugin:plan-lite
 Produce a lightweight plan based on prior analysis.
 ```
 
 ```text
-/plan-lite
+/nova-plugin:plan-lite
 Provide detailed architecture design and implementation steps.
 ```
 
@@ -64,5 +64,5 @@ Provide detailed architecture design and implementation steps.
 
 ## Comparison with Similar Commands
 
-- `/produce-plan` writes a formal design document to a file.
-- `/backend-plan` targets Java/Spring backend design.
+- `/nova-plugin:produce-plan` writes a formal design document to a file.
+- `/nova-plugin:backend-plan` targets Java/Spring backend design.

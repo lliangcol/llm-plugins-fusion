@@ -44,8 +44,14 @@ jobs:
   validate-claude-compat:
     uses: ./.github/workflows/reusable-node-check.yml
     with:
-      label: Validate Claude Compatibility
+      label: Claude Manifest Static
       command: node scripts/validate-claude-compat.mjs
+
+  validate-workflow-permissions:
+    uses: ./.github/workflows/reusable-node-check.yml
+    with:
+      label: Validate Workflow Permissions
+      command: node scripts/generate-workflow-permissions.mjs
 
   npm-test:
     uses: ./.github/workflows/reusable-node-check.yml

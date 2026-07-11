@@ -13,30 +13,30 @@ manual promotion tasks must stay consistent.
 ## Recommended nova workflow
 
 ```text
-/route -> /explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+/nova-plugin:route -> /nova-plugin:explore -> /nova-plugin:produce-plan -> /nova-plugin:review -> /nova-plugin:implement-plan -> /nova-plugin:finalize-work
 ```
 
-- Use `/route` to classify the task as docs, release, growth, verification, or
+- Use `/nova-plugin:route` to classify the task as docs, release, growth, verification, or
   mixed repository work.
-- Use `/explore` to inspect current version facts, generated files, docs
+- Use `/nova-plugin:explore` to inspect current version facts, generated files, docs
   indexes, and validation gates.
-- Use `/produce-plan` for multi-file public docs changes.
-- Use `/review` to catch stale release language, broken links, private context
+- Use `/nova-plugin:produce-plan` for multi-file public docs changes.
+- Use `/nova-plugin:review` to catch stale release language, broken links, private context
   leaks, and over-claimed validation.
-- Use `/implement-plan` for scoped edits.
-- Use `/finalize-work` to capture validation output, skipped checks, manual
+- Use `/nova-plugin:implement-plan` for scoped edits.
+- Use `/nova-plugin:finalize-work` to capture validation output, skipped checks, manual
   GitHub UI actions, and residual risk.
 
 ## Example command
 
 ```text
-/route I need to update README, getting-started docs, showcase pages, changelog wording, and growth metrics guidance without changing generated marketplace outputs. Recommend the next nova workflow step and validation.
+/nova-plugin:route I need to update README, getting-started docs, showcase pages, changelog wording, and growth metrics guidance without changing generated marketplace outputs. Recommend the next nova workflow step and validation.
 ```
 
-If `/route` recommends review before promotion:
+If `/nova-plugin:route` recommends review before promotion:
 
 ```text
-/review LEVEL=standard Review the docs and release wording for stale version claims, broken local links, private context leaks, generated-file edits, and validation over-claims.
+/nova-plugin:review LEVEL=standard Review the docs and release wording for stale version claims, broken local links, private context leaks, generated-file edits, and validation over-claims.
 ```
 
 ## Expected output evidence

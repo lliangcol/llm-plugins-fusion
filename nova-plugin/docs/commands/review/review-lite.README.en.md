@@ -1,4 +1,4 @@
-﻿# /review-lite
+﻿# /nova-plugin:review-lite
 
 - Source: `nova-plugin/commands/review-lite.md`
 
@@ -29,17 +29,17 @@ No obvious issues found in this review scope.
 ## Full Examples
 
 ```text
-/review-lite
+/nova-plugin:review-lite
 Quickly review this PR diff: ...
 ```
 
 ```text
-/review-lite
+/nova-plugin:review-lite
 Any obvious risks in this logic?
 ```
 
 ```text
-/review-lite
+/nova-plugin:review-lite
 Provide a full refactor plan.
 ```
 
@@ -50,5 +50,5 @@ Provide a full refactor plan.
 
 ## Comparison with Similar Commands
 
-- `/review-only` is more systematic.
-- `/review-strict` is exhaustive for high risk.
+- `/nova-plugin:review-only` is more systematic.
+- `/nova-plugin:review-strict` is exhaustive for high risk.

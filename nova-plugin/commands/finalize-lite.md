@@ -1,15 +1,18 @@
 ---
 id: finalize-lite
 stage: finalize
-title: /finalize-lite
+title: /nova-plugin:finalize-lite
 description: "Produce a minimal close-out summary of completed work, rationale, and limitations."
 destructive-actions: none
-allowed-tools: Read Glob Grep LS
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: false
 invokes:
   skill: nova-finalize-lite
 ---
 
-# /finalize-lite
+# /nova-plugin:finalize-lite
 
 Invoke `nova-finalize-lite` with `$ARGUMENTS`.
 
@@ -19,4 +22,4 @@ Entry semantics:
 
 - Summarizes completed work, rationale, and limitations.
 - Does not run release, Git, or deployment actions.
-- `/finalize-work` remains available for full handoff packaging.
+- `/nova-plugin:finalize-work` remains available for full handoff packaging.

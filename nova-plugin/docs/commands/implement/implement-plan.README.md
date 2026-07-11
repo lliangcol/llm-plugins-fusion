@@ -1,4 +1,4 @@
-﻿# /implement-plan
+﻿# /nova-plugin:implement-plan
 
 - 来源：`nova-plugin/commands/implement-plan.md`
 
@@ -29,19 +29,19 @@
 ## 完整示例
 
 ```text
-/implement-plan
+/nova-plugin:implement-plan
 PLAN_INPUT_PATH: docs/plans/feature.md
 PLAN_APPROVED: true
 ```
 
 ```text
-/implement-plan
+/nova-plugin:implement-plan
 PLAN_INPUT_PATH: docs/plans/bugfix.md
 PLAN_APPROVED: true
 ```
 
 ```text
-/implement-plan
+/nova-plugin:implement-plan
 PLAN_INPUT_PATH: docs/plans/feature.md
 PLAN_APPROVED: false
 ```
@@ -53,5 +53,5 @@ PLAN_APPROVED: false
 
 ## 与相近命令的对比
 
-- `/implement-standard` 允许有限纠偏。
-- `/implement-lite` 更快速且约束少。
+- `/nova-plugin:implement-standard` 允许有限纠偏。
+- `/nova-plugin:implement-lite` 更快速且约束少。

@@ -1,4 +1,4 @@
-# /route
+# /nova-plugin:route
 
 - Source: `nova-plugin/commands/route.md`
 
@@ -19,28 +19,28 @@
 ## Full Examples
 
 ```text
-/route
+/nova-plugin:route
 This task touches README, marketplace metadata, and release evidence. Which nova command should start?
 ```
 
 ```text
-/route CONTEXT="Cursor consuming nova skills"
+/nova-plugin:route CONTEXT="Cursor consuming nova skills"
 The user asked for a medium-risk implementation, but there is no approved plan.
 ```
 
 ## Comparison with Similar Commands
 
-- `/explore` understands facts, unknowns, and risks; it does not choose a full workflow route.
-- `/produce-plan` writes a formal plan and needs clearer planning intent plus an output path.
-- `/route` only selects the next command and input requirements; it does not replace planning, review, or implementation.
+- `/nova-plugin:explore` understands facts, unknowns, and risks; it does not choose a full workflow route.
+- `/nova-plugin:produce-plan` writes a formal plan and needs clearer planning intent plus an output path.
+- `/nova-plugin:route` only selects the next command and input requirements; it does not replace planning, review, or implementation.
 
 ## Route Families
 
 | Intent | Default route |
 | --- | --- |
-| Understand facts, risks, or unknowns | `/explore` or `/senior-explore` |
-| Produce a plan or design | `/produce-plan`, `/plan-lite`, or `/backend-plan` |
-| Review code, plans, or risk | `/review`, `/plan-review`, `/codex-review-only`, or `/codex-verify-only` |
-| Modify project files | `/implement-plan`, `/implement-standard`, or `/implement-lite` |
-| Deliver a handoff or release summary | `/finalize-work` or `/finalize-lite` |
-| Codex review/fix/verify loop | `/codex-review-fix`, `/codex-review-only`, or `/codex-verify-only` |
+| Understand facts, risks, or unknowns | `/nova-plugin:explore` or `/nova-plugin:senior-explore` |
+| Produce a plan or design | `/nova-plugin:produce-plan`, `/nova-plugin:plan-lite`, or `/nova-plugin:backend-plan` |
+| Review code, plans, or risk | `/nova-plugin:review`, `/nova-plugin:plan-review`, `/nova-plugin:codex-review-only`, or `/nova-plugin:codex-verify-only` |
+| Modify project files | `/nova-plugin:implement-plan`, `/nova-plugin:implement-standard`, or `/nova-plugin:implement-lite` |
+| Deliver a handoff or release summary | `/nova-plugin:finalize-work` or `/nova-plugin:finalize-lite` |
+| Codex review/fix/verify loop | `/nova-plugin:codex-review-fix`, `/nova-plugin:codex-review-only`, or `/nova-plugin:codex-verify-only` |

@@ -2,14 +2,16 @@
 name: nova-review
 description: Unified review Hub Skill. Route by LEVEL to lite, standard, or strict review outputs; no code modification.
 license: MIT
-allowed-tools: Read Glob Grep LS
-argument-hint: "Example: review LEVEL=lite INPUT='small PR diff'"
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: false
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true
-    destructiveActions: none
+  nova-user-invocable: "true"
+  nova-model-invocable: "true"
+  nova-subagent-safe: "true"
+  nova-destructive-actions: "none"
+argument-hint: "Example: review LEVEL=lite INPUT='small PR diff'"
 ---
 
 ## Inputs
@@ -32,7 +34,7 @@ metadata:
 ## Safety Preflight
 
 - This skill is read-only for project files and must not modify code.
-- No interrupting preflight is required for ordinary Read/Glob/Grep/LS usage.
+- No interrupting preflight is required for ordinary Read/Glob/Grep usage.
 - This invocation has no implicit export mode; a future write-capable variant must declare an explicit output path and run shared preflight before writing artifacts or invoking Bash.
 - Do not infer safety-boundary values for artifact exports or latest artifact selection.
 - Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.
@@ -63,7 +65,7 @@ metadata:
 
 ## Examples
 
-- Use `/review` as the hub for lite, standard, or strict review.
+- Use `/nova-plugin:review` as the hub for lite, standard, or strict review.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Common Rationalizations
@@ -133,7 +135,7 @@ Provide structured review findings for code/design artifacts, with routing by re
 
 ## Migrated Slash Command Contract
 
-Migrated from the pre-thin slash command contract for `/review` (`nova-plugin/commands/review.md`).
+Migrated from the pre-thin slash command contract for `/nova-plugin:review` (`nova-plugin/commands/review.md`).
 
 ### CODE REVIEW (NO IMPLEMENTATION)
 

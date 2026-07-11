@@ -13,7 +13,7 @@ show loading, error, and empty states.
 ## Recommended Nova Workflow
 
 ```text
-/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+/nova-plugin:explore -> /nova-plugin:produce-plan -> /nova-plugin:review -> /nova-plugin:implement-plan -> /nova-plugin:finalize-work
 ```
 
 Use screenshot or Playwright verification when the private project already has

@@ -68,10 +68,12 @@ gate is added, renamed, removed, or moved.
 | Validate Registry Fixtures | `node scripts/validate-registry-fixtures.mjs` | Registry fixture safety and generated-output fixture shape. |
 | Validate Generated Drift | `npm run validate:drift` | Generated marketplace, metadata, and catalog outputs match source. |
 | Validate Capability Packs | `node scripts/validate-packs.mjs` | Pack documentation, enhanced/fallback boundaries, and inventory. |
-| Validate Claude Compatibility | `node scripts/validate-claude-compat.mjs` | Claude marketplace manifest compatibility. |
+| Claude Manifest Static | `node scripts/validate-claude-compat.mjs` | Claude marketplace manifest compatibility. |
+| Validate Workflow Permissions | `node scripts/generate-workflow-permissions.mjs` | Native invocation/tool policy and 42-entry effective permission drift. |
+| Release Evidence | `node scripts/generate-release-evidence.mjs` | Machine-readable validation, coverage, install, live route, and checksum aggregation. |
 | NPM Test | `npm test` | Node unit, integration, and e2e test suite. |
 | Test Coverage | `npm run test:coverage:check` | Node built-in coverage on the Node 20 lane for the complete maintenance `.mjs` inventory; uploads `.metrics/coverage/` as `test-coverage-evidence`. |
-| Plugin Install Dry Run | `node scripts/validate-plugin-install.mjs --dry-run` | Safe install-path preview without user-scope mutation. |
+| Plugin Install Dry Run | `node scripts/validate-plugin-install.mjs --dry-run` | Safe preview of isolated install, ref, tree digest, and 42-item inventory checks. |
 | Lint Frontmatter | `node scripts/lint-frontmatter.mjs` | Command and skill frontmatter contracts. |
 | Validate Hooks | `node scripts/validate-hooks.mjs` plus hook `bash -n` | Hook config structure and Bash syntax. |
 | ShellCheck | `.github/workflows/ci.yml` | Static analysis for tracked shell scripts. |

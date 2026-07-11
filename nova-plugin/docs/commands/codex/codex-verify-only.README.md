@@ -1,4 +1,4 @@
-# /codex-verify-only
+# /nova-plugin:codex-verify-only
 
 - 来源：`nova-plugin/commands/codex-verify-only.md`
 
@@ -21,5 +21,5 @@
 ## 示例
 
 ```text
-/codex-verify-only REVIEW_FILE=.codex/codex-review-fix/latest-artifacts/review.md CHECKS_FILE=.codex/codex-review-fix/latest-artifacts/checks.txt BASE=main
+/nova-plugin:codex-verify-only REVIEW_FILE=.codex/codex-review-fix/latest-artifacts/review.md CHECKS_FILE=.codex/codex-review-fix/latest-artifacts/checks.txt BASE=main
 ```

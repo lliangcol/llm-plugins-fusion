@@ -31,18 +31,18 @@ marked as synced.
 Use this fixture to evaluate:
 
 ```text
-/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+/nova-plugin:explore -> /nova-plugin:produce-plan -> /nova-plugin:review -> /nova-plugin:implement-plan -> /nova-plugin:finalize-work
 ```
 
 ## Files
 
 | File | Use |
 | --- | --- |
-| [inputs/product-note.md](inputs/product-note.md) | Ambiguous request for `/explore`. |
-| [inputs/planning-brief.md](inputs/planning-brief.md) | Planning scenario for `/produce-plan`. |
-| [inputs/review-diff.patch](inputs/review-diff.patch) | Fictional buggy diff for `/review`. |
-| [plans/approved-implementation-plan.md](plans/approved-implementation-plan.md) | Approved plan input for `/implement-plan`. |
-| [src/invoice-sync.js](src/invoice-sync.js) | Intentionally defective implementation input for `/implement-plan`. |
+| [inputs/product-note.md](inputs/product-note.md) | Ambiguous request for `/nova-plugin:explore`. |
+| [inputs/planning-brief.md](inputs/planning-brief.md) | Planning scenario for `/nova-plugin:produce-plan`. |
+| [inputs/review-diff.patch](inputs/review-diff.patch) | Fictional buggy diff for `/nova-plugin:review`. |
+| [plans/approved-implementation-plan.md](plans/approved-implementation-plan.md) | Approved plan input for `/nova-plugin:implement-plan`. |
+| [src/invoice-sync.js](src/invoice-sync.js) | Intentionally defective implementation input for `/nova-plugin:implement-plan`. |
 | [test/invoice-sync.test.js](test/invoice-sync.test.js) | Runnable but intentionally incomplete baseline tests. |
 | [package.json](package.json) | Dependency-free `npm test` entry point for implementation validation. |
 
@@ -51,11 +51,11 @@ Use this fixture to evaluate:
 Run these only in a disposable copy or throwaway branch:
 
 ```text
-/explore INPUT=fixtures/workflow/invoice-sync/inputs/product-note.md
-/produce-plan PLAN_OUTPUT_PATH=fixtures/workflow/invoice-sync/out/plan.md PLAN_INTENT="Plan idempotent invoice sync with no schema migration" ANALYSIS_INPUTS=fixtures/workflow/invoice-sync/inputs/planning-brief.md
-/review LEVEL=standard INPUT=fixtures/workflow/invoice-sync/inputs/review-diff.patch
-/implement-plan PLAN_INPUT_PATH=fixtures/workflow/invoice-sync/plans/approved-implementation-plan.md PLAN_APPROVED=true
-/finalize-work Summarize the completed fixture run, validation, skipped checks, risks, and follow-ups.
+/nova-plugin:explore INPUT=fixtures/workflow/invoice-sync/inputs/product-note.md
+/nova-plugin:produce-plan PLAN_OUTPUT_PATH=fixtures/workflow/invoice-sync/out/plan.md PLAN_INTENT="Plan idempotent invoice sync with no schema migration" ANALYSIS_INPUTS=fixtures/workflow/invoice-sync/inputs/planning-brief.md
+/nova-plugin:review LEVEL=standard INPUT=fixtures/workflow/invoice-sync/inputs/review-diff.patch
+/nova-plugin:implement-plan PLAN_INPUT_PATH=fixtures/workflow/invoice-sync/plans/approved-implementation-plan.md PLAN_APPROVED=true
+/nova-plugin:finalize-work Summarize the completed fixture run, validation, skipped checks, risks, and follow-ups.
 ```
 
 ## Pass Signals

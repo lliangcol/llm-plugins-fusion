@@ -15,6 +15,7 @@ The JSON form is [surface-inventory.json](surface-inventory.json).
 | Active agents | 6 |
 | Capability packs | 8 |
 | Generated marketplace outputs | 3 |
+| Installed Claude Skills | 42 |
 
 ## Commands
 
@@ -44,29 +45,35 @@ The JSON form is [surface-inventory.json](surface-inventory.json).
 
 ## Skills
 
-| Name | Command ID | Subagent safe | Destructive actions |
-| --- | --- | --- | --- |
-| `nova-backend-plan` | `backend-plan` | true | low |
-| `nova-codex-review-fix` | `codex-review-fix` | false | medium |
-| `nova-codex-review-only` | `codex-review-only` | true | low |
-| `nova-codex-verify-only` | `codex-verify-only` | true | low |
-| `nova-explore` | `explore` | true | none |
-| `nova-explore-lite` | `explore-lite` | true | none |
-| `nova-explore-review` | `explore-review` | true | none |
-| `nova-finalize-lite` | `finalize-lite` | true | none |
-| `nova-finalize-work` | `finalize-work` | true | none |
-| `nova-implement-lite` | `implement-lite` | true | medium |
-| `nova-implement-plan` | `implement-plan` | true | medium |
-| `nova-implement-standard` | `implement-standard` | true | medium |
-| `nova-plan-lite` | `plan-lite` | true | none |
-| `nova-plan-review` | `plan-review` | true | none |
-| `nova-produce-plan` | `produce-plan` | true | low |
-| `nova-review` | `review` | true | none |
-| `nova-review-lite` | `review-lite` | true | none |
-| `nova-review-only` | `review-only` | true | none |
-| `nova-review-strict` | `review-strict` | true | none |
-| `nova-route` | `route` | true | none |
-| `nova-senior-explore` | `senior-explore` | true | low |
+| Name | Command ID | Model invocable | Subagent safe | Destructive actions |
+| --- | --- | --- | --- | --- |
+| `nova-backend-plan` | `backend-plan` | false | true | low |
+| `nova-codex-review-fix` | `codex-review-fix` | false | false | medium |
+| `nova-codex-review-only` | `codex-review-only` | false | true | low |
+| `nova-codex-verify-only` | `codex-verify-only` | false | true | low |
+| `nova-explore` | `explore` | true | true | none |
+| `nova-explore-lite` | `explore-lite` | true | true | none |
+| `nova-explore-review` | `explore-review` | true | true | none |
+| `nova-finalize-lite` | `finalize-lite` | true | true | none |
+| `nova-finalize-work` | `finalize-work` | true | true | none |
+| `nova-implement-lite` | `implement-lite` | false | true | medium |
+| `nova-implement-plan` | `implement-plan` | false | true | medium |
+| `nova-implement-standard` | `implement-standard` | false | true | medium |
+| `nova-plan-lite` | `plan-lite` | true | true | none |
+| `nova-plan-review` | `plan-review` | true | true | none |
+| `nova-produce-plan` | `produce-plan` | false | true | low |
+| `nova-review` | `review` | true | true | none |
+| `nova-review-lite` | `review-lite` | true | true | none |
+| `nova-review-only` | `review-only` | true | true | none |
+| `nova-review-strict` | `review-strict` | true | true | none |
+| `nova-route` | `route` | true | true | none |
+| `nova-senior-explore` | `senior-explore` | false | true | low |
+
+## Runtime Compatibility
+
+- Plugin namespace: `nova-plugin`
+- Known-good Claude CLI: `2.1.205`
+- Primary entrypoints: `/nova-plugin:route`, `/nova-plugin:explore`, `/nova-plugin:produce-plan`, `/nova-plugin:review`, `/nova-plugin:implement-plan`, `/nova-plugin:finalize-work`
 
 ## Active Agents
 
@@ -96,6 +103,6 @@ The JSON form is [surface-inventory.json](surface-inventory.json).
 
 | Path | Plugin versions |
 | --- | --- |
-| `.claude-plugin/marketplace.json` | `nova-plugin@2.4.0` |
-| `.claude-plugin/marketplace.metadata.json` | `nova-plugin@2.4.0` |
-| `docs/marketplace/catalog.md` | `nova-plugin@2.4.0` |
+| `.claude-plugin/marketplace.json` | `nova-plugin@2.4.1` |
+| `.claude-plugin/marketplace.metadata.json` | `nova-plugin@2.4.1` |
+| `docs/marketplace/catalog.md` | `nova-plugin@2.4.1` |

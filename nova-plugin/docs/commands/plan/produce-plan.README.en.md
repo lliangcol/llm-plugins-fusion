@@ -1,4 +1,4 @@
-﻿# /produce-plan
+﻿# /nova-plugin:produce-plan
 
 - Source: `nova-plugin/commands/produce-plan.md`
 
@@ -44,13 +44,13 @@ Chat output:
 ## Full Examples
 
 ```text
-/produce-plan
+/nova-plugin:produce-plan
 PLAN_OUTPUT_PATH: docs/plans/points-transfer.md
 PLAN_INTENT: Implement points transfer
 ```
 
 ```text
-/produce-plan
+/nova-plugin:produce-plan
 PLAN_OUTPUT_PATH: docs/plans/payment-retry.md
 PLAN_INTENT: Fix duplicate callback handling
 ANALYSIS_INPUTS:
@@ -58,7 +58,7 @@ ANALYSIS_INPUTS:
 ```
 
 ```text
-/produce-plan
+/nova-plugin:produce-plan
 PLAN_INTENT: Missing PLAN_OUTPUT_PATH
 ```
 
@@ -69,5 +69,5 @@ PLAN_INTENT: Missing PLAN_OUTPUT_PATH
 
 ## Comparison with Similar Commands
 
-- `/plan-lite` outputs a lightweight plan without writing a file.
-- `/backend-plan` targets Java/Spring backend design.
+- `/nova-plugin:plan-lite` outputs a lightweight plan without writing a file.
+- `/nova-plugin:backend-plan` targets Java/Spring backend design.

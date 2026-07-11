@@ -1,15 +1,18 @@
 ---
 id: produce-plan
 stage: plan
-title: /produce-plan
+title: /nova-plugin:produce-plan
 description: "Write a formal review-ready plan document to an explicit PLAN_OUTPUT_PATH."
 destructive-actions: low
-allowed-tools: Read Glob Grep LS Write Edit
+allowed-tools: Read Glob Grep Write Edit
+disallowed-tools: NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: true
 invokes:
   skill: nova-produce-plan
 ---
 
-# /produce-plan
+# /nova-plugin:produce-plan
 
 Invoke `nova-produce-plan` with `$ARGUMENTS`.
 
@@ -19,4 +22,4 @@ Entry semantics:
 
 - Requires explicit `PLAN_OUTPUT_PATH` before writing.
 - Uses `PLAN_PROFILE=general` by default; `PLAN_PROFILE=java-backend` selects the backend profile.
-- `/backend-plan` remains the Java/Spring compatibility shortcut.
+- `/nova-plugin:backend-plan` remains the Java/Spring compatibility shortcut.

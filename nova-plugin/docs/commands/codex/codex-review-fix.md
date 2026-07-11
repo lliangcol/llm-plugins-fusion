@@ -1,4 +1,4 @@
-# Skill: /codex-review-fix
+# Skill: /nova-plugin:codex-review-fix
 
 - 来源：`nova-plugin/commands/codex-review-fix.md`
 

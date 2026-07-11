@@ -1,4 +1,4 @@
-﻿# Skill: /explore-lite
+﻿# Skill: /nova-plugin:explore-lite
 
 - 来源：`nova-plugin/commands/explore-lite.md`
 
@@ -42,17 +42,17 @@
 ## 典型示例
 
 ```text
-/explore-lite
+/nova-plugin:explore-lite
 我们要新增订单退款接口，已有订单模块与支付模块。请快速梳理不清楚的点。
 ```
 
 ```text
-/explore-lite
+/nova-plugin:explore-lite
 线上告警：Connection pool exhausted。请列出不确定点和可能风险。
 ```
 
 ```text
-/explore-lite
+/nova-plugin:explore-lite
 请直接给我完整解决方案和实施步骤。
 ```
 

@@ -8,6 +8,10 @@ import { runProcess } from '../../scripts/lib/process-runner.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const payload = JSON.stringify({ tool_name: 'Write', tool_input: { file_path: 'README.md' } });
+const notebookPayload = JSON.stringify({
+  tool_name: 'NotebookEdit',
+  tool_input: { notebook_path: 'analysis.ipynb', cell_id: 'cell-1', new_source: 'print("changed")' },
+});
 
 async function blockedRotationRoot(t) {
   const root = await mkdtemp(join(tmpdir(), 'nova-audit-rotation-'));
@@ -56,6 +60,18 @@ for (const [label, command, args] of [
     assert.equal(result.ok, true, result.stderr);
     const after = (await stat(join(root, 'audit.log'))).size;
     assert.ok(after >= before, `expected ${after} >= ${before}`);
+  });
+
+  test(`${label} audit logger records NotebookEdit notebook paths`, async (t) => {
+    const root = await mkdtemp(join(tmpdir(), 'nova-audit-notebook-'));
+    t.after(() => rm(root, { recursive: true, force: true }));
+    const result = await runProcess(`${label} NotebookEdit audit`, command, args, {
+      cwd: repoRoot,
+      env: { ...process.env, CLAUDE_PLUGIN_DATA: root },
+      input: notebookPayload,
+    });
+    assert.equal(result.ok, true, result.stderr);
+    assert.match(await readFile(join(root, 'audit.log'), 'utf8'), /NotebookEdit\s+SUCCESS\s+analysis\.ipynb/);
   });
 
 }

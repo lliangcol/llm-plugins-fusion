@@ -1,4 +1,4 @@
-﻿# Skill: /finalize-work
+﻿# Skill: /nova-plugin:finalize-work
 
 - 来源：`nova-plugin/commands/finalize-work.md`
 
@@ -42,17 +42,17 @@
 ## 典型示例
 
 ```text
-/finalize-work
+/nova-plugin:finalize-work
 请生成 commit message 和 PR 描述。
 ```
 
 ```text
-/finalize-work
+/nova-plugin:finalize-work
 无 Git 项目，请给出交接总结。
 ```
 
 ```text
-/finalize-work
+/nova-plugin:finalize-work
 请继续修改代码。
 ```
 

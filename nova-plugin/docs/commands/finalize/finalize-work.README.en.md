@@ -1,4 +1,4 @@
-﻿# /finalize-work
+﻿# /nova-plugin:finalize-work
 
 - Source: `nova-plugin/commands/finalize-work.md`
 
@@ -27,17 +27,17 @@ Case B (No Git): local change summary + manual steps
 ## Full Examples
 
 ```text
-/finalize-work
+/nova-plugin:finalize-work
 Generate commit message and PR description.
 ```
 
 ```text
-/finalize-work
+/nova-plugin:finalize-work
 No Git project; provide handoff summary.
 ```
 
 ```text
-/finalize-work
+/nova-plugin:finalize-work
 Keep modifying code.
 ```
 
@@ -48,4 +48,4 @@ Keep modifying code.
 
 ## Comparison with Similar Commands
 
-- `/finalize-lite` outputs only a brief three-part summary.
+- `/nova-plugin:finalize-lite` outputs only a brief three-part summary.

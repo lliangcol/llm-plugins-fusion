@@ -1,4 +1,4 @@
-﻿# Skill: /implement-plan
+﻿# Skill: /nova-plugin:implement-plan
 
 - 来源：`nova-plugin/commands/implement-plan.md`
 
@@ -44,19 +44,19 @@
 ## 典型示例
 
 ```text
-/implement-plan
+/nova-plugin:implement-plan
 PLAN_INPUT_PATH: docs/plans/feature.md
 PLAN_APPROVED: true
 ```
 
 ```text
-/implement-plan
+/nova-plugin:implement-plan
 PLAN_INPUT_PATH: docs/plans/bugfix.md
 PLAN_APPROVED: true
 ```
 
 ```text
-/implement-plan
+/nova-plugin:implement-plan
 PLAN_INPUT_PATH: docs/plans/feature.md
 PLAN_APPROVED: false
 ```

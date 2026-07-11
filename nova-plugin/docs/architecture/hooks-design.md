@@ -15,7 +15,7 @@
 | 事件 | 触发时机 | 能否阻断 | Matcher 对象 |
 |------|----------|----------|--------------|
 | `PreToolUse` | 工具执行**前** | 是 | 工具名（正则 `\|` 分隔） |
-| `PostToolUse` | 工具执行**后** | 是（返回 block 决策） | 工具名 |
+| `PostToolUse` | 工具执行**后** | 否；操作已经完成 | 工具名 |
 | `Stop` | Claude 完成响应时 | 是 | 无（每次触发） |
 | `Notification` | Claude Code 发送通知时 | 否 | 通知类型 |
 
@@ -47,7 +47,7 @@ PostToolUse 额外包含：
 
 | 退出码 | 含义 |
 |--------|------|
-| `0` | 允许继续；stdout JSON 被解析为决策；纯文本作为上下文 |
+| `0` | hook 不返回阻断决定；后续仍进入正常权限流程，不表示授权 |
 | `2` | **阻断操作**；stderr 作为错误反馈传给 Claude |
 | 其他 | 非阻断，stderr 仅在 verbose 模式显示 |
 
@@ -58,7 +58,7 @@ PostToolUse 额外包含：
   "hooks": {
     "PreToolUse": [
       {
-            "matcher": "Write|Edit|MultiEdit",
+        "matcher": "Write|Edit|NotebookEdit",
             "hooks": [
               {
                 "type": "command",
@@ -90,7 +90,7 @@ PostToolUse 额外包含：
 | Hook 类型 | `type: "command"` |
 | Hook 字段 | `type`, `command`, `timeout`, `statusMessage`, `async` |
 | Shell 调用 | `.sh` 脚本必须通过 `bash "${CLAUDE_PLUGIN_ROOT}/..."` 调用 |
-| Node helper | `.mjs` hook helpers may exist as compatibility targets, but they are not active unless `hooks.json` switches to them in a reviewed release package. |
+| Active runtime | Bash `.sh` files are thin launchers; Node.js 20+ `.mjs` files own all hook business logic. |
 
 `Stop`、`Notification`、非 command hook 类型、额外字段或其它 Claude Code
 未来 schema 字段必须先补 fixture、脚本行为和文档，再放开校验。不要为了兼容
@@ -98,27 +98,28 @@ PostToolUse 额外包含：
 
 ### Hook 1：PreToolUse — 写入前检查
 
-**目标：** 在 Write / Edit / MultiEdit 操作前检查以下规则：
+**目标：** 在 Write / Edit / NotebookEdit 操作前检查以下规则：
 
 | 检查项 | 规则 | 处理 |
 |--------|------|------|
 | 敏感信息检测 | 内容含 `password|secret|token|api_key`（硬编码模式）| exit 2 阻断 |
-| hooks.json 结构校验 | 写入 `hooks/hooks.json` 时验证 JSON 格式 | exit 2 阻断 |
+| payload/runtime 校验 | Node 缺失、payload 非法或 Edit 无法可靠重构 | exit 2 阻断 |
+| 目标类型检查 | 已存在的 Write/Edit 目标是符号链接或非普通文件 | exit 2 阻断 |
+| NotebookEdit | 无法从 payload 可靠重构完整 notebook proposed content | exit 2 阻断 |
+| hooks.json 结构校验 | 对 Write 内容或 Edit proposed content 验证 JSON/schema | exit 2 阻断 |
 
-**Active implementation:** `nova-plugin/hooks/scripts/pre-write-check.sh`
+**Active launcher:** `nova-plugin/hooks/scripts/pre-write-check.sh`
 
-敏感信息检测规则由 `nova-plugin/runtime/secret-rules.mjs` 统一维护，Bash
-脚本只负责 hook payload I/O 与阻断反馈。
+**Active implementation:** `nova-plugin/hooks/scripts/pre-write-check.mjs`
 
-**Compatibility helper:** `nova-plugin/hooks/scripts/pre-write-check.mjs`
-mirrors the same stdin JSON parsing, shared secret rules, and `hooks.json`
-schema validation for a future Node-active runtime decision. It is validated by
-`node scripts/validate-runtime-smoke.mjs`, but `hooks.json` does not currently
-invoke it.
+敏感信息检测规则由 `nova-plugin/runtime/secret-rules.mjs` 统一维护。Bash
+启动器只解析 Node 路径；Node 缺失时 fail closed。设置
+`NOVA_WRITE_GUARD_DISABLED=1` 会打印警告并返回“无决定”，仅用于显式临时
+bypass，不得作为 release evidence。
 
 ### Hook 2：PostToolUse — 审计日志
 
-**目标：** 记录所有 Write / Edit / MultiEdit / Bash 操作的审计日志，格式：
+**目标：** 记录所有 Write / Edit / NotebookEdit / Bash 操作的审计日志，格式：
 
 ```
 [2026-03-18T07:00:00Z] Write /path/to/file.ts SUCCESS
@@ -129,11 +130,9 @@ invoke it.
 权限、轮转、禁用方式与 best-effort redaction 边界见
 [`docs/privacy/data-handling.md`](../../../docs/privacy/data-handling.md)。
 
-**Active implementation:** `nova-plugin/hooks/scripts/post-audit-log.sh`
+**Active launcher:** `nova-plugin/hooks/scripts/post-audit-log.sh`
 
-**Compatibility helper:** `nova-plugin/hooks/scripts/post-audit-log.mjs`
-mirrors the same local audit log, redaction, rotation, and disable behavior for
-future portability review. It is not the active distributed hook command.
+**Active implementation:** `nova-plugin/hooks/scripts/post-audit-log.mjs`
 
 ---
 
@@ -143,10 +142,10 @@ future portability review. It is not the active distributed hook command.
 nova-plugin/hooks/
 ├── hooks.json                    ← hook 主配置
 └── scripts/
-    ├── pre-write-check.sh        ← PreToolUse 检查脚本
-    ├── pre-write-check.mjs       ← Node compatibility helper, inactive
-    ├── post-audit-log.sh         ← PostToolUse 审计日志脚本
-    └── post-audit-log.mjs        ← Node compatibility helper, inactive
+    ├── pre-write-check.sh        ← fail-closed Bash 启动器
+    ├── pre-write-check.mjs       ← active Node PreToolUse 实现
+    ├── post-audit-log.sh         ← non-blocking Bash 启动器
+    └── post-audit-log.mjs        ← active Node PostToolUse 实现
 ```
 
 ---
@@ -163,15 +162,10 @@ nova-plugin/hooks/
 
 ## Windows 前置条件
 
-`hooks.json` 当前仍通过 `bash "<script>.sh"` 调用 active hook 脚本。Windows
-PowerShell 默认不提供 Bash，因此在 Windows 上需要安装 Git Bash、WSL，或其他
-可在 PATH 中解析为 `bash` 的兼容运行时。缺少 Bash 时，PowerShell 下的
-`bash -n` 语法检查和 Claude Code hook 执行都会失败。
-
-Node `.mjs` helpers reduce future portability risk, but they do not remove the
-current Bash prerequisite until `hooks.json` is explicitly changed and the
-compatibility matrix, release notes, validators, and semver assessment are
-updated in the same release package.
+`hooks.json` 通过 Bash 启动器调用 Node.js 20+ active 实现。Windows 需要 Git
+Bash、WSL 或其他可在 PATH 中解析为 `bash` 的兼容运行时，并需要可由 Bash
+发现的 `node`/`node.exe`。缺少 Node 时 PreToolUse fail closed；PostToolUse
+audit logger 只报告 warning，因为操作已经完成。
 
 ---
 
@@ -184,12 +178,20 @@ updated in the same release package.
 | `$CLAUDE_PROJECT_DIR` | 项目根目录 |
 | `${CLAUDE_PLUGIN_ROOT}` | 插件目录（`nova-plugin/`） |
 | `${CLAUDE_PLUGIN_DATA}` | 插件数据目录（持久存储，不在项目内） |
+| `NOVA_WRITE_GUARD_DISABLED=1` | 显式临时禁用 write guard；不属于可接受发布证据 |
+| `NOVA_AUDIT_DISABLED=1` | 禁用本地 audit log |
+
+## 安全边界
+
+PreToolUse matcher 不包含 Bash，因此 `cat > file`、`sed -i` 或脚本生成文件
+不会经过 proposed-content guard。该 hook 是 guardrail，不是 sandbox；Bash
+写入仍依赖 Claude 权限、sandbox、CI secret scan 和 release gate。
 
 ---
 
 ## 扩展计划
 
-以下事项从 `2.1.0` 起一直是未排期候选，在当前 `2.4.0` 中仍未发布，
+以下事项从 `2.1.0` 起一直是未排期候选，在当前 `2.4.1` 中仍未发布，
 也不作为下一版本承诺。
 
 | 状态 | 计划 |

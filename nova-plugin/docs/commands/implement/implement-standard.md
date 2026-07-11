@@ -1,4 +1,4 @@
-﻿# Skill: /implement-standard
+﻿# Skill: /nova-plugin:implement-standard
 
 - 来源：`nova-plugin/commands/implement-standard.md`
 
@@ -42,17 +42,17 @@
 ## 典型示例
 
 ```text
-/implement-standard
+/nova-plugin:implement-standard
 请按以下步骤实现取消订单功能：1) ... 2) ...
 ```
 
 ```text
-/implement-standard
+/nova-plugin:implement-standard
 根据确认步骤修复积分计算问题。
 ```
 
 ```text
-/implement-standard
+/nova-plugin:implement-standard
 请重新设计整体架构并实现。
 ```
 

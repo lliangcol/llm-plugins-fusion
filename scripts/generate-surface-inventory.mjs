@@ -154,8 +154,12 @@ function skillInventory(root) {
     return {
       name: frontmatter.name,
       commandId: name.slice('nova-'.length),
-      subagentSafe: frontmatter.metadata?.novaPlugin?.subagentSafe,
-      destructiveActions: frontmatter.metadata?.novaPlugin?.destructiveActions,
+      userInvocable: frontmatter['user-invocable'],
+      modelInvocable: !frontmatter['disable-model-invocation'],
+      allowedTools: String(frontmatter['allowed-tools'] ?? '').split(/\s+/).filter(Boolean),
+      disallowedTools: String(frontmatter['disallowed-tools'] ?? '').split(/\s+/).filter(Boolean),
+      subagentSafe: frontmatter.metadata?.['nova-subagent-safe'] === 'true',
+      destructiveActions: frontmatter.metadata?.['nova-destructive-actions'],
       path: relPath,
     };
   }).sort((a, b) => a.name.localeCompare(b.name));
@@ -207,6 +211,7 @@ export function buildSurfaceInventory(root = defaultRoot) {
   const skills = skillInventory(root);
   const agents = agentInventory(root);
   const packs = packInventory(root);
+  const permissionSpec = readJson(root, 'nova-plugin/runtime/workflow-permissions.json');
 
   return {
     schemaVersion: 1,
@@ -222,12 +227,20 @@ export function buildSurfaceInventory(root = defaultRoot) {
       activeAgents: agents.length,
       capabilityPacks: packs.length,
       generatedMarketplaceOutputs: 3,
+      installedSkills: permissionSpec.expectedInventory.combinedSkillCount,
     },
     commands,
     skills,
     activeAgents: agents,
     capabilityPacks: packs,
     generatedMarketplaceOutputs: marketplaceOutputs(root),
+    runtimeCompatibility: {
+      pluginNamespace: permissionSpec.pluginNamespace,
+      knownGoodClaudeCli: permissionSpec.knownGoodClaudeCli,
+      primaryEntrypoints: permissionSpec.primaryEntrypoints.map((id) => `/${permissionSpec.pluginNamespace}:${id}`),
+      expectedCommandIds: permissionSpec.expectedInventory.commandIds,
+      expectedSkillNames: permissionSpec.expectedInventory.skillNames,
+    },
   };
 }
 
@@ -260,6 +273,7 @@ ${markdownTable(
     ['Active agents', inventory.counts.activeAgents],
     ['Capability packs', inventory.counts.capabilityPacks],
     ['Generated marketplace outputs', inventory.counts.generatedMarketplaceOutputs],
+    ['Installed Claude Skills', inventory.counts.installedSkills],
   ],
 )}
 
@@ -278,14 +292,21 @@ ${markdownTable(
 ## Skills
 
 ${markdownTable(
-  ['Name', 'Command ID', 'Subagent safe', 'Destructive actions'],
+  ['Name', 'Command ID', 'Model invocable', 'Subagent safe', 'Destructive actions'],
   inventory.skills.map((skill) => [
     `\`${skill.name}\``,
     `\`${skill.commandId}\``,
+    String(skill.modelInvocable),
     String(skill.subagentSafe),
     skill.destructiveActions,
   ]),
 )}
+
+## Runtime Compatibility
+
+- Plugin namespace: \`${inventory.runtimeCompatibility.pluginNamespace}\`
+- Known-good Claude CLI: \`${inventory.runtimeCompatibility.knownGoodClaudeCli}\`
+- Primary entrypoints: ${inventory.runtimeCompatibility.primaryEntrypoints.map((entry) => `\`${entry}\``).join(', ')}
 
 ## Active Agents
 

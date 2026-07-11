@@ -1,4 +1,4 @@
-﻿# /backend-plan
+﻿# /nova-plugin:backend-plan
 
 - 来源：`nova-plugin/commands/backend-plan.md`
 
@@ -38,17 +38,17 @@
 ## 完整示例
 
 ```text
-/backend-plan
+/nova-plugin:backend-plan
 PLAN_OUTPUT_PATH: docs/plans/order-backend.md
 ```
 
 ```text
-/backend-plan
+/nova-plugin:backend-plan
 PLAN_OUTPUT_PATH: docs/plans/account-service.md
 ```
 
 ```text
-/backend-plan
+/nova-plugin:backend-plan
 缺少 PLAN_OUTPUT_PATH
 ```
 
@@ -59,5 +59,5 @@ PLAN_OUTPUT_PATH: docs/plans/account-service.md
 
 ## 与相近命令的对比
 
-- `/produce-plan` 为通用设计文档，不含 Java/Spring 专项章节。
-- `/plan-lite` 仅产出轻量计划。
+- `/nova-plugin:produce-plan` 为通用设计文档，不含 Java/Spring 专项章节。
+- `/nova-plugin:plan-lite` 仅产出轻量计划。

@@ -1,4 +1,4 @@
-﻿# /implement-standard
+﻿# /nova-plugin:implement-standard
 
 - Source: `nova-plugin/commands/implement-standard.md`
 
@@ -26,17 +26,17 @@
 ## Full Examples
 
 ```text
-/implement-standard
+/nova-plugin:implement-standard
 Implement order cancellation per steps: 1) ... 2) ...
 ```
 
 ```text
-/implement-standard
+/nova-plugin:implement-standard
 Fix the bug based on the confirmed steps.
 ```
 
 ```text
-/implement-standard
+/nova-plugin:implement-standard
 Redesign the entire architecture and implement.
 ```
 
@@ -47,5 +47,5 @@ Redesign the entire architecture and implement.
 
 ## Comparison with Similar Commands
 
-- `/implement-plan` requires PLAN_APPROVED=true.
-- `/implement-lite` is faster with fewer constraints.
+- `/nova-plugin:implement-plan` requires PLAN_APPROVED=true.
+- `/nova-plugin:implement-lite` is faster with fewer constraints.

@@ -1,4 +1,4 @@
-﻿# /produce-plan
+﻿# /nova-plugin:produce-plan
 
 - 来源：`nova-plugin/commands/produce-plan.md`
 
@@ -44,13 +44,13 @@
 ## 完整示例
 
 ```text
-/produce-plan
+/nova-plugin:produce-plan
 PLAN_OUTPUT_PATH: docs/plans/points-transfer.md
 PLAN_INTENT: 实现积分转赠功能
 ```
 
 ```text
-/produce-plan
+/nova-plugin:produce-plan
 PLAN_OUTPUT_PATH: docs/plans/payment-retry.md
 PLAN_INTENT: 修复支付回调重复问题
 ANALYSIS_INPUTS:
@@ -58,7 +58,7 @@ ANALYSIS_INPUTS:
 ```
 
 ```text
-/produce-plan
+/nova-plugin:produce-plan
 PLAN_INTENT: 只有意图，没有提供输出路径
 ```
 
@@ -69,5 +69,5 @@ PLAN_INTENT: 只有意图，没有提供输出路径
 
 ## 与相近命令的对比
 
-- `/plan-lite` 输出轻量计划，不写入文件。
-- `/backend-plan` 面向 Java/Spring 后端设计。
+- `/nova-plugin:plan-lite` 输出轻量计划，不写入文件。
+- `/nova-plugin:backend-plan` 面向 Java/Spring 后端设计。

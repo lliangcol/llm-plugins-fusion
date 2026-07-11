@@ -22,62 +22,62 @@
 
 ## 1. 快速决策：我现在该用哪个命令？
 
-默认从五个主入口开始；如果下一步入口不明确，先用只读 `/route`。只有在需要兼容入口、专项后端计划或 Codex 闭环时再使用高级命令：
+默认从五个主入口开始；如果下一步入口不明确，先用只读 `/nova-plugin:route`。只有在需要兼容入口、专项后端计划或 Codex 闭环时再使用高级命令：
 
 ```text
-/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+/nova-plugin:explore -> /nova-plugin:produce-plan -> /nova-plugin:review -> /nova-plugin:implement-plan -> /nova-plugin:finalize-work
 ```
 
 | 当前目标 | 默认命令 | 输出或动作 |
 | --- | --- | --- |
-| 不确定该从哪里开始 | `/route` | 推荐下一步命令、skill、agent、pack、输入和验证路径 |
-| 理解问题，不要方案 | `/explore` | 事实、不确定性、风险信号 |
-| 形成可评审计划 | `/produce-plan` | 写入正式计划文档 |
-| 审查计划、代码或风险 | `/review` | 按 `LEVEL=lite|standard|strict` 输出 findings |
-| 按批准计划实施 | `/implement-plan` | 根据 plan 修改项目文件 |
-| 交付总结和后续事项 | `/finalize-work` | 交付说明、风险、验证和 follow-up |
+| 不确定该从哪里开始 | `/nova-plugin:route` | 推荐下一步命令、skill、agent、pack、输入和验证路径 |
+| 理解问题，不要方案 | `/nova-plugin:explore` | 事实、不确定性、风险信号 |
+| 形成可评审计划 | `/nova-plugin:produce-plan` | 写入正式计划文档 |
+| 审查计划、代码或风险 | `/nova-plugin:review` | 按 `LEVEL=lite|standard|strict` 输出 findings |
+| 按批准计划实施 | `/nova-plugin:implement-plan` | 根据 plan 修改项目文件 |
+| 交付总结和后续事项 | `/nova-plugin:finalize-work` | 交付说明、风险、验证和 follow-up |
 
 ### 1.1 五个主入口最小模板
 
 | 命令 | 最小模板 |
 | --- | --- |
-| `/explore` | `/explore 梳理这个需求的事实、不确定性和风险，不要给方案` |
-| `/produce-plan` | `/produce-plan PLAN_OUTPUT_PATH=docs/plans/example.md PLAN_INTENT="为已确认需求写可评审计划"` |
-| `/review` | `/review LEVEL=standard 请评审这个计划或 diff，按严重级别输出 findings` |
-| `/implement-plan` | `/implement-plan PLAN_INPUT_PATH=docs/plans/example.md PLAN_APPROVED=true` |
-| `/finalize-work` | `/finalize-work 总结本次已完成变更、验证结果、限制和后续事项` |
+| `/nova-plugin:explore` | `/nova-plugin:explore 梳理这个需求的事实、不确定性和风险，不要给方案` |
+| `/nova-plugin:produce-plan` | `/nova-plugin:produce-plan PLAN_OUTPUT_PATH=docs/plans/example.md PLAN_INTENT="为已确认需求写可评审计划"` |
+| `/nova-plugin:review` | `/nova-plugin:review LEVEL=standard 请评审这个计划或 diff，按严重级别输出 findings` |
+| `/nova-plugin:implement-plan` | `/nova-plugin:implement-plan PLAN_INPUT_PATH=docs/plans/example.md PLAN_APPROVED=true` |
+| `/nova-plugin:finalize-work` | `/nova-plugin:finalize-work 总结本次已完成变更、验证结果、限制和后续事项` |
 
 ### 1.2 一句话判定表（最常用）
 
 | 你现在要做什么？                               | 推荐命令                                               | 关键理由                                                          |
 | ---------------------------------------------- | ------------------------------------------------------ | ----------------------------------------------------------------- |
-| 不确定下一步该用哪个 nova 命令或 skill          | `/route`                                               | 只读路由入口：选择 command / skill / agent / pack 和验证路径       |
-| 先把问题/需求/现状搞清楚，不要任何方案         | ⭐`/explore`                                           | 默认主入口：只输出事实、不确定性和风险信号                        |
-| 需要更深分析或导出探索 artifact                | `/senior-explore`                                      | 高级入口：强约束探索，可使用更完整的 intent/context/depth 参数    |
-| 快速对齐理解（轻量版探索）                     | ⭐`/explore` 或 `/explore-lite`                        | **统一命令**：默认观察者视角，输出更短                            |
-| 用"评审者心态"梳理问题，但仍不许给方案         | ⭐`/explore PERSPECTIVE=reviewer` 或 `/explore-review` | **统一命令**：评审者视角，只输出 clear / questions / risk signals |
-| 需要一份**轻量执行计划**（不写代码）           | `/plan-lite`                                           | 目标、非目标、选型、权衡、执行大纲、关键风险                      |
-| 需要一份**正式可评审的设计/计划文档**写入文件  | `/produce-plan` 或 `/backend-plan`                     | 强制写文件 + 固定章节结构；前者更通用，后者偏 Java/Spring         |
-| 对"计划文档"做决策质量评审（不改计划）         | `/plan-review`                                         | 只看决策清晰度、隐含假设、风险信号、必须回答的问题                |
-| 对现有代码/描述做快速 PR 反馈                  | ⭐`/review LEVEL=lite` 或 `/review-lite`                | **统一命令**：轻量级别，快、只抓明显问题，高信噪比                |
-| 对现有代码做常规严格评审（不给实现）           | ⭐`/review` 或 `/review-only`                          | **统一命令**：标准级别，分严重级别 + 给方向性改进建议             |
-| 高风险/核心模块/金融并发场景做"严苛审计式评审" | ⭐`/review LEVEL=strict` 或 `/review-strict`           | **统一命令**：严格级别，穷尽维度输出                              |
-| 让 Codex 先 review、Claude Code 再修复并复验   | `/codex-review-fix`                                    | 当前分支闭环，产出 `review.md` 与 `verify.md`                     |
-| 只想生成 Codex review 报告                     | `/codex-review-only`                                   | 不改代码，只输出结构化 `review.md`                                |
-| 已修复完成，只想做 Codex verify                | `/codex-verify-only`                                   | 对已有 `review.md` 做定向复验                                     |
-| 已有**批准的 plan 文件**，要严格按计划实现     | `/implement-plan`                                      | 必须提供 `PLAN_APPROVED=true`，偏差要解释                         |
-| 有计划或明确步骤，但允许少量纠错               | `/implement-standard`                                  | 计划为主，允许小调整，遇阻停下提问                                |
-| 追求速度、允许小重构与必要的微调               | `/implement-lite`                                      | "快实现"，避免过度设计                                            |
-| 做完了要交付：commit/PR/变更总结（不再改代码） | `/finalize-work` 或 `/finalize-lite`                   | 前者更完整（含 Git/无 Git 分支），后者极简三要素                  |
+| 不确定下一步该用哪个 nova 命令或 skill          | `/nova-plugin:route`                                               | 只读路由入口：选择 command / skill / agent / pack 和验证路径       |
+| 先把问题/需求/现状搞清楚，不要任何方案         | ⭐`/nova-plugin:explore`                                           | 默认主入口：只输出事实、不确定性和风险信号                        |
+| 需要更深分析或导出探索 artifact                | `/nova-plugin:senior-explore`                                      | 高级入口：强约束探索，可使用更完整的 intent/context/depth 参数    |
+| 快速对齐理解（轻量版探索）                     | ⭐`/nova-plugin:explore` 或 `/nova-plugin:explore-lite`                        | **统一命令**：默认观察者视角，输出更短                            |
+| 用"评审者心态"梳理问题，但仍不许给方案         | ⭐`/nova-plugin:explore PERSPECTIVE=reviewer` 或 `/nova-plugin:explore-review` | **统一命令**：评审者视角，只输出 clear / questions / risk signals |
+| 需要一份**轻量执行计划**（不写代码）           | `/nova-plugin:plan-lite`                                           | 目标、非目标、选型、权衡、执行大纲、关键风险                      |
+| 需要一份**正式可评审的设计/计划文档**写入文件  | `/nova-plugin:produce-plan` 或 `/nova-plugin:backend-plan`                     | 强制写文件 + 固定章节结构；前者更通用，后者偏 Java/Spring         |
+| 对"计划文档"做决策质量评审（不改计划）         | `/nova-plugin:plan-review`                                         | 只看决策清晰度、隐含假设、风险信号、必须回答的问题                |
+| 对现有代码/描述做快速 PR 反馈                  | ⭐`/nova-plugin:review LEVEL=lite` 或 `/nova-plugin:review-lite`                | **统一命令**：轻量级别，快、只抓明显问题，高信噪比                |
+| 对现有代码做常规严格评审（不给实现）           | ⭐`/nova-plugin:review` 或 `/nova-plugin:review-only`                          | **统一命令**：标准级别，分严重级别 + 给方向性改进建议             |
+| 高风险/核心模块/金融并发场景做"严苛审计式评审" | ⭐`/nova-plugin:review LEVEL=strict` 或 `/nova-plugin:review-strict`           | **统一命令**：严格级别，穷尽维度输出                              |
+| 让 Codex 先 review、Claude Code 再修复并复验   | `/nova-plugin:codex-review-fix`                                    | 当前分支闭环，产出 `review.md` 与 `verify.md`                     |
+| 只想生成 Codex review 报告                     | `/nova-plugin:codex-review-only`                                   | 不改代码，只输出结构化 `review.md`                                |
+| 已修复完成，只想做 Codex verify                | `/nova-plugin:codex-verify-only`                                   | 对已有 `review.md` 做定向复验                                     |
+| 已有**批准的 plan 文件**，要严格按计划实现     | `/nova-plugin:implement-plan`                                      | 必须提供 `PLAN_APPROVED=true`，偏差要解释                         |
+| 有计划或明确步骤，但允许少量纠错               | `/nova-plugin:implement-standard`                                  | 计划为主，允许小调整，遇阻停下提问                                |
+| 追求速度、允许小重构与必要的微调               | `/nova-plugin:implement-lite`                                      | "快实现"，避免过度设计                                            |
+| 做完了要交付：commit/PR/变更总结（不再改代码） | `/nova-plugin:finalize-work` 或 `/nova-plugin:finalize-lite`                   | 前者更完整（含 Git/无 Git 分支），后者极简三要素                  |
 
 Codex 三个命令是高级路径，需要本机可调用 Codex CLI，并需要 Bash 执行 skill 脚本。普通五阶段 workflow 不需要 Codex CLI。
 
 Codex 边界：
 
-- `/codex-review-only` 和 `/codex-verify-only` 可以写 review / verify artifact，但不应修改项目代码。
-- 只有 `/codex-review-fix` 可以在 review -> fix -> verify 闭环中驱动项目文件修改。
+- `/nova-plugin:codex-review-only` 和 `/nova-plugin:codex-verify-only` 可以写 review / verify artifact，但不应修改项目代码。
+- 只有 `/nova-plugin:codex-review-fix` 可以在 review -> fix -> verify 闭环中驱动项目文件修改。
 - `.codex/` 下的运行产物只作为本地证据，不提交到仓库。
-- 如果 Codex CLI 或 Bash 不可用，先回退到普通 `/review` -> `/implement-plan` workflow；不要通过放宽全局权限来掩盖前置条件缺失。
+- 如果 Codex CLI 或 Bash 不可用，先回退到普通 `/nova-plugin:review` -> `/nova-plugin:implement-plan` workflow；不要通过放宽全局权限来掩盖前置条件缺失。
 
 ---
 
@@ -85,7 +85,7 @@ Codex 边界：
 
 > 核心原则：**只理解，不决策**；只暴露事实/问题/风险。
 
-### 2.1 `/senior-explore` — EXPLORE ONLY（强约束探索）
+### 2.1 `/nova-plugin:senior-explore` — EXPLORE ONLY（强约束探索）
 
 **定位**
 
@@ -105,14 +105,14 @@ Codex 边界：
 
 **输出你会得到什么**
 
-- 可直接作为后续 `/plan-lite` 或 `/produce-plan` 的分析输入（ANALYSIS_INPUTS）。
+- 可直接作为后续 `/nova-plugin:plan-lite` 或 `/nova-plugin:produce-plan` 的分析输入（ANALYSIS_INPUTS）。
 
 **使用示例**
 
 1. 线上问题排查（带日志、限制不讨论方案）
 
 ```text
-/senior-explore
+/nova-plugin:senior-explore
 INTENT: Investigate a production issue or bug
 CONTEXT:
 - Error logs: (paste stacktrace)
@@ -127,7 +127,7 @@ EXPORT_PATH: docs/analysis/2026-01-10-payment-timeout.md
 2. 新功能需求理解（把需求文档/接口草案贴上）
 
 ```text
-/senior-explore
+/nova-plugin:senior-explore
 INTENT: Analyze a new feature requirement
 CONTEXT:
 - Requirement: (paste)
@@ -139,7 +139,7 @@ DEPTH: normal
 
 ---
 
-### 2.2 `/explore-lite` — QUICK UNDERSTANDING（轻量探索）
+### 2.2 `/nova-plugin:explore-lite` — QUICK UNDERSTANDING（轻量探索）
 
 **定位**
 
@@ -155,14 +155,14 @@ DEPTH: normal
 **示例**
 
 ```text
-/explore-lite
+/nova-plugin:explore-lite
 这里是现有逻辑说明 + 两段关键代码 + 我遇到的疑问
 （要求：只指出哪里不清楚、有哪些风险，不要给解决方案）
 ```
 
 ---
 
-### 2.2.5 ⭐ `/explore` — UNIFIED EXPLORATION（统一探索命令，推荐）
+### 2.2.5 ⭐ `/nova-plugin:explore` — UNIFIED EXPLORATION（统一探索命令，推荐）
 
 **定位**
 
@@ -179,8 +179,8 @@ PERSPECTIVE=observer (默认) 或 reviewer
 **等价关系**
 | PERSPECTIVE | 等价命令 | 输出格式 |
 |-------------|---------|---------|
-| `observer` | `/explore-lite` | Observations / Uncertainties / Potential risks |
-| `reviewer` | `/explore-review` | What is clear / Review questions / Risk signals |
+| `observer` | `/nova-plugin:explore-lite` | Observations / Uncertainties / Potential risks |
+| `reviewer` | `/nova-plugin:explore-review` | What is clear / Review questions / Risk signals |
 
 **适用**
 
@@ -192,7 +192,7 @@ PERSPECTIVE=observer (默认) 或 reviewer
 1. 默认观察者视角（省略参数）
 
 ```text
-/explore
+/nova-plugin:explore
 线上告警: "Connection pool exhausted"
 - 服务: user-service
 - 时间: 每天 10:00-11:00
@@ -202,7 +202,7 @@ PERSPECTIVE=observer (默认) 或 reviewer
 2. 评审者视角
 
 ```text
-/explore PERSPECTIVE=reviewer
+/nova-plugin:explore PERSPECTIVE=reviewer
 【需求文档】会员等级自动升降级
 - 消费满1000元升级为银卡
 - 消费满5000元升级为金卡
@@ -219,7 +219,7 @@ PERSPECTIVE=observer (默认) 或 reviewer
 
 ---
 
-### 2.3 `/explore-review` — REVIEW WITHOUT SOLUTIONS（评审视角探索）
+### 2.3 `/nova-plugin:explore-review` — REVIEW WITHOUT SOLUTIONS（评审视角探索）
 
 **定位**
 
@@ -234,7 +234,7 @@ PERSPECTIVE=observer (默认) 或 reviewer
 **示例**
 
 ```text
-/explore-review
+/nova-plugin:explore-review
 这是某同学的方案描述（粘贴），请按 reviewer 心态输出：
 - clear
 - questions
@@ -248,7 +248,7 @@ PERSPECTIVE=observer (默认) 或 reviewer
 
 > 核心原则：**把决策写下来**，让人类能评审；实现不在此阶段。
 
-### 3.1 `/plan-lite` — LIGHTWEIGHT PLANNING（轻量计划）
+### 3.1 `/nova-plugin:plan-lite` — LIGHTWEIGHT PLANNING（轻量计划）
 
 **定位**
 
@@ -265,15 +265,15 @@ PERSPECTIVE=observer (默认) 或 reviewer
 **示例（从探索结论转计划）**
 
 ```text
-/plan-lite
+/nova-plugin:plan-lite
 目标：修复订阅回调幂等问题
-输入：/senior-explore 的 findings + open questions（粘贴摘要）
+输入：/nova-plugin:senior-explore 的 findings + open questions（粘贴摘要）
 约束：不改数据库结构；必须向后兼容
 ```
 
 ---
 
-### 3.2 `/produce-plan` — DESIGN CHECKPOINT（正式计划/设计文档，写入文件）
+### 3.2 `/nova-plugin:produce-plan` — DESIGN CHECKPOINT（正式计划/设计文档，写入文件）
 
 **定位**
 
@@ -291,7 +291,7 @@ PERSPECTIVE=observer (默认) 或 reviewer
 **示例**
 
 ```text
-/produce-plan
+/nova-plugin:produce-plan
 PLAN_OUTPUT_PATH: docs/plans/2026-01-10-subscription-idempotency.md
 PLAN_INTENT: Fix production issue and prevent duplicate reporting
 ANALYSIS_INPUTS:
@@ -303,11 +303,11 @@ CONSTRAINTS:
 
 ---
 
-### 3.3 `/backend-plan` — JAVA / SPRING BACKEND DESIGN PLAN（Java 后端专项正式设计）
+### 3.3 `/nova-plugin:backend-plan` — JAVA / SPRING BACKEND DESIGN PLAN（Java 后端专项正式设计）
 
 **定位**
 
-- 和 `/produce-plan` 同类，但面向 Java/Spring，并明确"不要写 Java 代码；Design only"
+- 和 `/nova-plugin:produce-plan` 同类，但面向 Java/Spring，并明确"不要写 Java 代码；Design only"
 - 强制写文件（PLAN_OUTPUT_PATH），强制 12 个章节，覆盖事务、一致性、幂等、可观测性、回滚等
 
 **适用**
@@ -318,14 +318,14 @@ CONSTRAINTS:
 **示例**
 
 ```text
-/backend-plan
+/nova-plugin:backend-plan
 PLAN_OUTPUT_PATH: docs/plans/ads-callback-reporting.md
 （粘贴需求 + 现有 callback 逻辑 + 关键表结构）
 ```
 
 ---
 
-### 3.4 `/plan-review` — PLAN CRITICAL REVIEW（计划评审）
+### 3.4 `/nova-plugin:plan-review` — PLAN CRITICAL REVIEW（计划评审）
 
 **定位**
 
@@ -341,7 +341,7 @@ PLAN_OUTPUT_PATH: docs/plans/ads-callback-reporting.md
 **示例**
 
 ```text
-/plan-review
+/nova-plugin:plan-review
 这是同学写的计划文档（粘贴或给链接/摘要）
 请只按 plan-review 的结构输出评审意见，不要给替代方案
 ```
@@ -352,7 +352,7 @@ PLAN_OUTPUT_PATH: docs/plans/ads-callback-reporting.md
 
 > 核心原则：**只评审，不动手写代码**。
 
-### 4.1 `/review-lite` — LIGHTWEIGHT REVIEW（轻量评审）
+### 4.1 `/nova-plugin:review-lite` — LIGHTWEIGHT REVIEW（轻量评审）
 
 **定位**
 
@@ -368,14 +368,14 @@ PLAN_OUTPUT_PATH: docs/plans/ads-callback-reporting.md
 **示例**
 
 ```text
-/review-lite
+/nova-plugin:review-lite
 这是 PR diff（粘贴关键段）+ 变更目的
 请只输出 bullet findings，不要写代码
 ```
 
 ---
 
-### 4.1.5 ⭐ `/review` — UNIFIED CODE REVIEW（统一代码评审命令，推荐）
+### 4.1.5 ⭐ `/nova-plugin:review` — UNIFIED CODE REVIEW（统一代码评审命令，推荐）
 
 **定位**
 
@@ -393,9 +393,9 @@ LEVEL=lite / standard (默认) / strict
 **等价关系**
 | LEVEL | 等价命令 | 评审维度 | 语气 |
 |-------|---------|---------|------|
-| `lite` | `/review-lite` | 明显问题、高信号风险 | 简洁、快速 |
-| `standard` | `/review-only` | 7 项标准维度 | 中立、精确 |
-| `strict` | `/review-strict` | 9 项维度（+API边界、演进风险等） | 批判但建设性 |
+| `lite` | `/nova-plugin:review-lite` | 明显问题、高信号风险 | 简洁、快速 |
+| `standard` | `/nova-plugin:review-only` | 7 项标准维度 | 中立、精确 |
+| `strict` | `/nova-plugin:review-strict` | 9 项维度（+API边界、演进风险等） | 批判但建设性 |
 
 **评审维度**
 
@@ -433,7 +433,7 @@ LEVEL=lite / standard (默认) / strict
 1. 标准评审（默认）
 
 ```text
-/review
+/nova-plugin:review
 这是支付回调处理的核心代码，请评审:
 
 @Transactional
@@ -450,7 +450,7 @@ public void handlePaymentCallback(PaymentCallback callback) {
 2. 严格审计
 
 ```text
-/review LEVEL=strict
+/nova-plugin:review LEVEL=strict
 这是核心的资金结算逻辑，需要严格审计:
 (粘贴代码)
 这是高风险代码，请用 strict 级别全面审计
@@ -463,11 +463,11 @@ public void handlePaymentCallback(PaymentCallback callback) {
 - 减少命令选择成本
 - 原有命令仍然可用，向后兼容
 
-`/review-lite` 是 `/review LEVEL=lite` 的兼容快捷入口。
+`/nova-plugin:review-lite` 是 `/nova-plugin:review LEVEL=lite` 的兼容快捷入口。
 
 ---
 
-### 4.2 `/review-only` — REVIEW ONLY, NO IMPLEMENTATION（常规严格评审）
+### 4.2 `/nova-plugin:review-only` — REVIEW ONLY, NO IMPLEMENTATION（常规严格评审）
 
 **定位**
 
@@ -482,14 +482,14 @@ public void handlePaymentCallback(PaymentCallback callback) {
 **示例**
 
 ```text
-/review-only
+/nova-plugin:review-only
 请 review 这段支付回调处理逻辑 + 对应单测（粘贴）
 要求：按 Critical/Major/Minor 输出，给方向性建议，不写代码
 ```
 
 ---
 
-### 4.3 `/review-strict` — STRICT & EXHAUSTIVE REVIEW（高风险穷尽式评审）
+### 4.3 `/nova-plugin:review-strict` — STRICT & EXHAUSTIVE REVIEW（高风险穷尽式评审）
 
 **定位**
 
@@ -506,7 +506,7 @@ public void handlePaymentCallback(PaymentCallback callback) {
 **示例**
 
 ```text
-/review-strict
+/nova-plugin:review-strict
 输入：核心扣费链路代码（贴或给文件）
 要求：按 Critical/Major/Minor 输出，解释影响，不给实现代码
 ```
@@ -517,7 +517,7 @@ public void handlePaymentCallback(PaymentCallback callback) {
 
 > 核心原则：**按计划执行**；约束越强，越不允许临场发挥。
 
-### 5.1 `/implement-plan` — CONTROLLED EXECUTION（严格按"已批准计划"执行）
+### 5.1 `/nova-plugin:implement-plan` — CONTROLLED EXECUTION（严格按"已批准计划"执行）
 
 **定位**
 
@@ -535,14 +535,14 @@ public void handlePaymentCallback(PaymentCallback callback) {
 **示例**
 
 ```text
-/implement-plan
+/nova-plugin:implement-plan
 PLAN_INPUT_PATH: docs/plans/2026-01-10-subscription-idempotency.md
 PLAN_APPROVED: true
 ```
 
 ---
 
-### 5.2 `/implement-standard` — CONTROLLED EXECUTION（中等约束实施）
+### 5.2 `/nova-plugin:implement-standard` — CONTROLLED EXECUTION（中等约束实施）
 
 **定位**
 
@@ -553,12 +553,12 @@ PLAN_APPROVED: true
 
 - 有明确步骤，但未走"计划批准"流程
 - TL 允许"遇到现实假设不成立时微调"
-- 不想被 `/implement-plan` 的 `PLAN_APPROVED` 卡住
+- 不想被 `/nova-plugin:implement-plan` 的 `PLAN_APPROVED` 卡住
 
 **示例**
 
 ```text
-/implement-standard
+/nova-plugin:implement-standard
 按以下步骤实现：
 1) 在同步入口增加幂等校验
 2) 已处理记录直接返回当前状态
@@ -568,7 +568,7 @@ PLAN_APPROVED: true
 
 ---
 
-### 5.3 `/implement-lite` — FAST EXECUTION（快节奏实施）
+### 5.3 `/nova-plugin:implement-lite` — FAST EXECUTION（快节奏实施）
 
 **定位**
 
@@ -585,7 +585,7 @@ PLAN_APPROVED: true
 **示例**
 
 ```text
-/implement-lite
+/nova-plugin:implement-lite
 需求：把 DaysRangeEnum 的 getByCode 改成 O(1) 并补单测
 约束：不改 public API
 ```
@@ -596,7 +596,7 @@ PLAN_APPROVED: true
 
 > 核心原则：**冻结现状**，只"描述与打包"，不再做新决策或修改。
 
-### 6.1 `/finalize-work` — FINALIZE WORK ARTIFACTS（完整收尾）
+### 6.1 `/nova-plugin:finalize-work` — FINALIZE WORK ARTIFACTS（完整收尾）
 
 **定位**
 
@@ -615,13 +615,13 @@ PLAN_APPROVED: true
 **示例**
 
 ```text
-/finalize-work
+/nova-plugin:finalize-work
 （Claude Code 基于当前工作区状态总结）
 ```
 
 ---
 
-### 6.2 `/finalize-lite` — 极简收尾
+### 6.2 `/nova-plugin:finalize-lite` — 极简收尾
 
 **定位**
 
@@ -635,7 +635,7 @@ PLAN_APPROVED: true
 **示例**
 
 ```text
-/finalize-lite
+/nova-plugin:finalize-lite
 请对本次修复做三行总结：changed / why / limitations
 ```
 
@@ -643,9 +643,9 @@ PLAN_APPROVED: true
 
 ## 7. 相似命令差异与选型建议（重点）
 
-### 7.1 Explore 三兄弟：`/senior-explore` vs `/explore-lite` vs `/explore-review`
+### 7.1 Explore 三兄弟：`/nova-plugin:senior-explore` vs `/nova-plugin:explore-lite` vs `/nova-plugin:explore-review`
 
-| 对比维度 | `/senior-explore`                    | `/explore-lite`                      | `/explore-review`                |
+| 对比维度 | `/nova-plugin:senior-explore`                    | `/nova-plugin:explore-lite`                      | `/nova-plugin:explore-review`                |
 | -------- | ------------------------------------ | ------------------------------------ | -------------------------------- |
 | 目标     | 最严谨的"理解与风险暴露"             | 最快的"认知对齐"                     | 以 reviewer 心态生成问题清单     |
 | 输出结构 | Findings / Questions / Risks（严格） | Observations / Uncertainties / Risks | Clear / Questions / Risk signals |
@@ -654,9 +654,9 @@ PLAN_APPROVED: true
 
 ---
 
-### 7.2 Plan：`/plan-lite` vs `/produce-plan` vs `/backend-plan`
+### 7.2 Plan：`/nova-plugin:plan-lite` vs `/nova-plugin:produce-plan` vs `/nova-plugin:backend-plan`
 
-| 对比维度 | `/plan-lite`       | `/produce-plan`                    | `/backend-plan`                            |
+| 对比维度 | `/nova-plugin:plan-lite`       | `/nova-plugin:produce-plan`                    | `/nova-plugin:backend-plan`                            |
 | -------- | ------------------ | ---------------------------------- | ------------------------------------------ |
 | 产物形态 | 聊天输出的轻量计划 | 写入文件的正式计划文档             | 写入文件的 Java/Spring 专项设计            |
 | 结构强度 | 6 段固定结构       | 强制 9+ 章节（备选、回滚、缓解等） | 强制 12 章节（事务/幂等/可观测性等更突出） |
@@ -664,20 +664,20 @@ PLAN_APPROVED: true
 
 ---
 
-### 7.3 Review：`/review LEVEL=lite` vs `/review LEVEL=standard` vs `/review LEVEL=strict`
+### 7.3 Review：`/nova-plugin:review LEVEL=lite` vs `/nova-plugin:review LEVEL=standard` vs `/nova-plugin:review LEVEL=strict`
 
-| 对比维度 | `/review LEVEL=lite` | `/review LEVEL=standard`               | `/review LEVEL=strict`       |
+| 对比维度 | `/nova-plugin:review LEVEL=lite` | `/nova-plugin:review LEVEL=standard`               | `/nova-plugin:review LEVEL=strict`       |
 | -------- | -------------------- | -------------------------------------- | ---------------------------- |
-| 快捷入口 | `/review-lite`       | `/review-only`                         | `/review-strict`             |
+| 快捷入口 | `/nova-plugin:review-lite`       | `/nova-plugin:review-only`                         | `/nova-plugin:review-strict`             |
 | 深度     | 轻量高信噪比         | 系统化、按严重级别                     | 穷尽式、生产关键假设         |
 | 输出     | bullet findings      | Critical/Major/Minor + why + direction | 同上但覆盖维度更多、更严苛   |
 | 适用     | 日常 PR、小改动      | 核心链路、中高风险                     | 金融/并发/大重构/上线前 gate |
 
 ---
 
-### 7.4 Implement：`/implement-plan` vs `/implement-standard` vs `/implement-lite`
+### 7.4 Implement：`/nova-plugin:implement-plan` vs `/nova-plugin:implement-standard` vs `/nova-plugin:implement-lite`
 
-| 对比维度 | `/implement-plan`                      | `/implement-standard`            | `/implement-lite`          |
+| 对比维度 | `/nova-plugin:implement-plan`                      | `/nova-plugin:implement-standard`            | `/nova-plugin:implement-lite`          |
 | -------- | -------------------------------------- | -------------------------------- | -------------------------- |
 | 约束强度 | 最强：必须 plan + `PLAN_APPROVED=true` | 中：按 plan/步骤执行，允许小纠错 | 弱：以效率为先，允许小重构 |
 | 偏差处理 | 必须解释偏差，偏差大建议停下重审       | 遇阻停下，要求澄清/更新计划      | 更灵活，但仍要避免过度工程 |
@@ -689,25 +689,25 @@ PLAN_APPROVED: true
 
 ### 场景 A：新功能（需求不清晰）
 
-1. `/senior-explore`：明确已知/未知/风险（不提方案）
-2. `/plan-lite`：把目标、非目标、方法、权衡写清
-3. 需要正式评审：`/produce-plan`（写文件）
-4. `/plan-review`：把评审问题提前暴露
-5. 执行：`/implement-plan`（若已批准）或 `/implement-standard`
-6. 收尾：`/finalize-work`
+1. `/nova-plugin:senior-explore`：明确已知/未知/风险（不提方案）
+2. `/nova-plugin:plan-lite`：把目标、非目标、方法、权衡写清
+3. 需要正式评审：`/nova-plugin:produce-plan`（写文件）
+4. `/nova-plugin:plan-review`：把评审问题提前暴露
+5. 执行：`/nova-plugin:implement-plan`（若已批准）或 `/nova-plugin:implement-standard`
+6. 收尾：`/nova-plugin:finalize-work`
 
 ### 场景 B：线上事故/bug
 
-1. `/senior-explore`（deep）：先还原事实与假设
-2. 若需要计划/回滚说明：`/plan-lite` 或 `/produce-plan`
-3. 快速落地：`/implement-standard` 或 `/implement-lite`（视风险）
-4. 严格收尾：`/finalize-work`
+1. `/nova-plugin:senior-explore`（deep）：先还原事实与假设
+2. 若需要计划/回滚说明：`/nova-plugin:plan-lite` 或 `/nova-plugin:produce-plan`
+3. 快速落地：`/nova-plugin:implement-standard` 或 `/nova-plugin:implement-lite`（视风险）
+4. 严格收尾：`/nova-plugin:finalize-work`
 
 ### 场景 C：PR 评审
 
-- 小改动：`/review LEVEL=lite` 或 `/review-lite`
-- 核心链路：`/review LEVEL=standard` 或 `/review-only`
-- 并发/金融/大重构：`/review LEVEL=strict` 或 `/review-strict`
+- 小改动：`/nova-plugin:review LEVEL=lite` 或 `/nova-plugin:review-lite`
+- 核心链路：`/nova-plugin:review LEVEL=standard` 或 `/nova-plugin:review-only`
+- 并发/金融/大重构：`/nova-plugin:review LEVEL=strict` 或 `/nova-plugin:review-strict`
 
 ---
 
@@ -715,38 +715,38 @@ PLAN_APPROVED: true
 
 ### Explore
 
-- `/senior-explore`
-- `/explore`
-- `/explore-lite`
-- `/explore-review`
+- `/nova-plugin:senior-explore`
+- `/nova-plugin:explore`
+- `/nova-plugin:explore-lite`
+- `/nova-plugin:explore-review`
 
 ### Plan
 
-- `/plan-lite`
-- `/produce-plan`
-- `/backend-plan`
-- `/plan-review`
+- `/nova-plugin:plan-lite`
+- `/nova-plugin:produce-plan`
+- `/nova-plugin:backend-plan`
+- `/nova-plugin:plan-review`
 
 ### Review
 
-- `/review`
-- `/review-lite`
-- `/review-only`
-- `/review-strict`
-- `/codex-review-only`
-- `/codex-verify-only`
+- `/nova-plugin:review`
+- `/nova-plugin:review-lite`
+- `/nova-plugin:review-only`
+- `/nova-plugin:review-strict`
+- `/nova-plugin:codex-review-only`
+- `/nova-plugin:codex-verify-only`
 
 ### Implement
 
-- `/implement-plan`
-- `/implement-standard`
-- `/implement-lite`
-- `/codex-review-fix`
+- `/nova-plugin:implement-plan`
+- `/nova-plugin:implement-standard`
+- `/nova-plugin:implement-lite`
+- `/nova-plugin:codex-review-fix`
 
 ### Finalize
 
-- `/finalize-work`
-- `/finalize-lite`
+- `/nova-plugin:finalize-work`
+- `/nova-plugin:finalize-lite`
 
 ---
 
@@ -757,7 +757,7 @@ PLAN_APPROVED: true
 ### 10.1 需求理解（强约束）
 
 ```text
-/senior-explore
+/nova-plugin:senior-explore
 INTENT: Analyze a new feature requirement
 CONTEXT:
 - Requirement:
@@ -770,7 +770,7 @@ DEPTH: normal
 ### 10.2 线上排障（深度）
 
 ```text
-/senior-explore
+/nova-plugin:senior-explore
 INTENT: Investigate a production issue or bug
 CONTEXT:
 - Logs:
@@ -784,7 +784,7 @@ DEPTH: deep
 ### 10.3 轻量计划
 
 ```text
-/plan-lite
+/nova-plugin:plan-lite
 目标：
 非目标：
 约束：
@@ -794,7 +794,7 @@ DEPTH: deep
 ### 10.4 正式计划（写文件）
 
 ```text
-/produce-plan
+/nova-plugin:produce-plan
 PLAN_OUTPUT_PATH: docs/plans/<topic>.md
 PLAN_INTENT: <what>
 ANALYSIS_INPUTS: <links/paths>
@@ -804,7 +804,7 @@ CONSTRAINTS: <list>
 ### 10.5 计划评审
 
 ```text
-/plan-review
+/nova-plugin:plan-review
 这里是计划全文/摘要（粘贴）
 只输出：Decision clarity / Assumptions & gaps / Risk signals / Review questions
 ```
@@ -812,7 +812,7 @@ CONSTRAINTS: <list>
 ### 10.6 快速 PR Review
 
 ```text
-/review-lite
+/nova-plugin:review-lite
 PR 目标：
 diff/关键代码：
 ```
@@ -820,7 +820,7 @@ diff/关键代码：
 ### 10.7 严格按批准计划执行
 
 ```text
-/implement-plan
+/nova-plugin:implement-plan
 PLAN_INPUT_PATH: docs/plans/<topic>.md
 PLAN_APPROVED: true
 ```
@@ -828,6 +828,6 @@ PLAN_APPROVED: true
 ### 10.8 完整收尾交付
 
 ```text
-/finalize-work
+/nova-plugin:finalize-work
 （直接执行，让其基于当前工作区总结 + 生成 commit message & PR 描述）
 ```

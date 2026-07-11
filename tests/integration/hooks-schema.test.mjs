@@ -10,9 +10,12 @@ const repoRoot = resolve(__dir, '../..');
 
 test('distributed hooks.json satisfies the shared hook schema', async () => {
   const source = await readFile(resolve(repoRoot, 'nova-plugin/hooks/hooks.json'), 'utf8');
+  const config = JSON.parse(source);
   const errors = validateHooksJsonText(source, {
     pluginRootDir: resolve(repoRoot, 'nova-plugin'),
   });
 
   assert.deepEqual(errors, []);
+  assert.equal(config.hooks.PreToolUse[0].matcher, 'Write|Edit|NotebookEdit');
+  assert.equal(config.hooks.PostToolUse[0].matcher, 'Write|Edit|NotebookEdit|Bash');
 });

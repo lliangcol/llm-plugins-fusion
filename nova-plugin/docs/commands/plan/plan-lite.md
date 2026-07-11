@@ -1,4 +1,4 @@
-﻿# Skill: /plan-lite
+﻿# Skill: /nova-plugin:plan-lite
 
 - 来源：`nova-plugin/commands/plan-lite.md`
 
@@ -42,18 +42,18 @@
 ## 典型示例
 
 ```text
-/plan-lite
+/nova-plugin:plan-lite
 目标：新增用户积分转赠
 边界：不改动支付模块
 ```
 
 ```text
-/plan-lite
+/nova-plugin:plan-lite
 基于已完成分析产出轻量计划，关注风险与取舍。
 ```
 
 ```text
-/plan-lite
+/nova-plugin:plan-lite
 请给出详细架构设计和实现细节。
 ```
 

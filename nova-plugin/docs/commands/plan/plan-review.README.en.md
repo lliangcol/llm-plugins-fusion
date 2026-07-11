@@ -1,4 +1,4 @@
-﻿# /plan-review
+﻿# /nova-plugin:plan-review
 
 - Source: `nova-plugin/commands/plan-review.md`
 
@@ -36,17 +36,17 @@
 ## Full Examples
 
 ```text
-/plan-review
+/nova-plugin:plan-review
 Review this plan summary: ...
 ```
 
 ```text
-/plan-review
+/nova-plugin:plan-review
 Paste plan content here.
 ```
 
 ```text
-/plan-review
+/nova-plugin:plan-review
 Provide an alternative plan.
 ```
 
@@ -57,5 +57,5 @@ Provide an alternative plan.
 
 ## Comparison with Similar Commands
 
-- `/explore-review` is for general input review.
-- `/review-only` targets code review, not plans.
+- `/nova-plugin:explore-review` is for general input review.
+- `/nova-plugin:review-only` targets code review, not plans.

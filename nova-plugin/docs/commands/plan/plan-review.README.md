@@ -1,4 +1,4 @@
-﻿# /plan-review
+﻿# /nova-plugin:plan-review
 
 - 来源：`nova-plugin/commands/plan-review.md`
 
@@ -36,17 +36,17 @@
 ## 完整示例
 
 ```text
-/plan-review
+/nova-plugin:plan-review
 请审阅以下计划摘要：...
 ```
 
 ```text
-/plan-review
+/nova-plugin:plan-review
 计划文档链接或内容粘贴在这里。
 ```
 
 ```text
-/plan-review
+/nova-plugin:plan-review
 请给出替代方案并重新写计划。
 ```
 
@@ -57,5 +57,5 @@
 
 ## 与相近命令的对比
 
-- `/explore-review` 适用于通用输入审阅。
-- `/review-only` 面向代码评审，不是计划文档。
+- `/nova-plugin:explore-review` 适用于通用输入审阅。
+- `/nova-plugin:review-only` 面向代码评审，不是计划文档。

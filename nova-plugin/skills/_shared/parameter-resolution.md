@@ -9,9 +9,9 @@ policy.
 Accept these equivalent forms when a skill exposes the same parameter:
 
 ```text
-/review strict src/payment
-/review LEVEL=strict INPUT=src/payment
-/review --level strict --input src/payment
+/nova-plugin:review strict src/payment
+/nova-plugin:review LEVEL=strict INPUT=src/payment
+/nova-plugin:review --level strict --input src/payment
 ```
 
 ## Resolution Order

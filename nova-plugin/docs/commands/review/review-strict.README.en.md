@@ -1,4 +1,4 @@
-﻿# /review-strict
+﻿# /nova-plugin:review-strict
 
 - Source: `nova-plugin/commands/review-strict.md`
 
@@ -33,17 +33,17 @@
 ## Full Examples
 
 ```text
-/review-strict
+/nova-plugin:review-strict
 Review payment core logic: ...
 ```
 
 ```text
-/review-strict
+/nova-plugin:review-strict
 Strict audit of concurrency-sensitive module.
 ```
 
 ```text
-/review-strict
+/nova-plugin:review-strict
 Fix and submit code changes.
 ```
 
@@ -54,5 +54,5 @@ Fix and submit code changes.
 
 ## Comparison with Similar Commands
 
-- `/review-only` is medium intensity.
-- `/review-lite` is lightweight.
+- `/nova-plugin:review-only` is medium intensity.
+- `/nova-plugin:review-lite` is lightweight.

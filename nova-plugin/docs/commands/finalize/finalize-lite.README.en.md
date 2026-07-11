@@ -1,4 +1,4 @@
-﻿# /finalize-lite
+﻿# /nova-plugin:finalize-lite
 
 - Source: `nova-plugin/commands/finalize-lite.md`
 
@@ -28,17 +28,17 @@ Limitations: ...
 ## Full Examples
 
 ```text
-/finalize-lite
+/nova-plugin:finalize-lite
 Summarize this fix.
 ```
 
 ```text
-/finalize-lite
+/nova-plugin:finalize-lite
 Three-line summary of changes and limitations.
 ```
 
 ```text
-/finalize-lite
+/nova-plugin:finalize-lite
 Keep optimizing and change code.
 ```
 
@@ -49,4 +49,4 @@ Keep optimizing and change code.
 
 ## Comparison with Similar Commands
 
-- `/finalize-work` outputs full delivery artifacts.
+- `/nova-plugin:finalize-work` outputs full delivery artifacts.

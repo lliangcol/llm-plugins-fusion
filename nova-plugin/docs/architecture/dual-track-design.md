@@ -37,7 +37,7 @@ output format, artifact policy, and safety boundaries.
 Command 的职责是：
 
 - 保留用户熟悉的 slash command 名称。
-- 保持旧入口兼容，例如 `/explore-lite`、`/review-only`、`/finalize-lite`。
+- 保持旧入口兼容，例如 `/nova-plugin:explore-lite`、`/nova-plugin:review-only`、`/nova-plugin:finalize-lite`。
 - 暴露 Claude command `description`，帮助命令菜单和发现。
 - 将执行语义交给 `invokes.skill` 指向的 skill。
 

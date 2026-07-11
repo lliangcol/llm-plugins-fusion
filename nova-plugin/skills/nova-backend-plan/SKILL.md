@@ -2,14 +2,16 @@
 name: nova-backend-plan
 description: Generate a Java/Spring backend design plan with mandatory 12 sections and write to PLAN_OUTPUT_PATH.
 license: MIT
-allowed-tools: Read Glob Grep LS Write Edit
-argument-hint: "Example: backend-plan PLAN_OUTPUT_PATH=docs/plans/order-refund.md"
+allowed-tools: Read Glob Grep Write Edit
+disallowed-tools: NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: true
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true
-    destructiveActions: low
+  nova-user-invocable: "true"
+  nova-model-invocable: "false"
+  nova-subagent-safe: "true"
+  nova-destructive-actions: "low"
+argument-hint: "Example: backend-plan PLAN_OUTPUT_PATH=docs/plans/order-refund.md"
 ---
 
 ## Inputs
@@ -67,7 +69,7 @@ metadata:
 
 ## Examples
 
-- Use `/backend-plan` as a Java/Spring profile shortcut for `/produce-plan`.
+- Use `/nova-plugin:backend-plan` as a Java/Spring profile shortcut for `/nova-plugin:produce-plan`.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Skill-Specific Guidance
@@ -107,7 +109,7 @@ Produce a complete Java/Spring backend design artifact for senior review.
 
 ## Migrated Slash Command Contract
 
-Migrated from the pre-thin slash command contract for `/backend-plan` (`nova-plugin/commands/backend-plan.md`).
+Migrated from the pre-thin slash command contract for `/nova-plugin:backend-plan` (`nova-plugin/commands/backend-plan.md`).
 
 ### JAVA / SPRING BACKEND DESIGN PLAN
 

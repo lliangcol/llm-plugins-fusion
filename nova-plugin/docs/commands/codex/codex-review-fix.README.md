@@ -1,4 +1,4 @@
-# /codex-review-fix
+# /nova-plugin:codex-review-fix
 
 - 来源：`nova-plugin/commands/codex-review-fix.md`
 - 资源目录：`nova-plugin/skills/nova-codex-review-fix/`
@@ -30,11 +30,11 @@
 ## 典型示例
 
 ```text
-/codex-review-fix BASE=main GOAL="修复当前分支直到可合并"
+/nova-plugin:codex-review-fix BASE=main GOAL="修复当前分支直到可合并"
 ```
 
 ```text
-/codex-review-fix REVIEW_MODE=staged GOAL="只处理已暂存改动中的高风险问题"
+/nova-plugin:codex-review-fix REVIEW_MODE=staged GOAL="只处理已暂存改动中的高风险问题"
 ```
 
 ## 相关脚本直接调用
@@ -61,6 +61,6 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-fix/scripts/codex-verify.sh
 
 ## 与相近命令对比
 
-- `/codex-review-only`：只生成 review 报告，不修复
-- `/codex-verify-only`：只基于已有 review 做 verify
-- `/review-only`：纯 Claude Code 评审，不调用外部 Codex 脚本
+- `/nova-plugin:codex-review-only`：只生成 review 报告，不修复
+- `/nova-plugin:codex-verify-only`：只基于已有 review 做 verify
+- `/nova-plugin:review-only`：纯 Claude Code 评审，不调用外部 Codex 脚本

@@ -1,4 +1,4 @@
-﻿# /backend-plan
+﻿# /nova-plugin:backend-plan
 
 - Source: `nova-plugin/commands/backend-plan.md`
 
@@ -38,17 +38,17 @@ Plan document structure:
 ## Full Examples
 
 ```text
-/backend-plan
+/nova-plugin:backend-plan
 PLAN_OUTPUT_PATH: docs/plans/order-backend.md
 ```
 
 ```text
-/backend-plan
+/nova-plugin:backend-plan
 PLAN_OUTPUT_PATH: docs/plans/account-service.md
 ```
 
 ```text
-/backend-plan
+/nova-plugin:backend-plan
 Missing PLAN_OUTPUT_PATH
 ```
 
@@ -59,5 +59,5 @@ Missing PLAN_OUTPUT_PATH
 
 ## Comparison with Similar Commands
 
-- `/produce-plan` is a general design document without Java/Spring-specific sections.
-- `/plan-lite` outputs only a lightweight plan.
+- `/nova-plugin:produce-plan` is a general design document without Java/Spring-specific sections.
+- `/nova-plugin:plan-lite` outputs only a lightweight plan.

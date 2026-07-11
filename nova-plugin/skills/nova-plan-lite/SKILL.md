@@ -2,14 +2,16 @@
 name: nova-plan-lite
 description: Lightweight planning skill for quick execution alignment; non-formal and no code writing.
 license: MIT
-allowed-tools: Read Glob Grep LS
-argument-hint: "Example: plan-lite for this feature request."
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: false
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true
-    destructiveActions: none
+  nova-user-invocable: "true"
+  nova-model-invocable: "true"
+  nova-subagent-safe: "true"
+  nova-destructive-actions: "none"
+argument-hint: "Example: plan-lite for this feature request."
 ---
 
 ## Inputs
@@ -32,7 +34,7 @@ metadata:
 ## Safety Preflight
 
 - This skill is read-only for project files and must not modify code.
-- No interrupting preflight is required for ordinary Read/Glob/Grep/LS usage.
+- No interrupting preflight is required for ordinary Read/Glob/Grep usage.
 - This invocation has no implicit export mode; a future write-capable variant must declare an explicit output path and run shared preflight before writing artifacts or invoking Bash.
 - Do not infer safety-boundary values for artifact exports or latest artifact selection.
 - Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.
@@ -63,7 +65,7 @@ metadata:
 
 ## Examples
 
-- Use `/plan-lite` for fast planning without writing artifacts.
+- Use `/nova-plugin:plan-lite` for fast planning without writing artifacts.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Skill-Specific Guidance
@@ -102,7 +104,7 @@ Create a short execution plan with clear scope and trade-offs.
 
 ## Migrated Slash Command Contract
 
-Migrated from the pre-thin slash command contract for `/plan-lite` (`nova-plugin/commands/plan-lite.md`).
+Migrated from the pre-thin slash command contract for `/nova-plugin:plan-lite` (`nova-plugin/commands/plan-lite.md`).
 
 ### LIGHTWEIGHT PLANNING
 

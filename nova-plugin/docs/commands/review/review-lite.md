@@ -1,4 +1,4 @@
-﻿# Skill: /review-lite
+﻿# Skill: /nova-plugin:review-lite
 
 - 来源：`nova-plugin/commands/review-lite.md`
 
@@ -42,17 +42,17 @@
 ## 典型示例
 
 ```text
-/review-lite
+/nova-plugin:review-lite
 请快速审查这段 PR diff：...
 ```
 
 ```text
-/review-lite
+/nova-plugin:review-lite
 这段逻辑描述是否有明显风险？
 ```
 
 ```text
-/review-lite
+/nova-plugin:review-lite
 请做完整架构审计并给出重构方案。
 ```
 

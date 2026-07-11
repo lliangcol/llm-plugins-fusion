@@ -46,22 +46,22 @@ or mock command results.
 
 ### Install And Route
 
-1. Show `/plugin marketplace add lliangcol/llm-plugins-fusion`.
+1. Show `/plugin marketplace add lliangcol/llm-plugins-fusion@v2.4.1`.
 2. Show `/plugin install nova-plugin@llm-plugins-fusion`.
 3. Show `/plugin` listing enough context to confirm installation.
-4. Show `/route` with a redacted task and the recommended next workflow step.
+4. Show `/nova-plugin:route` with a redacted task and the recommended next workflow step.
 
 ### Review Workflow
 
 1. Start from a redacted diff, fixture, or public example.
-2. Run `/review LEVEL=standard`.
+2. Run `/nova-plugin:review LEVEL=standard`.
 3. Show severity-ranked findings.
 4. Show validation expectations and skipped-check wording when applicable.
 
 ### Release And Docs
 
 1. Show a docs/release task summary.
-2. Run `/route`, then the recommended command.
+2. Run `/nova-plugin:route`, then the recommended command.
 3. Show docs validation output and `git diff --check`.
 4. Close on final handoff with changed files, validation, skipped checks, and
    manual GitHub UI actions.

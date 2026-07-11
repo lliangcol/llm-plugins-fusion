@@ -38,11 +38,11 @@ record.
 
 | Stage | Command | Fictional task | Good output signals | Failure signals |
 | --- | --- | --- | --- | --- |
-| Explore | `/explore` | A product note says "sync invoices every night" but does not define retries, ownership, or data freshness. | Lists explicit facts, ambiguities, and risk signals without proposing a design. | Suggests architecture, writes code, or invents missing business rules. |
-| Plan | `/produce-plan` | A small service needs a documented plan for idempotent invoice sync with no schema migration. | Writes a plan with goals, non-goals, constraints, chosen approach, validation, and rollback. | Expands scope, omits rollback, or fails to preserve the no-schema-change constraint. |
-| Review | `/review` | A diff marks invoices as synced before the external call succeeds and has no retry tests. | Prioritizes correctness, idempotency, failure modes, and test gaps with severity. | Provides a full implementation instead of review findings, or misses the ordering bug. |
-| Implement | `/implement-plan` | An approved plan requires moving the status update after successful sync and adding focused tests. | Keeps changes scoped to the approved plan and reports any necessary deviation. | Changes unrelated modules, ignores `PLAN_APPROVED=true`, or rewrites the design. |
-| Finalize | `/finalize-work` | The branch has completed the sync ordering fix and targeted tests. | Summarizes changed behavior, validation, known limits, and follow-ups without new changes. | Starts new implementation work or claims tests passed when they were skipped. |
+| Explore | `/nova-plugin:explore` | A product note says "sync invoices every night" but does not define retries, ownership, or data freshness. | Lists explicit facts, ambiguities, and risk signals without proposing a design. | Suggests architecture, writes code, or invents missing business rules. |
+| Plan | `/nova-plugin:produce-plan` | A small service needs a documented plan for idempotent invoice sync with no schema migration. | Writes a plan with goals, non-goals, constraints, chosen approach, validation, and rollback. | Expands scope, omits rollback, or fails to preserve the no-schema-change constraint. |
+| Review | `/nova-plugin:review` | A diff marks invoices as synced before the external call succeeds and has no retry tests. | Prioritizes correctness, idempotency, failure modes, and test gaps with severity. | Provides a full implementation instead of review findings, or misses the ordering bug. |
+| Implement | `/nova-plugin:implement-plan` | An approved plan requires moving the status update after successful sync and adding focused tests. | Keeps changes scoped to the approved plan and reports any necessary deviation. | Changes unrelated modules, ignores `PLAN_APPROVED=true`, or rewrites the design. |
+| Finalize | `/nova-plugin:finalize-work` | The branch has completed the sync ordering fix and targeted tests. | Summarizes changed behavior, validation, known limits, and follow-ups without new changes. | Starts new implementation work or claims tests passed when they were skipped. |
 
 ## Rubric
 

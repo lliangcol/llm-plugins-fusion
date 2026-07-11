@@ -8,7 +8,7 @@ English | [中文](../../../README.md)
 
 [![CI](https://github.com/lliangcol/llm-plugins-fusion/actions/workflows/ci.yml/badge.svg)](https://github.com/lliangcol/llm-plugins-fusion/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/lliangcol/llm-plugins-fusion?label=release)](https://github.com/lliangcol/llm-plugins-fusion/releases/latest)
-[![Version](https://img.shields.io/badge/version-2.4.0-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion/releases/tag/v2.4.0)
+[![Version](https://img.shields.io/badge/version-2.4.1-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion/releases/tag/v2.4.1)
 [![License](https://img.shields.io/github/license/lliangcol/llm-plugins-fusion)](../../../LICENSE)
 
 </div>
@@ -30,9 +30,9 @@ Marketplace metadata is the current installation and distribution mechanism. Thi
 Regular `nova-plugin` workflows only require the Claude Code plugin. Repository maintenance and local validation require Node.js 20+. Codex loop commands also require a locally callable Codex CLI and Bash.
 
 ```text
-/plugin marketplace add lliangcol/llm-plugins-fusion
+/plugin marketplace add lliangcol/llm-plugins-fusion@v2.4.1
 /plugin install nova-plugin@llm-plugins-fusion
-/route This task touches docs, versioning, and install validation; recommend the next nova workflow step
+/nova-plugin:route This task touches docs, versioning, and install validation; recommend the next nova workflow step
 ```
 
 Confirm installation:
@@ -41,7 +41,7 @@ Confirm installation:
 /plugin
 ```
 
-After the first install, start with read-only `/route`. It should recommend the next command, skill, core agent, capability packs, required inputs, validation path, and fallback mode.
+After the first install, start with read-only `/nova-plugin:route`. It should recommend the next command, skill, core agent, capability packs, required inputs, validation path, and fallback mode.
 
 Without a Claude Code environment, inspect the workflow contract through the
 headless local demos:
@@ -59,7 +59,7 @@ other coding assistants.
 
 | Audience | Start here | Goal |
 | --- | --- | --- |
-| Claude Code users | [Getting Started](../../../docs/getting-started.md) | Install `nova-plugin` and complete the first `/route` workflow in minutes. |
+| Claude Code users | [Getting Started](../../../docs/getting-started.md) | Install `nova-plugin` and complete the first `/nova-plugin:route` workflow in minutes. |
 | Non-Claude users | `npm run demo:route` / [Consumer setup](../../../docs/consumers/README.md) | Understand the workflow with headless fixtures and Markdown contracts without assuming slash-command runtime support. |
 | Consumer maintainers | [Consumer profiles](../../../docs/consumers/README.md) | Keep private project context local while reusing the public workflow contract. |
 | Plugin authors | [CONTRIBUTING.md](../../../CONTRIBUTING.md) | Change commands or skills after reading the [skill-first design](../architecture/dual-track-design.md). |
@@ -88,7 +88,7 @@ Demo capture guidance lives in [docs/assets/README.md](../../../docs/assets/READ
 <table>
 <tr>
 <td><strong>Plugin version</strong></td>
-<td>2.4.0</td>
+<td>2.4.1</td>
 </tr>
 <tr>
 <td><strong>Main plugin</strong></td>
@@ -118,7 +118,7 @@ On Windows without Bash, `validate-all` warns and skips local Bash-dependent hoo
 
 ## Stable Promotion Boundary
 
-Promote formal release tags such as `v2.4.0`, not a moving `main` branch.
+Promote formal release tags such as `v2.4.1`, not a moving `main` branch.
 Current `main` may contain follow-up work under `CHANGELOG.md` `Unreleased`,
 so it should be described as an unreleased development snapshot until tagged.
 
@@ -144,7 +144,7 @@ checks.
 Add the marketplace in Claude Code:
 
 ```bash
-/plugin marketplace add lliangcol/llm-plugins-fusion
+/plugin marketplace add lliangcol/llm-plugins-fusion@v2.4.1
 ```
 
 Install the plugin:
@@ -162,13 +162,13 @@ Confirm installation:
 Start using it:
 
 ```bash
-/explore analyze the current project structure and main risks
+/nova-plugin:explore analyze the current project structure and main risks
 ```
 
 If you are not sure which command should start:
 
 ```bash
-/route This task touches docs, versioning, and install validation; recommend the next nova workflow step
+/nova-plugin:route This task touches docs, versioning, and install validation; recommend the next nova workflow step
 ```
 
 Private consumer projects should maintain their own project-local profile before running the workflow. The public contract is in [docs/consumers/](../../../docs/consumers/README.md).
@@ -176,55 +176,55 @@ Private consumer projects should maintain their own project-local profile before
 ### Default Workflow
 
 ```text
-/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+/nova-plugin:explore -> /nova-plugin:produce-plan -> /nova-plugin:review -> /nova-plugin:implement-plan -> /nova-plugin:finalize-work
 ```
 
 | Current goal | Default command | Notes |
 | --- | --- | --- |
-| Understand the problem without solutions | `/explore` | Gather facts, uncertainties, and risk signals only. |
-| Produce a reviewable plan | `/produce-plan` | Write a formal plan for review and implementation. |
-| Review plans, code, or risk | `/review` | Defaults to standard depth; use `LEVEL=lite|strict` to adjust. |
-| Implement an approved plan | `/implement-plan` | Requires a clear plan and `PLAN_APPROVED=true`. |
-| Summarize delivery and follow-ups | `/finalize-work` | Freeze state and write delivery notes without expanding scope. |
+| Understand the problem without solutions | `/nova-plugin:explore` | Gather facts, uncertainties, and risk signals only. |
+| Produce a reviewable plan | `/nova-plugin:produce-plan` | Write a formal plan for review and implementation. |
+| Review plans, code, or risk | `/nova-plugin:review` | Defaults to standard depth; use `LEVEL=lite|strict` to adjust. |
+| Implement an approved plan | `/nova-plugin:implement-plan` | Requires a clear plan and `PLAN_APPROVED=true`. |
+| Summarize delivery and follow-ups | `/nova-plugin:finalize-work` | Freeze state and write delivery notes without expanding scope. |
 
 Minimal copyable examples:
 
 | Command | Example |
 | --- | --- |
-| `/explore` | `/explore summarize facts, uncertainties, and risks for this requirement; no solutions` |
-| `/produce-plan` | `/produce-plan PLAN_OUTPUT_PATH=docs/plans/example.md PLAN_INTENT="write a reviewable plan for the confirmed requirement"` |
-| `/review` | `/review LEVEL=standard review this plan or diff and return severity-ranked findings` |
-| `/implement-plan` | `/implement-plan PLAN_INPUT_PATH=docs/plans/example.md PLAN_APPROVED=true` |
-| `/finalize-work` | `/finalize-work summarize completed changes, validation, limitations, and follow-ups` |
+| `/nova-plugin:explore` | `/nova-plugin:explore summarize facts, uncertainties, and risks for this requirement; no solutions` |
+| `/nova-plugin:produce-plan` | `/nova-plugin:produce-plan PLAN_OUTPUT_PATH=docs/plans/example.md PLAN_INTENT="write a reviewable plan for the confirmed requirement"` |
+| `/nova-plugin:review` | `/nova-plugin:review LEVEL=standard review this plan or diff and return severity-ranked findings` |
+| `/nova-plugin:implement-plan` | `/nova-plugin:implement-plan PLAN_INPUT_PATH=docs/plans/example.md PLAN_APPROVED=true` |
+| `/nova-plugin:finalize-work` | `/nova-plugin:finalize-work summarize completed changes, validation, limitations, and follow-ups` |
 
 ## Command Map
 
-New users and consumer profiles should default to the five main entries: `/explore`, `/produce-plan`, `/review`, `/implement-plan`, and `/finalize-work`. Use read-only `/route` first when the right entry point is unclear. Other commands remain available as advanced or compatibility entries without behavior changes.
+New users and consumer profiles should default to the five main entries: `/nova-plugin:explore`, `/nova-plugin:produce-plan`, `/nova-plugin:review`, `/nova-plugin:implement-plan`, and `/nova-plugin:finalize-work`. Use read-only `/nova-plugin:route` first when the right entry point is unclear. Other commands remain available as advanced or compatibility entries without behavior changes.
 
 | Stage | Goal | Main entry | Advanced / compatibility entries |
 | --- | --- | --- | --- |
-| Explore | Choose an entry point, understand the problem, gather facts, expose uncertainty | `/route`, `/explore` | `/senior-explore`, `/explore-lite`, `/explore-review` |
-| Plan | Produce an implementation plan or design document | `/produce-plan` | `/plan-lite`, `/plan-review`, `/backend-plan` |
-| Review | Review code, plans, or branch risk | `/review` | `/review-lite`, `/review-only`, `/review-strict`, `/codex-review-only`, `/codex-verify-only` |
-| Implement | Execute an approved plan | `/implement-plan` | `/implement-standard`, `/implement-lite`, `/codex-review-fix` |
-| Finalize | Summarize delivery, risks, verification, and follow-ups | `/finalize-work` | `/finalize-lite` |
+| Explore | Choose an entry point, understand the problem, gather facts, expose uncertainty | `/nova-plugin:route`, `/nova-plugin:explore` | `/nova-plugin:senior-explore`, `/nova-plugin:explore-lite`, `/nova-plugin:explore-review` |
+| Plan | Produce an implementation plan or design document | `/nova-plugin:produce-plan` | `/nova-plugin:plan-lite`, `/nova-plugin:plan-review`, `/nova-plugin:backend-plan` |
+| Review | Review code, plans, or branch risk | `/nova-plugin:review` | `/nova-plugin:review-lite`, `/nova-plugin:review-only`, `/nova-plugin:review-strict`, `/nova-plugin:codex-review-only`, `/nova-plugin:codex-verify-only` |
+| Implement | Execute an approved plan | `/nova-plugin:implement-plan` | `/nova-plugin:implement-standard`, `/nova-plugin:implement-lite`, `/nova-plugin:codex-review-fix` |
+| Finalize | Summarize delivery, risks, verification, and follow-ups | `/nova-plugin:finalize-work` | `/nova-plugin:finalize-lite` |
 
 Common path:
 
 ```text
-/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+/nova-plugin:explore -> /nova-plugin:produce-plan -> /nova-plugin:review -> /nova-plugin:implement-plan -> /nova-plugin:finalize-work
 ```
 
 Codex loop path:
 
 ```text
-/codex-review-only -> fix -> /codex-verify-only
+/nova-plugin:codex-review-only -> fix -> /nova-plugin:codex-verify-only
 ```
 
 Or use the semi-automated loop:
 
 ```text
-/codex-review-fix
+/nova-plugin:codex-review-fix
 ```
 
 Codex commands are an advanced path. They require a locally callable Codex CLI
@@ -330,7 +330,7 @@ llm-plugins-fusion/
 | [Core agent routing](../../../docs/agents/ROUTING.md) | Routing rules for 6 core agents and capability packs | Choosing or maintaining agents |
 | [Plugin-aware routing](../../../docs/agents/PLUGIN_AWARE_ROUTING.md) | Enhanced / fallback mode and pack activation rules | Maintaining pack routing |
 | [Marketplace catalog](../../../docs/marketplace/catalog.md) | Generated plugin catalog and compatibility evidence | Browsing marketplace entries |
-| [Marketplace portal IA](../../../docs/marketplace/portal-information-architecture.md) | Marketplace portal information architecture, data sources, current `v2.4.0` single-plugin boundary, and deferred `v3.0.0` boundary | Evaluating the deferred portal boundary |
+| [Marketplace portal IA](../../../docs/marketplace/portal-information-architecture.md) | Marketplace portal information architecture, data sources, current `v2.4.1` single-plugin boundary, and deferred `v3.0.0` boundary | Evaluating the deferred portal boundary |
 | [v3 readiness evidence](../../../docs/marketplace/v3-readiness-evidence.md) | Evidence ledger for whether multi-plugin directories or a public portal should start | Evaluating whether v3.0.0 should move into planning |
 | [Registry author workflow](../../../docs/marketplace/registry-author-workflow.md) | Plugin entry updates, scaffold dry-run, profiles, and validation flow | Plugin authors and maintainers |
 | [Compatibility matrix](../../../docs/marketplace/compatibility-matrix.md) | Claude Code, Codex CLI, Bash, Node.js, and optional enhanced tools | Reviewing compatibility |

@@ -168,6 +168,7 @@ docs/
 | [marketplace/catalog.md](marketplace/catalog.md) | Generated human-readable marketplace catalog. |
 | [marketplace/registry-author-workflow.md](marketplace/registry-author-workflow.md) | Author workflow for registry and marketplace entry maintenance. |
 | [marketplace/compatibility-matrix.md](marketplace/compatibility-matrix.md) | Compatibility matrix for Claude Code, Codex CLI, Bash, Node.js, and optional tools. |
+| [migrations/2.4.1-command-namespace.md](migrations/2.4.1-command-namespace.md) | 2.4.1 namespaced invocation and 42-item dual-surface migration. |
 | [marketplace/trust-policy.md](marketplace/trust-policy.md) | Trust, risk, deprecation, freshness, maintainer, and review metadata policy. |
 | [marketplace/security-review-route.md](marketplace/security-review-route.md) | Security-sensitive marketplace change review route. |
 | [marketplace/portal-information-architecture.md](marketplace/portal-information-architecture.md) | Deferred public portal information architecture. |
@@ -222,7 +223,7 @@ docs/
 | [workflows/source-controlled-checks.md](workflows/source-controlled-checks.md) | Design note for source-controlled workflow checks and fixture validation boundaries. |
 | [workflows/verification-evidence-contract.md](workflows/verification-evidence-contract.md) | Standards for mapping checks, checkpoints, and handoffs to verified behavior or facts. |
 | [workflows/thin-harness-fat-skills.md](workflows/thin-harness-fat-skills.md) | Placement doctrine for scripts, skills, prompts, packs, and profiles. |
-| [getting-started.md](getting-started.md) | Install, `/route`, five primary commands, Codex prerequisites, and common failure handling. |
+| [getting-started.md](getting-started.md) | Install, `/nova-plugin:route`, five primary commands, Codex prerequisites, and common failure handling. |
 | [project-optimization-plan.md](project-optimization-plan.md) | Active optimization plan for positioning, reliability, usability, maintenance, and release readiness. |
 | [llm-plugins-fusion-maintenance-status.md](llm-plugins-fusion-maintenance-status.md) | Context-safe maintenance snapshot for small-step optimization rounds. |
 

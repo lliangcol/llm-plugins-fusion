@@ -13,29 +13,29 @@ idempotency, DTO, schema, cache, queue, or rollback boundaries.
 ## Recommended nova workflow
 
 ```text
-/route -> /explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+/nova-plugin:route -> /nova-plugin:explore -> /nova-plugin:produce-plan -> /nova-plugin:review -> /nova-plugin:implement-plan -> /nova-plugin:finalize-work
 ```
 
-- Use `/route` to pick the smallest safe next command and required validation.
-- Use `/explore` to gather current controller, service, repository, schema, and
+- Use `/nova-plugin:route` to pick the smallest safe next command and required validation.
+- Use `/nova-plugin:explore` to gather current controller, service, repository, schema, and
   test facts without proposing a fix too early.
-- Use `/produce-plan` to define a scoped implementation and verification path.
-- Use `/review` before edits when the plan touches persistence, async work,
+- Use `/nova-plugin:produce-plan` to define a scoped implementation and verification path.
+- Use `/nova-plugin:review` before edits when the plan touches persistence, async work,
   authorization, payment, or public API behavior.
-- Use `/implement-plan` only after the plan is approved.
-- Use `/finalize-work` to summarize changed files, validation, skipped checks,
+- Use `/nova-plugin:implement-plan` only after the plan is approved.
+- Use `/nova-plugin:finalize-work` to summarize changed files, validation, skipped checks,
   and residual risk.
 
 ## Example command
 
 ```text
-/route A Java backend change needs to preserve an existing API contract, update service behavior, and prove the result with targeted tests. Recommend the next nova workflow step and validation.
+/nova-plugin:route A Java backend change needs to preserve an existing API contract, update service behavior, and prove the result with targeted tests. Recommend the next nova workflow step and validation.
 ```
 
-If `/route` recommends exploration, continue with:
+If `/nova-plugin:route` recommends exploration, continue with:
 
 ```text
-/explore Map the current backend flow for this redacted requirement. Collect controller, service, repository, validation, and test facts only; do not propose a solution yet.
+/nova-plugin:explore Map the current backend flow for this redacted requirement. Collect controller, service, repository, validation, and test facts only; do not propose a solution yet.
 ```
 
 ## Expected output evidence

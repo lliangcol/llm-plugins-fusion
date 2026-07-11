@@ -1,15 +1,18 @@
 ---
 id: implement-lite
 stage: implement
-title: /implement-lite
+title: /nova-plugin:implement-lite
 description: "Make small, bounded implementation changes quickly while respecting existing project conventions."
 destructive-actions: medium
-allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
+allowed-tools: Read Glob Grep Write Edit
+disallowed-tools: NotebookEdit
+user-invocable: true
+disable-model-invocation: true
 invokes:
   skill: nova-implement-lite
 ---
 
-# /implement-lite
+# /nova-plugin:implement-lite
 
 Invoke `nova-implement-lite` with `$ARGUMENTS`.
 

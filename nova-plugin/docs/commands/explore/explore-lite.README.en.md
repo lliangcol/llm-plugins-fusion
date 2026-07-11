@@ -1,4 +1,4 @@
-﻿# /explore-lite
+﻿# /nova-plugin:explore-lite
 
 - Source: `nova-plugin/commands/explore-lite.md`
 
@@ -33,17 +33,17 @@
 ## Full Examples
 
 ```text
-/explore-lite
+/nova-plugin:explore-lite
 We are adding a refund API; quick list of unclear points.
 ```
 
 ```text
-/explore-lite
+/nova-plugin:explore-lite
 Alert: Connection pool exhausted. List uncertainties and risks.
 ```
 
 ```text
-/explore-lite
+/nova-plugin:explore-lite
 Provide a full solution and implementation steps.
 ```
 
@@ -54,5 +54,5 @@ Provide a full solution and implementation steps.
 
 ## Comparison with Similar Commands
 
-- `/senior-explore` is deeper and more systematic.
-- `/explore-review` focuses on reviewer questions and risk signals.
+- `/nova-plugin:senior-explore` is deeper and more systematic.
+- `/nova-plugin:explore-review` focuses on reviewer questions and risk signals.

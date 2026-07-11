@@ -97,6 +97,26 @@ await runCheck('Bash', async () => {
   };
 });
 
+await runCheck('Write guard', async () => {
+  if (process.env.NOVA_WRITE_GUARD_DISABLED === '1') {
+    return { status: 'WARN', detail: 'explicitly disabled by NOVA_WRITE_GUARD_DISABLED=1' };
+  }
+  const bash = await commandResult('bash');
+  const major = nodeMajorVersion();
+  const hooks = readJson('nova-plugin/hooks/hooks.json');
+  const matcher = hooks.hooks?.PreToolUse?.[0]?.matcher;
+  if (matcher !== 'Write|Edit|NotebookEdit') {
+    return { status: 'ERROR', detail: `unexpected PreToolUse matcher: ${matcher ?? 'missing'}` };
+  }
+  if (!bash.ok || major === null || major < REQUIRED_NODE_MAJOR) {
+    return {
+      status: 'WARN',
+      detail: `unavailable; requires Bash and Node.js ${REQUIRED_NODE_MAJOR}+`,
+    };
+  }
+  return { status: 'OK', detail: 'active for Write/Edit; NotebookEdit fails closed' };
+});
+
 await runCheck('Package/plugin version', () => ({
   status: packageJson.version === plugin.version ? 'OK' : 'ERROR',
   detail: `package=${packageJson.version}; plugin=${plugin.version}`,

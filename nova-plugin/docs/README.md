@@ -1,6 +1,6 @@
 # nova-plugin 文档索引
 
-此目录保存 `nova-plugin` 的用户文档、命令文档和当前架构说明。`nova-plugin` 是公开多项目 AI 工程工作流框架的主插件交付物；marketplace 是安装与分发形式，不表示当前已经是成熟的多插件生态。当前文档覆盖由 `node scripts/validate-docs.mjs` 校验：Markdown 本地链接与锚点、命令文档 stage 位置、版本日期同步、`/review LEVEL=lite` 契约，以及命令文档三件套完整性。
+此目录保存 `nova-plugin` 的用户文档、命令文档和当前架构说明。`nova-plugin` 是公开多项目 AI 工程工作流框架的主插件交付物；marketplace 是安装与分发形式，不表示当前已经是成熟的多插件生态。当前文档覆盖由 `node scripts/validate-docs.mjs` 校验：Markdown 本地链接与锚点、命令文档 stage 位置、版本日期同步、`/nova-plugin:review LEVEL=lite` 契约，以及命令文档三件套完整性。
 
 ## 快速入口
 
@@ -73,7 +73,7 @@ Core agents use documentation-only capability packs for domain routing. Packs do
 
 ## 命令文档
 
-推荐默认入口是 `/explore`、`/produce-plan`、`/review`、`/implement-plan`、`/finalize-work`。当下一步入口不清楚时，先用只读 `/route`。其它命令继续作为高级/兼容入口保留，本文档索引不改变任何命令行为。
+推荐默认入口是 `/nova-plugin:explore`、`/nova-plugin:produce-plan`、`/nova-plugin:review`、`/nova-plugin:implement-plan`、`/nova-plugin:finalize-work`。当下一步入口不清楚时，先用只读 `/nova-plugin:route`。其它命令继续作为高级/兼容入口保留，本文档索引不改变任何命令行为。
 
 常规命令文档按 workflow stage 组织在 `commands/<stage>/` 下。Codex 命令跨 Review / Implement / Finalize 语义，为避免拆散闭环说明，统一维护在 `commands/codex/`；这是明确例外。
 

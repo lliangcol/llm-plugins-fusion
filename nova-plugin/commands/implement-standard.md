@@ -1,15 +1,18 @@
 ---
 id: implement-standard
 stage: implement
-title: /implement-standard
+title: /nova-plugin:implement-standard
 description: "Execute confirmed implementation steps with controlled scope and validation."
 destructive-actions: medium
-allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
+allowed-tools: Read Glob Grep Write Edit
+disallowed-tools: NotebookEdit
+user-invocable: true
+disable-model-invocation: true
 invokes:
   skill: nova-implement-standard
 ---
 
-# /implement-standard
+# /nova-plugin:implement-standard
 
 Invoke `nova-implement-standard` with `$ARGUMENTS`.
 
@@ -19,4 +22,4 @@ Entry semantics:
 
 - Uses `EXECUTION_BASIS` from confirmed steps, context, or a plan excerpt.
 - Allows minor corrective adjustments while preserving scope.
-- `/implement-lite` remains available for smaller tasks.
+- `/nova-plugin:implement-lite` remains available for smaller tasks.

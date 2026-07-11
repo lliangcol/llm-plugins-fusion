@@ -75,6 +75,7 @@ const warnings = [];
 const SKIP_DIRS = new Set([
   '.git',
   '.codex',
+  '.metrics',
   '.cache',
   '.idea',
   '.vite',
@@ -1743,6 +1744,53 @@ function validateReviewLevelLiteContract() {
   }
 }
 
+function validateNamespacedCommandInvocations() {
+  const migrationExceptions = new Set([
+    'docs/migrations/2.4.1-command-namespace.md',
+  ]);
+  const commandIds = readdirSync(resolve(root, 'nova-plugin/commands'))
+    .filter((name) => name.endsWith('.md'))
+    .map((name) => basename(name, '.md'))
+    .sort((left, right) => right.length - left.length);
+  const escaped = commandIds.map((id) => id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|');
+  const bareInvocation = new RegExp(`(^|[^A-Za-z0-9_-])/(${escaped})(?![A-Za-z0-9-])`, 'gm');
+
+  for (const file of walkFiles(root, (entry) => extname(entry) === '.md')) {
+    const relativePath = rel(file);
+    if (migrationExceptions.has(relativePath) || isArchivePath(file) || hasPathSegments(file, HISTORY_SEGMENTS)) {
+      continue;
+    }
+    const source = readFileSync(file, 'utf8');
+    for (const match of source.matchAll(bareInvocation)) {
+      const slashOffset = match.index + match[1].length;
+      recordError(
+        relativePath,
+        `bare plugin invocation /${match[2]} at line ${lineNumberAt(source, slashOffset)}; use /nova-plugin:${match[2]}`,
+      );
+    }
+  }
+}
+
+function validateToolVocabularyProse() {
+  const invalidPatterns = [
+    { pattern: /Read\/Glob\/Grep\/Glob/, message: 'duplicate Glob in prose tool vocabulary' },
+    { pattern: /Read Glob Grep Glob/, message: 'duplicate Glob in space-separated tool vocabulary' },
+    { pattern: /`Write`, `Edit`, `Edit`/, message: 'duplicate Edit in prose tool vocabulary' },
+    {
+      pattern: /移除活动 runtime surface 中的 `Glob`、`Edit`/,
+      message: 'release notes must identify retired LS and MultiEdit, not active Glob and Edit',
+    },
+  ];
+  for (const file of walkFiles(root, (entry) => extname(entry) === '.md')) {
+    if (isArchivePath(file) || hasPathSegments(file, HISTORY_SEGMENTS)) continue;
+    const source = readFileSync(file, 'utf8');
+    for (const invalid of invalidPatterns) {
+      const match = invalid.pattern.exec(source);
+      if (match) recordError(rel(file), `${invalid.message} at line ${lineNumberAt(source, match.index)}`);
+    }
+  }
+}
+
 validateLinksAndCommandDocs({
   root,
   CODEX_COMMAND_IDS,
@@ -1774,6 +1822,8 @@ validateAssetsContracts();
 validateDeferredPortalIaContracts();
 validateV3ReadinessEvidenceContracts();
 validateReviewLevelLiteContract();
+validateNamespacedCommandInvocations();
+validateToolVocabularyProse();
 validateActivePlanningAndReports({
   root,
   HISTORY_SEGMENTS,

@@ -1,10 +1,10 @@
-# Skill: /route
+# Skill: /nova-plugin:route
 
 - 来源：`nova-plugin/commands/route.md`
 
 ## 用途
 
-`/route` 是只读第一阶段工作流路由入口，用于在开始工作前选择下一步 `nova-plugin` 命令、skill、core agent、capability packs、必需输入和验证路径。
+`/nova-plugin:route` 是只读第一阶段工作流路由入口，用于在开始工作前选择下一步 `nova-plugin` 命令、skill、core agent、capability packs、必需输入和验证路径。
 
 它先把请求归类为 Explore、Plan、Review、Implement、Finalize 或 Codex loop，再推荐一个最小可执行的下一步；只有跨阶段任务才输出短序列。
 
@@ -37,12 +37,12 @@
 ## 示例
 
 ```text
-/route
+/nova-plugin:route
 我需要给一个含认证和依赖升级的 PR 做评审，但不确定该用哪个命令。
 ```
 
 ```text
-/route DEPTH=brief
+/nova-plugin:route DEPTH=brief
 Cursor 中没有 Claude slash command，如何用 nova skills 处理这个需求？
 ```
 

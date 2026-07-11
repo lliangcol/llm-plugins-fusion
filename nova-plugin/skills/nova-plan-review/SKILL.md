@@ -2,14 +2,16 @@
 name: nova-plan-review
 description: "Critically review a plan for decision clarity, assumptions, and execution risk without rewriting it."
 license: MIT
-allowed-tools: Read Glob Grep LS
-argument-hint: "Example: plan-review INPUT=docs/plans/order.md"
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: false
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true
-    destructiveActions: none
+  nova-user-invocable: "true"
+  nova-model-invocable: "true"
+  nova-subagent-safe: "true"
+  nova-destructive-actions: "none"
+argument-hint: "Example: plan-review INPUT=docs/plans/order.md"
 ---
 
 ## Inputs
@@ -31,7 +33,7 @@ metadata:
 ## Safety Preflight
 
 - This skill is read-only for project files and must not modify code.
-- No interrupting preflight is required for ordinary Read/Glob/Grep/LS usage.
+- No interrupting preflight is required for ordinary Read/Glob/Grep usage.
 - This invocation has no implicit export mode; a future write-capable variant must declare an explicit output path and run shared preflight before writing artifacts or invoking Bash.
 - Do not infer safety-boundary values for artifact exports or latest artifact selection.
 - Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.
@@ -62,7 +64,7 @@ metadata:
 
 ## Examples
 
-- Use `/plan-review` for critical review of an existing plan.
+- Use `/nova-plugin:plan-review` for critical review of an existing plan.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Skill-Specific Guidance
@@ -99,7 +101,7 @@ Assess plan quality and execution readiness from a reviewer perspective.
 
 ## Migrated Slash Command Contract
 
-Migrated from the pre-thin slash command contract for `/plan-review` (`nova-plugin/commands/plan-review.md`).
+Migrated from the pre-thin slash command contract for `/nova-plugin:plan-review` (`nova-plugin/commands/plan-review.md`).
 
 ### PLAN CRITICAL REVIEW
 

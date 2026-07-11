@@ -1,15 +1,18 @@
 ---
 id: codex-review-only
 stage: review
-title: /codex-review-only
+title: /nova-plugin:codex-review-only
 description: "Run Codex review only and write a structured review artifact without modifying code."
 destructive-actions: low
-allowed-tools: Bash Read Glob Grep LS
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit
+user-invocable: true
+disable-model-invocation: true
 invokes:
   skill: nova-codex-review-only
 ---
 
-# /codex-review-only
+# /nova-plugin:codex-review-only
 
 Invoke `nova-codex-review-only` with `$ARGUMENTS`.
 

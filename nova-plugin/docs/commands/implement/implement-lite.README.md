@@ -1,4 +1,4 @@
-﻿# /implement-lite
+﻿# /nova-plugin:implement-lite
 
 - 来源：`nova-plugin/commands/implement-lite.md`
 
@@ -26,17 +26,17 @@
 ## 完整示例
 
 ```text
-/implement-lite
+/nova-plugin:implement-lite
 请快速实现手机号脱敏。
 ```
 
 ```text
-/implement-lite
+/nova-plugin:implement-lite
 优化枚举查找并补测试。
 ```
 
 ```text
-/implement-lite
+/nova-plugin:implement-lite
 请给出完整设计与架构方案。
 ```
 
@@ -47,5 +47,5 @@
 
 ## 与相近命令的对比
 
-- `/implement-standard` 更受控，需明确步骤。
-- `/implement-plan` 必须按批准计划执行。
+- `/nova-plugin:implement-standard` 更受控，需明确步骤。
+- `/nova-plugin:implement-plan` 必须按批准计划执行。

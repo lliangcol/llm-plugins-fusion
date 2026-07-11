@@ -1,15 +1,18 @@
 ---
 id: codex-review-fix
 stage: implement
-title: /codex-review-fix
+title: /nova-plugin:codex-review-fix
 description: "Run the Codex review -> fix -> local checks -> verify loop for the current branch."
 destructive-actions: medium
-allowed-tools: Bash Read Glob Grep LS Edit Write
+allowed-tools: Read Glob Grep Write Edit
+disallowed-tools: NotebookEdit
+user-invocable: true
+disable-model-invocation: true
 invokes:
   skill: nova-codex-review-fix
 ---
 
-# /codex-review-fix
+# /nova-plugin:codex-review-fix
 
 Invoke `nova-codex-review-fix` with `$ARGUMENTS`.
 

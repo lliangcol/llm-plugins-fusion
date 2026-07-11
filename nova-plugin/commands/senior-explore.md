@@ -1,15 +1,18 @@
 ---
 id: senior-explore
 stage: explore
-title: /senior-explore
+title: /nova-plugin:senior-explore
 description: "Run deep exploration for complex requirements or incidents, optionally writing an analysis artifact."
 destructive-actions: low
-allowed-tools: Read Glob Grep LS Write
+allowed-tools: Read Glob Grep Write Edit
+disallowed-tools: NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: true
 invokes:
   skill: nova-senior-explore
 ---
 
-# /senior-explore
+# /nova-plugin:senior-explore
 
 Invoke `nova-senior-explore` with `$ARGUMENTS`.
 

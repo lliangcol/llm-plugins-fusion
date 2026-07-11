@@ -2,14 +2,17 @@
 name: nova-implement-plan
 description: Implement strictly from an approved plan. Requires PLAN_INPUT_PATH and PLAN_APPROVED=true before execution.
 license: MIT
-allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
-argument-hint: "Example: implement-plan PLAN_INPUT_PATH=docs/plans/refund.md PLAN_APPROVED=true"
+allowed-tools: Read Glob Grep Write Edit
+disallowed-tools: NotebookEdit
+user-invocable: true
+disable-model-invocation: true
+compatibility: "Designed for Claude Code; project validation through Bash follows the normal permission flow."
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true
-    destructiveActions: medium
+  nova-user-invocable: "true"
+  nova-model-invocable: "false"
+  nova-subagent-safe: "true"
+  nova-destructive-actions: "medium"
+argument-hint: "Example: implement-plan PLAN_INPUT_PATH=docs/plans/refund.md PLAN_APPROVED=true"
 ---
 
 ## Inputs
@@ -31,7 +34,7 @@ metadata:
 
 ## Safety Preflight
 
-- This skill declares side-effect-capable tools: `Write`, `Edit`, `MultiEdit`, `Bash`.
+- This skill declares side-effect-capable tools: `Write`, `Edit`, `Bash`.
 - Resolve parameters and present a preflight card before writing artifacts, editing project files, or running Bash.
 - Show files or artifacts that may be written, scripts or commands that may run, disallowed operations, and the proceed condition.
 - Do not infer missing safety-boundary values; ask once in interactive mode or fail in non-interactive mode.
@@ -64,7 +67,7 @@ metadata:
 
 ## Examples
 
-- Use `/implement-plan` only after a plan has been explicitly approved.
+- Use `/nova-plugin:implement-plan` only after a plan has been explicitly approved.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Common Rationalizations
@@ -129,7 +132,7 @@ Execute approved plan steps with minimal deviation and clear traceability.
 
 ## Migrated Slash Command Contract
 
-Migrated from the pre-thin slash command contract for `/implement-plan` (`nova-plugin/commands/implement-plan.md`).
+Migrated from the pre-thin slash command contract for `/nova-plugin:implement-plan` (`nova-plugin/commands/implement-plan.md`).
 
 ### CONTROLLED EXECUTION
 

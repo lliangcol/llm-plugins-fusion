@@ -147,6 +147,11 @@ const targets = [
     data: loadJson('.claude-plugin/marketplace.metadata.json'),
     label: '.claude-plugin/marketplace.metadata.json',
   },
+  {
+    schema: loadJson('schemas/workflow-permissions.schema.json'),
+    data: loadJson('nova-plugin/runtime/workflow-permissions.json'),
+    label: 'nova-plugin/runtime/workflow-permissions.json',
+  },
 ];
 
 const versionPatterns = [
@@ -167,6 +172,7 @@ for (const schemaPath of [
   'schemas/registry-source.schema.json',
   'schemas/marketplace.schema.json',
   'schemas/marketplace-metadata.schema.json',
+  'schemas/workflow-permissions.schema.json',
 ]) {
   const schema = loadJson(schemaPath);
   const fileName = schemaPath.split('/').at(-1);

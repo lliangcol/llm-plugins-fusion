@@ -1,4 +1,4 @@
-# /codex-review-only
+# /nova-plugin:codex-review-only
 
 - Source: `nova-plugin/commands/codex-review-only.md`
 
@@ -19,11 +19,11 @@
 ## Examples
 
 ```text
-/codex-review-only BASE=main
+/nova-plugin:codex-review-only BASE=main
 ```
 
 ```text
-/codex-review-only REVIEW_MODE=full
+/nova-plugin:codex-review-only REVIEW_MODE=full
 ```
 
 When invoked through the plugin, scripts should be called through `${CLAUDE_PLUGIN_ROOT}` instead of assuming the current repository contains `nova-plugin/`.

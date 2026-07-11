@@ -30,11 +30,11 @@ knowledge-base content.
 | --- | --- | --- | --- |
 | Claude Code marketplace install | Claude Code plugin marketplace support | `node scripts/validate-claude-compat.mjs` and live `claude plugin validate` when CLI is installed | Repository-local metadata must stay out of `.claude-plugin/marketplace.json`. |
 | Nova commands and skills | 21 commands and 21 one-to-one `nova-*` skills | `node scripts/lint-frontmatter.mjs` | Command docs remain covered by `node scripts/validate-docs.mjs`. |
-| Codex review/fix/verify loop | Codex CLI plus Bash 3.2+ for distributed skill scripts | `nova-plugin/docs/commands/codex/`, `nova-plugin/skills/nova-codex-review-fix/scripts/`, and `node scripts/validate-runtime-smoke.mjs` | Codex runtime artifacts under `.codex/` are never committed. Review/verify runs record runtime environment artifacts with CLI paths and versions. If Codex CLI is unavailable, use the ordinary `/review` -> `/implement-plan` path instead. |
+| Codex review/fix/verify loop | Codex CLI plus Bash 3.2+ for distributed skill scripts | `nova-plugin/docs/commands/codex/`, `nova-plugin/skills/nova-codex-review-fix/scripts/`, and `node scripts/validate-runtime-smoke.mjs` | Codex runtime artifacts under `.codex/` are never committed. Review/verify runs record runtime environment artifacts with CLI paths and versions. If Codex CLI is unavailable, use the ordinary `/nova-plugin:review` -> `/nova-plugin:implement-plan` path instead. |
 | Repository validation | Node.js 20+ | `node scripts/validate-all.mjs`, including `node scripts/validate-runtime-smoke.mjs` and `node scripts/scan-distribution-risk.mjs` | Validation scripts use built-in Node.js APIs and repository files. |
 | GitHub workflow contracts | Node.js 20+ | `node scripts/validate-github-workflows.mjs` | Covers least-privilege workflow token scope, `.github/workflows/` inventory, required-check docs/read-only print output synchronization, and isolated mutating install smoke boundaries. |
 | Prompt-surface budgets | Node.js 20+ | `node scripts/validate-surface-budget.mjs` | Budget checks are a prompt bloat guard, not a feature-quality metric. |
-| Hook Node compatibility helpers | Node.js 20+ | `node scripts/validate-runtime-smoke.mjs` | Node `.mjs` hook helpers mirror the Bash hook behavior for portability review, but `hooks.json` does not invoke them in the current release line. |
+| Active write guard | Node.js 20+ and Bash 3.2+ | `node scripts/validate-runtime-smoke.mjs` | Bash is a thin launcher. Missing Node blocks Write/Edit/NotebookEdit; NotebookEdit also fails closed when Node is available because complete proposed notebook content cannot be reconstructed. `NOVA_WRITE_GUARD_DISABLED=1` is an explicit bypass and is not release evidence. |
 | Hook syntax checks | Bash 3.2+ on PATH | `bash -n nova-plugin/hooks/scripts/pre-write-check.sh` and `bash -n nova-plugin/hooks/scripts/post-audit-log.sh` | Windows without Bash may warning-skip local syntax checks; CI/Linux and CI/Windows Bash smoke must run them. |
 | Windows maintenance smoke | Windows runner with Node.js 20, PowerShell, and Git Bash | CI `windows-node-smoke` and `windows-bash-smoke` jobs | Node/PowerShell checks run separately from Bash hook syntax and Codex runtime smoke so skipped local Bash checks have CI evidence. |
 | Optional enhanced tools | Installed plugins or tools named by capability packs | `docs/agents/PLUGIN_AWARE_ROUTING.md` and `nova-plugin/packs/` | Enhanced mode is optional; fallback mode must remain documented. |
@@ -43,7 +43,7 @@ knowledge-base content.
 
 | Plugin | Commands | Skills | Docs | Validation | Known prerequisites |
 | --- | --- | --- | --- | --- | --- |
-| `nova-plugin` | [nova-plugin/commands/](../../nova-plugin/commands/) | [nova-plugin/skills/](../../nova-plugin/skills/) | [nova-plugin/docs/README.md](../../nova-plugin/docs/README.md) | [scripts/validate-all.mjs](../../scripts/validate-all.mjs) | Claude Code for plugin use; Node.js 20+ for maintenance; Codex CLI and Bash 3.2+ only for Codex loop commands. |
+| `nova-plugin` | [nova-plugin/commands/](../../nova-plugin/commands/) | [nova-plugin/skills/](../../nova-plugin/skills/) | [nova-plugin/docs/README.md](../../nova-plugin/docs/README.md) | [scripts/validate-all.mjs](../../scripts/validate-all.mjs) | Claude Code for read-only use; Node.js 20+ and Bash 3.2+ for active Write/Edit guard; Codex CLI for Codex loop commands. |
 
 ## Evidence Rules
 

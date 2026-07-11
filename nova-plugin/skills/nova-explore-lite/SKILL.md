@@ -2,14 +2,16 @@
 name: nova-explore-lite
 description: Lightweight observer-style exploration for quick understanding alignment.
 license: MIT
-allowed-tools: Read Glob Grep LS
-argument-hint: "Example: explore-lite on this log snippet."
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: false
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true
-    destructiveActions: none
+  nova-user-invocable: "true"
+  nova-model-invocable: "true"
+  nova-subagent-safe: "true"
+  nova-destructive-actions: "none"
+argument-hint: "Example: explore-lite on this log snippet."
 ---
 
 ## Inputs
@@ -31,7 +33,7 @@ metadata:
 ## Safety Preflight
 
 - This skill is read-only for project files and must not modify code.
-- No interrupting preflight is required for ordinary Read/Glob/Grep/LS usage.
+- No interrupting preflight is required for ordinary Read/Glob/Grep usage.
 - This invocation has no implicit export mode; a future write-capable variant must declare an explicit output path and run shared preflight before writing artifacts or invoking Bash.
 - Do not infer safety-boundary values for artifact exports or latest artifact selection.
 - Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.
@@ -62,7 +64,7 @@ metadata:
 
 ## Examples
 
-- Use `/explore-lite` as a compatibility shortcut for lightweight observer exploration.
+- Use `/nova-plugin:explore-lite` as a compatibility shortcut for lightweight observer exploration.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Skill-Specific Guidance
@@ -99,7 +101,7 @@ Produce concise factual observations, uncertainties, and potential risks.
 
 ## Migrated Slash Command Contract
 
-Migrated from the pre-thin slash command contract for `/explore-lite` (`nova-plugin/commands/explore-lite.md`).
+Migrated from the pre-thin slash command contract for `/nova-plugin:explore-lite` (`nova-plugin/commands/explore-lite.md`).
 
 ### QUICK UNDERSTANDING
 

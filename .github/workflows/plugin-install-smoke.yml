@@ -9,18 +9,19 @@ permissions:
   contents: read
 
 jobs:
-  mutating-install-smoke:
-    name: Mutating install smoke on disposable runner
+  known-good-install-smoke:
+    name: Known-good Claude 2.1.205 install inventory on disposable runner
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '20'
       - name: Install Claude CLI
-        run: npm install -g @anthropic-ai/claude-code
+        run: npm install -g @anthropic-ai/claude-code@2.1.205
       - name: Validate user-scope install path
-        run: node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home
+        run: node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home --inventory-out .metrics/plugin-install-smoke/inventory.json
       - name: Record smoke context
         if: always()
         run: |
@@ -40,3 +41,28 @@ jobs:
         with:
           name: plugin-install-smoke-context
           path: .metrics/plugin-install-smoke/
+
+  latest-drift:
+    name: Claude Latest Drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '20'
+      - name: Install latest Claude CLI
+        run: npm install -g @anthropic-ai/claude-code@latest
+      - name: Record latest inventory drift
+        run: |
+          mkdir -p .metrics/plugin-latest-drift
+          set -o pipefail
+          node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home --inventory-out .metrics/plugin-latest-drift/inventory.json 2>&1 | tee .metrics/plugin-latest-drift/run.log
+      - name: Upload latest drift evidence
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: claude-latest-drift
+          path: .metrics/plugin-latest-drift/
+          include-hidden-files: true

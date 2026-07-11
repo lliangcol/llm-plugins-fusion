@@ -282,8 +282,9 @@ metadata:
     destructiveActions: none|low|medium|high
 ```
 
-Read-only commands normally use `allowed-tools: Read Glob Grep LS`. Write-capable
-implementation commands may also use `Write Edit MultiEdit Bash`.
+Read-only commands normally pre-approve `Read Glob Grep`. Write-capable
+commands may also pre-approve `Write Edit`; Bash follows the normal permission
+flow unless it is explicitly disallowed.
 
 Command documentation normally lives under `nova-plugin/docs/commands/<stage>/`.
 Codex commands are the explicit exception: `codex-review-fix`,
@@ -300,10 +301,10 @@ Codex commands are the explicit exception: `codex-review-fix`,
 | Implement | `implement-plan`, `implement-standard`, `implement-lite`, `codex-review-fix` | Plan-based implementation, standard implementation, lightweight implementation, and Codex-driven fix loops |
 | Finalize | `finalize-work`, `finalize-lite` | Delivery summaries and handoff |
 
-- `/route` is read-only and recommends the next command, skill, core agent,
+- `/nova-plugin:route` is read-only and recommends the next command, skill, core agent,
   capability packs, required inputs, validation expectations, and fallback path.
-- `/explore` routes by `PERSPECTIVE=observer|reviewer`.
-- `/review` adjusts depth by `LEVEL=lite|standard|strict`.
+- `/nova-plugin:explore` routes by `PERSPECTIVE=observer|reviewer`.
+- `/nova-plugin:review` adjusts depth by `LEVEL=lite|standard|strict`.
 - `codex-review-only` writes review artifacts only.
 - `codex-review-fix` runs review -> Claude Code fix -> local checks -> verify.
 - `codex-verify-only` verifies against an existing review and optional checks.
@@ -338,14 +339,18 @@ routing docs, migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
 
 `nova-plugin/hooks/hooks.json` enables:
 
-- `PreToolUse`: matches `Write|Edit|MultiEdit` and runs
-  `hooks/scripts/pre-write-check.sh` through Bash.
-- `PostToolUse`: matches `Write|Edit|MultiEdit|Bash` and asynchronously runs
-  `hooks/scripts/post-audit-log.sh` through Bash.
+- `PreToolUse`: matches `Write|Edit|NotebookEdit` and runs the thin
+  `hooks/scripts/pre-write-check.sh` Bash launcher. Node.js 20+ performs the
+  fail-closed payload, target-type, secret, proposed Edit, and `hooks.json`
+  validation. NotebookEdit fails closed because complete proposed notebook
+  content cannot be reconstructed reliably.
+- `PostToolUse`: matches `Write|Edit|NotebookEdit|Bash` and asynchronously runs the thin
+  `hooks/scripts/post-audit-log.sh` launcher backed by the Node audit logger.
 
-Hook scripts rely on `CLAUDE_PLUGIN_ROOT`. Invoke `.sh` scripts explicitly
-through Bash unless the scripts are deliberately tracked with a Unix executable
-bit.
+Hook scripts rely on `CLAUDE_PLUGIN_ROOT`, Bash 3.2+, and Node.js 20+. Exit 0
+means that the hook made no blocking decision; it is not a permission grant.
+`NOVA_WRITE_GUARD_DISABLED=1` is an explicit bypass and is not valid release
+evidence.
 
 ## Change Workflows
 
@@ -449,7 +454,8 @@ Prompt-surface budget checks are a bloat guard, not a quality metric. Run
 surfaces change.
 
 Current CI includes verify-agents, validate-packs, validate-schemas,
-validate-registry-fixtures, validate-claude-compat, NPM Test, Test Coverage,
+validate-registry-fixtures, Claude Manifest Static, Validate Workflow Permissions,
+NPM Test, Test Coverage,
 plugin install dry run, lint-frontmatter, validate-hooks, ShellCheck, GitHub workflow permission, inventory, and required-check validation, including action SHA
 pinning and the NPM Test gate, hook `bash -n`, runtime smoke, surface budget,
 surface inventory,

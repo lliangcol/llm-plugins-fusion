@@ -12,30 +12,30 @@ validation. A direct edit can create regressions that static review misses.
 ## Recommended nova workflow
 
 ```text
-/route -> /explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+/nova-plugin:route -> /nova-plugin:explore -> /nova-plugin:produce-plan -> /nova-plugin:review -> /nova-plugin:implement-plan -> /nova-plugin:finalize-work
 ```
 
-- Use `/route` to decide whether the task starts as exploration, plan, review,
+- Use `/nova-plugin:route` to decide whether the task starts as exploration, plan, review,
   or implementation.
-- Use `/explore` to inspect component structure, state ownership, API contracts,
+- Use `/nova-plugin:explore` to inspect component structure, state ownership, API contracts,
   design-system conventions, and validation gates.
-- Use `/produce-plan` to define UI states and screenshot/browser checks before
+- Use `/nova-plugin:produce-plan` to define UI states and screenshot/browser checks before
   editing.
-- Use `/review` to catch behavior, accessibility, layout, and validation gaps.
-- Use `/implement-plan` after approval.
-- Use `/finalize-work` to record screenshots, checks, limitations, and follow-up
+- Use `/nova-plugin:review` to catch behavior, accessibility, layout, and validation gaps.
+- Use `/nova-plugin:implement-plan` after approval.
+- Use `/nova-plugin:finalize-work` to record screenshots, checks, limitations, and follow-up
   UI risks.
 
 ## Example command
 
 ```text
-/route A frontend task needs a new table action, disabled states, empty/loading/error handling, and screenshot validation. Recommend the next nova workflow step and validation.
+/nova-plugin:route A frontend task needs a new table action, disabled states, empty/loading/error handling, and screenshot validation. Recommend the next nova workflow step and validation.
 ```
 
-If `/route` recommends planning after facts are known:
+If `/nova-plugin:route` recommends planning after facts are known:
 
 ```text
-/produce-plan PLAN_INTENT="Plan a scoped frontend change with component, state, accessibility, responsive layout, and screenshot validation evidence."
+/nova-plugin:produce-plan PLAN_INTENT="Plan a scoped frontend change with component, state, accessibility, responsive layout, and screenshot validation evidence."
 ```
 
 ## Expected output evidence

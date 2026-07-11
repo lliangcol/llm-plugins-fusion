@@ -2,14 +2,16 @@
 name: nova-finalize-lite
 description: "Minimal close-out summary: what changed, why, and known limitations."
 license: MIT
-allowed-tools: Read Glob Grep LS
-argument-hint: "Example: finalize-lite summarize this completed patch"
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: false
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true
-    destructiveActions: none
+  nova-user-invocable: "true"
+  nova-model-invocable: "true"
+  nova-subagent-safe: "true"
+  nova-destructive-actions: "none"
+argument-hint: "Example: finalize-lite summarize this completed patch"
 ---
 
 ## Inputs
@@ -31,7 +33,7 @@ metadata:
 ## Safety Preflight
 
 - This skill is read-only for project files and must not modify code.
-- No interrupting preflight is required for ordinary Read/Glob/Grep/LS usage.
+- No interrupting preflight is required for ordinary Read/Glob/Grep usage.
 - This invocation has no implicit export mode; a future write-capable variant must declare an explicit output path and run shared preflight before writing artifacts or invoking Bash.
 - Do not infer safety-boundary values for artifact exports or latest artifact selection.
 - Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.
@@ -62,7 +64,7 @@ metadata:
 
 ## Examples
 
-- Use `/finalize-lite` for a compact close-out summary.
+- Use `/nova-plugin:finalize-lite` for a compact close-out summary.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Skill-Specific Guidance
@@ -99,7 +101,7 @@ Provide a short and factual closure summary.
 
 ## Migrated Slash Command Contract
 
-Migrated from the pre-thin slash command contract for `/finalize-lite` (`nova-plugin/commands/finalize-lite.md`).
+Migrated from the pre-thin slash command contract for `/nova-plugin:finalize-lite` (`nova-plugin/commands/finalize-lite.md`).
 
 ### Summarize the completed work
 

@@ -1,15 +1,18 @@
 ---
 id: plan-review
 stage: plan
-title: /plan-review
+title: /nova-plugin:plan-review
 description: "Critically review an existing plan for decision clarity, assumptions, and execution risk."
 destructive-actions: none
-allowed-tools: Read Glob Grep LS
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: false
 invokes:
   skill: nova-plan-review
 ---
 
-# /plan-review
+# /nova-plugin:plan-review
 
 Invoke `nova-plan-review` with `$ARGUMENTS`.
 

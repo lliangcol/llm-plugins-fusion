@@ -17,7 +17,7 @@ removing stale archive documentation from the public working tree rather than
 keeping a second active archive surface. The 2026-05-12 unattended P0-P2 pass
 added maintainer npm shortcuts, consumer profile scaffolding, regression
 checks, workflow evaluation fixtures, and expanded distribution-risk scanning.
-The exact `v2.4.0` tag and GitHub release now provide the stable promotion
+The exact `v2.4.1` tag and GitHub release now provide the stable promotion
 baseline; later `main` commits remain development snapshots until the next
 release tag.
 
@@ -618,12 +618,12 @@ validation commands, expected output artifacts, and residual risk format.
 
 - `nova-plugin` is the only production plugin. Multi-plugin behavior is covered
   by registry fixtures, not by production plugin directories.
-- Exact `v2.4.0` is the current stable promotion baseline. Moving `main` may
+- Exact `v2.4.1` is the current stable promotion baseline. Moving `main` may
   contain later unreleased maintenance work and must not be promoted as stable
   release content.
 - README already presents the main workflow path:
-  `/explore` -> `/produce-plan` -> `/review` -> `/implement-plan` ->
-  `/finalize-work`.
+  `/nova-plugin:explore` -> `/nova-plugin:produce-plan` -> `/nova-plugin:review` -> `/nova-plugin:implement-plan` ->
+  `/nova-plugin:finalize-work`.
 - Existing validation covers schemas, generated registry output drift, registry
   fixtures, Claude compatibility, command/skill frontmatter, active agents,
   retired active-agent surface guards, packs, pack documentation-only
@@ -868,7 +868,7 @@ its marketplace-oriented, low-default-permission model.
 
 Completed Work:
 
-- Strengthened `/route` as the read-only first-stage router.
+- Strengthened `/nova-plugin:route` as the read-only first-stage router.
 - Added a checkpoint artifact contract for private consumer workbenches.
 - Added `node scripts/validate-surface-budget.mjs` as a prompt bloat guard.
 - Added Windows Node/PowerShell and Bash CI smoke evidence.

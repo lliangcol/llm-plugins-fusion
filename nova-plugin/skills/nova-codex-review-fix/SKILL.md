@@ -2,14 +2,17 @@
 name: nova-codex-review-fix
 description: "Run a semi-automated Codex review -> Claude Code fix -> local checks -> Codex verify closure loop for the current branch. Use when Claude Code should orchestrate review-driven fixes with external Bash scripts, structured review artifacts, validation reports, merge readiness, and residual-risk summaries."
 license: MIT
-allowed-tools: Bash Read Glob Grep LS Edit Write
-argument-hint: "Example: codex-review-fix BASE=main GOAL='fix current branch until merge-ready'"
+allowed-tools: Read Glob Grep Write Edit
+disallowed-tools: NotebookEdit
+user-invocable: true
+disable-model-invocation: true
+compatibility: "Requires Node.js 20+, Bash 3.2+, an authenticated Codex CLI, and network access for the external review/fix/verify loop."
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: false
-    destructiveActions: medium
+  nova-user-invocable: "true"
+  nova-model-invocable: "false"
+  nova-subagent-safe: "false"
+  nova-destructive-actions: "medium"
+argument-hint: "Example: codex-review-fix BASE=main GOAL='fix current branch until merge-ready'"
 ---
 
 ## Inputs
@@ -50,7 +53,7 @@ metadata:
 - `INCLUDE_UNTRACKED_CONTENT=true` adds `--include-untracked-content` to review and verify; the scripts reject likely secrets, sensitive paths, binary files, and oversized untracked files before writing content into review or verify patches.
 - `BASE` is passed as `--base <BASE>` to both review and verify scripts.
 - `OUTPUT_DIR`, when provided, is passed as `--output-dir <OUTPUT_DIR>` to review and verify.
-- If `OUTPUT_DIR` is provided, use `<OUTPUT_DIR>/review.md` for the fix step and write local checks to `<OUTPUT_DIR>/artifacts/checks.txt` so `codex-verify.sh` can auto-detect them when `--checks-file` is not passed.
+- If `OUTPUT_DIR` is provided, use `<OUTPUT_DIR>/nova-plugin:review.md` for the fix step and write local checks to `<OUTPUT_DIR>/artifacts/checks.txt` so `codex-verify.sh` can auto-detect them when `--checks-file` is not passed.
 - If `OUTPUT_DIR` is not provided, use the script's latest artifacts paths under `.codex/codex-review-fix/latest-artifacts/`.
 - `GOAL` and `FIX_SCOPE` guide Claude Code's fix selection and summary; they are not script flags.
 
@@ -80,7 +83,7 @@ metadata:
 
 ## Examples
 
-- Use `/codex-review-fix` as the full Codex review -> Claude Code fix -> checks -> verify loop.
+- Use `/nova-plugin:codex-review-fix` as the full Codex review -> Claude Code fix -> checks -> verify loop.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Common Rationalizations
@@ -174,7 +177,7 @@ metadata:
 
 ## Migrated Slash Command Contract
 
-Migrated from the pre-thin slash command contract for `/codex-review-fix` (`nova-plugin/commands/codex-review-fix.md`).
+Migrated from the pre-thin slash command contract for `/nova-plugin:codex-review-fix` (`nova-plugin/commands/codex-review-fix.md`).
 
 ### CODEX REVIEW -> FIX -> VERIFY LOOP
 

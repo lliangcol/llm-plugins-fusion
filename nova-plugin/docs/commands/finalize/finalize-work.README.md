@@ -1,4 +1,4 @@
-﻿# /finalize-work
+﻿# /nova-plugin:finalize-work
 
 - 来源：`nova-plugin/commands/finalize-work.md`
 
@@ -27,17 +27,17 @@ Case B (No Git): local change summary + manual steps
 ## 完整示例
 
 ```text
-/finalize-work
+/nova-plugin:finalize-work
 请生成 commit message 和 PR 描述。
 ```
 
 ```text
-/finalize-work
+/nova-plugin:finalize-work
 无 Git 项目，请给出交接总结。
 ```
 
 ```text
-/finalize-work
+/nova-plugin:finalize-work
 请继续修改代码。
 ```
 
@@ -48,4 +48,4 @@ Case B (No Git): local change summary + manual steps
 
 ## 与相近命令的对比
 
-- `/finalize-lite` 仅输出三点总结。
+- `/nova-plugin:finalize-lite` 仅输出三点总结。

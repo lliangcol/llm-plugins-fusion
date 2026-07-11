@@ -1,4 +1,4 @@
-﻿# /review-only
+﻿# /nova-plugin:review-only
 
 - 来源：`nova-plugin/commands/review-only.md`
 
@@ -33,17 +33,17 @@
 ## 完整示例
 
 ```text
-/review-only
+/nova-plugin:review-only
 请审查以下代码片段：...
 ```
 
 ```text
-/review-only
+/nova-plugin:review-only
 以下是实现描述，请分级输出问题。
 ```
 
 ```text
-/review-only
+/nova-plugin:review-only
 请给出完整修复代码。
 ```
 
@@ -54,5 +54,5 @@
 
 ## 与相近命令的对比
 
-- `/review-lite` 轻量快速审查。
-- `/review-strict` 高风险全面审计。
+- `/nova-plugin:review-lite` 轻量快速审查。
+- `/nova-plugin:review-strict` 高风险全面审计。

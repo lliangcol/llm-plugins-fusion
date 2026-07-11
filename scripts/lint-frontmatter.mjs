@@ -9,7 +9,8 @@
  *     - title (string)
  *     - description (string, Claude command description)
  *     - destructive-actions (enum: none|low|medium|high)
- *     - allowed-tools (space-separated string)
+ *     - allowed-tools / disallowed-tools (space-separated strings)
+ *     - native user-invocable / disable-model-invocation fields
  *     - invokes.skill (string matching nova-<id>)
  *
  *   skills/nova-*\/SKILL.md required:
@@ -17,7 +18,8 @@
  *     - description (string)
  *     - license (MIT)
  *     - allowed-tools (string)
- *     - metadata.novaPlugin.{userInvocable,autoLoad,subagentSafe,destructiveActions}
+ *     - native user-invocable / disable-model-invocation fields
+ *     - Agent Skills-compatible string metadata under nova-* keys
  *
  * Exits 1 on any violation; prints a machine-readable report.
  *
@@ -31,6 +33,11 @@ import { fileURLToPath } from 'node:url';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
+const permissionSpec = JSON.parse(readFileSync(
+  resolve(root, 'nova-plugin/runtime/workflow-permissions.json'),
+  'utf8',
+));
+const permissionById = new Map(permissionSpec.workflows.map((workflow) => [workflow.id, workflow]));
 
 const STAGES = new Set(['explore', 'plan', 'implement', 'review', 'finalize']);
 const DESTRUCTIVE = new Set(['none', 'low', 'medium', 'high']);
@@ -159,7 +166,7 @@ function countHeading(src, heading) {
 }
 
 function hasSideEffectTool(tools) {
-  return splitTools(tools).some((tool) => ['Write', 'Edit', 'MultiEdit', 'Bash'].includes(tool));
+  return splitTools(tools).some((tool) => ['Write', 'Edit'].includes(tool));
 }
 
 function hasReadOnlyBashGuard(src) {
@@ -172,14 +179,37 @@ function hasReadOnlyBashGuard(src) {
 function lintToolRisk(rel, toolsValue, destructiveActions, src = '') {
   const tools = new Set(splitTools(toolsValue));
   const level = String(destructiveActions);
-  if ((tools.has('Write') || tools.has('Edit') || tools.has('MultiEdit')) && level === 'none') {
-    recordError(rel, 'Write/Edit/MultiEdit tools require destructive-actions other than none');
-  }
-  if (tools.has('MultiEdit') && !['medium', 'high'].includes(level)) {
-    recordError(rel, 'MultiEdit requires destructive-actions medium or high');
+  if ((tools.has('Write') || tools.has('Edit')) && level === 'none') {
+    recordError(rel, 'Write/Edit tools require destructive-actions other than none');
   }
   if (tools.has('Bash') && level === 'none' && !hasReadOnlyBashGuard(src)) {
     recordWarning(rel, 'Bash with destructive-actions none must be read-only probing only; use low when Bash writes artifacts or invokes external review/verify tools');
+  }
+}
+
+function lintNativePermissions(rel, obj, expected) {
+  if (!expected) {
+    recordError(rel, 'missing workflow permission source entry');
+    return;
+  }
+  if (obj['user-invocable'] !== true) {
+    recordError(rel, 'user-invocable must be true');
+  }
+  if (obj['disable-model-invocation'] !== !expected.modelInvocable) {
+    recordError(rel, `disable-model-invocation must be ${!expected.modelInvocable}`);
+  }
+  if (!sameToolSet(obj['allowed-tools'], expected.allowedTools.join(' '))) {
+    recordError(rel, 'allowed-tools differ from canonical workflow permission source');
+  }
+  if (!sameToolSet(obj['disallowed-tools'], expected.disallowedTools.join(' '))) {
+    recordError(rel, 'disallowed-tools differ from canonical workflow permission source');
+  }
+  const overlap = splitTools(obj['allowed-tools']).filter((tool) => splitTools(obj['disallowed-tools']).includes(tool));
+  if (overlap.length) recordError(rel, `tools cannot be both pre-approved and disallowed: ${overlap.join(', ')}`);
+  for (const tool of [...splitTools(obj['allowed-tools']), ...splitTools(obj['disallowed-tools'])]) {
+    if (!permissionSpec.toolVocabulary.includes(tool)) {
+      recordError(rel, `tool "${tool}" is outside canonical runtime vocabulary`);
+    }
   }
 }
 
@@ -212,8 +242,11 @@ function lintCommands() {
 
     if (!obj['allowed-tools']) recordError(rel, 'missing allowed-tools');
     else if (typeof obj['allowed-tools'] !== 'string') recordError(rel, 'allowed-tools must be a space-separated string');
+    if (!obj['disallowed-tools']) recordError(rel, 'missing disallowed-tools');
+    else if (typeof obj['disallowed-tools'] !== 'string') recordError(rel, 'disallowed-tools must be a space-separated string');
 
     lintToolRisk(rel, obj['allowed-tools'], obj['destructive-actions'], src);
+    lintNativePermissions(rel, obj, permissionById.get(expectedId));
 
     if (!obj.invokes || typeof obj.invokes !== 'object') {
       recordError(rel, 'missing invokes.skill');
@@ -228,6 +261,8 @@ function lintCommands() {
       id: expectedId,
       skill: obj.invokes?.skill,
       allowedTools: obj['allowed-tools'],
+      disallowedTools: obj['disallowed-tools'],
+      modelInvocable: !obj['disable-model-invocation'],
       destructiveActions: obj['destructive-actions'],
     });
   }
@@ -243,6 +278,12 @@ function lintSkills() {
     try { if (!statSync(skillMd).isFile()) continue; } catch { continue; }
     const rel = `skills/${entry}/SKILL.md`;
     const src = readFileSync(skillMd, 'utf8').replace(/\r\n/g, '\n');
+    for (const [pattern, message] of [
+      [/Read\/Glob\/Grep\/Glob/, 'duplicate Glob in prose tool vocabulary'],
+      [/`Write`, `Edit`, `Edit`/, 'duplicate Edit in prose tool vocabulary'],
+    ]) {
+      if (pattern.test(src)) recordError(rel, message);
+    }
     if (entry === 'nova-senior-explore') {
       if (/normal or deep\./.test(src) || !/quick(?:,|`\/`|\/).*normal(?:,|`\/`|\/).*deep/i.test(src)) {
         recordError(rel, 'DEPTH must consistently allow quick, normal, and deep');
@@ -271,8 +312,13 @@ function lintSkills() {
 
     if (!obj['allowed-tools']) recordError(rel, 'missing allowed-tools');
     else if (typeof obj['allowed-tools'] !== 'string') recordError(rel, 'allowed-tools must be a space-separated string');
+    if (!obj['disallowed-tools']) recordError(rel, 'missing disallowed-tools');
+    else if (typeof obj['disallowed-tools'] !== 'string') recordError(rel, 'disallowed-tools must be a space-separated string');
 
-    lintToolRisk(rel, obj['allowed-tools'], obj.metadata?.novaPlugin?.destructiveActions, src);
+    const workflowId = entry.startsWith('nova-') ? entry.slice('nova-'.length) : entry;
+    const expectedPermission = permissionById.get(workflowId);
+    lintToolRisk(rel, obj['allowed-tools'], obj.metadata?.['nova-destructive-actions'], src);
+    lintNativePermissions(rel, obj, expectedPermission);
 
     for (const heading of STANDARD_SKILL_HEADINGS) {
       const count = countHeading(src, heading);
@@ -292,15 +338,29 @@ function lintSkills() {
     if (!meta || typeof meta !== 'object') {
       recordError(rel, 'missing metadata block');
     } else {
-      const nova = meta.novaPlugin;
-      if (!nova || typeof nova !== 'object') {
-        recordError(rel, 'missing metadata.novaPlugin');
-      } else {
-        for (const k of ['userInvocable', 'autoLoad', 'subagentSafe', 'destructiveActions']) {
-          if (nova[k] === undefined) recordError(rel, `missing metadata.novaPlugin.${k}`);
+      for (const key of [
+        'nova-user-invocable',
+        'nova-model-invocable',
+        'nova-subagent-safe',
+        'nova-destructive-actions',
+      ]) {
+        if (typeof meta[key] !== 'string') recordError(rel, `metadata.${key} must be a string`);
+      }
+      if (meta['nova-destructive-actions'] !== undefined && !DESTRUCTIVE.has(meta['nova-destructive-actions'])) {
+        recordError(rel, `metadata.nova-destructive-actions invalid: "${meta['nova-destructive-actions']}"`);
+      }
+      if (expectedPermission) {
+        if (meta['nova-model-invocable'] !== String(expectedPermission.modelInvocable)) {
+          recordError(rel, 'metadata.nova-model-invocable differs from canonical permission source');
         }
-        if (nova.destructiveActions !== undefined && !DESTRUCTIVE.has(String(nova.destructiveActions))) {
-          recordError(rel, `metadata.novaPlugin.destructiveActions invalid: "${nova.destructiveActions}"`);
+        if (meta['nova-subagent-safe'] !== String(expectedPermission.subagentSafe)) {
+          recordError(rel, 'metadata.nova-subagent-safe differs from canonical permission source');
+        }
+        if (meta['nova-destructive-actions'] !== expectedPermission.destructiveActions) {
+          recordError(rel, 'metadata.nova-destructive-actions differs from canonical permission source');
+        }
+        if ((obj.compatibility ?? null) !== (expectedPermission.compatibility ?? null)) {
+          recordError(rel, 'compatibility differs from canonical permission source');
         }
       }
     }
@@ -310,7 +370,9 @@ function lintSkills() {
       name: obj.name,
       commandId: entry.startsWith('nova-') ? entry.slice('nova-'.length) : null,
       allowedTools: obj['allowed-tools'],
-      destructiveActions: obj.metadata?.novaPlugin?.destructiveActions,
+      disallowedTools: obj['disallowed-tools'],
+      modelInvocable: !obj['disable-model-invocation'],
+      destructiveActions: obj.metadata?.['nova-destructive-actions'],
     });
   }
 }
@@ -333,8 +395,14 @@ function lintCommandSkillContracts() {
     if (!sameToolSet(command.allowedTools, skill.allowedTools)) {
       recordError(command.rel, `allowed-tools differ from ${skill.rel}`);
     }
+    if (!sameToolSet(command.disallowedTools, skill.disallowedTools)) {
+      recordError(command.rel, `disallowed-tools differ from ${skill.rel}`);
+    }
+    if (command.modelInvocable !== skill.modelInvocable) {
+      recordError(command.rel, `model invocation policy differs from ${skill.rel}`);
+    }
     if (String(command.destructiveActions) !== String(skill.destructiveActions)) {
-      recordError(command.rel, `destructive-actions "${command.destructiveActions}" differ from ${skill.rel} metadata.novaPlugin.destructiveActions "${skill.destructiveActions}"`);
+      recordError(command.rel, `destructive-actions "${command.destructiveActions}" differ from ${skill.rel} metadata.nova-destructive-actions "${skill.destructiveActions}"`);
     }
   }
 

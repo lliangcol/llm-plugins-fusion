@@ -2,14 +2,17 @@
 name: nova-finalize-work
 description: "Finalize completed work artifacts. Produce commit/PR text in Git repo, else local handoff summary and manual steps."
 license: MIT
-allowed-tools: Read Glob Grep LS Bash
-argument-hint: "Example: finalize-work for current completed changes"
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit
+user-invocable: true
+disable-model-invocation: false
+compatibility: "Designed for Claude Code; optional read-only Git inspection through Bash follows the normal permission flow."
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true
-    destructiveActions: none
+  nova-user-invocable: "true"
+  nova-model-invocable: "true"
+  nova-subagent-safe: "true"
+  nova-destructive-actions: "none"
+argument-hint: "Example: finalize-work for current completed changes"
 ---
 
 ## Inputs
@@ -66,7 +69,7 @@ metadata:
 
 ## Examples
 
-- Use `/finalize-work` for full finalization and handoff packaging.
+- Use `/nova-plugin:finalize-work` for full finalization and handoff packaging.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Common Rationalizations
@@ -131,7 +134,7 @@ Package completed work into review-ready handoff artifacts without new changes.
 
 ## Migrated Slash Command Contract
 
-Migrated from the pre-thin slash command contract for `/finalize-work` (`nova-plugin/commands/finalize-work.md`).
+Migrated from the pre-thin slash command contract for `/nova-plugin:finalize-work` (`nova-plugin/commands/finalize-work.md`).
 
 ### Complete the work results
 
