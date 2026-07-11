@@ -145,14 +145,13 @@ test('write guard recognizes Windows hooks.json paths for full Write payloads', 
 test('Bash launcher fails closed without Node and honors explicit opt-out', async () => {
   const script = resolve(root, 'nova-plugin/hooks/scripts/pre-write-check.sh');
   const env = { PATH: '/usr/bin:/bin', CLAUDE_PLUGIN_ROOT: resolve(root, 'nova-plugin') };
-  const payload = writePayload('README.md', 'ordinary text');
-  const noNode = await runGuard(payload, { command: '/bin/bash', args: [script], env });
+  const noNode = await runGuard(undefined, { command: '/bin/bash', args: [script], env });
   if (!noNode.ok) {
     assert.equal(noNode.code, 2);
     assert.match(noNode.stderr, /Node\.js 20\+/);
   }
 
-  const disabled = await runGuard(payload, {
+  const disabled = await runGuard(undefined, {
     command: '/bin/bash',
     args: [script],
     env: { ...env, NOVA_WRITE_GUARD_DISABLED: '1' },

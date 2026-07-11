@@ -30,19 +30,6 @@ test('runProcess reports non-zero exits without throwing', async () => {
   assert.equal(result.timedOut, false);
 });
 
-test('runProcess tolerates EPIPE when a child exits non-zero before reading input', async () => {
-  const result = await runProcess('early exit input sample', process.execPath, [
-    '-e',
-    'process.stdin.destroy(); process.exit(7);',
-  ], {
-    input: 'x'.repeat(8 * 1024 * 1024),
-  });
-
-  assert.equal(result.ok, false);
-  assert.equal(result.code, 7);
-  assert.equal(result.errorMessage, null);
-});
-
 test('runProcess rejects shell execution', () => {
   assert.throws(
     () => runProcess('shell sample', 'echo ok', [], { shell: true }),

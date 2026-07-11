@@ -65,7 +65,6 @@ export function runProcess(label, command, args = [], options = {}) {
   let stdout = '';
   let stderr = '';
   let spawnError = null;
-  let inputError = null;
   let timedOut = false;
 
   return new Promise((resolve) => {
@@ -147,30 +146,23 @@ export function runProcess(label, command, args = [], options = {}) {
     }
 
     if (input !== undefined && child.stdin) {
-      child.stdin.on('error', (error) => {
-        inputError = error;
-      });
       child.stdin.end(input);
     } else {
       child.stdin?.end();
     }
 
     child.on('close', (code, signal) => {
-      const effectiveInputError = inputError?.code === 'EPIPE' && code !== 0
-        ? null
-        : inputError;
       const errorMessage = spawnError?.message
-        ?? effectiveInputError?.message
         ?? (timedOut ? `timed out after ${timeoutMs}ms` : null);
       settle({
         label,
         command,
         args,
-        ok: !spawnError && !effectiveInputError && !timedOut && code === 0,
+        ok: !spawnError && !timedOut && code === 0,
         code,
         signal,
         timedOut,
-        error: spawnError ?? effectiveInputError,
+        error: spawnError,
         errorMessage,
         stdout: capturedOutput(stdout, stdoutState, outputLimit),
         stderr: capturedOutput(stderr, stderrState, outputLimit),
