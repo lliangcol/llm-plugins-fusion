@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Added
+- 新增依赖为零的 SemVer 2.0.0 解析与安全 release metadata 准备脚本，
+  支持 prerelease/build metadata，并避免 tag 或 step output 直接进入 shell。
+- 新增完整维护代码覆盖率 inventory：所有受 Git 跟踪、非 `tests/**` 的
+  `.mjs` 自动进入 V8 evidence 对账和覆盖率分母，遗漏任一模块即失败。
 - 新增 generated surface inventory：`scripts/generate-surface-inventory.mjs`
   生成并校验 `docs/generated/surface-inventory.json` 与 `.md`，覆盖
   command、skill、active agent、capability pack 和 generated marketplace
@@ -27,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   禁用方式和 public-safe 数据处理边界。
 
 ### Changed
+- Release workflow 通过环境变量和校验后的 GitHub outputs 传递版本、
+  prerelease 状态与 release notes，不再使用可注入的 shell 插值或连字符猜测。
 - GitHub Actions 外部 action 引用改为 full commit SHA pin，并由
   `scripts/validate-github-workflows.mjs` 校验 SHA pin、tag 注释、`NPM Test`
   gate、required-check 文档和 print 输出同步。
@@ -40,11 +46,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   action pinning、isolated release install smoke、surface inventory 和新增 CI
   checks。
 - `test:coverage:check` 现在执行 lines 85%、branches 60%、functions 90% 的
-  固定基线；普通 coverage 命令仍保持 collection-only。
+  固定发布阻断基线，并验证完整维护 `.mjs` inventory；普通 coverage 命令仍
+  保持 collection-only。
+- maintainer wrapper 和通用 process runner 现在只使用参数数组与
+  `shell: false`；Windows 显式调用 `npm.cmd`，其他平台调用 `npm`。
+- `--out`、`--coverage-dir`、`--root` 等 CLI option 统一使用严格 value
+  校验，下一 token 为 option 时直接失败且不产生文件副作用。
 - Codex helper 的兼容边界明确为 Bash 3.2+，migration CLI、read-only Bash
   scaffold 和 `/senior-explore` 参数/导出契约同步收敛。
 
 ### Fixed
+- Bash 与 Node audit log 只有在轮转重命名成功后才创建新日志；轮转失败时
+  保留原字节并受限追加，避免意外截断审计证据。
+- project checks 汇总改为 `selected/passed/failed`，失败场景不再误报
+  “无任务”，并兼容 Bash 3.2 的空 package inventory。
+- Markdown heading entity 改为单次解码，避免 `&amp;lt;` 被重复解释；
+  validate-all E2E smoke 超时提升到 180 秒并输出阶段、耗时及截断诊断。
 - 修复 Node 20 无法展开测试 glob 导致 `NPM Test` 与 `Test Coverage` CI 失败，
   普通测试和 coverage 现在复用显式、确定性测试文件发现。
 - 修复 macOS 系统 Bash 3.2 因 `mapfile` 无法运行 Codex helper，并清理当前

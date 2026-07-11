@@ -16,6 +16,7 @@ import {
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
+import { requireOptionValue } from './lib/cli-args.mjs';
 
 assertNodeVersion({ label: 'surface inventory generation' });
 
@@ -45,12 +46,7 @@ function parseArgs(args) {
       continue;
     }
     if (arg === '--root') {
-      const value = args[index + 1];
-      if (!value) {
-        console.error('ERROR --root requires a path');
-        console.error(usage());
-        process.exit(1);
-      }
+      const value = requireOptionValue(args, index, '--root');
       options.root = resolve(value);
       index += 1;
       continue;
@@ -367,6 +363,12 @@ function checkOrWriteGeneratedFiles(root, write) {
 }
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const options = parseArgs(process.argv.slice(2));
-  checkOrWriteGeneratedFiles(options.root, options.write);
+  try {
+    const options = parseArgs(process.argv.slice(2));
+    checkOrWriteGeneratedFiles(options.root, options.write);
+  } catch (error) {
+    console.error(`ERROR ${error.message}`);
+    console.error(usage());
+    process.exitCode = 1;
+  }
 }

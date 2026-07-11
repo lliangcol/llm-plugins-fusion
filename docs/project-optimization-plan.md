@@ -94,7 +94,7 @@ Live facts checked for this plan:
 | --- | --- | --- | --- | ---: | --- |
 | DR0 | P0 | Baseline and execution controls | Complete for the 2026-07-09 slice; repeat for future slices | 0.5-1 day | `npm run validate:maintainer` |
 | DR1 | P0 | Modularize `validate-docs` safely | Started; stable wrapper and first rule modules extracted | 5-7 days | docs, regression, tests, maintainer gate |
-| DR2 | P0 | Coverage and timing evidence | Implemented for collection; threshold enforcement deferred | 2-3 days | tests, coverage, workflow validation |
+| DR2 | P0 | Coverage and timing evidence | Complete: full maintenance source inventory and blocking thresholds enforced | 2-3 days | tests, coverage, workflow validation |
 | DR3 | P0 | Hook portability and Bash boundary | Started; Node helpers added while Bash remains active | 4-6 days | hooks, runtime smoke, tests, Windows CI |
 | DR4 | P1 | Headless public-safe demo harness | Implemented for route, review, and verification fixtures | 3-5 days | workflow fixtures, docs, demos |
 | DR5 | P1 | Toolchain and release-proof artifacts | Implemented for `.node-version` and checksums; SBOM/signing deferred | 2-4 days | workflow validation, release dry run |
@@ -226,8 +226,9 @@ Execution steps:
    Add npm tooling only after a supply-chain review.
 3. Add shortcuts such as `npm run test:coverage` and
    `npm run test:coverage:check`.
-4. Start with non-blocking coverage collection if the baseline is unknown.
-   Promote thresholds only after CI records a green baseline.
+4. The observed baseline has been promoted: `--check` requires every
+   Git-tracked non-test maintenance `.mjs` and enforces lines 85%, branches
+   60%, functions 90% without permanent exclusions.
 5. Upload coverage and validation timing artifacts from CI or release workflows.
    `validate-all` already supports timing output, so this work should make that
    evidence easier to retrieve rather than invent a second timing system.
@@ -237,7 +238,8 @@ Execution steps:
 Acceptance criteria:
 
 - Coverage can be collected on the Node 20 CI lane.
-- Thresholds, if enabled, are conservative and pass in CI.
+- Blocking thresholds are conservative, cover the full maintenance inventory,
+  and pass on the Node 20 CI lane.
 - Validation timing evidence is available from CI or release artifacts.
 - No npm dependency is added without an explicit decision.
 
@@ -255,7 +257,9 @@ git diff --check
 
 Rollback:
 
-- Remove blocking thresholds while retaining non-blocking artifact collection.
+- Revert the faulty coverage implementation while retaining the last verified
+  blocking baseline; do not lower thresholds or exempt maintenance modules to
+  make a release pass.
 
 ### DR3: Hook Portability And Bash Boundary
 

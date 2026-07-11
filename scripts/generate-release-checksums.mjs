@@ -10,12 +10,13 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
+import { requireOptionValue } from './lib/cli-args.mjs';
 
 assertNodeVersion({ label: 'release checksum generation' });
 
 const __dir = dirname(fileURLToPath(import.meta.url));
-const root = resolve(__dir, '..');
-const releaseArtifacts = [
+const defaultRoot = resolve(__dir, '..');
+export const releaseArtifacts = [
   'nova-plugin/.claude-plugin/plugin.json',
   '.claude-plugin/marketplace.json',
   '.claude-plugin/marketplace.metadata.json',
@@ -26,7 +27,7 @@ function usage() {
   return 'Usage: node scripts/generate-release-checksums.mjs [--out <path>]';
 }
 
-function parseArgs(args) {
+export function parseArgs(args, root = defaultRoot) {
   let out = resolve(root, '.metrics/release-checksums/SHA256SUMS.txt');
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -35,32 +36,46 @@ function parseArgs(args) {
       process.exit(0);
     }
     if (arg === '--out') {
-      const value = args[index + 1];
-      if (!value) {
-        console.error('ERROR --out requires a path');
-        console.error(usage());
-        process.exit(1);
-      }
+      const value = requireOptionValue(args, index, '--out');
       out = resolve(root, value);
       index += 1;
       continue;
     }
-    console.error(`ERROR unknown argument: ${arg}`);
-    console.error(usage());
-    process.exit(1);
+    throw new Error(`unknown argument: ${arg}`);
   }
   return out;
 }
 
-function checksum(relPath) {
+function checksum(root, relPath) {
   const data = readFileSync(resolve(root, relPath));
   return createHash('sha256').update(data).digest('hex');
 }
 
-const outPath = parseArgs(process.argv.slice(2));
-const lines = releaseArtifacts.map((relPath) => `${checksum(relPath)}  ${relPath}`);
-mkdirSync(dirname(outPath), { recursive: true });
-writeFileSync(outPath, `${lines.join('\n')}\n`, 'utf8');
+export function generateReleaseChecksums({ root = defaultRoot, args = [] } = {}) {
+  const outPath = parseArgs(args, root);
+  const lines = releaseArtifacts.map((relPath) => `${checksum(root, relPath)}  ${relPath}`);
+  mkdirSync(dirname(outPath), { recursive: true });
+  writeFileSync(outPath, `${lines.join('\n')}\n`, 'utf8');
+  return { outPath, lines };
+}
 
-for (const line of lines) console.log(line);
-console.log(`Wrote release checksums to ${relative(root, outPath).replaceAll('\\', '/')}`);
+export function main(args = process.argv.slice(2)) {
+  if (args.includes('--help') || args.includes('-h')) {
+    console.log(usage());
+    return 0;
+  }
+  try {
+    const { outPath, lines } = generateReleaseChecksums({ args });
+    for (const line of lines) console.log(line);
+    console.log(`Wrote release checksums to ${relative(defaultRoot, outPath).replaceAll('\\', '/')}`);
+    return 0;
+  } catch (error) {
+    console.error(`ERROR ${error.message}`);
+    console.error(usage());
+    return 1;
+  }
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  process.exitCode = main();
+}

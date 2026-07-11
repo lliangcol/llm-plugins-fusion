@@ -205,18 +205,12 @@ discover_node_tasks() {
     return 0
   fi
 
-  PKGS=()
   while IFS= read -r pkg; do
-    PKGS+=("$pkg")
-  done < <(find "${ROOT}" \
-    \( -path "*/node_modules" -o -path "*/dist" -o -path "*/build" -o -path "*/target" -o -path "*/.codex" -o -path "*/.cache" -o -path "*/.idea" -o -path "*/.vite" -o -path "*/.vscode" -o -path "*/coverage" -o -path "*/logs" -o -path "*/tmp" -o -path "*/temp" -o -path "*/.runtime-smoke-*" -o -path "*/.next" -o -path "*/.nuxt" -o -path "*/out" \) -prune \
-    -o -name package.json -print 2>/dev/null)
-  for pkg in "${PKGS[@]}"; do
     local dir
-    dir="$(dirname "$pkg")"
     local manager
-    manager="$(manager_for_dir "$dir")"
     local display_dir
+    dir="$(dirname "$pkg")"
+    manager="$(manager_for_dir "$dir")"
     display_dir="${dir#"$ROOT"/}"
     if [[ "$display_dir" == "$dir" ]]; then
       display_dir="."
@@ -234,7 +228,9 @@ discover_node_tasks() {
     if package_has_script "$dir" "build"; then
       append_task "build" "${display_dir}:build" "$dir" "package-script" "$manager" "build"
     fi
-  done
+  done < <(find "${ROOT}" \
+    \( -path "*/node_modules" -o -path "*/dist" -o -path "*/build" -o -path "*/target" -o -path "*/.codex" -o -path "*/.cache" -o -path "*/.idea" -o -path "*/.vite" -o -path "*/.vscode" -o -path "*/coverage" -o -path "*/logs" -o -path "*/tmp" -o -path "*/temp" -o -path "*/.runtime-smoke-*" -o -path "*/.next" -o -path "*/.nuxt" -o -path "*/out" \) -prune \
+    -o -name package.json -print 2>/dev/null)
 }
 
 should_run_phase() {
@@ -305,7 +301,8 @@ discover_node_tasks
 
 [[ ${#TASK_PHASES[@]} -gt 0 ]] || die "未发现可执行的仓库检查任务。"
 
-executed=0
+selected=0
+passed=0
 failed=0
 
 for index in "${!TASK_PHASES[@]}"; do
@@ -316,20 +313,21 @@ for index in "${!TASK_PHASES[@]}"; do
   if ! should_run_phase "$phase"; then
     continue
   fi
+  selected=$((selected + 1))
 
   info "执行 ${phase}: ${label}"
   if (cd "$dir" && run_task "$kind" "${TASK_ARG1[$index]}" "${TASK_ARG2[$index]}" "${TASK_ARG3[$index]}"); then
     success "${label}"
-    executed=$((executed + 1))
+    passed=$((passed + 1))
   else
     error "${label} 失败"
     failed=$((failed + 1))
   fi
 done
 
-[[ "$executed" -gt 0 ]] || die "当前模式 (${MODE}) 下没有发现可执行任务。"
+[[ "$selected" -gt 0 ]] || die "当前模式 (${MODE}) 下没有发现可执行任务。"
 
-printf '\nSummary: executed=%s failed=%s mode=%s\n' "$executed" "$failed" "$MODE"
+printf '\nSummary: selected=%s passed=%s failed=%s mode=%s\n' "$selected" "$passed" "$failed" "$MODE"
 
 if [[ "$failed" -gt 0 ]]; then
   exit 1

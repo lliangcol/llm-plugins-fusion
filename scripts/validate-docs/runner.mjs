@@ -27,6 +27,7 @@ import {
 } from 'node:fs';
 import { basename, dirname, extname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { requireOptionValue } from '../lib/cli-args.mjs';
 import { validateActivePlanningAndReports } from './rules/active-planning-and-reports.mjs';
 import { validateLinksAndCommandDocs } from './rules/links-and-command-docs.mjs';
 
@@ -46,12 +47,7 @@ function parseRoot(args) {
       process.exit(0);
     }
     if (arg === '--root') {
-      const value = args[index + 1];
-      if (!value) {
-        console.error('ERROR --root requires a path');
-        console.error(usage());
-        process.exit(1);
-      }
+      const value = requireOptionValue(args, index, '--root');
       selectedRoot = resolve(value);
       index += 1;
       continue;
@@ -63,7 +59,14 @@ function parseRoot(args) {
   return selectedRoot;
 }
 
-const root = parseRoot(process.argv.slice(2));
+let root;
+try {
+  root = parseRoot(process.argv.slice(2));
+} catch (error) {
+  console.error(`ERROR ${error.message}`);
+  console.error(usage());
+  process.exit(1);
+}
 
 const errors = [];
 const warnings = [];

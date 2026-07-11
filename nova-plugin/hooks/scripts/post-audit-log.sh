@@ -120,9 +120,10 @@ chmod 600 "$LOG_FILE" 2>/dev/null || true
 
 LOG_SIZE=$(wc -c < "$LOG_FILE" 2>/dev/null || printf '0')
 if [ "${LOG_SIZE:-0}" -gt 5242880 ] 2>/dev/null; then
-  mv -f "$LOG_FILE" "$LOG_FILE.1" 2>/dev/null || true
-  : > "$LOG_FILE" 2>/dev/null || true
-  chmod 600 "$LOG_FILE" 2>/dev/null || true
+  if mv -f "$LOG_FILE" "$LOG_FILE.1" 2>/dev/null; then
+    : > "$LOG_FILE" 2>/dev/null || true
+    chmod 600 "$LOG_FILE" 2>/dev/null || true
+  fi
 fi
 
 # 追加日志（非阻塞，忽略写入失败）

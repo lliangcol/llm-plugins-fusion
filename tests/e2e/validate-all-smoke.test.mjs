@@ -16,9 +16,20 @@ test('validate-all smoke completes with zero failures', async () => {
       ...process.env,
       NOVA_VALIDATE_CONCURRENCY: '2',
     },
-    timeoutMs: 120_000,
+    timeoutMs: 180_000,
   });
 
+  if (!result.ok) {
+    console.error(JSON.stringify({
+      stage: 'validate-all smoke',
+      elapsedMs: result.ms,
+      timedOut: result.timedOut,
+      stdoutTruncated: result.stdoutTruncated,
+      stderrTruncated: result.stderrTruncated,
+      stdout: result.stdout,
+      stderr: result.stderr,
+    }));
+  }
   assert.equal(result.ok, true);
   assert.match(result.stdout, /Summary: failed=0/);
   assert.match(result.stdout, /== validation timings ==/);

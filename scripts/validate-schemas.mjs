@@ -13,6 +13,7 @@ import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateRegistryFiles } from './generate-registry.mjs';
+import { SEMVER_PATTERN_SOURCE } from './lib/semver.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -147,6 +148,18 @@ const targets = [
     label: '.claude-plugin/marketplace.metadata.json',
   },
 ];
+
+const versionPatterns = [
+  targets[0].schema.properties.version.pattern,
+  targets[2].schema.properties.plugins.items.properties.version.pattern,
+  targets[3].schema.properties.plugins.items.properties.version.pattern,
+];
+if (versionPatterns.some((pattern) => pattern !== SEMVER_PATTERN_SOURCE)) {
+  console.error('✗ schema SemVer pattern alignment');
+  console.error('  - plugin and marketplace version schemas must match scripts/lib/semver.mjs');
+  process.exit(1);
+}
+console.log('✓ schema SemVer pattern alignment');
 
 let allPassed = true;
 for (const schemaPath of [
