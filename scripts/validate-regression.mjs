@@ -1261,21 +1261,20 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     const promptReadmePath = resolve(fixtureRoot, 'docs/prompts/README.md');
     const promptReadme = readFileSync(promptReadmePath, 'utf8');
     assert.match(promptReadme, /public-safe prompt templates/);
+    const driftedPromptReadme = promptReadme
+      .replace(
+        /This directory contains public-safe prompt templates[\s\S]*?(?=\r?\n## Template Rules)/,
+        '',
+      )
+      .replace(
+        /## Template Rules[\s\S]*?(?=\r?\n## Templates)/,
+        '## Template Rules\n',
+      );
+    assert.doesNotMatch(driftedPromptReadme, /public-safe prompt templates/);
+    assert.doesNotMatch(driftedPromptReadme, /artifact path or summary is enough/);
     writeFileSync(
       promptReadmePath,
-      promptReadme
-        .replace(
-          /This directory contains public-safe prompt templates[\s\S]*?rules out of this public repository\.\r?\n/,
-          '',
-        )
-        .replace(
-          /- Do not paste full files,[\s\S]*?when an artifact path or summary is enough\.\r?\n/,
-          '',
-        )
-        .replace(
-          /- Treat HTML outputs as derived reading artifacts;[\s\S]*?as the source of truth\.\r?\n/,
-          '',
-        ),
+      driftedPromptReadme,
       'utf8',
     );
 
