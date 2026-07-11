@@ -70,6 +70,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   普通测试和 coverage 现在复用显式、确定性测试文件发现。
 - 修复 macOS 系统 Bash 3.2 因 `mapfile` 无法运行 Codex helper，并清理当前
   ShellCheck 诊断。
+- 修复 `verify-agents.sh` 在 `pipefail` 下因 `grep -q` 提前退出触发 broken
+  pipe、进而在 macOS runner 误判合法 agent 文件的问题。
 - distribution risk scan 现在覆盖 patch、常见源码/配置和未知文本扩展，扫描
   1 MiB 以上文本，并对超过 10 MiB 的文本 fail closed。
 - Bash 与 Node audit hook 现在把不可信字段脱敏、单行化并限制长度，阻止换行

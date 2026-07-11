@@ -474,6 +474,14 @@ test('verify-agents scripts reject retired active-agent surfaces consistently', 
   }
 });
 
+test('verify-agents avoids grep early-exit pipelines under pipefail', () => {
+  const bashScript = readFileSync(resolve(root, 'scripts/verify-agents.sh'), 'utf8');
+  assert.match(bashScript, /array_contains\(\)/);
+  assert.doesNotMatch(bashScript, /printf[^\n]*\|[[:space:]]*grep/);
+  assert.match(bashScript, /grep -Eq[^\n]*<<< "\$frontmatter"/);
+  assert.match(bashScript, /grep -Fq[^\n]*<<< "\$body"/);
+});
+
 test('validate-github-workflows enforces least-privilege workflow contracts', () => {
   const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-workflow-contract-'));
   const fixtureRoot = resolve(tempRoot, 'repo');
