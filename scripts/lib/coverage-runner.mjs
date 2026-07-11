@@ -59,6 +59,16 @@ export function coverageCommand(testFiles) {
   return ['--test', '--experimental-test-coverage', ...testFiles];
 }
 
+export function prepareCoverageDirectory(
+  coverageDir,
+  { remove = rmSync, makeDirectory = mkdirSync } = {},
+) {
+  const v8Dir = resolve(coverageDir, 'v8');
+  remove(v8Dir, { recursive: true, force: true });
+  makeDirectory(v8Dir, { recursive: true });
+  return v8Dir;
+}
+
 export function runCoverage({
   root,
   args = [],
@@ -97,8 +107,7 @@ export function runCoverage({
   const v8Dir = resolve(options.coverageDir, 'v8');
   const summaryPath = resolve(options.coverageDir, 'coverage-summary.txt');
   const metadataPath = resolve(options.coverageDir, 'metadata.json');
-  rmSync(options.coverageDir, { recursive: true, force: true });
-  mkdirSync(v8Dir, { recursive: true });
+  prepareCoverageDirectory(options.coverageDir);
   const commandArgs = coverageCommand(testFiles);
 
   console.log(`Running coverage command: ${process.execPath} ${commandArgs.join(' ')}`);

@@ -8,9 +8,9 @@ export function parseSemVer(value) {
   if (!match) return null;
   return {
     version: value,
-    major: Number(match[1]),
-    minor: Number(match[2]),
-    patch: Number(match[3]),
+    major: match[1],
+    minor: match[2],
+    patch: match[3],
     prerelease: match[4] || null,
     build: match[5] || null,
     isPrerelease: Boolean(match[4]),

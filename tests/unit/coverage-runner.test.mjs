@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   coverageCommand,
   parseCoverageArgs,
+  prepareCoverageDirectory,
   runCoverage,
 } from '../../scripts/lib/coverage-runner.mjs';
 
@@ -18,6 +19,19 @@ test('coverage runner parses strict CLI options', () => {
 test('coverage command uses explicit test files', () => {
   assert.deepEqual(coverageCommand(['tests/a.test.mjs']), [
     '--test', '--experimental-test-coverage', 'tests/a.test.mjs',
+  ]);
+});
+
+test('coverage cleanup removes only the owned V8 evidence directory', () => {
+  const calls = [];
+  const v8Dir = prepareCoverageDirectory('/repo', {
+    remove: (...args) => calls.push(['remove', ...args]),
+    makeDirectory: (...args) => calls.push(['mkdir', ...args]),
+  });
+  assert.equal(v8Dir, resolve('/repo', 'v8'));
+  assert.deepEqual(calls, [
+    ['remove', resolve('/repo', 'v8'), { recursive: true, force: true }],
+    ['mkdir', resolve('/repo', 'v8'), { recursive: true }],
   ]);
 });
 

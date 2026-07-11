@@ -52,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   `shell: false`；Windows 显式调用 `npm.cmd`，其他平台调用 `npm`。
 - `--out`、`--coverage-dir`、`--root` 等 CLI option 统一使用严格 value
   校验，下一 token 为 option 时直接失败且不产生文件副作用。
+- Coverage evidence 清理范围收敛为 runner 自有的 `v8/` 子目录，不再递归
+  删除整个 `--coverage-dir`；SemVer 核心数字段保持字符串精度。
 - Codex helper 的兼容边界明确为 Bash 3.2+，migration CLI、read-only Bash
   scaffold 和 `/senior-explore` 参数/导出契约同步收敛。
 
