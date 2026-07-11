@@ -8,7 +8,7 @@
 
 [![CI](https://github.com/lliangcol/llm-plugins-fusion/actions/workflows/ci.yml/badge.svg)](https://github.com/lliangcol/llm-plugins-fusion/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/lliangcol/llm-plugins-fusion?label=release)](https://github.com/lliangcol/llm-plugins-fusion/releases/latest)
-[![Version](https://img.shields.io/badge/version-2.3.0-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion/releases/tag/v2.3.0)
+[![Version](https://img.shields.io/badge/version-2.4.0-rc.1-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion/releases/tag/v2.4.0-rc.1)
 [![License](https://img.shields.io/github/license/lliangcol/llm-plugins-fusion)](./LICENSE)
 
 </div>
@@ -96,7 +96,7 @@ Claude slash-command runtime 行为会在其它 coding assistant 中自动存在
 <table>
 <tr>
 <td><strong>插件版本</strong></td>
-<td>2.3.0</td>
+<td>2.4.0-rc.1</td>
 </tr>
 <tr>
 <td><strong>主插件</strong></td>

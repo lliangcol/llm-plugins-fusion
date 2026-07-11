@@ -474,6 +474,14 @@ test('verify-agents scripts reject retired active-agent surfaces consistently', 
   }
 });
 
+test('verify-agents avoids grep early-exit pipelines under pipefail', () => {
+  const bashScript = readFileSync(resolve(root, 'scripts/verify-agents.sh'), 'utf8');
+  assert.match(bashScript, /array_contains\(\)/);
+  assert.doesNotMatch(bashScript, /printf[^\n]*\|[[:space:]]*grep/);
+  assert.match(bashScript, /grep -Eq[^\n]*<<< "\$frontmatter"/);
+  assert.match(bashScript, /grep -Fq[^\n]*<<< "\$body"/);
+});
+
 test('validate-github-workflows enforces least-privilege workflow contracts', () => {
   const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-workflow-contract-'));
   const fixtureRoot = resolve(tempRoot, 'repo');
@@ -1253,21 +1261,20 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     const promptReadmePath = resolve(fixtureRoot, 'docs/prompts/README.md');
     const promptReadme = readFileSync(promptReadmePath, 'utf8');
     assert.match(promptReadme, /public-safe prompt templates/);
+    const driftedPromptReadme = promptReadme
+      .replace(
+        /This directory contains public-safe prompt templates[\s\S]*?(?=\r?\n## Template Rules)/,
+        '',
+      )
+      .replace(
+        /## Template Rules[\s\S]*?(?=\r?\n## Templates)/,
+        '## Template Rules\n',
+      );
+    assert.doesNotMatch(driftedPromptReadme, /public-safe prompt templates/);
+    assert.doesNotMatch(driftedPromptReadme, /artifact path or summary is enough/);
     writeFileSync(
       promptReadmePath,
-      promptReadme
-        .replace(
-          /This directory contains public-safe prompt templates[\s\S]*?rules out of this public repository\.\r?\n/,
-          '',
-        )
-        .replace(
-          /- Do not paste full files,[\s\S]*?when an artifact path or summary is enough\.\r?\n/,
-          '',
-        )
-        .replace(
-          /- Treat HTML outputs as derived reading artifacts;[\s\S]*?as the source of truth\.\r?\n/,
-          '',
-        ),
+      driftedPromptReadme,
       'utf8',
     );
 

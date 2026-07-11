@@ -29,6 +29,18 @@ required_sections=(
   "Pack hints:"
 )
 
+array_contains() {
+  local needle="$1"
+  shift
+  local item
+  for item in "$@"; do
+    if [[ "$item" == "$needle" ]]; then
+      return 0
+    fi
+  done
+  return 1
+}
+
 echo "== Active agents =="
 actual=()
 while IFS= read -r file_name; do
@@ -41,20 +53,20 @@ if [[ ${#actual[@]} -ne 6 ]]; then
   echo "ERROR: Active agents count must be exactly 6 (got ${#actual[@]})." >&2
   exit 1
 fi
-if ! printf "%s\n" "${actual[@]}" | grep -qx "orchestrator.md"; then
+if ! array_contains "orchestrator.md" "${actual[@]}"; then
   echo "ERROR: Missing required agent: orchestrator.md" >&2
   exit 1
 fi
 
 missing=()
 for e in "${expected[@]}"; do
-  if ! printf "%s\n" "${actual[@]}" | grep -qx "$e"; then
+  if ! array_contains "$e" "${actual[@]}"; then
     missing+=("$e")
   fi
 done
 extra=()
 for a in "${actual[@]}"; do
-  if ! printf "%s\n" "${expected[@]}" | grep -qx "$a"; then
+  if ! array_contains "$a" "${expected[@]}"; then
     extra+=("$a")
   fi
 done
@@ -70,27 +82,28 @@ echo
 echo "== Agent contract =="
 for file_name in "${actual[@]}"; do
   file_path="$active_dir/$file_name"
-  first_line="$(head -n 1 "$file_path" | tr -d '\r')"
+  IFS= read -r first_line < "$file_path"
+  first_line="${first_line%$'\r'}"
   if [[ "$first_line" != "---" ]]; then
     echo "ERROR: $file_name is missing YAML frontmatter." >&2
     exit 1
   fi
-  frontmatter="$(tr -d '\r' < "$file_path" | awk 'NR==1 && $0=="---"{in_fm=1; next} in_fm && $0=="---"{exit} in_fm{print}')"
+  frontmatter="$(awk '{sub(/\r$/, "")} NR==1 && $0=="---"{in_fm=1; next} in_fm && $0=="---"{exit} in_fm{print}' "$file_path")"
   for field in name description tools; do
-    if ! printf "%s\n" "$frontmatter" | grep -Eq "^${field}:[[:space:]]*[^[:space:]]"; then
+    if ! grep -Eq "^${field}:[[:space:]]*[^[:space:]]" <<< "$frontmatter"; then
       echo "ERROR: $file_name frontmatter missing required field: $field" >&2
       exit 1
     fi
   done
-  name_value="$(printf "%s\n" "$frontmatter" | sed -n 's/^name:[[:space:]]*//p' | head -n 1)"
+  name_value="$(sed -n 's/^name:[[:space:]]*//p' <<< "$frontmatter")"
   expected_name="${file_name%.md}"
   if [[ "$name_value" != "$expected_name" ]]; then
     echo "ERROR: $file_name frontmatter name must equal basename '$expected_name'." >&2
     exit 1
   fi
-  body="$(tr -d '\r' < "$file_path" | awk 'BEGIN{delims=0} /^---$/{delims++; next} delims>=2{print}')"
+  body="$(awk 'BEGIN{delims=0} {sub(/\r$/, "")} /^---$/{delims++; next} delims>=2{print}' "$file_path")"
   for section in "${required_sections[@]}"; do
-    if ! printf "%s\n" "$body" | grep -Fq "$section"; then
+    if ! grep -Fq "$section" <<< "$body"; then
       echo "ERROR: $file_name body missing required label: $section" >&2
       exit 1
     fi

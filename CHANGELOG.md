@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [2.4.0-rc.1] - 2026-07-11
+
 ### Added
 - 新增依赖为零的 SemVer 2.0.0 解析与安全 release metadata 准备脚本，
   支持 prerelease/build metadata，并避免 tag 或 step output 直接进入 shell。
@@ -68,6 +70,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   普通测试和 coverage 现在复用显式、确定性测试文件发现。
 - 修复 macOS 系统 Bash 3.2 因 `mapfile` 无法运行 Codex helper，并清理当前
   ShellCheck 诊断。
+- 修复 `verify-agents.sh` 在 `pipefail` 下因 `grep -q` 提前退出触发 broken
+  pipe、进而在 macOS runner 误判合法 agent 文件的问题。
+- `verify-agents.sh` 现在在 `awk` 内先规范化行尾 `\r`，使 CRLF agent 的
+  frontmatter 与正文分隔符和 LF 文件保持同样的验证行为。
+- 回归测试的 prompt 文档负向 fixture 改为按 Markdown heading 边界确定性
+  变异并立即校验，避免平台文本差异导致预期错误集合偶发缺项。
+- 补齐 workflow evaluation 的依赖为零 runnable fixture，使
+  `/implement-plan` 人工门禁能够真实修复顺序缺陷并运行聚焦测试，而不是因
+  只有局部 patch、缺少源码和测试入口而停止。
 - distribution risk scan 现在覆盖 patch、常见源码/配置和未知文本扩展，扫描
   1 MiB 以上文本，并对超过 10 MiB 的文本 fail closed。
 - Bash 与 Node audit hook 现在把不可信字段脱敏、单行化并限制长度，阻止换行
@@ -582,7 +593,8 @@ must not replace the exact release tag as stable evidence.
 - MIT 开源协议
 - 中英双语 README 文档
 
-[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.4.0-rc.1...HEAD
+[2.4.0-rc.1]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.3.0...v2.4.0-rc.1
 [2.3.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.0.0...v2.1.0

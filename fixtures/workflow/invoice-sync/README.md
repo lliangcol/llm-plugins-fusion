@@ -7,6 +7,12 @@ This fixture is fictional. It exists so maintainers can run the primary workflow
 without copying private project names, paths, endpoints, credentials, runtime
 flags, repository addresses, or real business rules into release evidence.
 
+The tracked `src/` and `test/` files are an intentionally defective starting
+point: the local status is updated before the fictional external send, and the
+failure-path test does not catch that ordering bug. Run implementation commands
+only in a disposable copy because a successful evaluation is expected to edit
+those files.
+
 The fixture files and expected signals are validated by:
 
 ```bash
@@ -36,6 +42,9 @@ Use this fixture to evaluate:
 | [inputs/planning-brief.md](inputs/planning-brief.md) | Planning scenario for `/produce-plan`. |
 | [inputs/review-diff.patch](inputs/review-diff.patch) | Fictional buggy diff for `/review`. |
 | [plans/approved-implementation-plan.md](plans/approved-implementation-plan.md) | Approved plan input for `/implement-plan`. |
+| [src/invoice-sync.js](src/invoice-sync.js) | Intentionally defective implementation input for `/implement-plan`. |
+| [test/invoice-sync.test.js](test/invoice-sync.test.js) | Runnable but intentionally incomplete baseline tests. |
+| [package.json](package.json) | Dependency-free `npm test` entry point for implementation validation. |
 
 ## Suggested Manual Commands
 
@@ -56,6 +65,8 @@ Run these only in a disposable copy or throwaway branch:
 - The plan preserves the no-schema-change constraint.
 - Review catches the status-update-before-success bug and missing retry tests.
 - Implementation stays scoped to the approved plan.
+- The implementation step fixes the tracked defective source and strengthens
+  the focused tests; `npm test` passes in the disposable copy.
 - Finalization does not claim tests passed unless they actually ran.
 
 ## Safety
