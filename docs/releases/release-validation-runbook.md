@@ -62,13 +62,12 @@ maintainers decide to fold coverage into the maintainer gate:
 npm run validate:maintainer
 ```
 
-The tag release workflow also writes `.codex/release-validation-evidence.md`
-and uploads it with `.metrics/validation-timings.json`, `.metrics/coverage/`,
-and `.metrics/release-checksums/` as the `release-validation-evidence`
-artifact. Its isolated install smoke job uploads
-`.metrics/release-install-smoke/context.txt` as the
-`release-install-smoke-evidence` artifact. Treat these artifacts as CI
-evidence, not as tracked repository files.
+The tag release workflow uploads raw validation and live-install inputs, then
+`scripts/generate-release-evidence.mjs` creates `release-evidence.json` and
+derived Markdown from one source. The canonical `release-evidence` artifact
+includes coverage, timings, exact-tag install inventory, tree digests, and the
+credentialed namespaced route result. Treat these as CI evidence, not tracked
+repository files, and do not copy coverage numbers manually into PR bodies.
 
 Expected conditions:
 
@@ -183,8 +182,7 @@ After pushing, record:
 - Commit SHA.
 - GitHub Actions release workflow URL or run id.
 - Whether the workflow reached the release creation step.
-- The `release-validation-evidence` and `release-install-smoke-evidence`
-  artifact names or URLs.
+- The canonical `release-evidence` artifact name or URL.
 - The published GitHub Release URL when available.
 
 ## Isolated Plugin Install Smoke
@@ -230,9 +228,9 @@ Expected script behavior:
   removes that temporary profile when the script exits.
 
 Record the final success line and the installed version in release evidence.
-For normal tag publication, prefer the `release-install-smoke-evidence`
-artifact from `.github/workflows/release.yml` because it binds the smoke result
-to the release tag and commit.
+For normal tag publication, require the `release-evidence` artifact from
+`.github/workflows/release.yml`; it binds exact-tag installation, 42-item
+inventory, credentialed `/nova-plugin:route`, coverage, tag, and commit.
 
 Optional cleanup in the isolated environment:
 
@@ -263,7 +261,7 @@ Safety rules:
 
 - Run implementation steps only in a disposable fixture copy or throwaway
   branch.
-- Do not run `/implement-plan` against a production consumer workspace.
+- Do not run `/nova-plugin:implement-plan` against a production consumer workspace.
 - Do not paste private consumer names, paths, endpoints, credentials, runtime
   flags, repository addresses, or business rules into the record.
 - Keep generated outputs under a disposable output directory or remove them
@@ -272,11 +270,11 @@ Safety rules:
 Suggested command sequence:
 
 ```text
-/explore INPUT=fixtures/workflow/invoice-sync/inputs/product-note.md
-/produce-plan PLAN_OUTPUT_PATH=fixtures/workflow/invoice-sync/out/plan.md PLAN_INTENT="Plan idempotent invoice sync with no schema migration" ANALYSIS_INPUTS=fixtures/workflow/invoice-sync/inputs/planning-brief.md
-/review LEVEL=standard INPUT=fixtures/workflow/invoice-sync/inputs/review-diff.patch
-/implement-plan PLAN_INPUT_PATH=fixtures/workflow/invoice-sync/plans/approved-implementation-plan.md PLAN_APPROVED=true
-/finalize-work Summarize the completed fixture run, validation, skipped checks, risks, and follow-ups.
+/nova-plugin:explore INPUT=fixtures/workflow/invoice-sync/inputs/product-note.md
+/nova-plugin:produce-plan PLAN_OUTPUT_PATH=fixtures/workflow/invoice-sync/out/plan.md PLAN_INTENT="Plan idempotent invoice sync with no schema migration" ANALYSIS_INPUTS=fixtures/workflow/invoice-sync/inputs/planning-brief.md
+/nova-plugin:review LEVEL=standard INPUT=fixtures/workflow/invoice-sync/inputs/review-diff.patch
+/nova-plugin:implement-plan PLAN_INPUT_PATH=fixtures/workflow/invoice-sync/plans/approved-implementation-plan.md PLAN_APPROVED=true
+/nova-plugin:finalize-work Summarize the completed fixture run, validation, skipped checks, risks, and follow-ups.
 ```
 
 Evaluate each command against the rubric:

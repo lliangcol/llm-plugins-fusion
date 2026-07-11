@@ -283,6 +283,7 @@ async function main() {
       { skippedPattern: /skipping live claude plugin validate checks/i },
     ),
     nodeTask('lint frontmatter', 'scripts/lint-frontmatter.mjs'),
+    nodeTask('validate workflow permissions', 'scripts/generate-workflow-permissions.mjs'),
   ]);
 
   await runTaskGroup([

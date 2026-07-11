@@ -16,7 +16,7 @@ function validConfig(overrides = {}) {
     hooks: {
       PreToolUse: [
         {
-          matcher: 'Write|Edit|MultiEdit',
+          matcher: 'Write|Edit',
           hooks: [
             {
               type: 'command',

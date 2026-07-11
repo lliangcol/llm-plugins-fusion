@@ -1,4 +1,4 @@
-﻿# /explore-review
+﻿# /nova-plugin:explore-review
 
 - Source: `nova-plugin/commands/explore-review.md`
 
@@ -33,17 +33,17 @@
 ## Full Examples
 
 ```text
-/explore-review
+/nova-plugin:explore-review
 Here is a requirement. Output review questions.
 ```
 
 ```text
-/explore-review
+/nova-plugin:explore-review
 Here is an approach. List risk signals.
 ```
 
 ```text
-/explore-review
+/nova-plugin:explore-review
 Provide a concrete solution.
 ```
 
@@ -54,5 +54,5 @@ Provide a concrete solution.
 
 ## Comparison with Similar Commands
 
-- `/explore-lite` is quick alignment.
-- `/plan-review` focuses on plan document review.
+- `/nova-plugin:explore-lite` is quick alignment.
+- `/nova-plugin:plan-review` focuses on plan document review.

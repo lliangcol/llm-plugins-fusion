@@ -1,4 +1,4 @@
-# /codex-review-only
+# /nova-plugin:codex-review-only
 
 - 来源：`nova-plugin/commands/codex-review-only.md`
 
@@ -19,11 +19,11 @@
 ## 示例
 
 ```text
-/codex-review-only BASE=main
+/nova-plugin:codex-review-only BASE=main
 ```
 
 ```text
-/codex-review-only REVIEW_MODE=full
+/nova-plugin:codex-review-only REVIEW_MODE=full
 ```
 
 通过插件运行时，内部脚本应优先经 `${CLAUDE_PLUGIN_ROOT}` 调用，而不是假设当前仓库存在 `nova-plugin/` 目录。

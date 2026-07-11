@@ -1,4 +1,4 @@
-# /codex-review-fix
+# /nova-plugin:codex-review-fix
 
 - Source: `nova-plugin/commands/codex-review-fix.md`
 - Resource directory: `nova-plugin/skills/nova-codex-review-fix/`
@@ -23,11 +23,11 @@
 ## Examples
 
 ```text
-/codex-review-fix BASE=main GOAL="fix current branch until mergeable"
+/nova-plugin:codex-review-fix BASE=main GOAL="fix current branch until mergeable"
 ```
 
 ```text
-/codex-review-fix REVIEW_MODE=staged GOAL="handle only high-risk staged findings"
+/nova-plugin:codex-review-fix REVIEW_MODE=staged GOAL="handle only high-risk staged findings"
 ```
 
 ## Outputs
@@ -39,6 +39,6 @@
 
 ## Related Commands
 
-- `/codex-review-only`: generate a review report only.
-- `/codex-verify-only`: verify against an existing review.
-- `/review-only`: Claude Code review only, without external Codex scripts.
+- `/nova-plugin:codex-review-only`: generate a review report only.
+- `/nova-plugin:codex-verify-only`: verify against an existing review.
+- `/nova-plugin:review-only`: Claude Code review only, without external Codex scripts.

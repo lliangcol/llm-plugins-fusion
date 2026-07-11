@@ -1,4 +1,4 @@
-﻿# /review-only
+﻿# /nova-plugin:review-only
 
 - Source: `nova-plugin/commands/review-only.md`
 
@@ -33,17 +33,17 @@
 ## Full Examples
 
 ```text
-/review-only
+/nova-plugin:review-only
 Review this code snippet: ...
 ```
 
 ```text
-/review-only
+/nova-plugin:review-only
 Implementation description below, group findings by severity.
 ```
 
 ```text
-/review-only
+/nova-plugin:review-only
 Provide full fix code.
 ```
 
@@ -54,5 +54,5 @@ Provide full fix code.
 
 ## Comparison with Similar Commands
 
-- `/review-lite` is lightweight.
-- `/review-strict` is exhaustive for high risk.
+- `/nova-plugin:review-lite` is lightweight.
+- `/nova-plugin:review-strict` is exhaustive for high risk.

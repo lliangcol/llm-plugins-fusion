@@ -1,0 +1,54 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/workflow-permissions.schema.json",
+  "title": "nova-plugin workflow permissions",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "pluginNamespace", "knownGoodClaudeCli", "primaryEntrypoints", "toolVocabulary", "expectedInventory", "workflows"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "pluginNamespace": { "const": "nova-plugin" },
+    "knownGoodClaudeCli": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "primaryEntrypoints": {
+      "type": "array",
+      "minItems": 6,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+    },
+    "toolVocabulary": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "enum": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "NotebookEdit"] }
+    },
+    "expectedInventory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["combinedSkillCount", "commandIds", "skillNames"],
+      "properties": {
+        "combinedSkillCount": { "const": 42 },
+        "commandIds": { "type": "array", "minItems": 21, "uniqueItems": true, "items": { "type": "string" } },
+        "skillNames": { "type": "array", "minItems": 21, "uniqueItems": true, "items": { "type": "string" } }
+      }
+    },
+    "workflows": {
+      "type": "array",
+      "minItems": 21,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "destructiveActions", "modelInvocable", "subagentSafe", "allowedTools", "disallowedTools"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "destructiveActions": { "enum": ["none", "low", "medium", "high"] },
+          "modelInvocable": { "type": "boolean" },
+          "subagentSafe": { "type": "boolean" },
+          "allowedTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+          "disallowedTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+          "compatibility": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

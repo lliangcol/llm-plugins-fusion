@@ -1,4 +1,4 @@
-﻿# Skill: /review-strict
+﻿# Skill: /nova-plugin:review-strict
 
 - 来源：`nova-plugin/commands/review-strict.md`
 
@@ -42,17 +42,17 @@
 ## 典型示例
 
 ```text
-/review-strict
+/nova-plugin:review-strict
 请审查支付核心逻辑代码：...
 ```
 
 ```text
-/review-strict
+/nova-plugin:review-strict
 对并发敏感模块做严格审计。
 ```
 
 ```text
-/review-strict
+/nova-plugin:review-strict
 请直接修复并提交代码。
 ```
 

@@ -13,10 +13,10 @@ the preference, and return a redacted response shape.
 ## Recommended Nova Workflow
 
 ```text
-/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+/nova-plugin:explore -> /nova-plugin:produce-plan -> /nova-plugin:review -> /nova-plugin:implement-plan -> /nova-plugin:finalize-work
 ```
 
-Use `/review LEVEL=strict` or a project-approved verification path if the
+Use `/nova-plugin:review LEVEL=strict` or a project-approved verification path if the
 private project rules classify the change as high risk.
 
 ## Project Rules to Read

@@ -1,4 +1,4 @@
-﻿# Skill: /explore-review
+﻿# Skill: /nova-plugin:explore-review
 
 - 来源：`nova-plugin/commands/explore-review.md`
 
@@ -42,17 +42,17 @@
 ## 典型示例
 
 ```text
-/explore-review
+/nova-plugin:explore-review
 这是需求描述，请输出审阅问题。
 ```
 
 ```text
-/explore-review
+/nova-plugin:explore-review
 这是方案描述，请给出风险信号。
 ```
 
 ```text
-/explore-review
+/nova-plugin:explore-review
 请直接给出解决方案。
 ```
 

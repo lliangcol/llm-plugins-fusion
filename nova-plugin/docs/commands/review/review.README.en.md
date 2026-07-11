@@ -1,4 +1,4 @@
-# /review
+# /nova-plugin:review
 
 - Source: `nova-plugin/commands/review.md`
 
@@ -18,22 +18,22 @@
 ## Full Examples
 
 ```text
-/review
+/nova-plugin:review
 Review this order-state transition implementation note: ...
 ```
 
 ```text
-/review LEVEL=strict
+/nova-plugin:review LEVEL=strict
 Strictly review this payment callback code, focusing on concurrency, idempotency, and data integrity.
 ```
 
 ```text
-/review LEVEL=lite
+/nova-plugin:review LEVEL=lite
 Quickly review this small PR diff and report only high-signal issues.
 ```
 
 ## Comparison with Similar Commands
 
-- `/review LEVEL=lite` is equivalent to the lightweight `/review-lite` entry point.
-- `/review LEVEL=standard` is equivalent to the standard-depth `/review-only` entry point.
-- `/review LEVEL=strict` is equivalent to the strict audit `/review-strict` entry point.
+- `/nova-plugin:review LEVEL=lite` is equivalent to the lightweight `/nova-plugin:review-lite` entry point.
+- `/nova-plugin:review LEVEL=standard` is equivalent to the standard-depth `/nova-plugin:review-only` entry point.
+- `/nova-plugin:review LEVEL=strict` is equivalent to the strict audit `/nova-plugin:review-strict` entry point.

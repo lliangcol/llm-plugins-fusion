@@ -2,14 +2,17 @@
 name: nova-implement-standard
 description: Controlled implementation from confirmed steps/plan with minor corrective adjustments only.
 license: MIT
-allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
-argument-hint: "Example: implement-standard STEPS='A,B,C'"
+allowed-tools: Read Glob Grep Write Edit
+disallowed-tools: NotebookEdit
+user-invocable: true
+disable-model-invocation: true
+compatibility: "Designed for Claude Code; project validation through Bash follows the normal permission flow."
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true
-    destructiveActions: medium
+  nova-user-invocable: "true"
+  nova-model-invocable: "false"
+  nova-subagent-safe: "true"
+  nova-destructive-actions: "medium"
+argument-hint: "Example: implement-standard STEPS='A,B,C'"
 ---
 
 ## Inputs
@@ -32,7 +35,7 @@ metadata:
 
 ## Safety Preflight
 
-- This skill declares side-effect-capable tools: `Write`, `Edit`, `MultiEdit`, `Bash`.
+- This skill declares side-effect-capable tools: `Write`, `Edit`, `Edit`, `Bash`.
 - Resolve parameters and present a preflight card before writing artifacts, editing project files, or running Bash.
 - Show files or artifacts that may be written, scripts or commands that may run, disallowed operations, and the proceed condition.
 - Do not infer missing safety-boundary values; ask once in interactive mode or fail in non-interactive mode.
@@ -65,7 +68,7 @@ metadata:
 
 ## Examples
 
-- Use `/implement-standard` for confirmed implementation steps without a formal approved-plan gate.
+- Use `/nova-plugin:implement-standard` for confirmed implementation steps without a formal approved-plan gate.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Common Rationalizations
@@ -130,7 +133,7 @@ Implement reliably with scoped execution discipline.
 
 ## Migrated Slash Command Contract
 
-Migrated from the pre-thin slash command contract for `/implement-standard` (`nova-plugin/commands/implement-standard.md`).
+Migrated from the pre-thin slash command contract for `/nova-plugin:implement-standard` (`nova-plugin/commands/implement-standard.md`).
 
 ### CONTROLLED EXECUTION
 

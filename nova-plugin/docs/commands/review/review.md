@@ -1,10 +1,10 @@
-# Skill: /review
+# Skill: /nova-plugin:review
 
 - 来源：`nova-plugin/commands/review.md`
 
 ## 用途
 
-`/review` 是统一评审入口，用于对提供的代码、设计或内容做只读评审。
+`/nova-plugin:review` 是统一评审入口，用于对提供的代码、设计或内容做只读评审。
 
 ## 参数
 
@@ -28,17 +28,17 @@
 ## 示例
 
 ```text
-/review
+/nova-plugin:review
 请评审以下实现说明：...
 ```
 
 ```text
-/review LEVEL=strict
+/nova-plugin:review LEVEL=strict
 请严格评审这段支付回调代码，关注并发、数据一致性和安全风险。
 ```
 
 ```text
-/review LEVEL=lite
+/nova-plugin:review LEVEL=lite
 请快速评审这个小型 PR diff，优先指出明显风险。
 ```
 

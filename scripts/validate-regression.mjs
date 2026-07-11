@@ -81,6 +81,9 @@ function copyRepositoryFixture(destination) {
   for (const relPath of listed.stdout.toString('utf8').split('\0').filter(Boolean)) {
     if (COPY_SKIP_ROOTS.has(relPath.split('/')[0])) continue;
     const source = resolve(root, relPath);
+    // A tracked path may be deleted in the current worktree before the change
+    // is staged. Treat the live worktree as authoritative for the fixture.
+    if (!existsSync(source)) continue;
     const target = resolve(destination, relPath);
     mkdirSync(dirname(target), { recursive: true });
     copyFileSync(source, target);
@@ -243,14 +246,20 @@ test('distribution risk scan covers patch, unknown, large text, and binary bound
 test('runtime secret rules are shared by hooks, Codex helpers, and distribution scan', () => {
   const preWrite = readFileSync(resolve(root, 'nova-plugin/hooks/scripts/pre-write-check.sh'), 'utf8');
   const postAudit = readFileSync(resolve(root, 'nova-plugin/hooks/scripts/post-audit-log.sh'), 'utf8');
+  const preWriteNode = readFileSync(resolve(root, 'nova-plugin/hooks/scripts/pre-write-check.mjs'), 'utf8');
+  const postAuditNode = readFileSync(resolve(root, 'nova-plugin/hooks/scripts/post-audit-log.mjs'), 'utf8');
   const codexCommon = readFileSync(resolve(root, 'nova-plugin/skills/nova-codex-review-fix/scripts/codex-common.sh'), 'utf8');
   const distributionScan = readFileSync(resolve(root, 'scripts/scan-distribution-risk.mjs'), 'utf8');
 
-  for (const source of [preWrite, postAudit, codexCommon]) {
+  for (const source of [preWriteNode, postAuditNode, codexCommon]) {
     assert.match(source, /runtime\/secret-rules\.mjs|nova_secret_rules_path/);
     assert.doesNotMatch(source, /assignment_pattern=/);
     assert.doesNotMatch(source, /sk-\(proj-\)\?/);
     assert.doesNotMatch(source, /npm_\[A-Za-z0-9\]/);
+  }
+  for (const launcher of [preWrite, postAudit]) {
+    assert.match(launcher, /nova_node_command/);
+    assert.doesNotMatch(launcher, /JSON\.parse|jq -r|assignment_pattern=/);
   }
   assert.match(distributionScan, /secretChecks/);
 });

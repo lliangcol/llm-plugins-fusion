@@ -90,9 +90,9 @@ Common profiles:
 
 | Profile | Use | Tools | Risk |
 | --- | --- | --- | --- |
-| `read` | Repository inspection or planning without file writes | `Read Glob Grep LS` | `none` |
-| `artifact` | Explicit artifact writing without project-code edits | `Read Glob Grep LS Write Edit` | `low` |
-| `implementation` | Bounded project-code edits and validation | `Read Glob Grep LS Write Edit MultiEdit Bash` | `medium` |
+| `read` | Repository inspection or planning without file writes | `Read Glob Grep Glob` | `none` |
+| `artifact` | Explicit artifact writing without project-code edits | `Read Glob Grep Glob Write Edit` | `low` |
+| `implementation` | Bounded project-code edits and validation | `Read Glob Grep Glob Write Edit Bash` | `medium` |
 
 Examples:
 

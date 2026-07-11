@@ -1,4 +1,4 @@
-﻿# /senior-explore
+﻿# /nova-plugin:senior-explore
 
 - 来源：`nova-plugin/commands/senior-explore.md`
 
@@ -37,20 +37,20 @@
 ## 完整示例
 
 ```text
-/senior-explore
+/nova-plugin:senior-explore
 INTENT: Analyze a new feature requirement
 CONTEXT: 需求文档与现有模块概述
 ```
 
 ```text
-/senior-explore
+/nova-plugin:senior-explore
 INTENT: Investigate a production issue or bug
 DEPTH: deep
 EXPORT_PATH: docs/analysis/payment-issue.md
 ```
 
 ```text
-/senior-explore
+/nova-plugin:senior-explore
 CONTEXT: 只有上下文，没有提供 INTENT
 ```
 
@@ -61,5 +61,5 @@ CONTEXT: 只有上下文，没有提供 INTENT
 
 ## 与相近命令的对比
 
-- `/explore-lite` 更快、更浅，侧重快速认知对齐。
-- `/explore-review` 侧重审阅问题与风险信号，不做系统性分析。
+- `/nova-plugin:explore-lite` 更快、更浅，侧重快速认知对齐。
+- `/nova-plugin:explore-review` 侧重审阅问题与风险信号，不做系统性分析。

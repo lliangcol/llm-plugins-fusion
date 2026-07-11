@@ -1,15 +1,18 @@
 ---
 id: route
 stage: explore
-title: /route
+title: /nova-plugin:route
 description: "Recommend the next nova command, skill, core agent, and capability packs for a request."
 destructive-actions: none
-allowed-tools: Read Glob Grep LS
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: false
 invokes:
   skill: nova-route
 ---
 
-# /route
+# /nova-plugin:route
 
 Invoke `nova-route` with `$ARGUMENTS`.
 

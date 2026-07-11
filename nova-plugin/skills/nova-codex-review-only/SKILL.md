@@ -2,14 +2,17 @@
 name: nova-codex-review-only
 description: Run Codex-only branch review with external scripts and structured review artifacts. Use when Claude Code should collect current branch diff context and ask Codex to produce a high-confidence review report without modifying code.
 license: MIT
-allowed-tools: Bash Read Glob Grep LS
-argument-hint: "Example: codex-review-only BASE=main"
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit
+user-invocable: true
+disable-model-invocation: true
+compatibility: "Requires Node.js 20+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved."
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true
-    destructiveActions: low
+  nova-user-invocable: "true"
+  nova-model-invocable: "false"
+  nova-subagent-safe: "true"
+  nova-destructive-actions: "low"
+argument-hint: "Example: codex-review-only BASE=main"
 ---
 
 ## Inputs
@@ -73,7 +76,7 @@ metadata:
 
 ## Examples
 
-- Use `/codex-review-only` for the review step only.
+- Use `/nova-plugin:codex-review-only` for the review step only.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Common Rationalizations
@@ -129,7 +132,7 @@ metadata:
 
 ## Migrated Slash Command Contract
 
-Migrated from the pre-thin slash command contract for `/codex-review-only` (`nova-plugin/commands/codex-review-only.md`).
+Migrated from the pre-thin slash command contract for `/nova-plugin:codex-review-only` (`nova-plugin/commands/codex-review-only.md`).
 
 ### CODEX REVIEW ONLY
 

@@ -2,14 +2,16 @@
 name: nova-senior-explore
 description: Deep exploration skill for complex requirements/incidents; can export analysis artifact identical to chat output.
 license: MIT
-allowed-tools: Read Glob Grep LS Write
-argument-hint: "Example: senior-explore INTENT=incident DEPTH=deep EXPORT_PATH=docs/analysis/incident.md"
+allowed-tools: Read Glob Grep Write Edit
+disallowed-tools: NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: true
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true
-    destructiveActions: low
+  nova-user-invocable: "true"
+  nova-model-invocable: "false"
+  nova-subagent-safe: "true"
+  nova-destructive-actions: "low"
+argument-hint: "Example: senior-explore INTENT=incident DEPTH=deep EXPORT_PATH=docs/analysis/incident.md"
 ---
 
 ## Inputs
@@ -67,7 +69,7 @@ metadata:
 
 ## Examples
 
-- Use `/senior-explore` for deep fact gathering and optional exported analysis.
+- Use `/nova-plugin:senior-explore` for deep fact gathering and optional exported analysis.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Skill-Specific Guidance
@@ -110,7 +112,7 @@ Conduct systematic analysis and surface findings/open questions/risks.
 
 ## Migrated Slash Command Contract
 
-Migrated from the pre-thin slash command contract for `/senior-explore` (`nova-plugin/commands/senior-explore.md`).
+Migrated from the pre-thin slash command contract for `/nova-plugin:senior-explore` (`nova-plugin/commands/senior-explore.md`).
 
 ### EXPLORE ONLY
 

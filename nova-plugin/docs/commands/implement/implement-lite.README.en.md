@@ -1,4 +1,4 @@
-﻿# /implement-lite
+﻿# /nova-plugin:implement-lite
 
 - Source: `nova-plugin/commands/implement-lite.md`
 
@@ -26,17 +26,17 @@
 ## Full Examples
 
 ```text
-/implement-lite
+/nova-plugin:implement-lite
 Quickly implement phone masking.
 ```
 
 ```text
-/implement-lite
+/nova-plugin:implement-lite
 Optimize enum lookup and add tests.
 ```
 
 ```text
-/implement-lite
+/nova-plugin:implement-lite
 Provide a full architecture design.
 ```
 
@@ -47,5 +47,5 @@ Provide a full architecture design.
 
 ## Comparison with Similar Commands
 
-- `/implement-standard` is more controlled with explicit steps.
-- `/implement-plan` must follow an approved plan.
+- `/nova-plugin:implement-standard` is more controlled with explicit steps.
+- `/nova-plugin:implement-plan` must follow an approved plan.

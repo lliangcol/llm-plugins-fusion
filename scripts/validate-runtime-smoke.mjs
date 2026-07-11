@@ -173,6 +173,7 @@ await runNode('node pre-write hook rejects common token shapes', [
   'nova-plugin/hooks/scripts/pre-write-check.mjs',
 ], {
   input: JSON.stringify({
+    tool_name: 'Write',
     tool_input: {
       file_path: 'src/example.js',
       content: `OPENAI_API_KEY=sk-proj-${'e'.repeat(24)}`,
@@ -186,6 +187,7 @@ await runNode('node pre-write hook validates hooks.json structure', [
   'nova-plugin/hooks/scripts/pre-write-check.mjs',
 ], {
   input: JSON.stringify({
+    tool_name: 'Write',
     tool_input: {
       file_path: 'nova-plugin/hooks/hooks.json',
       content: readFileSync(resolve(root, 'nova-plugin/hooks/hooks.json'), 'utf8'),
@@ -327,12 +329,12 @@ printf '%s\\n' 'ordinary public documentation text' | "$node_bin" "$rules_path" 
 await runTempBash('pre-write hook rejects common token shapes', `
 secret_tail="aaaaaaaaaaaaaaaaaaaaaaaa"
 token="sk-proj-\${secret_tail}"
-payload="$(printf '{"tool_input":{"file_path":"src/example.js","content":"OPENAI_API_KEY=%s"}}' "$token")"
+payload="$(printf '{"tool_name":"Write","tool_input":{"file_path":"src/example.js","content":"OPENAI_API_KEY=%s"}}' "$token")"
 printf '%s' "$payload" | bash nova-plugin/hooks/scripts/pre-write-check.sh
 `, { expectFailure: true, outputPattern: /敏感信息/ });
 
 await runTempBash('pre-write hook validates hooks.json structure', `
-payload='{"tool_input":{"file_path":"nova-plugin/hooks/hooks.json","content":"{\\"hooks\\":{\\"PreToolUse\\":[{\\"matcher\\":\\"Write\\",\\"hooks\\":[{\\"type\\":\\"command\\",\\"command\\":\\"bash \\\\\\"\${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh\\\\\\"\\",\\"timeout\\":10}]}]}}"}}'
+payload='{"tool_name":"Write","tool_input":{"file_path":"nova-plugin/hooks/hooks.json","content":"{\\"hooks\\":{\\"PreToolUse\\":[{\\"matcher\\":\\"Write\\",\\"hooks\\":[{\\"type\\":\\"command\\",\\"command\\":\\"bash \\\\\\"\${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh\\\\\\"\\",\\"timeout\\":10}]}]}}"}}'
 plugin_root="$(pwd -W 2>/dev/null || pwd)/nova-plugin"
 printf '%s' "$payload" | CLAUDE_PLUGIN_ROOT="$plugin_root" bash nova-plugin/hooks/scripts/pre-write-check.sh
 `);

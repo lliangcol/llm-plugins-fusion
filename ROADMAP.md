@@ -15,7 +15,7 @@ agents、packs、hooks 和文档的本地/CI 校验体系。
 
 | 领域 | 当前状态 |
 | --- | --- |
-| 发布版本 | `nova-plugin` 当前稳定推广版本为 exact release tag `v2.4.0`；移动 `main` 可能包含后续 `Unreleased` 工作，不能替代正式 tag。 |
+| 发布版本 | `nova-plugin` 当前稳定推广版本为 exact release tag `v2.4.1`；移动 `main` 可能包含后续 `Unreleased` 工作，不能替代正式 tag。 |
 | 插件能力面 | 21 个 slash commands 与 21 个一对一 `nova-*` skills。 |
 | Agent 模型 | `nova-plugin/agents/` 中固定 6 个 active core agents；旧 specialist agent 模型已进入 legacy。 |
 | Capability packs | `nova-plugin/packs/` 中固定 8 个 packs，均声明 enhanced mode 与 fallback mode。 |
@@ -110,12 +110,12 @@ node scripts/validate-docs.mjs
 分发安全扫描、consumer 工作台模板和 release evidence 的可靠性。
 
 状态：Released / Completed。`v2.2.0` 是非破坏性 minor，新增
-`/route` 路由入口，补强 Codex runtime smoke、分发风险扫描、Claude 插件安装
+`/nova-plugin:route` 路由入口，补强 Codex runtime smoke、分发风险扫描、Claude 插件安装
 smoke、consumer setup 文档、prompt 模板和 workflow handoff 约束。
 
 | 工作项 | 状态 | 验收证据 |
 | --- | --- | --- |
-| Read-only route entry | Completed | `/route` 与 `nova-route` 选择下一步 command、skill、core agent、capability packs、必需输入和验证路径。 |
+| Read-only route entry | Completed | `/nova-plugin:route` 与 `nova-route` 选择下一步 command、skill、core agent、capability packs、必需输入和验证路径。 |
 | Runtime smoke | Completed | `scripts/validate-runtime-smoke.mjs` 校验 Codex helper 语法、help 输出、安全失败路径和跨平台 executable fallback。 |
 | Distribution risk scan | Completed | `scripts/scan-distribution-risk.mjs` 扫描活跃分发内容中的密钥、私有路径、私网地址和内部 endpoint，并对历史归档降级 warning。 |
 | Plugin install smoke | Scripted / evidence per promotion | `scripts/validate-plugin-install.mjs` 覆盖 marketplace add/list、plugin validate、user-scope install/update 和版本核对；每次正式推广仍需在 CI 或隔离测试用户环境记录 evidence，因为它会修改 user-scope Claude 插件安装状态。 |

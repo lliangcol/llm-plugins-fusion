@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": {
     "pluginName": "nova-plugin",
-    "pluginVersion": "2.4.0",
+    "pluginVersion": "2.4.1",
     "registrySource": ".claude-plugin/registry.source.json",
     "registryPluginCount": 1
   },
@@ -11,7 +11,8 @@
     "skills": 21,
     "activeAgents": 6,
     "capabilityPacks": 8,
-    "generatedMarketplaceOutputs": 3
+    "generatedMarketplaceOutputs": 3,
+    "installedSkills": 42
   },
   "commands": [
     {
@@ -166,6 +167,19 @@
     {
       "name": "nova-backend-plan",
       "commandId": "backend-plan",
+      "userInvocable": true,
+      "modelInvocable": false,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit"
+      ],
+      "disallowedTools": [
+        "NotebookEdit",
+        "Bash"
+      ],
       "subagentSafe": true,
       "destructiveActions": "low",
       "path": "nova-plugin/skills/nova-backend-plan/SKILL.md"
@@ -173,6 +187,18 @@
     {
       "name": "nova-codex-review-fix",
       "commandId": "codex-review-fix",
+      "userInvocable": true,
+      "modelInvocable": false,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit"
+      ],
+      "disallowedTools": [
+        "NotebookEdit"
+      ],
       "subagentSafe": false,
       "destructiveActions": "medium",
       "path": "nova-plugin/skills/nova-codex-review-fix/SKILL.md"
@@ -180,6 +206,18 @@
     {
       "name": "nova-codex-review-only",
       "commandId": "codex-review-only",
+      "userInvocable": true,
+      "modelInvocable": false,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit"
+      ],
       "subagentSafe": true,
       "destructiveActions": "low",
       "path": "nova-plugin/skills/nova-codex-review-only/SKILL.md"
@@ -187,6 +225,18 @@
     {
       "name": "nova-codex-verify-only",
       "commandId": "codex-verify-only",
+      "userInvocable": true,
+      "modelInvocable": false,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit"
+      ],
       "subagentSafe": true,
       "destructiveActions": "low",
       "path": "nova-plugin/skills/nova-codex-verify-only/SKILL.md"
@@ -194,6 +244,19 @@
     {
       "name": "nova-explore",
       "commandId": "explore",
+      "userInvocable": true,
+      "modelInvocable": true,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
       "subagentSafe": true,
       "destructiveActions": "none",
       "path": "nova-plugin/skills/nova-explore/SKILL.md"
@@ -201,6 +264,19 @@
     {
       "name": "nova-explore-lite",
       "commandId": "explore-lite",
+      "userInvocable": true,
+      "modelInvocable": true,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
       "subagentSafe": true,
       "destructiveActions": "none",
       "path": "nova-plugin/skills/nova-explore-lite/SKILL.md"
@@ -208,6 +284,19 @@
     {
       "name": "nova-explore-review",
       "commandId": "explore-review",
+      "userInvocable": true,
+      "modelInvocable": true,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
       "subagentSafe": true,
       "destructiveActions": "none",
       "path": "nova-plugin/skills/nova-explore-review/SKILL.md"
@@ -215,6 +304,19 @@
     {
       "name": "nova-finalize-lite",
       "commandId": "finalize-lite",
+      "userInvocable": true,
+      "modelInvocable": true,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
       "subagentSafe": true,
       "destructiveActions": "none",
       "path": "nova-plugin/skills/nova-finalize-lite/SKILL.md"
@@ -222,6 +324,18 @@
     {
       "name": "nova-finalize-work",
       "commandId": "finalize-work",
+      "userInvocable": true,
+      "modelInvocable": true,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit"
+      ],
       "subagentSafe": true,
       "destructiveActions": "none",
       "path": "nova-plugin/skills/nova-finalize-work/SKILL.md"
@@ -229,6 +343,18 @@
     {
       "name": "nova-implement-lite",
       "commandId": "implement-lite",
+      "userInvocable": true,
+      "modelInvocable": false,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit"
+      ],
+      "disallowedTools": [
+        "NotebookEdit"
+      ],
       "subagentSafe": true,
       "destructiveActions": "medium",
       "path": "nova-plugin/skills/nova-implement-lite/SKILL.md"
@@ -236,6 +362,18 @@
     {
       "name": "nova-implement-plan",
       "commandId": "implement-plan",
+      "userInvocable": true,
+      "modelInvocable": false,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit"
+      ],
+      "disallowedTools": [
+        "NotebookEdit"
+      ],
       "subagentSafe": true,
       "destructiveActions": "medium",
       "path": "nova-plugin/skills/nova-implement-plan/SKILL.md"
@@ -243,6 +381,18 @@
     {
       "name": "nova-implement-standard",
       "commandId": "implement-standard",
+      "userInvocable": true,
+      "modelInvocable": false,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit"
+      ],
+      "disallowedTools": [
+        "NotebookEdit"
+      ],
       "subagentSafe": true,
       "destructiveActions": "medium",
       "path": "nova-plugin/skills/nova-implement-standard/SKILL.md"
@@ -250,6 +400,19 @@
     {
       "name": "nova-plan-lite",
       "commandId": "plan-lite",
+      "userInvocable": true,
+      "modelInvocable": true,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
       "subagentSafe": true,
       "destructiveActions": "none",
       "path": "nova-plugin/skills/nova-plan-lite/SKILL.md"
@@ -257,6 +420,19 @@
     {
       "name": "nova-plan-review",
       "commandId": "plan-review",
+      "userInvocable": true,
+      "modelInvocable": true,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
       "subagentSafe": true,
       "destructiveActions": "none",
       "path": "nova-plugin/skills/nova-plan-review/SKILL.md"
@@ -264,6 +440,19 @@
     {
       "name": "nova-produce-plan",
       "commandId": "produce-plan",
+      "userInvocable": true,
+      "modelInvocable": false,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit"
+      ],
+      "disallowedTools": [
+        "NotebookEdit",
+        "Bash"
+      ],
       "subagentSafe": true,
       "destructiveActions": "low",
       "path": "nova-plugin/skills/nova-produce-plan/SKILL.md"
@@ -271,6 +460,19 @@
     {
       "name": "nova-review",
       "commandId": "review",
+      "userInvocable": true,
+      "modelInvocable": true,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
       "subagentSafe": true,
       "destructiveActions": "none",
       "path": "nova-plugin/skills/nova-review/SKILL.md"
@@ -278,6 +480,19 @@
     {
       "name": "nova-review-lite",
       "commandId": "review-lite",
+      "userInvocable": true,
+      "modelInvocable": true,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
       "subagentSafe": true,
       "destructiveActions": "none",
       "path": "nova-plugin/skills/nova-review-lite/SKILL.md"
@@ -285,6 +500,19 @@
     {
       "name": "nova-review-only",
       "commandId": "review-only",
+      "userInvocable": true,
+      "modelInvocable": true,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
       "subagentSafe": true,
       "destructiveActions": "none",
       "path": "nova-plugin/skills/nova-review-only/SKILL.md"
@@ -292,6 +520,19 @@
     {
       "name": "nova-review-strict",
       "commandId": "review-strict",
+      "userInvocable": true,
+      "modelInvocable": true,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
       "subagentSafe": true,
       "destructiveActions": "none",
       "path": "nova-plugin/skills/nova-review-strict/SKILL.md"
@@ -299,6 +540,19 @@
     {
       "name": "nova-route",
       "commandId": "route",
+      "userInvocable": true,
+      "modelInvocable": true,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
       "subagentSafe": true,
       "destructiveActions": "none",
       "path": "nova-plugin/skills/nova-route/SKILL.md"
@@ -306,6 +560,19 @@
     {
       "name": "nova-senior-explore",
       "commandId": "senior-explore",
+      "userInvocable": true,
+      "modelInvocable": false,
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit"
+      ],
+      "disallowedTools": [
+        "NotebookEdit",
+        "Bash"
+      ],
       "subagentSafe": true,
       "destructiveActions": "low",
       "path": "nova-plugin/skills/nova-senior-explore/SKILL.md"
@@ -377,7 +644,7 @@
       "generated": true,
       "pluginCount": 1,
       "pluginVersions": [
-        "nova-plugin@2.4.0"
+        "nova-plugin@2.4.1"
       ]
     },
     {
@@ -385,7 +652,7 @@
       "generated": true,
       "pluginCount": 1,
       "pluginVersions": [
-        "nova-plugin@2.4.0"
+        "nova-plugin@2.4.1"
       ]
     },
     {
@@ -393,8 +660,66 @@
       "generated": true,
       "pluginCount": 1,
       "pluginVersions": [
-        "nova-plugin@2.4.0"
+        "nova-plugin@2.4.1"
       ]
     }
-  ]
+  ],
+  "runtimeCompatibility": {
+    "pluginNamespace": "nova-plugin",
+    "knownGoodClaudeCli": "2.1.205",
+    "primaryEntrypoints": [
+      "/nova-plugin:route",
+      "/nova-plugin:explore",
+      "/nova-plugin:produce-plan",
+      "/nova-plugin:review",
+      "/nova-plugin:implement-plan",
+      "/nova-plugin:finalize-work"
+    ],
+    "expectedCommandIds": [
+      "backend-plan",
+      "codex-review-fix",
+      "codex-review-only",
+      "codex-verify-only",
+      "explore",
+      "explore-lite",
+      "explore-review",
+      "finalize-lite",
+      "finalize-work",
+      "implement-lite",
+      "implement-plan",
+      "implement-standard",
+      "plan-lite",
+      "plan-review",
+      "produce-plan",
+      "review",
+      "review-lite",
+      "review-only",
+      "review-strict",
+      "route",
+      "senior-explore"
+    ],
+    "expectedSkillNames": [
+      "nova-backend-plan",
+      "nova-codex-review-fix",
+      "nova-codex-review-only",
+      "nova-codex-verify-only",
+      "nova-explore",
+      "nova-explore-lite",
+      "nova-explore-review",
+      "nova-finalize-lite",
+      "nova-finalize-work",
+      "nova-implement-lite",
+      "nova-implement-plan",
+      "nova-implement-standard",
+      "nova-plan-lite",
+      "nova-plan-review",
+      "nova-produce-plan",
+      "nova-review",
+      "nova-review-lite",
+      "nova-review-only",
+      "nova-review-strict",
+      "nova-route",
+      "nova-senior-explore"
+    ]
+  }
 }

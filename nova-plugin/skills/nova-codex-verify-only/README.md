@@ -34,14 +34,14 @@ nova-plugin/skills/
 - Git 仓库
 - `codex` CLI 已登录并可 `codex --help`
 - Bash 运行环境（macOS / Linux / WSL / Git Bash）
-- 一份可读的 `review.md`（通常来自 `/codex-review-only` 或 `/codex-review-fix`）
+- 一份可读的 `review.md`（通常来自 `/nova-plugin:codex-review-only` 或 `/nova-plugin:codex-review-fix`）
 
 ## 5. Claude Code 使用方式
 
 ```text
-/codex-verify-only REVIEW_FILE=.codex/codex-review-fix/latest-artifacts/review.md
-/codex-verify-only REVIEW_FILE=<path> CHECKS_FILE=.codex/codex-review-fix/latest-artifacts/checks.txt
-/codex-verify-only REVIEW_FILE=<path> CHECKS_FILE=<path> BASE=main
+/nova-plugin:codex-verify-only REVIEW_FILE=.codex/codex-review-fix/latest-artifacts/review.md
+/nova-plugin:codex-verify-only REVIEW_FILE=<path> CHECKS_FILE=.codex/codex-review-fix/latest-artifacts/checks.txt
+/nova-plugin:codex-verify-only REVIEW_FILE=<path> CHECKS_FILE=<path> BASE=main
 ```
 
 等价底层调用：
@@ -86,7 +86,7 @@ Claude Code 在 verify 完成后必须汇报：
 
 ### `REVIEW_FILE` 缺失或不存在
 
-- 先跑 `/codex-review-only` 生成 `review.md`
+- 先跑 `/nova-plugin:codex-review-only` 生成 `review.md`
 - 或从历史时间戳目录复制到 `latest-artifacts/review.md`
 
 ### `CHECKS_FILE` 可选但强烈建议
@@ -98,6 +98,6 @@ Claude Code 在 verify 完成后必须汇报：
 
 | 命令 | 行为 |
 |---|---|
-| `/codex-review-only` | 仅 review，产生 `review.md` |
-| `/codex-verify-only` | 仅 verify（本 skill） |
-| `/codex-review-fix` | review → fix → checks → verify 完整闭环 |
+| `/nova-plugin:codex-review-only` | 仅 review，产生 `review.md` |
+| `/nova-plugin:codex-verify-only` | 仅 verify（本 skill） |
+| `/nova-plugin:codex-review-fix` | review → fix → checks → verify 完整闭环 |

@@ -1,4 +1,4 @@
-# Skill: /codex-verify-only
+# Skill: /nova-plugin:codex-verify-only
 
 - 来源：`nova-plugin/commands/codex-verify-only.md`
 

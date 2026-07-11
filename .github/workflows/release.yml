@@ -27,75 +27,42 @@ jobs:
         run: node scripts/generate-release-checksums.mjs
       - name: Plugin install dry run
         run: node scripts/validate-plugin-install.mjs --dry-run
-      - name: Write release validation evidence
-        if: always()
+      - name: Prepare machine-readable validation inputs
         run: |
-          mkdir -p .codex .metrics/release-validation
-          {
-            echo "# Release Validation Evidence"
-            echo
-            echo "- workflow: ${GITHUB_WORKFLOW}"
-            echo "- run_id: ${GITHUB_RUN_ID}"
-            echo "- ref: ${GITHUB_REF}"
-            echo "- sha: ${GITHUB_SHA}"
-            echo "- generated_at: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
-            echo
-            echo "## Commands"
-            echo
-            echo '```text'
-            echo "NOVA_VALIDATE_WRITE_TIMINGS=1 npm run validate:maintainer"
-            echo "npm run test:coverage:check"
-            echo "node scripts/generate-release-checksums.mjs"
-            echo "node scripts/validate-plugin-install.mjs --dry-run"
-            echo '```'
-            if [ -f .metrics/validation-timings.json ]; then
-              echo
-              echo "## Validation Timings"
-              echo
-              echo '```json'
-              cat .metrics/validation-timings.json
-              echo '```'
-            fi
-            if [ -f .metrics/coverage/coverage-summary.txt ]; then
-              echo
-              echo "## Test Coverage"
-              echo
-              echo '```text'
-              cat .metrics/coverage/coverage-summary.txt
-              echo '```'
-            fi
-            if [ -f .metrics/release-checksums/SHA256SUMS.txt ]; then
-              echo
-              echo "## Release Checksums"
-              echo
-              echo '```text'
-              cat .metrics/release-checksums/SHA256SUMS.txt
-              echo '```'
-            fi
-          } > .codex/release-validation-evidence.md
-      - name: Upload release validation evidence
-        if: always()
+          mkdir -p .metrics/release-inputs
+          cp .metrics/validation-timings.json .metrics/release-inputs/validation-timings.json
+          cp .metrics/coverage/coverage-summary.txt .metrics/release-inputs/coverage-summary.txt
+          cp .metrics/coverage/metadata.json .metrics/release-inputs/coverage-metadata.json
+          cp .metrics/release-checksums/SHA256SUMS.txt .metrics/release-inputs/SHA256SUMS.txt
+      - name: Upload release validation inputs
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: release-validation-evidence
-          path: |
-            .codex/release-validation-evidence.md
-            .metrics/validation-timings.json
-            .metrics/coverage/
-            .metrics/release-checksums/
+          name: release-validation-inputs
+          path: .metrics/release-inputs/
+          include-hidden-files: true
 
-  isolated-install-smoke:
-    name: Isolated Install Smoke
+  claude-live-validation:
+    name: Claude Live Validation / known-good 2.1.205
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '20'
       - name: Install Claude CLI
-        run: npm install -g @anthropic-ai/claude-code
-      - name: Validate user-scope install path
-        run: node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home
+        run: npm install -g @anthropic-ai/claude-code@2.1.205
+      - name: Validate exact-tag install, inventory, and route
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: >-
+          node scripts/validate-plugin-install.mjs
+          --accept-user-scope-mutation
+          --isolated-home
+          --marketplace-source "lliangcol/llm-plugins-fusion@${GITHUB_REF_NAME}"
+          --expected-ref "${GITHUB_REF_NAME}"
+          --inventory-out .metrics/release-install-smoke/inventory.json
+          --route-smoke-out .metrics/release-install-smoke/route-smoke.json
       - name: Record isolated install smoke evidence
         if: always()
         run: |
@@ -118,15 +85,54 @@ jobs:
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: release-install-smoke-evidence
+          name: release-live-inputs
           path: .metrics/release-install-smoke/
+          include-hidden-files: true
+
+  assemble-release-evidence:
+    name: Assemble Release Evidence
+    runs-on: ubuntu-latest
+    needs:
+      - validate
+      - claude-live-validation
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '20'
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: release-validation-inputs
+          path: .metrics/aggregate/validation
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: release-live-inputs
+          path: .metrics/aggregate/live
+      - name: Generate canonical release evidence
+        run: >-
+          node scripts/generate-release-evidence.mjs
+          --coverage-summary .metrics/aggregate/validation/coverage-summary.txt
+          --coverage-metadata .metrics/aggregate/validation/coverage-metadata.json
+          --timings .metrics/aggregate/validation/validation-timings.json
+          --checksums .metrics/aggregate/validation/SHA256SUMS.txt
+          --install .metrics/aggregate/live/inventory.json
+          --route .metrics/aggregate/live/route-smoke.json
+          --out-dir .metrics/release-evidence
+          --require-live
+      - name: Publish GitHub Step Summary
+        run: cat .metrics/release-evidence/release-evidence.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload canonical release evidence
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: release-evidence
+          path: .metrics/release-evidence/
+          include-hidden-files: true
 
   release:
     name: Create GitHub Release
     runs-on: ubuntu-latest
     needs:
-      - validate
-      - isolated-install-smoke
+      - assemble-release-evidence
     permissions:
       contents: write
     steps:
@@ -143,11 +149,18 @@ jobs:
         run: node scripts/prepare-release.mjs
       - name: Generate release checksums
         run: node scripts/generate-release-checksums.mjs
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: release-evidence
+          path: .metrics/release-evidence
       - name: Create GitHub Release
         uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d # v3
         with:
           name: "nova-plugin v${{ steps.release.outputs.version }}"
           body_path: ${{ steps.release.outputs.notes_file }}
-          files: .metrics/release-checksums/SHA256SUMS.txt
+          files: |
+            .metrics/release-checksums/SHA256SUMS.txt
+            .metrics/release-evidence/release-evidence.json
+            .metrics/release-evidence/release-evidence.md
           draft: false
           prerelease: ${{ steps.release.outputs.prerelease }}

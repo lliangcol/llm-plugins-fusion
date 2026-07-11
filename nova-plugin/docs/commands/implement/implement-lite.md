@@ -1,4 +1,4 @@
-﻿# Skill: /implement-lite
+﻿# Skill: /nova-plugin:implement-lite
 
 - 来源：`nova-plugin/commands/implement-lite.md`
 
@@ -42,17 +42,17 @@
 ## 典型示例
 
 ```text
-/implement-lite
+/nova-plugin:implement-lite
 请快速实现手机号脱敏。
 ```
 
 ```text
-/implement-lite
+/nova-plugin:implement-lite
 优化枚举查找并补测试。
 ```
 
 ```text
-/implement-lite
+/nova-plugin:implement-lite
 请给出完整设计与架构方案。
 ```
 

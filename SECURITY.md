@@ -36,7 +36,7 @@
 
 本仓库在设计上对 LLM 工具调用风险保持警惕：
 
-1. **默认无写权限**：`explore` / `review` 类命令的 `allowed-tools` 只含 `Read / Glob / Grep / LS`。
+1. **默认无写权限**：`explore` / `review` 类命令的 `allowed-tools` 只含 `Read / Glob / Grep / Glob`。
 2. **destructive-actions 分级**：每个命令在 frontmatter 中声明 `none / low / medium / high`，配合 skill 的 `subagentSafe` 字段共同决定是否允许在 agent 自动化流中调用。
 3. **Codex 闭环的安全边界**：`codex-review-fix` 等命令在 SKILL.md 中显式禁止 `git reset --hard`、`git clean -fd`、批量删除等操作。
 4. **供应链**：仓库级脚本尽量使用 Node.js 内置模块与 Bash/PowerShell；CI 持续执行 schema、frontmatter 与 active agent 校验。

@@ -70,9 +70,9 @@ export CODEX_PROFILE="default"
 推荐通过命令或 skill 触发：
 
 ```text
-/codex-review-fix BASE=main GOAL="修复当前分支直到可合并"
-/codex-review-only BASE=main
-/codex-verify-only REVIEW_FILE=.codex/codex-review-fix/latest-artifacts/review.md CHECKS_FILE=.codex/codex-review-fix/latest-artifacts/checks.txt
+/nova-plugin:codex-review-fix BASE=main GOAL="修复当前分支直到可合并"
+/nova-plugin:codex-review-only BASE=main
+/nova-plugin:codex-verify-only REVIEW_FILE=.codex/codex-review-fix/latest-artifacts/review.md CHECKS_FILE=.codex/codex-review-fix/latest-artifacts/checks.txt
 ```
 
 Claude Code 在使用主技能时应遵循：

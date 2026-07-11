@@ -38,9 +38,9 @@ nova-plugin/skills/
 ## 5. Claude Code 使用方式
 
 ```text
-/codex-review-only                         # 默认 base 为自动识别
-/codex-review-only BASE=main               # 指定 base
-/codex-review-only BASE=main REVIEW_MODE=staged
+/nova-plugin:codex-review-only                         # 默认 base 为自动识别
+/nova-plugin:codex-review-only BASE=main               # 指定 base
+/nova-plugin:codex-review-only BASE=main REVIEW_MODE=staged
 ```
 
 等价底层调用：
@@ -64,7 +64,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-fix/scripts/codex-review.sh
 └── review.md
 ```
 
-说明：输出目录沿用 `codex-review-fix` 的命名，保证后续可以无缝对接 `/codex-verify-only` 或完整 `/codex-review-fix` 闭环。
+说明：输出目录沿用 `codex-review-fix` 的命名，保证后续可以无缝对接 `/nova-plugin:codex-verify-only` 或完整 `/nova-plugin:codex-review-fix` 闭环。
 
 ## 7. 安全边界
 
@@ -88,6 +88,6 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-fix/scripts/codex-review.sh
 
 | 命令 | 行为 |
 |---|---|
-| `/codex-review-only` | 仅 review（本 skill） |
-| `/codex-verify-only` | 基于已有 `review.md` 做 verify |
-| `/codex-review-fix` | review → fix → checks → verify 完整闭环 |
+| `/nova-plugin:codex-review-only` | 仅 review（本 skill） |
+| `/nova-plugin:codex-verify-only` | 基于已有 `review.md` 做 verify |
+| `/nova-plugin:codex-review-fix` | review → fix → checks → verify 完整闭环 |

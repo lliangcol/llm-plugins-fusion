@@ -25,7 +25,7 @@ The public API is intentionally narrow:
 ## Stable Install And Plugin Identifiers
 
 ```text
-/plugin marketplace add lliangcol/llm-plugins-fusion
+/plugin marketplace add lliangcol/llm-plugins-fusion@v2.4.1
 /plugin install nova-plugin@llm-plugins-fusion
 ```
 

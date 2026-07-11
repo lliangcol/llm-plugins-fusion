@@ -1,4 +1,4 @@
-﻿# Skill: /backend-plan
+﻿# Skill: /nova-plugin:backend-plan
 
 - 来源：`nova-plugin/commands/backend-plan.md`
 
@@ -42,17 +42,17 @@
 ## 典型示例
 
 ```text
-/backend-plan
+/nova-plugin:backend-plan
 PLAN_OUTPUT_PATH: docs/plans/order-backend.md
 ```
 
 ```text
-/backend-plan
+/nova-plugin:backend-plan
 PLAN_OUTPUT_PATH: docs/plans/account-service.md
 ```
 
 ```text
-/backend-plan
+/nova-plugin:backend-plan
 缺少 PLAN_OUTPUT_PATH
 ```
 

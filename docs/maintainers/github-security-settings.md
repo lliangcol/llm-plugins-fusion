@@ -42,7 +42,8 @@ Validate Schemas
 Validate Registry Fixtures
 Validate Generated Drift
 Validate Capability Packs
-Validate Claude Compatibility
+Claude Manifest Static
+Validate Workflow Permissions
 NPM Test
 Test Coverage
 Plugin Install Dry Run

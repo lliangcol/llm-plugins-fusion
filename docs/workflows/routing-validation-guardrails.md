@@ -6,7 +6,7 @@ Date: 2026-05-12
 This document explains the guardrails that keep `nova-plugin` routing,
 checkpointing, and validation evidence reliable without expanding the public
 command surface. It is a maintenance guide for the changes that harden
-`/route`, checkpoint artifacts, validation claims, prompt-surface budgets, and
+`/nova-plugin:route`, checkpoint artifacts, validation claims, prompt-surface budgets, and
 distribution-risk scanning.
 
 ## Why This Exists
@@ -26,7 +26,7 @@ and they do not replace review, planning, implementation, or release evidence.
 
 | Guardrail | Primary surface | Purpose | Validation |
 | --- | --- | --- | --- |
-| First-stage routing | `/route`, `nova-route`, command docs, routing docs | Classify intent before recommending the next command, skill, core agent, packs, required inputs, validation expectations, and fallback path. | `node scripts/lint-frontmatter.mjs`, `node scripts/validate-docs.mjs` |
+| First-stage routing | `/nova-plugin:route`, `nova-route`, command docs, routing docs | Classify intent before recommending the next command, skill, core agent, packs, required inputs, validation expectations, and fallback path. | `node scripts/lint-frontmatter.mjs`, `node scripts/validate-docs.mjs` |
 | Checkpoint artifacts | `docs/prompts/common/checkpoint-artifact.md`, workbench template, artifact policy | Preserve resumable state for long-running private work without relying on chat history. | `node scripts/validate-docs.mjs` |
 | Verification evidence mapping | shared output contracts, Codex verification prompt, context-safe workflow docs | Prevent "tests passed" from standing in for behavior, repository fact, review finding, or change-goal evidence. | Review artifact inspection plus focused checks named by the workflow |
 | Prompt-surface budget | `scripts/validate-surface-budget.mjs`, CI, npm shortcut, allowlist | Keep public command, skill, agent, and pack surfaces small enough to audit. | `node scripts/validate-surface-budget.mjs` |
@@ -34,7 +34,7 @@ and they do not replace review, planning, implementation, or release evidence.
 
 ## Routing Rules
 
-`/route` is a read-only first-stage router. It should:
+`/nova-plugin:route` is a read-only first-stage router. It should:
 
 1. classify the request as Explore, Plan, Review, Implement, Finalize, or Codex
    loop;
@@ -96,7 +96,7 @@ Use this checklist when changing routing, checkpoint, validation, prompt,
 security, or CI guardrails:
 
 - Update the command, skill, docs, and user-facing guide that own the behavior.
-- Keep `/route` read-only and first-stage.
+- Keep `/nova-plugin:route` read-only and first-stage.
 - Ensure checkpoints map evidence to behavior or repository facts.
 - Add or update `CHANGELOG.md` for user-visible workflow or validation changes.
 - Run `node scripts/validate-surface-budget.mjs` when command, skill, agent, or

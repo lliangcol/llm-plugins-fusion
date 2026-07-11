@@ -1,4 +1,4 @@
-# Skill: /codex-review-only
+# Skill: /nova-plugin:codex-review-only
 
 - 来源：`nova-plugin/commands/codex-review-only.md`
 

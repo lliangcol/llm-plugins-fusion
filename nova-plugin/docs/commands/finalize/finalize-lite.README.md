@@ -1,4 +1,4 @@
-﻿# /finalize-lite
+﻿# /nova-plugin:finalize-lite
 
 - 来源：`nova-plugin/commands/finalize-lite.md`
 
@@ -28,17 +28,17 @@ Limitations: ...
 ## 完整示例
 
 ```text
-/finalize-lite
+/nova-plugin:finalize-lite
 总结这次修复。
 ```
 
 ```text
-/finalize-lite
+/nova-plugin:finalize-lite
 用三行说明改动与限制。
 ```
 
 ```text
-/finalize-lite
+/nova-plugin:finalize-lite
 请继续优化并改代码。
 ```
 
@@ -49,4 +49,4 @@ Limitations: ...
 
 ## 与相近命令的对比
 
-- `/finalize-work` 输出完整交付材料。
+- `/nova-plugin:finalize-work` 输出完整交付材料。

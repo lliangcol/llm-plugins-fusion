@@ -1,4 +1,4 @@
-﻿# /implement-standard
+﻿# /nova-plugin:implement-standard
 
 - 来源：`nova-plugin/commands/implement-standard.md`
 
@@ -26,17 +26,17 @@
 ## 完整示例
 
 ```text
-/implement-standard
+/nova-plugin:implement-standard
 请按以下步骤实现取消订单功能：1) ... 2) ...
 ```
 
 ```text
-/implement-standard
+/nova-plugin:implement-standard
 根据确认步骤修复积分计算问题。
 ```
 
 ```text
-/implement-standard
+/nova-plugin:implement-standard
 请重新设计整体架构并实现。
 ```
 
@@ -47,5 +47,5 @@
 
 ## 与相近命令的对比
 
-- `/implement-plan` 需要 PLAN_APPROVED=true。
-- `/implement-lite` 更快速、约束更少。
+- `/nova-plugin:implement-plan` 需要 PLAN_APPROVED=true。
+- `/nova-plugin:implement-lite` 更快速、约束更少。

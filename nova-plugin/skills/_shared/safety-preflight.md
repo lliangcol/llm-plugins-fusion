@@ -1,7 +1,7 @@
 # Shared Safety Preflight
 
 Use this policy before any skill performs side effects through `Write`, `Edit`,
-`MultiEdit`, or `Bash`. Read-only skills do not need an interrupting preflight
+`Edit`, or `Bash`. Read-only skills do not need an interrupting preflight
 unless they invoke external tools or write explicit artifacts.
 
 ## When Preflight Is Required

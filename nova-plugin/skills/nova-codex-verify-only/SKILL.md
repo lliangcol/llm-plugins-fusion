@@ -2,14 +2,17 @@
 name: nova-codex-verify-only
 description: "Run Codex verification against an existing review.md and the current branch state. Use when Claude Code or a human has already applied fixes and only needs a focused verify pass, merge recommendation, and residual blockers."
 license: MIT
-allowed-tools: Bash Read Glob Grep LS
-argument-hint: "Example: codex-verify-only REVIEW_FILE=.codex/codex-review-fix/latest-artifacts/review.md CHECKS_FILE=.codex/codex-review-fix/latest-artifacts/checks.txt"
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit
+user-invocable: true
+disable-model-invocation: true
+compatibility: "Requires Node.js 20+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved."
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true
-    destructiveActions: low
+  nova-user-invocable: "true"
+  nova-model-invocable: "false"
+  nova-subagent-safe: "true"
+  nova-destructive-actions: "low"
+argument-hint: "Example: codex-verify-only REVIEW_FILE=.codex/codex-review-fix/latest-artifacts/review.md CHECKS_FILE=.codex/codex-review-fix/latest-artifacts/checks.txt"
 ---
 
 ## Inputs
@@ -76,7 +79,7 @@ metadata:
 
 ## Examples
 
-- Use `/codex-verify-only` for verify against an existing review file.
+- Use `/nova-plugin:codex-verify-only` for verify against an existing review file.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Common Rationalizations
@@ -133,7 +136,7 @@ metadata:
 
 ## Migrated Slash Command Contract
 
-Migrated from the pre-thin slash command contract for `/codex-verify-only` (`nova-plugin/commands/codex-verify-only.md`).
+Migrated from the pre-thin slash command contract for `/nova-plugin:codex-verify-only` (`nova-plugin/commands/codex-verify-only.md`).
 
 ### CODEX VERIFY ONLY
 

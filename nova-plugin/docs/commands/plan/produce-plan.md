@@ -1,4 +1,4 @@
-﻿# Skill: /produce-plan
+﻿# Skill: /nova-plugin:produce-plan
 
 - 来源：`nova-plugin/commands/produce-plan.md`
 
@@ -45,13 +45,13 @@
 ## 典型示例
 
 ```text
-/produce-plan
+/nova-plugin:produce-plan
 PLAN_OUTPUT_PATH: docs/plans/points-transfer.md
 PLAN_INTENT: 实现积分转赠功能
 ```
 
 ```text
-/produce-plan
+/nova-plugin:produce-plan
 PLAN_OUTPUT_PATH: docs/plans/payment-retry.md
 PLAN_INTENT: 修复支付回调重复问题
 ANALYSIS_INPUTS:
@@ -59,7 +59,7 @@ ANALYSIS_INPUTS:
 ```
 
 ```text
-/produce-plan
+/nova-plugin:produce-plan
 PLAN_INTENT: 只有意图，没有提供输出路径
 ```
 

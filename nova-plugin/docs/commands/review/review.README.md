@@ -1,4 +1,4 @@
-# /review
+# /nova-plugin:review
 
 - 来源：`nova-plugin/commands/review.md`
 
@@ -18,22 +18,22 @@
 ## 完整示例
 
 ```text
-/review
+/nova-plugin:review
 请审查以下订单状态流转实现说明：...
 ```
 
 ```text
-/review LEVEL=strict
+/nova-plugin:review LEVEL=strict
 请严格审查这段支付回调代码，重点看并发、幂等和数据一致性。
 ```
 
 ```text
-/review LEVEL=lite
+/nova-plugin:review LEVEL=lite
 请快速审查这个小型 PR diff，只输出高信号问题。
 ```
 
 ## 与相近命令的对比
 
-- `/review LEVEL=lite` 等价于 `/review-lite` 轻量快速评审入口。
-- `/review LEVEL=standard` 等价于 `/review-only` 标准深度传统入口。
-- `/review LEVEL=strict` 等价于 `/review-strict` 严格审计入口。
+- `/nova-plugin:review LEVEL=lite` 等价于 `/nova-plugin:review-lite` 轻量快速评审入口。
+- `/nova-plugin:review LEVEL=standard` 等价于 `/nova-plugin:review-only` 标准深度传统入口。
+- `/nova-plugin:review LEVEL=strict` 等价于 `/nova-plugin:review-strict` 严格审计入口。

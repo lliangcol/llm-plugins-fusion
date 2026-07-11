@@ -41,7 +41,7 @@ credentials, or configuration values.
 Routine frontend changes should prefer:
 
 ```text
-/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work
+/nova-plugin:explore -> /nova-plugin:produce-plan -> /nova-plugin:review -> /nova-plugin:implement-plan -> /nova-plugin:finalize-work
 ```
 
 Use stricter review or verification when a change affects shared components,

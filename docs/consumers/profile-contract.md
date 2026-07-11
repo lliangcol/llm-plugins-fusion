@@ -16,7 +16,7 @@ generic and store the concrete value only in the private consumer project.
 | Project type | The kind of consumer project and its scope. | `private Java/Spring backend consumer` |
 | Rules source | The files or private docs that define local rules. | `project-local AGENTS.md / CLAUDE.md as source of truth` |
 | Tech stack | Frameworks, build tools, and runtime families. | `Java, Spring Boot, Maven, relational database` |
-| Default workflow | The preferred nova command path for normal changes. | `/explore -> /produce-plan -> /review -> /implement-plan -> /finalize-work` |
+| Default workflow | The preferred nova command path for normal changes. | `/nova-plugin:explore -> /nova-plugin:produce-plan -> /nova-plugin:review -> /nova-plugin:implement-plan -> /nova-plugin:finalize-work` |
 | Default validation commands | Local checks agents should prefer before handoff. | `mvn test`, `npm test`, or `project-provided validation script` |
 | High-risk change categories | Changes that require stricter planning, review, or validation. | `schema changes`, `auth changes`, `transactional writes` |
 | Capability packs | Packs that should be considered for the project. | `java`, `frontend`, `security`, `dependency` |
@@ -50,11 +50,11 @@ that are safe for that project-local context.
 
 ## Default Workflow
 
-- Explore: `/explore`
-- Plan: `/produce-plan`
-- Review: `/review`
-- Implement: `/implement-plan`
-- Finalize: `/finalize-work`
+- Explore: `/nova-plugin:explore`
+- Plan: `/nova-plugin:produce-plan`
+- Review: `/nova-plugin:review`
+- Implement: `/nova-plugin:implement-plan`
+- Finalize: `/nova-plugin:finalize-work`
 
 ## Default Validation Commands
 
@@ -90,8 +90,8 @@ that are safe for that project-local context.
 - Keep the public profile contract generic and redacted.
 - Keep concrete project facts in the consumer repository or private docs.
 - Prefer the five main `nova-plugin` workflow entries for routine work:
-  `/explore`, `/produce-plan`, `/review`, `/implement-plan`, and
-  `/finalize-work`.
+  `/nova-plugin:explore`, `/nova-plugin:produce-plan`, `/nova-plugin:review`, `/nova-plugin:implement-plan`, and
+  `/nova-plugin:finalize-work`.
 - Treat other commands as advanced or compatibility entries unless the consumer
   profile explicitly selects them.
 - Run validation commands from the consumer profile when available; otherwise,

@@ -1,4 +1,4 @@
-# /explore
+# /nova-plugin:explore
 
 - 来源：`nova-plugin/commands/explore.md`
 
@@ -18,18 +18,18 @@
 ## 完整示例
 
 ```text
-/explore
+/nova-plugin:explore
 我们要新增订单退款接口，请先快速梳理已知事实、不确定点和潜在风险。
 ```
 
 ```text
-/explore PERSPECTIVE=reviewer
+/nova-plugin:explore PERSPECTIVE=reviewer
 请以评审者视角阅读这份需求，只输出清楚的内容、评审问题和风险信号。
 ```
 
 ## 与相近命令的对比
 
-- `/explore-lite` 是轻量观察者视角。
-- `/explore-review` 是评审者视角。
-- `/senior-explore` 更深、更系统，并支持导出分析产物。
+- `/nova-plugin:explore-lite` 是轻量观察者视角。
+- `/nova-plugin:explore-review` 是评审者视角。
+- `/nova-plugin:senior-explore` 更深、更系统，并支持导出分析产物。
 

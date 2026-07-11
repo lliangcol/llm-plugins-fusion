@@ -1,4 +1,4 @@
-﻿# /implement-plan
+﻿# /nova-plugin:implement-plan
 
 - Source: `nova-plugin/commands/implement-plan.md`
 
@@ -29,19 +29,19 @@
 ## Full Examples
 
 ```text
-/implement-plan
+/nova-plugin:implement-plan
 PLAN_INPUT_PATH: docs/plans/feature.md
 PLAN_APPROVED: true
 ```
 
 ```text
-/implement-plan
+/nova-plugin:implement-plan
 PLAN_INPUT_PATH: docs/plans/bugfix.md
 PLAN_APPROVED: true
 ```
 
 ```text
-/implement-plan
+/nova-plugin:implement-plan
 PLAN_INPUT_PATH: docs/plans/feature.md
 PLAN_APPROVED: false
 ```
@@ -53,5 +53,5 @@ PLAN_APPROVED: false
 
 ## Comparison with Similar Commands
 
-- `/implement-standard` allows limited adjustments.
-- `/implement-lite` is faster with fewer constraints.
+- `/nova-plugin:implement-standard` allows limited adjustments.
+- `/nova-plugin:implement-lite` is faster with fewer constraints.

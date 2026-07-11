@@ -56,8 +56,8 @@ module or audience.
 13. Finalize: summarize behavior, changed files, validation, limits, and follow-ups.
 
 The five primary `nova-plugin` commands map naturally onto this flow:
-`/explore` for steps 1-2, `/produce-plan` for steps 3-5, `/review` for steps
-7 and 9, `/implement-plan` for steps 6 and 8, and `/finalize-work` for step 13.
+`/nova-plugin:explore` for steps 1-2, `/nova-plugin:produce-plan` for steps 3-5, `/nova-plugin:review` for steps
+7 and 9, `/nova-plugin:implement-plan` for steps 6 and 8, and `/nova-plugin:finalize-work` for step 13.
 
 ## Context-Safe Review Flow
 

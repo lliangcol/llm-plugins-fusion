@@ -12,7 +12,7 @@ machine paths, or private knowledge-base content.
 ## Local Audit Log
 
 `nova-plugin` includes a `PostToolUse` hook that records a local audit summary
-after `Write`, `Edit`, `MultiEdit`, and `Bash` tool use. The hook writes only to
+after `Write`, `Edit`, `Edit`, and `Bash` tool use. The hook writes only to
 the local plugin data or state directory. It does not write audit logs to this
 repository.
 

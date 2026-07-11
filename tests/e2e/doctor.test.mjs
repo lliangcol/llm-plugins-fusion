@@ -21,6 +21,7 @@ test('doctor reports stable maintainer diagnostics without hard-requiring option
   assert.match(result.stdout, /^OK Node\.js: /m);
   assert.match(result.stdout, /^OK Git: /m);
   assert.match(result.stdout, /^(OK|WARN) Bash: /m);
+  assert.match(result.stdout, /^(OK|WARN) Write guard: /m);
   assert.match(result.stdout, /^(OK|WARN) Claude CLI: /m);
   assert.match(result.stdout, /^(OK|WARN) Codex CLI: /m);
   const versionLine = result.stdout.match(/^OK Package\/plugin version: package=([^;]+); plugin=(\S+)$/m);

@@ -228,7 +228,13 @@ test('approved implementation plan keeps bounded scope', () => {
 
 test('workflow evaluation covers all five primary commands and rubric signals', () => {
   const doc = read('docs/examples/workflow-evaluation.md');
-  for (const command of ['/explore', '/produce-plan', '/review', '/implement-plan', '/finalize-work']) {
+  for (const command of [
+    '/nova-plugin:explore',
+    '/nova-plugin:produce-plan',
+    '/nova-plugin:review',
+    '/nova-plugin:implement-plan',
+    '/nova-plugin:finalize-work',
+  ]) {
     assert.match(doc, new RegExp(command.replace('/', '\\/')));
   }
   for (const signal of [

@@ -1,4 +1,4 @@
-# /explore
+# /nova-plugin:explore
 
 - Source: `nova-plugin/commands/explore.md`
 
@@ -18,18 +18,18 @@
 ## Full Examples
 
 ```text
-/explore
+/nova-plugin:explore
 We need to add a refund API. First list known facts, uncertainties, and potential risks.
 ```
 
 ```text
-/explore PERSPECTIVE=reviewer
+/nova-plugin:explore PERSPECTIVE=reviewer
 Read this requirement as a reviewer and output only what is clear, review questions, and risk signals.
 ```
 
 ## Comparison with Similar Commands
 
-- `/explore-lite` is a lightweight observer-style scan.
-- `/explore-review` is reviewer-oriented exploration.
-- `/senior-explore` is deeper, more systematic, and can export an analysis artifact.
+- `/nova-plugin:explore-lite` is a lightweight observer-style scan.
+- `/nova-plugin:explore-review` is reviewer-oriented exploration.
+- `/nova-plugin:senior-explore` is deeper, more systematic, and can export an analysis artifact.
 

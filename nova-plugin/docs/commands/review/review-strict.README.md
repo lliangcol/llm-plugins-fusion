@@ -1,4 +1,4 @@
-﻿# /review-strict
+﻿# /nova-plugin:review-strict
 
 - 来源：`nova-plugin/commands/review-strict.md`
 
@@ -33,17 +33,17 @@
 ## 完整示例
 
 ```text
-/review-strict
+/nova-plugin:review-strict
 请审查支付核心逻辑代码：...
 ```
 
 ```text
-/review-strict
+/nova-plugin:review-strict
 对并发敏感模块做严格审计。
 ```
 
 ```text
-/review-strict
+/nova-plugin:review-strict
 请直接修复并提交代码。
 ```
 
@@ -54,5 +54,5 @@
 
 ## 与相近命令的对比
 
-- `/review-only` 中等强度审查。
-- `/review-lite` 轻量快速审查。
+- `/nova-plugin:review-only` 中等强度审查。
+- `/nova-plugin:review-lite` 轻量快速审查。

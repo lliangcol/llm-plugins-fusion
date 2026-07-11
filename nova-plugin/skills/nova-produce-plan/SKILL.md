@@ -2,14 +2,16 @@
 name: nova-produce-plan
 description: Write a formal plan document to file using general or java-backend profile; design checkpoint only.
 license: MIT
-allowed-tools: Read Glob Grep LS Write Edit
-argument-hint: "Example: produce-plan PLAN_OUTPUT_PATH=docs/plans/refund.md PLAN_INTENT=Fix idempotency PLAN_PROFILE=general"
+allowed-tools: Read Glob Grep Write Edit
+disallowed-tools: NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: true
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true
-    destructiveActions: low
+  nova-user-invocable: "true"
+  nova-model-invocable: "false"
+  nova-subagent-safe: "true"
+  nova-destructive-actions: "low"
+argument-hint: "Example: produce-plan PLAN_OUTPUT_PATH=docs/plans/refund.md PLAN_INTENT=Fix idempotency PLAN_PROFILE=general"
 ---
 
 ## Inputs
@@ -67,7 +69,7 @@ metadata:
 
 ## Examples
 
-- Use `/produce-plan` to write a formal plan artifact.
+- Use `/nova-plugin:produce-plan` to write a formal plan artifact.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Skill-Specific Guidance
@@ -110,7 +112,7 @@ Generate review-ready design/plan documentation based on intent and constraints.
 
 ## Migrated Slash Command Contract
 
-Migrated from the pre-thin slash command contract for `/produce-plan` (`nova-plugin/commands/produce-plan.md`).
+Migrated from the pre-thin slash command contract for `/nova-plugin:produce-plan` (`nova-plugin/commands/produce-plan.md`).
 
 ### DESIGN CHECKPOINT
 
@@ -183,7 +185,7 @@ $PLAN_INTENT
 #### 4. Input Analysis Artifacts (Strongly Recommended)
 
 Reference one or more prior analysis artifacts
-(e.g. produced by `/senior-explore`).
+(e.g. produced by `/nova-plugin:senior-explore`).
 
 ANALYSIS_INPUTS:
 $ANALYSIS_INPUTS

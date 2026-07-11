@@ -2,14 +2,16 @@
 name: nova-route
 description: "Read-only workflow routing skill. Use when a request needs the next nova command, skill, core agent, capability packs, required inputs, and validation path selected before work starts."
 license: MIT
-allowed-tools: Read Glob Grep LS
-argument-hint: "Example: route this request to the right nova command and packs."
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: false
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true
-    destructiveActions: none
+  nova-user-invocable: "true"
+  nova-model-invocable: "true"
+  nova-subagent-safe: "true"
+  nova-destructive-actions: "none"
+argument-hint: "Example: route this request to the right nova command and packs."
 ---
 
 ## Inputs
@@ -25,7 +27,7 @@ metadata:
 - Parse natural-language payload, explicit `KEY=value`, `--flag value`, and `--flag=value` forms from `$ARGUMENTS`.
 - Normalize parameter names to uppercase snake case and map known mode words before assigning remaining text to `REQUEST`.
 - Explicit values win over inferred values only when they do not conflict with another explicit value.
-- Apply documented defaults only when unambiguous; use only Read/Glob/Grep/LS for local context discovery.
+- Apply documented defaults only when unambiguous; use only Read/Glob/Grep/Glob for local context discovery.
 - Do not run Git, Bash, install, network, test, or external review commands from this skill.
 - Safety-boundary parameters for this skill: none for this skill.
 - In non-interactive mode, fail before side effects when required or safety-boundary parameters are missing.
@@ -34,7 +36,7 @@ metadata:
 ## Safety Preflight
 
 - This skill is read-only for project files and must not modify code or write route artifacts.
-- No interrupting preflight is required for ordinary Read/Glob/Grep/LS usage.
+- No interrupting preflight is required for ordinary Read/Glob/Grep/Glob usage.
 - This skill has no export mode; a future write-capable route variant must be a separate command with explicit output parameters and shared preflight.
 - Do not infer safety-boundary values for artifact exports, project edits, branch changes, or external tool invocation.
 - Full policy: `nova-plugin/skills/_shared/safety-preflight.md`.
@@ -67,8 +69,8 @@ metadata:
 
 ## Examples
 
-- Use `/route` before a large or ambiguous task to choose the next nova command.
-- Use `/route` when consuming nova skills from Cursor, Gemini CLI, OpenCode, Copilot, Codex, or another agent without Claude slash commands.
+- Use `/nova-plugin:route` before a large or ambiguous task to choose the next nova command.
+- Use `/nova-plugin:route` when consuming nova skills from Cursor, Gemini CLI, OpenCode, Copilot, Codex, or another agent without Claude slash commands.
 - Explicit parameters may use `KEY=value` or `--flag value`; natural-language payload is accepted when unambiguous.
 
 ## Skill-Specific Guidance
@@ -83,42 +85,42 @@ Use this as the first-stage keyword router before selecting the specific command
 
 | Intent family | Keyword signals | Primary route |
 | --- | --- | --- |
-| Explore | understand, investigate, clarify, unknowns, facts, risk, scope | `/explore` or `/senior-explore` |
-| Plan | plan, design, proposal, approach, architecture, API shape, migration | `/produce-plan`, `/plan-lite`, or `/backend-plan` |
-| Review | review, audit, verify plan, risk check, security, dependency, PR feedback | `/review`, `/plan-review`, `/codex-review-only`, or `/codex-verify-only` |
-| Implement | implement, fix, refactor, integrate, apply plan, change files | `/implement-plan`, `/implement-standard`, or `/implement-lite` |
-| Finalize | summarize, handoff, release notes, delivery, close out | `/finalize-work` or `/finalize-lite` |
-| Codex loop | Codex, external review, review artifact, verify artifact, closed loop | `/codex-review-fix`, `/codex-review-only`, or `/codex-verify-only` |
+| Explore | understand, investigate, clarify, unknowns, facts, risk, scope | `/nova-plugin:explore` or `/nova-plugin:senior-explore` |
+| Plan | plan, design, proposal, approach, architecture, API shape, migration | `/nova-plugin:produce-plan`, `/nova-plugin:plan-lite`, or `/nova-plugin:backend-plan` |
+| Review | review, audit, verify plan, risk check, security, dependency, PR feedback | `/nova-plugin:review`, `/nova-plugin:plan-review`, `/nova-plugin:codex-review-only`, or `/nova-plugin:codex-verify-only` |
+| Implement | implement, fix, refactor, integrate, apply plan, change files | `/nova-plugin:implement-plan`, `/nova-plugin:implement-standard`, or `/nova-plugin:implement-lite` |
+| Finalize | summarize, handoff, release notes, delivery, close out | `/nova-plugin:finalize-work` or `/nova-plugin:finalize-lite` |
+| Codex loop | Codex, external review, review artifact, verify artifact, closed loop | `/nova-plugin:codex-review-fix`, `/nova-plugin:codex-review-only`, or `/nova-plugin:codex-verify-only` |
 
 | Request signal | Command | Skill | Core agent | Pack hints |
 | --- | --- | --- | --- | --- |
-| Understand facts, unknowns, or risk only | `/explore` | `nova-explore` | `orchestrator` or `reviewer` | Domain packs from context |
-| Deep investigation or analysis artifact | `/senior-explore` | `nova-senior-explore` | `architect` or `reviewer` | Domain packs from context |
-| Write a reviewable plan | `/produce-plan` | `nova-produce-plan` | `architect` | `docs`, plus domain packs |
-| Lightweight task outline | `/plan-lite` | `nova-plan-lite` | `architect` | Domain packs from context |
-| Review code, plan, or risk | `/review` | `nova-review` | `reviewer` | `security`, `dependency`, `frontend`, `marketplace`, or other domain packs |
-| Implement approved plan | `/implement-plan` | `nova-implement-plan` | `builder` | Domain packs from touched files |
-| Implement explicit steps | `/implement-standard` | `nova-implement-standard` | `builder` | Domain packs from touched files |
-| Small low-risk fix | `/implement-lite` | `nova-implement-lite` | `builder` | Domain packs from touched files |
-| Codex review/fix/verify loop | `/codex-review-fix` | `nova-codex-review-fix` | `reviewer` then `builder` then `verifier` | Domain packs from diff |
-| Delivery summary or handoff | `/finalize-work` | `nova-finalize-work` | `publisher` | `release`, `docs`, `marketplace` when metadata changed |
+| Understand facts, unknowns, or risk only | `/nova-plugin:explore` | `nova-explore` | `orchestrator` or `reviewer` | Domain packs from context |
+| Deep investigation or analysis artifact | `/nova-plugin:senior-explore` | `nova-senior-explore` | `architect` or `reviewer` | Domain packs from context |
+| Write a reviewable plan | `/nova-plugin:produce-plan` | `nova-produce-plan` | `architect` | `docs`, plus domain packs |
+| Lightweight task outline | `/nova-plugin:plan-lite` | `nova-plan-lite` | `architect` | Domain packs from context |
+| Review code, plan, or risk | `/nova-plugin:review` | `nova-review` | `reviewer` | `security`, `dependency`, `frontend`, `marketplace`, or other domain packs |
+| Implement approved plan | `/nova-plugin:implement-plan` | `nova-implement-plan` | `builder` | Domain packs from touched files |
+| Implement explicit steps | `/nova-plugin:implement-standard` | `nova-implement-standard` | `builder` | Domain packs from touched files |
+| Small low-risk fix | `/nova-plugin:implement-lite` | `nova-implement-lite` | `builder` | Domain packs from touched files |
+| Codex review/fix/verify loop | `/nova-plugin:codex-review-fix` | `nova-codex-review-fix` | `reviewer` then `builder` then `verifier` | Domain packs from diff |
+| Delivery summary or handoff | `/nova-plugin:finalize-work` | `nova-finalize-work` | `publisher` | `release`, `docs`, `marketplace` when metadata changed |
 
 Specialized and compatibility commands are still valid routes. Use them only
 when their narrower contract fits better than the primary command.
 
 | Specialized signal | Command | Skill | Core agent | Pack hints |
 | --- | --- | --- | --- | --- |
-| Need only a route recommendation | `/route` | `nova-route` | `orchestrator` | Packs implied by request context |
-| Lightweight fact gathering | `/explore-lite` | `nova-explore-lite` | `orchestrator` | Domain packs from context |
-| Exploration scoped to review readiness | `/explore-review` | `nova-explore-review` | `reviewer` | `security`, `dependency`, or domain packs |
-| Review an implementation plan before edits | `/plan-review` | `nova-plan-review` | `reviewer` | `docs`, `security`, or domain packs |
-| Java/Spring backend plan | `/backend-plan` | `nova-backend-plan` | `architect` | `java`, `security`, `dependency` |
-| Fast review with bounded depth | `/review-lite` | `nova-review-lite` | `reviewer` | Domain packs from diff |
-| Review-only artifact or findings | `/review-only` | `nova-review-only` | `reviewer` | `security`, `dependency`, or domain packs |
-| Strict/high-risk review | `/review-strict` | `nova-review-strict` | `reviewer` | `security`, `dependency`, plus domain packs |
-| Codex read-only review artifact | `/codex-review-only` | `nova-codex-review-only` | `reviewer` | Domain packs from diff |
-| Codex verification of existing review | `/codex-verify-only` | `nova-codex-verify-only` | `verifier` | Domain packs from review scope |
-| Lightweight closeout | `/finalize-lite` | `nova-finalize-lite` | `publisher` | `docs` or `release` when relevant |
+| Need only a route recommendation | `/nova-plugin:route` | `nova-route` | `orchestrator` | Packs implied by request context |
+| Lightweight fact gathering | `/nova-plugin:explore-lite` | `nova-explore-lite` | `orchestrator` | Domain packs from context |
+| Exploration scoped to review readiness | `/nova-plugin:explore-review` | `nova-explore-review` | `reviewer` | `security`, `dependency`, or domain packs |
+| Review an implementation plan before edits | `/nova-plugin:plan-review` | `nova-plan-review` | `reviewer` | `docs`, `security`, or domain packs |
+| Java/Spring backend plan | `/nova-plugin:backend-plan` | `nova-backend-plan` | `architect` | `java`, `security`, `dependency` |
+| Fast review with bounded depth | `/nova-plugin:review-lite` | `nova-review-lite` | `reviewer` | Domain packs from diff |
+| Review-only artifact or findings | `/nova-plugin:review-only` | `nova-review-only` | `reviewer` | `security`, `dependency`, or domain packs |
+| Strict/high-risk review | `/nova-plugin:review-strict` | `nova-review-strict` | `reviewer` | `security`, `dependency`, plus domain packs |
+| Codex read-only review artifact | `/nova-plugin:codex-review-only` | `nova-codex-review-only` | `reviewer` | Domain packs from diff |
+| Codex verification of existing review | `/nova-plugin:codex-verify-only` | `nova-codex-verify-only` | `verifier` | Domain packs from review scope |
+| Lightweight closeout | `/nova-plugin:finalize-lite` | `nova-finalize-lite` | `publisher` | `docs` or `release` when relevant |
 
 ### Output Format
 
@@ -143,9 +145,9 @@ same fixed fields for the immediate next step:
 ```markdown
 ## Recommended Route
 
-1. `/explore` -> `nova-explore`
-2. `/produce-plan` -> `nova-produce-plan`
-3. `/review` -> `nova-review`
+1. `/nova-plugin:explore` -> `nova-explore`
+2. `/nova-plugin:produce-plan` -> `nova-produce-plan`
+3. `/nova-plugin:review` -> `nova-review`
 ```
 
 ### Routing Rules

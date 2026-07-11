@@ -1,15 +1,18 @@
 ---
 id: implement-plan
 stage: implement
-title: /implement-plan
+title: /nova-plugin:implement-plan
 description: "Implement strictly from an approved plan; requires PLAN_INPUT_PATH and PLAN_APPROVED=true."
 destructive-actions: medium
-allowed-tools: Read Glob Grep LS Write Edit MultiEdit Bash
+allowed-tools: Read Glob Grep Write Edit
+disallowed-tools: NotebookEdit
+user-invocable: true
+disable-model-invocation: true
 invokes:
   skill: nova-implement-plan
 ---
 
-# /implement-plan
+# /nova-plugin:implement-plan
 
 Invoke `nova-implement-plan` with `$ARGUMENTS`.
 

@@ -1,15 +1,18 @@
 ---
 id: explore-review
 stage: explore
-title: /explore-review
+title: /nova-plugin:explore-review
 description: "Review-oriented exploration that surfaces questions and risks without proposing fixes."
 destructive-actions: none
-allowed-tools: Read Glob Grep LS
+allowed-tools: Read Glob Grep
+disallowed-tools: Write Edit NotebookEdit Bash
+user-invocable: true
+disable-model-invocation: false
 invokes:
   skill: nova-explore-review
 ---
 
-# /explore-review
+# /nova-plugin:explore-review
 
 Invoke `nova-explore-review` with `$ARGUMENTS`.
 
@@ -17,6 +20,6 @@ This is a compatibility shortcut for reviewer-style exploration. The skill is th
 
 Entry semantics:
 
-- Equivalent in intent to `/explore PERSPECTIVE=reviewer`.
+- Equivalent in intent to `/nova-plugin:explore PERSPECTIVE=reviewer`.
 - Surfaces questions, risks, and uncertainty without proposing fixes.
 - Read-only; no project modifications.

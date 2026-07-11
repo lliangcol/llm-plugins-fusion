@@ -30,7 +30,7 @@ Do not describe the run as release validation for a stable tag.
 ## Safety Setup
 
 Run the evaluation in a disposable consumer fixture, a throwaway branch, or a
-local test copy. The `/implement-plan` step is expected to edit files, so do not
+local test copy. The `/nova-plugin:implement-plan` step is expected to edit files, so do not
 run the full five-command sequence directly against a production consumer
 workspace or a release branch.
 
@@ -68,11 +68,11 @@ Reviewer notes:
 Required command set:
 
 ```text
-/explore
-/produce-plan
-/review
-/implement-plan
-/finalize-work
+/nova-plugin:explore
+/nova-plugin:produce-plan
+/nova-plugin:review
+/nova-plugin:implement-plan
+/nova-plugin:finalize-work
 ```
 
 ## Verdict
