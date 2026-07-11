@@ -742,6 +742,32 @@ test('validate-github-workflows rejects workflow inventory and CLAUDE layout dri
   }
 });
 
+test('validate-docs rejects duplicate tool vocabulary prose', () => {
+  const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-docs-tool-vocabulary-'));
+  const fixtureRoot = resolve(tempRoot, 'repo');
+  try {
+    copyRepositoryFixture(fixtureRoot);
+    writeFileSync(
+      resolve(fixtureRoot, 'docs/tool-vocabulary-regression.md'),
+      '# Tool Vocabulary Regression\n\nRead Glob Grep Glob\n',
+      'utf8',
+    );
+    const drifted = spawnSync(process.execPath, [
+      'scripts/validate-docs.mjs',
+      '--root',
+      fixtureRoot,
+    ], {
+      cwd: root,
+      encoding: 'utf8',
+      shell: false,
+    });
+    assert.notEqual(drifted.status, 0, 'validate-docs should reject duplicate tool vocabulary prose');
+    assert.match(`${drifted.stdout}${drifted.stderr}`, /duplicate Glob in space-separated tool vocabulary/);
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test('validate-docs enforces positioning, maintenance status, release, maintainer, public API, marketplace, contribution/issue intake, docs-index, consumer setup, prompt template, workflow evidence, showcase, growth, assets, portal, and v3 contracts', () => {
   const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-docs-contract-'));
   const fixtureRoot = resolve(tempRoot, 'repo');
@@ -772,9 +798,6 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
         /GitHub workflow permission, inventory, and\s+required-check validation/,
         'GitHub workflow permission validation',
       ).replace(
-        'Read-only commands normally pre-approve `Read Glob Grep`',
-        'Read-only commands normally pre-approve `Read Glob Grep Glob`',
-      ).replace(
         /maintainer diagnostic and security setting semantics, /,
         '',
       ).replace(
@@ -792,7 +815,6 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       ),
       'utf8',
     );
-
     const maintenanceStatusPath = resolve(
       fixtureRoot,
       'docs/llm-plugins-fusion-maintenance-status.md',
@@ -1609,7 +1631,6 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     assert.match(output, /CLAUDE mature ecosystem and public portal boundary/);
     assert.match(output, /CLAUDE validate-docs coverage narrative/);
     assert.match(output, /CLAUDE CI GitHub workflow coverage narrative/);
-    assert.match(output, /duplicate Glob in space-separated tool vocabulary/);
     assert.match(output, /README exact release tag promotion boundary/);
     assert.match(output, /README validate-all GitHub workflow coverage narrative/);
     assert.match(output, /release evidence skipped checks replacement boundary/);
