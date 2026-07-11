@@ -20,8 +20,8 @@ gate is added, renamed, removed, or moved.
 - `scripts/validate-maintainer.mjs` adds release-maintainer checks such as
   `npm test`, generated registry drift, and `git diff --check`.
 - `scripts/run-test-coverage.mjs` collects dependency-free Node test coverage
-  evidence under `.metrics/coverage/`; thresholds remain opt-in until CI
-  records a stable baseline.
+  evidence under `.metrics/coverage/`; `--check` enforces the 85% lines, 60%
+  branches, and 90% functions baseline.
 - `.github/workflows/ci.yml` owns merge-required check names.
 - `.github/workflows/plugin-install-smoke.yml` owns isolated mutating install
   smoke evidence and is not a default merge blocker. It uploads smoke context
@@ -42,7 +42,7 @@ gate is added, renamed, removed, or moved.
 | `npm run demo:review` | Headless review and verification demo fixture. | Deterministic public-safe output; does not execute an LLM review or mutate repository state. |
 | `npm run test` | Node test suite. | Runs unit, integration, and e2e suites sequentially for clearer CI logs. |
 | `npm run test:coverage` | Node built-in coverage collection. | Writes raw V8 coverage and a text summary under `.metrics/coverage/`; no thresholds by default. |
-| `npm run test:coverage:check` | Coverage collection health check. | Fails on test failures or missing coverage output; percentage thresholds are opt-in through `NOVA_COVERAGE_*` environment variables. |
+| `npm run test:coverage:check` | Coverage collection and baseline gate. | Fails on test failures, missing coverage output, or coverage below lines 85%, branches 60%, functions 90%; `NOVA_COVERAGE_*` provides explicit overrides. |
 | `npm run test:unit` | Unit test suite. | Runs `tests/unit/**/*.test.mjs`. |
 | `npm run test:integration` | Integration test suite. | Runs `tests/integration/**/*.test.mjs`. |
 | `npm run test:e2e` | E2E smoke suite. | Runs `tests/e2e/**/*.test.mjs`, including the aggregate validation smoke. |
@@ -56,7 +56,7 @@ gate is added, renamed, removed, or moved.
 | `npm run validate:runtime` | Bash runtime smoke. | Requires Bash locally. |
 | `npm run validate:regression` | Regression tests. | Run after validator, scanner, docs-contract, or scaffold behavior changes. |
 | `npm run scan:secrets` | Source-owned secret scan gate. | Alias for `node scripts/scan-distribution-risk.mjs`; exposes a named PR check for secret/private-data signals. |
-| `npm run scan:distribution` | Public distribution risk scan. | Redacts findings and blocks tracked private/Codex runtime artifacts. |
+| `npm run scan:distribution` | Public distribution risk scan. | Redacts findings, scans patch/common/unknown text through 10 MiB, fails closed above that limit, and blocks tracked private/Codex runtime artifacts. |
 
 ## CI Check Map
 

@@ -149,6 +149,24 @@ const targets = [
 ];
 
 let allPassed = true;
+for (const schemaPath of [
+  'schemas/plugin.schema.json',
+  'schemas/registry-source.schema.json',
+  'schemas/marketplace.schema.json',
+  'schemas/marketplace-metadata.schema.json',
+]) {
+  const schema = loadJson(schemaPath);
+  const fileName = schemaPath.split('/').at(-1);
+  const expectedId = `https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/${fileName}`;
+  if (schema.$id !== expectedId) {
+    allPassed = false;
+    console.error(`✗ ${schemaPath} $id`);
+    console.error(`  - got ${schema.$id ?? '(missing)'}, expected ${expectedId}`);
+  } else {
+    console.log(`✓ ${schemaPath} $id`);
+  }
+}
+
 for (const { schema, data, label } of targets) {
   const errors = validate(schema, data);
   if (errors.length === 0) {

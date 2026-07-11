@@ -200,6 +200,46 @@ test('distribution risk scan detects expanded active secret signals and redacts 
   }
 });
 
+test('distribution risk scan covers patch, unknown, large text, and binary boundaries', () => {
+  const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-risk-file-types-'));
+  const patchToken = `sk-proj-${'p'.repeat(24)}`;
+  const unknownToken = `sk-proj-${'u'.repeat(24)}`;
+  const largeToken = `sk-proj-${'l'.repeat(24)}`;
+  const binaryToken = `sk-proj-${'b'.repeat(24)}`;
+  try {
+    writeFileSync(resolve(tempRoot, 'change.patch'), `+OPENAI_API_KEY=${patchToken}\n`, 'utf8');
+    writeFileSync(resolve(tempRoot, 'config.nova'), `OPENAI_API_KEY=${unknownToken}\n`, 'utf8');
+    writeFileSync(
+      resolve(tempRoot, 'large.md'),
+      `${'x'.repeat(1024 * 1024 + 32)}\nOPENAI_API_KEY=${largeToken}\n`,
+      'utf8',
+    );
+    writeFileSync(
+      resolve(tempRoot, 'binary.bin'),
+      Buffer.concat([Buffer.from([0, 1, 2, 3]), Buffer.from(binaryToken)]),
+    );
+    writeFileSync(resolve(tempRoot, 'oversized.md'), 'x'.repeat(10 * 1024 * 1024 + 1), 'utf8');
+
+    const result = scanDistributionRisk({ rootDir: tempRoot });
+    const paths = new Set(result.errors.map((finding) => finding.path));
+    assert.ok(paths.has('change.patch'), 'patch content must be scanned');
+    assert.ok(paths.has('config.nova'), 'unknown text extension must be scanned');
+    assert.ok(paths.has('large.md'), 'text larger than 1 MiB must be scanned');
+    assert.equal(paths.has('binary.bin'), false, 'binary content must not be treated as text');
+    assert.ok(
+      result.errors.some((finding) => finding.path === 'oversized.md' && /oversized text file/.test(finding.label)),
+      'text larger than 10 MiB must fail closed',
+    );
+
+    const rendered = result.errors.map(formatFinding).join('\n');
+    for (const secret of [patchToken, unknownToken, largeToken, binaryToken]) {
+      assert.equal(rendered.includes(secret), false, `rendered output leaked ${secret}`);
+    }
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test('runtime secret rules are shared by hooks, Codex helpers, and distribution scan', () => {
   const preWrite = readFileSync(resolve(root, 'nova-plugin/hooks/scripts/pre-write-check.sh'), 'utf8');
   const postAudit = readFileSync(resolve(root, 'nova-plugin/hooks/scripts/post-audit-log.sh'), 'utf8');
@@ -458,7 +498,9 @@ test('validate-github-workflows enforces least-privilege workflow contracts', ()
       ciWorkflowPath,
       ciWorkflow
         .replace(/permissions:\r?\n  contents: read/, 'permissions:\n  contents: write')
-        .replace('pull_request:', 'pull_request_target:'),
+        .replace('pull_request:', 'pull_request_target:')
+        .replace('include-hidden-files: true', 'include-hidden-files: false')
+        .replace('/bin/bash nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh', 'bash nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh'),
       'utf8',
     );
 
@@ -495,6 +537,8 @@ test('validate-github-workflows enforces least-privilege workflow contracts', ()
     assert.match(output, /CI workflow top-level permissions/);
     assert.match(output, /release job scoped write permission/);
     assert.match(output, /plugin install smoke isolation contract/);
+    assert.match(output, /explicitly upload hidden \.metrics\/coverage content/);
+    assert.match(output, /normal project-check path with system \/bin\/bash/);
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }
@@ -1685,6 +1729,69 @@ test('scaffold dry-run routes Codex command docs to codex directory', () => {
   assert.equal(result.status, 0, result.stderr || result.stdout);
   assert.match(result.stdout, /nova-plugin\/docs\/commands\/codex\/codex-smoke\.md/);
   assert.doesNotMatch(result.stdout, /nova-plugin\/docs\/commands\/review\/codex-smoke\.md/);
+});
+
+test('migration CLIs handle help, unknown arguments, and dry-run before writes', () => {
+  for (const script of [
+    'scripts/migrate-command-frontmatter.mjs',
+    'scripts/migrate-skill-frontmatter.mjs',
+  ]) {
+    const help = spawnSync(process.execPath, [script, '--help'], {
+      cwd: root,
+      encoding: 'utf8',
+      shell: false,
+    });
+    assert.equal(help.status, 0, help.stderr || help.stdout);
+    assert.match(help.stdout, /Usage:/);
+
+    const unknown = spawnSync(process.execPath, [script, '--definitely-invalid'], {
+      cwd: root,
+      encoding: 'utf8',
+      shell: false,
+    });
+    assert.notEqual(unknown.status, 0, 'unknown migration arguments must fail');
+    assert.match(`${unknown.stdout}${unknown.stderr}`, /unknown argument/);
+
+    const dryRun = spawnSync(process.execPath, [script, '--dry-run'], {
+      cwd: root,
+      encoding: 'utf8',
+      shell: false,
+    });
+    assert.equal(dryRun.status, 0, dryRun.stderr || dryRun.stdout);
+    assert.match(dryRun.stdout, /\[dry-run\]/);
+  }
+});
+
+test('scaffold permits only guarded read-only Bash at destructive-actions none', () => {
+  const allowed = spawnSync(process.execPath, [
+    'scripts/scaffold.mjs',
+    'command',
+    '/read-bash-smoke',
+    '--stage', 'finalize',
+    '--profile', 'read',
+    '--allowed-tools', 'Read Glob Grep LS Bash',
+    '--destructive-actions', 'none',
+    '--description', 'Inspect repository state using read-only Bash probes.',
+    '--dry-run',
+  ], { cwd: root, encoding: 'utf8', shell: false });
+  assert.equal(allowed.status, 0, allowed.stderr || allowed.stdout);
+
+  const rejected = spawnSync(process.execPath, [
+    'scripts/scaffold.mjs',
+    'command',
+    '/write-bash-smoke',
+    '--stage', 'review',
+    '--profile', 'artifact',
+    '--allowed-tools', 'Read Glob Grep LS Bash',
+    '--destructive-actions', 'none',
+    '--description', 'Write an explicit review artifact using bounded tools.',
+    '--dry-run',
+  ], { cwd: root, encoding: 'utf8', shell: false });
+  assert.notEqual(rejected.status, 0, 'write-capable profiles must reject risk none');
+  assert.match(`${rejected.stdout}${rejected.stderr}`, /allowed only for the read profile/);
+
+  const scaffoldSource = readFileSync(resolve(root, 'scripts/scaffold.mjs'), 'utf8');
+  assert.match(scaffoldSource, /Bash is limited to read-only probes; do not modify or write project files/);
 });
 
 test('consumer profile scaffold refuses writes inside public repository', () => {

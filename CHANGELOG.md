@@ -39,6 +39,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - 贡献、维护者、release 和 adapter 文档同步说明开放受控 issue intake、
   action pinning、isolated release install smoke、surface inventory 和新增 CI
   checks。
+- `test:coverage:check` 现在执行 lines 85%、branches 60%、functions 90% 的
+  固定基线；普通 coverage 命令仍保持 collection-only。
+- Codex helper 的兼容边界明确为 Bash 3.2+，migration CLI、read-only Bash
+  scaffold 和 `/senior-explore` 参数/导出契约同步收敛。
+
+### Fixed
+- 修复 Node 20 无法展开测试 glob 导致 `NPM Test` 与 `Test Coverage` CI 失败，
+  普通测试和 coverage 现在复用显式、确定性测试文件发现。
+- 修复 macOS 系统 Bash 3.2 因 `mapfile` 无法运行 Codex helper，并清理当前
+  ShellCheck 诊断。
+- distribution risk scan 现在覆盖 patch、常见源码/配置和未知文本扩展，扫描
+  1 MiB 以上文本，并对超过 10 MiB 的文本 fail closed。
+- Bash 与 Node audit hook 现在把不可信字段脱敏、单行化并限制长度，阻止换行
+  注入伪造日志记录。
+- 修正文档当前版本漂移、失效 v1 GitHub 链接、不可获取的 schema `$id` 和
+  `nova-senior-explore` 内部契约冲突，并为这些事实增加防漂移验证。
 
 ## [2.3.0] - 2026-07-08
 
@@ -442,7 +458,7 @@ must not replace the exact release tag as stable evidence.
 - 新一轮 Codex review 成功后同步清理旧 `verify.md` 与 `checks.txt`，防止 verify 自动读取上一轮检查产物。
 - 修正路线图与贡献清单中 schema 扩展边界、Claude 兼容性校验和 `validate-all` 覆盖范围的过期描述。
 
-## [1.0.9] - 2026-05-04
+## 1.0.9 - 2026-05-04
 
 ### Added
 - 新增 `nova-plugin/skills/_shared/` 通用策略文档，统一参数解析、安全 preflight、输出契约、artifact 写入规则与 agent routing 边界。
@@ -454,7 +470,7 @@ must not replace the exact release tag as stable evidence.
 - 20 个 skill 增加标准 `Inputs`、`Parameter Resolution`、`Safety Preflight`、输出与失败模式章节，并保留原 command 行为契约作为 skill 事实源。
 - 同步 `nova-plugin` 与 marketplace 版本至 1.0.9。
 
-## [1.0.8] - 2026-04-21
+## 1.0.8 - 2026-04-21
 
 ### Added
 - 补齐 `nova-codex-review-only` 与 `nova-codex-verify-only` 两个 skill 的 `README.md`，完成 Codex 三件套的对外用户文档
@@ -472,7 +488,7 @@ must not replace the exact release tag as stable evidence.
 
 ---
 
-## [1.0.7] - 2026-03-26
+## 1.0.7 - 2026-03-26
 
 ### Added
 - 新增 `nova-codex-review-fix` 技能包，提供 Codex review -> Claude Code fix -> local checks -> Codex verify 半自动闭环
@@ -484,7 +500,7 @@ must not replace the exact release tag as stable evidence.
 
 ---
 
-## [1.0.6] - 2026-02-12
+## 1.0.6 - 2026-02-12
 
 ### Added
 - 新增 nova-plugin Skills 目录，17 个命令均配套对应的 SKILL.md 技能文件
@@ -492,7 +508,7 @@ must not replace the exact release tag as stable evidence.
 
 ---
 
-## [1.0.5] - 2026-02-06
+## 1.0.5 - 2026-02-06
 
 ### Changed
 - 格式化多处文档，统一代码块和章节排版
@@ -503,7 +519,7 @@ must not replace the exact release tag as stable evidence.
 
 ---
 
-## [1.0.4] - 2026-02-03
+## 1.0.4 - 2026-02-03
 
 ### Changed
 - 优化 14 个专项 Agent 的描述和路由规则
@@ -511,7 +527,7 @@ must not replace the exact release tag as stable evidence.
 
 ---
 
-## [1.0.3] - 2026-01-22
+## 1.0.3 - 2026-01-22
 
 ### Added
 - 新增多篇使用文档（中英双语）
@@ -523,7 +539,7 @@ must not replace the exact release tag as stable evidence.
 
 ---
 
-## [1.0.2] - 2026-01-16
+## 1.0.2 - 2026-01-16
 
 ### Changed
 - 格式化所有命令文件（统一缩进与换行）
@@ -531,7 +547,7 @@ must not replace the exact release tag as stable evidence.
 
 ---
 
-## [1.0.1] - 2026-01-15
+## 1.0.1 - 2026-01-15
 
 ### Added
 - 新增 Agent 文件（14 个专项 Agent）
@@ -539,7 +555,7 @@ must not replace the exact release tag as stable evidence.
 
 ---
 
-## [1.0.0] - 2026-01-11
+## 1.0.0 - 2026-01-11
 
 ### Added
 - 初始化项目结构：`nova-plugin` + `.claude-plugin/marketplace.json`
@@ -551,14 +567,4 @@ must not replace the exact release tag as stable evidence.
 [2.3.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.2.0...v2.3.0
 [2.2.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.0.0...v2.1.0
-[2.0.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.9...v2.0.0
-[1.0.9]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.8...v1.0.9
-[1.0.8]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.7...v1.0.8
-[1.0.7]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.6...v1.0.7
-[1.0.6]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.5...v1.0.6
-[1.0.5]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.4...v1.0.5
-[1.0.4]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.3...v1.0.4
-[1.0.3]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.2...v1.0.3
-[1.0.2]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.1...v1.0.2
-[1.0.1]: https://github.com/lliangcol/llm-plugins-fusion/compare/v1.0.0...v1.0.1
-[1.0.0]: https://github.com/lliangcol/llm-plugins-fusion/releases/tag/v1.0.0
+[2.0.0]: https://github.com/lliangcol/llm-plugins-fusion/releases/tag/v2.0.0

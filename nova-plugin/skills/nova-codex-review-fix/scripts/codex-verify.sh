@@ -138,7 +138,10 @@ $(cat "${PROMPT_TEMPLATE}")
 请先读取 review 文件；如果提供了 checks 文件，也要把它纳入验证依据。直接输出 Markdown。
 EOF
 
-mapfile -t CODEX_ARGS < <(codex_exec_args "$ROOT")
+CODEX_ARGS=()
+while IFS= read -r arg; do
+  CODEX_ARGS+=("$arg")
+done < <(codex_exec_args "$ROOT")
 "${CODEX_BIN}" "${CODEX_ARGS[@]}" "${VERIFY_FILE}" - < "${FINAL_PROMPT}"
 
 [[ -s "${VERIFY_FILE}" ]] || die "Codex 未生成 verify.md。"

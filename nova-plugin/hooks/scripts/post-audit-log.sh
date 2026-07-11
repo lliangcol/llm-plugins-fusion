@@ -12,6 +12,7 @@ set -euo pipefail
 INPUT=$(cat)
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd -- "$SCRIPT_DIR/../.." >/dev/null 2>&1 && pwd -P)}"
+# shellcheck source-path=SCRIPTDIR
 # shellcheck source=../../runtime/bash-common.sh
 source "$PLUGIN_ROOT/runtime/bash-common.sh"
 
@@ -60,15 +61,16 @@ process.stdout.write(value == null ? "" : String(value));
   return 0
 }
 
-redact_sensitive_text() {
+sanitize_audit_field() {
   local text="$1"
+  local max_length="$2"
   local node_bin=""
   local rules_path=""
   local node_rules_path=""
 
   if node_bin="$(nova_node_command)" && rules_path="$(nova_secret_rules_path)" && [ -f "$rules_path" ]; then
     node_rules_path="$(nova_secret_rules_path_for_node "$node_bin")"
-    printf '%s' "$text" | "$node_bin" "$node_rules_path" redact-text 2>/dev/null || printf '<redaction-unavailable>'
+    printf '%s' "$text" | "$node_bin" "$node_rules_path" sanitize-audit-field "$max_length" 2>/dev/null || printf '<redaction-unavailable>'
     return 0
   fi
 
@@ -77,25 +79,25 @@ redact_sensitive_text() {
 
 TOOL_NAME=$(json_read tool_name)
 TOOL_NAME=${TOOL_NAME:-unknown}
+TOOL_NAME=$(sanitize_audit_field "$TOOL_NAME" 32)
+TOOL_NAME=${TOOL_NAME:-unknown}
 FILE_PATH=$(json_read file_path)
 COMMAND=$(json_read command)
 SUCCESS=$(json_read success)
 SUCCESS=${SUCCESS:-true}
 TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
 
-# 构造摘要（取文件路径或命令，截断到 80 字符）
+# 构造摘要（取文件路径、命令或输入键，统一脱敏为单行并限制长度）
 if [ -n "$FILE_PATH" ]; then
   SUMMARY="$FILE_PATH"
 elif [ -n "$COMMAND" ]; then
-  # 命令截断到 60 字符
-  REDACTED_COMMAND=$(redact_sensitive_text "$COMMAND")
-  SUMMARY="${REDACTED_COMMAND:0:60}"
-  [ ${#REDACTED_COMMAND} -gt 60 ] && SUMMARY="${SUMMARY}..."
+  SUMMARY="$COMMAND"
 else
   SUMMARY=$(json_read tool_input_keys)
   SUMMARY=${SUMMARY:-N/A}
 fi
-SUMMARY=$(redact_sensitive_text "$SUMMARY")
+SUMMARY=$(sanitize_audit_field "$SUMMARY" 200)
+SUMMARY=${SUMMARY:-N/A}
 
 STATUS="SUCCESS"
 if [ "$SUCCESS" = "false" ]; then

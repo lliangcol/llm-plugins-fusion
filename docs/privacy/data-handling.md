@@ -36,6 +36,9 @@ NOVA_AUDIT_DISABLED=1
 
 Audit summaries use best-effort redaction for common token, bearer header, JWT,
 npm token, GitHub token, Slack token, OpenAI key, and secret-assignment shapes.
+Untrusted tool names and summaries are normalized to one line after redaction:
+control characters become spaces, repeated whitespace is collapsed, tool names
+are limited to 32 characters, and summaries are limited to 200 characters.
 Redaction is a guardrail, not a guarantee. Do not paste real secrets, endpoints,
 private customer details, or private repository paths into public issues,
 examples, prompts, or release evidence.

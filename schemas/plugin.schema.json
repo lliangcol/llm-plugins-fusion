@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/lliangcol/llm-plugins-fusion/schemas/plugin.schema.json",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/plugin.schema.json",
   "title": "Nova Plugin Metadata",
   "description": "Schema for nova-plugin/.claude-plugin/plugin.json, aligned with Claude plugin validation. Marketplace-only fields belong in .claude-plugin/marketplace.json.",
   "type": "object",

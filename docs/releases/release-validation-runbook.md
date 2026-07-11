@@ -19,7 +19,7 @@ A snapshot is promotable only when all required evidence exists.
 | Gate | Automated or manual | Required evidence |
 | --- | --- | --- |
 | Repository structure and docs | Automated | `node scripts/validate-all.mjs` passes with skipped checks explained. |
-| Test coverage evidence | Automated / CI | `npm run test:coverage:check` collects Node built-in coverage and uploads `.metrics/coverage/`; thresholds are collection-only unless explicitly configured after a CI baseline. |
+| Test coverage evidence | Automated / CI | `npm run test:coverage:check` collects Node built-in coverage, enforces lines 85%, branches 60%, functions 90%, and uploads `.metrics/coverage/`. |
 | Generated marketplace outputs | Automated | `node scripts/generate-registry.mjs` reports no drift, or `--write` was run before validation. |
 | Generated surface inventory | Automated | `node scripts/generate-surface-inventory.mjs` reports no drift, or `--write` was run before validation. |
 | Release checksums | Automated / CI | `node scripts/generate-release-checksums.mjs` writes SHA-256 checksums for selected source-controlled release artifacts and uploads them with release evidence. |

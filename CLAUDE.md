@@ -54,8 +54,9 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
   `validate:github-workflows`, `validate:runtime`, `validate:regression`,
   `validate:surface`, `validate:workflow`, `scan:secrets`, `scan:distribution`,
   `scaffold:consumer`; no `check`/`build` script names)
-- Repository validation scripts require Node.js 20+. Hook shell syntax and
-  runtime smoke checks require Bash; Windows without Bash may warning-skip
+- Repository validation scripts require Node.js 20+. Distributed shell helpers
+  support Bash 3.2+. Hook shell syntax and runtime smoke checks require Bash;
+  Windows without Bash may warning-skip
   local Bash-dependent checks, while CI/Linux and CI/Windows Bash smoke must
   run them.
 - `.node-version` records the intended local Node major for maintainers;

@@ -19,7 +19,7 @@ metadata:
 | `INTENT` | Yes | Remaining payload | Analysis intent, incident, requirement, or code area. |
 | `CONTEXT` | No | Probe from environment | Relevant files, symptoms, logs, or prior artifacts. |
 | `CONSTRAINTS` | No | None | Known limits or boundaries. |
-| `DEPTH` | No | normal | normal or deep. |
+| `DEPTH` | No | normal | quick, normal, or deep. |
 | `EXPORT_PATH` | No | None | Safety-boundary analysis artifact path when export is requested. |
 
 ## Parameter Resolution
@@ -242,7 +242,8 @@ Language constraints:
 
 #### OUTPUT FORMAT (STRICT)
 
-Output in chat ONLY, using the following structure:
+Chat output is always required, using the following structure. When `EXPORT_PATH`
+is provided, write the exact same content to that file:
 
 ##### Key findings
 

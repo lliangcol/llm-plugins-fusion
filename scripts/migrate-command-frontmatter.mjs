@@ -21,10 +21,24 @@
 import { readFileSync, writeFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { parseMigrationArgs } from './lib/migration-cli.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
-const DRY_RUN = process.argv.includes('--dry-run');
+const USAGE = 'Usage: node scripts/migrate-command-frontmatter.mjs [--dry-run]';
+let options;
+try {
+  options = parseMigrationArgs(process.argv.slice(2));
+} catch (error) {
+  console.error(`ERROR ${error.message}`);
+  console.error(USAGE);
+  process.exit(1);
+}
+if (options.help) {
+  console.log(USAGE);
+  process.exit(0);
+}
+const DRY_RUN = options.dryRun;
 
 function splitFrontmatter(src) {
   if (!src.startsWith('---')) return { fm: '', body: src, hasFm: false };

@@ -243,6 +243,17 @@ function lintSkills() {
     try { if (!statSync(skillMd).isFile()) continue; } catch { continue; }
     const rel = `skills/${entry}/SKILL.md`;
     const src = readFileSync(skillMd, 'utf8').replace(/\r\n/g, '\n');
+    if (entry === 'nova-senior-explore') {
+      if (/normal or deep\./.test(src) || !/quick(?:,|`\/`|\/).*normal(?:,|`\/`|\/).*deep/i.test(src)) {
+        recordError(rel, 'DEPTH must consistently allow quick, normal, and deep');
+      }
+      if (/Output in chat ONLY/i.test(src)) {
+        recordError(rel, 'chat-only wording conflicts with optional EXPORT_PATH behavior');
+      }
+      if (!/Chat output is always required[\s\S]*EXPORT_PATH[\s\S]*exact same content/i.test(src)) {
+        recordError(rel, 'missing required chat output plus identical optional export contract');
+      }
+    }
     const fm = splitFrontmatter(src);
     if (!fm) { recordError(rel, 'missing frontmatter'); continue; }
     const obj = parseFrontmatter(fm);

@@ -9,6 +9,12 @@ import { dirname, resolve, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
 import { assertNodeVersion } from './lib/node-version.mjs';
+import {
+  coverageThresholdFailures,
+  parseCoverageSummary,
+  resolveCoverageThresholds,
+} from './lib/coverage-thresholds.mjs';
+import { relativeTestFiles } from './lib/test-discovery.mjs';
 
 assertNodeVersion({ label: 'test coverage' });
 
@@ -20,10 +26,10 @@ function usage() {
 
 Runs node --test --experimental-test-coverage for the repository test suite.
 Coverage output is local runtime evidence and is written under .metrics/ by
-default. --check verifies coverage collection and test success; percentage
-thresholds are intentionally opt-in until CI records a stable baseline.
+default. --check verifies coverage collection and test success and enforces
+the repository baseline: lines 85%, branches 60%, and functions 90%.
 
-Optional threshold environment variables:
+Optional --check threshold overrides:
   NOVA_COVERAGE_LINES
   NOVA_COVERAGE_BRANCHES
   NOVA_COVERAGE_FUNCTIONS`;
@@ -64,26 +70,25 @@ function parseArgs(args) {
   return options;
 }
 
-function thresholdFlag(envName, flagName) {
-  const value = process.env[envName];
-  if (!value) return null;
-  const numeric = Number(value);
-  if (!Number.isFinite(numeric) || numeric < 0 || numeric > 100) {
-    console.error(`ERROR ${envName} must be a percentage between 0 and 100`);
-    process.exit(1);
-  }
-  return `${flagName}=${value}`;
-}
-
 const options = parseArgs(process.argv.slice(2));
 const v8Dir = resolve(options.coverageDir, 'v8');
 const summaryPath = resolve(options.coverageDir, 'coverage-summary.txt');
 const metadataPath = resolve(options.coverageDir, 'metadata.json');
-const thresholds = [
-  thresholdFlag('NOVA_COVERAGE_LINES', '--test-coverage-lines'),
-  thresholdFlag('NOVA_COVERAGE_BRANCHES', '--test-coverage-branches'),
-  thresholdFlag('NOVA_COVERAGE_FUNCTIONS', '--test-coverage-functions'),
-].filter(Boolean);
+let thresholds = null;
+if (options.check) {
+  try {
+    thresholds = resolveCoverageThresholds();
+  } catch (error) {
+    console.error(`ERROR ${error.message}`);
+    process.exit(1);
+  }
+}
+const testFiles = relativeTestFiles(root, 'all');
+
+if (testFiles.length === 0) {
+  console.error('ERROR no test files found under tests/');
+  process.exit(1);
+}
 
 rmSync(options.coverageDir, { recursive: true, force: true });
 mkdirSync(v8Dir, { recursive: true });
@@ -91,16 +96,15 @@ mkdirSync(v8Dir, { recursive: true });
 const args = [
   '--test',
   '--experimental-test-coverage',
-  ...thresholds,
-  'tests/**/*.test.mjs',
+  ...testFiles,
 ];
 
 console.log(`Running coverage command: ${process.execPath} ${args.join(' ')}`);
 console.log(`Coverage evidence directory: ${relative(root, options.coverageDir)}`);
-if (thresholds.length === 0) {
+if (!options.check) {
   console.log('Coverage thresholds: not enforced; collection-only mode is active.');
 } else {
-  console.log(`Coverage thresholds: ${thresholds.join(' ')}`);
+  console.log(`Coverage thresholds: lines=${thresholds.lines} branches=${thresholds.branches} functions=${thresholds.functions}`);
 }
 
 const startedAt = new Date().toISOString();
@@ -126,7 +130,7 @@ writeFileSync(
   [
     `command=${process.execPath} ${args.join(' ')}`,
     `check=${options.check}`,
-    `thresholds=${thresholds.length ? thresholds.join(' ') : 'not enforced'}`,
+    `thresholds=${thresholds ? JSON.stringify(thresholds) : 'not enforced'}`,
     `exitCode=${result.status ?? 'null'}`,
     `signal=${result.signal ?? ''}`,
     `startedAt=${startedAt}`,
@@ -146,7 +150,7 @@ writeFileSync(
   `${JSON.stringify({
     command: [process.execPath, ...args],
     check: options.check,
-    thresholds,
+    thresholds: thresholds ?? [],
     exitCode: result.status,
     signal: result.signal,
     startedAt,
@@ -171,6 +175,20 @@ if (result.status !== 0) {
 if (options.check && !stdout.includes('start of coverage report')) {
   console.error('ERROR coverage report marker was not found in test output');
   process.exit(1);
+}
+
+if (options.check) {
+  const actual = parseCoverageSummary(stdout);
+  if (!actual) {
+    console.error('ERROR all-files coverage summary was not found in test output');
+    process.exit(1);
+  }
+  const thresholdFailures = coverageThresholdFailures(actual, thresholds);
+  if (thresholdFailures.length > 0) {
+    for (const failure of thresholdFailures) console.error(`ERROR ${failure}`);
+    process.exit(1);
+  }
+  console.log(`Coverage baseline passed: lines=${actual.lines} branches=${actual.branches} functions=${actual.functions}`);
 }
 
 if (options.check) {

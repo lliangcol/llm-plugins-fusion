@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/lliangcol/llm-plugins-fusion/schemas/marketplace-metadata.schema.json",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/marketplace-metadata.schema.json",
   "title": "Marketplace Custom Metadata",
   "description": "Repository-local custom plugin metadata kept separate from the Claude-compatible marketplace manifest.",
   "type": "object",

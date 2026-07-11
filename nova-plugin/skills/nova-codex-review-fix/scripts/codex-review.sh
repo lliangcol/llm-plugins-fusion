@@ -151,7 +151,10 @@ $(cat "${PROMPT_TEMPLATE}")
 请阅读这些文件并产出最终 review 报告，直接输出 Markdown。
 EOF
 
-mapfile -t CODEX_ARGS < <(codex_exec_args "$ROOT")
+CODEX_ARGS=()
+while IFS= read -r arg; do
+  CODEX_ARGS+=("$arg")
+done < <(codex_exec_args "$ROOT")
 "${CODEX_BIN}" "${CODEX_ARGS[@]}" "${REVIEW_FILE}" - < "${FINAL_PROMPT}"
 
 [[ -s "${REVIEW_FILE}" ]] || die "Codex 未生成 review.md。"

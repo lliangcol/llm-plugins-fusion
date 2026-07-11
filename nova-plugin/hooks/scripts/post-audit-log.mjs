@@ -15,7 +15,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { resolve } from 'node:path';
-import { redactSensitiveText } from '../../runtime/secret-rules.mjs';
+import { sanitizeAuditField } from '../../runtime/secret-rules.mjs';
 
 function readStdin() {
   return readFileSync(0, 'utf8');
@@ -56,7 +56,7 @@ if (process.env.NOVA_AUDIT_DISABLED === '1') {
 const payload = parsePayload(readStdin());
 const input = payload.tool_input || {};
 const response = payload.tool_response || {};
-const toolName = payload.tool_name || 'unknown';
+const toolName = sanitizeAuditField(payload.tool_name || 'unknown', 32) || 'unknown';
 const filePath = input.file_path || response.filePath || '';
 const command = input.command || '';
 const success = response.success == null ? true : response.success;
@@ -66,13 +66,11 @@ let summary = '';
 if (filePath) {
   summary = filePath;
 } else if (command) {
-  const redactedCommand = redactSensitiveText(command);
-  summary = redactedCommand.slice(0, 60);
-  if (redactedCommand.length > 60) summary = `${summary}...`;
+  summary = command;
 } else {
   summary = Object.keys(input).join(',') || 'N/A';
 }
-summary = redactSensitiveText(summary);
+summary = sanitizeAuditField(summary, 200) || 'N/A';
 
 const stateHome = process.env.XDG_STATE_HOME || resolve(process.env.HOME || process.env.USERPROFILE || '/tmp', '.local/state');
 const logDir = process.env.CLAUDE_PLUGIN_DATA || resolve(stateHome, 'nova-plugin');

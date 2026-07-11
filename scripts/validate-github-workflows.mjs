@@ -577,9 +577,38 @@ function validateRequiredCheckContracts() {
   );
 }
 
+function validateCiRuntimeEvidenceContracts() {
+  const file = '.github/workflows/ci.yml';
+  const src = readWorkflow(file);
+  if (!src) return;
+
+  const coverageLines = extractCiJobLines('test-coverage');
+  if (coverageLines) {
+    const coverage = coverageLines.join('\n');
+    if (!/node-version:\s*['"]20['"]/.test(coverage)) {
+      recordError(file, 'Test Coverage must run on the minimum supported Node 20 lane');
+    }
+    if (!/run:\s*npm run test:coverage:check/.test(coverage)) {
+      recordError(file, 'Test Coverage must run npm run test:coverage:check');
+    }
+    if (!/path:\s*\.metrics\/coverage\//.test(coverage) || !/include-hidden-files:\s*true/.test(coverage)) {
+      recordError(file, 'Test Coverage artifact must explicitly upload hidden .metrics/coverage content');
+    }
+  }
+
+  const macosLines = extractCiJobLines('macos-smoke');
+  if (macosLines) {
+    const macos = macosLines.join('\n');
+    if (!/\/bin\/bash nova-plugin\/skills\/nova-codex-review-fix\/scripts\/run-project-checks\.sh --test-only/.test(macos)) {
+      recordError(file, 'macOS Smoke must exercise the normal project-check path with system /bin/bash');
+    }
+  }
+}
+
 validateWorkflowInventory();
 validateWorkflowContracts();
 validateRequiredCheckContracts();
+validateCiRuntimeEvidenceContracts();
 
 if (errors.length) {
   console.error(`GitHub workflow validation failed (${errors.length} error${errors.length === 1 ? '' : 's'}):`);

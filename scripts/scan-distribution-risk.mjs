@@ -6,7 +6,15 @@
  * and runtime-env patterns, and always redacts matched source text from output.
  */
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import {
+  closeSync,
+  existsSync,
+  openSync,
+  readFileSync,
+  readSync,
+  readdirSync,
+  statSync,
+} from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { basename, dirname, extname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,6 +33,7 @@ const alwaysSkipDirs = new Set([
   '.idea',
   '.vite',
   '.vscode',
+  '.metrics',
   'node_modules',
 ]);
 
@@ -45,18 +54,42 @@ const textExtensions = new Set([
   '',
   '.cjs',
   '.css',
+  '.diff',
+  '.env',
+  '.go',
   '.html',
+  '.ini',
+  '.java',
   '.js',
+  '.jsx',
   '.json',
   '.md',
   '.mjs',
+  '.patch',
+  '.properties',
   '.ps1',
+  '.py',
+  '.rb',
+  '.rs',
   '.sh',
+  '.sql',
+  '.toml',
+  '.ts',
+  '.tsx',
   '.txt',
   '.xml',
   '.yaml',
   '.yml',
 ]);
+
+const binaryExtensions = new Set([
+  '.7z', '.avi', '.bmp', '.class', '.dll', '.dylib', '.exe', '.gif', '.gz',
+  '.ico', '.jpeg', '.jpg', '.mov', '.mp3', '.mp4', '.o', '.pdf', '.png',
+  '.so', '.tar', '.webm', '.webp', '.woff', '.woff2', '.zip',
+]);
+
+const MAX_TEXT_FILE_BYTES = 10 * 1024 * 1024;
+const BINARY_SAMPLE_BYTES = 8192;
 
 const historicalSegments = [
   ['.claude', 'agents', 'archive'],
@@ -173,9 +206,22 @@ function shouldSkipDir(rootDir, absPath) {
   return !hasTrackedFilesUnder(rootDir, absPath);
 }
 
-function shouldReadFile(fileName) {
+function isTextCandidate(absPath, fileName, size) {
   const ext = extname(fileName).toLowerCase();
-  return textExtensions.has(ext) || fileName.startsWith('.env');
+  if (textExtensions.has(ext) || fileName.startsWith('.env')) return true;
+  if (binaryExtensions.has(ext)) return false;
+
+  const sample = Buffer.alloc(Math.min(size, BINARY_SAMPLE_BYTES));
+  let fd;
+  try {
+    fd = openSync(absPath, 'r');
+    const bytesRead = readSync(fd, sample, 0, sample.length, 0);
+    return !sample.subarray(0, bytesRead).includes(0);
+  } catch {
+    return false;
+  } finally {
+    if (fd !== undefined) closeSync(fd);
+  }
 }
 
 function walk(rootDir, dir, files = []) {
@@ -183,7 +229,7 @@ function walk(rootDir, dir, files = []) {
     const abs = resolve(dir, entry.name);
     if (entry.isDirectory()) {
       if (!shouldSkipDir(rootDir, abs)) walk(rootDir, abs, files);
-    } else if (entry.isFile() && shouldReadFile(entry.name)) {
+    } else if (entry.isFile()) {
       files.push(abs);
     }
   }
@@ -246,12 +292,12 @@ function recordFinding({ rootDir, absPath, src, match, label, allowlist, errors,
   }
 }
 
-function recordPathFinding({ rootDir, relPath, label, errors }) {
+function recordPathFinding({ rootDir, relPath, label, errors, redacted = '<redacted>' }) {
   errors.push({
     path: relPath,
     line: 1,
     label,
-    redacted: '<redacted>',
+    redacted,
     scope: 'active',
   });
 }
@@ -290,7 +336,17 @@ export function scanDistributionRisk(options = {}) {
     let src;
     try {
       const stats = statSync(file);
-      if (stats.size > 1024 * 1024) continue;
+      if (!isTextCandidate(file, basename(file), stats.size)) continue;
+      if (stats.size > MAX_TEXT_FILE_BYTES) {
+        recordPathFinding({
+          rootDir,
+          relPath: rel(rootDir, file),
+          label: `oversized text file (${stats.size} bytes; limit ${MAX_TEXT_FILE_BYTES} bytes)`,
+          errors,
+          redacted: '<not scanned>',
+        });
+        continue;
+      }
       src = readFileSync(file, 'utf8');
     } catch {
       continue;

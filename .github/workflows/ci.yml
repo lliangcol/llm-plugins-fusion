@@ -68,6 +68,7 @@ jobs:
         with:
           name: test-coverage-evidence
           path: .metrics/coverage/
+          include-hidden-files: true
 
   plugin-install-dry-run:
     uses: ./.github/workflows/reusable-node-check.yml
@@ -221,3 +222,5 @@ jobs:
       - run: node scripts/validate-docs.mjs
       - run: bash scripts/verify-agents.sh
       - run: node scripts/validate-runtime-smoke.mjs
+      - name: Exercise project checks with macOS system Bash
+        run: /bin/bash nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh --test-only

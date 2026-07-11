@@ -12,7 +12,7 @@ Prerequisites:
 
 - Claude Code with third-party marketplace support.
 - Node.js 20+ only when maintaining this repository or running local validators.
-- Codex CLI and Bash only for Codex loop commands such as `/codex-review-fix`.
+- Codex CLI and Bash 3.2+ only for Codex loop commands such as `/codex-review-fix`.
 
 Minute 1: add the marketplace and install the plugin:
 
@@ -100,7 +100,7 @@ Good first prompts:
 Only Codex loop commands require Codex-specific setup:
 
 - Codex CLI must be available in the shell used by Claude Code.
-- Bash must be available for distributed helper scripts.
+- Bash 3.2+ must be available for distributed helper scripts.
 - Codex review-only and verify-only commands may write `.codex/` artifacts, but
   should not modify project code.
 - `codex-review-fix` is the Codex command that may drive project fixes through

@@ -205,7 +205,10 @@ discover_node_tasks() {
     return 0
   fi
 
-  mapfile -t PKGS < <(find "${ROOT}" \
+  PKGS=()
+  while IFS= read -r pkg; do
+    PKGS+=("$pkg")
+  done < <(find "${ROOT}" \
     \( -path "*/node_modules" -o -path "*/dist" -o -path "*/build" -o -path "*/target" -o -path "*/.codex" -o -path "*/.cache" -o -path "*/.idea" -o -path "*/.vite" -o -path "*/.vscode" -o -path "*/coverage" -o -path "*/logs" -o -path "*/tmp" -o -path "*/temp" -o -path "*/.runtime-smoke-*" -o -path "*/.next" -o -path "*/.nuxt" -o -path "*/out" \) -prune \
     -o -name package.json -print 2>/dev/null)
   for pkg in "${PKGS[@]}"; do
@@ -214,7 +217,7 @@ discover_node_tasks() {
     local manager
     manager="$(manager_for_dir "$dir")"
     local display_dir
-    display_dir="${dir#${ROOT}/}"
+    display_dir="${dir#"$ROOT"/}"
     if [[ "$display_dir" == "$dir" ]]; then
       display_dir="."
     fi

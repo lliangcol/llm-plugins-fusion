@@ -65,7 +65,7 @@ resolve_path() {
       printf '%s\n' "$normalized_input"
       return 0
       ;;
-    /*|[A-Za-z]:/*|//*)
+    /*|[A-Za-z]:/*)
       printf '%s\n' "$input"
       return 0
       ;;
@@ -98,7 +98,7 @@ resolve_output_path() {
       printf '%s\n' "$normalized_input"
       return 0
       ;;
-    /*|[A-Za-z]:/*|//*)
+    /*|[A-Za-z]:/*)
       printf '%s\n' "$input"
       return 0
       ;;
@@ -169,6 +169,8 @@ prompt_file() {
 }
 
 ensure_codex_available() {
+  # CODEX_BIN is intentionally global for codex-review.sh and codex-verify.sh.
+  # shellcheck disable=SC2034
   if ! CODEX_BIN="$(codex_executable)"; then
     die "未找到可运行的 codex 命令。请确认 Codex CLI 及其运行时依赖在当前 Bash 环境中可用。"
   fi

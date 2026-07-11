@@ -199,14 +199,19 @@ function validateToolRisk(allowedTools, destructiveActions) {
   if (tools.has('MultiEdit') && !['medium', 'high'].includes(destructiveActions)) {
     fail('MultiEdit requires destructive-actions medium or high');
   }
-  if (tools.has('Bash') && destructiveActions === 'none') {
-    fail('Bash requires destructive-actions other than none');
-  }
 }
 
 function validateProfileToolConsistency(profileName, allowedTools, allowedToolsWasOverridden) {
-  if (profileName !== 'read' || !allowedToolsWasOverridden || !hasSideEffectTool(allowedTools)) return;
-  fail('read profile cannot use side-effect tools from --allowed-tools; choose --profile artifact or --profile implementation');
+  if (profileName !== 'read' || !allowedToolsWasOverridden) return;
+  const tools = new Set(splitTools(allowedTools));
+  if (![...tools].some((tool) => ['Write', 'Edit', 'MultiEdit'].includes(tool))) return;
+  fail('read profile cannot use Write/Edit/MultiEdit from --allowed-tools; choose --profile artifact or --profile implementation');
+}
+
+function validateReadOnlyBashProfile(profileName, allowedTools, destructiveActions) {
+  const tools = new Set(splitTools(allowedTools));
+  if (!tools.has('Bash') || destructiveActions !== 'none' || profileName === 'read') return;
+  fail('Bash with destructive-actions none is allowed only for the read profile');
 }
 
 function validateProfileStageConsistency(profileName, stage) {
@@ -264,6 +269,7 @@ function buildConfig(positional, options) {
   const destructiveActions = String(options['destructive-actions'] ?? profile.destructiveActions);
   validateToolRisk(allowedTools, destructiveActions);
   validateProfileToolConsistency(profileName, allowedTools, allowedToolsWasOverridden);
+  validateReadOnlyBashProfile(profileName, allowedTools, destructiveActions);
 
   const inputName = normalizeInputName(options['input-name'] ?? profile.inputName);
   const skillName = `nova-${id}`;
@@ -340,11 +346,14 @@ function safetyPreflightBlock(config) {
     .filter((tool) => SIDE_EFFECT_TOOLS.has(tool))
     .map((tool) => `\`${tool}\``)
     .join(', ');
+  const readOnlyBashGuard = config.destructiveActions === 'none' && splitTools(config.allowedTools).includes('Bash')
+    ? '\n- Bash is limited to read-only probes; do not modify or write project files, commit, push, merge, or rebase.'
+    : '';
   return `- This skill declares side-effect-capable tools: ${sideEffectTools}.
 - Resolve parameters and present a preflight card before writing artifacts, editing project files, or running Bash.
 - Show files or artifacts that may be written, scripts or commands that may run, disallowed operations, and the proceed condition.
 - Do not infer missing safety-boundary values; ask once in interactive mode or fail in non-interactive mode.
-- Preserve repository constraints: no destructive Git cleanup, no branch deletion, no push/merge/rebase, no editing archived agents as active agents.
+- Preserve repository constraints: no destructive Git cleanup, no branch deletion, no push/merge/rebase, no editing archived agents as active agents.${readOnlyBashGuard}
 - Full policy: \`nova-plugin/skills/_shared/safety-preflight.md\`.`;
 }
 

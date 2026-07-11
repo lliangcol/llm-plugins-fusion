@@ -17,7 +17,7 @@
 
 - `CONTEXT`: 上下文材料。示例: `Logs, code paths`
 - `CONSTRAINTS`: 分析边界与约束。示例: `Only analyze current implementation`
-- `DEPTH`: 分析深度。示例: `deep`
+- `DEPTH`: 分析深度，可选 `quick`、`normal`、`deep`，默认 `normal`。
 - `EXPORT_PATH`: 导出路径。示例: `docs/analysis/issue.md`
 
 ## 行为准则（Do/Don't）

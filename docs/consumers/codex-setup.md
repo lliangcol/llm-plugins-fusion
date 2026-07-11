@@ -19,7 +19,7 @@ nova-plugin/skills/nova-finalize-work/SKILL.md
 ```
 
 Use Codex-specific review commands only when the consumer project has the
-required Codex CLI, Bash runtime, and artifact policy:
+required Codex CLI, Bash 3.2+ runtime, and artifact policy:
 
 ```text
 nova-plugin/skills/nova-codex-review-fix/SKILL.md
@@ -52,4 +52,4 @@ nova-plugin/skills/nova-codex-verify-only/SKILL.md
 
 - Codex can consume Markdown instructions, but Claude Code slash command syntax is not portable by itself.
 - Claude plugin install and Claude hooks remain Claude-specific.
-- Codex loop scripts require Bash and a working Codex CLI; ordinary five-stage workflow skills do not.
+- Codex loop scripts require Bash 3.2+ and a working Codex CLI; ordinary five-stage workflow skills do not.

@@ -252,6 +252,24 @@ function validateVersionReferences() {
     version,
     'command reference version',
   );
+  expectRegex(
+    'docs/marketplace/portal-information-architecture.md',
+    /remains the current `v(\d+\.\d+\.\d+)` marketplace state/,
+    version,
+    'current portal boundary version',
+  );
+  expectRegex(
+    'nova-plugin/docs/overview/README.en.md',
+    /current `v(\d+\.\d+\.\d+)` single-plugin boundary/,
+    version,
+    'English overview current portal version',
+  );
+  expectRegex(
+    'nova-plugin/docs/architecture/hooks-design.md',
+    /当前 `(\d+\.\d+\.\d+)` 中仍未发布/,
+    version,
+    'hooks design current version',
+  );
 
   if (updated) {
     expectRegex(
@@ -1041,6 +1059,11 @@ function validateIssueTemplateContracts() {
       label: 'bug report required public safety checkbox',
     },
     {
+      file: '.github/ISSUE_TEMPLATE/bug_report.yml',
+      pattern: /placeholder: vX\.Y\.Z, X\.Y\.Z, or a commit SHA/,
+      label: 'bug report version placeholder is drift-safe',
+    },
+    {
       file: '.github/ISSUE_TEMPLATE/feature_request.yml',
       pattern: /feature proposals that can be discussed publicly[\s\S]*generic and redacted[\s\S]*Do not include credentials,[\s\S]*private endpoints,[\s\S]*private repository addresses,[\s\S]*local machine paths,[\s\S]*consumer-specific business rules,[\s\S]*private knowledge-base content/,
       label: 'feature request public-safe disclosure boundary',
@@ -1622,8 +1645,8 @@ function validateDeferredPortalIaContracts() {
     },
     {
       file: 'docs/marketplace/portal-information-architecture.md',
-      pattern: /The current portal preparation boundary is the `v2\.2\.0` single-plugin\s+marketplace state[\s\S]*does not require\s+a plugin path move or a public portal implementation[\s\S]*breaking multi-plugin\s+repository layout remains a future `v3\.0\.0` candidate/,
-      label: 'portal IA v2.2 single-plugin boundary',
+      pattern: /single-plugin portal preparation boundary was introduced in `v2\.2\.0`[\s\S]*remains the current `v\d+\.\d+\.\d+` marketplace state[\s\S]*does not require\s+a plugin path move or a public portal implementation[\s\S]*breaking multi-plugin\s+repository layout remains a future `v3\.0\.0` candidate/,
+      label: 'portal IA historical and current single-plugin boundary',
     },
     {
       file: 'docs/marketplace/portal-information-architecture.md',

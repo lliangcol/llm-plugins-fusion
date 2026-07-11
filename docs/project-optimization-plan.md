@@ -53,9 +53,9 @@ Live facts checked for this plan:
 - `scripts/validate-docs.mjs` remains the stable CLI entry point. The
   implementation has started moving under `scripts/validate-docs/` so rule
   families can be reviewed without changing the command contract.
-- Tests are already split across 3 unit files, 4 integration files, and 3 e2e
-  files. The first follow-up slice adds coverage evidence collection; threshold
-  decisions remain deferred until CI records a stable baseline.
+- Tests are split across unit, integration, and e2e suites with explicit
+  Node 20-compatible discovery. Coverage checks enforce the recorded 85% lines,
+  60% branches, and 90% functions baseline.
 - `package.json` still declares no `dependencies` or `devDependencies`.
 - `validate-all` timing support, workflow fixtures, issue forms, release
   evidence artifacts, Windows Node smoke, Windows Bash smoke, and isolated
@@ -553,8 +553,8 @@ Acceptance criteria:
 ### Remaining Follow-Up Sequence
 
 1. Continue DR1 validator modularization in small rule-family batches.
-2. Keep DR2 coverage in collection mode until CI records a stable baseline and
-   maintainers explicitly choose thresholds.
+2. Keep the completed DR2 coverage baseline at 85% lines, 60% branches, and 90%
+   functions; raise it only with observed Node 20 evidence.
 3. Continue DR3 by deciding whether hooks stay Bash-active or switch to Node;
    do not update `hooks.json` until docs, validators, and semver review agree.
 4. Use DR4 demo fixtures as public-safe examples, not as model-output quality

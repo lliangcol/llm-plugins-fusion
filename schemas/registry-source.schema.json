@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://github.com/lliangcol/llm-plugins-fusion/schemas/registry-source.schema.json",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/registry-source.schema.json",
   "title": "Registry Generation Source",
   "description": "Human-maintained source for generating the Claude-compatible marketplace manifest and repository-local marketplace metadata.",
   "type": "object",

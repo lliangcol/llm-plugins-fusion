@@ -39,8 +39,8 @@ nova-plugin/skills/nova-codex-review-fix/
 
 - Git 仓库
 - `codex` CLI，且已完成登录
-- Bash 运行环境
-  - macOS / Linux：直接使用系统 Bash
+- Bash 3.2+ 运行环境
+  - macOS / Linux：可直接使用满足 3.2+ 的系统 Bash
   - Win11：推荐在 WSL / Git Bash 中执行
 - 本地项目依赖工具
   - Node 项目通常需要 `node` 与对应包管理器

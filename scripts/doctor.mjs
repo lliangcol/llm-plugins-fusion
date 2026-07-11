@@ -69,7 +69,6 @@ await runCheck('Node.js', () => {
 
 for (const [label, command] of [
   ['Git', 'git'],
-  ['Bash', 'bash'],
   ['Claude CLI', 'claude'],
   ['Codex CLI', 'codex'],
 ]) {
@@ -82,6 +81,21 @@ for (const [label, command] of [
     };
   });
 }
+
+await runCheck('Bash', async () => {
+  const version = await commandResult('bash');
+  if (!version.ok) return { status: 'WARN', detail: 'not available' };
+  const capability = await commandResult('bash', [
+    '-c',
+    'set -euo pipefail; values=(); values+=(ok); [[ ${#values[@]} -eq 1 ]]; cat <(printf compatible)',
+  ]);
+  return {
+    status: capability.ok && capability.detail === 'compatible' ? 'OK' : 'WARN',
+    detail: capability.ok
+      ? `${version.detail}; required Bash 3.2 features available`
+      : `${version.detail}; required Bash 3.2 features unavailable`,
+  };
+});
 
 await runCheck('Package/plugin version', () => ({
   status: packageJson.version === plugin.version ? 'OK' : 'ERROR',

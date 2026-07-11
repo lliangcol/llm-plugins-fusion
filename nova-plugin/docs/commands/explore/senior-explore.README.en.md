@@ -15,7 +15,7 @@
 | `INTENT`      | Yes      | Analysis intent.                     | `Analyze a new feature requirement`   |
 | `CONTEXT`     | No       | Context materials.                   | `Logs and modules`                    |
 | `CONSTRAINTS` | No       | Analysis boundaries and constraints. | `Only analyze current implementation` |
-| `DEPTH`       | No       | Analysis depth.                      | `deep`                                |
+| `DEPTH`       | No       | `quick` / `normal` / `deep`; default `normal`. | `deep`                     |
 | `EXPORT_PATH` | No       | Export path (identical to chat).     | `docs/analysis/issue.md`              |
 
 ## Output

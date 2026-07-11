@@ -62,10 +62,11 @@ npm run test:coverage:check
 ```
 
 This uses Node's built-in test coverage support and writes raw V8 coverage plus
-a text summary under `.metrics/coverage/`. The current default is
-collection-only: percentage thresholds are not enforced unless a maintainer
-sets `NOVA_COVERAGE_LINES`, `NOVA_COVERAGE_BRANCHES`, or
-`NOVA_COVERAGE_FUNCTIONS` after a CI baseline is known.
+a text summary under `.metrics/coverage/`. The `--check` path enforces lines
+85%, branches 60%, and functions 90%. `NOVA_COVERAGE_LINES`,
+`NOVA_COVERAGE_BRANCHES`, and `NOVA_COVERAGE_FUNCTIONS` can override those
+values for an explicit maintainer experiment; `npm run test:coverage` remains
+collection-only.
 
 Run the focused generated-output gate when registry source, plugin metadata, or
 marketplace catalog files are in scope:

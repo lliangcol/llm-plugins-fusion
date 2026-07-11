@@ -63,6 +63,16 @@ export function redactSensitiveText(value) {
   return redacted;
 }
 
+export function sanitizeAuditField(value, maxLength) {
+  const normalized = redactSensitiveText(String(value ?? ''))
+    .replace(/[\u0000-\u001f\u007f-\u009f]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (normalized.length <= maxLength) return normalized;
+  if (maxLength <= 3) return normalized.slice(0, maxLength);
+  return `${normalized.slice(0, maxLength - 3)}...`;
+}
+
 export function isSensitivePath(value) {
   const name = basename(String(value)).toLowerCase();
   return (
@@ -88,6 +98,8 @@ function usage() {
     'Commands:',
     '  detect-text       Exit 0 when stdin contains a sensitive value; 1 otherwise.',
     '  redact-text       Redact sensitive values from stdin and write stdout.',
+    '  sanitize-audit-field MAX_LENGTH',
+    '                    Redact and normalize stdin into one bounded log field.',
     '  detect-file PATH  Exit 0 when PATH contains a sensitive value; 1 otherwise.',
     '  sensitive-path PATH',
     '                    Exit 0 when PATH is a sensitive untracked path; 1 otherwise.',
@@ -107,6 +119,16 @@ export function main(argv = process.argv.slice(2)) {
 
   if (command === 'redact-text') {
     process.stdout.write(redactSensitiveText(readStdin()));
+    return 0;
+  }
+
+  if (command === 'sanitize-audit-field') {
+    const maxLength = Number(args[0]);
+    if (!Number.isInteger(maxLength) || maxLength < 1 || maxLength > 10_000) {
+      console.error('ERROR sanitize-audit-field requires MAX_LENGTH between 1 and 10000');
+      return 2;
+    }
+    process.stdout.write(sanitizeAuditField(readStdin(), maxLength));
     return 0;
   }
 

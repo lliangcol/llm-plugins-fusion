@@ -108,9 +108,9 @@ async function runNodePostAuditSmoke() {
   const tmpRoot = mkdtempSync(resolve(tmpdir(), 'nova-node-hook-'));
   const token = `sk-proj-${'f'.repeat(24)}`;
   const payload = JSON.stringify({
-    tool_name: 'Bash',
+    tool_name: 'Bash\nFORGED_TOOL',
     tool_input: {
-      command: `curl -H Authorization: Bearer ${token} https://example.test`,
+      file_path: `src/example.js\nFORGED_STATUS ${token}`,
     },
     tool_response: { success: true },
   });
@@ -126,14 +126,21 @@ async function runNodePostAuditSmoke() {
     });
     const logPath = resolve(tmpRoot, 'audit.log');
     const log = existsSync(logPath) ? readFileSync(logPath, 'utf8') : '';
-    if (result.code !== 0 || !log.includes('<redacted>') || log.includes(token)) {
+    const lines = log.trimEnd().split(/\r?\n/);
+    if (
+      result.code !== 0
+      || lines.length !== 1
+      || !log.includes('<redacted>')
+      || log.includes(token)
+      || /^FORGED_/m.test(log)
+    ) {
       failed += 1;
       console.error('ERROR node post-audit hook redacts command secrets');
       console.error(`  status=${result.code}`);
       console.error(log.split(/\r?\n/).filter(Boolean).slice(0, 4).join('\n'));
       return;
     }
-    console.log('OK node post-audit hook redacts command secrets');
+    console.log('OK node post-audit hook writes one sanitized line');
   } finally {
     rmSync(tmpRoot, { recursive: true, force: true });
   }
@@ -208,6 +215,7 @@ const scripts = [
 
 for (const script of scripts) {
   await run(`bash -n ${script}`, ['-n', script]);
+  assertFileDoesNotMatch(`${script} avoids Bash 4 mapfile`, script, /\bmapfile\b/);
 }
 
 await run('codex-review.sh --help', [
@@ -341,6 +349,16 @@ payload="$(printf '{"tool_name":"Bash","tool_input":{"command":"curl -H %s %s %s
 printf '%s' "$payload" | bash nova-plugin/hooks/scripts/post-audit-log.sh
 grep -q '<redacted>' "$log_dir/audit.log"
 ! grep -q "$token" "$log_dir/audit.log"
+`);
+
+await runTempBash('post-audit hook normalizes injected newlines to one line', `
+log_dir="$(dirname "$0")/hook-injection-data"
+mkdir "$log_dir"
+export CLAUDE_PLUGIN_DATA="$log_dir"
+payload='{"tool_name":"Bash\\nFORGED_TOOL","tool_input":{"file_path":"src/example.js\\nFORGED_STATUS"},"tool_response":{"success":true}}'
+printf '%s' "$payload" | bash nova-plugin/hooks/scripts/post-audit-log.sh
+[ "$(wc -l < "$log_dir/audit.log" | tr -d ' ')" = "1" ]
+! grep -q '^FORGED_' "$log_dir/audit.log"
 `);
 
 await runTempBash('codex_executable falls back to codex.exe', `

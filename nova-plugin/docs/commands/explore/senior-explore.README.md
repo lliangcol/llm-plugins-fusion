@@ -15,7 +15,7 @@
 | `INTENT`      | Yes  | 分析意图。               | `Analyze a new feature requirement`   |
 | `CONTEXT`     | No   | 上下文材料。             | `Logs and modules`                    |
 | `CONSTRAINTS` | No   | 分析边界与约束。         | `Only analyze current implementation` |
-| `DEPTH`       | No   | 分析深度。               | `deep`                                |
+| `DEPTH`       | No   | `quick` / `normal` / `deep`，默认 `normal`。 | `deep`              |
 | `EXPORT_PATH` | No   | 导出路径（与聊天一致）。 | `docs/analysis/issue.md`              |
 
 ## 输出说明

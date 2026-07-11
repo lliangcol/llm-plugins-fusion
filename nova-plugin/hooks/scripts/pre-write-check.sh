@@ -13,6 +13,7 @@ set -euo pipefail
 INPUT=$(cat)
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
 PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd -- "$SCRIPT_DIR/../.." >/dev/null 2>&1 && pwd -P)}"
+# shellcheck source-path=SCRIPTDIR
 # shellcheck source=../../runtime/bash-common.sh
 source "$PLUGIN_ROOT/runtime/bash-common.sh"
 
