@@ -1,7 +1,7 @@
 # LLM Plugins Fusion Maintenance Status
 
 Status: active
-Date: 2026-06-25
+Date: 2026-07-11
 Scope: context-safe maintenance snapshot for small-step optimization rounds
 
 ## Project Positioning
@@ -110,6 +110,15 @@ npm run doctor
 npm run validate:maintainer
 ```
 
+Full maintenance coverage validation:
+
+```bash
+npm run test:coverage:check
+```
+
+This gate requires every Git-tracked, non-`tests/**` maintenance `.mjs` to be
+loaded by V8 evidence and enforces lines 85%, branches 60%, functions 90%.
+
 Focused validation shortcuts currently declared in `package.json`:
 
 ```bash
@@ -171,6 +180,16 @@ for CI or isolated test-user environments.
    gate output shows a confusing or overly broad failure signal.
 
 ## Recently Observed
+
+- 2026-07-11: The coverage gate was expanded to the complete maintenance `.mjs`
+  inventory with automatic source discovery; all three existing thresholds
+  remain release blockers.
+- 2026-07-11: Release preparation now validates full SemVer 2 tags, derives the
+  prerelease flag from parsed semantics, and keeps GitHub context out of shell
+  interpolation.
+- 2026-07-11: Runtime reliability fixes cover non-truncating audit-log rotation,
+  accurate project-check summaries, strict option values, single-pass Markdown
+  entity decoding, and shell-free subprocess execution.
 
 - 2026-06-25: Light scan confirmed current inventory counts: 21 commands, 21
   `nova-*` skills, 6 active agents, and 8 capability packs.

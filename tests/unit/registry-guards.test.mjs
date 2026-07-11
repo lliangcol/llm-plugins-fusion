@@ -1,9 +1,11 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 import { buildRegistryObjects } from '../../scripts/generate-registry.mjs';
+import { SEMVER_PATTERN_SOURCE } from '../../scripts/lib/semver.mjs';
 
 function registryEntry(source, metadata = {}) {
   return {
@@ -28,6 +30,16 @@ function pluginManifest(name) {
     license: 'MIT',
   };
 }
+
+test('repository version schemas share the canonical SemVer pattern', async () => {
+  const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+  const pluginSchema = JSON.parse(await readFile(resolve(root, 'schemas/plugin.schema.json'), 'utf8'));
+  const marketplaceSchema = JSON.parse(await readFile(resolve(root, 'schemas/marketplace.schema.json'), 'utf8'));
+  const metadataSchema = JSON.parse(await readFile(resolve(root, 'schemas/marketplace-metadata.schema.json'), 'utf8'));
+  assert.equal(pluginSchema.properties.version.pattern, SEMVER_PATTERN_SOURCE);
+  assert.equal(marketplaceSchema.properties.plugins.items.properties.version.pattern, SEMVER_PATTERN_SOURCE);
+  assert.equal(metadataSchema.properties.plugins.items.properties.version.pattern, SEMVER_PATTERN_SOURCE);
+});
 
 async function writeJson(path, value) {
   await writeFile(path, `${JSON.stringify(value, null, 2)}\n`, 'utf8');

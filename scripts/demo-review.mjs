@@ -8,7 +8,7 @@
 
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -17,34 +17,42 @@ function readJson(relPath) {
   return JSON.parse(readFileSync(resolve(root, relPath), 'utf8'));
 }
 
-function printList(label, values) {
-  console.log(`${label}:`);
-  for (const value of values) console.log(`  - ${value}`);
+function appendList(lines, label, values) {
+  lines.push(`${label}:`);
+  for (const value of values) lines.push(`  - ${value}`);
 }
 
-const review = readJson('fixtures/demo/review-signal.json');
-const verification = readJson('fixtures/demo/verification-evidence.json');
+export function renderReviewDemo(review, verification) {
+  const lines = [
+    `Headless demo fixture: ${review.id}`,
+    `Mode: ${review.mode}`,
+    `Title: ${review.title}`,
+    '',
+    'Boundary: deterministic local fixture only; no LLM, network, Codex, Claude Code, or install path is executed.',
+    '',
+    `Request: ${review.request}`,
+    `Expected command: ${review.expected.command}`,
+    `Primary finding: [${review.expected.primaryFinding.severity}] ${review.expected.primaryFinding.signal}`,
+    `Fix direction: ${review.expected.primaryFinding.expectedFixDirection}`,
+  ];
+  appendList(lines, 'Required inputs', review.expected.requiredInputs);
+  appendList(lines, 'Good review signals', review.expected.outputSignals);
+  appendList(lines, 'Review failure signals', review.expected.failureSignals);
+  lines.push('', `Verification fixture: ${verification.id}`, `Expected command: ${verification.expected.command}`);
+  appendList(lines, 'Changed files', verification.expected.changedFiles);
+  appendList(lines, 'Validation evidence', verification.expected.validation);
+  appendList(lines, 'Skipped checks', verification.expected.skippedChecks);
+  appendList(lines, 'Residual risk', verification.expected.residualRisk);
+  appendList(lines, 'Good handoff signals', verification.expected.outputSignals);
+  appendList(lines, 'Handoff failure signals', verification.expected.failureSignals);
+  return `${lines.join('\n')}\n`;
+}
 
-console.log(`Headless demo fixture: ${review.id}`);
-console.log(`Mode: ${review.mode}`);
-console.log(`Title: ${review.title}`);
-console.log('');
-console.log('Boundary: deterministic local fixture only; no LLM, network, Codex, Claude Code, or install path is executed.');
-console.log('');
-console.log(`Request: ${review.request}`);
-console.log(`Expected command: ${review.expected.command}`);
-console.log(`Primary finding: [${review.expected.primaryFinding.severity}] ${review.expected.primaryFinding.signal}`);
-console.log(`Fix direction: ${review.expected.primaryFinding.expectedFixDirection}`);
-printList('Required inputs', review.expected.requiredInputs);
-printList('Good review signals', review.expected.outputSignals);
-printList('Review failure signals', review.expected.failureSignals);
+export function main() {
+  process.stdout.write(renderReviewDemo(
+    readJson('fixtures/demo/review-signal.json'),
+    readJson('fixtures/demo/verification-evidence.json'),
+  ));
+}
 
-console.log('');
-console.log(`Verification fixture: ${verification.id}`);
-console.log(`Expected command: ${verification.expected.command}`);
-printList('Changed files', verification.expected.changedFiles);
-printList('Validation evidence', verification.expected.validation);
-printList('Skipped checks', verification.expected.skippedChecks);
-printList('Residual risk', verification.expected.residualRisk);
-printList('Good handoff signals', verification.expected.outputSignals);
-printList('Handoff failure signals', verification.expected.failureSignals);
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) main();

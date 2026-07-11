@@ -90,16 +90,14 @@ function collectMarkdownLinks(src, context) {
   return links;
 }
 
-function stripInlineMarkdown(src) {
+export function stripInlineMarkdown(src) {
   return src
     .replace(/<[^>]+>/g, ' ')
     .replace(/`([^`]*)`/g, '$1')
     .replace(/!\[[^\]]*\]\([^)]+\)/g, ' ')
     .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
     .replace(/[*_~]/g, '')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>');
+    .replace(/&(amp|lt|gt);/g, (_, entity) => ({ amp: '&', lt: '<', gt: '>' })[entity]);
 }
 
 function slugifyAnchor(src) {

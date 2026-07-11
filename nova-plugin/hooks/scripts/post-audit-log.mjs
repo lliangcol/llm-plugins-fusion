@@ -84,13 +84,17 @@ try {
 
   const size = statSync(logFile).size;
   if (size > 5_242_880) {
+    let rotated = false;
     try {
       renameSync(logFile, `${logFile}.1`);
+      rotated = true;
     } catch {
       // If rotation fails, keep best-effort append behavior.
     }
-    writeFileSync(logFile, '', 'utf8');
-    chmodBestEffort(logFile, 0o600);
+    if (rotated) {
+      writeFileSync(logFile, '', 'utf8');
+      chmodBestEffort(logFile, 0o600);
+    }
   }
 
   appendLine(logFile, formatRow(timestamp, toolName, success === false ? 'FAILED' : 'SUCCESS', summary));

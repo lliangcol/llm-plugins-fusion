@@ -136,37 +136,18 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '20'
-      - name: Extract version from tag
-        id: version
-        run: echo "version=${GITHUB_REF_NAME#v}" >> $GITHUB_OUTPUT
-      - name: Validate tag matches plugin version
-        run: |
-          TAG_VERSION="${{ steps.version.outputs.version }}"
-          PLUGIN_VERSION="$(node -e "process.stdout.write(require('./nova-plugin/.claude-plugin/plugin.json').version)")"
-          if [ "$TAG_VERSION" != "$PLUGIN_VERSION" ]; then
-            echo "Tag version $TAG_VERSION does not match plugin version $PLUGIN_VERSION" >&2
-            exit 1
-          fi
-      - name: Extract changelog for this version
-        id: changelog
-        run: |
-          VERSION="${{ steps.version.outputs.version }}"
-          # Extract the section between ## [VERSION] and the next ## [
-          NOTES=$(awk "/^## \[$VERSION\]/{found=1; next} found && /^## \[/{exit} found{print}" CHANGELOG.md)
-          if [ -z "$(printf '%s' "$NOTES" | tr -d '[:space:]')" ]; then
-            echo "CHANGELOG.md has no release notes for $VERSION" >&2
-            exit 1
-          fi
-          # Write to file to handle multiline
-          echo "$NOTES" > /tmp/release-notes.md
-          echo "notes_file=/tmp/release-notes.md" >> $GITHUB_OUTPUT
+      - name: Prepare validated release metadata
+        id: release
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: node scripts/prepare-release.mjs
       - name: Generate release checksums
         run: node scripts/generate-release-checksums.mjs
       - name: Create GitHub Release
         uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d # v3
         with:
-          name: "nova-plugin v${{ steps.version.outputs.version }}"
-          body_path: ${{ steps.changelog.outputs.notes_file }}
+          name: "nova-plugin v${{ steps.release.outputs.version }}"
+          body_path: ${{ steps.release.outputs.notes_file }}
           files: .metrics/release-checksums/SHA256SUMS.txt
           draft: false
-          prerelease: ${{ contains(github.ref_name, '-') }}
+          prerelease: ${{ steps.release.outputs.prerelease }}

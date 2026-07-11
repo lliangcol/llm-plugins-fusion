@@ -12,6 +12,7 @@ import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
+import { requireOptionValue } from './lib/cli-args.mjs';
 
 assertNodeVersion({ label: 'GitHub workflow validation' });
 
@@ -31,12 +32,7 @@ function parseRoot(args) {
       process.exit(0);
     }
     if (arg === '--root') {
-      const value = args[index + 1];
-      if (!value) {
-        console.error('ERROR --root requires a path');
-        console.error(usage());
-        process.exit(1);
-      }
+      const value = requireOptionValue(args, index, '--root');
       selectedRoot = resolve(value);
       index += 1;
       continue;
@@ -48,7 +44,14 @@ function parseRoot(args) {
   return selectedRoot;
 }
 
-const root = parseRoot(process.argv.slice(2));
+let root;
+try {
+  root = parseRoot(process.argv.slice(2));
+} catch (error) {
+  console.error(`ERROR ${error.message}`);
+  console.error(usage());
+  process.exit(1);
+}
 const errors = [];
 const EXTERNAL_REQUIRED_CHECKS = [
   'Dependency Review',
@@ -118,6 +121,30 @@ function escapeRegExp(value) {
 
 function lineIndent(line) {
   return line.match(/^ */)?.[0].length ?? 0;
+}
+
+function extractRunScripts(src) {
+  const lines = src.split(/\r?\n/);
+  const scripts = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    const match = lines[index].match(/^(\s*)run:\s*(.*)$/);
+    if (!match) continue;
+    const indent = match[1].length;
+    const marker = match[2].trim();
+    if (marker !== '|' && marker !== '>') {
+      scripts.push(match[2]);
+      continue;
+    }
+    const body = [];
+    for (let bodyIndex = index + 1; bodyIndex < lines.length; bodyIndex += 1) {
+      const line = lines[bodyIndex];
+      if (line.trim() && lineIndent(line) <= indent) break;
+      body.push(line);
+      index = bodyIndex;
+    }
+    scripts.push(body.join('\n'));
+  }
+  return scripts;
 }
 
 function extractYamlBlock(file, src, key, indent, label, searchStart = 0, searchEnd = null) {
@@ -488,6 +515,15 @@ function validateWorkflowContracts() {
   const releaseFile = '.github/workflows/release.yml';
   const releaseSrc = readWorkflow(releaseFile);
   if (releaseSrc) {
+    if (extractRunScripts(releaseSrc).some((script) => /\$\{\{\s*(?:github\.|steps\.[^.\s]+\.outputs\.)/.test(script))) {
+      recordError(releaseFile, 'release shell scripts must receive GitHub contexts and step outputs through env, not direct expression interpolation');
+    }
+    if (!/id:\s*release[\s\S]*?RELEASE_TAG:\s*\$\{\{\s*github\.ref_name\s*\}\}[\s\S]*?run:\s*node scripts\/prepare-release\.mjs/.test(releaseSrc)) {
+      recordError(releaseFile, 'release workflow must prepare validated metadata through scripts/prepare-release.mjs');
+    }
+    if (!/prerelease:\s*\$\{\{\s*steps\.release\.outputs\.prerelease\s*\}\}/.test(releaseSrc)) {
+      recordError(releaseFile, 'release action must use the validated prerelease output');
+    }
     const releaseJob = extractYamlBlock(
       releaseFile,
       releaseSrc,

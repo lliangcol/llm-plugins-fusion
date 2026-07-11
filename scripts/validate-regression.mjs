@@ -509,7 +509,9 @@ test('validate-github-workflows enforces least-privilege workflow contracts', ()
     assert.match(releaseWorkflow, /  release:\r?\n[\s\S]*?    permissions:\r?\n      contents: write/);
     writeFileSync(
       releaseWorkflowPath,
-      releaseWorkflow.replace(/    permissions:\r?\n      contents: write\r?\n/, ''),
+      releaseWorkflow
+        .replace(/    permissions:\r?\n      contents: write\r?\n/, '')
+        .replace('run: node scripts/prepare-release.mjs', 'run: echo "${{ github.ref_name }}"'),
       'utf8',
     );
 
@@ -536,6 +538,7 @@ test('validate-github-workflows enforces least-privilege workflow contracts', ()
     assert.match(output, /workflow trigger safety contract forbids pull_request_target/);
     assert.match(output, /CI workflow top-level permissions/);
     assert.match(output, /release job scoped write permission/);
+    assert.match(output, /release shell scripts must receive GitHub contexts and step outputs through env/);
     assert.match(output, /plugin install smoke isolation contract/);
     assert.match(output, /explicitly upload hidden \.metrics\/coverage content/);
     assert.match(output, /normal project-check path with system \/bin\/bash/);

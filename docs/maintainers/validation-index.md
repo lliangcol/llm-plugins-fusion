@@ -1,7 +1,7 @@
 # Validation Index
 
 Status: active
-Date: 2026-07-09
+Date: 2026-07-11
 
 This index maps repository validation surfaces to npm shortcuts and CI checks.
 It is the maintainer-facing inventory for validation coverage. Runtime behavior
@@ -21,7 +21,8 @@ gate is added, renamed, removed, or moved.
   `npm test`, generated registry drift, and `git diff --check`.
 - `scripts/run-test-coverage.mjs` collects dependency-free Node test coverage
   evidence under `.metrics/coverage/`; `--check` enforces the 85% lines, 60%
-  branches, and 90% functions baseline.
+  branches, and 90% functions baseline and fails unless every Git-tracked,
+  non-test maintenance `.mjs` is present in the V8 loaded-source evidence.
 - `.github/workflows/ci.yml` owns merge-required check names.
 - `.github/workflows/plugin-install-smoke.yml` owns isolated mutating install
   smoke evidence and is not a default merge blocker. It uploads smoke context
@@ -42,7 +43,7 @@ gate is added, renamed, removed, or moved.
 | `npm run demo:review` | Headless review and verification demo fixture. | Deterministic public-safe output; does not execute an LLM review or mutate repository state. |
 | `npm run test` | Node test suite. | Runs unit, integration, and e2e suites sequentially for clearer CI logs. |
 | `npm run test:coverage` | Node built-in coverage collection. | Writes raw V8 coverage and a text summary under `.metrics/coverage/`; no thresholds by default. |
-| `npm run test:coverage:check` | Coverage collection and baseline gate. | Fails on test failures, missing coverage output, or coverage below lines 85%, branches 60%, functions 90%; `NOVA_COVERAGE_*` provides explicit overrides. |
+| `npm run test:coverage:check` | Full maintenance coverage and baseline gate. | Fails on test failures, missing coverage output, any unloaded Git-tracked non-test `.mjs`, or coverage below lines 85%, branches 60%, functions 90%; `NOVA_COVERAGE_*` overrides are diagnostic only and do not replace the release baseline. |
 | `npm run test:unit` | Unit test suite. | Runs `tests/unit/**/*.test.mjs`. |
 | `npm run test:integration` | Integration test suite. | Runs `tests/integration/**/*.test.mjs`. |
 | `npm run test:e2e` | E2E smoke suite. | Runs `tests/e2e/**/*.test.mjs`, including the aggregate validation smoke. |
@@ -69,7 +70,7 @@ gate is added, renamed, removed, or moved.
 | Validate Capability Packs | `node scripts/validate-packs.mjs` | Pack documentation, enhanced/fallback boundaries, and inventory. |
 | Validate Claude Compatibility | `node scripts/validate-claude-compat.mjs` | Claude marketplace manifest compatibility. |
 | NPM Test | `npm test` | Node unit, integration, and e2e test suite. |
-| Test Coverage | `npm run test:coverage:check` | Node built-in coverage collection on the Node 20 lane; uploads `.metrics/coverage/` as `test-coverage-evidence`. |
+| Test Coverage | `npm run test:coverage:check` | Node built-in coverage on the Node 20 lane for the complete maintenance `.mjs` inventory; uploads `.metrics/coverage/` as `test-coverage-evidence`. |
 | Plugin Install Dry Run | `node scripts/validate-plugin-install.mjs --dry-run` | Safe install-path preview without user-scope mutation. |
 | Lint Frontmatter | `node scripts/lint-frontmatter.mjs` | Command and skill frontmatter contracts. |
 | Validate Hooks | `node scripts/validate-hooks.mjs` plus hook `bash -n` | Hook config structure and Bash syntax. |

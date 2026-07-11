@@ -20,8 +20,8 @@
     },
     "version": {
       "type": "string",
-      "pattern": "^\\d+\\.\\d+\\.\\d+$",
-      "description": "Semantic version (e.g. 1.0.6)"
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$",
+      "description": "Semantic Versioning 2.0.0 version (e.g. 1.0.6 or 2.0.0-rc.1)"
     },
     "author": {
       "type": "object",

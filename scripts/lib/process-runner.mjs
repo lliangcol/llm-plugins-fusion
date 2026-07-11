@@ -46,11 +46,13 @@ function capturedOutput(value, state, maxBytes) {
 }
 
 export function runProcess(label, command, args = [], options = {}) {
+  if (options.shell) {
+    throw new Error('runProcess forbids shell execution; pass a command and argument array');
+  }
   const {
     cwd = process.cwd(),
     env = process.env,
     input,
-    shell = false,
     timeoutMs = DEFAULT_TIMEOUT_MS,
     capture = true,
     maxOutputBytes = DEFAULT_MAX_OUTPUT_BYTES,
@@ -82,7 +84,7 @@ export function runProcess(label, command, args = [], options = {}) {
       child = spawn(command, args, {
         cwd,
         env,
-        shell,
+        shell: false,
         windowsHide: true,
         stdio: capture ? ['pipe', 'pipe', 'pipe'] : ['ignore', 'inherit', 'inherit'],
       });

@@ -13,6 +13,7 @@ import {
 } from 'node:fs';
 import { dirname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { requireOptionValue } from './lib/cli-args.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -128,9 +129,11 @@ function parseArgs(argv) {
       continue;
     }
 
-    const next = argv[i + 1];
-    if (!next || next.startsWith('--')) fail(`missing value for --${key}`);
-    options[key] = next;
+    try {
+      options[key] = requireOptionValue(argv, i, `--${key}`);
+    } catch (error) {
+      fail(error.message);
+    }
     i += 1;
   }
 

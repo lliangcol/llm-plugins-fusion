@@ -1,7 +1,7 @@
 # Release Validation Runbook
 
 Status: active
-Date: 2026-05-12
+Date: 2026-07-11
 
 Use this runbook when a release-ready `nova-plugin` snapshot needs to become
 promotable release evidence. It turns the release hygiene rules and evidence
@@ -19,7 +19,7 @@ A snapshot is promotable only when all required evidence exists.
 | Gate | Automated or manual | Required evidence |
 | --- | --- | --- |
 | Repository structure and docs | Automated | `node scripts/validate-all.mjs` passes with skipped checks explained. |
-| Test coverage evidence | Automated / CI | `npm run test:coverage:check` collects Node built-in coverage, enforces lines 85%, branches 60%, functions 90%, and uploads `.metrics/coverage/`. |
+| Test coverage evidence | Automated / CI | `npm run test:coverage:check` requires the complete Git-tracked non-test maintenance `.mjs` inventory, enforces lines 85%, branches 60%, functions 90%, and uploads `.metrics/coverage/`. |
 | Generated marketplace outputs | Automated | `node scripts/generate-registry.mjs` reports no drift, or `--write` was run before validation. |
 | Generated surface inventory | Automated | `node scripts/generate-surface-inventory.mjs` reports no drift, or `--write` was run before validation. |
 | Release checksums | Automated / CI | `node scripts/generate-release-checksums.mjs` writes SHA-256 checksums for selected source-controlled release artifacts and uploads them with release evidence. |
@@ -77,8 +77,9 @@ Expected conditions:
 - If registry or plugin metadata sources changed,
   `node scripts/generate-registry.mjs --write` regenerated the derived outputs.
 - `npm run test:coverage:check` reports pass and leaves coverage evidence under
-  ignored `.metrics/coverage/`; percentage thresholds are not release blockers
-  unless maintainers explicitly configured them for the run.
+  ignored `.metrics/coverage/`; complete maintenance-source loading and the
+  lines 85%, branches 60%, functions 90% baselines are release blockers.
+  Diagnostic threshold overrides are not acceptable promotion evidence.
 - `node scripts/generate-release-checksums.mjs` writes
   `.metrics/release-checksums/SHA256SUMS.txt` for the selected release
   artifacts. SBOM, signing, and attestations remain deferred until maintainers
@@ -167,11 +168,14 @@ validation evidence are correct:
 git push origin "v${PLUGIN_VERSION}"
 ```
 
-The release workflow listens for `v*.*.*` tags. It blocks GitHub Release
-creation on pre-release validation and isolated install smoke for the exact
-tag. Do not use `claude plugin tag` for this repository release unless the
-release policy changes, because that CLI creates plugin-scoped tags that do not
-match the current GitHub release trigger.
+The release workflow listens for `v*.*.*` tags, including SemVer prerelease and
+build metadata. `scripts/prepare-release.mjs` validates `RELEASE_TAG` against
+the plugin manifest, extracts the exact matching changelog section, and emits
+the canonical version, prerelease flag, and release-notes path. It blocks
+GitHub Release creation on pre-release validation and isolated install smoke
+for the exact tag. Do not use `claude plugin tag` for this repository release
+unless the release policy changes, because that CLI creates plugin-scoped tags
+that do not match the current GitHub release trigger.
 
 After pushing, record:
 

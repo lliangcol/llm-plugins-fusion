@@ -30,6 +30,13 @@ test('runProcess reports non-zero exits without throwing', async () => {
   assert.equal(result.timedOut, false);
 });
 
+test('runProcess rejects shell execution', () => {
+  assert.throws(
+    () => runProcess('shell sample', 'echo ok', [], { shell: true }),
+    /forbids shell execution/,
+  );
+});
+
 test('runProcess caps captured output with an explicit truncation marker', async () => {
   const result = await runProcess('large output sample', process.execPath, [
     '-e',

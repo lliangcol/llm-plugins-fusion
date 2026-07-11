@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import process from 'node:process';
+import { requireOptionValue } from './lib/cli-args.mjs';
 
 const defaults = {
   owner: 'lliangcol',
@@ -10,21 +12,21 @@ const defaults = {
   starsBefore: null,
 };
 
-function parseArgs(argv) {
-  const options = { ...defaults };
+export function parseArgs(argv) {
+  const options = { ...defaults, help: false };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === '--owner') {
-      options.owner = requireValue(argv, index, arg);
+      options.owner = requireOptionValue(argv, index, arg);
       index += 1;
     } else if (arg === '--repo') {
-      options.repo = requireValue(argv, index, arg);
+      options.repo = requireOptionValue(argv, index, arg);
       index += 1;
     } else if (arg === '--out') {
-      options.out = requireValue(argv, index, arg);
+      options.out = requireOptionValue(argv, index, arg);
       index += 1;
     } else if (arg === '--stars-before') {
-      const raw = requireValue(argv, index, arg);
+      const raw = requireOptionValue(argv, index, arg);
       const parsed = Number(raw);
       if (!Number.isInteger(parsed) || parsed < 0) {
         throw new Error('--stars-before requires a non-negative integer');
@@ -32,21 +34,12 @@ function parseArgs(argv) {
       options.starsBefore = parsed;
       index += 1;
     } else if (arg === '--help' || arg === '-h') {
-      printHelp();
-      process.exit(0);
+      options.help = true;
     } else {
       throw new Error(`Unknown argument: ${arg}`);
     }
   }
   return options;
-}
-
-function requireValue(argv, index, flag) {
-  const value = argv[index + 1];
-  if (!value || value.startsWith('--')) {
-    throw new Error(`${flag} requires a value`);
-  }
-  return value;
 }
 
 function printHelp() {
@@ -68,7 +61,7 @@ function assertNode20() {
   }
 }
 
-function parseLinkCount(linkHeader, fallbackCount) {
+export function parseLinkCount(linkHeader, fallbackCount) {
   if (!linkHeader) {
     return fallbackCount;
   }
@@ -95,10 +88,10 @@ function makeHeaders(token) {
   return headers;
 }
 
-async function githubRequest(url, { token, tolerate = false } = {}) {
+export async function githubRequest(url, { token, tolerate = false, fetchImpl = fetch } = {}) {
   let response;
   try {
-    response = await fetch(url, { headers: makeHeaders(token) });
+    response = await fetchImpl(url, { headers: makeHeaders(token) });
   } catch (error) {
     throw new Error(
       `Unable to reach GitHub API (${url}): ${error.message}. Check network access or retry later.`,
@@ -129,15 +122,15 @@ async function githubRequest(url, { token, tolerate = false } = {}) {
   return { ok: true, body, response };
 }
 
-async function countByListEndpoint(url, token) {
-  const result = await githubRequest(`${url}${url.includes('?') ? '&' : '?'}per_page=1`, { token });
+async function countByListEndpoint(url, token, fetchImpl) {
+  const result = await githubRequest(`${url}${url.includes('?') ? '&' : '?'}per_page=1`, { token, fetchImpl });
   const items = Array.isArray(result.body) ? result.body : [];
   return parseLinkCount(result.response.headers.get('Link'), items.length);
 }
 
-async function searchCount(query, token) {
+async function searchCount(query, token, fetchImpl) {
   const encoded = encodeURIComponent(query);
-  const result = await githubRequest(`https://api.github.com/search/issues?q=${encoded}&per_page=1`, { token });
+  const result = await githubRequest(`https://api.github.com/search/issues?q=${encoded}&per_page=1`, { token, fetchImpl });
   return result.body.total_count;
 }
 
@@ -148,7 +141,7 @@ function settledValue(result) {
   throw result.reason;
 }
 
-async function collectTraffic(baseUrl, token) {
+async function collectTraffic(baseUrl, token, fetchImpl) {
   const traffic = {};
   const skipped = [];
   const errors = [];
@@ -167,7 +160,7 @@ async function collectTraffic(baseUrl, token) {
   }
 
   for (const [name, url] of endpoints) {
-    const result = await githubRequest(url, { token, tolerate: true });
+    const result = await githubRequest(url, { token, tolerate: true, fetchImpl });
     if (result.ok) {
       traffic[name] = result.body;
     } else if (result.error.status === 403 || result.error.status === 404) {
@@ -188,25 +181,31 @@ async function collectTraffic(baseUrl, token) {
   return { traffic, skipped, errors };
 }
 
-async function main() {
+export async function collectMetrics({
+  argv = process.argv.slice(2),
+  env = process.env,
+  fetchImpl = fetch,
+  now = () => new Date(),
+} = {}) {
   assertNode20();
-  const options = parseArgs(process.argv.slice(2));
-  const token = process.env.GITHUB_TOKEN || '';
+  const options = parseArgs(argv);
+  if (options.help) return { help: true, options };
+  const token = env.GITHUB_TOKEN || '';
   const baseUrl = `https://api.github.com/repos/${options.owner}/${options.repo}`;
-  const collectedAt = new Date().toISOString();
+  const collectedAt = now().toISOString();
 
   const [repoResult, releasesCount, latestReleaseResult, communityResult, openIssues, openPrs] =
     (await Promise.allSettled([
-      githubRequest(baseUrl, { token }),
-      countByListEndpoint(`${baseUrl}/releases`, token),
-      githubRequest(`${baseUrl}/releases/latest`, { token, tolerate: true }),
-      githubRequest(`${baseUrl}/community/profile`, { token, tolerate: true }),
-      searchCount(`repo:${options.owner}/${options.repo} is:issue is:open`, token),
-      searchCount(`repo:${options.owner}/${options.repo} is:pr is:open`, token),
+      githubRequest(baseUrl, { token, fetchImpl }),
+      countByListEndpoint(`${baseUrl}/releases`, token, fetchImpl),
+      githubRequest(`${baseUrl}/releases/latest`, { token, tolerate: true, fetchImpl }),
+      githubRequest(`${baseUrl}/community/profile`, { token, tolerate: true, fetchImpl }),
+      searchCount(`repo:${options.owner}/${options.repo} is:issue is:open`, token, fetchImpl),
+      searchCount(`repo:${options.owner}/${options.repo} is:pr is:open`, token, fetchImpl),
     ])).map(settledValue);
 
   const repo = repoResult.body;
-  const trafficResult = await collectTraffic(baseUrl, token);
+  const trafficResult = await collectTraffic(baseUrl, token, fetchImpl);
   const stars = repo.stargazers_count;
   const views = trafficResult.traffic.views?.uniques ?? null;
   const newStars =
@@ -275,6 +274,16 @@ async function main() {
     errors: trafficResult.errors,
   };
 
+  return { help: false, options, snapshot };
+}
+
+export async function main(dependencies = {}) {
+  const result = await collectMetrics(dependencies);
+  if (result.help) {
+    printHelp();
+    return 0;
+  }
+  const { options, snapshot } = result;
   const outPath = resolve(process.cwd(), options.out);
   await mkdir(dirname(outPath), { recursive: true });
   await writeFile(outPath, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8');
@@ -288,11 +297,16 @@ async function main() {
   }
   if (snapshot.errors.length > 0) {
     console.error(`Traffic errors: ${snapshot.errors.length}`);
-    process.exitCode = 1;
+    return 1;
   }
+  return 0;
 }
 
-main().catch((error) => {
-  console.error(`collect-github-metrics failed: ${error.message}`);
-  process.exit(1);
-});
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main().then((code) => {
+    process.exitCode = code;
+  }).catch((error) => {
+    console.error(`collect-github-metrics failed: ${error.message}`);
+    process.exitCode = 1;
+  });
+}
