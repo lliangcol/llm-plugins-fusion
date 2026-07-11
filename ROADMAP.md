@@ -15,7 +15,7 @@ agents、packs、hooks 和文档的本地/CI 校验体系。
 
 | 领域 | 当前状态 |
 | --- | --- |
-| 发布版本 | `nova-plugin` 当前稳定推广版本为 exact release tag `v2.3.0`；移动 `main` 可能包含后续 `Unreleased` 工作，不能替代正式 tag。 |
+| 发布版本 | `nova-plugin` 当前稳定推广版本为 exact release tag `v2.4.0`；移动 `main` 可能包含后续 `Unreleased` 工作，不能替代正式 tag。 |
 | 插件能力面 | 21 个 slash commands 与 21 个一对一 `nova-*` skills。 |
 | Agent 模型 | `nova-plugin/agents/` 中固定 6 个 active core agents；旧 specialist agent 模型已进入 legacy。 |
 | Capability packs | `nova-plugin/packs/` 中固定 8 个 packs，均声明 enhanced mode 与 fallback mode。 |

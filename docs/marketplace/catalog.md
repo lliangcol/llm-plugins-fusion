@@ -16,7 +16,7 @@ Source data:
 
 ## nova-plugin
 
-- Version: `2.4.0-rc.1`
+- Version: `2.4.0`
 - Source: [./nova-plugin](../../nova-plugin)
 - Category: `workflow`
 - Tags: `workflow`, `ai-coding`, `claude-code`, `codex-review`

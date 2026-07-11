@@ -44,7 +44,7 @@ these repository sources rather than duplicate plugin metadata by hand.
 | Compatibility matrix | Maintainers and advanced users | Claude Code install compatibility, Codex prerequisites, Bash and Node.js requirements, command/skill compatibility, optional enhanced tools | Ready from [Compatibility matrix](compatibility-matrix.md) |
 | Contribution entry | Plugin authors | Registry source contract, plugin manifest contract, scaffold dry-run/profile workflow, validation commands, docs requirements | Ready from `CONTRIBUTING.md` and [Registry author workflow](registry-author-workflow.md) |
 | Trust and maintenance policy | Maintainers | `trust-level`, `risk-level`, `deprecated`, `last-updated`, maintainer ownership, compatibility evidence, review links | Ready from [Trust policy](trust-policy.md) and [Security review route](security-review-route.md) |
-| Roadmap and migration | Maintainers and authors | Current `v2.4.0-rc.1` single-plugin boundary, the `v2.2.0` introduction of that scope, and `v3.0.0` activation evidence | Ready from roadmap, release hygiene, and [v3 readiness evidence](v3-readiness-evidence.md) |
+| Roadmap and migration | Maintainers and authors | Current `v2.4.0` single-plugin boundary, the `v2.2.0` introduction of that scope, and `v3.0.0` activation evidence | Ready from roadmap, release hygiene, and [v3 readiness evidence](v3-readiness-evidence.md) |
 
 ## Navigation Model
 
@@ -76,7 +76,7 @@ For the current repository, these map to Markdown and generated metadata:
 ## Phase Boundaries
 
 The single-plugin portal preparation boundary was introduced in `v2.2.0` and
-remains the current `v2.4.0-rc.1` marketplace state. It adds routing, runtime smoke, distribution risk scanning, a
+remains the current `v2.4.0` marketplace state. It adds routing, runtime smoke, distribution risk scanning, a
 plugin install smoke script that must run only in CI or an isolated test-user
 environment, consumer setup, and workflow artifact guidance. It does not require
 a plugin path move or a public portal implementation. The breaking multi-plugin
@@ -103,7 +103,7 @@ repository layout remains a future `v3.0.0` candidate.
 
 - This document exists under `docs/marketplace/` and is linked from the project
   navigation.
-- The current `v2.4.0-rc.1` single-plugin boundary, its `v2.2.0` introduction, and
+- The current `v2.4.0` single-plugin boundary, its `v2.2.0` introduction, and
   the deferred `v3.0.0` boundary are explicitly separated.
 - The work remains documentation-only and does not introduce frontend or release
   pipeline dependencies.
