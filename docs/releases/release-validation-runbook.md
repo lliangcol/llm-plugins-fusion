@@ -240,6 +240,9 @@ Expected script behavior:
 - Reads `claude plugin list --json`.
 - Confirms the installed user-scope version equals
   `nova-plugin/.claude-plugin/plugin.json`.
+- Compares source and installed plugin content while excluding only Claude's
+  installed-tree runtime lock marker `.in_use/**`; all source files and every
+  other installed file remain digest-covered.
 - When `--isolated-home` is used, runs Claude CLI with temporary `HOME`,
   `USERPROFILE`, `XDG_CONFIG_HOME`, `XDG_DATA_HOME`, and `XDG_STATE_HOME` and
   removes that temporary profile when the script exits.

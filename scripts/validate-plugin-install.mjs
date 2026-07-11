@@ -105,9 +105,13 @@ function relativeFiles(rootDir, current = rootDir) {
   return files.sort();
 }
 
-export function treeDigest(rootDir) {
+export function treeDigest(rootDir, { ignoreClaudeRuntimeMarkers = false } = {}) {
   const hash = createHash('sha256');
   for (const relPath of relativeFiles(rootDir)) {
+    if (
+      ignoreClaudeRuntimeMarkers
+      && (relPath === '.in_use' || relPath.startsWith('.in_use/'))
+    ) continue;
     hash.update(relPath);
     hash.update('\0');
     hash.update(readFileSync(resolve(rootDir, relPath)));
@@ -324,7 +328,9 @@ export async function main(args = process.argv.slice(2)) {
     }
 
     const sourceTreeDigest = treeDigest(resolve(root, 'nova-plugin'));
-    const installedTreeDigest = treeDigest(installed.installPath);
+    const installedTreeDigest = treeDigest(installed.installPath, {
+      ignoreClaudeRuntimeMarkers: true,
+    });
     if (sourceTreeDigest !== installedTreeDigest) {
       validationErrors.push(`installed tree digest ${installedTreeDigest} differs from checkout ${sourceTreeDigest}`);
     }
@@ -344,6 +350,7 @@ export async function main(args = process.argv.slice(2)) {
       primaryEntrypoints: permissionSpec.primaryEntrypoints.map((id) => `/${permissionSpec.pluginNamespace}:${id}`),
       sourceTreeDigest,
       installedTreeDigest,
+      installedTreeIgnoredPaths: ['.in_use/**'],
       routeSmoke,
       validation: { passed: validationErrors.length === 0, errors: validationErrors },
     };

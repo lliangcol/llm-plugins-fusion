@@ -45,6 +45,7 @@ function fixtureInput() {
       inventoryDiff: { matches: true },
       sourceTreeDigest: digest,
       installedTreeDigest: digest,
+      installedTreeIgnoredPaths: ['.in_use/**'],
       validation: { passed: true, errors: [] },
     },
     route: {
@@ -79,6 +80,7 @@ test('release evidence aggregates machine facts without raw model output', () =>
   const evidence = fixture();
   assert.equal(evidence.release.pluginVersion, '2.4.1');
   assert.equal(evidence.install.skillsCount, 42);
+  assert.deepEqual(evidence.install.installedTreeIgnoredPaths, ['.in_use/**']);
   assert.equal(evidence.route.projectChanged, false);
   assert.deepEqual(evidence.tests.coverage, { lines: 88.05, branches: 70.01, functions: 92.89 });
   assert.doesNotMatch(JSON.stringify(evidence), /Recommended Route/);
@@ -110,6 +112,7 @@ test('release evidence rejects skipped gates and inconsistent live inputs', () =
     (input) => { input.install.marketplace.ref = 'wrong'; },
     (input) => { input.install.plugin.version = '0.0.0'; },
     (input) => { input.install.installedTreeDigest = 'd'.repeat(64); },
+    (input) => { input.install.installedTreeIgnoredPaths = ['.in_use/**', 'commands/**']; },
     (input) => { input.route.invocation = '/wrong:route'; },
     (input) => { input.route.outputStructureValid = false; },
     (input) => { input.route.resultSha256 = ''; },

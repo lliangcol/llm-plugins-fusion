@@ -132,6 +132,9 @@ export function buildReleaseEvidence({
     if (!sha256Pattern.test(install.sourceTreeDigest ?? '') || install.sourceTreeDigest !== install.installedTreeDigest) {
       throw new Error('install evidence does not prove equal source and installed tree digests');
     }
+    if (JSON.stringify(install.installedTreeIgnoredPaths) !== JSON.stringify(['.in_use/**'])) {
+      throw new Error('install evidence does not use the exact approved installed-tree ignore policy');
+    }
     if (install.knownGoodClaudeCli !== '2.1.205' || !String(install.claudeVersion ?? '').startsWith('2.1.205')) {
       throw new Error('install evidence does not prove known-good Claude CLI 2.1.205');
     }
@@ -226,6 +229,7 @@ export function buildReleaseEvidence({
       inventorySha256: createHash('sha256').update(JSON.stringify(install.inventory.skills)).digest('hex'),
       sourceTreeDigest: install.sourceTreeDigest,
       installedTreeDigest: install.installedTreeDigest,
+      installedTreeIgnoredPaths: install.installedTreeIgnoredPaths,
     } : null,
     route: route ? {
       invocation: route.invocation,
