@@ -95,6 +95,11 @@ test('tree digest is deterministic and content-sensitive', async (t) => {
   await writeFile(join(left, 'nested', 'file.txt'), 'same');
   await writeFile(join(right, 'nested', 'file.txt'), 'same');
   assert.equal(treeDigest(left), treeDigest(right));
+  await mkdir(join(right, '.in_use'));
+  await writeFile(join(right, '.in_use', '12345'), '');
+  assert.notEqual(treeDigest(left), treeDigest(right));
+  assert.equal(treeDigest(left), treeDigest(right, { ignoreClaudeRuntimeMarkers: true }));
   await writeFile(join(right, 'nested', 'file.txt'), 'changed');
   assert.notEqual(treeDigest(left), treeDigest(right));
+  assert.notEqual(treeDigest(left), treeDigest(right, { ignoreClaudeRuntimeMarkers: true }));
 });

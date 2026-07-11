@@ -46,6 +46,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - release evidence 现在拒绝 skipped gate、错误 tag/version、inventory 漂移、
   不一致 tree digest 和不完整 route 证据；weekly latest-drift 在失败前保留
   missing/unexpected Skills 的结构化差异。
+- exact-tag 安装树 digest 仅在 installed tree 侧忽略 Claude 运行时生成的
+  `.in_use/**` 锁标记，避免进程号导致跨平台误报；Claude 2.1.205 live smoke
+  改用其声明支持的 Node.js 22。
 
 ## [2.4.0] - 2026-07-11
 
