@@ -19,6 +19,11 @@ import { captureProcess, runProcess } from './lib/process-runner.mjs';
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
 const fixedPrompt = '/nova-plugin:route REQUEST="Review a public README change before editing and recommend the next workflow." DEPTH=brief';
+export const routeAllowedTools = Object.freeze([
+  'Skill(nova-plugin:route)',
+  'Skill(nova-plugin:nova-route)',
+]);
+export const routeDisallowedTools = Object.freeze(['Write', 'Edit', 'NotebookEdit', 'Bash']);
 const competingCredentialVariables = [
   'ANTHROPIC_API_KEY',
   'ANTHROPIC_AUTH_TOKEN',
@@ -175,9 +180,32 @@ export function routeInvocationArgs(pluginDir) {
     '3',
     '--permission-mode',
     'dontAsk',
+    '--allowedTools',
+    routeAllowedTools.join(','),
     '--disallowedTools',
-    'Write,Edit,NotebookEdit,Bash',
+    routeDisallowedTools.join(','),
   ];
+}
+
+export function routeFailureDetails(invocation) {
+  const details = [`exit=${invocation.code ?? 'unknown'}`];
+  if (invocation.timedOut) details.push('timedOut=true');
+  try {
+    const response = JSON.parse(invocation.stdout ?? '');
+    if (typeof response.subtype === 'string') details.push(`subtype=${response.subtype}`);
+    if (typeof response.terminal_reason === 'string') details.push(`terminalReason=${response.terminal_reason}`);
+    if (Array.isArray(response.permission_denials) && response.permission_denials.length) {
+      const denials = response.permission_denials.map((denial) => {
+        const skill = denial?.tool_input?.skill;
+        return skill ? `${denial.tool_name}(${skill})` : String(denial?.tool_name ?? 'unknown');
+      });
+      details.push(`permissionDenials=${[...new Set(denials)].join(',')}`);
+    }
+  } catch {
+    if (invocation.errorMessage) details.push(`processError=${invocation.errorMessage}`);
+    if (invocation.stderr?.trim()) details.push('stderrPresent=true');
+  }
+  return details.join(' ');
 }
 
 async function gitStatus(cwd, env) {
@@ -221,7 +249,7 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       timeoutMs: 300_000,
     });
     if (!invocation.ok) {
-      throw new Error(`OAuth route invocation failed: ${invocation.errorMessage ?? invocation.stderr}`);
+      throw new Error(`OAuth route invocation failed: ${routeFailureDetails(invocation)}`);
     }
     let response;
     try {
@@ -249,7 +277,8 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       authenticationMode: 'claude-code-oauth-token',
       configurationIsolation: 'temporary-home',
       permissionMode: 'dontAsk',
-      disallowedTools: ['Write', 'Edit', 'NotebookEdit', 'Bash'],
+      allowedTools: routeAllowedTools,
+      disallowedTools: routeDisallowedTools,
       outputStructureValid: true,
       commands: validation.commandMatches,
       skills: validation.skills,

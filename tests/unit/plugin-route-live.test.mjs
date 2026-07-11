@@ -9,6 +9,8 @@ import {
   buildOAuthRouteEnvironment,
   loadRouteInventory,
   projectSnapshot,
+  routeAllowedTools,
+  routeFailureDetails,
   routeInvocationArgs,
   validateRouteResult,
 } from '../../scripts/validate-plugin-route-live.mjs';
@@ -122,5 +124,39 @@ test('OAuth route invocation isolates configuration without bare mode', (t) => {
   assert.equal(args.includes('--bare'), false);
   assert.deepEqual(args.slice(0, 2), ['--plugin-dir', '/installed/nova-plugin']);
   assert.ok(args.includes('dontAsk'));
+  assert.deepEqual(
+    args.slice(args.indexOf('--allowedTools'), args.indexOf('--allowedTools') + 2),
+    ['--allowedTools', routeAllowedTools.join(',')],
+  );
   assert.ok(args.includes('Write,Edit,NotebookEdit,Bash'));
+});
+
+test('OAuth route failures report safe permission diagnostics without model output', () => {
+  const details = routeFailureDetails({
+    code: 1,
+    timedOut: false,
+    stdout: JSON.stringify({
+      subtype: 'error_max_turns',
+      terminal_reason: 'max_turns',
+      result: 'unnecessary model transcript',
+      permission_denials: [{
+        tool_name: 'Skill',
+        tool_input: { skill: 'nova-plugin:nova-route', args: 'private request text' },
+      }],
+      errors: ['Reached maximum number of turns (3)'],
+    }),
+    stderr: '',
+  });
+  assert.match(details, /exit=1 subtype=error_max_turns terminalReason=max_turns/);
+  assert.match(details, /permissionDenials=Skill\(nova-plugin:nova-route\)/);
+  assert.doesNotMatch(details, /unnecessary model transcript|private request text|Reached maximum/);
+
+  const fallback = routeFailureDetails({
+    code: null,
+    errorMessage: 'spawn failed',
+    stdout: '',
+    stderr: 'sensitive diagnostic',
+  });
+  assert.equal(fallback, 'exit=unknown processError=spawn failed stderrPresent=true');
+  assert.doesNotMatch(fallback, /sensitive diagnostic/);
 });

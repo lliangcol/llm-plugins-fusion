@@ -52,6 +52,9 @@ function fixtureInput() {
       invocation: '/nova-plugin:route',
       authenticationMode: 'claude-code-oauth-token',
       configurationIsolation: 'temporary-home',
+      permissionMode: 'dontAsk',
+      allowedTools: ['Skill(nova-plugin:route)', 'Skill(nova-plugin:nova-route)'],
+      disallowedTools: ['Write', 'Edit', 'NotebookEdit', 'Bash'],
       outputStructureValid: true,
       projectChanged: false,
       gitStatus: '',
@@ -85,6 +88,8 @@ test('release evidence aggregates machine facts without raw model output', () =>
   assert.deepEqual(evidence.tests.coverage, { lines: 88.05, branches: 70.01, functions: 92.89 });
   assert.doesNotMatch(JSON.stringify(evidence), /Recommended Route/);
   assert.equal(evidence.route.authenticationMode, 'claude-code-oauth-token');
+  assert.deepEqual(evidence.route.allowedTools, ['Skill(nova-plugin:route)', 'Skill(nova-plugin:nova-route)']);
+  assert.deepEqual(evidence.route.disallowedTools, ['Write', 'Edit', 'NotebookEdit', 'Bash']);
   assert.match(renderReleaseEvidenceMarkdown(evidence), /OAuth route: passed with temporary-home isolation and zero project writes/);
 });
 
@@ -115,6 +120,9 @@ test('release evidence rejects skipped gates and inconsistent live inputs', () =
     (input) => { input.install.installedTreeIgnoredPaths = ['.in_use/**', 'commands/**']; },
     (input) => { input.route.invocation = '/wrong:route'; },
     (input) => { input.route.outputStructureValid = false; },
+    (input) => { input.route.permissionMode = 'default'; },
+    (input) => { input.route.allowedTools = ['Skill']; },
+    (input) => { input.route.disallowedTools = ['Write']; },
     (input) => { input.route.resultSha256 = ''; },
     (input) => { input.route.afterProjectDigest = 'd'.repeat(64); },
     (input) => { input.install.inventory.skills[2] = 'invented-skill'; },
