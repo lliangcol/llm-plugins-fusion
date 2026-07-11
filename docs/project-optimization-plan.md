@@ -18,7 +18,7 @@ removing stale archive documentation from the public working tree rather than
 keeping a second active archive surface. The 2026-05-12 unattended P0-P2 pass
 added maintainer npm shortcuts, consumer profile scaffolding, regression
 checks, workflow evaluation fixtures, and expanded distribution-risk scanning.
-The exact `v3.0.0` tag and GitHub release provide the current stable promotion
+The exact `v3.0.1` tag and GitHub release provide the current stable promotion
 baseline; later `main` commits remain development snapshots until the next
 release tag.
 
@@ -619,7 +619,7 @@ validation commands, expected output artifacts, and residual risk format.
 
 - `nova-plugin` is the only production plugin. Multi-plugin behavior is covered
   by registry fixtures, not by production plugin directories.
-- Exact `v3.0.0` is the current stable promotion baseline. Moving `main` may
+- Exact `v3.0.1` is the current stable promotion baseline. Moving `main` may
   contain later unreleased maintenance work and must not be promoted as stable
   release content.
 - README already presents the main workflow path:

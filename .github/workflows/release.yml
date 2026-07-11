@@ -221,11 +221,23 @@ jobs:
         with:
           name: release-evidence
           path: .metrics/release-evidence
+      - name: Resolve exactly one archive and SBOM
+        id: release-files
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          archives=(.metrics/release-inputs/release-artifacts/nova-plugin-*.tar.gz)
+          sboms=(.metrics/release-inputs/release-artifacts/nova-plugin-*.tar.gz.cdx.json)
+          test "${#archives[@]}" -eq 1
+          test "${#sboms[@]}" -eq 1
+          printf 'archive=%s\n' "${archives[0]}" >> "${GITHUB_OUTPUT}"
+          printf 'sbom=%s\n' "${sboms[0]}" >> "${GITHUB_OUTPUT}"
       - name: Attest archive provenance and SBOM
         uses: actions/attest@f6bf1532d7d6793fce74eac584813a8eee607999 # v4
         with:
-          subject-path: .metrics/release-inputs/release-artifacts/nova-plugin-*.tar.gz
-          sbom-path: .metrics/release-inputs/release-artifacts/nova-plugin-*.cdx.json
+          subject-path: ${{ steps.release-files.outputs.archive }}
+          sbom-path: ${{ steps.release-files.outputs.sbom }}
       - name: Create GitHub Release
         uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d # v3
         with:

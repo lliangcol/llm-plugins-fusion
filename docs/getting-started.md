@@ -18,7 +18,7 @@ Prerequisites:
 Minute 1: add the marketplace and install the plugin:
 
 ```text
-/plugin marketplace add lliangcol/llm-plugins-fusion@v3.0.0
+/plugin marketplace add lliangcol/llm-plugins-fusion@v3.0.1
 /plugin install nova-plugin@llm-plugins-fusion
 ```
 

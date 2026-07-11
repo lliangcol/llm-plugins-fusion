@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.0.1] - 2026-07-12
+
+### Fixed
+- Release attestation now resolves exactly one deterministic archive and one exact CycloneDX SBOM path before calling `actions/attest`; glob text is no longer passed as `sbom-path`.
+- The signed immutable `v3.0.0` tag is retained unchanged after its final publication job rejected the glob SBOM path. No `v3.0.0` GitHub Release was published; `v3.0.1` is the patch release with the corrected attestation contract.
+
 ## [3.0.0] - 2026-07-12
 
 ### Added
