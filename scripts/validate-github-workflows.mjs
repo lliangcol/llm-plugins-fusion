@@ -578,7 +578,7 @@ function validateWorkflowContracts() {
     if (!candidateSrc.includes('npm install -g ./cli/claude-code.tgz')) recordError(candidateFile, 'candidate live gate must install the verified Claude package through an explicit local path');
     if (candidateSrc.includes('npm install -g ./cli/claude-code.tgz --ignore-scripts')) recordError(candidateFile, 'candidate live gate must allow the verified Claude package to install its native binary');
     if (!candidateSrc.includes('marketplace.canary.json') || !candidateSrc.includes('--expected-commit "${GITHUB_SHA}"') || !candidateSrc.includes('--evidence-source "lliangcol/llm-plugins-fusion@${GITHUB_REF_NAME}"')) recordError(candidateFile, 'candidate live gate must bind its temporary marketplace to the exact tag and commit');
-    if (!candidateSrc.includes('.metrics/nova-plugin-*-candidate-bundle.tar.gz') || !candidateSrc.includes('if-no-files-found: error')) recordError(candidateFile, 'candidate bundle upload must select explicit files and fail closed when absent');
+    if (!candidateSrc.includes('.metrics/nova-plugin-*-candidate-bundle.tar.gz') || !candidateSrc.includes('include-hidden-files: true') || !candidateSrc.includes('if-no-files-found: error')) recordError(candidateFile, 'candidate bundle upload must select explicit hidden files and fail closed when absent');
     if (/ANTHROPIC_API_KEY/u.test(candidateSrc)) recordError(candidateFile, 'candidate live gate must not use ANTHROPIC_API_KEY');
   }
 
