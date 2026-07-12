@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - Made release distribution scans fail closed on tracked-file read failures and hardened process execution for stdin early exit, absolute watchdog termination evidence, and UTF-8-safe truncation.
 - Removed stale Node/check/frontmatter/version narratives and validators that previously protected obsolete natural-language wording.
 - Raised the exact-tag route validation budget from five to eight turns while retaining its five-minute timeout, read-only tool policy, and strict output contract.
+- Constrained exact-tag route inventory fields to canonical IDs without explanatory prose so live evidence remains machine-verifiable without weakening unknown-value rejection.
 
 ## [3.0.1] - 2026-07-12
 
