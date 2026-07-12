@@ -574,6 +574,7 @@ function validateWorkflowContracts() {
     if (allSteps({ jobs: { live: model?.jobs?.live } }).some((step) => String(step.uses ?? '').startsWith('actions/checkout@'))) recordError(candidateFile, 'secret-bearing live job must not checkout repository credentials or source');
     if (!candidateSrc.includes('build-release-control-bundle.mjs') || !candidateSrc.includes('promotion-intent.json') || !candidateSrc.includes('--control-bundle-manifest')) recordError(candidateFile, 'candidate must bind promotion intent and a content-addressed control bundle');
     if (!candidateSrc.includes('build-candidate-bundle.mjs')) recordError(candidateFile, 'candidate bundle must use the deterministic Node archive builder');
+    if (!candidateSrc.includes('npm install -g ./cli/claude-code.tgz --ignore-scripts')) recordError(candidateFile, 'candidate live gate must install the verified Claude package through an explicit local path');
     if (/ANTHROPIC_API_KEY/u.test(candidateSrc)) recordError(candidateFile, 'candidate live gate must not use ANTHROPIC_API_KEY');
   }
 
