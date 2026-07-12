@@ -7,6 +7,7 @@ import test from 'node:test';
 import {
   buildReleaseEvidence,
   generateReleaseEvidence,
+  parseArgs,
   renderReleaseEvidenceMarkdown,
 } from '../../scripts/generate-release-evidence.mjs';
 import { routeOutputContract, routeSystemPromptSha256 } from '../../scripts/validate-plugin-route-live.mjs';
@@ -83,6 +84,16 @@ function fixtureInput() {
 function fixture() {
   return buildReleaseEvidence(fixtureInput());
 }
+
+test('release evidence CLI parsing covers flags, values, and rejected arguments', () => {
+  const root = resolve('/tmp', 'release-evidence-args');
+  const options = parseArgs(['--help', '--require-live', '--out-dir', 'output', '--artifact-dir', 'artifacts'], root);
+  assert.equal(options.help, true);
+  assert.equal(options.requireLive, true);
+  assert.equal(options.outDir, resolve(root, 'output'));
+  assert.equal(options.artifactDir, resolve(root, 'artifacts'));
+  assert.throws(() => parseArgs(['--unknown'], root), /unknown argument/);
+});
 
 test('release evidence aggregates machine facts without raw model output', () => {
   const evidence = fixture();

@@ -28,7 +28,7 @@ function writeOctal(buffer, offset, length, value) {
   writeString(buffer, offset, length, `${text}\0`);
 }
 
-function tarPath(path) {
+export function tarPath(path) {
   if (Buffer.byteLength(path) <= 100) return { name: path, prefix: '' };
   const split = path.lastIndexOf('/');
   if (split <= 0) throw new Error(`release archive path is too long: ${path}`);
@@ -169,15 +169,15 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
   return { archivePath, sbomPath, provenancePath, archiveSha256, manifestSha256 };
 }
 
-function main() {
+export function main({ build = buildReleaseArtifacts, log = console.log, errorLog = console.error } = {}) {
   try {
-    const result = buildReleaseArtifacts();
+    const result = build();
     for (const path of [result.archivePath, result.sbomPath, result.provenancePath]) {
-      console.log(`Wrote ${relative(defaultRoot, path).replaceAll('\\', '/')}`);
+      log(`Wrote ${relative(defaultRoot, path).replaceAll('\\', '/')}`);
     }
     return 0;
   } catch (error) {
-    console.error(`ERROR ${error.message}`);
+    errorLog(`ERROR ${error.message}`);
     return 1;
   }
 }
