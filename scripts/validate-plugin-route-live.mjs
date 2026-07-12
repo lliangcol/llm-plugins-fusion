@@ -34,6 +34,7 @@ export const routeSystemPromptSha256 = sha256(routeSystemPrompt);
 export const routeMaxTurns = 8;
 export const routeAllowedTools = Object.freeze([
   'Skill(nova-plugin:route)',
+  'Skill(nova-plugin:nova-route)',
   ...routePermission.allowedTools,
 ]);
 export const routeDisallowedTools = Object.freeze(['Write', 'Edit', 'NotebookEdit', 'Bash']);
