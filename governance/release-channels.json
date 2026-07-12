@@ -8,9 +8,9 @@
     "candidateTag": "v4.0.0-rc.8",
     "candidateManifestSha256": "b7e894b92314d07ba5dd8990add7345c40ea9e034a2e49610522efa0be7a88b5",
     "pluginTreeSha256": "4d4df0f13c80424d324c475910b8a2e311f4c4da27a4ce5e29dd3c58cc8c99b8",
-    "state": "STABLE_CHANNEL_PINNED",
+    "state": "INSTALL_PROVEN",
     "publishedAt": "2026-07-12T17:31:24Z",
-    "stableInstallProof": null
+    "stableInstallProof": "governance/stable-install-proof.json"
   },
   "canary": {
     "ref": "main"

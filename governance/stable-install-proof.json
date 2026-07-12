@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "stable": {
+    "version": "4.0.0",
+    "tag": "v4.0.0",
+    "commit": "367beb25666d6b15e5c3d9b85d0c6c22650c2669",
+    "channelFactsSha256": "3130a2de7465401565b67f69a8d2ddd0d99c8c6ebed802165ff472ce8c890347"
+  },
+  "claudeVersion": "2.1.207 (Claude Code)",
+  "treeManifestVersion": 2,
+  "candidateTreeDigest": "4d4df0f13c80424d324c475910b8a2e311f4c4da27a4ce5e29dd3c58cc8c99b8",
+  "installedTreeDigest": "4d4df0f13c80424d324c475910b8a2e311f4c4da27a4ce5e29dd3c58cc8c99b8",
+  "ignoredInstalledPaths": [
+    ".in_use/**"
+  ],
+  "matches": true,
+  "generatedAt": "2026-07-12T17:49:32.376Z"
+}
