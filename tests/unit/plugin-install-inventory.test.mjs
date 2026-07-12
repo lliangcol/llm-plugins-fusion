@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import test from 'node:test';
 import {
   assertMarketplaceRef,
+  assertCandidateMarketplaceSource,
   buildInstallEvidence,
   diffInventory,
   parseArgs,
@@ -58,6 +59,8 @@ test('plugin install options accept exact source/ref and evidence output', () =>
     isolatedHome: true,
     marketplaceSource: 'owner/repo@v2.4.1',
     expectedRef: 'v2.4.1',
+    expectedCommit: null,
+    evidenceSource: null,
     inventoryOut: '.metrics/inventory.json',
     routeSmokeOut: null,
     help: false,
@@ -78,6 +81,13 @@ test('marketplace ref assertions distinguish local sources from exact remote ref
   assert.doesNotThrow(() => assertMarketplaceRef({ ref: 'v2.4.1' }, 'v2.4.1', false));
   assert.throws(() => assertMarketplaceRef({}, 'v2.4.1', false), /expected "v2.4.1"/);
   assert.throws(() => assertMarketplaceRef({}, 'local', false), /filesystem marketplace source/);
+});
+
+test('candidate marketplace assertions bind plugin source to the exact tag and commit', () => {
+  const marketplace = { plugins: [{ name: 'nova-plugin', source: { ref: 'v4.0.0-rc.4', sha: 'a'.repeat(40) } }] };
+  assert.doesNotThrow(() => assertCandidateMarketplaceSource(marketplace, 'v4.0.0-rc.4', 'a'.repeat(40)));
+  assert.throws(() => assertCandidateMarketplaceSource(marketplace, 'v4.0.0-rc.5', 'a'.repeat(40)), /plugin ref/u);
+  assert.throws(() => assertCandidateMarketplaceSource(marketplace, 'v4.0.0-rc.4', 'b'.repeat(40)), /plugin commit/u);
 });
 
 test('local marketplace sources are normalized for the Claude CLI', () => {
