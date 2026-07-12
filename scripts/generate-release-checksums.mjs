@@ -19,6 +19,7 @@ const defaultRoot = resolve(__dir, '..');
 export const releaseArtifacts = [
   'nova-plugin/.claude-plugin/plugin.json',
   '.claude-plugin/marketplace.json',
+  '.claude-plugin/marketplace.canary.json',
   '.claude-plugin/marketplace.metadata.json',
   'docs/marketplace/catalog.md',
 ];
@@ -56,7 +57,7 @@ export function generateReleaseChecksums({ root = defaultRoot, args = [] } = {})
   const generatedDir = resolve(root, '.metrics/release-artifacts');
   const plugin = JSON.parse(readFileSync(resolve(root, 'nova-plugin/.claude-plugin/plugin.json'), 'utf8'));
   const archiveName = `nova-plugin-${plugin.version}.tar.gz`;
-  const expectedNames = [archiveName, `${archiveName}.cdx.json`, `${archiveName}.provenance.json`];
+  const expectedNames = [archiveName, 'artifact-manifest.json', 'build-sbom.cdx.json', 'runtime-capabilities.cdx.json', 'nova-build-record.json'];
   const present = new Set(existsSync(generatedDir) ? readdirSync(generatedDir) : []);
   const missing = expectedNames.filter((name) => !present.has(name));
   if (missing.length) throw new Error(`release artifacts missing for ${plugin.version}: ${missing.join(', ')}`);

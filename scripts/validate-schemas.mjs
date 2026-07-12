@@ -188,6 +188,11 @@ const targets = [
     label: '.claude-plugin/marketplace.json',
   },
   {
+    schema: loadJson('schemas/marketplace.schema.json'),
+    data: loadJson('.claude-plugin/marketplace.canary.json'),
+    label: '.claude-plugin/marketplace.canary.json',
+  },
+  {
     schema: loadJson('schemas/marketplace-metadata.schema.json'),
     data: loadJson('.claude-plugin/marketplace.metadata.json'),
     label: '.claude-plugin/marketplace.metadata.json',
@@ -258,6 +263,21 @@ const targets = [
     label: 'governance/product-lanes.json',
   },
   {
+    schema: loadJson('schemas/release-channels.schema.json'),
+    data: loadJson('governance/release-channels.json'),
+    label: 'governance/release-channels.json',
+  },
+  {
+    schema: loadJson('schemas/complexity-budget.schema.json'),
+    data: loadJson('governance/complexity-budget.json'),
+    label: 'governance/complexity-budget.json',
+  },
+  {
+    schema: loadJson('schemas/fact-graph.schema.json'),
+    data: loadJson('governance/facts.generated.json'),
+    label: 'governance/facts.generated.json',
+  },
+  {
     schema: loadJson('schemas/project-state.schema.json'),
     data: loadJson('governance/project-state.generated.json'),
     label: 'governance/project-state.generated.json',
@@ -282,7 +302,7 @@ const targets = [
 const versionPatterns = [
   targets[0].schema.properties.version.pattern,
   targets[2].schema.properties.plugins.items.properties.version.pattern,
-  targets[3].schema.properties.plugins.items.properties.version.pattern,
+  targets[4].schema.properties.plugins.items.properties.version.pattern,
 ];
 if (versionPatterns.some((pattern) => pattern !== SEMVER_PATTERN_SOURCE)) {
   console.error('✗ schema SemVer pattern alignment');
@@ -309,6 +329,14 @@ const schemaPaths = [
   'schemas/product-lanes.schema.json',
   'schemas/project-state.schema.json',
   'schemas/release-candidate.schema.json',
+  'schemas/candidate-core.schema.json',
+  'schemas/promotion-intent.schema.json',
+  'schemas/release-event.schema.json',
+  'schemas/control-bundle.schema.json',
+  'schemas/stable-install-proof.schema.json',
+  'schemas/release-channels.schema.json',
+  'schemas/complexity-budget.schema.json',
+  'schemas/fact-graph.schema.json',
   'schemas/adapter-evidence.schema.json',
   'schemas/eval-result.schema.json',
 ];
@@ -375,22 +403,23 @@ const plugin = loadJson('nova-plugin/.claude-plugin/plugin.json');
 const registrySource = loadJson('.claude-plugin/registry.source.json');
 const marketplace = loadJson('.claude-plugin/marketplace.json');
 const metadata = loadJson('.claude-plugin/marketplace.metadata.json');
-validateUniqueValues(registrySource.plugins ?? [], '.claude-plugin/registry.source.json', 'plugin source', (entry) => entry?.source);
+const releaseChannels = loadJson('governance/release-channels.json');
+validateUniqueValues(registrySource.plugins ?? [], '.claude-plugin/registry.source.json', 'plugin source', (entry) => entry?.localSource);
 validateUniqueValues(marketplace.plugins ?? [], '.claude-plugin/marketplace.json', 'plugin name', (entry) => entry?.name);
 validateUniqueValues(metadata.plugins ?? [], '.claude-plugin/marketplace.metadata.json', 'plugin name', (entry) => entry?.name);
 const marketplaceEntry = findPluginEntry(marketplace, plugin.name, '.claude-plugin/marketplace.json');
 const metadataEntry = findPluginEntry(metadata, plugin.name, '.claude-plugin/marketplace.metadata.json');
 
-if (marketplaceEntry && marketplaceEntry.version !== plugin.version) {
+if (marketplaceEntry && marketplaceEntry.version !== releaseChannels.stable.version) {
   allPassed = false;
   console.error('✗ marketplace version alignment');
-  console.error(`  - .claude-plugin/marketplace.json has ${marketplaceEntry.version}, expected ${plugin.version}`);
+  console.error(`  - .claude-plugin/marketplace.json has ${marketplaceEntry.version}, expected stable ${releaseChannels.stable.version}`);
 }
 
-if (metadataEntry && metadataEntry.version !== plugin.version) {
+if (metadataEntry && metadataEntry.version !== releaseChannels.stable.version) {
   allPassed = false;
   console.error('✗ marketplace metadata version alignment');
-  console.error(`  - .claude-plugin/marketplace.metadata.json has ${metadataEntry.version}, expected ${plugin.version}`);
+  console.error(`  - .claude-plugin/marketplace.metadata.json has ${metadataEntry.version}, expected stable ${releaseChannels.stable.version}`);
 }
 
 if (
@@ -403,7 +432,7 @@ if (
   console.error('  - marketplace.json and marketplace.metadata.json must agree on plugin name/version');
 }
 
-if (marketplaceEntry && metadataEntry && marketplaceEntry.version === plugin.version && metadataEntry.version === plugin.version) {
+if (marketplaceEntry && metadataEntry && marketplaceEntry.version === releaseChannels.stable.version && metadataEntry.version === releaseChannels.stable.version) {
   console.log('✓ marketplace name/version alignment');
 }
 

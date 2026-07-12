@@ -202,6 +202,7 @@ function expectRegex(file, pattern, expected, label) {
 
 function validateVersionReferences() {
   const plugin = readJson('nova-plugin/.claude-plugin/plugin.json');
+  const releaseChannels = readJson('governance/release-channels.json');
   const marketplace = readJson('.claude-plugin/marketplace.json');
   const metadata = readJson('.claude-plugin/marketplace.metadata.json');
   const marketplaceEntry = marketplace.plugins?.find((entry) => entry.name === plugin.name);
@@ -215,20 +216,20 @@ function validateVersionReferences() {
     return;
   }
 
-  if (marketplaceEntry.version !== plugin.version) {
+  if (marketplaceEntry.version !== releaseChannels.stable.version) {
     recordError(
       '.claude-plugin/marketplace.json',
-      `plugins[].version is "${marketplaceEntry.version}", expected "${plugin.version}"`,
+      `plugins[].version is "${marketplaceEntry.version}", expected stable "${releaseChannels.stable.version}"`,
     );
   }
-  if (metadataEntry.version !== plugin.version) {
+  if (metadataEntry.version !== releaseChannels.stable.version) {
     recordError(
       '.claude-plugin/marketplace.metadata.json',
-      `plugins[].version is "${metadataEntry.version}", expected "${plugin.version}"`,
+      `plugins[].version is "${metadataEntry.version}", expected stable "${releaseChannels.stable.version}"`,
     );
   }
 
-  const version = plugin.version;
+  const version = releaseChannels.stable.version;
   const versionPattern = escapeRegExp(version);
   const updated = metadataEntry['last-updated'];
 
@@ -344,14 +345,15 @@ function escapeRegExp(value) {
 
 function validateInventoryFacts() {
   const commandCount = countFiles('nova-plugin/commands', (name) => name.endsWith('.md'));
-  const skillCount = countDirectories('nova-plugin/skills', (name) => name.startsWith('nova-'));
+  const skillCount = readdirSync(resolve(root, 'nova-plugin/skills'), { withFileTypes: true })
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith('nova-') && existsSync(resolve(root, 'nova-plugin/skills', entry.name, 'SKILL.md'))).length;
   const activeAgentCount = countFiles('nova-plugin/agents', (name) => name.endsWith('.md'));
   const packCount = countDirectories('nova-plugin/packs', () => true);
 
   const checks = [
     {
       file: 'README.md',
-      pattern: /<td>(\d+) 个命令，(\d+) 个一对一 skills<\/td>/,
+      pattern: /<td>(\d+) 个命令，(\d+) 个 canonical skills<\/td>/,
       values: [commandCount, skillCount],
       label: 'README command/skill count',
     },
@@ -369,7 +371,7 @@ function validateInventoryFacts() {
     },
     {
       file: 'README.md',
-      pattern: /\|   \|-- skills\/\s+# (\d+) 个 nova-\* skills/,
+      pattern: /\|   \|-- skills\/\s+# (\d+) 个 (?:canonical )?nova-\* skills/,
       values: [skillCount],
       label: 'README repository tree skill count',
     },
@@ -387,7 +389,7 @@ function validateInventoryFacts() {
     },
     {
       file: 'nova-plugin/docs/overview/README.en.md',
-      pattern: /<td>(\d+) commands, (\d+) one-to-one skills<\/td>/,
+      pattern: /<td>(\d+) commands, (\d+) canonical skills<\/td>/,
       values: [commandCount, skillCount],
       label: 'English overview command/skill count',
     },
@@ -405,7 +407,7 @@ function validateInventoryFacts() {
     },
     {
       file: 'nova-plugin/docs/overview/README.en.md',
-      pattern: /\|   \|-- skills\/\s+# (\d+) nova-\* skills/,
+      pattern: /\|   \|-- skills\/\s+# (\d+) (?:canonical )?nova-\* skills/,
       values: [skillCount],
       label: 'English overview repository tree skill count',
     },
@@ -477,13 +479,13 @@ function validateInventoryFacts() {
     },
     {
       file: 'docs/marketplace/compatibility-matrix.md',
-      pattern: /\| Nova commands and skills \| (\d+) commands and (\d+) one-to-one `nova-\*` skills \|/,
+      pattern: /\| Nova commands and skills \| (\d+) generated commands and (\d+) canonical `nova-\*` skills \|/,
       values: [commandCount, skillCount],
       label: 'compatibility matrix command/skill count',
     },
     {
       file: 'nova-plugin/docs/architecture/dual-track-design.md',
-      pattern: /避免参数、安全和输出规则在 (\d+) 个 skill 中漂移/,
+      pattern: /避免参数、安全和输出规则在 (\d+) 个 (?:canonical )?skill 中漂移/,
       values: [skillCount],
       label: 'dual-track skill count',
     },
@@ -680,6 +682,11 @@ function validateReleasePromotionContracts() {
     },
     {
       file: 'docs/releases/release-validation-runbook.md',
+      pattern: /Stable\s+publication is then started manually[\s\S]*signed stable tag[\s\S]*exact candidate tag[\s\S]*pushing a stable tag alone does not publish a release/,
+      label: 'release runbook explicit stable and candidate dispatch boundary',
+    },
+    {
+      file: 'docs/releases/release-validation-runbook.md',
       pattern: /GitHub workflow contracts \| Automated \| `node scripts\/validate-github-workflows\.mjs` passes; this proves workflow permissions,[\s\S]*workflow inventory,[\s\S]*required-check list synchronization/,
       label: 'release runbook GitHub workflow contract gate',
     },
@@ -717,6 +724,11 @@ function validateReleasePromotionContracts() {
       file: 'docs/releases/release-hygiene.md',
       pattern: /Run `node scripts\/validate-plugin-install\.mjs` only in CI or an isolated\s+test-user environment[\s\S]*unattended local release evidence should record it as pending/,
       label: 'release hygiene unattended install smoke pending boundary',
+    },
+    {
+      file: 'docs/releases/release-hygiene.md',
+      pattern: /content-addressed\s+control bundle[\s\S]*actual control-bundle archive and\s+file inventory[\s\S]*publishing those exact candidate bytes/,
+      label: 'release hygiene verified immutable candidate asset boundary',
     },
     {
       file: 'docs/releases/release-hygiene.md',
@@ -794,7 +806,7 @@ function validateMaintainerDiagnosticContracts() {
     },
     {
       file: 'docs/maintainers/troubleshooting.md',
-      pattern: /\| Command or skill frontmatter failure \| `node scripts\/lint-frontmatter\.mjs` \| Preserve command\/skill one-to-one mapping and existing tool permission intent\. \|/,
+      pattern: /\| Command or skill frontmatter failure \| `node scripts\/lint-frontmatter\.mjs` \| Preserve canonical skill ownership, generated alias mapping, and existing tool permission intent\. \|/,
       label: 'maintainer troubleshooting frontmatter failure shortcut',
     },
     {
@@ -1633,7 +1645,7 @@ function validateAssetsContracts() {
 
 function validateDeferredPortalIaContracts() {
   const pluginVersionPattern = escapeRegExp(
-    readJson('nova-plugin/.claude-plugin/plugin.json').version,
+    readJson('governance/release-channels.json').stable.version,
   );
   const checks = [
     {

@@ -12,9 +12,9 @@ disable-model-invocation: true
 
 # /nova-plugin:codex-review-fix
 
-Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-codex-review-fix` through the Skill tool.
+**Deprecated compatibility alias:** this wrapper remains for the 4.x migration window.
 
-Before answering, use Read to load both `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/codex-review-fix.json` as the machine-readable policy summary and `${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-fix/SKILL.md` as the authoritative behavioral contract, then execute the workflow directly. If either contract cannot be loaded or they conflict, fail closed and report contract drift.
+Load `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/codex-review-fix.json` and canonical skill `${CLAUDE_PLUGIN_ROOT}/skills/nova-implement-plan/SKILL.md`, then execute canonical surface `nova-implement-plan` with variant preset `{"EXECUTION_PROFILE":"codex-review-fix"}` merged beneath explicit non-conflicting `$ARGUMENTS`. Never copy or override behavior in this wrapper; the runtime contract and canonical skill are authoritative. If they differ, fail closed.
 
 - Stage: implement
 - Owner agents: reviewer, builder, verifier
@@ -23,4 +23,4 @@ Before answering, use Read to load both `${CLAUDE_PLUGIN_ROOT}/runtime/contracts
 - Risk: medium
 - Recommended packs: None
 
-Preserve all safety, approval, output, failure, and validation requirements in both contracts. If a required input or safety boundary is missing, stop before side effects and report the blocker.
+If required input, approval, capability, or safety state is unresolved, stop before side effects.

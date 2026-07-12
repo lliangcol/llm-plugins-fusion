@@ -3,7 +3,7 @@
   "schemaVersion": 1,
   "layer": "static-contract",
   "executionMode": "deterministic-dataset-integrity",
-  "workflowSpecSha256": "562b6645143dba698f298a683b04d52e93527256bce3fa7dee9d4b019d199041",
+  "workflowSpecSha256": "c6dfaf7c60184db60c55e7e45ddce08d0c1d9beb29ea72232baac4f4695ebb9e",
   "cases": [
     {
       "id": "quick-exploration",

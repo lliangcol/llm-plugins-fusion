@@ -5,275 +5,348 @@
   "cases": [
     {
       "id": "backend-plan",
-      "direct": {
-        "bytes": 1246,
-        "estimatedTokens": 312,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1173,
+        "estimatedTokens": 294,
+        "canonicalSurfaceId": "produce-plan",
+        "variantPreset": {
+          "PLAN_PROFILE": "java-backend"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 6109,
-        "estimatedTokens": 1510,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 10293,
+        "estimatedTokens": 2565,
+        "id": "produce-plan"
       }
     },
     {
       "id": "codex-review-fix",
-      "direct": {
-        "bytes": 1260,
-        "estimatedTokens": 315,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1192,
+        "estimatedTokens": 298,
+        "canonicalSurfaceId": "implement-plan",
+        "variantPreset": {
+          "EXECUTION_PROFILE": "codex-review-fix"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 9520,
-        "estimatedTokens": 1784,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 7909,
+        "estimatedTokens": 1971,
+        "id": "implement-plan"
       }
     },
     {
       "id": "codex-review-only",
-      "direct": {
-        "bytes": 1238,
-        "estimatedTokens": 310,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1150,
+        "estimatedTokens": 288,
+        "canonicalSurfaceId": "review",
+        "variantPreset": {
+          "REVIEW_PROFILE": "codex-review-only"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 4693,
-        "estimatedTokens": 1034,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 7623,
+        "estimatedTokens": 1901,
+        "id": "review"
       }
     },
     {
       "id": "codex-verify-only",
-      "direct": {
-        "bytes": 1239,
-        "estimatedTokens": 310,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1151,
+        "estimatedTokens": 288,
+        "canonicalSurfaceId": "review",
+        "variantPreset": {
+          "REVIEW_PROFILE": "codex-verify-only"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 5593,
-        "estimatedTokens": 1194,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 7623,
+        "estimatedTokens": 1901,
+        "id": "review"
       }
     },
     {
       "id": "explore",
-      "direct": {
-        "bytes": 1200,
-        "estimatedTokens": 300,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1038,
+        "estimatedTokens": 260,
+        "canonicalSurfaceId": "explore",
+        "variantPreset": {},
+        "deprecated": false
       },
-      "compatibilityContract": {
-        "bytes": 6075,
-        "estimatedTokens": 1514,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 6578,
+        "estimatedTokens": 1640,
+        "id": "explore"
       }
     },
     {
       "id": "explore-lite",
-      "direct": {
-        "bytes": 1229,
-        "estimatedTokens": 308,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1156,
+        "estimatedTokens": 289,
+        "canonicalSurfaceId": "explore",
+        "variantPreset": {
+          "PERSPECTIVE": "observer",
+          "DEPTH": "lite"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 4567,
-        "estimatedTokens": 1139,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 6578,
+        "estimatedTokens": 1640,
+        "id": "explore"
       }
     },
     {
       "id": "explore-review",
-      "direct": {
-        "bytes": 1242,
-        "estimatedTokens": 311,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1150,
+        "estimatedTokens": 288,
+        "canonicalSurfaceId": "explore",
+        "variantPreset": {
+          "PERSPECTIVE": "reviewer"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 4609,
-        "estimatedTokens": 1150,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 6578,
+        "estimatedTokens": 1640,
+        "id": "explore"
       }
     },
     {
       "id": "finalize-lite",
-      "direct": {
-        "bytes": 1221,
-        "estimatedTokens": 306,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1133,
+        "estimatedTokens": 284,
+        "canonicalSurfaceId": "finalize-work",
+        "variantPreset": {
+          "DEPTH": "lite"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 4071,
-        "estimatedTokens": 1015,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 7461,
+        "estimatedTokens": 1856,
+        "id": "finalize-work"
       }
     },
     {
       "id": "finalize-work",
-      "direct": {
-        "bytes": 1229,
-        "estimatedTokens": 308,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1067,
+        "estimatedTokens": 267,
+        "canonicalSurfaceId": "finalize-work",
+        "variantPreset": {},
+        "deprecated": false
       },
-      "compatibilityContract": {
-        "bytes": 7253,
-        "estimatedTokens": 1804,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 7461,
+        "estimatedTokens": 1856,
+        "id": "finalize-work"
       }
     },
     {
       "id": "implement-lite",
-      "direct": {
-        "bytes": 1241,
-        "estimatedTokens": 311,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1165,
+        "estimatedTokens": 292,
+        "canonicalSurfaceId": "implement-plan",
+        "variantPreset": {
+          "EXECUTION_PROFILE": "lite"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 4817,
-        "estimatedTokens": 1200,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 7909,
+        "estimatedTokens": 1971,
+        "id": "implement-plan"
       }
     },
     {
       "id": "implement-plan",
-      "direct": {
-        "bytes": 1259,
-        "estimatedTokens": 315,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1097,
+        "estimatedTokens": 275,
+        "canonicalSurfaceId": "implement-plan",
+        "variantPreset": {},
+        "deprecated": false
       },
-      "compatibilityContract": {
-        "bytes": 7430,
-        "estimatedTokens": 1851,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 7909,
+        "estimatedTokens": 1971,
+        "id": "implement-plan"
       }
     },
     {
       "id": "implement-standard",
-      "direct": {
-        "bytes": 1248,
-        "estimatedTokens": 312,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1168,
+        "estimatedTokens": 292,
+        "canonicalSurfaceId": "implement-plan",
+        "variantPreset": {
+          "EXECUTION_PROFILE": "standard"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 4932,
-        "estimatedTokens": 1228,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 7909,
+        "estimatedTokens": 1971,
+        "id": "implement-plan"
       }
     },
     {
       "id": "plan-lite",
-      "direct": {
-        "bytes": 1175,
-        "estimatedTokens": 294,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1100,
+        "estimatedTokens": 275,
+        "canonicalSurfaceId": "produce-plan",
+        "variantPreset": {
+          "PLAN_PROFILE": "lite"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 4958,
-        "estimatedTokens": 1234,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 10293,
+        "estimatedTokens": 2565,
+        "id": "produce-plan"
       }
     },
     {
       "id": "plan-review",
-      "direct": {
-        "bytes": 1220,
-        "estimatedTokens": 305,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1131,
+        "estimatedTokens": 283,
+        "canonicalSurfaceId": "review",
+        "variantPreset": {
+          "REVIEW_PROFILE": "plan"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 4763,
-        "estimatedTokens": 1187,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 7623,
+        "estimatedTokens": 1901,
+        "id": "review"
       }
     },
     {
       "id": "produce-plan",
-      "direct": {
-        "bytes": 1210,
-        "estimatedTokens": 303,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1048,
+        "estimatedTokens": 262,
+        "canonicalSurfaceId": "produce-plan",
+        "variantPreset": {},
+        "deprecated": false
       },
-      "compatibilityContract": {
-        "bytes": 9982,
-        "estimatedTokens": 2487,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 10293,
+        "estimatedTokens": 2565,
+        "id": "produce-plan"
       }
     },
     {
       "id": "review",
-      "direct": {
-        "bytes": 1194,
-        "estimatedTokens": 299,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1027,
+        "estimatedTokens": 257,
+        "canonicalSurfaceId": "review",
+        "variantPreset": {},
+        "deprecated": false
       },
-      "compatibilityContract": {
-        "bytes": 7154,
-        "estimatedTokens": 1783,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 7623,
+        "estimatedTokens": 1901,
+        "id": "review"
       }
     },
     {
       "id": "review-lite",
-      "direct": {
-        "bytes": 1198,
-        "estimatedTokens": 300,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1100,
+        "estimatedTokens": 275,
+        "canonicalSurfaceId": "review",
+        "variantPreset": {
+          "LEVEL": "lite"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 5205,
-        "estimatedTokens": 1300,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 7623,
+        "estimatedTokens": 1901,
+        "id": "review"
       }
     },
     {
       "id": "review-only",
-      "direct": {
-        "bytes": 1237,
-        "estimatedTokens": 310,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1143,
+        "estimatedTokens": 286,
+        "canonicalSurfaceId": "review",
+        "variantPreset": {
+          "LEVEL": "standard"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 5936,
-        "estimatedTokens": 1480,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 7623,
+        "estimatedTokens": 1901,
+        "id": "review"
       }
     },
     {
       "id": "review-strict",
-      "direct": {
-        "bytes": 1215,
-        "estimatedTokens": 304,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1115,
+        "estimatedTokens": 279,
+        "canonicalSurfaceId": "review",
+        "variantPreset": {
+          "LEVEL": "strict"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 5948,
-        "estimatedTokens": 1483,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 7623,
+        "estimatedTokens": 1901,
+        "id": "review"
       }
     },
     {
       "id": "route",
-      "direct": {
-        "bytes": 1178,
-        "estimatedTokens": 295,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1016,
+        "estimatedTokens": 254,
+        "canonicalSurfaceId": "route",
+        "variantPreset": {},
+        "deprecated": false
       },
-      "compatibilityContract": {
-        "bytes": 12039,
-        "estimatedTokens": 3004,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 13126,
+        "estimatedTokens": 3275,
+        "id": "route"
       }
     },
     {
       "id": "senior-explore",
-      "direct": {
-        "bytes": 1260,
-        "estimatedTokens": 315,
-        "delegatedSkillToolCalls": 0
+      "commandWrapper": {
+        "bytes": 1158,
+        "estimatedTokens": 290,
+        "canonicalSurfaceId": "explore",
+        "variantPreset": {
+          "DEPTH": "deep"
+        },
+        "deprecated": true
       },
-      "compatibilityContract": {
-        "bytes": 8327,
-        "estimatedTokens": 2068,
-        "historicalDelegatedSkillToolCalls": 1
+      "canonicalSkill": {
+        "bytes": 6578,
+        "estimatedTokens": 1640,
+        "id": "explore"
       }
     }
   ]

@@ -35,7 +35,7 @@ test('workspace policy rejects lexical and absolute escapes', async (t) => {
   assert.throws(() => resolveWorkspaceTarget({ filePath: join(outside, 'file.txt'), projectRoot: workspace }), /outside explicit allowed roots/);
 });
 
-test('workspace policy rejects parent symlinks and protected hard links', { skip: process.platform === 'win32' }, async (t) => {
+test('workspace policy rejects parent symlinks and every existing hard-linked target', { skip: process.platform === 'win32' }, async (t) => {
   const { workspace, outside } = await workspaceFixture(t);
   await symlink(outside, join(workspace, 'link'));
   assert.throws(() => resolveWorkspaceTarget({ filePath: 'link/new.txt', projectRoot: workspace }), /symlink or junction/);
@@ -44,9 +44,12 @@ test('workspace policy rejects parent symlinks and protected hard links', { skip
   const hooks = join(workspace, '.claude/hooks.json');
   await writeFile(hooks, '{}');
   await link(hooks, join(workspace, 'hooks-copy.json'));
-  assert.throws(() => resolveWorkspaceTarget({
-    filePath: hooks, projectRoot: workspace, mustExist: true, protectedTarget: true,
-  }), /multiple hard links/);
+  assert.throws(() => resolveWorkspaceTarget({ filePath: hooks, projectRoot: workspace, mustExist: true }), /exactly one hard link/);
+
+  const ordinary = join(workspace, 'ordinary.txt');
+  await writeFile(ordinary, 'ordinary');
+  await link(ordinary, join(outside, 'ordinary-outside.txt'));
+  assert.throws(() => resolveWorkspaceTarget({ filePath: ordinary, projectRoot: workspace, mustExist: true }), /exactly one hard link/);
 });
 
 test('explicit artifact roots are opt-in and parsed without broadening project scope', async (t) => {

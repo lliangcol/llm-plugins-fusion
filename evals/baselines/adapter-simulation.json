@@ -3,7 +3,7 @@
   "schemaVersion": 1,
   "layer": "adapter-simulation",
   "executionMode": "deterministic-adapter-simulation",
-  "workflowSpecSha256": "562b6645143dba698f298a683b04d52e93527256bce3fa7dee9d4b019d199041",
+  "workflowSpecSha256": "c6dfaf7c60184db60c55e7e45ddce08d0c1d9beb29ea72232baac4f4695ebb9e",
   "cases": [
     {
       "id": "missing-required-input",
@@ -72,12 +72,140 @@
         "unknown workflow"
       ],
       "passed": true
+    },
+    {
+      "id": "route-ready",
+      "expectedDecision": "ready",
+      "decision": "ready",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "id": "explore-ready",
+      "expectedDecision": "ready",
+      "decision": "ready",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "id": "formal-plan-missing-output",
+      "expectedDecision": "blocked-missing-input",
+      "decision": "blocked-missing-input",
+      "reasons": [
+        "PLAN_OUTPUT_PATH"
+      ],
+      "passed": true
+    },
+    {
+      "id": "formal-plan-write-unapproved",
+      "expectedDecision": "blocked-approval",
+      "decision": "blocked-approval",
+      "reasons": [
+        "workspaceWrite"
+      ],
+      "passed": true
+    },
+    {
+      "id": "formal-plan-approved",
+      "expectedDecision": "ready",
+      "decision": "ready",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "id": "strict-review-ready",
+      "expectedDecision": "ready",
+      "decision": "ready",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "id": "small-fix-missing-request",
+      "expectedDecision": "blocked-missing-input",
+      "decision": "blocked-missing-input",
+      "reasons": [
+        "REQUEST"
+      ],
+      "passed": true
+    },
+    {
+      "id": "small-fix-unapproved",
+      "expectedDecision": "blocked-approval",
+      "decision": "blocked-approval",
+      "reasons": [
+        "workspaceWrite"
+      ],
+      "passed": true
+    },
+    {
+      "id": "small-fix-approved",
+      "expectedDecision": "ready",
+      "decision": "ready",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "id": "finalize-ready",
+      "expectedDecision": "ready",
+      "decision": "ready",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "id": "finalize-missing-summary",
+      "expectedDecision": "blocked-missing-input",
+      "decision": "blocked-missing-input",
+      "reasons": [
+        "WORK_SUMMARY"
+      ],
+      "passed": true
+    },
+    {
+      "id": "external-fix-network-unavailable",
+      "expectedDecision": "fallback-unsupported-capability",
+      "decision": "fallback-unsupported-capability",
+      "reasons": [
+        "network"
+      ],
+      "passed": true
+    },
+    {
+      "id": "external-fix-credentials-unapproved",
+      "expectedDecision": "blocked-approval",
+      "decision": "blocked-approval",
+      "reasons": [
+        "credentials"
+      ],
+      "passed": true
+    },
+    {
+      "id": "external-fix-approved",
+      "expectedDecision": "ready",
+      "decision": "ready",
+      "reasons": [],
+      "passed": true
+    },
+    {
+      "id": "review-scope-missing",
+      "expectedDecision": "blocked-missing-input",
+      "decision": "blocked-missing-input",
+      "reasons": [
+        "REVIEW_SCOPE"
+      ],
+      "passed": true
+    },
+    {
+      "id": "review-level-ready",
+      "expectedDecision": "ready",
+      "decision": "ready",
+      "reasons": [],
+      "passed": true
     }
   ],
   "summary": {
-    "total": 8,
-    "passed": 8,
-    "fallbackCases": 2,
+    "total": 24,
+    "passed": 24,
+    "fallbackCases": 3,
     "unsafeContinuation": 0
   },
   "claimBoundary": "Deterministic adapter-state simulation only; no assistant process, network, latency, token, or model-quality claim."

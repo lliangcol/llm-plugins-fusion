@@ -40,7 +40,7 @@ function renderBehavior(behavior) {
 export function generatedBehaviorSurfaces() {
   const { spec, behaviorSpec } = loadNovaWorkflowModel(root);
   const behaviors = new Map(behaviorSpec.behaviors.map((behavior) => [behavior.id, behavior]));
-  return spec.workflows.map((workflow) => {
+  return spec.workflows.filter((workflow) => !workflow.compatibilityAlias).map((workflow) => {
     const path = resolve(root, 'nova-plugin', workflow.contractPath);
     const current = readFileSync(path, 'utf8');
     const behavior = behaviors.get(workflow.id);

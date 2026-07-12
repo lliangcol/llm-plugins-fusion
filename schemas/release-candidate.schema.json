@@ -1,54 +1,28 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/release-candidate.schema.json",
-  "title": "Release candidate manifest",
+  "title": "Release Candidate Envelope v3",
   "type": "object",
+  "required": ["schemaVersion", "candidateCore", "promotionIntent"],
   "additionalProperties": false,
-  "required": ["schemaVersion", "candidate", "sourceDigests", "artifacts", "evidence"],
   "properties": {
-    "schemaVersion": { "const": 2 },
-    "candidate": {
+    "schemaVersion": { "const": 3 },
+    "candidateCore": {
       "type": "object",
+      "required": ["path", "sha256"],
       "additionalProperties": false,
-      "required": ["tag", "number", "stableVersion", "commit", "createdAt"],
       "properties": {
-        "tag": { "type": "string" },
-        "number": { "type": "number" },
-        "stableVersion": { "type": "string" },
-        "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
-        "createdAt": { "type": "string" }
+        "path": { "const": "candidate-core.json" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
       }
     },
-    "sourceDigests": { "type": "object" },
-    "artifacts": {
-      "type": "array",
-      "minItems": 3,
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["name", "path", "sha256", "bytes", "kind"],
-        "properties": {
-          "name": { "type": "string" },
-          "path": { "type": "string", "pattern": "^artifacts/[^/]+$" },
-          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-          "bytes": { "type": "number" },
-          "kind": { "enum": ["archive", "sbom", "provenance"] }
-        }
-      }
-    },
-    "evidence": {
-      "type": "array",
-      "items": {
-        "type": "object",
-        "additionalProperties": false,
-        "required": ["kind", "path", "sha256", "bytes", "requiredForPromotion"],
-        "properties": {
-          "kind": { "enum": ["checksums", "coverage-metadata", "validation-timings", "install-inventory", "route-smoke", "quality-summary"] },
-          "path": { "type": "string", "pattern": "^evidence/[^/]+$" },
-          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-          "bytes": { "type": "number" },
-          "requiredForPromotion": { "const": true }
-        }
+    "promotionIntent": {
+      "type": "object",
+      "required": ["path", "sha256"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "const": "promotion-intent.json" },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
       }
     }
   }

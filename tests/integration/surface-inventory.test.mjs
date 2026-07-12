@@ -16,18 +16,18 @@ test('surface inventory captures current public repository surfaces', () => {
 
   assert.deepEqual(inventory.counts, {
     commands: 21,
-    skills: 21,
+    skills: 6,
     activeAgents: 6,
     capabilityPacks: 8,
-    generatedMarketplaceOutputs: 3,
-    installedSkills: 42,
+    generatedMarketplaceOutputs: 4,
+    installedSkills: 27,
   });
 
   const commandsById = new Map(inventory.commands.map((command) => [command.id, command]));
   const skillsByName = new Map(inventory.skills.map((skill) => [skill.name, skill]));
 
   assert.equal(commandsById.get('review')?.stage, 'review');
-  assert.equal(commandsById.get('review')?.compatibilitySkill, 'nova-review');
+  assert.equal(commandsById.get('review')?.canonicalSkill, 'nova-review');
   assert.equal(commandsById.get('review')?.runtimeDelegation, false);
   assert.equal(commandsById.get('review')?.supportingContract, 'nova-plugin/skills/nova-review/SKILL.md');
   assert.equal(skillsByName.get('nova-review')?.commandId, 'review');
@@ -44,9 +44,8 @@ test('surface inventory captures current public repository surfaces', () => {
   ]);
 
   for (const command of inventory.commands) {
-    const skill = skillsByName.get(command.compatibilitySkill);
-    assert.ok(skill, `${command.id} has missing compatibility skill ${command.compatibilitySkill}`);
-    assert.equal(skill.commandId, command.id);
+    const skill = skillsByName.get(command.canonicalSkill);
+    assert.ok(skill, `${command.id} has missing canonical skill ${command.canonicalSkill}`);
     assert.equal(command.runtimeDelegation, false);
   }
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** Validate generated project truth and reject known stale active narratives. */
 
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -33,7 +33,8 @@ export function activeNarrativeDocuments(repoRoot = root) {
     .filter(Boolean)
     .filter((path) => path !== 'CHANGELOG.md')
     .filter((path) => !path.startsWith('docs/migrations/'))
-    .filter((path) => !/^docs\/releases\/\d/.test(path));
+    .filter((path) => !/^docs\/releases\/\d/.test(path))
+    .filter((path) => existsSync(resolve(repoRoot, path)));
 }
 
 export function validateProjectState({ repoRoot = root } = {}) {

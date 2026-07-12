@@ -28,9 +28,12 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "destructiveActions", "modelInvocable", "subagentSafe", "allowedTools", "disallowedTools", "runtimeRequirements", "permissionPolicy", "enforcement", "legacyCapabilities"],
+        "required": ["id", "canonicalSurfaceId", "variantPreset", "compatibilityAlias", "destructiveActions", "modelInvocable", "subagentSafe", "allowedTools", "disallowedTools", "runtimeRequirements", "permissionPolicy", "enforcement", "legacyCapabilities"],
         "properties": {
           "id": { "type": "string" },
+          "canonicalSurfaceId": { "type": "string" },
+          "variantPreset": { "type": "object" },
+          "compatibilityAlias": { "type": "boolean" },
           "destructiveActions": { "enum": ["none", "low", "medium", "high"] },
           "modelInvocable": { "type": "boolean" },
           "subagentSafe": { "type": "boolean" },

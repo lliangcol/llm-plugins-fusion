@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-/** Build a deterministic plugin archive, CycloneDX SBOM, and provenance statement. */
+/** Build a deterministic plugin archive, manifest, build SBOM, runtime BOM, and build record. */
 
 import { createHash } from 'node:crypto';
 import { gzipSync } from 'node:zlib';
@@ -53,7 +53,10 @@ function tarHeader(entry, size) {
   writeOctal(header, 136, 12, 0);
   header.fill(0x20, 148, 156);
   writeString(header, 156, 1, entry.type === 'directory' ? '5' : (entry.type === 'symlink' ? '2' : '0'));
-  if (entry.type === 'symlink') writeString(header, 157, 100, entry.target);
+  if (entry.type === 'symlink') {
+    if (Buffer.byteLength(entry.target, 'utf8') > 100) throw new Error(`release archive symlink target is too long: ${entry.path}`);
+    writeString(header, 157, 100, entry.target);
+  }
   writeString(header, 257, 6, 'ustar\0');
   writeString(header, 263, 2, '00');
   writeString(header, 345, 155, prefix);
@@ -82,10 +85,17 @@ function gitValue(root, args) {
   return result.status === 0 ? result.stdout.trim() : 'unknown';
 }
 
-export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/release-artifacts', now = () => new Date(0), env = process.env } = {}) {
+export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/release-artifacts', now, env = process.env } = {}) {
+  const sourceEpoch = Number(env.SOURCE_DATE_EPOCH);
+  const commitTimestamp = gitValue(root, ['show', '-s', '--format=%cI', 'HEAD']);
+  const buildTimestamp = Number.isFinite(sourceEpoch)
+    ? new Date(sourceEpoch * 1000)
+    : new Date(commitTimestamp === 'unknown' ? 0 : commitTimestamp);
+  const clock = now ?? (() => buildTimestamp);
   const pluginRoot = resolve(root, 'nova-plugin');
   const plugin = JSON.parse(readFileSync(resolve(pluginRoot, '.claude-plugin/plugin.json'), 'utf8'));
   const { knownGoodClaudeCli } = loadNovaWorkflowModel(root);
+  const packageLock = JSON.parse(readFileSync(resolve(root, 'package-lock.json'), 'utf8'));
   const outputRoot = resolve(root, outDir);
   mkdirSync(outputRoot, { recursive: true });
   const archiveName = `nova-plugin-${plugin.version}.tar.gz`;
@@ -95,85 +105,91 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
   const manifest = treeManifest(pluginRoot);
   const manifestSha256 = sha256(JSON.stringify(manifest));
   const archiveSha256 = sha256(archive);
-  const sbom = {
+  const artifactManifest = {
+    schemaVersion: 1,
+    archive: { name: archiveName, sha256: archiveSha256, bytes: archive.length },
+    pluginTree: { manifestVersion: 2, sha256: manifestSha256, entries: manifest },
+  };
+  const artifactManifestPath = resolve(outputRoot, 'artifact-manifest.json');
+  writeFileSync(artifactManifestPath, `${JSON.stringify(artifactManifest, null, 2)}\n`, 'utf8');
+
+  const buildComponents = Object.entries(packageLock.packages ?? {})
+    .filter(([path, data]) => path.startsWith('node_modules/') && data.version)
+    .map(([path, data]) => {
+      const name = path.slice('node_modules/'.length);
+      return {
+        type: 'library',
+        name,
+        version: data.version,
+        'bom-ref': `pkg:npm/${name}@${data.version}`,
+        purl: `pkg:npm/${name}@${data.version}`,
+        scope: 'required',
+        ...(data.license ? { licenses: [{ license: { id: data.license } }] } : {}),
+      };
+    });
+  const buildSbom = {
     bomFormat: 'CycloneDX',
-    specVersion: '1.5',
+    specVersion: '1.7',
     serialNumber: `urn:uuid:${archiveSha256.slice(0, 8)}-${archiveSha256.slice(8, 12)}-${archiveSha256.slice(12, 16)}-${archiveSha256.slice(16, 20)}-${archiveSha256.slice(20, 32)}`,
     version: 1,
     metadata: {
-      timestamp: now().toISOString(),
-      component: {
-        type: 'application',
-        name: 'nova-plugin',
-        version: plugin.version,
-        'bom-ref': `pkg:generic/nova-plugin@${plugin.version}`,
-        hashes: [{ alg: 'SHA-256', content: archiveSha256 }],
-      },
+      timestamp: clock().toISOString(),
+      component: { type: 'application', name: 'llm-plugins-fusion-build', version: plugin.version, 'bom-ref': `build:llm-plugins-fusion@${plugin.version}` },
     },
-    components: [
-      {
-        type: 'platform',
-        name: 'Node.js',
-        version: '>=22',
-        'bom-ref': 'runtime:node>=22',
-        scope: 'required',
-        properties: [{ name: 'nova:purpose', value: 'hook and validation runtime' }],
-      },
-      {
-        type: 'application',
-        name: 'Bash',
-        version: '>=3.2',
-        'bom-ref': 'runtime:bash>=3.2',
-        scope: 'required',
-        properties: [{ name: 'nova:purpose', value: 'fail-closed launcher and Codex helpers' }],
-      },
-      {
-        type: 'application',
-        name: 'Claude Code',
-        version: knownGoodClaudeCli,
-        'bom-ref': 'host:claude-code',
-        scope: 'required',
-        properties: [{ name: 'nova:purpose', value: 'plugin host; exact compatible version is release-evidence-bound' }],
-      },
-    ],
+    components: buildComponents,
     dependencies: [
-      { ref: `pkg:generic/nova-plugin@${plugin.version}`, dependsOn: ['runtime:node>=22', 'runtime:bash>=3.2', 'host:claude-code'] },
-      { ref: 'runtime:node>=22', dependsOn: [] },
-      { ref: 'runtime:bash>=3.2', dependsOn: [] },
-      { ref: 'host:claude-code', dependsOn: [] },
+      { ref: `build:llm-plugins-fusion@${plugin.version}`, dependsOn: buildComponents.map((component) => component['bom-ref']) },
+      ...buildComponents.map((component) => ({ ref: component['bom-ref'], dependsOn: [] })),
     ],
+    compositions: [{ aggregate: 'complete', assemblies: [`build:llm-plugins-fusion@${plugin.version}`] }],
+    formulation: [{ components: buildComponents }],
   };
-  const sbomPath = resolve(outputRoot, `${archiveName}.cdx.json`);
-  writeFileSync(sbomPath, `${JSON.stringify(sbom, null, 2)}\n`, 'utf8');
-  const commit = env.RELEASE_COMMIT ?? env.GITHUB_SHA ?? gitValue(root, ['rev-parse', 'HEAD']);
-  const tag = env.RELEASE_TAG ?? env.GITHUB_REF_NAME ?? gitValue(root, ['describe', '--tags', '--exact-match', 'HEAD']);
-  const provenance = {
-    _type: 'https://in-toto.io/Statement/v1',
-    subject: [{ name: archiveName, digest: { sha256: archiveSha256 } }],
-    predicateType: 'https://slsa.dev/provenance/v1',
-    predicate: {
-      buildDefinition: {
-        buildType: 'https://github.com/lliangcol/llm-plugins-fusion/build-types/nova-plugin-release/v1',
-        externalParameters: { pluginVersion: plugin.version, tag },
-        internalParameters: { node: process.version, deterministicTarVersion: 1 },
-        resolvedDependencies: [{ uri: 'git+https://github.com/lliangcol/llm-plugins-fusion', digest: { gitCommit: commit } }],
-      },
-      runDetails: {
-        builder: { id: 'https://github.com/lliangcol/llm-plugins-fusion/.github/workflows/release-candidate.yml' },
-        metadata: { invocationId: `${commit}:${tag}`, startedOn: now().toISOString(), finishedOn: now().toISOString() },
-        byproducts: [{ name: 'tree-manifest-v2', digest: { sha256: manifestSha256 }, entries: manifest.length }],
-      },
-    },
+  const buildSbomPath = resolve(outputRoot, 'build-sbom.cdx.json');
+  writeFileSync(buildSbomPath, `${JSON.stringify(buildSbom, null, 2)}\n`, 'utf8');
+
+  const runtimeCapabilities = {
+    bomFormat: 'CycloneDX', specVersion: '1.7', version: 1,
+    metadata: { timestamp: clock().toISOString(), component: { type: 'application', name: 'nova-plugin', version: plugin.version, 'bom-ref': `pkg:generic/nova-plugin@${plugin.version}`, hashes: [{ alg: 'SHA-256', content: archiveSha256 }] } },
+    components: [
+      { type: 'platform', name: 'Node.js', version: '>=22', 'bom-ref': 'runtime:node>=22', properties: [{ name: 'nova:known-good', value: process.version }] },
+      { type: 'application', name: 'Bash', version: '>=3.2', 'bom-ref': 'runtime:bash>=3.2' },
+      { type: 'application', name: 'Claude Code', version: knownGoodClaudeCli, 'bom-ref': 'host:claude-code' },
+      { type: 'application', name: 'Codex', version: env.CODEX_VERSION ?? 'not-release-bound', 'bom-ref': 'external:codex' },
+    ],
+    dependencies: [{ ref: `pkg:generic/nova-plugin@${plugin.version}`, dependsOn: ['runtime:node>=22', 'runtime:bash>=3.2', 'host:claude-code', 'external:codex'] }],
   };
-  const provenancePath = resolve(outputRoot, `${archiveName}.provenance.json`);
-  writeFileSync(provenancePath, `${JSON.stringify(provenance, null, 2)}\n`, 'utf8');
-  return { archivePath, sbomPath, provenancePath, archiveSha256, manifestSha256 };
+  const runtimeCapabilitiesPath = resolve(outputRoot, 'runtime-capabilities.cdx.json');
+  writeFileSync(runtimeCapabilitiesPath, `${JSON.stringify(runtimeCapabilities, null, 2)}\n`, 'utf8');
+
+  const commit = env.RELEASE_COMMIT ?? gitValue(root, ['rev-parse', 'HEAD']);
+  const tag = env.RELEASE_TAG ?? gitValue(root, ['describe', '--tags', '--exact-match', 'HEAD']);
+  const startedOn = clock().toISOString();
+  const buildRecord = {
+    schemaVersion: 1,
+    subject: { name: archiveName, sha256: archiveSha256 },
+    sourceCommit: commit,
+    candidateTag: tag,
+    promotionIntentSha256: env.PROMOTION_INTENT_SHA256 ?? null,
+    workflow: { path: '.github/workflows/release-candidate.yml', sha256: sha256(readFileSync(resolve(root, '.github/workflows/release-candidate.yml'))) },
+    controlBundleSha256: env.RELEASE_CONTROL_BUNDLE_SHA256 ?? null,
+    githubRunId: env.GITHUB_RUN_ID ?? null,
+    startedOn,
+    finishedOn: clock().toISOString(),
+    runnerImage: env.ImageOS ?? env.RUNNER_OS ?? 'local',
+    nodeVersion: process.version,
+    actionShas: env.NOVA_ACTION_SHAS ? JSON.parse(env.NOVA_ACTION_SHAS) : {},
+    npmTarballIntegrity: env.CLAUDE_NPM_INTEGRITY ?? null,
+    artifactManifestSha256: sha256(readFileSync(artifactManifestPath)),
+  };
+  const buildRecordPath = resolve(outputRoot, 'nova-build-record.json');
+  writeFileSync(buildRecordPath, `${JSON.stringify(buildRecord, null, 2)}\n`, 'utf8');
+  return { archivePath, artifactManifestPath, buildSbomPath, runtimeCapabilitiesPath, buildRecordPath, archiveSha256, manifestSha256 };
 }
 
 export function main({ build = buildReleaseArtifacts, log = console.log, errorLog = console.error } = {}) {
   try {
     const result = build();
-    for (const path of [result.archivePath, result.sbomPath, result.provenancePath]) {
+    for (const path of [result.archivePath, result.artifactManifestPath, result.buildSbomPath, result.runtimeCapabilitiesPath, result.buildRecordPath]) {
       log(`Wrote ${relative(defaultRoot, path).replaceAll('\\', '/')}`);
     }
     return 0;

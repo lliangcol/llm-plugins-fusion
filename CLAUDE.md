@@ -7,16 +7,16 @@ Do not edit this block by hand. It is synchronized by
 `node scripts/sync-doc-facts.mjs --write` from repository domain sources and
 `governance/product-lanes.json`.
 
-- Plugin: `nova-plugin@3.2.0`; production plugins: 1; public path: `nova-plugin/`
+- Plugin: `nova-plugin@4.0.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
-- Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
-- Workflow contract: schema v4, namespace `nova-plugin`, 21 workflows
+- Inventory: 21 commands, 6 skills, 6 active agents, 8 capability packs
+- Workflow contract: schema v5, namespace `nova-plugin`, 21 workflows
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`, `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"`
+- Active PreToolUse launcher: `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh`, `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh`
 - Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
 <!-- generated:project-state:end -->
 
@@ -53,7 +53,7 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 - Generated marketplace catalog: `docs/marketplace/catalog.md`
 - Main plugin metadata and version source: `nova-plugin/.claude-plugin/plugin.json`
 - Current command snapshot: 21 files under `nova-plugin/commands/*.md`; validate frontmatter with `node scripts/lint-frontmatter.mjs`.
-- Current skill snapshot: 21 files under `nova-plugin/skills/nova-*/SKILL.md`; validate frontmatter with `node scripts/lint-frontmatter.mjs`.
+- Current skill snapshot: 6 files under `nova-plugin/skills/nova-*/SKILL.md`; validate frontmatter with `node scripts/lint-frontmatter.mjs`.
 - Command docs: each command has `<id>.md`, `<id>.README.md`, and `<id>.README.en.md` under `nova-plugin/docs/commands/**/`; validate with `node scripts/validate-docs.mjs`.
 - Shared skill policies: `nova-plugin/skills/_shared/*.md`
 - Current active agent snapshot: 6 core files under `nova-plugin/agents/*.md`; verify with `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`.
@@ -143,8 +143,7 @@ llm-plugins-fusion/
 |   |-- promote-release.yml
 |   |-- release-candidate.yml
 |   |-- release-recovery-drill.yml
-|   |-- release.yml
-|   `-- reusable-node-check.yml
+|   `-- release.yml
 |-- docs/
 |   |-- README.md
 |   |-- agents/
@@ -160,7 +159,7 @@ llm-plugins-fusion/
 |-- nova-plugin/
 |   |-- .claude-plugin/plugin.json
 |   |-- commands/                     # 21 Claude Code command definitions
-|   |-- skills/                       # 21 Agent Skills mapped one-to-one with commands
+|   |-- skills/                       # 6 canonical Agent Skills plus shared policies
 |   |-- agents/                       # 6 core active agents
 |   |-- packs/                        # 8 capability pack docs
 |   |-- docs/
@@ -296,11 +295,13 @@ checks as locally passed unless Bash actually ran them.
 
 ### Commands and Skills
 
-Commands and skills must stay one-to-one:
+Skills are the canonical runtime behavior surface. All commands are generated
+compatibility or discoverability wrappers and must not duplicate behavior:
 
 ```text
-nova-plugin/commands/<id>.md
-nova-plugin/skills/nova-<id>/SKILL.md
+workflow-specs/workflows.json
+  -> nova-plugin/skills/nova-<canonical-surface>/SKILL.md
+  -> nova-plugin/commands/<id>.md
 ```
 
 Command frontmatter must include:
@@ -526,9 +527,9 @@ validation, validate-docs, CodeQL, a Windows Node/PowerShell smoke job for
 schemas, docs, frontmatter, and `scripts/verify-agents.ps1`, PSScriptAnalyzer,
 a Windows Bash smoke job for hook syntax and Codex runtime smoke, and a macOS
 smoke job for schemas, frontmatter, docs, agent verification, and runtime
-smoke. Repeated Node jobs route through
-`.github/workflows/reusable-node-check.yml`. Real user-scope plugin install
-smoke is isolated in `.github/workflows/plugin-install-smoke.yml` for manual or
+smoke. Workflow YAML is limited to orchestration and fixed argv; release
+identity and transition semantics live in the Node release state machine. Real
+user-scope plugin install smoke is isolated in `.github/workflows/plugin-install-smoke.yml` for manual or
 scheduled evidence and in `.github/workflows/release-candidate.yml` as an
 exact-RC-tag blocker. Stable `.github/workflows/release.yml` only delegates
 promotion of the already verified candidate; install smoke is not a default
@@ -555,7 +556,8 @@ merge blocker.
   Skipped or unavailable checks need an explicit reason.
 - When repository instructions conflict, surface the conflict and follow the
   source-of-truth table instead of blending incompatible rules.
-- `commands/*.md` and `skills/nova-*/SKILL.md` must remain one-to-one.
+- The six canonical `skills/nova-*/SKILL.md` files own behavior; all 21
+  `commands/*.md` files are generated thin wrappers, including 15 deprecated aliases.
 - Every command must have three command docs; Codex command docs are centralized
   under `nova-plugin/docs/commands/codex/`.
 - `allowed-tools` must be a space-separated string, not a YAML array.

@@ -3,35 +3,13 @@
   "source": "workflow-specs/workflows.json",
   "pluginNamespace": "nova-plugin",
   "knownGoodClaudeCli": "2.1.205",
-  "expectedCombinedSkillCount": 42,
+  "expectedCombinedSkillCount": 27,
   "entries": [
     {
       "surface": "command",
       "id": "backend-plan",
       "invocation": "/nova-plugin:backend-plan",
-      "visibility": "advanced",
-      "destructiveActions": "low",
-      "userInvocable": true,
-      "modelInvocable": false,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep",
-        "Write",
-        "Edit"
-      ],
-      "disallowedTools": [
-        "NotebookEdit",
-        "Bash"
-      ],
-      "permissionPromptTools": [],
-      "compatibility": null
-    },
-    {
-      "surface": "skill",
-      "id": "nova-backend-plan",
-      "invocation": "/nova-plugin:nova-backend-plan",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "low",
       "userInvocable": true,
       "modelInvocable": false,
@@ -53,30 +31,7 @@
       "surface": "command",
       "id": "codex-review-fix",
       "invocation": "/nova-plugin:codex-review-fix",
-      "visibility": "advanced",
-      "destructiveActions": "medium",
-      "userInvocable": true,
-      "modelInvocable": false,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep",
-        "Write",
-        "Edit"
-      ],
-      "disallowedTools": [
-        "NotebookEdit"
-      ],
-      "permissionPromptTools": [
-        "Bash"
-      ],
-      "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access for the external review/fix/verify loop."
-    },
-    {
-      "surface": "skill",
-      "id": "nova-codex-review-fix",
-      "invocation": "/nova-plugin:nova-codex-review-fix",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "medium",
       "userInvocable": true,
       "modelInvocable": false,
@@ -99,30 +54,7 @@
       "surface": "command",
       "id": "codex-review-only",
       "invocation": "/nova-plugin:codex-review-only",
-      "visibility": "advanced",
-      "destructiveActions": "low",
-      "userInvocable": true,
-      "modelInvocable": false,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep"
-      ],
-      "disallowedTools": [
-        "Write",
-        "Edit",
-        "NotebookEdit"
-      ],
-      "permissionPromptTools": [
-        "Bash"
-      ],
-      "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved."
-    },
-    {
-      "surface": "skill",
-      "id": "nova-codex-review-only",
-      "invocation": "/nova-plugin:nova-codex-review-only",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "low",
       "userInvocable": true,
       "modelInvocable": false,
@@ -145,30 +77,7 @@
       "surface": "command",
       "id": "codex-verify-only",
       "invocation": "/nova-plugin:codex-verify-only",
-      "visibility": "advanced",
-      "destructiveActions": "low",
-      "userInvocable": true,
-      "modelInvocable": false,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep"
-      ],
-      "disallowedTools": [
-        "Write",
-        "Edit",
-        "NotebookEdit"
-      ],
-      "permissionPromptTools": [
-        "Bash"
-      ],
-      "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved."
-    },
-    {
-      "surface": "skill",
-      "id": "nova-codex-verify-only",
-      "invocation": "/nova-plugin:nova-codex-verify-only",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "low",
       "userInvocable": true,
       "modelInvocable": false,
@@ -213,7 +122,7 @@
       "surface": "skill",
       "id": "nova-explore",
       "invocation": "/nova-plugin:nova-explore",
-      "visibility": "compatibility",
+      "visibility": "canonical",
       "destructiveActions": "none",
       "userInvocable": true,
       "modelInvocable": true,
@@ -235,29 +144,7 @@
       "surface": "command",
       "id": "explore-lite",
       "invocation": "/nova-plugin:explore-lite",
-      "visibility": "advanced",
-      "destructiveActions": "none",
-      "userInvocable": true,
-      "modelInvocable": true,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep"
-      ],
-      "disallowedTools": [
-        "Write",
-        "Edit",
-        "NotebookEdit",
-        "Bash"
-      ],
-      "permissionPromptTools": [],
-      "compatibility": null
-    },
-    {
-      "surface": "skill",
-      "id": "nova-explore-lite",
-      "invocation": "/nova-plugin:nova-explore-lite",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "none",
       "userInvocable": true,
       "modelInvocable": true,
@@ -279,29 +166,7 @@
       "surface": "command",
       "id": "explore-review",
       "invocation": "/nova-plugin:explore-review",
-      "visibility": "advanced",
-      "destructiveActions": "none",
-      "userInvocable": true,
-      "modelInvocable": true,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep"
-      ],
-      "disallowedTools": [
-        "Write",
-        "Edit",
-        "NotebookEdit",
-        "Bash"
-      ],
-      "permissionPromptTools": [],
-      "compatibility": null
-    },
-    {
-      "surface": "skill",
-      "id": "nova-explore-review",
-      "invocation": "/nova-plugin:nova-explore-review",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "none",
       "userInvocable": true,
       "modelInvocable": true,
@@ -323,29 +188,7 @@
       "surface": "command",
       "id": "finalize-lite",
       "invocation": "/nova-plugin:finalize-lite",
-      "visibility": "advanced",
-      "destructiveActions": "none",
-      "userInvocable": true,
-      "modelInvocable": true,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep"
-      ],
-      "disallowedTools": [
-        "Write",
-        "Edit",
-        "NotebookEdit",
-        "Bash"
-      ],
-      "permissionPromptTools": [],
-      "compatibility": null
-    },
-    {
-      "surface": "skill",
-      "id": "nova-finalize-lite",
-      "invocation": "/nova-plugin:nova-finalize-lite",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "none",
       "userInvocable": true,
       "modelInvocable": true,
@@ -390,7 +233,7 @@
       "surface": "skill",
       "id": "nova-finalize-work",
       "invocation": "/nova-plugin:nova-finalize-work",
-      "visibility": "compatibility",
+      "visibility": "canonical",
       "destructiveActions": "none",
       "userInvocable": true,
       "modelInvocable": true,
@@ -413,30 +256,7 @@
       "surface": "command",
       "id": "implement-lite",
       "invocation": "/nova-plugin:implement-lite",
-      "visibility": "advanced",
-      "destructiveActions": "medium",
-      "userInvocable": true,
-      "modelInvocable": false,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep",
-        "Write",
-        "Edit"
-      ],
-      "disallowedTools": [
-        "NotebookEdit"
-      ],
-      "permissionPromptTools": [
-        "Bash"
-      ],
-      "compatibility": "Designed for Claude Code; project validation through Bash follows the normal permission flow."
-    },
-    {
-      "surface": "skill",
-      "id": "nova-implement-lite",
-      "invocation": "/nova-plugin:nova-implement-lite",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "medium",
       "userInvocable": true,
       "modelInvocable": false,
@@ -482,7 +302,7 @@
       "surface": "skill",
       "id": "nova-implement-plan",
       "invocation": "/nova-plugin:nova-implement-plan",
-      "visibility": "compatibility",
+      "visibility": "canonical",
       "destructiveActions": "medium",
       "userInvocable": true,
       "modelInvocable": false,
@@ -505,30 +325,7 @@
       "surface": "command",
       "id": "implement-standard",
       "invocation": "/nova-plugin:implement-standard",
-      "visibility": "advanced",
-      "destructiveActions": "medium",
-      "userInvocable": true,
-      "modelInvocable": false,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep",
-        "Write",
-        "Edit"
-      ],
-      "disallowedTools": [
-        "NotebookEdit"
-      ],
-      "permissionPromptTools": [
-        "Bash"
-      ],
-      "compatibility": "Designed for Claude Code; project validation through Bash follows the normal permission flow."
-    },
-    {
-      "surface": "skill",
-      "id": "nova-implement-standard",
-      "invocation": "/nova-plugin:nova-implement-standard",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "medium",
       "userInvocable": true,
       "modelInvocable": false,
@@ -551,29 +348,7 @@
       "surface": "command",
       "id": "plan-lite",
       "invocation": "/nova-plugin:plan-lite",
-      "visibility": "advanced",
-      "destructiveActions": "none",
-      "userInvocable": true,
-      "modelInvocable": true,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep"
-      ],
-      "disallowedTools": [
-        "Write",
-        "Edit",
-        "NotebookEdit",
-        "Bash"
-      ],
-      "permissionPromptTools": [],
-      "compatibility": null
-    },
-    {
-      "surface": "skill",
-      "id": "nova-plan-lite",
-      "invocation": "/nova-plugin:nova-plan-lite",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "none",
       "userInvocable": true,
       "modelInvocable": true,
@@ -595,29 +370,7 @@
       "surface": "command",
       "id": "plan-review",
       "invocation": "/nova-plugin:plan-review",
-      "visibility": "advanced",
-      "destructiveActions": "none",
-      "userInvocable": true,
-      "modelInvocable": true,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep"
-      ],
-      "disallowedTools": [
-        "Write",
-        "Edit",
-        "NotebookEdit",
-        "Bash"
-      ],
-      "permissionPromptTools": [],
-      "compatibility": null
-    },
-    {
-      "surface": "skill",
-      "id": "nova-plan-review",
-      "invocation": "/nova-plugin:nova-plan-review",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "none",
       "userInvocable": true,
       "modelInvocable": true,
@@ -661,7 +414,7 @@
       "surface": "skill",
       "id": "nova-produce-plan",
       "invocation": "/nova-plugin:nova-produce-plan",
-      "visibility": "compatibility",
+      "visibility": "canonical",
       "destructiveActions": "low",
       "userInvocable": true,
       "modelInvocable": false,
@@ -695,17 +448,18 @@
       "disallowedTools": [
         "Write",
         "Edit",
-        "NotebookEdit",
+        "NotebookEdit"
+      ],
+      "permissionPromptTools": [
         "Bash"
       ],
-      "permissionPromptTools": [],
       "compatibility": null
     },
     {
       "surface": "skill",
       "id": "nova-review",
       "invocation": "/nova-plugin:nova-review",
-      "visibility": "compatibility",
+      "visibility": "canonical",
       "destructiveActions": "none",
       "userInvocable": true,
       "modelInvocable": true,
@@ -717,39 +471,18 @@
       "disallowedTools": [
         "Write",
         "Edit",
-        "NotebookEdit",
+        "NotebookEdit"
+      ],
+      "permissionPromptTools": [
         "Bash"
       ],
-      "permissionPromptTools": [],
       "compatibility": null
     },
     {
       "surface": "command",
       "id": "review-lite",
       "invocation": "/nova-plugin:review-lite",
-      "visibility": "advanced",
-      "destructiveActions": "none",
-      "userInvocable": true,
-      "modelInvocable": true,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep"
-      ],
-      "disallowedTools": [
-        "Write",
-        "Edit",
-        "NotebookEdit",
-        "Bash"
-      ],
-      "permissionPromptTools": [],
-      "compatibility": null
-    },
-    {
-      "surface": "skill",
-      "id": "nova-review-lite",
-      "invocation": "/nova-plugin:nova-review-lite",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "none",
       "userInvocable": true,
       "modelInvocable": true,
@@ -771,29 +504,7 @@
       "surface": "command",
       "id": "review-only",
       "invocation": "/nova-plugin:review-only",
-      "visibility": "advanced",
-      "destructiveActions": "none",
-      "userInvocable": true,
-      "modelInvocable": true,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep"
-      ],
-      "disallowedTools": [
-        "Write",
-        "Edit",
-        "NotebookEdit",
-        "Bash"
-      ],
-      "permissionPromptTools": [],
-      "compatibility": null
-    },
-    {
-      "surface": "skill",
-      "id": "nova-review-only",
-      "invocation": "/nova-plugin:nova-review-only",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "none",
       "userInvocable": true,
       "modelInvocable": true,
@@ -815,29 +526,7 @@
       "surface": "command",
       "id": "review-strict",
       "invocation": "/nova-plugin:review-strict",
-      "visibility": "advanced",
-      "destructiveActions": "none",
-      "userInvocable": true,
-      "modelInvocable": true,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep"
-      ],
-      "disallowedTools": [
-        "Write",
-        "Edit",
-        "NotebookEdit",
-        "Bash"
-      ],
-      "permissionPromptTools": [],
-      "compatibility": null
-    },
-    {
-      "surface": "skill",
-      "id": "nova-review-strict",
-      "invocation": "/nova-plugin:nova-review-strict",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "none",
       "userInvocable": true,
       "modelInvocable": true,
@@ -881,7 +570,7 @@
       "surface": "skill",
       "id": "nova-route",
       "invocation": "/nova-plugin:nova-route",
-      "visibility": "compatibility",
+      "visibility": "canonical",
       "destructiveActions": "none",
       "userInvocable": true,
       "modelInvocable": true,
@@ -903,29 +592,7 @@
       "surface": "command",
       "id": "senior-explore",
       "invocation": "/nova-plugin:senior-explore",
-      "visibility": "advanced",
-      "destructiveActions": "low",
-      "userInvocable": true,
-      "modelInvocable": false,
-      "preapprovedTools": [
-        "Read",
-        "Glob",
-        "Grep",
-        "Write",
-        "Edit"
-      ],
-      "disallowedTools": [
-        "NotebookEdit",
-        "Bash"
-      ],
-      "permissionPromptTools": [],
-      "compatibility": null
-    },
-    {
-      "surface": "skill",
-      "id": "nova-senior-explore",
-      "invocation": "/nova-plugin:nova-senior-explore",
-      "visibility": "compatibility",
+      "visibility": "deprecated-alias",
       "destructiveActions": "low",
       "userInvocable": true,
       "modelInvocable": false,

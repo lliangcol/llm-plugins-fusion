@@ -4,8 +4,12 @@ on:
   workflow_call:
     inputs:
       release-tag:
-        description: Existing signed immutable stable tag for forward recovery
-        required: false
+        description: Exact signed immutable stable tag
+        required: true
+        type: string
+      candidate-tag:
+        description: Exact signed immutable candidate tag
+        required: true
         type: string
 
 permissions:
@@ -13,9 +17,9 @@ permissions:
 
 jobs:
   promote:
-    name: Promote Identical Candidate Artifacts
+    name: Promote Exact Candidate Through Release State Machine
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
     environment: release
     permissions:
       contents: write
@@ -26,158 +30,115 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
-      - name: Stage reviewed recovery verifier control
-        if: ${{ inputs.release-tag != '' }}
-        run: |
-          cp scripts/lib/release-candidate.mjs "${RUNNER_TEMP}/release-candidate.mjs"
-          cp scripts/build-release-artifacts.mjs "${RUNNER_TEMP}/build-release-artifacts.mjs"
-      - name: Check out immutable stable release source
-        if: ${{ inputs.release-tag != '' }}
-        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-        with:
-          fetch-depth: 0
+          persist-credentials: false
           ref: ${{ inputs.release-tag }}
-      - name: Restore reviewed recovery verifier control
-        if: ${{ inputs.release-tag != '' }}
-        run: |
-          cp "${RUNNER_TEMP}/release-candidate.mjs" scripts/lib/release-candidate.mjs
-          cp "${RUNNER_TEMP}/build-release-artifacts.mjs" scripts/build-release-artifacts.mjs
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
       - run: npm ci --ignore-scripts
-      - name: Verify immutable stable tag and protected main ancestry
-        id: release
+      - name: Verify explicit signed tag identity
+        id: identity
         env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ inputs.release-tag || github.ref_name }}
-        run: |
-          set -euo pipefail
-          test "$(git cat-file -t "refs/tags/${RELEASE_TAG}")" = "tag"
-          git config gpg.format ssh
-          git config gpg.ssh.allowedSignersFile .github/release-signers
-          git verify-tag "${RELEASE_TAG}"
-          release_commit="$(git rev-list -n 1 "${RELEASE_TAG}")"
-          git fetch origin main
-          git merge-base --is-ancestor "${release_commit}" origin/main
-          test "${release_commit}" = "$(git rev-parse HEAD)"
-          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
-            echo "Release ${RELEASE_TAG} already exists; immutable promotion refused."
-            exit 1
-          fi
-          node scripts/prepare-release.mjs
-          printf 'commit=%s\n' "${release_commit}" >> "${GITHUB_OUTPUT}"
-      - name: Resolve latest matching candidate release
-        id: candidate
-        env:
-          GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ inputs.release-tag || github.ref_name }}
-        run: |
-          set -euo pipefail
-          version="${RELEASE_TAG#v}"
-          escaped_version="${version//./\\.}"
-          candidate_tag="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
-            --jq '.[] | select(.prerelease == true) | .tag_name' \
-            | grep -E "^v${escaped_version}-rc\\.[0-9]+$" \
-            | sort -V \
-            | tail -n 1)"
-          test -n "${candidate_tag}"
-          mkdir -p .metrics/promotion
-          gh release download "${candidate_tag}" --dir .metrics/promotion
-          shopt -s nullglob
-          bundles=(.metrics/promotion/nova-plugin-*-candidate-bundle.tar.gz)
-          test "${#bundles[@]}" -eq 1
-          printf 'candidate_tag=%s\n' "${candidate_tag}" >> "${GITHUB_OUTPUT}"
-          printf 'candidate_bundle=%s\n' "${bundles[0]}" >> "${GITHUB_OUTPUT}"
-      - name: Verify signed candidate tag and original candidate attestations
-        env:
-          GH_TOKEN: ${{ github.token }}
-          CANDIDATE_TAG: ${{ steps.candidate.outputs.candidate_tag }}
-          CANDIDATE_BUNDLE: ${{ steps.candidate.outputs.candidate_bundle }}
-          RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
-          RELEASE_TAG: ${{ inputs.release-tag || github.ref_name }}
+          STABLE_TAG: ${{ inputs.release-tag }}
+          CANDIDATE_TAG: ${{ inputs.candidate-tag }}
         run: |
           set -euo pipefail
           git fetch origin "refs/tags/${CANDIDATE_TAG}:refs/tags/${CANDIDATE_TAG}"
-          test "$(git cat-file -t "refs/tags/${CANDIDATE_TAG}")" = "tag"
           git config gpg.format ssh
           git config gpg.ssh.allowedSignersFile .github/release-signers
+          test "$(git cat-file -t "refs/tags/${STABLE_TAG}")" = tag
+          test "$(git cat-file -t "refs/tags/${CANDIDATE_TAG}")" = tag
+          git verify-tag "${STABLE_TAG}"
           git verify-tag "${CANDIDATE_TAG}"
-          test "$(git rev-list -n 1 "${CANDIDATE_TAG}")" = "${RELEASE_COMMIT}"
-          gh attestation verify .metrics/promotion/nova-plugin-${RELEASE_TAG#v}.tar.gz \
-            --repo "${GITHUB_REPOSITORY}" \
-            --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" \
-            --source-ref "refs/tags/${CANDIDATE_TAG}" \
-            --source-digest "${RELEASE_COMMIT}" \
-            --predicate-type "https://cyclonedx.org/bom"
-          gh attestation verify "${CANDIDATE_BUNDLE}" \
-            --repo "${GITHUB_REPOSITORY}" \
-            --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" \
-            --source-ref "refs/tags/${CANDIDATE_TAG}" \
-            --source-digest "${RELEASE_COMMIT}"
-      - name: Extract verified candidate bundle with safe paths
+          stable_commit="$(git rev-list -n 1 "${STABLE_TAG}")"
+          test "${stable_commit}" = "$(git rev-list -n 1 "${CANDIDATE_TAG}")"
+          test "${stable_commit}" = "$(git rev-parse HEAD)"
+          printf 'commit=%s\n' "${stable_commit}" >> "${GITHUB_OUTPUT}"
+      - name: Download exact authenticated candidate bundle
         env:
-          CANDIDATE_BUNDLE: ${{ steps.candidate.outputs.candidate_bundle }}
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_TAG: ${{ inputs.candidate-tag }}
+          SOURCE_COMMIT: ${{ steps.identity.outputs.commit }}
         run: |
           set -euo pipefail
-          if tar -tzf "${CANDIDATE_BUNDLE}" | grep -Eq '(^/|(^|/)\.\.(/|$))'; then
-            echo "Candidate bundle contains an unsafe archive path."
-            exit 1
-          fi
-          mkdir -p .metrics/promotion/bundle
-          tar -xzf "${CANDIDATE_BUNDLE}" -C .metrics/promotion/bundle
-      - name: Verify candidate manifest, commit, sources, and artifact digests
-        id: verify
-        env:
-          EXPECTED_CANDIDATE_TAG: ${{ steps.candidate.outputs.candidate_tag }}
-          RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
-          RELEASE_TAG: ${{ inputs.release-tag || github.ref_name }}
-        run: >-
-          node scripts/verify-release-promotion.mjs
-          --stable-tag "${RELEASE_TAG}"
-          --candidate-tag "${EXPECTED_CANDIDATE_TAG}"
-          --commit "${RELEASE_COMMIT}"
-          --manifest .metrics/promotion/bundle/release-candidate.json
-          --bundle-root .metrics/promotion/bundle
-          --artifact-dir .metrics/promotion/bundle/artifacts
-      - name: Rebuild candidate bytes for deterministic comparison only
-        env:
-          RELEASE_TAG: ${{ steps.candidate.outputs.candidate_tag }}
-          RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
-        run: |
-          npm run release:artifacts
-          cmp .metrics/release-artifacts/nova-plugin-*.tar.gz .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz
-          cmp .metrics/release-artifacts/nova-plugin-*.tar.gz.cdx.json .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz.cdx.json
-          cmp .metrics/release-artifacts/nova-plugin-*.tar.gz.provenance.json .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz.provenance.json
-      - name: Resolve exactly one promoted archive and SBOM
-        id: release-files
-        shell: bash
-        run: |
-          set -euo pipefail
+          mkdir -p .metrics/promotion/download .metrics/promotion/bundle
+          gh release download "${CANDIDATE_TAG}" --dir .metrics/promotion/download --pattern 'nova-plugin-*-candidate-bundle.tar.gz'
           shopt -s nullglob
-          archives=(.metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz)
-          sboms=(.metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz.cdx.json)
-          test "${#archives[@]}" -eq 1
-          test "${#sboms[@]}" -eq 1
-          printf 'archive=%s\n' "${archives[0]}" >> "${GITHUB_OUTPUT}"
-          printf 'sbom=%s\n' "${sboms[0]}" >> "${GITHUB_OUTPUT}"
-      - name: Attest promoted archive and SBOM
+          bundles=(.metrics/promotion/download/nova-plugin-*-candidate-bundle.tar.gz)
+          test "${#bundles[@]}" -eq 1
+          bundle="${bundles[0]}"
+          gh attestation verify "${bundle}" --repo "${GITHUB_REPOSITORY}" --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" --source-ref "refs/tags/${CANDIDATE_TAG}" --source-digest "${SOURCE_COMMIT}"
+          node scripts/extract-release-bundle.mjs --archive "${bundle}" --out .metrics/promotion/bundle
+          cp "${bundle}" .metrics/promotion/candidate-bundle.tar.gz
+      - name: Verify candidate envelope, intent, control, evidence, and artifacts
+        env:
+          STABLE_TAG: ${{ inputs.release-tag }}
+          CANDIDATE_TAG: ${{ inputs.candidate-tag }}
+          SOURCE_COMMIT: ${{ steps.identity.outputs.commit }}
+        run: |
+          node scripts/verify-release-promotion.mjs \
+            --stable-tag "${STABLE_TAG}" \
+            --candidate-tag "${CANDIDATE_TAG}" \
+            --commit "${SOURCE_COMMIT}" \
+            --manifest .metrics/promotion/bundle/release-candidate.json \
+            --candidate-core .metrics/promotion/bundle/candidate-core.json \
+            --promotion-intent .metrics/promotion/bundle/promotion-intent.json \
+            --control-bundle-manifest .metrics/promotion/bundle/release-control-bundle.manifest.json \
+            --bundle-root .metrics/promotion/bundle \
+            --artifact-dir .metrics/promotion/bundle/artifacts
+          node scripts/release-orchestrator.mjs --mode promote --state PROMOTION_READY --target-state ASSETS_RECONCILED \
+            --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}" \
+            --promotion-intent .metrics/promotion/bundle/promotion-intent.json \
+            --control-bundle .metrics/promotion/bundle/release-control-bundle.manifest.json \
+            --event-dir .metrics/promotion/events/pre-publish --run-id "${GITHUB_RUN_ID}"
+      - name: Prepare draft release asset inventory
+        env:
+          RELEASE_TAG: ${{ inputs.release-tag }}
+        run: |
+          set -euo pipefail
+          node scripts/prepare-release.mjs
+          mkdir -p .metrics/promotion/publish
+          cp .metrics/promotion/candidate-bundle.tar.gz .metrics/promotion/publish/
+          cp .metrics/promotion/bundle/artifacts/* .metrics/promotion/publish/
+          cp .metrics/promotion/bundle/evidence/* .metrics/promotion/publish/
+          cp .metrics/promotion/bundle/candidate-core.json .metrics/promotion/publish/
+          cp .metrics/promotion/bundle/promotion-intent.json .metrics/promotion/publish/
+          cp .metrics/promotion/bundle/release-candidate.json .metrics/promotion/publish/
+          cp .metrics/promotion/bundle/release-control-bundle.* .metrics/promotion/publish/
+      - name: Resolve promoted archive and build SBOM
+        id: release-files
+        run: |
+          shopt -s nullglob
+          archives=(.metrics/promotion/publish/nova-plugin-*.tar.gz)
+          filtered=()
+          for archive in "${archives[@]}"; do [[ "${archive}" == *candidate-bundle* ]] || filtered+=("${archive}"); done
+          test "${#filtered[@]}" -eq 1
+          archive="${filtered[0]}"
+          printf 'archive=%s\n' "${archive}" >> "${GITHUB_OUTPUT}"
+          printf 'sbom=%s\n' '.metrics/promotion/publish/build-sbom.cdx.json' >> "${GITHUB_OUTPUT}"
+      - name: Attest promoted archive and build SBOM
         uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
         with:
           subject-path: ${{ steps.release-files.outputs.archive }}
           sbom-path: ${{ steps.release-files.outputs.sbom }}
-      - name: Publish stable release without rebuilding
-        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3
+      - name: Draft, reconcile, verify, and publish release transaction
+        env:
+          GH_TOKEN: ${{ github.token }}
+          STABLE_TAG: ${{ inputs.release-tag }}
+        run: node scripts/reconcile-github-release.mjs --tag "${STABLE_TAG}" --assets-dir .metrics/promotion/publish --notes .metrics/release/release-notes.md
+      - name: Record release published transition
+        env:
+          STABLE_TAG: ${{ inputs.release-tag }}
+          CANDIDATE_TAG: ${{ inputs.candidate-tag }}
+          SOURCE_COMMIT: ${{ steps.identity.outputs.commit }}
+        run: |
+          node scripts/release-orchestrator.mjs --mode promote --state ASSETS_RECONCILED --target-state RELEASE_PUBLISHED \
+            --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}" \
+            --promotion-intent .metrics/promotion/bundle/promotion-intent.json \
+            --control-bundle .metrics/promotion/bundle/release-control-bundle.manifest.json \
+            --event-dir .metrics/promotion/events/published --run-id "${GITHUB_RUN_ID}"
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
         with:
-          name: "nova-plugin ${{ inputs.release-tag || github.ref_name }}"
-          tag_name: ${{ inputs.release-tag || github.ref_name }}
-          body_path: .metrics/release/release-notes.md
-          files: |
-            .metrics/promotion/nova-plugin-*-candidate-bundle.tar.gz
-            .metrics/promotion/bundle/evidence/*
-            .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz
-            .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz.cdx.json
-            .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz.provenance.json
-            .metrics/promotion/bundle/release-candidate.json
-          draft: false
-          prerelease: false
+          name: release-state-events-${{ inputs.release-tag }}
+          path: .metrics/promotion/events/

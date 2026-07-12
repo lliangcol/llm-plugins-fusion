@@ -1,7 +1,17 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "codex-review-fix",
+  "canonicalSurfaceId": "implement-plan",
+  "variantPreset": {
+    "EXECUTION_PROFILE": "codex-review-fix"
+  },
+  "compatibilityAlias": true,
   "stage": "implement",
   "ownerAgents": [
     "reviewer",
@@ -66,7 +76,7 @@
   "behaviorContract": {
     "schemaVersion": 1,
     "source": "workflow-specs/behaviors.json",
-    "guidanceReference": "../../skills/nova-codex-review-fix/SKILL.md",
+    "guidanceReference": "../../skills/nova-implement-plan/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Run an external Codex review, fix high-confidence findings, run project checks, and verify closure.",
     "inputs": [

@@ -17,6 +17,10 @@ export const candidateSourcePaths = Object.freeze([
   'governance/release-operations.json',
   'scripts/verify-independent-release-review.mjs',
   'scripts/lib/release-review.mjs',
+  'scripts/build-release-control-bundle.mjs',
+  'scripts/release-orchestrator.mjs',
+  'scripts/lib/release-state-machine.mjs',
+  'governance/release-channels.json',
   '.github/workflows/release-candidate.yml',
   '.github/workflows/promote-release.yml',
   '.github/workflows/release.yml',
@@ -48,11 +52,13 @@ function portableRelative(root, path) {
 export function resolveCandidateArtifacts(artifactDir, stableVersion, bundleRoot = artifactDir) {
   const names = readdirSync(artifactDir).sort();
   const archive = exactlyOne(names, (name) => /^nova-plugin-.*\.tar\.gz$/.test(name), 'archive');
-  const sbom = exactlyOne(names, (name) => /^nova-plugin-.*\.tar\.gz\.cdx\.json$/.test(name), 'SBOM');
-  const provenance = exactlyOne(names, (name) => /^nova-plugin-.*\.tar\.gz\.provenance\.json$/.test(name), 'provenance');
+  const artifactManifest = exactlyOne(names, (name) => name === 'artifact-manifest.json', 'artifact manifest');
+  const buildSbom = exactlyOne(names, (name) => name === 'build-sbom.cdx.json', 'build SBOM');
+  const runtimeCapabilities = exactlyOne(names, (name) => name === 'runtime-capabilities.cdx.json', 'runtime capabilities BOM');
+  const buildRecord = exactlyOne(names, (name) => name === 'nova-build-record.json', 'build record');
   const expectedArchive = `nova-plugin-${stableVersion}.tar.gz`;
-  const expected = [expectedArchive, `${expectedArchive}.cdx.json`, `${expectedArchive}.provenance.json`];
-  const actual = [archive, sbom, provenance];
+  const expected = [expectedArchive, 'artifact-manifest.json', 'build-sbom.cdx.json', 'runtime-capabilities.cdx.json', 'nova-build-record.json'];
+  const actual = [archive, artifactManifest, buildSbom, runtimeCapabilities, buildRecord];
   if (JSON.stringify(actual) !== JSON.stringify(expected)) {
     throw new Error(`candidate artifacts do not match stable version ${stableVersion}: ${actual.join(', ')}`);
   }
@@ -63,7 +69,7 @@ export function resolveCandidateArtifacts(artifactDir, stableVersion, bundleRoot
       path: portableRelative(bundleRoot, path),
       sha256: sha256File(path),
       bytes: statSync(path).size,
-      kind: ['archive', 'sbom', 'provenance'][index],
+      kind: ['archive', 'artifact-manifest', 'build-sbom', 'runtime-capabilities', 'build-record'][index],
     };
   });
 }
@@ -187,10 +193,14 @@ export function buildReleaseCandidate({
   artifactDir,
   bundleRoot = artifactDir,
   evidencePaths = [],
+  controlBundle,
   now = () => new Date(),
 }) {
   const candidate = parseCandidateTag(tag);
   if (!/^[a-f0-9]{40}$/.test(commit ?? '')) throw new Error('candidate commit must be a full Git SHA');
+  if (!controlBundle || !/^[a-f0-9]{64}$/u.test(controlBundle.sha256 ?? '') || !Number.isInteger(controlBundle.bytes)) {
+    throw new Error('candidate requires a content-addressed release control bundle');
+  }
   const plugin = JSON.parse(readFileSync(resolve(root, 'nova-plugin/.claude-plugin/plugin.json'), 'utf8'));
   if (plugin.version !== candidate.stableVersion) {
     throw new Error(`candidate base version ${candidate.stableVersion} does not match plugin version ${plugin.version}`);
@@ -206,6 +216,7 @@ export function buildReleaseCandidate({
       createdAt: now().toISOString(),
     },
     sourceDigests,
+    controlBundle,
     artifacts: resolveCandidateArtifacts(artifactDir, candidate.stableVersion, bundleRoot),
     evidence: evidenceRecords(evidencePaths, bundleRoot),
   };
@@ -213,6 +224,9 @@ export function buildReleaseCandidate({
 
 export function verifyReleasePromotion({ root, stableTag, expectedCandidateTag = null, commit, manifest, artifactDir, bundleRoot = resolve(artifactDir, '..') }) {
   if (manifest?.schemaVersion !== 2) throw new Error('candidate manifest schema must be 2');
+  if (!/^[a-f0-9]{64}$/u.test(manifest?.controlBundle?.sha256 ?? '') || !Number.isInteger(manifest?.controlBundle?.bytes)) {
+    throw new Error('candidate manifest does not bind a release control bundle');
+  }
   if (!/^v/.test(stableTag ?? '')) throw new Error('stable tag must start with v');
   const stable = requireSemVer(stableTag.slice(1), 'stable tag version');
   if (stable.isPrerelease || stable.build) throw new Error('stable promotion tag must not contain prerelease or build metadata');

@@ -312,7 +312,7 @@ export async function main(args = process.argv.slice(2)) {
       'claude plugin marketplace list --json and ref assertion',
       `install/update ${pluginId} in isolated user scope`,
       'claude plugin list --json and installed tree digest',
-      'claude plugin details and exact 42-item Skills inventory comparison',
+      `claude plugin details and exact ${permissionSpec.expectedInventory.combinedSkillCount}-item Skills inventory comparison`,
       ...(options.routeSmokeOut ? ['OAuth /nova-plugin:route invocation with isolated configuration and zero project writes'] : []),
     ]) console.log(`- ${step}`);
     console.log('\nNo Claude CLI commands were run and no user-scope plugin state was changed.');

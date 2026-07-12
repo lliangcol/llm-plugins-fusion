@@ -12,9 +12,9 @@ disable-model-invocation: false
 
 # /nova-plugin:finalize-lite
 
-Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-finalize-lite` through the Skill tool.
+**Deprecated compatibility alias:** this wrapper remains for the 4.x migration window.
 
-Before answering, use Read to load both `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/finalize-lite.json` as the machine-readable policy summary and `${CLAUDE_PLUGIN_ROOT}/skills/nova-finalize-lite/SKILL.md` as the authoritative behavioral contract, then execute the workflow directly. If either contract cannot be loaded or they conflict, fail closed and report contract drift.
+Load `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/finalize-lite.json` and canonical skill `${CLAUDE_PLUGIN_ROOT}/skills/nova-finalize-work/SKILL.md`, then execute canonical surface `nova-finalize-work` with variant preset `{"DEPTH":"lite"}` merged beneath explicit non-conflicting `$ARGUMENTS`. Never copy or override behavior in this wrapper; the runtime contract and canonical skill are authoritative. If they differ, fail closed.
 
 - Stage: finalize
 - Owner agents: publisher
@@ -23,4 +23,4 @@ Before answering, use Read to load both `${CLAUDE_PLUGIN_ROOT}/runtime/contracts
 - Risk: none
 - Recommended packs: docs
 
-Preserve all safety, approval, output, failure, and validation requirements in both contracts. If a required input or safety boundary is missing, stop before side effects and report the blocker.
+If required input, approval, capability, or safety state is unresolved, stop before side effects.

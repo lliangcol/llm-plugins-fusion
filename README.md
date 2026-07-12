@@ -19,7 +19,7 @@
 
 `llm-plugins-fusion` 是面向 LLM coding assistant 的公开 AI 工程工作流框架。当前主交付物是 `nova-plugin`：一个可通过 Claude Code marketplace 安装的 workflow plugin，用命令、skills、core agents、capability packs 和验证脚本，把临时 prompt 收敛成可复用、可审查、可交付的工程流程。
 
-跨 assistant 能力按证据分级：Claude Code 的 exact-tag 发布链路以 L4 为目标；Codex 适配层在没有当前 live evidence 时只声明 L3；通用 Agent Skills manifest 只声明 L1。能读取同一份 Markdown 不等于权限、安全或输出语义已经被验证，详见 [Assistant compatibility levels](./docs/compatibility/assistant-levels.md)。
+跨 assistant 能力按证据分级：Claude Code 的 exact-tag 发布链路以 L4 为目标；没有当前 paired live evidence 时，Claude Code 与 Codex 都只声明 L2；通用 Agent Skills manifest 只声明 L1。能读取同一份 Markdown 不等于权限、安全或输出语义已经被验证，详见 [Assistant compatibility levels](./docs/compatibility/assistant-levels.md)。
 
 ```text
 Explore -> Plan -> Review -> Implement -> Finalize
@@ -91,6 +91,7 @@ Claude slash-command runtime 行为会在其它 coding assistant 中自动存在
 - 测试覆盖率证据使用 `npm run test:coverage:check`，它通过 Node 内置 coverage 写入 `.metrics/coverage/`，要求所有受 Git 跟踪、非 `tests/**` 的维护 `.mjs` 都进入覆盖率分母，并执行 lines 85%、branches 60%、functions 90% 的发布阻断门槛；`npm run test:coverage` 保持仅采集模式。
 - Release checksum 证据使用 `node scripts/generate-release-checksums.mjs`，它通过 Node 内置 crypto 为选定 source-controlled release artifacts 生成 SHA-256 清单。
 - Claude 插件安装 smoke 的安全预览路径是 `node scripts/validate-plugin-install.mjs --dry-run`；真实 user-scope 安装/更新只应在隔离用户或 CI profile 中显式运行 `--accept-user-scope-mutation --isolated-home`。
+- 固定答案 route smoke 只证明 installation、invocation 与 safety contract；workflow 质量声明必须来自隐藏标签、paired baseline 的独立行为评估。
 - 安全问题请按 [SECURITY.md](./SECURITY.md) 私下披露，不要在公开 issue 中暴露漏洞细节。
 
 ## 当前状态
@@ -106,7 +107,7 @@ Claude slash-command runtime 行为会在其它 coding assistant 中自动存在
 </tr>
 <tr>
 <td><strong>命令 / Skills</strong></td>
-<td>21 个命令，21 个一对一 skills</td>
+<td>21 个命令，6 个 canonical skills</td>
 </tr>
 <tr>
 <td><strong>Active agents</strong></td>
@@ -225,7 +226,7 @@ llm-plugins-fusion/
 |-- nova-plugin/
 |   |-- .claude-plugin/plugin.json    # 插件元信息，版本事实源
 |   |-- commands/                     # 21 个 slash command 薄入口
-|   |-- skills/                       # 21 个 nova-* skills + _shared 策略
+|   |-- skills/                       # 6 个 canonical nova-* skills + _shared 策略
 |   |-- agents/                       # 6 个 core active agents
 |   |-- packs/                        # 8 个 capability pack 文档
 |   |-- docs/                         # 用户文档、命令文档和当前架构说明
@@ -275,11 +276,12 @@ llm-plugins-fusion/
 - `CHANGELOG.md`、`SECURITY.md`、`CLAUDE.md`、`AGENTS.md`：版本、支持范围、库存或行为边界变化时同步
 - `package.json` / `package-lock.json`：维护者便捷脚本与锁定的开发期 Ajv schema 工具链；先运行 `npm ci --ignore-scripts`。分发的 `nova-plugin` 归档不携带 Node package 运行时依赖；发布归档使用 `release:artifacts` 而不是通用 `build`
 
-Command 与 skill 必须一对一：
+Skill 是行为事实源，command 仅是生成的入口 wrapper：
 
 ```text
-nova-plugin/commands/<id>.md
-nova-plugin/skills/nova-<id>/SKILL.md
+workflow-specs/workflows.json
+  -> nova-plugin/skills/nova-<canonical-surface>/SKILL.md
+  -> nova-plugin/commands/<id>.md
 ```
 
 每个命令必须有三份命令文档：

@@ -69,7 +69,7 @@ gate is added, renamed, removed, or moved.
 | Required / Tests | `npm test`, coverage, targeted critical mutation | Unit/integration/e2e, global and critical coverage, and three manually selected high-risk mutants; uploads `.metrics/coverage/`. |
 | Required / Security | hooks, ShellCheck, fault injection, secret/distribution scans | Security guardrails and SARIF evidence in one scoped-permission job. |
 | Required / Platform | Linux Node 22/24, Windows Node 22, macOS Node 22 matrix | Cross-platform contracts, Windows PowerShell/Bash, and macOS system Bash. |
-| Required / Package | install dry-run and double artifact build | Package inventory, deterministic archive/SBOM/provenance build, and reproducibility. |
+| Required / Package | install dry-run and deterministic artifact tests | Package inventory, deterministic archive, build/runtime BOMs, build record, and reproducibility. |
 | Conditional / Evidence Registry Integrity | `node scripts/validate-assistant-evidence.mjs` | Runs on `main`; validates checked-in evidence and never claims to execute an assistant. |
 | Required / Aggregate | result aggregation | The only CI branch-protection check; fails unless every required consolidated lane succeeds. |
 | Release Evidence | `node scripts/generate-release-evidence.mjs` | Machine-readable validation, coverage, install, live route, and checksum aggregation. |

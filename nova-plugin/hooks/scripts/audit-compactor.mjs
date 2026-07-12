@@ -26,7 +26,9 @@ const staleLockTtlMs = Number.parseInt(process.env.NOVA_AUDIT_LOCK_TTL_MS ?? '30
 
 function health(reason) {
   try {
-    writeFileSync(resolve(logDir, 'audit-health.log'), `${JSON.stringify({ timestamp: new Date().toISOString(), status: 'degraded', reason: sanitizeAuditField(reason, 160) })}\n`, { flag: 'a', encoding: 'utf8' });
+    const path = resolve(logDir, 'audit-health.log');
+    writeFileSync(path, `${JSON.stringify({ timestamp: new Date().toISOString(), status: 'degraded', reason: sanitizeAuditField(reason, 160) })}\n`, { flag: 'a', encoding: 'utf8', mode: 0o600 });
+    chmodBestEffort(path, 0o600);
   } catch { /* best effort */ }
 }
 

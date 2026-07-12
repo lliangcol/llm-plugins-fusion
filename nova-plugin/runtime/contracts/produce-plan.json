@@ -1,7 +1,15 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "produce-plan",
+  "canonicalSurfaceId": "produce-plan",
+  "variantPreset": {},
+  "compatibilityAlias": false,
   "stage": "plan",
   "ownerAgents": [
     "architect"

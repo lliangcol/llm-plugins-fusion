@@ -208,7 +208,16 @@ function trackedFiles(rootDir) {
   if (result.error || result.status !== 0) {
     throw new Error(result.error?.message || result.stderr || 'git ls-files failed');
   }
-  const files = result.stdout.split('\0').filter(Boolean).map((path) => path.replace(/\\/g, '/'));
+  const deleted = spawnSync('git', ['ls-files', '-z', '--deleted'], {
+    cwd: rootDir,
+    encoding: 'utf8',
+    shell: false,
+  });
+  if (deleted.error || deleted.status !== 0) {
+    throw new Error(deleted.error?.message || deleted.stderr || 'git ls-files --deleted failed');
+  }
+  const deletedPaths = new Set(deleted.stdout.split('\0').filter(Boolean).map((path) => path.replace(/\\/g, '/')));
+  const files = result.stdout.split('\0').filter(Boolean).map((path) => path.replace(/\\/g, '/')).filter((path) => !deletedPaths.has(path));
   trackedFilesByRoot.set(rootDir, files);
   return files;
 }

@@ -1,7 +1,17 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "plan-lite",
+  "canonicalSurfaceId": "produce-plan",
+  "variantPreset": {
+    "PLAN_PROFILE": "lite"
+  },
+  "compatibilityAlias": true,
   "stage": "plan",
   "ownerAgents": [
     "architect"
@@ -48,7 +58,7 @@
   "behaviorContract": {
     "schemaVersion": 1,
     "source": "workflow-specs/behaviors.json",
-    "guidanceReference": "../../skills/nova-plan-lite/SKILL.md",
+    "guidanceReference": "../../skills/nova-produce-plan/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Create a short execution plan with explicit scope, trade-offs, and risks without writing code.",
     "inputs": [

@@ -11,6 +11,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   MARKETPLACE_CATALOG_PATH,
+  MARKETPLACE_CANARY_PATH,
   MARKETPLACE_METADATA_PATH,
   MARKETPLACE_PATH,
   buildRegistryObjects,
@@ -109,6 +110,7 @@ try {
   check(
     JSON.stringify(generatedPaths) === JSON.stringify([
       MARKETPLACE_CATALOG_PATH,
+      MARKETPLACE_CANARY_PATH,
       MARKETPLACE_METADATA_PATH,
       MARKETPLACE_PATH,
     ].sort()),

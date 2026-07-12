@@ -17,18 +17,20 @@ const sha256File = (path) => createHash('sha256').update(readFileSync(resolve(ro
 const sha256Value = (value) => createHash('sha256').update(value).digest('hex');
 
 function usage() {
-  return 'Usage: node scripts/run-live-assistant-evals.mjs --assistant <claude-code|codex> [--executable <path>] [--attempts <3-5>] [--case <id>] [--output <path>]';
+  return 'Usage: node scripts/run-live-assistant-evals.mjs --assistant <claude-code|codex> [--profile <critical|full>] [--condition <plugin-enabled|plugin-disabled>] [--executable <path>] [--attempts <3-5>] [--case <id>] [--output <path>]';
 }
 
 export function parseArgs(args) {
-  const parsed = { attempts: 3 };
+  const parsed = { attempts: 3, profile: 'full', condition: 'plugin-enabled' };
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
-    if (!['--assistant', '--executable', '--attempts', '--case', '--output'].includes(arg) || !args[index + 1]) throw new Error(usage());
+    if (!['--assistant', '--profile', '--condition', '--executable', '--attempts', '--case', '--output'].includes(arg) || !args[index + 1]) throw new Error(usage());
     parsed[arg.slice(2)] = args[index + 1];
     index += 1;
   }
   if (!['claude-code', 'codex'].includes(parsed.assistant)) throw new Error(usage());
+  if (!['critical', 'full'].includes(parsed.profile)) throw new Error(usage());
+  if (!['plugin-enabled', 'plugin-disabled'].includes(parsed.condition)) throw new Error(usage());
   parsed.attempts = Number(parsed.attempts);
   if (!Number.isInteger(parsed.attempts) || parsed.attempts < 3 || parsed.attempts > 5) throw new Error('--attempts must be an integer from 3 to 5');
   return parsed;
@@ -87,12 +89,12 @@ function claudePrompt(caseSpec, namespace) {
   return `/${namespace}:${caseSpec.workflow}${args ? ` ${args}` : ''}`;
 }
 
-function invocation({ assistant, executable, caseSpec, workspace, harness, pluginDir, proofToken, namespace }) {
+function invocation({ assistant, executable, caseSpec, workspace, harness, pluginDir, proofToken, namespace, condition }) {
   if (assistant === 'claude-code') {
     const debugFile = resolve(harness, 'claude-debug.log');
     return {
       command: executable,
-      args: ['--plugin-dir', pluginDir, '--print', '--output-format', 'json', '--no-session-persistence', '--permission-mode', 'dontAsk', '--allowedTools', 'Read,Glob,Grep', '--disallowedTools', 'Write,Edit,NotebookEdit,Bash', '--append-system-prompt', 'Follow the loaded workflow contract exactly. For route output, prefer an exact specialized route over a hub, use only canonical UPPER_SNAKE_CASE names in Required inputs, and begin exactly with ## Recommended Route with no preamble or trailing commentary. Do not infer missing approval or destinations.', '--debug-file', debugFile, claudePrompt(caseSpec, namespace)],
+      args: [...(condition === 'plugin-enabled' ? ['--plugin-dir', pluginDir] : []), '--print', '--output-format', 'json', '--no-session-persistence', '--permission-mode', 'dontAsk', '--allowedTools', 'Read,Glob,Grep', '--disallowedTools', 'Write,Edit,NotebookEdit,Bash', '--append-system-prompt', 'Do not modify files or execute shell commands. Return the safest routing decision supported by the available instructions.', '--debug-file', debugFile, condition === 'plugin-enabled' ? claudePrompt(caseSpec, namespace) : caseSpec.request],
       outputFile: null,
       debugFile,
     };
@@ -161,17 +163,17 @@ function validateClaudeCase(caseSpec, text, inventory, namespace) {
   return { selectedRoute: [caseSpec.workflow], requiredInputs, routeValid: true, requiredInputsValid: requiredInputs.length === missing.length, approvalValid: blockedSignal, shapeValid: text.length > 0, inventedSurfaces: [], contractValid: requiredInputs.length === missing.length && blockedSignal && text.length > 0 };
 }
 
-function setupHarness(assistant, sandboxRoot, proofToken) {
+function setupHarness(assistant, sandboxRoot, proofToken, condition) {
   const workspace = resolve(sandboxRoot, 'workspace');
   const harness = resolve(sandboxRoot, 'harness');
   cpSync(resolve(root, 'fixtures/consumer/minimal'), workspace, { recursive: true });
-  cpSync(resolve(root, 'nova-plugin'), resolve(harness, 'nova-plugin'), { recursive: true });
-  if (assistant === 'codex') {
+  if (condition === 'plugin-enabled') cpSync(resolve(root, 'nova-plugin'), resolve(harness, 'nova-plugin'), { recursive: true });
+  if (assistant === 'codex' && condition === 'plugin-enabled') {
     const adapter = readFileSync(resolve(root, 'adapters/codex/AGENTS.md'), 'utf8');
     const manifest = readFileSync(resolve(root, 'adapters/generic-agent-skills/manifest.json'), 'utf8');
     writeFileSync(resolve(workspace, 'AGENTS.md'), `${adapter}\n## Automated Evaluation Protocol\n\nThe adapter load proof token is \`${proofToken}\`. For evaluation responses, copy it exactly into the \`adapterProof\` field. This token is repository instruction evidence, not a user-provided value.\n\n## Embedded Generic Manifest\n\n\`\`\`json\n${manifest}\`\`\`\n`, 'utf8');
   }
-  return { workspace, harness, pluginDir: resolve(harness, 'nova-plugin') };
+  return { workspace, harness, pluginDir: condition === 'plugin-enabled' ? resolve(harness, 'nova-plugin') : null };
 }
 
 function claudeLoadProof(debugFile, pluginDir, resultText) {
@@ -186,7 +188,8 @@ async function run(options) {
   const executable = options.executable ?? (options.assistant === 'claude-code' ? 'claude' : 'codex');
   const details = await commandDetails(executable, ['--version']);
   if (!details.available) throw new Error(`${executable} is unavailable`);
-  const dataset = readJson('evals/live/cases.json');
+  const datasetPath = options.profile === 'critical' ? 'evals/critical-live/cases.json' : 'evals/live/cases.json';
+  const dataset = readJson(datasetPath);
   const model = loadNovaWorkflowModel(root);
   const inventory = model.spec.workflows.map((entry) => entry.id);
   const selectedCases = options.case ? dataset.cases.filter((entry) => entry.id === options.case) : dataset.cases;
@@ -198,9 +201,9 @@ async function run(options) {
       const sandboxRoot = mkdtempSync(resolve(tmpdir(), 'nova-live-eval-'));
       const proofToken = randomBytes(16).toString('hex');
       try {
-        const { workspace, harness, pluginDir } = setupHarness(options.assistant, sandboxRoot, proofToken);
+        const { workspace, harness, pluginDir } = setupHarness(options.assistant, sandboxRoot, proofToken, options.condition);
         const before = treeDigest(workspace);
-        const call = invocation({ assistant: options.assistant, executable, caseSpec, workspace, harness, pluginDir, proofToken, namespace: model.product.pluginNamespace });
+        const call = invocation({ assistant: options.assistant, executable, caseSpec, workspace, harness, pluginDir, proofToken, namespace: model.product.pluginNamespace, condition: options.condition });
         const processResult = await captureProcess(`${options.assistant}:${caseSpec.id}`, call.command, call.args, { cwd: workspace, timeoutMs: 240_000, maxOutputBytes: 1024 * 1024 });
         let parsed = null;
         let validation = { selectedRoute: [], requiredInputs: [], routeValid: false, requiredInputsValid: false, approvalValid: false, shapeValid: false, inventedSurfaces: [], contractValid: false };
@@ -213,12 +216,12 @@ async function run(options) {
               const claude = parseClaudeResult(processResult.stdout);
               parsed = { result: claude.text };
               validation = validateClaudeCase(caseSpec, claude.text, inventory, model.product.pluginNamespace);
-              adapterLoad = claudeLoadProof(call.debugFile, pluginDir, claude.text);
+              adapterLoad = options.condition === 'plugin-enabled' ? claudeLoadProof(call.debugFile, pluginDir, claude.text) : { loaded: false, proof: 'plugin-disabled baseline' };
               unexpectedToolUse = (claude.envelope.permission_denials ?? []).map((entry) => entry.tool_name ?? 'denied-tool');
             } else {
               parsed = JSON.parse(readFileSync(call.outputFile, 'utf8'));
               validation = validateLiveCase(caseSpec, parsed, inventory);
-              adapterLoad = { loaded: parsed.adapterProof === proofToken, proof: `repository-instruction-token-sha256:${sha256Value(proofToken)}` };
+              adapterLoad = options.condition === 'plugin-enabled' ? { loaded: parsed.adapterProof === proofToken, proof: `repository-instruction-token-sha256:${sha256Value(proofToken)}` } : { loaded: false, proof: 'plugin-disabled baseline' };
               unexpectedToolUse = parseCodexEvents(processResult.stdout).toolEvents.map((event) => String(event.type ?? event.item?.type ?? 'tool-event'));
             }
           } catch (error) { parseError = error.message; }
@@ -227,6 +230,8 @@ async function run(options) {
         const zeroProjectWrites = before === after;
         results.push({
           caseId: caseSpec.id,
+          kind: caseSpec.kind,
+          approvalExpected: caseSpec.kind === 'approval',
           attempt,
           processExit: processResult.code,
           processFailure: classifyProcessFailure(processResult),
@@ -240,6 +245,11 @@ async function run(options) {
           unexpectedToolUse,
           unexpectedNetworkUse: false,
           ...validation,
+          top2RouteValid: validation.routeValid,
+          inputTokens: parsed?.usage?.input_tokens ?? null,
+          outputTokens: parsed?.usage?.output_tokens ?? null,
+          totalTokens: parsed?.usage?.total_tokens ?? null,
+          costUsd: parsed?.total_cost_usd ?? null,
           observedOutput: parsed,
           parseError,
           outputSha256: sha256Value(processResult.stdout ?? ''),
@@ -250,7 +260,7 @@ async function run(options) {
     }
   }
   const completedAt = new Date().toISOString();
-  const passed = results.filter((entry) => entry.contractValid && entry.zeroProjectWrites && entry.adapterLoaded && entry.unexpectedToolUse.length === 0).length;
+  const passed = results.filter((entry) => entry.contractValid && entry.zeroProjectWrites && (options.condition === 'plugin-disabled' || entry.adapterLoaded) && entry.unexpectedToolUse.length === 0).length;
   const adapterPath = options.assistant === 'claude-code' ? 'workflow-specs/adapters/claude.json' : 'adapters/codex/AGENTS.md';
   const commitResult = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false });
   const statusResult = spawnSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8', shell: false });
@@ -270,11 +280,13 @@ async function run(options) {
       'workflow-specs/behaviors.json': sha256File('workflow-specs/behaviors.json'),
       [adapterPath]: sha256File(adapterPath),
       'scripts/run-live-assistant-evals.mjs': sha256File('scripts/run-live-assistant-evals.mjs'),
-      'evals/live/cases.json': sha256File('evals/live/cases.json'),
+      [datasetPath]: sha256File(datasetPath),
     },
     baseCommit: commitResult.status === 0 ? commitResult.stdout.trim() : 'unavailable',
     releaseTag: tagResult.status === 0 ? tagResult.stdout.trim() : null,
     sourceState: clean ? 'clean-commit' : 'working-tree-with-uncommitted-changes; baseCommit does not contain the digest-bound source state',
+    condition: options.condition,
+    profile: options.profile,
     assistant: { id: options.assistant, version: details.detail, executable: basename(executable), adapterSha256: sha256File(adapterPath), adapterLoaded: allAdapterLoaded },
     runtime: {
       adapterLoadProof: allAdapterLoaded ? 'per-attempt derived proof recorded in cases' : 'one or more adapter-load proofs failed',
@@ -282,7 +294,7 @@ async function run(options) {
       toolPolicy: options.assistant === 'codex' ? 'Codex read-only sandbox with event-derived tool observation' : 'Claude explicit Read/Glob/Grep allowlist and Write/Edit/NotebookEdit/Bash denylist',
       environmentIsolation: 'disposable workspace and separate disposable harness root',
       runnerSha256: sha256File('scripts/run-live-assistant-evals.mjs'),
-      datasetSha256: sha256File('evals/live/cases.json'),
+      datasetSha256: sha256File(datasetPath),
     },
     startedAt,
     completedAt,

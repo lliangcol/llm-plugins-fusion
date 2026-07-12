@@ -7,20 +7,20 @@ Do not edit this block by hand. It is synchronized by
 `node scripts/sync-doc-facts.mjs --write` from repository domain sources and
 `governance/product-lanes.json`.
 
-- Plugin: `nova-plugin@3.2.0`; production plugins: 1; public path: `nova-plugin/`
+- Plugin: `nova-plugin@4.0.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
-- Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
-- Workflow contract: schema v4, namespace `nova-plugin`, 21 workflows
+- Inventory: 21 commands, 6 skills, 6 active agents, 8 capability packs
+- Workflow contract: schema v5, namespace `nova-plugin`, 21 workflows
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`, `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"`
+- Active PreToolUse launcher: `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh`, `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh`
 - Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
 <!-- generated:project-state:end -->
 
-Status: active
+Status: archived
 Date: 2026-07-09
 Scope: post-`v2.3.0` optimization roadmap for `llm-plugins-fusion`
 
@@ -32,7 +32,7 @@ Public portal work and production multi-plugin directory migration remain
 deferred until real maintenance pressure appears. These are independently
 named product lanes and are not coupled to an already released version number.
 
-This document is the active optimization record. Tracks 1 through 5 have been
+This document is an archived optimization record. Tracks 1 through 5 have been
 implemented for the `v2.2.0` release-ready work. Track 6 has been resolved by
 removing stale archive documentation from the public working tree rather than
 keeping a second active archive surface. The 2026-05-12 unattended P0-P2 pass
@@ -55,7 +55,7 @@ Primary optimization sequence:
 
 ## Deep Research Follow-Up Execution Plan
 
-Status: active follow-up plan
+Status: archived follow-up plan
 Date: 2026-07-09
 
 This section converts the deep research findings into repository-local work
@@ -69,7 +69,7 @@ demos, release proof, and first contribution flow.
 Live facts checked for this plan:
 
 - `nova-plugin` remains the only production plugin.
-- The public inventory remains 21 commands, 21 one-to-one `nova-*` skills, 6
+- The historical public inventory was 21 commands and 21 one-to-one `nova-*` skills, with 6
   active core agents, and 8 documentation capability packs.
 - `scripts/validate-docs.mjs` remains the stable CLI entry point. The
   implementation has started moving under `scripts/validate-docs/` so rule
@@ -77,7 +77,7 @@ Live facts checked for this plan:
 - Tests are split across unit, integration, and e2e suites with explicit
   Node.js 22+ discovery. Coverage checks enforce the recorded 85% lines,
   60% branches, and 90% functions baseline.
-- `package.json` still declares no `dependencies` or `devDependencies`.
+- The historical baseline predated the current locked Ajv and YAML development dependencies.
 - `validate-all` timing support, workflow fixtures, issue forms, release
   evidence artifacts, Windows Node smoke, Windows Bash smoke, and isolated
   install smoke already exist. Follow-up work should extend these controls, not
@@ -404,8 +404,8 @@ Rollback:
 
 ### DR5: Toolchain And Release-Proof Artifacts
 
-Objective: improve reproducibility and release trust while keeping SBOM,
-provenance, and attestation as verified release evidence.
+Objective: improve reproducibility and release trust while keeping build/runtime
+BOMs, build records, and GitHub attestations as verified release evidence.
 
 Primary files:
 
@@ -429,7 +429,7 @@ Execution steps:
    `docs/marketplace/catalog.md`.
 3. Upload checksum artifacts in release workflow. Do not include local runtime
    paths or machine-specific data.
-4. Validate SBOM, provenance, attestation inputs, and release notes before
+4. Validate build/runtime BOMs, build record, attestation inputs, and release notes before
    candidate promotion; stable publication must reuse candidate artifacts.
 5. Update release docs so evidence separates exact-tag validation,
    generated-output drift, dry-run plugin install, isolated mutating install
@@ -586,8 +586,8 @@ Acceptance criteria:
    do not update `hooks.json` until docs, validators, and semver review agree.
 4. Use DR4 demo fixtures as public-safe examples, not as model-output quality
    proof.
-5. Extend DR5 from checksums to candidate-bound SBOM, provenance, attestation,
-   and reproducibility evidence.
+5. Keep DR5 evidence bound to checksums, build/runtime BOMs, build record,
+   GitHub attestations, and reproducibility evidence.
 6. Continue DR6 and DR7 as positioning-preserving documentation refinements.
 7. Run DR8 final review and prepare release or promotion evidence only after CI
    confirms required gates.
@@ -633,7 +633,7 @@ validation commands, expected output artifacts, and residual risk format.
 | Coverage implementation | Node built-in coverage script | Change only after supply-chain review; Ajv remains development-only for schema validation |
 | Coverage gate mode | Enforce the recorded global baseline | Add per-module and mutation gates after a supported-runtime baseline |
 | Active hook runtime | Bash fail-closed PreToolUse launcher and exec-form Node post-use hooks | Change only with docs, validators, and semver review |
-| Release evidence | Checksums, SBOM, provenance, and attestation | Promote only identical candidate artifacts after full rehearsal |
+| Release evidence | Checksums, build/runtime BOMs, build record, and GitHub attestations | Promote only identical candidate artifacts after full rehearsal |
 | Community channels | Existing issues and PRs | Add Discussions only if maintainers commit to monitoring it |
 | README rewrite depth | Reorder and compress only | Larger positioning rewrite only with validator updates |
 
@@ -900,8 +900,8 @@ Completed Work:
 
 Acceptance Criteria:
 
-- The command count remains 21 and command/skill one-to-one mapping remains
-  intact.
+- The historical command count remained 21 and command/skill one-to-one mapping
+  was intact at the time; 4.0 supersedes it with six canonical skills.
 - No public doc recommends blanket permission bypasses as the default path.
 - Surface budget validation is wired into `validate-all`, CI, npm shortcuts,
   and release evidence.

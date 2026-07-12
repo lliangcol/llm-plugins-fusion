@@ -19,10 +19,10 @@ const mutants = [
     async test(module) { if (module.isPathInside('/workspace', '/outside')) throw new Error('outside path accepted'); },
   },
   {
-    id: 'protected-hardlink-check-disabled',
+    id: 'all-target-hardlink-check-disabled',
     source: 'nova-plugin/runtime/safe-workspace-path.mjs',
-    from: '    if (protectedTarget && statSync(target).nlink > 1) {',
-    to: '    if (false && protectedTarget && statSync(target).nlink > 1) {',
+    from: '    if (links !== 1) {',
+    to: '    if (false) {',
     async test(module, temp) {
       const workspace = resolve(temp, 'workspace');
       mkdirSync(workspace);
@@ -30,8 +30,8 @@ const mutants = [
       writeFileSync(targetFile, '{}\n');
       linkSync(targetFile, resolve(workspace, 'copy.json'));
       let rejected = false;
-      try { module.resolveWorkspaceTarget({ filePath: targetFile, projectRoot: workspace, protectedTarget: true }); } catch { rejected = true; }
-      if (!rejected) throw new Error('protected hard link accepted');
+      try { module.resolveWorkspaceTarget({ filePath: targetFile, projectRoot: workspace }); } catch { rejected = true; }
+      if (!rejected) throw new Error('ordinary hard link accepted');
     },
   },
   {

@@ -1,7 +1,18 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "explore-lite",
+  "canonicalSurfaceId": "explore",
+  "variantPreset": {
+    "PERSPECTIVE": "observer",
+    "DEPTH": "lite"
+  },
+  "compatibilityAlias": true,
   "stage": "explore",
   "ownerAgents": [
     "orchestrator"
@@ -48,7 +59,7 @@
   "behaviorContract": {
     "schemaVersion": 1,
     "source": "workflow-specs/behaviors.json",
-    "guidanceReference": "../../skills/nova-explore-lite/SKILL.md",
+    "guidanceReference": "../../skills/nova-explore/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Produce concise factual observations, uncertainties, and risks from knowledge gaps.",
     "inputs": [

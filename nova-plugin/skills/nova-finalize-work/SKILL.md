@@ -221,4 +221,11 @@ This command is the **final step** after implementation is complete:
 
 ---
 
+#### 4.0 VARIANT PROFILES
+
+- Default: complete handoff and delivery packaging.
+- `DEPTH=lite`: former `finalize-lite` short factual closure.
+
+Neither profile upgrades validation or release-readiness claims.
+
 #### END OF COMMAND

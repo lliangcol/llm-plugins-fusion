@@ -1,7 +1,15 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "finalize-work",
+  "canonicalSurfaceId": "finalize-work",
+  "variantPreset": {},
+  "compatibilityAlias": false,
   "stage": "finalize",
   "ownerAgents": [
     "publisher"

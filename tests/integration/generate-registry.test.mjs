@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import {
   MARKETPLACE_CATALOG_PATH,
+  MARKETPLACE_CANARY_PATH,
   MARKETPLACE_METADATA_PATH,
   MARKETPLACE_PATH,
   generateRegistryFiles,
@@ -19,6 +20,7 @@ test('generateRegistryFiles supports the multi-plugin fixture', () => {
 
   assert.deepEqual([...byPath.keys()], [
     MARKETPLACE_PATH,
+    MARKETPLACE_CANARY_PATH,
     MARKETPLACE_METADATA_PATH,
     MARKETPLACE_CATALOG_PATH,
   ]);

@@ -1,6 +1,7 @@
 {
   "$schema": "../../../schemas/workflow-spec.schema.json",
-  "schemaVersion": 4,
+  "schemaVersion": 5,
+  "contractVersions": { "workflow": "5.0.0", "runtime": "3.0.0", "adapter": "2.0.0" },
   "permissionProfiles": {
     "inspect": {
       "allowedTools": ["Inspect"],
@@ -18,8 +19,8 @@
     }
   },
   "workflows": [
-    { "id": "triage", "stage": "intake", "ownerAgents": ["coordinator"], "recommendedPacks": ["logic"], "requiredInputs": ["REQUEST"], "outputContract": "triage-v1", "risk": "none", "modelInvocable": true, "subagentSafe": true, "permissionProfile": "inspect", "legacyAlias": "acme-triage", "contractPath": "contracts/triage.md" },
-    { "id": "design", "stage": "shape", "ownerAgents": ["designer"], "recommendedPacks": ["logic"], "requiredInputs": ["REQUEST"], "outputContract": "design-v1", "risk": "none", "modelInvocable": true, "subagentSafe": true, "permissionProfile": "inspect", "legacyAlias": "acme-design", "contractPath": "contracts/design.md" },
-    { "id": "verify", "stage": "assure", "ownerAgents": ["checker"], "recommendedPacks": ["logic"], "requiredInputs": ["RESULT"], "outputContract": "verify-v1", "risk": "none", "modelInvocable": true, "subagentSafe": true, "permissionProfile": "inspect", "legacyAlias": "acme-verify", "contractPath": "contracts/verify.md" }
+    { "id": "triage", "stage": "intake", "ownerAgents": ["coordinator"], "recommendedPacks": ["logic"], "requiredInputs": ["REQUEST"], "outputContract": "triage-v1", "risk": "none", "modelInvocable": true, "subagentSafe": true, "permissionProfile": "inspect", "legacyAlias": "acme-triage", "contractPath": "contracts/triage.md", "canonicalSurfaceId": "triage", "variantPreset": {}, "compatibilityAlias": false },
+    { "id": "design", "stage": "shape", "ownerAgents": ["designer"], "recommendedPacks": ["logic"], "requiredInputs": ["REQUEST"], "outputContract": "design-v1", "risk": "none", "modelInvocable": true, "subagentSafe": true, "permissionProfile": "inspect", "legacyAlias": "acme-design", "contractPath": "contracts/design.md", "canonicalSurfaceId": "design", "variantPreset": {}, "compatibilityAlias": false },
+    { "id": "verify", "stage": "assure", "ownerAgents": ["checker"], "recommendedPacks": ["logic"], "requiredInputs": ["RESULT"], "outputContract": "verify-v1", "risk": "none", "modelInvocable": true, "subagentSafe": true, "permissionProfile": "inspect", "legacyAlias": "acme-verify", "contractPath": "contracts/verify.md", "canonicalSurfaceId": "verify", "variantPreset": {}, "compatibilityAlias": false }
   ]
 }

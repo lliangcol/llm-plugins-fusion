@@ -12,7 +12,12 @@
   "workflows": [
     {
       "id": "backend-plan",
-      "contract": "../../nova-plugin/skills/nova-backend-plan/SKILL.md",
+      "canonicalSurfaceId": "produce-plan",
+      "variantPreset": {
+        "PLAN_PROFILE": "java-backend"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-produce-plan/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/backend-plan.json",
       "stage": "plan",
       "risk": "low",
@@ -50,7 +55,12 @@
     },
     {
       "id": "codex-review-fix",
-      "contract": "../../nova-plugin/skills/nova-codex-review-fix/SKILL.md",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {
+        "EXECUTION_PROFILE": "codex-review-fix"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-implement-plan/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/codex-review-fix.json",
       "stage": "implement",
       "risk": "medium",
@@ -103,7 +113,12 @@
     },
     {
       "id": "codex-review-only",
-      "contract": "../../nova-plugin/skills/nova-codex-review-only/SKILL.md",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "REVIEW_PROFILE": "codex-review-only"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/codex-review-only.json",
       "stage": "review",
       "risk": "low",
@@ -156,7 +171,12 @@
     },
     {
       "id": "codex-verify-only",
-      "contract": "../../nova-plugin/skills/nova-codex-verify-only/SKILL.md",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "REVIEW_PROFILE": "codex-verify-only"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/codex-verify-only.json",
       "stage": "review",
       "risk": "low",
@@ -209,6 +229,9 @@
     },
     {
       "id": "explore",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "contract": "../../nova-plugin/skills/nova-explore/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/explore.json",
       "stage": "explore",
@@ -246,7 +269,13 @@
     },
     {
       "id": "explore-lite",
-      "contract": "../../nova-plugin/skills/nova-explore-lite/SKILL.md",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {
+        "PERSPECTIVE": "observer",
+        "DEPTH": "lite"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-explore/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/explore-lite.json",
       "stage": "explore",
       "risk": "none",
@@ -283,7 +312,12 @@
     },
     {
       "id": "explore-review",
-      "contract": "../../nova-plugin/skills/nova-explore-review/SKILL.md",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {
+        "PERSPECTIVE": "reviewer"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-explore/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/explore-review.json",
       "stage": "explore",
       "risk": "none",
@@ -320,7 +354,12 @@
     },
     {
       "id": "finalize-lite",
-      "contract": "../../nova-plugin/skills/nova-finalize-lite/SKILL.md",
+      "canonicalSurfaceId": "finalize-work",
+      "variantPreset": {
+        "DEPTH": "lite"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-finalize-work/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/finalize-lite.json",
       "stage": "finalize",
       "risk": "none",
@@ -357,6 +396,9 @@
     },
     {
       "id": "finalize-work",
+      "canonicalSurfaceId": "finalize-work",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "contract": "../../nova-plugin/skills/nova-finalize-work/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/finalize-work.json",
       "stage": "finalize",
@@ -394,7 +436,12 @@
     },
     {
       "id": "implement-lite",
-      "contract": "../../nova-plugin/skills/nova-implement-lite/SKILL.md",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {
+        "EXECUTION_PROFILE": "lite"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-implement-plan/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/implement-lite.json",
       "stage": "implement",
       "risk": "medium",
@@ -431,6 +478,9 @@
     },
     {
       "id": "implement-plan",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "contract": "../../nova-plugin/skills/nova-implement-plan/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/implement-plan.json",
       "stage": "implement",
@@ -455,8 +505,8 @@
         "workspaceRead": "preapproved",
         "workspaceWrite": "preapproved",
         "shell": "prompt",
-        "network": "denied",
-        "credentials": "denied",
+        "network": "prompt",
+        "credentials": "explicit",
         "userScopeMutation": "denied",
         "externalPublish": "denied",
         "gitHistoryMutation": "denied"
@@ -469,7 +519,12 @@
     },
     {
       "id": "implement-standard",
-      "contract": "../../nova-plugin/skills/nova-implement-standard/SKILL.md",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {
+        "EXECUTION_PROFILE": "standard"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-implement-plan/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/implement-standard.json",
       "stage": "implement",
       "risk": "medium",
@@ -506,7 +561,12 @@
     },
     {
       "id": "plan-lite",
-      "contract": "../../nova-plugin/skills/nova-plan-lite/SKILL.md",
+      "canonicalSurfaceId": "produce-plan",
+      "variantPreset": {
+        "PLAN_PROFILE": "lite"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-produce-plan/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/plan-lite.json",
       "stage": "plan",
       "risk": "none",
@@ -543,7 +603,12 @@
     },
     {
       "id": "plan-review",
-      "contract": "../../nova-plugin/skills/nova-plan-review/SKILL.md",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "REVIEW_PROFILE": "plan"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/plan-review.json",
       "stage": "review",
       "risk": "none",
@@ -580,6 +645,9 @@
     },
     {
       "id": "produce-plan",
+      "canonicalSurfaceId": "produce-plan",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "contract": "../../nova-plugin/skills/nova-produce-plan/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/produce-plan.json",
       "stage": "plan",
@@ -618,6 +686,9 @@
     },
     {
       "id": "review",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/review.json",
       "stage": "review",
@@ -640,9 +711,9 @@
       "permissionPolicy": {
         "workspaceRead": "preapproved",
         "workspaceWrite": "denied",
-        "shell": "denied",
-        "network": "denied",
-        "credentials": "denied",
+        "shell": "prompt",
+        "network": "prompt",
+        "credentials": "explicit",
         "userScopeMutation": "denied",
         "externalPublish": "denied",
         "gitHistoryMutation": "denied"
@@ -655,7 +726,12 @@
     },
     {
       "id": "review-lite",
-      "contract": "../../nova-plugin/skills/nova-review-lite/SKILL.md",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "LEVEL": "lite"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/review-lite.json",
       "stage": "review",
       "risk": "none",
@@ -692,7 +768,12 @@
     },
     {
       "id": "review-only",
-      "contract": "../../nova-plugin/skills/nova-review-only/SKILL.md",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "LEVEL": "standard"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/review-only.json",
       "stage": "review",
       "risk": "none",
@@ -729,7 +810,12 @@
     },
     {
       "id": "review-strict",
-      "contract": "../../nova-plugin/skills/nova-review-strict/SKILL.md",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "LEVEL": "strict"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/review-strict.json",
       "stage": "review",
       "risk": "none",
@@ -766,6 +852,9 @@
     },
     {
       "id": "route",
+      "canonicalSurfaceId": "route",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "contract": "../../nova-plugin/skills/nova-route/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/route.json",
       "stage": "explore",
@@ -803,7 +892,12 @@
     },
     {
       "id": "senior-explore",
-      "contract": "../../nova-plugin/skills/nova-senior-explore/SKILL.md",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {
+        "DEPTH": "deep"
+      },
+      "compatibilityAlias": true,
+      "contract": "../../nova-plugin/skills/nova-explore/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/senior-explore.json",
       "stage": "explore",
       "risk": "low",

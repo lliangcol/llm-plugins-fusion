@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "knownGood": [
-    { "assistant": "claude-code", "version": "2.1.205", "blocking": true },
+    { "assistant": "claude-code", "version": "2.1.205", "npmIntegrity": "sha512-riShT8jUKjYFupfYtFJF8JelKmJzAm+fHDvqUadfEAjzRAJ3AatZm5gtzWT3pEBmSXPIjoIjOHOXBGzo5wpuCw==", "blocking": true },
     { "assistant": "codex", "version": "0.144.0-alpha.4", "blocking": true }
   ],
   "latestCanary": [

@@ -1,7 +1,15 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "review",
+  "canonicalSurfaceId": "review",
+  "variantPreset": {},
+  "compatibilityAlias": false,
   "stage": "review",
   "ownerAgents": [
     "reviewer"
@@ -29,9 +37,9 @@
   "permissionPolicy": {
     "workspaceRead": "preapproved",
     "workspaceWrite": "denied",
-    "shell": "denied",
-    "network": "denied",
-    "credentials": "denied",
+    "shell": "prompt",
+    "network": "prompt",
+    "credentials": "explicit",
     "userScopeMutation": "denied",
     "externalPublish": "denied",
     "gitHistoryMutation": "denied"

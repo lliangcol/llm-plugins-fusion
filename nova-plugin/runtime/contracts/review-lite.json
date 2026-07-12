@@ -1,7 +1,17 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "review-lite",
+  "canonicalSurfaceId": "review",
+  "variantPreset": {
+    "LEVEL": "lite"
+  },
+  "compatibilityAlias": true,
   "stage": "review",
   "ownerAgents": [
     "reviewer"
@@ -48,7 +58,7 @@
   "behaviorContract": {
     "schemaVersion": 1,
     "source": "workflow-specs/behaviors.json",
-    "guidanceReference": "../../skills/nova-review-lite/SKILL.md",
+    "guidanceReference": "../../skills/nova-review/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Deliver concise daily-review feedback with high signal and bounded depth.",
     "inputs": [

@@ -178,4 +178,13 @@ Output format varies based on PERSPECTIVE:
 
 ---
 
+#### 4.0 VARIANT PROFILES
+
+- Default or `PERSPECTIVE=observer`: normal read-only exploration.
+- `PERSPECTIVE=reviewer`: former `explore-review` behavior.
+- `DEPTH=lite`: former `explore-lite` behavior.
+- `DEPTH=deep`: former `senior-explore` behavior; `EXPORT_PATH` requires explicit artifact-write scope and the shared safety preflight.
+
+Compatibility command presets are defaults only; explicit non-conflicting user inputs win. Runtime contracts remain the complete behavior source for each variant.
+
 #### END OF COMMAND

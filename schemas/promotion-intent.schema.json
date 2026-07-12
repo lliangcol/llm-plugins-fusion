@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/promotion-intent.schema.json",
+  "title": "Promotion Intent",
+  "type": "object",
+  "required": ["schemaVersion", "stableTag", "candidateTag", "sourceCommit", "candidateCoreSha256", "controlBundleSha256"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "stableTag": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "candidateTag": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+-rc\\.[0-9]+$" },
+    "sourceCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "candidateCoreSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "controlBundleSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

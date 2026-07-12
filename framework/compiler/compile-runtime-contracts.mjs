@@ -10,7 +10,11 @@ export function compileRuntimeContract(spec, workflow, behavior) {
   return {
     schemaVersion: 3,
     sourceSchemaVersion: spec.schemaVersion,
+    contractVersions: spec.contractVersions,
     id: workflow.id,
+    canonicalSurfaceId: workflow.canonicalSurfaceId,
+    variantPreset: workflow.variantPreset,
+    compatibilityAlias: workflow.compatibilityAlias,
     stage: workflow.stage,
     ownerAgents: workflow.ownerAgents,
     recommendedPacks: workflow.recommendedPacks,

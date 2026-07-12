@@ -29,7 +29,7 @@ for (const entry of fixture.cases) {
     const command = entry.commands[index];
     const workflow = workflows.get(command);
     assert.ok(workflow, `${entry.id}: invented command ${command}`);
-    assert.equal(entry.skills[index], `nova-${command}`, `${entry.id}: command/skill mapping differs`);
+    assert.equal(entry.skills[index], `nova-${workflow.canonicalSurfaceId}`, `${entry.id}: command/canonical-skill mapping differs`);
     for (const owner of workflow.ownerAgents) owners.add(owner);
     for (const input of workflow.requiredInputs) requiredInputs.add(input);
   }

@@ -22,6 +22,13 @@ const notebookPayload = JSON.stringify({
   tool_response: { success: true },
 });
 
+async function compact(root, label = 'audit compaction') {
+  return runProcess(label, process.execPath, ['nova-plugin/hooks/scripts/audit-compactor.mjs'], {
+    cwd: repoRoot,
+    env: { ...process.env, CLAUDE_PLUGIN_DATA: root },
+  });
+}
+
 async function blockedRotationRoot(t) {
   const root = await mkdtemp(join(tmpdir(), 'nova-audit-rotation-'));
   t.after(async () => {
@@ -54,6 +61,8 @@ for (const [label, command, args] of [
       input: payload,
     });
     assert.equal(result.ok, true, result.stderr);
+    const compacted = await compact(root, `${label} rotation compaction`);
+    assert.equal(compacted.ok, true, compacted.stderr);
     assert.equal((await stat(join(root, 'audit.log.1'))).size, before);
     const record = JSON.parse((await readFile(join(root, 'audit.log'), 'utf8')).trim());
     assert.equal(record.schemaVersion, 3);
@@ -71,6 +80,8 @@ for (const [label, command, args] of [
       input: payload,
     });
     assert.equal(result.ok, true, result.stderr);
+    const compacted = await compact(root, `${label} blocked rotation compaction`);
+    assert.equal(compacted.ok, false);
     const after = (await stat(join(root, 'audit.log'))).size;
     assert.ok(after >= before, `expected ${after} >= ${before}`);
   });
@@ -84,6 +95,8 @@ for (const [label, command, args] of [
       input: notebookPayload,
     });
     assert.equal(result.ok, true, result.stderr);
+    const compacted = await compact(root, `${label} NotebookEdit compaction`);
+    assert.equal(compacted.ok, true, compacted.stderr);
     const record = JSON.parse((await readFile(join(root, 'audit.log'), 'utf8')).trim());
     assert.equal(record.tool, 'NotebookEdit');
     assert.equal(record.outcome, 'success');
@@ -129,6 +142,8 @@ test('audit compactor exits cleanly when another process owns the lock', async (
     env: { ...process.env, CLAUDE_PLUGIN_DATA: root },
   });
   assert.equal(result.ok, true, result.stderr);
+  const compacted = await compact(root, 'external path compaction');
+  assert.equal(compacted.ok, true, compacted.stderr);
   await assert.rejects(() => stat(join(root, 'audit.log')), { code: 'ENOENT' });
 });
 
@@ -178,6 +193,8 @@ test('audit logger hashes paths outside the project root', async (t) => {
     input: JSON.stringify({ ...JSON.parse(payload), cwd: repoRoot, tool_input: { file_path: resolve(tmpdir(), 'private-consumer/file.txt') } }),
   });
   assert.equal(result.ok, true, result.stderr);
+  const compacted = await compact(root, 'external path compaction');
+  assert.equal(compacted.ok, true, compacted.stderr);
   const record = JSON.parse((await readFile(join(root, 'audit.log'), 'utf8')).trim());
   assert.match(record.summary, /^external-path:[a-f0-9]{16}$/);
   assert.equal(record.summary.includes(tmpdir()), false);
@@ -198,6 +215,8 @@ test('audit logger distinguishes failed, denied, and unknown outcomes', async (t
     });
     assert.equal(result.ok, true, result.stderr);
   }
+  const compacted = await compact(root, 'outcomes compaction');
+  assert.equal(compacted.ok, true, compacted.stderr);
   const records = (await readFile(join(root, 'audit.log'), 'utf8')).trim().split('\n').map(JSON.parse);
   assert.deepEqual(records.map((record) => record.outcome), ['failed', 'denied', 'unknown']);
 });

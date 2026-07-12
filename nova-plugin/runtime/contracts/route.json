@@ -1,7 +1,15 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "route",
+  "canonicalSurfaceId": "route",
+  "variantPreset": {},
+  "compatibilityAlias": false,
   "stage": "explore",
   "ownerAgents": [
     "orchestrator"
@@ -173,7 +181,7 @@
       }
     ],
     "invariants": [
-      "Recommend only existing commands, skills, agents, and packs.",
+      "Recommend only existing canonical skills, compatibility command aliases, agents, and packs.",
       "Prefer an exact specialized route over a broader hub when its condition matches.",
       "Do not modify files or execute downstream work.",
       "Do not claim validation has run.",
@@ -215,14 +223,19 @@
       "mode": "chat",
       "fields": [
         {
-          "name": "Command",
+          "name": "Canonical skill",
           "required": true,
-          "description": "Existing command or shortest safe sequence."
+          "description": "One of the six canonical 4.0 skills."
         },
         {
-          "name": "Skill",
+          "name": "Command alias (optional)",
           "required": true,
-          "description": "One-to-one matching skill."
+          "description": "Existing generated compatibility wrapper or None."
+        },
+        {
+          "name": "Variant parameters",
+          "required": true,
+          "description": "Exact preset parameters for the selected internal workflow."
         },
         {
           "name": "Core agent",
@@ -251,8 +264,9 @@
         }
       ],
       "order": [
-        "Command",
-        "Skill",
+        "Canonical skill",
+        "Command alias (optional)",
+        "Variant parameters",
         "Core agent",
         "Capability packs",
         "Required inputs",
@@ -263,7 +277,7 @@
     },
     "validation": [
       "Confirm the most specific matching route was selected before considering a hub.",
-      "Confirm selected commands and skills exist one-to-one.",
+      "Confirm selected the canonical skill, compatibility alias, and preset exist in the generated catalog.",
       "Confirm agents and packs exist in the product inventory.",
       "Confirm required inputs exactly equal the canonical names and order of the selected workflows.",
       "Confirm the response contains routing only."

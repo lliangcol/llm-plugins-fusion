@@ -7,16 +7,16 @@ Do not edit this block by hand. It is synchronized by
 `node scripts/sync-doc-facts.mjs --write` from repository domain sources and
 `governance/product-lanes.json`.
 
-- Plugin: `nova-plugin@3.2.0`; production plugins: 1; public path: `nova-plugin/`
+- Plugin: `nova-plugin@4.0.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
-- Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
-- Workflow contract: schema v4, namespace `nova-plugin`, 21 workflows
+- Inventory: 21 commands, 6 skills, 6 active agents, 8 capability packs
+- Workflow contract: schema v5, namespace `nova-plugin`, 21 workflows
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`, `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"`
+- Active PreToolUse launcher: `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh`, `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh`
 - Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
 <!-- generated:project-state:end -->
 
@@ -64,7 +64,7 @@ and update this file after the source is corrected.
 ## Current Inventory
 
 - Commands: 21 files under `nova-plugin/commands/*.md`.
-- Skills: 21 files under `nova-plugin/skills/nova-*/SKILL.md`.
+- Skills: 6 files under `nova-plugin/skills/nova-*/SKILL.md`.
 - Active agents: 6 core files under `nova-plugin/agents/*.md`.
 - Capability packs: 8 documentation packs under `nova-plugin/packs/*/README.md`.
 - Main plugin version: `3.2.0`.
@@ -80,7 +80,7 @@ and update this file after the source is corrected.
 | `docs/` | Public repository docs, examples, prompts, workflows, release, marketplace, and maintainer guidance. |
 | `fixtures/` | Public-safe validation fixtures. |
 | `nova-plugin/commands/` | Claude Code slash command definitions. |
-| `nova-plugin/skills/` | One-to-one `nova-*` skill contracts and shared policies. |
+| `nova-plugin/skills/` | Six canonical `nova-*` behavior contracts and shared policies. |
 | `nova-plugin/agents/` | Active 6-core-agent surface. |
 | `nova-plugin/packs/` | Documentation-only enhanced/fallback capability packs. |
 | `nova-plugin/hooks/` | Claude Code hook configuration and Bash scripts. |
@@ -97,9 +97,8 @@ and update this file after the source is corrected.
   `latest-artifacts/`.
 - Do not hand-edit generated marketplace outputs. Edit source files, then run
   `node scripts/generate-registry.mjs --write`.
-- Preserve command/skill one-to-one mapping:
-  `nova-plugin/commands/<id>.md` maps to
-  `nova-plugin/skills/nova-<id>/SKILL.md`.
+- Preserve skill-first projection: six canonical skills own behavior; 21
+  generated command wrappers carry only canonical surface and preset metadata.
 - Keep active agents only in `nova-plugin/agents/`; do not recreate retired
   `.claude/agents/` archive paths as active surfaces.
 - Keep capability packs as documentation packs with enhanced and fallback

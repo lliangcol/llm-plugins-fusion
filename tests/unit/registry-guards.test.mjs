@@ -9,7 +9,8 @@ import { SEMVER_PATTERN_SOURCE } from '../../scripts/lib/semver.mjs';
 
 function registryEntry(source, metadata = {}) {
   return {
-    source,
+    localSource: source,
+    distributionSource: source,
     category: 'development',
     tags: ['test'],
     metadata: {

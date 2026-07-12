@@ -11,7 +11,13 @@
   "plugins": [
     {
       "name": "nova-plugin",
-      "source": "./nova-plugin",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/lliangcol/llm-plugins-fusion.git",
+        "path": "nova-plugin",
+        "ref": "v3.2.0",
+        "sha": "1a52cea609fc6dbe20d12385b473e89ae8aefbbf"
+      },
       "version": "3.2.0",
       "author": {
         "name": "liu liang",

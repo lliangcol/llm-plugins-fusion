@@ -9,6 +9,7 @@
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
 import { dirname, isAbsolute, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,6 +19,7 @@ const scriptPath = fileURLToPath(import.meta.url);
 
 export const REGISTRY_SOURCE_PATH = '.claude-plugin/registry.source.json';
 export const MARKETPLACE_PATH = '.claude-plugin/marketplace.json';
+export const MARKETPLACE_CANARY_PATH = '.claude-plugin/marketplace.canary.json';
 export const MARKETPLACE_METADATA_PATH = '.claude-plugin/marketplace.metadata.json';
 export const MARKETPLACE_CATALOG_PATH = 'docs/marketplace/catalog.md';
 
@@ -69,18 +71,18 @@ function assertRepositoryRelativeSource(root, source) {
 }
 
 function pluginManifestPath(entry, root = defaultRoot) {
-  if (typeof entry.source !== 'string') {
-    throw new Error('registry plugin source must be a string path to a local plugin directory');
+  if (typeof entry.localSource !== 'string') {
+    throw new Error('registry plugin localSource must be a string path to a local plugin directory');
   }
-  assertRepositoryRelativeSource(root, entry.source);
-  return `${entry.source.replace(/[\\/]+$/, '')}/.claude-plugin/plugin.json`;
+  assertRepositoryRelativeSource(root, entry.localSource);
+  return `${entry.localSource.replace(/[\\/]+$/, '')}/.claude-plugin/plugin.json`;
 }
 
-function buildMarketplacePlugin(entry, plugin) {
+function buildMarketplacePlugin(entry, plugin, distributionSource, version = plugin.version) {
   const output = {
     name: plugin.name,
-    source: entry.source,
-    version: plugin.version,
+    source: distributionSource,
+    version,
   };
 
   copyDefined(output, plugin, 'author');
@@ -98,13 +100,13 @@ function buildMarketplacePlugin(entry, plugin) {
   return output;
 }
 
-function buildMetadataPlugin(entry, plugin) {
+function buildMetadataPlugin(entry, plugin, version = plugin.version) {
   if (!entry.metadata || typeof entry.metadata !== 'object') {
-    throw new Error(`registry metadata is missing for plugin source ${entry.source}`);
+    throw new Error(`registry metadata is missing for plugin source ${entry.localSource}`);
   }
   const output = {
     name: plugin.name,
-    version: plugin.version,
+    version,
     'trust-level': entry.metadata['trust-level'],
     'risk-level': entry.metadata['risk-level'],
     deprecated: entry.metadata.deprecated,
@@ -177,7 +179,7 @@ function renderCatalog({ marketplace, metadata }) {
     lines.push(`## ${escapeMarkdown(plugin.name)}`);
     lines.push('');
     lines.push(`- Version: \`${escapeMarkdown(plugin.version)}\``);
-    lines.push(`- Source: ${markdownLink(plugin.source, plugin.source)}`);
+    lines.push(`- Source: \`${escapeMarkdown(typeof plugin.source === 'string' ? plugin.source : JSON.stringify(plugin.source))}\``);
     lines.push(`- Category: \`${escapeMarkdown(plugin.category ?? 'other')}\``);
     lines.push(`- Tags: ${(plugin.tags ?? []).map((tag) => `\`${escapeMarkdown(tag)}\``).join(', ') || 'none'}`);
     lines.push(`- Trust: \`${escapeMarkdown(localMetadata?.['trust-level'] ?? 'unknown')}\``);
@@ -217,6 +219,10 @@ function renderCatalog({ marketplace, metadata }) {
 
 export function buildRegistryObjects(root = defaultRoot) {
   const source = readJson(root, REGISTRY_SOURCE_PATH);
+  const releaseChannelsPath = resolve(root, 'governance/release-channels.json');
+  const releaseChannels = (() => {
+    try { return JSON.parse(readFileSync(releaseChannelsPath, 'utf8')); } catch { return null; }
+  })();
   if (!Array.isArray(source.plugins) || source.plugins.length === 0) {
     throw new Error('registry.source.json must contain a non-empty plugins array');
   }
@@ -224,16 +230,16 @@ export function buildRegistryObjects(root = defaultRoot) {
   const seenSources = new Set();
   const seenPluginNames = new Set();
   const plugins = source.plugins.map((entry) => {
-    assertRepositoryRelativeSource(root, entry.source);
-    const sourceKey = normalizeRegistrySource(entry.source);
+    assertRepositoryRelativeSource(root, entry.localSource);
+    const sourceKey = normalizeRegistrySource(entry.localSource);
     if (seenSources.has(sourceKey)) {
-      throw new Error(`duplicate plugin source: ${entry.source}`);
+      throw new Error(`duplicate plugin source: ${entry.localSource}`);
     }
     seenSources.add(sourceKey);
 
     const plugin = readJson(root, pluginManifestPath(entry, root));
     if (typeof plugin.name !== 'string' || plugin.name.trim() === '') {
-      throw new Error(`plugin manifest is missing name for source ${entry.source}`);
+      throw new Error(`plugin manifest is missing name for source ${entry.localSource}`);
     }
     if (seenPluginNames.has(plugin.name)) {
       throw new Error(`duplicate plugin name: ${plugin.name}`);
@@ -243,30 +249,54 @@ export function buildRegistryObjects(root = defaultRoot) {
     return {
       source: entry,
       plugin,
+      stableVersion: releaseChannels?.stable?.version ?? plugin.version,
     };
   }).sort((left, right) => (
     left.plugin.name.localeCompare(right.plugin.name)
-    || normalizeRegistrySource(left.source.source).localeCompare(normalizeRegistrySource(right.source.source))
+    || normalizeRegistrySource(left.source.localSource).localeCompare(normalizeRegistrySource(right.source.localSource))
   ));
+
+  if (releaseChannels) {
+    for (const { source: entry } of plugins) {
+      if (entry.distributionSource?.ref !== releaseChannels.stable.tag || entry.distributionSource?.sha !== releaseChannels.stable.commit) {
+        throw new Error('stable distributionSource must match governance/release-channels.json tag and commit');
+      }
+      if (entry.canarySource?.ref !== releaseChannels.canary.ref || entry.canarySource?.sha !== undefined) {
+        throw new Error('canarySource must point to moving main without a SHA pin');
+      }
+    }
+    const manifestPath = pluginManifestPath(plugins[0].source, root).replace(/^\.\//u, '');
+    const shown = spawnSync('git', ['show', `${releaseChannels.stable.commit}:${manifestPath}`], { cwd: root, encoding: 'utf8', shell: false });
+    if (shown.status !== 0) throw new Error('stable plugin manifest cannot be read from the pinned commit');
+    const stablePlugin = JSON.parse(shown.stdout);
+    if (stablePlugin.version !== releaseChannels.stable.version || stablePlugin.name !== plugins[0].plugin.name) {
+      throw new Error('stable release channel does not match the pinned plugin manifest');
+    }
+  }
 
   const marketplace = {
     name: source.name,
     owner: source.owner,
   };
   copyDefined(marketplace, source, 'metadata');
-  marketplace.plugins = plugins.map(({ source: entry, plugin }) => buildMarketplacePlugin(entry, plugin));
+  marketplace.plugins = plugins.map(({ source: entry, plugin, stableVersion }) => buildMarketplacePlugin(entry, plugin, entry.distributionSource, stableVersion));
+
+  const canaryMarketplace = { name: `${source.name}-canary`, owner: source.owner };
+  copyDefined(canaryMarketplace, source, 'metadata');
+  canaryMarketplace.plugins = plugins.map(({ source: entry, plugin }) => buildMarketplacePlugin(entry, plugin, entry.canarySource ?? entry.localSource));
 
   const metadata = {
-    plugins: plugins.map(({ source: entry, plugin }) => buildMetadataPlugin(entry, plugin)),
+    plugins: plugins.map(({ source: entry, plugin, stableVersion }) => buildMetadataPlugin(entry, plugin, stableVersion)),
   };
 
-  return { marketplace, metadata };
+  return { marketplace, canaryMarketplace, metadata };
 }
 
 export function generateRegistryFiles(root = defaultRoot) {
-  const { marketplace, metadata } = buildRegistryObjects(root);
+  const { marketplace, canaryMarketplace, metadata } = buildRegistryObjects(root);
   return [
     { relPath: MARKETPLACE_PATH, content: formatJson(marketplace) },
+    { relPath: MARKETPLACE_CANARY_PATH, content: formatJson(canaryMarketplace) },
     { relPath: MARKETPLACE_METADATA_PATH, content: formatJson(metadata) },
     { relPath: MARKETPLACE_CATALOG_PATH, content: renderCatalog({ marketplace, metadata }) },
   ];

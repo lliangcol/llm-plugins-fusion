@@ -224,7 +224,7 @@ test('write guard contains targets to workspace or explicit artifact roots', asy
   assert.equal(artifact.ok, true, artifact.stderr);
 });
 
-test('write guard rejects parent symlink escapes and protected hard links', { skip: process.platform === 'win32' }, async (t) => {
+test('write guard rejects parent symlink escapes and all hard links', { skip: process.platform === 'win32' }, async (t) => {
   const temp = await mkdtemp(join(tmpdir(), 'nova-containment-links-'));
   t.after(() => rm(temp, { recursive: true, force: true }));
   const workspace = join(temp, 'workspace');
@@ -242,7 +242,14 @@ test('write guard rejects parent symlink escapes and protected hard links', { sk
   await link(hooksPath, join(workspace, 'hooks-copy.json'));
   const hardLinked = await runGuard(editPayload(hooksPath, '"timeout": 10', '"timeout": 12'), { projectRoot: workspace });
   assert.equal(hardLinked.code, 2);
-  assert.match(hardLinked.stderr, /multiple hard links/);
+  assert.match(hardLinked.stderr, /exactly one hard link/);
+
+  const ordinary = join(workspace, 'ordinary.txt');
+  await writeFile(ordinary, 'ordinary');
+  await link(ordinary, join(outside, 'ordinary.txt'));
+  const ordinaryEdit = await runGuard(editPayload(ordinary, 'ordinary', 'changed'), { projectRoot: workspace });
+  assert.equal(ordinaryEdit.code, 2);
+  assert.match(ordinaryEdit.stderr, /exactly one hard link/);
 });
 
 test('write guard rejects oversized Write payloads', async (t) => {

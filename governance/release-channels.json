@@ -1,0 +1,18 @@
+{
+  "$schema": "../schemas/release-channels.schema.json",
+  "schemaVersion": 1,
+  "stable": {
+    "version": "3.2.0",
+    "tag": "v3.2.0",
+    "commit": "1a52cea609fc6dbe20d12385b473e89ae8aefbbf",
+    "candidateTag": "v3.2.0-rc.3",
+    "candidateManifestSha256": "01b45da3c332d49037992850b27e6fa494ff6f8fe124c0ffc0a0c5dc32b8db19",
+    "pluginTreeSha256": "6195bcd61cd16ad03c76be56a0e1794f11674599fd32e38d599add9fdf28409a",
+    "state": "RELEASE_PUBLISHED",
+    "publishedAt": "2026-07-12T12:44:20Z",
+    "stableInstallProof": null
+  },
+  "canary": {
+    "ref": "main"
+  }
+}

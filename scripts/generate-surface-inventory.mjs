@@ -145,7 +145,9 @@ function commandInventory(root, workflowSpec) {
       stage: frontmatter.stage,
       destructiveActions: frontmatter['destructive-actions'],
       supportingContract: `nova-plugin/${workflow.contractPath}`,
-      compatibilitySkill: workflow.legacyAlias,
+      canonicalSkill: `nova-${workflow.canonicalSurfaceId}`,
+      compatibilityAlias: workflow.compatibilityAlias,
+      variantPreset: workflow.variantPreset,
       runtimeDelegation: false,
       path: relPath,
     };
@@ -153,7 +155,7 @@ function commandInventory(root, workflowSpec) {
 }
 
 function skillInventory(root) {
-  return directories(root, 'nova-plugin/skills', (name) => name.startsWith('nova-')).map((name) => {
+  return directories(root, 'nova-plugin/skills', (name) => name.startsWith('nova-') && existsSync(resolve(root, 'nova-plugin/skills', name, 'SKILL.md'))).map((name) => {
     const relPath = `nova-plugin/skills/${name}/SKILL.md`;
     const frontmatter = parseFrontmatter(readFileSync(resolve(root, relPath), 'utf8'), relPath);
     return {
@@ -186,6 +188,7 @@ function packInventory(root) {
 
 function marketplaceOutputs(root) {
   const marketplace = readJson(root, '.claude-plugin/marketplace.json');
+  const canary = readJson(root, '.claude-plugin/marketplace.canary.json');
   const metadata = readJson(root, '.claude-plugin/marketplace.metadata.json');
   return [
     {
@@ -193,6 +196,12 @@ function marketplaceOutputs(root) {
       generated: true,
       pluginCount: marketplace.plugins?.length ?? 0,
       pluginVersions: (marketplace.plugins ?? []).map((plugin) => `${plugin.name}@${plugin.version}`).sort(),
+    },
+    {
+      path: '.claude-plugin/marketplace.canary.json',
+      generated: true,
+      pluginCount: canary.plugins?.length ?? 0,
+      pluginVersions: (canary.plugins ?? []).map((plugin) => `${plugin.name}@${plugin.version}`).sort(),
     },
     {
       path: '.claude-plugin/marketplace.metadata.json',
@@ -232,7 +241,7 @@ export function buildSurfaceInventory(root = defaultRoot) {
       skills: skills.length,
       activeAgents: agents.length,
       capabilityPacks: packs.length,
-      generatedMarketplaceOutputs: 3,
+      generatedMarketplaceOutputs: 4,
       installedSkills: permissionSpec.expectedInventory.combinedSkillCount,
     },
     commands,
@@ -286,12 +295,13 @@ ${markdownTable(
 ## Commands
 
 ${markdownTable(
-  ['ID', 'Stage', 'Destructive actions', 'Compatibility skill'],
+  ['ID', 'Stage', 'Destructive actions', 'Canonical skill', 'Deprecated alias'],
   inventory.commands.map((command) => [
     `\`${command.id}\``,
     command.stage,
     command.destructiveActions,
-    `\`${command.compatibilitySkill}\``,
+    `\`${command.canonicalSkill}\``,
+    String(command.compatibilityAlias),
   ]),
 )}
 

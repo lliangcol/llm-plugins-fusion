@@ -1,0 +1,9 @@
+{
+  "$schema": "../schemas/complexity-budget.schema.json",
+  "schemaVersion": 1,
+  "maximumWorkflowFiles": 12,
+  "maximumReleaseYamlLogicLines": 250,
+  "maximumManualCurrentFacts": 0,
+  "maximumGeneratedProjectionLayers": 4,
+  "maximumReleaseStateTransitions": 10
+}

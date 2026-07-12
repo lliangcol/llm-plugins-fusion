@@ -96,7 +96,7 @@ Demo capture guidance lives in [docs/assets/README.md](../../../docs/assets/READ
 </tr>
 <tr>
 <td><strong>Commands / Skills</strong></td>
-<td>21 commands, 21 one-to-one skills</td>
+<td>21 commands, 6 canonical skills</td>
 </tr>
 <tr>
 <td><strong>Active agents</strong></td>
@@ -253,7 +253,7 @@ Capability packs: `java`, `security`, `dependency`, `docs`, `release`, `marketpl
 | Layer | Current sources | Maintenance focus |
 | --- | --- | --- |
 | Memory | `CLAUDE.md`, `AGENTS.md`, `docs/consumers/` | Claude guidance source, non-Claude agent adapter, consumer profile boundaries, public/private information separation |
-| Skills | `nova-plugin/skills/`, `nova-plugin/commands/` | One-to-one command / skill mapping, parameters, safety boundaries, and output contracts |
+| Skills | `nova-plugin/skills/`, `nova-plugin/commands/` | Six canonical behavior skills, generated command wrappers, variant presets, safety boundaries, and output contracts |
 | Guardrails | `nova-plugin/hooks/`, `scripts/validate-*.mjs` | Deterministic hooks, schema, frontmatter, docs, and release validation |
 | Delegation | `nova-plugin/agents/`, `nova-plugin/packs/` | 6 core agents, 8 capability packs, enhanced / fallback routing |
 | Distribution | `.claude-plugin/`, `nova-plugin/.claude-plugin/plugin.json` | Marketplace metadata, generated catalog, and install boundary |
@@ -269,7 +269,7 @@ llm-plugins-fusion/
 |-- nova-plugin/
 |   |-- .claude-plugin/plugin.json    # plugin metadata and version source
 |   |-- commands/                     # 21 slash command thin wrappers
-|   |-- skills/                       # 21 nova-* skills + _shared policies
+|   |-- skills/                       # 6 canonical nova-* skills + _shared policies
 |   |-- agents/                       # 6 core active agents
 |   |-- packs/                        # 8 capability pack docs
 |   |-- docs/                         # user docs, command docs, and current architecture notes
@@ -351,11 +351,13 @@ Version and registry sources:
 - `docs/marketplace/catalog.md`: generated Markdown catalog
 - `CHANGELOG.md`
 
-Commands and skills must stay one-to-one:
+Skills own runtime behavior. Commands are generated compatibility and
+discoverability wrappers; they must not duplicate behavior:
 
 ```text
-nova-plugin/commands/<id>.md
-nova-plugin/skills/nova-<id>/SKILL.md
+workflow-specs/workflows.json
+  -> nova-plugin/skills/nova-<canonical-surface>/SKILL.md
+  -> nova-plugin/commands/<id>.md
 ```
 
 Each command must have three command docs:

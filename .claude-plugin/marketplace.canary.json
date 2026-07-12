@@ -1,0 +1,47 @@
+{
+  "name": "llm-plugins-fusion-canary",
+  "owner": {
+    "name": "liu liang",
+    "email": "lliangcoder@gmail.com",
+    "url": "https://github.com/lliangcol"
+  },
+  "metadata": {
+    "description": "A Claude Code marketplace source for the nova-plugin AI engineering workflow framework and related public workflow metadata."
+  },
+  "plugins": [
+    {
+      "name": "nova-plugin",
+      "source": {
+        "source": "git-subdir",
+        "url": "https://github.com/lliangcol/llm-plugins-fusion.git",
+        "path": "nova-plugin",
+        "ref": "main"
+      },
+      "version": "4.0.0",
+      "author": {
+        "name": "liu liang",
+        "email": "lliangcoder@gmail.com",
+        "url": "https://github.com/lliangcol"
+      },
+      "description": "nova-plugin is a Claude Code compatible workflow plugin for AI coding assistants. It provides Explore, Plan, Review, Implement, and Finalize command/skill contracts, consumer profile guidance, and validation-aware handoff patterns for multi-project engineering work.",
+      "category": "workflow",
+      "homepage": "https://github.com/lliangcol/llm-plugins-fusion",
+      "repository": "https://github.com/lliangcol/llm-plugins-fusion",
+      "license": "MIT",
+      "tags": [
+        "workflow",
+        "ai-coding",
+        "claude-code",
+        "codex-review"
+      ],
+      "keywords": [
+        "explore",
+        "plan",
+        "review",
+        "implement",
+        "finalize",
+        "codex"
+      ]
+    }
+  ]
+}

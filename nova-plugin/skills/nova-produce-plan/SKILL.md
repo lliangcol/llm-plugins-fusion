@@ -91,7 +91,6 @@ You are Claude Code acting as a **senior engineer / tech lead**.
 This command produces a **written planning & design document**
 based on prior analysis and explicit intent.
 
----
 
 #### TASK MODE
 
@@ -103,7 +102,6 @@ This is a **DESIGN CHECKPOINT**, not an exploration step.
 - The document is expected to be reviewed by humans
 - Clarity, explicit trade-offs, and traceability matter more than brevity
 
----
 
 #### REQUIRED INPUT EXTRACTION
 
@@ -120,7 +118,6 @@ If `PLAN_OUTPUT_PATH` is missing:
 - Ask the user to explicitly provide it
 - Do NOT infer or guess a path
 
----
 
 #### 2. Plan Profile (Optional)
 
@@ -134,7 +131,6 @@ If not specified, use `general` profile.
 PLAN_PROFILE:
 <PLAN_PROFILE>
 
----
 
 #### 3. Plan Intent (Required)
 
@@ -150,7 +146,6 @@ Examples:
 PLAN_INTENT:
 <PLAN_INTENT>
 
----
 
 #### 4. Input Analysis Artifacts (Strongly Recommended)
 
@@ -165,7 +160,6 @@ If no analysis is provided:
 - Proceed cautiously
 - Explicitly call out missing analysis as a risk
 
----
 
 #### 5. Constraints & Decision Boundaries (Optional but Important)
 
@@ -181,7 +175,6 @@ Examples:
 CONSTRAINTS:
 <CONSTRAINTS>
 
----
 
 #### PLAN AUTHORING RULES
 
@@ -205,13 +198,11 @@ Tone & style:
 - Prefer clear reasoning over persuasion
 - Avoid vague language such as “simple”, “obvious”, “straightforward”
 
----
 
 #### REQUIRED PLAN DOCUMENT STRUCTURE
 
 The structure depends on the `PLAN_PROFILE`:
 
----
 
 ##### Profile: general (default)
 
@@ -259,7 +250,6 @@ The plan document MUST include these 9 sections in order:
    - High-level rollback steps
    - Expected impact and limitations
 
----
 
 ##### Profile: java-backend
 
@@ -278,7 +268,6 @@ For Java/Spring backend designs, include these 12 sections:
 11. **Rollback & Safety Plan**
 12. **Risks & Open Questions**
 
----
 
 #### OUTPUT RULES
 
@@ -295,6 +284,13 @@ Do NOT:
 - Paste the plan content into chat
 - Add commentary outside the required output
 
----
+
+#### 4.0 VARIANT PROFILES
+
+- Default: formal review-ready plan written to `PLAN_OUTPUT_PATH`.
+- `PLAN_PROFILE=lite`: former `plan-lite` chat-only behavior; no artifact path is inferred.
+- `PLAN_PROFILE=java-backend`: former `backend-plan` twelve-section Java/Spring profile.
+
+The former `plan-review` entry is a `nova-review` variant, not a planning writer.
 
 #### END OF COMMAND

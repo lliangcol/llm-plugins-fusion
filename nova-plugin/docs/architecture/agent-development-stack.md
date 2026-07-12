@@ -50,11 +50,13 @@ The skills layer is the behavior source of truth for command execution.
 - `nova-plugin/skills/_shared/` keeps reusable policy for parameters, safety,
   artifacts, output contracts, and agent routing.
 
-Commands and skills must remain one-to-one:
+Six canonical skills own behavior. Commands are generated wrappers and may
+select a canonical skill through a compatibility preset:
 
 ```text
-nova-plugin/commands/<id>.md
-nova-plugin/skills/nova-<id>/SKILL.md
+workflow-specs/workflows.json
+  -> nova-plugin/skills/nova-<canonical-surface>/SKILL.md
+  -> nova-plugin/commands/<id>.md
 ```
 
 ### Guardrails

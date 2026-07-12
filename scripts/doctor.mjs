@@ -3,7 +3,8 @@
  * Read-only repository doctor for maintainers and first-time contributors.
  */
 
-import { readFileSync } from 'node:fs';
+import { linkSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { REQUIRED_NODE_MAJOR, nodeMajorVersion } from './lib/node-version.mjs';
@@ -14,6 +15,8 @@ const root = resolve(__dir, '..');
 
 let warnings = 0;
 let errors = 0;
+const availability = new Map();
+let guardedAvailable = false;
 
 function readJson(path) {
   return JSON.parse(readFileSync(resolve(root, path), 'utf8'));
@@ -74,6 +77,7 @@ for (const [label, command] of [
 ]) {
   await runCheck(label, async () => {
     const result = await commandResult(command);
+    availability.set(label, result.ok);
     const optional = label === 'Claude CLI' || label === 'Codex CLI' || label === 'Bash';
     return {
       status: result.ok ? 'OK' : (optional ? 'WARN' : 'ERROR'),
@@ -97,24 +101,42 @@ await runCheck('Bash', async () => {
   };
 });
 
+await runCheck('Codex authentication', async () => {
+  const result = await commandResult('codex', ['login', 'status']);
+  availability.set('Codex authentication', result.ok);
+  return { status: result.ok ? 'OK' : 'WARN', detail: result.ok ? result.detail : 'not authenticated or status unavailable' };
+});
+
 await runCheck('Write guard', async () => {
   if (process.env.NOVA_WRITE_GUARD_DISABLED === '1') {
     return { status: 'WARN', detail: 'explicitly disabled by NOVA_WRITE_GUARD_DISABLED=1' };
   }
-  const bash = await commandResult('bash');
   const major = nodeMajorVersion();
   const hooks = readJson('nova-plugin/hooks/hooks.json');
   const matcher = hooks.hooks?.PreToolUse?.[0]?.matcher;
   if (matcher !== 'Write|Edit|NotebookEdit') {
     return { status: 'ERROR', detail: `unexpected PreToolUse matcher: ${matcher ?? 'missing'}` };
   }
-  if (!bash.ok || major === null || major < REQUIRED_NODE_MAJOR) {
+  const hook = hooks.hooks?.PreToolUse?.[0]?.hooks?.[0];
+  if (hook?.command !== 'bash' || hook?.args?.[0] !== '${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh') {
+    return { status: 'ERROR', detail: 'PreToolUse is not using the required fail-closed Bash exec-form launcher' };
+  }
+  const temp = mkdtempSync(resolve(tmpdir(), 'nova-doctor-links-'));
+  let hardLinksSupported = false;
+  try {
+    const first = resolve(temp, 'first');
+    writeFileSync(first, 'test');
+    linkSync(first, resolve(temp, 'second'));
+    hardLinksSupported = statSync(first).nlink === 2;
+  } catch { hardLinksSupported = false; } finally { rmSync(temp, { recursive: true, force: true }); }
+  if (major === null || major < REQUIRED_NODE_MAJOR || !hardLinksSupported) {
     return {
       status: 'WARN',
-      detail: `unavailable; requires Bash and Node.js ${REQUIRED_NODE_MAJOR}+`,
+      detail: `unavailable; requires Node.js ${REQUIRED_NODE_MAJOR}+ and reliable hard-link counts`,
     };
   }
-  return { status: 'OK', detail: 'active for Write/Edit; NotebookEdit fails closed' };
+  guardedAvailable = true;
+  return { status: 'OK', detail: 'Node exec-form active for Write/Edit; nlink semantics verified; NotebookEdit fails closed' };
 });
 
 await runCheck('Package/plugin version', () => ({
@@ -152,4 +174,11 @@ await runCheck('Generated registry drift', async () => {
 });
 
 console.log(`\nSummary: errors=${errors} warnings=${warnings}`);
+const capability = guardedAvailable && availability.get('Codex CLI') && availability.get('Codex authentication') ? 'External' : guardedAvailable ? 'Guarded' : 'Core';
+const capabilityReason = capability === 'External'
+  ? 'guarded Write/Edit/Bash hooks and authenticated Codex CLI are available'
+  : capability === 'Guarded'
+    ? 'guarded Write/Edit/Bash hooks are available; external Codex integration is unavailable'
+    : 'read-only commands and canonical skills only; guarded runtime capability is unavailable';
+console.log(`Capability level: ${capability} (${capabilityReason})`);
 if (errors > 0) process.exit(1);

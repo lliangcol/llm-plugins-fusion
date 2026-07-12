@@ -2,23 +2,25 @@
 /** Default-deny validation command broker for Bash PreToolUse events. */
 
 import { lstatSync, readFileSync, realpathSync } from 'node:fs';
-import { basename, dirname, isAbsolute, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, posix, relative, resolve, win32 } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const moduleDir = dirname(fileURLToPath(import.meta.url));
 const defaultPolicyPath = resolve(moduleDir, '../../runtime/shell-command-policy.json');
-const lexicalHazards = /[;&|<>`\r\n]/u;
-
-function executableName(token = '') {
-  return basename(token).toLowerCase();
+function trustedExecutableToken(token) {
+  if (typeof token !== 'string' || !/^[a-z0-9][a-z0-9._-]*$/iu.test(token)) return null;
+  if (token.includes('/') || token.includes('\\')) return null;
+  return token.toLowerCase();
 }
 
-export function tokenizeShellCommand(command) {
+function tokenizeDetailed(command) {
   const tokens = [];
   let token = '';
   let quote = null;
   let escaped = false;
   let started = false;
+  let expansion = false;
+  let composition = false;
   for (const character of command) {
     if (escaped) {
       token += character;
@@ -33,7 +35,10 @@ export function tokenizeShellCommand(command) {
     }
     if (quote) {
       if (character === quote) quote = null;
-      else token += character;
+      else {
+        if (quote === '"' && (character === '$' || character === '`')) expansion = true;
+        token += character;
+      }
       started = true;
       continue;
     }
@@ -42,21 +47,31 @@ export function tokenizeShellCommand(command) {
       started = true;
       continue;
     }
+    if (character === '\r' || character === '\n') composition = true;
     if (/\s/u.test(character)) {
       if (started) {
-        tokens.push(token);
+        tokens.push({ value: token, expansion, composition });
         token = '';
         started = false;
+        expansion = false;
+        composition = character === '\r' || character === '\n';
       }
       continue;
     }
+    if (/[;&|<>`]/u.test(character)) composition = true;
+    if (/[$*?\[\]{}]/u.test(character) || (character === '~' && !started)) expansion = true;
+    if (/\p{Cc}/u.test(character)) composition = true;
     token += character;
     started = true;
   }
   if (quote) throw new Error('unterminated shell quote');
   if (escaped) throw new Error('trailing shell escape');
-  if (started) tokens.push(token);
+  if (started) tokens.push({ value: token, expansion, composition });
   return tokens;
+}
+
+export function tokenizeShellCommand(command) {
+  return tokenizeDetailed(command).map((token) => token.value);
 }
 
 function readBasePolicy(path = defaultPolicyPath) {
@@ -94,7 +109,8 @@ export function loadProjectPolicy(workspaceRoot, relativePath) {
 }
 
 function matchesRule(tokens, rule) {
-  const executable = executableName(tokens[0]);
+  const executable = trustedExecutableToken(tokens[0]);
+  if (!executable) return false;
   if (rule.type === 'exact-tail') {
     return rule.executables.includes(executable) && rule.tails.some((tail) => JSON.stringify(tokens.slice(1)) === JSON.stringify(tail));
   }
@@ -119,11 +135,19 @@ export function authorizeBashCommand(command, { workspaceRoot = process.cwd(), b
   const reasons = [];
   if (typeof command !== 'string' || command.trim() === '') return { allowed: false, source: null, ruleId: null, reasons: ['Bash command must be a non-empty string'] };
   if (Buffer.byteLength(command, 'utf8') > basePolicy.maxCommandBytes) reasons.push('command exceeds the guarded size limit');
-  if (lexicalHazards.test(command) || /\$\(|\$\{|\$[A-Za-z_]/u.test(command)) reasons.push('shell composition, expansion, redirection, pipes, or command substitution are not allowed');
+  if (/[\r\n]/u.test(command)) reasons.push('shell composition, expansion, redirection, pipes, or command substitution are not allowed');
+  let detailedTokens = [];
   let tokens = [];
-  try { tokens = tokenizeShellCommand(command.trim()); } catch (error) { reasons.push(error.message); }
+  try {
+    detailedTokens = tokenizeDetailed(command.trim());
+    tokens = detailedTokens.map((token) => token.value);
+  } catch (error) { reasons.push(error.message); }
+  if (detailedTokens.some((token) => token.composition || token.expansion)) {
+    reasons.push('shell composition, expansion, redirection, pipes, or command substitution are not allowed');
+  }
   if (tokens[0] && /^[A-Za-z_][A-Za-z0-9_]*=/u.test(tokens[0])) reasons.push('environment assignment prefixes are not allowed');
-  if (tokens.slice(1).some((token) => isAbsolute(token) || token.split(/[\\/]/u).includes('..'))) reasons.push('absolute or parent-traversal arguments are not allowed');
+  if (tokens[0] && !trustedExecutableToken(tokens[0])) reasons.push('executable must be a bare trusted command token without path semantics');
+  if (tokens.slice(1).some((token) => isAbsolute(token) || posix.isAbsolute(token) || win32.isAbsolute(token) || token.split(/[\\/]/u).includes('..'))) reasons.push('absolute or parent-traversal arguments are not allowed');
   if (reasons.length) return { allowed: false, source: null, ruleId: null, reasons: [...new Set(reasons)] };
 
   for (const rule of basePolicy.rules) {

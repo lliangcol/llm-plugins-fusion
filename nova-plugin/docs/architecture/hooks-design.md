@@ -7,16 +7,16 @@ Do not edit this block by hand. It is synchronized by
 `node scripts/sync-doc-facts.mjs --write` from repository domain sources and
 `governance/product-lanes.json`.
 
-- Plugin: `nova-plugin@3.2.0`; production plugins: 1; public path: `nova-plugin/`
+- Plugin: `nova-plugin@4.0.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
-- Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
-- Workflow contract: schema v4, namespace `nova-plugin`, 21 workflows
+- Inventory: 21 commands, 6 skills, 6 active agents, 8 capability packs
+- Workflow contract: schema v5, namespace `nova-plugin`, 21 workflows
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`, `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"`
+- Active PreToolUse launcher: `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh`, `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh`
 - Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
 <!-- generated:project-state:end -->
 
@@ -79,12 +79,13 @@ PostToolUse 额外包含：
     "PreToolUse": [
       {
         "matcher": "Write|Edit|NotebookEdit",
-            "hooks": [
-              {
-                "type": "command",
-                "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh\"",
-                "timeout": 10,
-                "statusMessage": "检查文件写入..."
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"],
+            "timeout": 10,
+            "statusMessage": "检查文件写入..."
           }
         ]
       }
@@ -105,12 +106,12 @@ PostToolUse 额外包含：
 
 | 维度 | 当前允许值 |
 |------|------------|
-| 事件 | `PreToolUse`, `PostToolUse` |
+| 事件 | `PreToolUse`, `PostToolUse`, `PostToolUseFailure`, `PermissionDenied`, `SessionEnd` |
 | Entry 字段 | `matcher`, `hooks` |
 | Hook 类型 | `type: "command"` |
-| Hook 字段 | `type`, `command`, `timeout`, `statusMessage`, `async` |
-| Shell 调用 | `.sh` 脚本必须通过 `bash "${CLAUDE_PLUGIN_ROOT}/..."` 调用 |
-| Active runtime | Node.js 22+ `.mjs` files own hook business logic; PreToolUse keeps a Bash fail-closed launcher, while post-use verification and audit events use direct Node exec form. |
+| Hook 字段 | `type`, `command`, `args`, `timeout`, `statusMessage`, `async` |
+| Shell 调用 | `.sh` 脚本必须通过 exec-form `bash` + 单一 `args` 路径调用 |
+| Active runtime | Node.js 22+ `.mjs` files own hook business logic; PreToolUse uses fail-closed Bash exec-form launchers and post-use hooks use direct Node exec form. |
 
 `Stop`、`Notification`、非 command hook 类型、额外字段或其它 Claude Code
 未来 schema 字段必须先补 fixture、脚本行为和文档，再放开校验。不要为了兼容
@@ -125,12 +126,12 @@ PostToolUse 额外包含：
 | 敏感信息检测 | 内容含 `password|secret|token|api_key`（硬编码模式）| exit 2 阻断 |
 | payload/runtime 校验 | Node 缺失、payload 非法或 Edit 无法可靠重构 | exit 2 阻断 |
 | 路径封闭 | 目标不在 project/显式 artifact root、父路径经 symlink/junction 跳转 | exit 2 阻断 |
-| 目标类型检查 | 已存在的 Write/Edit 目标是符号链接、非普通文件，或受保护目标有多个 hard links | exit 2 阻断 |
+| 目标类型检查 | 已存在的 Write/Edit 目标是符号链接、非普通文件，或 `nlink !== 1`（含无法可靠读取 link count） | exit 2 阻断 |
 | 内容大小 | Write 或重构后的 Edit 内容超过 10 MiB | exit 2 阻断 |
 | NotebookEdit | 无法从 payload 可靠重构完整 notebook proposed content | exit 2 阻断 |
 | hooks.json 结构校验 | 仅对 project/plugin 的受保护 hooks 配置验证 JSON/schema；无关的 `config/hooks.json` 不套用 nova schema | exit 2 阻断 |
 
-**Active launcher:** `nova-plugin/hooks/scripts/pre-write-check.sh`
+**Active launcher:** exec-form `bash` + `nova-plugin/hooks/scripts/pre-write-check.sh`
 
 **Active implementation:** `nova-plugin/hooks/scripts/pre-write-check.mjs`
 
@@ -142,7 +143,7 @@ PostToolUse 额外包含：
 变量/命令替换、未登记解释器与包执行器一律拒绝。允许结果仍要经过 Claude 权限提示
 和外部 sandbox；项目策略是仓库审查面，不等于预授权。
 
-**Active launcher:** `nova-plugin/hooks/scripts/pre-bash-check.sh`
+**Active launcher:** exec-form `bash` + `nova-plugin/hooks/scripts/pre-bash-check.sh`
 
 **Active implementation:** `nova-plugin/hooks/scripts/pre-bash-check.mjs`
 
@@ -173,8 +174,10 @@ high-severity 信息停止后续 workflow。PostToolUse 发生在实际操作之
 [2026-03-18T07:00:01Z] Bash  node scripts/validate-schemas.mjs SUCCESS
 ```
 
-事件先原子写入 `${CLAUDE_PLUGIN_DATA}/audit-spool/`，再由独立 compactor 在
-跨进程目录锁下汇总到 `audit.log`（本地，不提交 git）。日志位置、权限、轮转、
+事件只原子写入 `${CLAUDE_PLUGIN_DATA}/audit-spool/`；达到 50 条或 1 MiB 时
+异步触发独立 compactor，并在 `SessionEnd` 做最终 compact。compactor 在跨进程
+目录锁下汇总到 `audit.log`（本地，不提交 git）。目录使用 `0700`，health、lock、
+spool 和 log 文件使用 `0600`。日志位置、权限、轮转、
 health 事件、路径哈希与 best-effort redaction 边界见
 [`docs/privacy/data-handling.md`](../../../docs/privacy/data-handling.md)。
 
@@ -190,9 +193,9 @@ health 事件、路径哈希与 best-effort redaction 边界见
 nova-plugin/hooks/
 ├── hooks.json                    ← hook 主配置
 └── scripts/
-    ├── pre-write-check.sh        ← fail-closed Bash 启动器
+    ├── pre-write-check.sh        ← active fail-closed PreToolUse launcher
     ├── pre-write-check.mjs       ← active Node PreToolUse 实现
-    ├── pre-bash-check.sh         ← fail-closed Bash scope launcher
+    ├── pre-bash-check.sh         ← active fail-closed Bash broker launcher
     ├── pre-bash-check.mjs        ← scoped Bash command policy
     ├── post-write-verify.mjs     ← synchronous actual-path/content verifier
     ├── audit-compactor.mjs       ← lock-protected spool compactor and rotation owner
@@ -214,9 +217,9 @@ nova-plugin/hooks/
 
 ## Windows 前置条件
 
-`hooks.json` 对 post-use audit 使用 exec form 直接调用 Node.js 22+，对 PreToolUse 保留 Bash fail-closed launcher。Windows 在写入 guard 和运行 Codex helpers 时需要 Git
-Bash、WSL 或其他可在 PATH 中解析为 `bash` 的兼容运行时，并需要可由 Bash
-发现的 `node`/`node.exe`。缺少 Node 时 PreToolUse fail closed；PostToolUse
+`hooks.json` 的 PreToolUse 与 PostToolUse 都通过 exec form 直接调用 Node.js 22+。
+Windows 仅在显式使用 Bash fallback 或运行 Codex helpers 时需要 Git Bash、WSL
+或其他兼容运行时。缺少 Node 时 PreToolUse fail closed；PostToolUse
 audit logger 只报告 warning，因为操作已经完成。
 
 ---

@@ -1,7 +1,17 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "backend-plan",
+  "canonicalSurfaceId": "produce-plan",
+  "variantPreset": {
+    "PLAN_PROFILE": "java-backend"
+  },
+  "compatibilityAlias": true,
   "stage": "plan",
   "ownerAgents": [
     "architect"
@@ -53,7 +63,7 @@
   "behaviorContract": {
     "schemaVersion": 1,
     "source": "workflow-specs/behaviors.json",
-    "guidanceReference": "../../skills/nova-backend-plan/SKILL.md",
+    "guidanceReference": "../../skills/nova-produce-plan/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Produce a complete Java and Spring backend design artifact for senior review without implementing code.",
     "inputs": [

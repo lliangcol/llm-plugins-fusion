@@ -1,15 +1,19 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "id": "recommended-route-v2",
   "heading": "## Recommended Route",
   "fields": [
     {
-      "id": "command",
-      "label": "Command:"
+      "id": "canonicalSkill",
+      "label": "Canonical skill:"
     },
     {
-      "id": "skill",
-      "label": "Skill:"
+      "id": "commandAlias",
+      "label": "Command alias (optional):"
+    },
+    {
+      "id": "variantParameters",
+      "label": "Variant parameters:"
     },
     {
       "id": "coreAgent",
