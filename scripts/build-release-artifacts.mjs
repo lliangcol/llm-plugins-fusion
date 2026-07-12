@@ -85,7 +85,13 @@ function gitValue(root, args) {
   return result.status === 0 ? result.stdout.trim() : 'unknown';
 }
 
-export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/release-artifacts', now = () => new Date(), env = process.env } = {}) {
+export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/release-artifacts', now, env = process.env } = {}) {
+  const sourceEpoch = Number(env.SOURCE_DATE_EPOCH);
+  const commitTimestamp = gitValue(root, ['show', '-s', '--format=%cI', 'HEAD']);
+  const buildTimestamp = Number.isFinite(sourceEpoch)
+    ? new Date(sourceEpoch * 1000)
+    : new Date(commitTimestamp === 'unknown' ? 0 : commitTimestamp);
+  const clock = now ?? (() => buildTimestamp);
   const pluginRoot = resolve(root, 'nova-plugin');
   const plugin = JSON.parse(readFileSync(resolve(pluginRoot, '.claude-plugin/plugin.json'), 'utf8'));
   const { knownGoodClaudeCli } = loadNovaWorkflowModel(root);
@@ -127,7 +133,7 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
     serialNumber: `urn:uuid:${archiveSha256.slice(0, 8)}-${archiveSha256.slice(8, 12)}-${archiveSha256.slice(12, 16)}-${archiveSha256.slice(16, 20)}-${archiveSha256.slice(20, 32)}`,
     version: 1,
     metadata: {
-      timestamp: now().toISOString(),
+      timestamp: clock().toISOString(),
       component: { type: 'application', name: 'llm-plugins-fusion-build', version: plugin.version, 'bom-ref': `build:llm-plugins-fusion@${plugin.version}` },
     },
     components: buildComponents,
@@ -143,7 +149,7 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
 
   const runtimeCapabilities = {
     bomFormat: 'CycloneDX', specVersion: '1.7', version: 1,
-    metadata: { timestamp: now().toISOString(), component: { type: 'application', name: 'nova-plugin', version: plugin.version, 'bom-ref': `pkg:generic/nova-plugin@${plugin.version}`, hashes: [{ alg: 'SHA-256', content: archiveSha256 }] } },
+    metadata: { timestamp: clock().toISOString(), component: { type: 'application', name: 'nova-plugin', version: plugin.version, 'bom-ref': `pkg:generic/nova-plugin@${plugin.version}`, hashes: [{ alg: 'SHA-256', content: archiveSha256 }] } },
     components: [
       { type: 'platform', name: 'Node.js', version: '>=22', 'bom-ref': 'runtime:node>=22', properties: [{ name: 'nova:known-good', value: process.version }] },
       { type: 'application', name: 'Bash', version: '>=3.2', 'bom-ref': 'runtime:bash>=3.2' },
@@ -157,7 +163,7 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
 
   const commit = env.RELEASE_COMMIT ?? gitValue(root, ['rev-parse', 'HEAD']);
   const tag = env.RELEASE_TAG ?? gitValue(root, ['describe', '--tags', '--exact-match', 'HEAD']);
-  const startedOn = now().toISOString();
+  const startedOn = clock().toISOString();
   const buildRecord = {
     schemaVersion: 1,
     subject: { name: archiveName, sha256: archiveSha256 },
@@ -168,7 +174,7 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
     controlBundleSha256: env.RELEASE_CONTROL_BUNDLE_SHA256 ?? null,
     githubRunId: env.GITHUB_RUN_ID ?? null,
     startedOn,
-    finishedOn: now().toISOString(),
+    finishedOn: clock().toISOString(),
     runnerImage: env.ImageOS ?? env.RUNNER_OS ?? 'local',
     nodeVersion: process.version,
     actionShas: env.NOVA_ACTION_SHAS ? JSON.parse(env.NOVA_ACTION_SHAS) : {},
