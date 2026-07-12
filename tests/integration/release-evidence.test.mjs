@@ -126,6 +126,15 @@ test('release evidence also accepts interactive Node test summary markers', () =
   assert.equal(buildReleaseEvidence(input).tests.passed, 80);
 });
 
+test('release evidence binds an explicit Claude success completion after exit 1', () => {
+  const input = fixtureInput();
+  input.route.processExitCode = 1;
+  input.route.processCompletion = 'claude-json-success-completed';
+  const evidence = buildReleaseEvidence(input);
+  assert.equal(evidence.route.processExitCode, 1);
+  assert.equal(evidence.route.processCompletion, 'claude-json-success-completed');
+});
+
 test('release evidence rejects ambiguous route authentication evidence', () => {
   assert.throws(
     () => buildReleaseEvidence({
@@ -152,6 +161,9 @@ test('release evidence rejects skipped gates and inconsistent live inputs', () =
     (input) => { input.install.installedTreeDigest = 'd'.repeat(64); },
     (input) => { input.install.installedTreeIgnoredPaths = ['.in_use/**', 'commands/**']; },
     (input) => { input.route.invocation = '/wrong:route'; },
+    (input) => { input.route.processExitCode = 2; },
+    (input) => { input.route.processCompletion = 'wrong'; },
+    (input) => { input.route.processExitCode = 1; input.route.processCompletion = 'zero-exit'; },
     (input) => { input.route.outputStructureValid = false; },
     (input) => { input.route.permissionMode = 'default'; },
     (input) => { input.route.allowedTools = ['Skill']; },
