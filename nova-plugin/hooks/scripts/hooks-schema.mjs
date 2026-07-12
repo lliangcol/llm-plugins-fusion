@@ -40,6 +40,7 @@ function referencedHookScript(hook) {
 const REQUIRED_NOVA_EVENTS = new Map([
   ['PreToolUse', [
     { matcher: 'Write|Edit|NotebookEdit', script: 'hooks/scripts/pre-write-check.sh', command: 'bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"', async: false },
+    { matcher: 'Bash', script: 'hooks/scripts/pre-bash-check.sh', command: 'bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"', async: false },
   ]],
   ['PostToolUse', [
     { matcher: 'Write|Edit', script: 'hooks/scripts/post-write-verify.mjs', command: 'node', async: false },

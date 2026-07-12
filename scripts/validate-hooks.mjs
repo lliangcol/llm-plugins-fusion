@@ -16,6 +16,7 @@ const root = resolve(__dir, '..');
 const hooksPath = resolve(root, 'nova-plugin/hooks/hooks.json');
 const compatibilityHelpers = [
   'nova-plugin/hooks/scripts/pre-write-check.mjs',
+  'nova-plugin/hooks/scripts/pre-bash-check.mjs',
   'nova-plugin/hooks/scripts/post-write-verify.mjs',
   'nova-plugin/hooks/scripts/post-audit-log.mjs',
 ];
@@ -33,7 +34,7 @@ try {
 }
 
 for (const [event, expectedMatchers] of [
-  ['PreToolUse', ['Write|Edit|NotebookEdit']],
+  ['PreToolUse', ['Write|Edit|NotebookEdit', 'Bash']],
   ['PostToolUse', ['Write|Edit', 'Write|Edit|NotebookEdit|Bash']],
   ['PostToolUseFailure', ['Write|Edit|NotebookEdit|Bash']],
   ['PermissionDenied', ['Write|Edit|NotebookEdit|Bash']],

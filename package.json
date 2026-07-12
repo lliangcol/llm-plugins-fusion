@@ -52,6 +52,8 @@
     "validate:surface": "node scripts/validate-surface-budget.mjs",
     "validate:workflow": "node scripts/validate-workflow-fixtures.mjs",
     "validate:permissions": "node scripts/generate-workflow-permissions.mjs",
+    "validate:behavior-contracts": "node scripts/validate-runtime-behavior-contracts.mjs",
+    "validate:portable-paths": "node scripts/validate-portable-paths.mjs",
     "normalize:surfaces": "node scripts/normalize-workflow-surfaces.mjs --write",
     "generate:adapters": "node scripts/generate-adapters.mjs --write",
     "generate:workflow-v2-compat": "node scripts/generate-workflow-v2-compat.mjs --write",

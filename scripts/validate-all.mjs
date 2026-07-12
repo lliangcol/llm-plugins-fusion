@@ -176,6 +176,10 @@ function buildHookSyntaxTasks(hasBash) {
       '-n',
       'nova-plugin/hooks/scripts/pre-write-check.sh',
     ], 30_000),
+    commandTask('hooks.syntax.prebash', 'hook shell syntax nova-plugin/hooks/scripts/pre-bash-check.sh', 'bash', [
+      '-n',
+      'nova-plugin/hooks/scripts/pre-bash-check.sh',
+    ], 30_000),
     commandTask('hooks.syntax.audit', 'hook shell syntax nova-plugin/hooks/scripts/post-audit-log.sh', 'bash', [
       '-n',
       'nova-plugin/hooks/scripts/post-audit-log.sh',
@@ -298,6 +302,8 @@ async function main() {
     nodeTask('workflow.contract.v3', 'validate workflow capability contract v3', 'scripts/validate-workflow-contract-v3.mjs'),
     nodeTask('workflow.v2.compat', 'validate workflow v2 compatibility projection', 'scripts/generate-workflow-v2-compat.mjs'),
     nodeTask('workflow.runtime.contracts', 'validate concise runtime contracts', 'scripts/generate-runtime-contracts.mjs'),
+    nodeTask('workflow.runtime.behavior', 'validate direct command behavior contracts', 'scripts/validate-runtime-behavior-contracts.mjs'),
+    nodeTask('platform.file.urls', 'validate portable file URL handling', 'scripts/validate-portable-paths.mjs'),
     nodeTask('workflow.surface.normalization', 'validate normalized workflow surfaces', 'scripts/normalize-workflow-surfaces.mjs'),
   ]);
 

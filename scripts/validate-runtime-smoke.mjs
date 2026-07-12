@@ -195,6 +195,20 @@ await runNode('node pre-write hook validates hooks.json structure', [
   }),
 });
 
+await runNode('node pre-bash hook blocks redirection bypass', [
+  'nova-plugin/hooks/scripts/pre-bash-check.mjs',
+], {
+  input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'cat input > output' } }),
+  expectFailure: true,
+  outputPattern: /shell composition, redirection/,
+});
+
+await runNode('node pre-bash hook allows a bounded validation command', [
+  'nova-plugin/hooks/scripts/pre-bash-check.mjs',
+], {
+  input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'npm run validate' } }),
+});
+
 await runNodePostAuditSmoke();
 
 if (!(await commandExists('bash', ['--version'], { cwd: root }))) {

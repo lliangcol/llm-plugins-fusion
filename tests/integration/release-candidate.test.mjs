@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, rm, unlink, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, unlink, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import test from 'node:test';
@@ -8,6 +8,7 @@ import {
   buildReleaseCandidate,
   parseCandidateTag,
   resolveCandidateArtifacts,
+  sha256File,
   verifyReleasePromotion,
 } from '../../scripts/lib/release-candidate.mjs';
 import {
@@ -17,23 +18,39 @@ import {
 import {
   parsePromotionArgs,
 } from '../../scripts/verify-release-promotion.mjs';
+import { resolveFromModule } from '../../scripts/lib/repo-root.mjs';
 
-const root = resolve(new URL('../..', import.meta.url).pathname);
+const root = resolveFromModule(import.meta.url, '../..');
 const commit = 'a'.repeat(40);
 
 async function candidateFixture(t) {
   const temp = await mkdtemp(join(tmpdir(), 'nova-candidate-'));
   t.after(() => rm(temp, { recursive: true, force: true }));
   const artifactDir = join(temp, 'artifacts');
-  const evidence = join(temp, 'evidence.json');
-  await writeFile(evidence, '{"status":"passed"}\n');
+  const evidenceDir = join(temp, 'evidence');
+  await mkdir(evidenceDir);
+  const evidence = [
+    join(evidenceDir, 'SHA256SUMS.txt'),
+    join(evidenceDir, 'coverage-metadata.json'),
+    join(evidenceDir, 'validation-timings.json'),
+    join(evidenceDir, 'inventory.json'),
+    join(evidenceDir, 'route-smoke.json'),
+  ];
   buildReleaseArtifacts({ root, outDir: artifactDir, now: () => new Date('2026-07-12T00:00:00Z') });
+  await Promise.all([
+    writeFile(evidence[0], `${sha256File(resolve(root, 'package.json'))}  package.json\n`),
+    writeFile(evidence[1], '{"check":true,"exitCode":0,"thresholds":{"lines":85,"branches":60,"functions":90},"summaryPath":"coverage-summary.txt"}\n'),
+    writeFile(evidence[2], '{"failed":0,"skipped":0,"gates":[{"status":"passed"}]}\n'),
+    writeFile(evidence[3], '{"validation":{"passed":true,"errors":[]},"inventoryDiff":{"matches":true},"manifestValidation":{"marketplace":true,"plugin":true},"sourceTreeDigest":"same","installedTreeDigest":"same","plugin":{"version":"3.1.0"},"marketplace":{"ref":"v3.1.0-rc.1"}}\n'),
+    writeFile(evidence[4], '{"outputStructureValid":true,"projectChanged":false,"gitStatus":"","authenticationMode":"claude-code-oauth-token","configurationIsolation":"temporary-home","beforeProjectDigest":"same","afterProjectDigest":"same"}\n'),
+  ]);
   const manifest = buildReleaseCandidate({
     root,
     tag: 'v3.1.0-rc.1',
     commit,
     artifactDir,
-    evidencePaths: [evidence],
+    bundleRoot: temp,
+    evidencePaths: evidence,
     now: () => new Date('2026-07-12T01:00:00Z'),
   });
   return { temp, artifactDir, evidence, manifest };
@@ -51,7 +68,8 @@ test('candidate tag parsing binds an RC number to a stable base version', () => 
 test('candidate manifest binds source, evidence, and deterministic artifacts for promotion', async (t) => {
   const fixture = await candidateFixture(t);
   assert.equal(fixture.manifest.artifacts.length, 3);
-  assert.equal(fixture.manifest.evidence.length, 1);
+  assert.equal(fixture.manifest.evidence.length, 5);
+  assert.equal(fixture.manifest.schemaVersion, 2);
   assert.equal(fixture.manifest.candidate.stableVersion, '3.1.0');
   assert.equal(Object.keys(fixture.manifest.sourceDigests).length, 6);
   const promoted = verifyReleasePromotion({
@@ -88,6 +106,9 @@ test('candidate rehearsal rejects zero, multiple, and mismatched artifacts', asy
 test('promotion rejects candidate version, commit, and source drift', async (t) => {
   const fixture = await candidateFixture(t);
   assert.throws(() => verifyReleasePromotion({
+    root, stableTag: 'v3.1.0', expectedCandidateTag: 'v3.1.0-rc.2', commit, manifest: fixture.manifest, artifactDir: fixture.artifactDir,
+  }), /selected candidate release/);
+  assert.throws(() => verifyReleasePromotion({
     root, stableTag: 'v3.1.0', commit: 'b'.repeat(40), manifest: fixture.manifest, artifactDir: fixture.artifactDir,
   }), /same commit/);
   assert.throws(() => verifyReleasePromotion({
@@ -98,6 +119,35 @@ test('promotion rejects candidate version, commit, and source drift', async (t) 
   assert.throws(() => verifyReleasePromotion({
     root, stableTag: 'v3.1.0', commit, manifest: drifted, artifactDir: fixture.artifactDir,
   }), /source digest differs/);
+  const extraSource = structuredClone(fixture.manifest);
+  extraSource.sourceDigests['README.md'] = sha256File(resolve(root, 'README.md'));
+  assert.throws(() => verifyReleasePromotion({
+    root, stableTag: 'v3.1.0', commit, manifest: extraSource, artifactDir: fixture.artifactDir,
+  }), /source digest inventory differs/);
+});
+
+test('promotion fails closed for missing, replaced, or skipped required evidence', async (t) => {
+  const fixture = await candidateFixture(t);
+  const missing = structuredClone(fixture.manifest);
+  missing.evidence = missing.evidence.filter((entry) => entry.kind !== 'route-smoke');
+  assert.throws(() => verifyReleasePromotion({
+    root, stableTag: 'v3.1.0', commit, manifest: missing, artifactDir: fixture.artifactDir,
+  }), /required promotion evidence is missing: route-smoke/);
+
+  await writeFile(fixture.evidence.find((path) => path.endsWith('inventory.json')), '{"validation":{"passed":false,"errors":["replaced"]}}\n');
+  assert.throws(() => verifyReleasePromotion({
+    root, stableTag: 'v3.1.0', commit, manifest: fixture.manifest, artifactDir: fixture.artifactDir,
+  }), /evidence digest or size differs/);
+
+  const skipped = await candidateFixture(t);
+  const timingPath = skipped.evidence.find((path) => path.endsWith('validation-timings.json'));
+  await writeFile(timingPath, '{"failed":0,"skipped":1,"gates":[{"status":"skipped"}]}\n');
+  const timing = skipped.manifest.evidence.find((entry) => entry.kind === 'validation-timings');
+  timing.sha256 = sha256File(timingPath);
+  timing.bytes = (await readFile(timingPath)).length;
+  assert.throws(() => verifyReleasePromotion({
+    root, stableTag: 'v3.1.0', commit, manifest: skipped.manifest, artifactDir: skipped.artifactDir,
+  }), /failed or skipped gates/);
 });
 
 test('candidate and promotion CLI parsers preserve explicit evidence paths', async (t) => {
@@ -108,7 +158,8 @@ test('candidate and promotion CLI parsers preserve explicit evidence paths', asy
       '--tag', 'v3.1.0-rc.3',
       '--commit', commit,
       '--artifact-dir', fixture.artifactDir,
-      '--evidence', fixture.evidence,
+      '--bundle-root', fixture.temp,
+      ...fixture.evidence.flatMap((path) => ['--evidence', path]),
       '--out', out,
     ],
     env: {},
@@ -118,4 +169,5 @@ test('candidate and promotion CLI parsers preserve explicit evidence paths', asy
   assert.equal(JSON.parse(await readFile(out, 'utf8')).candidate.tag, 'v3.1.0-rc.3');
   assert.equal(parseCandidateArgs(['--tag', 'v3.1.0-rc.4', '--commit', commit], {}).tag, 'v3.1.0-rc.4');
   assert.equal(parsePromotionArgs(['--stable-tag', 'v3.1.0', '--commit', commit], {}).stableTag, 'v3.1.0');
+  assert.equal(parsePromotionArgs(['--candidate-tag', 'v3.1.0-rc.4'], {}).expectedCandidateTag, 'v3.1.0-rc.4');
 });

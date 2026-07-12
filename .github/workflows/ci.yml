@@ -24,6 +24,7 @@ jobs:
         with:
           node-version: '22'
       - run: npm run ci:quick
+      - run: npm run validate:portable-paths
       - run: node scripts/generate-workflow-permissions.mjs
       - run: node scripts/generate-workflow-v2-compat.mjs
       - run: node scripts/generate-runtime-contracts.mjs
@@ -106,6 +107,9 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: npm run ci:quick
+      - run: npm run validate:portable-paths
+      - if: runner.os == 'Windows'
+        run: node scripts/generate-runtime-contracts.mjs && node scripts/generate-adapters.mjs && node scripts/generate-compatibility-evidence.mjs && node scripts/generate-quality-report.mjs
       - if: runner.os != 'Windows'
         run: bash scripts/verify-agents.sh
       - if: runner.os == 'Windows'
@@ -134,7 +138,7 @@ jobs:
       - run: diff -ru .metrics/release-artifacts-first .metrics/release-artifacts
 
   live-evidence:
-    name: Conditional / Live Evidence
+    name: Conditional / Evidence Registry Integrity
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 10

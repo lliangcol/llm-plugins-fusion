@@ -3,8 +3,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { repoRoot } from './lib/repo-root.mjs';
 
-const root = resolve(new URL('..', import.meta.url).pathname);
+const root = repoRoot(import.meta.url);
 const read = (path) => readFileSync(resolve(root, path), 'utf8');
 const owners = read('.github/CODEOWNERS');
 const labels = read('.github/labels.yml');

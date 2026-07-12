@@ -24,9 +24,12 @@ tag or publishing release notes.
 existing `v*` tag, including with maintainer approval; publish a new patch
 version instead.
 
-Candidate bundles include a non-empty CycloneDX dependency graph and an
-in-toto statement using the SLSA Provenance v1 predicate. Stable promotion
-reuses those exact bytes and does not rebuild the archive, SBOM, or provenance.
+Candidate bundles include the manifest, required promotion evidence, a non-empty
+CycloneDX dependency graph, and an in-toto statement using the SLSA Provenance
+v1 predicate. Stable promotion verifies the original candidate tag and signer
+workflow attestation, validates every required evidence digest and status, and
+publishes those exact bytes. It performs a deterministic rebuild only as a
+byte-comparison verifier; rebuilt files are never publication inputs.
 The package CI lane performs two builds and requires byte-for-byte equality.
 - Release tags must be signed annotated tags created by the designated release
   actor and verified against `.github/release-signers`.
@@ -76,6 +79,7 @@ When Bash is available, confirm hook syntax checks actually ran:
 
 ```bash
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 
@@ -101,8 +105,9 @@ The release workflow is split by responsibility:
    prerelease candidate manifest.
 2. `.github/workflows/release.yml` accepts only stable tags and delegates to
    `.github/workflows/promote-release.yml`.
-3. Promotion downloads the candidate assets, verifies commit, source, artifact,
-   SBOM, and provenance digests, and publishes without rebuilding.
+3. Promotion downloads the candidate bundle, verifies signed tag, original
+   attestation signer, commit, source, artifact, SBOM, provenance, and required
+   evidence, then rebuilds only for byte comparison and publishes candidate bytes.
 
 ## Review Before Release
 

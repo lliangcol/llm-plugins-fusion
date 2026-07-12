@@ -68,6 +68,7 @@
       "test:mutation:critical",
       "test:unit",
       "validate",
+      "validate:behavior-contracts",
       "validate:community",
       "validate:compatibility-evidence",
       "validate:docs",
@@ -75,6 +76,7 @@
       "validate:github-workflows",
       "validate:maintainer",
       "validate:permissions",
+      "validate:portable-paths",
       "validate:project-state",
       "validate:regression",
       "validate:runtime",
@@ -131,6 +133,12 @@
         "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh\"",
         "args": [],
         "async": false
+      },
+      {
+        "matcher": "Bash",
+        "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh\"",
+        "args": [],
+        "async": false
       }
     ],
     "PostToolUse": [
@@ -178,12 +186,12 @@
     "exactTagInstallGate": true
   },
   "sourceDigests": {
-    "package.json": "c13df1bb6f9d1096256035dda1804369f0327088269aec5985da78dd684fcdb2",
+    "package.json": "8c36b8237eca1ca25242e3075e3e4b9930c5595b196121ea8eeaa6ed596ad7c5",
     "nova-plugin/.claude-plugin/plugin.json": "05c62e72fc160e4233519f13a1f18827a32e82558b2f09a6803a91594f86ff7d",
     "workflow-specs/workflows.json": "a0004c565a7984f7e1b3a24187c4d3961755d7f7c06bd04efcd5d2f5d3878608",
     "workflow-specs/nova.product.json": "b3a274d7d266d382551a7dae5f282d46cbc199a55c2127f81e2156e1f2790daa",
     "docs/generated/surface-inventory.json": "48edcfec1020ca3cb28251f926c509a1f38803adb69d9c9816a90ab38df2ee60",
     "governance/product-lanes.json": "ada36f3719d3cd745ccef06c594226de26f01329414b0ed7e7d25a8110868c39",
-    "nova-plugin/hooks/hooks.json": "46e0eb97aa9e42b4071ca7dff55bb0efd66e53097f9230090e59fc94e279567f"
+    "nova-plugin/hooks/hooks.json": "38ce56ef4bd94f6920a50e0e053bf2e3c6612ca1f857f11f4c249473585c58a1"
   }
 }

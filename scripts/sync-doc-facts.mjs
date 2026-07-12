@@ -5,8 +5,9 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { buildProjectState } from './generate-project-state.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 
-const root = resolve(new URL('..', import.meta.url).pathname);
+const root = repoRoot(import.meta.url);
 export const startMarker = '<!-- generated:project-state:start -->';
 export const endMarker = '<!-- generated:project-state:end -->';
 export const projectFactDocuments = Object.freeze([

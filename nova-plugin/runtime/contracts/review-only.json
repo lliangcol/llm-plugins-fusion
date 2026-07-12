@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "sourceSchemaVersion": 3,
   "id": "review-only",
   "stage": "review",
@@ -48,6 +48,10 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-review-only/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "loadRequired": true,
+    "reference": "../../skills/nova-review-only/SKILL.md",
+    "conflictPolicy": "fail-closed"
+  },
+  "claimBoundary": "Machine-readable policy summary only; the referenced authored skill is required for complete workflow behavior."
 }

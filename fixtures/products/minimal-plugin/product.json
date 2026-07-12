@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "namespace": "acme-flow",
+  "workflowCount": 3,
+  "stages": ["intake", "shape", "assure"],
+  "agents": ["coordinator", "designer", "checker"]
+}

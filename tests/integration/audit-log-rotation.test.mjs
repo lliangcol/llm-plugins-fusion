@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { chmod, mkdir, mkdtemp, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readFile, rm, stat, utimes, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -130,6 +130,43 @@ test('audit compactor exits cleanly when another process owns the lock', async (
   });
   assert.equal(result.ok, true, result.stderr);
   await assert.rejects(() => stat(join(root, 'audit.log')), { code: 'ENOENT' });
+});
+
+test('audit compactor recovers an expired lock owned by a dead process', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'nova-audit-stale-lock-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const lock = join(root, '.audit-compact.lock');
+  const spool = join(root, 'audit-spool');
+  await mkdir(lock);
+  await mkdir(spool);
+  await writeFile(join(lock, 'owner.json'), JSON.stringify({ pid: 99999999, startedAt: '2020-01-01T00:00:00.000Z', host: 'stale', processStartIdentity: 'stale' }));
+  await utimes(lock, new Date('2020-01-01T00:00:00Z'), new Date('2020-01-01T00:00:00Z'));
+  await writeFile(join(spool, 'record.json'), '{"schemaVersion":3,"tool":"Write"}\n');
+  const result = await runProcess('stale lock recovery', process.execPath, ['nova-plugin/hooks/scripts/audit-compactor.mjs'], {
+    cwd: repoRoot,
+    env: { ...process.env, CLAUDE_PLUGIN_DATA: root, NOVA_AUDIT_LOCK_TTL_MS: '1' },
+  });
+  assert.equal(result.ok, true, result.stderr);
+  assert.match(await readFile(join(root, 'audit.log'), 'utf8'), /"tool":"Write"/);
+  assert.match(await readFile(join(root, 'audit-health.log'), 'utf8'), /recovered stale audit compaction lock/);
+  await assert.rejects(() => stat(lock), { code: 'ENOENT' });
+});
+
+test('audit compactor recovers an expired lock after PID reuse identity mismatch', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'nova-audit-reused-pid-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const lock = join(root, '.audit-compact.lock');
+  const spool = join(root, 'audit-spool');
+  await mkdir(lock);
+  await mkdir(spool);
+  await writeFile(join(lock, 'owner.json'), JSON.stringify({ pid: process.pid, startedAt: '2020-01-01T00:00:00.000Z', host: 'stale', processStartIdentity: 'different-process-start' }));
+  await writeFile(join(spool, 'record.json'), '{"schemaVersion":3,"tool":"Bash"}\n');
+  const result = await runProcess('reused PID lock recovery', process.execPath, ['nova-plugin/hooks/scripts/audit-compactor.mjs'], {
+    cwd: repoRoot,
+    env: { ...process.env, CLAUDE_PLUGIN_DATA: root, NOVA_AUDIT_LOCK_TTL_MS: '1' },
+  });
+  assert.equal(result.ok, true, result.stderr);
+  assert.match(await readFile(join(root, 'audit.log'), 'utf8'), /"tool":"Bash"/);
 });
 
 test('audit logger hashes paths outside the project root', async (t) => {

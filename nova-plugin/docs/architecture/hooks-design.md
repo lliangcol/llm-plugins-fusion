@@ -16,7 +16,7 @@ Do not edit this block by hand. It is synchronized by
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`
+- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`, `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"`
 - Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
 <!-- generated:project-state:end -->
 
@@ -134,6 +134,17 @@ PostToolUse 额外包含：
 
 **Active implementation:** `nova-plugin/hooks/scripts/pre-write-check.mjs`
 
+### Hook 1B：PreToolUse — scoped Bash guard
+
+**目标：** 在正常 Bash 权限提示之前拒绝常见的写入绕过形式，包括重定向、管道/
+compound shell、直接文件系统 mutator、inline interpreter、mutating Git/package
+subcommand。允许通过的单命令仍受 Claude 权限提示和外部 sandbox 约束；脚本内部
+副作用无法由词法检查完整证明，因此该 guard 不是 command sandbox。
+
+**Active launcher:** `nova-plugin/hooks/scripts/pre-bash-check.sh`
+
+**Active implementation:** `nova-plugin/hooks/scripts/pre-bash-check.mjs`
+
 敏感信息检测规则由 `nova-plugin/runtime/secret-rules.mjs` 统一维护。Bash
 启动器只解析 Node 路径；Node 缺失时 fail closed。设置
 `NOVA_WRITE_GUARD_DISABLED=1` 会打印警告并返回“无决定”，仅用于显式临时
@@ -176,6 +187,8 @@ nova-plugin/hooks/
 └── scripts/
     ├── pre-write-check.sh        ← fail-closed Bash 启动器
     ├── pre-write-check.mjs       ← active Node PreToolUse 实现
+    ├── pre-bash-check.sh         ← fail-closed Bash scope launcher
+    ├── pre-bash-check.mjs        ← scoped Bash command policy
     ├── post-write-verify.mjs     ← synchronous actual-path/content verifier
     ├── audit-compactor.mjs       ← lock-protected spool compactor and rotation owner
     ├── post-audit-log.sh         ← compatibility and syntax-test helper; not active in hooks.json
@@ -218,10 +231,11 @@ audit logger 只报告 warning，因为操作已经完成。
 
 ## 安全边界
 
-PreToolUse matcher 不包含 Bash，因此 `cat > file`、`sed -i` 或脚本生成文件
-不会经过 proposed-content guard。PreToolUse 与 PostToolUse 之间仍存在 TOCTOU
-时间窗，且 PostToolUse 不能撤销已经完成的操作。该 hook 是 guardrail，不是
-sandbox；Bash 写入仍依赖 Claude 权限、sandbox、CI secret scan 和 release gate。
+PreToolUse 的 Bash matcher 会阻止常见的重定向、compound command 和直接 mutator，
+但无法证明允许脚本的内部副作用，也无法替代 OS sandbox。PreToolUse 与 PostToolUse
+之间仍存在 TOCTOU 时间窗，且 PostToolUse 不能撤销已经完成的操作。该 hook 是
+guardrail，不是 sandbox；剩余 Bash 风险仍依赖 Claude 权限、sandbox、CI secret
+scan 和 release gate。
 
 ---
 

@@ -3,7 +3,7 @@ export function compileRuntimeContract(spec, workflow) {
   const profile = spec.permissionProfiles[workflow.permissionProfile];
   if (!profile) throw new Error(`${workflow.id}: unknown permission profile ${workflow.permissionProfile}`);
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     sourceSchemaVersion: spec.schemaVersion,
     id: workflow.id,
     stage: workflow.stage,
@@ -22,8 +22,12 @@ export function compileRuntimeContract(spec, workflow) {
       'Preserve the named output contract and report skipped validation honestly.',
       'Do not publish externally, mutate user scope, or rewrite Git history.',
     ],
-    authoredBehaviorReference: `../../skills/nova-${workflow.id}/SKILL.md`,
-    claimBoundary: 'Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference.',
+    behaviorContract: {
+      loadRequired: true,
+      reference: `../../${workflow.contractPath}`,
+      conflictPolicy: 'fail-closed',
+    },
+    claimBoundary: 'Machine-readable policy summary only; the referenced authored skill is required for complete workflow behavior.',
   };
 }
 

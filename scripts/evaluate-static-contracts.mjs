@@ -6,8 +6,9 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { repoRoot } from './lib/repo-root.mjs';
 
-const root = resolve(new URL('..', import.meta.url).pathname);
+const root = repoRoot(import.meta.url);
 const target = 'evals/baselines/static-contract.json';
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 

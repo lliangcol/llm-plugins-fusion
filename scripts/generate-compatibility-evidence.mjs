@@ -2,11 +2,13 @@
 /** Derive current compatibility claims from static adapters and digest-bound evidence. */
 
 import { createHash } from 'node:crypto';
+import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { repoRoot } from './lib/repo-root.mjs';
 
-const root = resolve(new URL('..', import.meta.url).pathname);
+const root = repoRoot(import.meta.url);
 const registryPath = 'governance/compatibility-evidence.generated.json';
 const summaryPath = 'docs/generated/assistant-compatibility.md';
 const matrixPath = 'docs/marketplace/compatibility-matrix.md';
@@ -15,6 +17,9 @@ const matrixEnd = '<!-- generated:assistant-compatibility:end -->';
 
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 const sha256 = (path) => createHash('sha256').update(readFileSync(resolve(root, path))).digest('hex');
+const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false }).stdout?.trim() ?? null;
+const minimumLiveCases = 20;
+const minimumLiveAttempts = 3;
 
 const declarations = Object.freeze({
   'claude-code': { declaredLevel: 'L2', maximumSupportedLevel: 'L4', adapter: 'adapters/claude/manifest.json', scope: 'stable Claude command invocation; hooks and release verification require current evidence' },
@@ -29,12 +34,14 @@ function evidenceFiles() {
     .map((name) => `evals/evidence/${name}`);
 }
 
-function evidenceStatus(path, evidence, assistant) {
-  const staleReasons = [];
+function evidenceStatus(path, evidence, assistant, eligibilityReasons = []) {
+  const staleReasons = [...eligibilityReasons];
   for (const [sourcePath, expected] of Object.entries(evidence.sourceDigests ?? {})) {
     if (!existsSync(resolve(root, sourcePath))) staleReasons.push(`${sourcePath}:missing`);
     else if (sha256(sourcePath) !== expected) staleReasons.push(`${sourcePath}:digest-changed`);
   }
+  if (evidence.sourceState && evidence.sourceState !== 'clean-commit') staleReasons.push('source-state:not-clean-commit');
+  if (evidence.baseCommit && head && evidence.baseCommit !== head) staleReasons.push('base-commit:not-current-head');
   return {
     assistant: assistant.id,
     assistantVersion: assistant.version,
@@ -48,6 +55,20 @@ function evidenceStatus(path, evidence, assistant) {
   };
 }
 
+function liveEligibilityReasons(evidence) {
+  const reasons = [];
+  const caseIds = new Set((evidence.cases ?? []).map((entry) => entry.caseId));
+  const attempts = new Map();
+  for (const entry of evidence.cases ?? []) attempts.set(entry.caseId, (attempts.get(entry.caseId) ?? 0) + 1);
+  if (evidence.sourceState !== 'clean-commit') reasons.push('live-source:not-clean');
+  if (!/^v\d+\.\d+\.\d+(?:-rc\.\d+)?$/u.test(evidence.releaseTag ?? '')) reasons.push('live-source:exact-tag-missing');
+  if (evidence.assistant?.adapterLoaded !== true || !evidence.runtime?.adapterLoadProof) reasons.push('live-runtime:adapter-load-unproven');
+  if (!evidence.sourceDigests?.['scripts/run-live-assistant-evals.mjs'] || !evidence.sourceDigests?.['evals/live/cases.json']) reasons.push('live-source:runner-or-dataset-digest-missing');
+  if (caseIds.size < minimumLiveCases) reasons.push(`live-dataset:fewer-than-${minimumLiveCases}-cases`);
+  if ([...attempts.values()].some((count) => count < minimumLiveAttempts) || attempts.size === 0) reasons.push(`live-dataset:fewer-than-${minimumLiveAttempts}-attempts`);
+  return reasons;
+}
+
 export function buildRegistry() {
   const support = readJson('governance/assistant-support.json');
   const records = evidenceFiles().flatMap((path) => {
@@ -58,11 +79,12 @@ export function buildRegistry() {
         recordedAt: evidence.completedAt,
         sourceDigests: evidence.sourceDigests,
         baseCommit: evidence.baseCommit,
+        sourceState: evidence.sourceState,
       }, {
         id: evidence.assistant.id,
         version: exactVersion,
-        compatibilityLevel: evidence.summary?.passed === evidence.summary?.total ? 'L4-local' : 'L2',
-      })];
+        compatibilityLevel: evidence.summary?.passed === evidence.summary?.total && liveEligibilityReasons(evidence).length === 0 ? 'L4-local' : 'L2',
+      }, liveEligibilityReasons(evidence))];
     }
     return (evidence.assistants ?? []).map((assistant) => evidenceStatus(path, evidence, assistant));
   });

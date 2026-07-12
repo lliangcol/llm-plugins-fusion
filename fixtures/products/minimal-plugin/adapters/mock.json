@@ -1,0 +1,6 @@
+{
+  "schemaVersion": 1,
+  "assistant": "mock",
+  "invocation": "fixture-only",
+  "enforcement": "advisory"
+}

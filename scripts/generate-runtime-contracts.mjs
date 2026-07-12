@@ -4,8 +4,9 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { compileRuntimeContracts } from '../framework/compiler/compile-runtime-contracts.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 
-const root = resolve(new URL('..', import.meta.url).pathname);
+const root = repoRoot(import.meta.url);
 export function generatedRuntimeContracts() {
   const spec = JSON.parse(readFileSync(resolve(root, 'workflow-specs/workflows.json'), 'utf8'));
   return compileRuntimeContracts(spec).map((contract) => ({ path: `nova-plugin/runtime/contracts/${contract.id}.json`, content: `${JSON.stringify(contract, null, 2)}\n` }));

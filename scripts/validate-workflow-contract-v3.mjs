@@ -4,8 +4,9 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { repoRoot } from './lib/repo-root.mjs';
 
-const root = resolve(new URL('..', import.meta.url).pathname);
+const root = repoRoot(import.meta.url);
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 const spec = readJson('workflow-specs/workflows.json');
 const product = readJson('workflow-specs/nova.product.json');

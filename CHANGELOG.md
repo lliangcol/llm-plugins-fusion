@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+- Added a 21/21 direct-command behavior-contract gate, Windows-safe file URL validation, a non-Nova three-workflow compiler fixture, fail-closed schema keyword checks, deep `uniqueItems` validation, and stale audit-lock recovery.
+- Added a scoped PreToolUse Bash guard that blocks common redirection, shell composition, filesystem mutators, inline interpreters, and mutating Git/package subcommands before the normal permission prompt.
+
+### Changed
+- Direct commands again load their full authored `SKILL.md` behavior contract while retaining the generated runtime JSON as a machine-readable policy summary; missing or conflicting contracts fail closed.
+- Candidate releases now publish an attested evidence bundle containing the manifest, deterministic artifacts, checksums, coverage, validation timings, exact-tag install inventory, and route smoke evidence. Stable promotion verifies the original signer workflow and required evidence, then rebuilds only for byte comparison while publishing the original candidate bytes.
+- Bare-CLI prompt probes no longer upgrade compatibility unless they come from a clean exact tag, prove adapter loading, bind runner and dataset digests, and satisfy the minimum case/attempt policy. Small latency samples now report median and range rather than P95.
+
+### Fixed
+- Fixed stable release display names that could render as `vv<version>` and removed non-portable `file:` URL `.pathname` handling from maintenance scripts and tests.
+- Removed duplicate hard-coding of the known-good Claude CLI from release evidence generation; the workflow specification remains the single source.
+
 ## [3.1.0] - 2026-07-12
 
 ### Added
@@ -18,7 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - Added CODEOWNERS, labels-as-code, an architecture decision record, and private vulnerability reporting guidance.
 
 ### Changed
-- Consolidated pull-request CI into Contracts, Tests, Security, Platform, Package, conditional Live Evidence, and one branch-protection Aggregate check.
+- Consolidated pull-request CI into Contracts, Tests, Security, Platform, Package, conditional Evidence Registry Integrity, and one branch-protection Aggregate check.
 - Direct commands now load generated minimum runtime contracts instead of always loading full compatibility skills; the measured static prompt reduction is 77.5% without changing the 21 command/skill public inventory.
 - Post-use audit logging now uses atomic spool records and a lock-protected compactor; external paths are hashed and degraded health events remain observable.
 

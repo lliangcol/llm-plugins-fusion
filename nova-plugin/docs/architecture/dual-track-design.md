@@ -8,8 +8,9 @@
 - `nova-plugin/skills/nova-*/SKILL.md`：行为事实源，承载参数解析、安全边界、输出契约和工作流。
 
 本仓库当前采用 **direct command + compatibility skill + shared policy**。
-Command 直接执行 workflow，并读取对应 `SKILL.md` 作为行为契约；它不再通过
-Skill tool 或 frontmatter 运行时委派。
+Command 直接执行 workflow，并同时读取生成的 runtime JSON 作为机器权限/输入摘要、
+对应 `SKILL.md` 作为完整行为契约；它不再通过 Skill tool 或 frontmatter 运行时委派。
+任一合同缺失或两者冲突时必须 fail closed。
 
 ---
 
@@ -34,8 +35,10 @@ Command 文件必须保留：
 ```md
 Execute this workflow directly from `$ARGUMENTS`.
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/nova-<id>/SKILL.md` as the supporting
-behavioral contract. Do not invoke it through the Skill tool.
+Read `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/<id>.json` as the machine policy
+summary and `${CLAUDE_PLUGIN_ROOT}/skills/nova-<id>/SKILL.md` as the
+authoritative behavioral contract. Do not invoke it through the Skill tool;
+fail closed on missing or conflicting contracts.
 ```
 
 Command 的职责是：
@@ -96,6 +99,10 @@ commands/<id>.md
   thin wrapper + frontmatter
         |
         v
+runtime/contracts/<id>.json
+  machine policy summary
+        |
+        v
 skills/nova-<id>/SKILL.md
   behavior source of truth
         |
@@ -135,6 +142,7 @@ claude plugin validate nova-plugin
 ```bash
 node scripts/validate-hooks.mjs
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 

@@ -59,23 +59,73 @@ jobs:
           test -n "${candidate_tag}"
           mkdir -p .metrics/promotion
           gh release download "${candidate_tag}" --dir .metrics/promotion
+          shopt -s nullglob
+          bundles=(.metrics/promotion/nova-plugin-*-candidate-bundle.tar.gz)
+          test "${#bundles[@]}" -eq 1
           printf 'candidate_tag=%s\n' "${candidate_tag}" >> "${GITHUB_OUTPUT}"
+          printf 'candidate_bundle=%s\n' "${bundles[0]}" >> "${GITHUB_OUTPUT}"
+      - name: Verify signed candidate tag and original candidate attestations
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_TAG: ${{ steps.candidate.outputs.candidate_tag }}
+          CANDIDATE_BUNDLE: ${{ steps.candidate.outputs.candidate_bundle }}
+        run: |
+          set -euo pipefail
+          git fetch origin "refs/tags/${CANDIDATE_TAG}:refs/tags/${CANDIDATE_TAG}"
+          test "$(git cat-file -t "refs/tags/${CANDIDATE_TAG}")" = "tag"
+          git config gpg.format ssh
+          git config gpg.ssh.allowedSignersFile .github/release-signers
+          git verify-tag "${CANDIDATE_TAG}"
+          test "$(git rev-list -n 1 "${CANDIDATE_TAG}")" = "${GITHUB_SHA}"
+          gh attestation verify .metrics/promotion/nova-plugin-${GITHUB_REF_NAME#v}.tar.gz \
+            --repo "${GITHUB_REPOSITORY}" \
+            --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" \
+            --source-ref "refs/tags/${CANDIDATE_TAG}" \
+            --source-digest "${GITHUB_SHA}"
+          gh attestation verify "${CANDIDATE_BUNDLE}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" \
+            --source-ref "refs/tags/${CANDIDATE_TAG}" \
+            --source-digest "${GITHUB_SHA}"
+      - name: Extract verified candidate bundle with safe paths
+        env:
+          CANDIDATE_BUNDLE: ${{ steps.candidate.outputs.candidate_bundle }}
+        run: |
+          set -euo pipefail
+          if tar -tzf "${CANDIDATE_BUNDLE}" | grep -Eq '(^/|(^|/)\.\.(/|$))'; then
+            echo "Candidate bundle contains an unsafe archive path."
+            exit 1
+          fi
+          mkdir -p .metrics/promotion/bundle
+          tar -xzf "${CANDIDATE_BUNDLE}" -C .metrics/promotion/bundle
       - name: Verify candidate manifest, commit, sources, and artifact digests
         id: verify
+        env:
+          EXPECTED_CANDIDATE_TAG: ${{ steps.candidate.outputs.candidate_tag }}
         run: >-
           node scripts/verify-release-promotion.mjs
           --stable-tag "${GITHUB_REF_NAME}"
+          --candidate-tag "${EXPECTED_CANDIDATE_TAG}"
           --commit "${GITHUB_SHA}"
-          --manifest .metrics/promotion/release-candidate.json
-          --artifact-dir .metrics/promotion
+          --manifest .metrics/promotion/bundle/release-candidate.json
+          --bundle-root .metrics/promotion/bundle
+          --artifact-dir .metrics/promotion/bundle/artifacts
+      - name: Rebuild candidate bytes for deterministic comparison only
+        env:
+          GITHUB_REF_NAME: ${{ steps.candidate.outputs.candidate_tag }}
+        run: |
+          npm run release:artifacts
+          cmp .metrics/release-artifacts/nova-plugin-*.tar.gz .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz
+          cmp .metrics/release-artifacts/nova-plugin-*.tar.gz.cdx.json .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz.cdx.json
+          cmp .metrics/release-artifacts/nova-plugin-*.tar.gz.provenance.json .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz.provenance.json
       - name: Resolve exactly one promoted archive and SBOM
         id: release-files
         shell: bash
         run: |
           set -euo pipefail
           shopt -s nullglob
-          archives=(.metrics/promotion/nova-plugin-*.tar.gz)
-          sboms=(.metrics/promotion/nova-plugin-*.tar.gz.cdx.json)
+          archives=(.metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz)
+          sboms=(.metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz.cdx.json)
           test "${#archives[@]}" -eq 1
           test "${#sboms[@]}" -eq 1
           printf 'archive=%s\n' "${archives[0]}" >> "${GITHUB_OUTPUT}"
@@ -88,13 +138,14 @@ jobs:
       - name: Publish stable release without rebuilding
         uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d # v3
         with:
-          name: "nova-plugin v${{ github.ref_name }}"
+          name: "nova-plugin ${{ github.ref_name }}"
           body_path: .metrics/release/release-notes.md
           files: |
-            .metrics/promotion/SHA256SUMS.txt
-            .metrics/promotion/nova-plugin-*.tar.gz
-            .metrics/promotion/nova-plugin-*.tar.gz.cdx.json
-            .metrics/promotion/nova-plugin-*.tar.gz.provenance.json
-            .metrics/promotion/release-candidate.json
+            .metrics/promotion/nova-plugin-*-candidate-bundle.tar.gz
+            .metrics/promotion/bundle/evidence/*
+            .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz
+            .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz.cdx.json
+            .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz.provenance.json
+            .metrics/promotion/bundle/release-candidate.json
           draft: false
           prerelease: false

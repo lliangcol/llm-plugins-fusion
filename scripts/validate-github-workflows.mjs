@@ -555,7 +555,9 @@ function validateWorkflowContracts() {
       [/RELEASE_CANDIDATE:\s*'1'[\s\S]*run:\s*node scripts\/prepare-release\.mjs/, 'candidate workflow must prepare RC notes from the stable base version'],
       [/CLAUDE_CODE_OAUTH_TOKEN:\s*\$\{\{\s*secrets\.CLAUDE_CODE_OAUTH_TOKEN\s*\}\}/, 'candidate live gate must use the OAuth repository secret'],
       [/node scripts\/generate-release-candidate\.mjs[\s\S]*--artifact-dir[\s\S]*--evidence[\s\S]*--out/, 'candidate workflow must bind artifacts and evidence into a manifest'],
-      [/archives=\(\.metrics\/candidate-bundle\/nova-plugin-\*\.tar\.gz\)[\s\S]*sboms=\(\.metrics\/candidate-bundle\/nova-plugin-\*\.tar\.gz\.cdx\.json\)[\s\S]*test "\$\{#archives\[@\]\}" -eq 1[\s\S]*test "\$\{#sboms\[@\]\}" -eq 1/, 'candidate workflow must resolve exactly one archive and SBOM'],
+      [/archives=\(\.metrics\/candidate-bundle\/artifacts\/nova-plugin-\*\.tar\.gz\)[\s\S]*sboms=\(\.metrics\/candidate-bundle\/artifacts\/nova-plugin-\*\.tar\.gz\.cdx\.json\)[\s\S]*test "\$\{#archives\[@\]\}" -eq 1[\s\S]*test "\$\{#sboms\[@\]\}" -eq 1/, 'candidate workflow must resolve exactly one archive and SBOM'],
+      [/candidate-bundle\.tar\.gz[\s\S]*--sort=name[\s\S]*--mtime='@0'/, 'candidate workflow must create a deterministic evidence bundle'],
+      [/subject-path:\s*\$\{\{\s*steps\.files\.outputs\.bundle\s*\}\}/, 'candidate workflow must attest the evidence bundle'],
       [/subject-path:\s*\$\{\{\s*steps\.files\.outputs\.archive\s*\}\}[\s\S]*sbom-path:\s*\$\{\{\s*steps\.files\.outputs\.sbom\s*\}\}/, 'candidate attestation must use resolved concrete paths'],
       [/prerelease:\s*true/, 'candidate publication must be a prerelease'],
     ]) if (!pattern.test(candidateSrc)) recordError(candidateFile, message);
@@ -571,12 +573,15 @@ function validateWorkflowContracts() {
     for (const [pattern, message] of [
       [/gh release download "\$\{candidate_tag\}" --dir \.metrics\/promotion/, 'promotion must download existing candidate assets'],
       [/node scripts\/verify-release-promotion\.mjs[\s\S]*--manifest[\s\S]*--artifact-dir/, 'promotion must verify manifest, source, commit, and artifact digests'],
+      [/gh attestation verify[\s\S]*--signer-workflow[\s\S]*--source-ref[\s\S]*--source-digest/, 'promotion must verify original candidate attestations and signer identity'],
+      [/Extract verified candidate bundle with safe paths[\s\S]*tar -tzf[\s\S]*grep -Eq[\s\S]*tar -xzf/, 'promotion must verify archive paths before extracting the attested candidate bundle'],
+      [/Rebuild candidate bytes for deterministic comparison only[\s\S]*npm run release:artifacts[\s\S]*cmp /, 'promotion must rebuild only for byte comparison against candidate artifacts'],
       [/node scripts\/prepare-release\.mjs/, 'promotion must prepare stable release metadata'],
       [/subject-path:\s*\$\{\{\s*steps\.release-files\.outputs\.archive\s*\}\}[\s\S]*sbom-path:\s*\$\{\{\s*steps\.release-files\.outputs\.sbom\s*\}\}/, 'promotion attestation must use resolved concrete paths'],
       [/prerelease:\s*false/, 'stable promotion must publish a non-prerelease'],
     ]) if (!pattern.test(promotionSrc)) recordError(promotionFile, message);
-    if (/release:artifacts|build-release-artifacts\.mjs/.test(promotionSrc)) {
-      recordError(promotionFile, 'stable promotion must not rebuild candidate artifacts');
+    if (/files:[\s\S]*\.metrics\/release-artifacts\/nova-plugin-/u.test(promotionSrc)) {
+      recordError(promotionFile, 'stable promotion must publish candidate bytes rather than rebuilt artifacts');
     }
   }
 

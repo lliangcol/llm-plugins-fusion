@@ -35,9 +35,36 @@ function isValidIsoDate(value) {
   return month >= 1 && month <= 12 && day >= 1 && day <= daysInMonth[month - 1];
 }
 
-// Minimal JSON Schema draft-07 validator
-// Supports: required/type/pattern/format/minLength/additionalProperties/properties/items/minItems/uniqueItems/enum/oneOf/const
-function validate(schema, data, path = '') {
+const supportedSchemaKeywords = new Set([
+  '$schema', '$id', 'title', 'description', 'type', 'required', 'pattern', 'format',
+  'minLength', 'minimum', 'additionalProperties', 'properties', 'items', 'minItems',
+  'uniqueItems', 'enum', 'oneOf', 'const',
+]);
+
+export function validateSchemaKeywords(schema, path = '(root)') {
+  const errors = [];
+  for (const key of Object.keys(schema)) {
+    if (!supportedSchemaKeywords.has(key)) errors.push(`${path}: unsupported schema keyword ${key}`);
+  }
+  for (const [key, child] of Object.entries(schema.properties ?? {})) {
+    errors.push(...validateSchemaKeywords(child, `${path}.properties.${key}`));
+  }
+  if (schema.format && !['uri', 'date', 'date-time', 'email'].includes(schema.format)) errors.push(`${path}: unsupported schema format ${schema.format}`);
+  if (schema.items && typeof schema.items === 'object') errors.push(...validateSchemaKeywords(schema.items, `${path}.items`));
+  for (const [index, child] of (schema.oneOf ?? []).entries()) errors.push(...validateSchemaKeywords(child, `${path}.oneOf[${index}]`));
+  return errors;
+}
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+// Dependency-free schema subset. Unsupported keywords fail closed above.
+export function validate(schema, data, path = '') {
   const errors = [];
 
   if (schema.oneOf) {
@@ -59,7 +86,8 @@ function validate(schema, data, path = '') {
   if (schema.type) {
     const types = Array.isArray(schema.type) ? schema.type : [schema.type];
     const jsType = Array.isArray(data) ? 'array' : (data === null ? 'null' : typeof data);
-    if (!types.includes(jsType)) {
+    const typeMatches = types.some((type) => type === jsType || (type === 'integer' && jsType === 'number' && Number.isInteger(data)));
+    if (!typeMatches) {
       errors.push(`${path || '(root)'}: expected type ${types.join('|')}, got ${jsType}`);
       return errors;
     }
@@ -80,9 +108,16 @@ function validate(schema, data, path = '') {
     if (schema.format === 'date' && !isValidIsoDate(data)) {
       errors.push(`${path}: value "${data}" is not a valid ISO-8601 date (YYYY-MM-DD)`);
     }
+    if (schema.format === 'date-time' && (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/u.test(data) || Number.isNaN(Date.parse(data)))) {
+      errors.push(`${path}: value "${data}" is not a valid RFC 3339 date-time`);
+    }
     if (schema.format === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data)) {
       errors.push(`${path}: value "${data}" is not a valid email`);
     }
+  }
+
+  if ((typeof data === 'number') && schema.minimum !== undefined && data < schema.minimum) {
+    errors.push(`${path}: number ${data} < minimum ${schema.minimum}`);
   }
 
   if ((schema.type === 'object' || typeof data === 'object') && !Array.isArray(data) && data !== null) {
@@ -113,7 +148,7 @@ function validate(schema, data, path = '') {
     if (schema.minItems !== undefined && data.length < schema.minItems) {
       errors.push(`${path}: array length ${data.length} < minItems ${schema.minItems}`);
     }
-    if (schema.uniqueItems && new Set(data).size !== data.length) {
+    if (schema.uniqueItems && new Set(data.map(canonicalJson)).size !== data.length) {
       errors.push(`${path}: array items must be unique`);
     }
     if (schema.items) {
@@ -202,7 +237,7 @@ if (versionPatterns.some((pattern) => pattern !== SEMVER_PATTERN_SOURCE)) {
 console.log('✓ schema SemVer pattern alignment');
 
 let allPassed = true;
-for (const schemaPath of [
+const schemaPaths = [
   'schemas/plugin.schema.json',
   'schemas/registry-source.schema.json',
   'schemas/marketplace.schema.json',
@@ -217,7 +252,8 @@ for (const schemaPath of [
   'schemas/release-candidate.schema.json',
   'schemas/adapter-evidence.schema.json',
   'schemas/eval-result.schema.json',
-]) {
+];
+for (const schemaPath of schemaPaths) {
   const schema = loadJson(schemaPath);
   const fileName = schemaPath.split('/').at(-1);
   const expectedId = `https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/${fileName}`;
@@ -227,6 +263,12 @@ for (const schemaPath of [
     console.error(`  - got ${schema.$id ?? '(missing)'}, expected ${expectedId}`);
   } else {
     console.log(`✓ ${schemaPath} $id`);
+  }
+  const keywordErrors = validateSchemaKeywords(schema);
+  if (keywordErrors.length) {
+    allPassed = false;
+    console.error(`✗ ${schemaPath} supported keyword boundary`);
+    for (const error of keywordErrors) console.error(`  - ${error}`);
   }
 }
 

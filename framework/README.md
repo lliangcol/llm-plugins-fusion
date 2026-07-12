@@ -10,5 +10,8 @@ layout exists.
 
 The generic kernel must not contain a `nova-plugin` namespace constant, a
 21-workflow count, or a fixed agent/pack registry. Those product-instance facts
-remain in `workflow-specs/nova.product.json`. A future `plugins/` layout still
-requires a second independently maintained plugin spec and release evidence.
+remain in `workflow-specs/nova.product.json`. The three-workflow
+`fixtures/products/minimal-plugin/` fixture proves that the compiler accepts a
+different namespace, stages, agents, behavior paths, and mock assistant. A
+future production `plugins/` layout still requires an independently maintained
+second product and release evidence; this fixture does not claim that product exists.

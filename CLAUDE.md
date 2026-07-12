@@ -16,7 +16,7 @@ Do not edit this block by hand. It is synchronized by
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`
+- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`, `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"`
 - Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
 <!-- generated:project-state:end -->
 
@@ -384,6 +384,11 @@ routing docs, migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
   secret, proposed Edit, and protected `hooks.json` validation. NotebookEdit
   fails closed because complete proposed notebook content cannot be
   reconstructed reliably.
+- A second `PreToolUse` entry matches `Bash` and blocks common write-bypass
+  forms such as redirection, compound shell programs, direct filesystem
+  mutators, inline interpreters, and mutating Git/package subcommands before
+  the normal Bash permission prompt. This narrows risk but is not a sandbox;
+  an allowed validation script can still have its own side effects.
 - `PostToolUse` synchronously rechecks actual `Write|Edit` targets after the
   runtime operation. A containment, target-type, hard-link, or protected
   `hooks.json` violation emits a high-severity failure and stops the subsequent

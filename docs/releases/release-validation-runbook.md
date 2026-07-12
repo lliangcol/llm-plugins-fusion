@@ -269,7 +269,9 @@ For publication, require `release-candidate.json` and its bound candidate
 evidence from `.github/workflows/release-candidate.yml`; it binds exact-tag
 installation, inventory, OAuth-authenticated `/nova-plugin:route`, coverage,
 source digests, artifact digests, tag, and commit. Stable promotion must verify
-this manifest and must not run the artifact builder again.
+the signed candidate tag, original candidate signer workflow attestation, and
+every required evidence record. It may run the artifact builder only in an
+isolated comparison step and must publish the downloaded candidate bytes.
 
 The scheduled `Claude Latest Drift` job intentionally fails its validation step
 when the latest CLI inventory changes, but it must still write

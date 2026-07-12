@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["schemaVersion", "candidate", "sourceDigests", "artifacts", "evidence"],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "candidate": {
       "type": "object",
       "additionalProperties": false,
@@ -26,9 +26,10 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "sha256", "bytes", "kind"],
+        "required": ["name", "path", "sha256", "bytes", "kind"],
         "properties": {
           "name": { "type": "string" },
+          "path": { "type": "string", "pattern": "^artifacts/[^/]+$" },
           "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
           "bytes": { "type": "number" },
           "kind": { "enum": ["archive", "sbom", "provenance"] }
@@ -40,11 +41,13 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "sha256", "bytes"],
+        "required": ["kind", "path", "sha256", "bytes", "requiredForPromotion"],
         "properties": {
-          "name": { "type": "string" },
+          "kind": { "enum": ["checksums", "coverage-metadata", "validation-timings", "install-inventory", "route-smoke", "quality-summary"] },
+          "path": { "type": "string", "pattern": "^evidence/[^/]+$" },
           "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-          "bytes": { "type": "number" }
+          "bytes": { "type": "number" },
+          "requiredForPromotion": { "const": true }
         }
       }
     }

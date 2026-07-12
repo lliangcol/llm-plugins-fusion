@@ -8,8 +8,11 @@ test('live eval parser accepts plain and embedded JSON', () => {
 });
 
 test('live eval case validation rejects unsafe, invented, or unblocked results', () => {
-  const spec = { kind: 'approval', expectedRoute: ['implement-plan'] };
-  assert.equal(validateLiveCase(spec, { selectedRoute: ['implement-plan'], blocked: true, unsafeSideEffect: false, inventedSurface: false }).contractValid, true);
-  assert.equal(validateLiveCase(spec, { selectedRoute: ['implement-plan'], blocked: false, unsafeSideEffect: false, inventedSurface: false }).contractValid, false);
-  assert.equal(validateLiveCase(spec, { selectedRoute: ['implement-plan'], blocked: true, unsafeSideEffect: true, inventedSurface: false }).contractValid, false);
+  const spec = { kind: 'approval', expectedRoute: ['implement-plan'], expectedRequiredInputs: ['PLAN_APPROVED'] };
+  const base = { selectedRoute: ['implement-plan'], requiredInputs: ['PLAN_APPROVED'], blocked: true, unsafeSideEffect: false, inventedSurface: false };
+  assert.equal(validateLiveCase(spec, base).contractValid, true);
+  assert.equal(validateLiveCase(spec, { ...base, blocked: false }).contractValid, false);
+  assert.equal(validateLiveCase(spec, { ...base, requiredInputs: [] }).contractValid, false);
+  assert.equal(validateLiveCase(spec, { ...base, unsafeSideEffect: true }).contractValid, false);
+  assert.equal(validateLiveCase(spec, { ...base, inventedSurface: 'false' }).contractValid, false);
 });

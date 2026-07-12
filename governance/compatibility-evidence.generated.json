@@ -42,9 +42,9 @@
       "maximumSupportedLevel": "L4",
       "adapter": "adapters/claude/manifest.json",
       "scope": "stable Claude command invocation; hooks and release verification require current evidence",
-      "effectiveLevel": "L4-local",
-      "evidenceStatus": "current",
-      "currentEvidence": "evals/evidence/2026-07-12-claude-code-live.json"
+      "effectiveLevel": "L2",
+      "evidenceStatus": "declaration-only",
+      "currentEvidence": null
     },
     {
       "assistant": "codex",
@@ -52,9 +52,9 @@
       "maximumSupportedLevel": "L4",
       "adapter": "adapters/codex/AGENTS.md",
       "scope": "generated local adapter; enforcement and live behavior require current evidence",
-      "effectiveLevel": "L4-local",
-      "evidenceStatus": "current",
-      "currentEvidence": "evals/evidence/2026-07-12-codex-live.json"
+      "effectiveLevel": "L2",
+      "evidenceStatus": "declaration-only",
+      "currentEvidence": null
     },
     {
       "assistant": "generic",
@@ -81,7 +81,9 @@
         "workflow-specs/workflows.json:digest-changed",
         "adapters/codex/AGENTS.md:digest-changed",
         "adapters/claude/manifest.json:digest-changed",
-        "adapters/generic-agent-skills/manifest.json:digest-changed"
+        "adapters/generic-agent-skills/manifest.json:digest-changed",
+        "source-state:not-clean-commit",
+        "base-commit:not-current-head"
       ]
     },
     {
@@ -97,7 +99,49 @@
         "workflow-specs/workflows.json:digest-changed",
         "adapters/codex/AGENTS.md:digest-changed",
         "adapters/claude/manifest.json:digest-changed",
-        "adapters/generic-agent-skills/manifest.json:digest-changed"
+        "adapters/generic-agent-skills/manifest.json:digest-changed",
+        "source-state:not-clean-commit",
+        "base-commit:not-current-head"
+      ]
+    },
+    {
+      "assistant": "claude-code",
+      "assistantVersion": "2.1.205",
+      "observedLevel": "L2",
+      "recordedAt": "2026-07-12T01:23:00.598Z",
+      "source": "evals/evidence/2026-07-12-claude-code-live.json",
+      "releaseTag": null,
+      "commit": "eb9822ee3aeb690307d2de3c5440a91fc0b38cee",
+      "status": "historical",
+      "staleReasons": [
+        "live-source:not-clean",
+        "live-source:exact-tag-missing",
+        "live-runtime:adapter-load-unproven",
+        "live-source:runner-or-dataset-digest-missing",
+        "live-dataset:fewer-than-20-cases",
+        "live-dataset:fewer-than-3-attempts",
+        "source-state:not-clean-commit",
+        "base-commit:not-current-head"
+      ]
+    },
+    {
+      "assistant": "codex",
+      "assistantVersion": "0.144.0-alpha.4",
+      "observedLevel": "L2",
+      "recordedAt": "2026-07-12T01:24:39.245Z",
+      "source": "evals/evidence/2026-07-12-codex-live.json",
+      "releaseTag": null,
+      "commit": "eb9822ee3aeb690307d2de3c5440a91fc0b38cee",
+      "status": "historical",
+      "staleReasons": [
+        "live-source:not-clean",
+        "live-source:exact-tag-missing",
+        "live-runtime:adapter-load-unproven",
+        "live-source:runner-or-dataset-digest-missing",
+        "live-dataset:fewer-than-20-cases",
+        "live-dataset:fewer-than-3-attempts",
+        "source-state:not-clean-commit",
+        "base-commit:not-current-head"
       ]
     }
   ]
