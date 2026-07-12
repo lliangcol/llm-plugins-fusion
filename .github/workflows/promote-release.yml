@@ -2,6 +2,11 @@ name: Promote Verified Release Candidate
 
 on:
   workflow_call:
+    inputs:
+      release-tag:
+        description: Existing signed immutable stable tag for forward recovery
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -21,14 +26,16 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
           fetch-depth: 0
+          ref: ${{ inputs.release-tag || github.ref }}
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
       - run: npm ci --ignore-scripts
       - name: Verify immutable stable tag and protected main ancestry
+        id: release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ inputs.release-tag || github.ref_name }}
         run: |
           set -euo pipefail
           test "$(git cat-file -t "refs/tags/${RELEASE_TAG}")" = "tag"
@@ -38,19 +45,21 @@ jobs:
           release_commit="$(git rev-list -n 1 "${RELEASE_TAG}")"
           git fetch origin main
           git merge-base --is-ancestor "${release_commit}" origin/main
-          test "${release_commit}" = "${GITHUB_SHA}"
+          test "${release_commit}" = "$(git rev-parse HEAD)"
           if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
             echo "Release ${RELEASE_TAG} already exists; immutable promotion refused."
             exit 1
           fi
           node scripts/prepare-release.mjs
+          printf 'commit=%s\n' "${release_commit}" >> "${GITHUB_OUTPUT}"
       - name: Resolve latest matching candidate release
         id: candidate
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release-tag || github.ref_name }}
         run: |
           set -euo pipefail
-          version="${GITHUB_REF_NAME#v}"
+          version="${RELEASE_TAG#v}"
           escaped_version="${version//./\\.}"
           candidate_tag="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
             --jq '.[] | select(.prerelease == true) | .tag_name' \
@@ -70,6 +79,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           CANDIDATE_TAG: ${{ steps.candidate.outputs.candidate_tag }}
           CANDIDATE_BUNDLE: ${{ steps.candidate.outputs.candidate_bundle }}
+          RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
+          RELEASE_TAG: ${{ inputs.release-tag || github.ref_name }}
         run: |
           set -euo pipefail
           git fetch origin "refs/tags/${CANDIDATE_TAG}:refs/tags/${CANDIDATE_TAG}"
@@ -77,17 +88,18 @@ jobs:
           git config gpg.format ssh
           git config gpg.ssh.allowedSignersFile .github/release-signers
           git verify-tag "${CANDIDATE_TAG}"
-          test "$(git rev-list -n 1 "${CANDIDATE_TAG}")" = "${GITHUB_SHA}"
-          gh attestation verify .metrics/promotion/nova-plugin-${GITHUB_REF_NAME#v}.tar.gz \
+          test "$(git rev-list -n 1 "${CANDIDATE_TAG}")" = "${RELEASE_COMMIT}"
+          gh attestation verify .metrics/promotion/nova-plugin-${RELEASE_TAG#v}.tar.gz \
             --repo "${GITHUB_REPOSITORY}" \
             --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" \
             --source-ref "refs/tags/${CANDIDATE_TAG}" \
-            --source-digest "${GITHUB_SHA}"
+            --source-digest "${RELEASE_COMMIT}" \
+            --predicate-type "https://cyclonedx.org/bom"
           gh attestation verify "${CANDIDATE_BUNDLE}" \
             --repo "${GITHUB_REPOSITORY}" \
             --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" \
             --source-ref "refs/tags/${CANDIDATE_TAG}" \
-            --source-digest "${GITHUB_SHA}"
+            --source-digest "${RELEASE_COMMIT}"
       - name: Extract verified candidate bundle with safe paths
         env:
           CANDIDATE_BUNDLE: ${{ steps.candidate.outputs.candidate_bundle }}
@@ -103,11 +115,13 @@ jobs:
         id: verify
         env:
           EXPECTED_CANDIDATE_TAG: ${{ steps.candidate.outputs.candidate_tag }}
+          RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
+          RELEASE_TAG: ${{ inputs.release-tag || github.ref_name }}
         run: >-
           node scripts/verify-release-promotion.mjs
-          --stable-tag "${GITHUB_REF_NAME}"
+          --stable-tag "${RELEASE_TAG}"
           --candidate-tag "${EXPECTED_CANDIDATE_TAG}"
-          --commit "${GITHUB_SHA}"
+          --commit "${RELEASE_COMMIT}"
           --manifest .metrics/promotion/bundle/release-candidate.json
           --bundle-root .metrics/promotion/bundle
           --artifact-dir .metrics/promotion/bundle/artifacts
@@ -139,7 +153,8 @@ jobs:
       - name: Publish stable release without rebuilding
         uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3
         with:
-          name: "nova-plugin ${{ github.ref_name }}"
+          name: "nova-plugin ${{ inputs.release-tag || github.ref_name }}"
+          tag_name: ${{ inputs.release-tag || github.ref_name }}
           body_path: .metrics/release/release-notes.md
           files: |
             .metrics/promotion/nova-plugin-*-candidate-bundle.tar.gz
