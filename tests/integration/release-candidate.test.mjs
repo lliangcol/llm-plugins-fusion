@@ -44,7 +44,7 @@ async function candidateFixture(t) {
     writeFile(evidence[1], '{"check":true,"exitCode":0,"thresholds":{"lines":85,"branches":60,"functions":90},"summaryPath":"coverage-summary.txt"}\n'),
     writeFile(evidence[2], '{"failed":0,"skipped":0,"gates":[{"status":"passed"}]}\n'),
     writeFile(evidence[3], '{"validation":{"passed":true,"errors":[]},"inventoryDiff":{"matches":true},"manifestValidation":{"marketplace":true,"plugin":true},"sourceTreeDigest":"same","installedTreeDigest":"same","plugin":{"version":"3.2.0"},"marketplace":{"ref":"v3.2.0-rc.1"}}\n'),
-    writeFile(evidence[4], '{"outputStructureValid":true,"processExitCode":0,"processCompletion":"zero-exit","projectChanged":false,"gitStatus":"","authenticationMode":"claude-code-oauth-token","configurationIsolation":"temporary-home","beforeProjectDigest":"same","afterProjectDigest":"same"}\n'),
+    writeFile(evidence[4], '{"outputStructureValid":true,"processExitCode":0,"processCompletion":"zero-exit","processStderrPresent":false,"processStderrBytes":0,"processStderrSha256":"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855","projectChanged":false,"gitStatus":"","authenticationMode":"claude-code-oauth-token","configurationIsolation":"temporary-home","beforeProjectDigest":"same","afterProjectDigest":"same"}\n'),
     writeFile(evidence[5], `{"passed":true,"commit":"${commit}","pullRequestHead":"${commit}","expectedReviewCommit":"${commit}","minimumApprovals":1,"approvalReviewers":["peer"],"excludedReviewers":["author","actor"]}\n`),
   ]);
   const manifest = buildReleaseCandidate({
