@@ -132,7 +132,7 @@ jobs:
           printf 'archive=%s\n' "${archives[0]}" >> "${GITHUB_OUTPUT}"
           printf 'sbom=%s\n' "${sboms[0]}" >> "${GITHUB_OUTPUT}"
       - name: Attest promoted archive and SBOM
-        uses: actions/attest@f6bf1532d7d6793fce74eac584813a8eee607999 # v4
+        uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
         with:
           subject-path: ${{ steps.release-files.outputs.archive }}
           sbom-path: ${{ steps.release-files.outputs.sbom }}

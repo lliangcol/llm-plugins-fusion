@@ -213,12 +213,12 @@ jobs:
           printf 'archive=%s\n' "${archives[0]}" >> "${GITHUB_OUTPUT}"
           printf 'sbom=%s\n' "${sboms[0]}" >> "${GITHUB_OUTPUT}"
           printf 'bundle=%s\n' "${bundle}" >> "${GITHUB_OUTPUT}"
-      - uses: actions/attest@f6bf1532d7d6793fce74eac584813a8eee607999 # v4
+      - uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
         with:
           subject-path: ${{ steps.files.outputs.archive }}
           sbom-path: ${{ steps.files.outputs.sbom }}
       - name: Attest candidate bundle that binds manifest, artifacts, and evidence
-        uses: actions/attest@f6bf1532d7d6793fce74eac584813a8eee607999 # v4
+        uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
         with:
           subject-path: ${{ steps.files.outputs.bundle }}
       - uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d # v3
