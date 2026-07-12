@@ -19,6 +19,12 @@ import {
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
 
+function knownGoodClaudeCli(root) {
+  const productPath = resolve(root, 'workflow-specs/nova.product.json');
+  if (existsSync(productPath)) return readJson(productPath).runtimeCompatibility?.['claude-code'] ?? null;
+  return readJson(resolve(root, 'workflow-specs/workflows.json')).knownGoodClaudeCli ?? null;
+}
+
 function usage() {
   return 'Usage: node scripts/generate-release-evidence.mjs [--coverage-summary <path>] [--coverage-metadata <path>] [--timings <path>] [--install <path>] [--route <path>] [--checksums <path>] [--artifact-dir <path>] [--out-dir <path>] [--require-live]';
 }
@@ -150,6 +156,7 @@ export function buildReleaseEvidence({
   artifacts = [],
   requireLive = false,
   expectedRouteInventory = null,
+  knownGoodClaudeCli,
 } = {}) {
   const coverage = parseCoverageSummary(coverageSummary);
   if (!coverage) throw new Error('coverage summary does not contain an all files row');
@@ -203,8 +210,8 @@ export function buildReleaseEvidence({
     if (JSON.stringify(install.installedTreeIgnoredPaths) !== JSON.stringify(['.in_use/**'])) {
       throw new Error('install evidence does not use the exact approved installed-tree ignore policy');
     }
-    if (install.knownGoodClaudeCli !== '2.1.205' || !String(install.claudeVersion ?? '').startsWith('2.1.205')) {
-      throw new Error('install evidence does not prove known-good Claude CLI 2.1.205');
+    if (!knownGoodClaudeCli || install.knownGoodClaudeCli !== knownGoodClaudeCli || !String(install.claudeVersion ?? '').startsWith(knownGoodClaudeCli)) {
+      throw new Error(`install evidence does not prove known-good Claude CLI ${knownGoodClaudeCli ?? '(missing source fact)'}`);
     }
     if (requireLive) {
       if (
@@ -298,7 +305,7 @@ export function buildReleaseEvidence({
     runtime: {
       node: coverageMetadata.node,
       claude: install?.claudeVersion ?? 'not-run',
-      knownGoodClaudeCli: install?.knownGoodClaudeCli ?? '2.1.205',
+      knownGoodClaudeCli,
     },
     tests: {
       ...counts,
@@ -395,6 +402,7 @@ export function generateReleaseEvidence({ root = defaultRoot, args = [], env = p
     })),
     requireLive: options.requireLive,
     expectedRouteInventory,
+    knownGoodClaudeCli: knownGoodClaudeCli(root),
   });
   mkdirSync(options.outDir, { recursive: true });
   const jsonPath = resolve(options.outDir, 'release-evidence.json');

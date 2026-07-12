@@ -16,6 +16,7 @@ workflow details into this public repository.
 | Document | Purpose |
 | --- | --- |
 | [profile-contract.md](profile-contract.md) | Required fields and public-safe rules for any consumer profile. |
+| [shell-policy-template.json](shell-policy-template.json) | Empty default-deny command-broker policy; copy it to `.nova/shell-policy.json` and add only reviewed exact argv entries. |
 | [private-java-backend-template.md](private-java-backend-template.md) | Redacted template for a private Java/Spring backend consumer. |
 | [frontend-project-template.md](frontend-project-template.md) | Redacted template for a private frontend application. |
 | [workbench-template.md](workbench-template.md) | Public-safe template for organizing private requirements, plans, reviews, checkpoints, prompts, and handoff artifacts. |

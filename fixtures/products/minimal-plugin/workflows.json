@@ -1,0 +1,25 @@
+{
+  "$schema": "../../../schemas/workflow-spec.schema.json",
+  "schemaVersion": 4,
+  "permissionProfiles": {
+    "inspect": {
+      "allowedTools": ["Inspect"],
+      "disallowedTools": [],
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
+        "shell": "denied",
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      }
+    }
+  },
+  "workflows": [
+    { "id": "triage", "stage": "intake", "ownerAgents": ["coordinator"], "recommendedPacks": ["logic"], "requiredInputs": ["REQUEST"], "outputContract": "triage-v1", "risk": "none", "modelInvocable": true, "subagentSafe": true, "permissionProfile": "inspect", "legacyAlias": "acme-triage", "contractPath": "contracts/triage.md" },
+    { "id": "design", "stage": "shape", "ownerAgents": ["designer"], "recommendedPacks": ["logic"], "requiredInputs": ["REQUEST"], "outputContract": "design-v1", "risk": "none", "modelInvocable": true, "subagentSafe": true, "permissionProfile": "inspect", "legacyAlias": "acme-design", "contractPath": "contracts/design.md" },
+    { "id": "verify", "stage": "assure", "ownerAgents": ["checker"], "recommendedPacks": ["logic"], "requiredInputs": ["RESULT"], "outputContract": "verify-v1", "risk": "none", "modelInvocable": true, "subagentSafe": true, "permissionProfile": "inspect", "legacyAlias": "acme-verify", "contractPath": "contracts/verify.md" }
+  ]
+}

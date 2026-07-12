@@ -10,13 +10,13 @@ Do not edit this block by hand. It is synchronized by
 - Plugin: `nova-plugin@3.1.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
-- Workflow contract: schema v3, namespace `nova-plugin`, 21 workflows
+- Workflow contract: schema v4, namespace `nova-plugin`, 21 workflows
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`
+- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`, `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"`
 - Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
 <!-- generated:project-state:end -->
 
@@ -48,7 +48,7 @@ Status: active.
 | Machine-derived project truth | Version, runtime, inventory, scripts, hook launchers, release model, and product lanes are generated from domain sources. |
 | Documentation facts | Active documentation consumes generated fact blocks and validators reject stale semantics rather than requiring exact prose. |
 | Candidate release | Candidate artifacts are built and bound to a signed manifest before an immutable RC tag is verified. |
-| Stable promotion | Stable publication promotes the exact RC commit and artifact digests without rebuilding. |
+| Stable promotion | Stable publication verifies signed RC identity, original attestations, required evidence, and deterministic rebuild equality, then publishes only the exact RC bytes. |
 | Workspace-safe hooks | Write/Edit targets are lexically and physically contained in explicit allowed roots. |
 
 Phase A exits only after normal, missing/multiple artifact, and digest/tag

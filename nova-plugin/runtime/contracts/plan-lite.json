@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "plan-lite",
   "stage": "plan",
   "ownerAgents": [
@@ -45,6 +45,134 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-plan-lite/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-plan-lite/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Create a short execution plan with explicit scope, trade-offs, and risks without writing code.",
+    "inputs": [
+      {
+        "name": "REQUEST",
+        "required": true,
+        "aliases": [
+          "INPUT",
+          "TASK"
+        ],
+        "description": "Requirement or problem to plan."
+      },
+      {
+        "name": "CONSTRAINTS",
+        "required": false,
+        "aliases": [
+          "BOUNDARIES"
+        ],
+        "description": "Timeline, compatibility, and scope limits."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "REQUEST and success criteria are sufficiently clear.",
+        "action": "Produce a lightweight plan."
+      },
+      {
+        "when": "Critical information is missing.",
+        "action": "Mark assumptions and blocking questions instead of inventing detail."
+      }
+    ],
+    "invariants": [
+      "Do not write production code or artifacts.",
+      "Make assumptions explicit.",
+      "Keep the plan lightweight rather than implementation-detailed."
+    ],
+    "stopConditions": [
+      "REQUEST is unresolved.",
+      "Planning would require unauthorized external research or writes."
+    ],
+    "workflowSteps": [
+      {
+        "id": "clarify-goal",
+        "action": "Clarify target and success criteria."
+      },
+      {
+        "id": "lock-scope",
+        "action": "State goals and non-goals."
+      },
+      {
+        "id": "select-approach",
+        "action": "Choose a high-level approach and trade-offs."
+      },
+      {
+        "id": "outline",
+        "action": "List execution outline and key risks."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "report",
+      "instructions": "Label assumptions and unresolved choices; do not silently turn them into decisions."
+    },
+    "output": {
+      "mode": "chat",
+      "fields": [
+        {
+          "name": "Goal",
+          "required": true,
+          "description": "Target outcome."
+        },
+        {
+          "name": "Non-Goals",
+          "required": true,
+          "description": "Explicit exclusions."
+        },
+        {
+          "name": "Chosen Approach",
+          "required": true,
+          "description": "High-level direction."
+        },
+        {
+          "name": "Key Trade-offs",
+          "required": true,
+          "description": "Costs and benefits."
+        },
+        {
+          "name": "Execution Outline",
+          "required": true,
+          "description": "Ordered steps."
+        },
+        {
+          "name": "Key Risks",
+          "required": true,
+          "description": "Material uncertainty and failure modes."
+        }
+      ],
+      "order": [
+        "Goal",
+        "Non-Goals",
+        "Chosen Approach",
+        "Key Trade-offs",
+        "Execution Outline",
+        "Key Risks"
+      ],
+      "severityLevels": []
+    },
+    "validation": [
+      "Confirm every output field appears in order.",
+      "Confirm the response contains no production code or file modification claim."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "missing input",
+        "assumptions",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "missing input",
+        "assumptions",
+        "safe next action"
+      ]
+    }
+  },
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

@@ -33,6 +33,20 @@ This file is the supporting behavioral contract for `/nova-plugin:finalize-work`
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Package completed work into review-ready handoff text without changing the completed state.
+- **Canonical inputs:** `WORK_SUMMARY`(required aliases=WORK_SCOPE)
+- **Decision entries:** 2.
+- **Workflow steps:** `freeze-state` → `detect-mode` → `package` → `verify-sections`
+- **Output:** mode=`chat`; order=`title or commit message` → `change summary` → `validation` → `handoff` → `out-of-scope follow-up`; severity=none.
+- **Deviation/failure:** mode=`forbid`; failure order=`status` → `missing evidence` → `available handoff` → `safe next action`.
+- **Full IR:** `runtime/contracts/finalize-work.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### Purpose
 
 Package completed work into review-ready handoff artifacts without new changes.

@@ -106,7 +106,9 @@ The default full validation remains:
 node scripts/validate-all.mjs
 ```
 
-Maintainer validation npm shortcuts in `package.json` are dependency-free:
+Maintainer validation requires the locked development-only Ajv toolchain via
+`npm ci --ignore-scripts`. The distributed plugin archive remains free of Node
+package runtime dependencies. Shortcuts in `package.json` include:
 
 ```bash
 npm run doctor

@@ -33,6 +33,20 @@ This file is the supporting behavioral contract for `/nova-plugin:codex-review-f
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Run an external Codex review, fix high-confidence findings, run project checks, and verify closure.
+- **Canonical inputs:** `REVIEW_SCOPE`(required aliases=INPUT,SCOPE); `BASE`(optional aliases=BASE_BRANCH); `REVIEW_MODE`(optional aliases=MODE default="branch" exact="branch","staged","full"); `INCLUDE_UNTRACKED_CONTENT`(optional default=false exact=true,false)
+- **Decision entries:** 3.
+- **Workflow steps:** `review` → `triage` → `repair` → `check` → `verify` → `close`
+- **Output:** mode=`workspace-and-chat`; order=`review artifact` → `fix summary` → `checks evidence` → `verification artifact` → `merge recommendation` → `residual risk`; severity=`must-fix`, `should-fix`, `ignorable`.
+- **Deviation/failure:** mode=`approval-required`; failure order=`status` → `completed phase` → `blocker` → `retained evidence` → `safe next action`.
+- **Full IR:** `runtime/contracts/codex-review-fix.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### 目的
 
 执行一个面向当前分支的半自动闭环：

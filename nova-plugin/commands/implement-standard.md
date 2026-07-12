@@ -14,7 +14,7 @@ disable-model-invocation: true
 
 Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-implement-standard` through the Skill tool.
 
-Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/implement-standard.json` as the compiled runtime contract, then apply it directly. The full compatibility skill is a maintainer reference and is not required for ordinary direct execution.
+Before answering, use Read to load both `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/implement-standard.json` as the machine-readable policy summary and `${CLAUDE_PLUGIN_ROOT}/skills/nova-implement-standard/SKILL.md` as the authoritative behavioral contract, then execute the workflow directly. If either contract cannot be loaded or they conflict, fail closed and report contract drift.
 
 - Stage: implement
 - Owner agents: builder
@@ -23,4 +23,4 @@ Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/impl
 - Risk: medium
 - Recommended packs: None
 
-Preserve all safety, approval, output, failure, and validation requirements in the compiled contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.
+Preserve all safety, approval, output, failure, and validation requirements in both contracts. If a required input or safety boundary is missing, stop before side effects and report the blocker.

@@ -3,10 +3,10 @@
   "schemaVersion": 1,
   "generatedFrom": "static adapter declarations plus digest-bound evals/evidence records",
   "sourceDigests": {
-    "workflow-specs/workflows.json": "a0004c565a7984f7e1b3a24187c4d3961755d7f7c06bd04efcd5d2f5d3878608",
-    "adapters/claude/manifest.json": "5713a1ddafb8ee8e421d7a3e9df157a705881b394f27a419a4843fd2b09ad735",
-    "adapters/codex/AGENTS.md": "3eec24f936272b570580c5c7b2609df012f6446ab4292c9fd16518af27474d9d",
-    "adapters/generic-agent-skills/manifest.json": "bd8d25fecea6812d511500985609acdfdcb7319cfb6e532cb00e792b02b3e5b9",
+    "workflow-specs/workflows.json": "562b6645143dba698f298a683b04d52e93527256bce3fa7dee9d4b019d199041",
+    "adapters/claude/manifest.json": "45247ee269f4dd35d654c863ba6830644e426b5c20b514c77b1f42db8a85e665",
+    "adapters/codex/AGENTS.md": "02df12273cd92a4589b19dd583da800e81c3fd219a07b3aba5fa14b0dbc7f732",
+    "adapters/generic-agent-skills/manifest.json": "b6132955350c39abd42618820188a79296d80edd9264f958242e3b18c77b739a",
     "governance/assistant-support.json": "7d13cc15f4aa790e87c64b538193161b73a74d5b16e90d2feee75855e2eed853"
   },
   "knownGoodLanes": [
@@ -42,9 +42,9 @@
       "maximumSupportedLevel": "L4",
       "adapter": "adapters/claude/manifest.json",
       "scope": "stable Claude command invocation; hooks and release verification require current evidence",
-      "effectiveLevel": "L4-local",
-      "evidenceStatus": "current",
-      "currentEvidence": "evals/evidence/2026-07-12-claude-code-live.json"
+      "effectiveLevel": "L2",
+      "evidenceStatus": "declaration-only",
+      "currentEvidence": null
     },
     {
       "assistant": "codex",
@@ -52,9 +52,9 @@
       "maximumSupportedLevel": "L4",
       "adapter": "adapters/codex/AGENTS.md",
       "scope": "generated local adapter; enforcement and live behavior require current evidence",
-      "effectiveLevel": "L4-local",
-      "evidenceStatus": "current",
-      "currentEvidence": "evals/evidence/2026-07-12-codex-live.json"
+      "effectiveLevel": "L2",
+      "evidenceStatus": "declaration-only",
+      "currentEvidence": null
     },
     {
       "assistant": "generic",
@@ -81,7 +81,9 @@
         "workflow-specs/workflows.json:digest-changed",
         "adapters/codex/AGENTS.md:digest-changed",
         "adapters/claude/manifest.json:digest-changed",
-        "adapters/generic-agent-skills/manifest.json:digest-changed"
+        "adapters/generic-agent-skills/manifest.json:digest-changed",
+        "source-state:not-clean-commit",
+        "base-commit:not-current-head"
       ]
     },
     {
@@ -97,7 +99,53 @@
         "workflow-specs/workflows.json:digest-changed",
         "adapters/codex/AGENTS.md:digest-changed",
         "adapters/claude/manifest.json:digest-changed",
-        "adapters/generic-agent-skills/manifest.json:digest-changed"
+        "adapters/generic-agent-skills/manifest.json:digest-changed",
+        "source-state:not-clean-commit",
+        "base-commit:not-current-head"
+      ]
+    },
+    {
+      "assistant": "claude-code",
+      "assistantVersion": "2.1.205",
+      "observedLevel": "L2",
+      "recordedAt": "2026-07-12T01:23:00.598Z",
+      "source": "evals/evidence/2026-07-12-claude-code-live.json",
+      "releaseTag": null,
+      "commit": "eb9822ee3aeb690307d2de3c5440a91fc0b38cee",
+      "status": "historical",
+      "staleReasons": [
+        "live-source:not-clean",
+        "live-source:exact-tag-missing",
+        "live-runtime:adapter-load-unproven",
+        "live-source:runner-or-dataset-digest-missing",
+        "live-dataset:fewer-than-20-cases",
+        "live-dataset:fewer-than-3-attempts",
+        "workflow-specs/workflows.json:digest-changed",
+        "adapters/claude/manifest.json:digest-changed",
+        "source-state:not-clean-commit",
+        "base-commit:not-current-head"
+      ]
+    },
+    {
+      "assistant": "codex",
+      "assistantVersion": "0.144.0-alpha.4",
+      "observedLevel": "L2",
+      "recordedAt": "2026-07-12T01:24:39.245Z",
+      "source": "evals/evidence/2026-07-12-codex-live.json",
+      "releaseTag": null,
+      "commit": "eb9822ee3aeb690307d2de3c5440a91fc0b38cee",
+      "status": "historical",
+      "staleReasons": [
+        "live-source:not-clean",
+        "live-source:exact-tag-missing",
+        "live-runtime:adapter-load-unproven",
+        "live-source:runner-or-dataset-digest-missing",
+        "live-dataset:fewer-than-20-cases",
+        "live-dataset:fewer-than-3-attempts",
+        "workflow-specs/workflows.json:digest-changed",
+        "adapters/codex/AGENTS.md:digest-changed",
+        "source-state:not-clean-commit",
+        "base-commit:not-current-head"
       ]
     }
   ]

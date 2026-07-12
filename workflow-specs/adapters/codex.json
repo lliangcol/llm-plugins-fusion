@@ -1,0 +1,10 @@
+{
+  "$schema": "../../schemas/workflow-adapter.schema.json",
+  "schemaVersion": 1,
+  "id": "codex",
+  "enforcement": "adapter",
+  "declaredLevel": "L2",
+  "maximumSupportedLevel": "L4",
+  "invocation": { "kind": "repository-adapter", "prefix": "AGENTS.md:" },
+  "evidenceRequiredFor": ["L3", "L4"]
+}

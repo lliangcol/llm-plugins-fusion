@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "explore-lite",
   "stage": "explore",
   "ownerAgents": [
@@ -45,6 +45,97 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-explore-lite/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-explore-lite/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Produce concise factual observations, uncertainties, and risks from knowledge gaps.",
+    "inputs": [
+      {
+        "name": "INPUT",
+        "required": true,
+        "aliases": [
+          "REQUEST",
+          "CONTEXT"
+        ],
+        "description": "Requirement, code, logs, or other evidence."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "INPUT is resolved.",
+        "action": "Analyze it with the observer perspective."
+      }
+    ],
+    "invariants": [
+      "Do not suggest solutions or design decisions.",
+      "Do not fabricate missing facts."
+    ],
+    "stopConditions": [
+      "INPUT is unresolved.",
+      "The requested output requires a decision, recommendation, or write."
+    ],
+    "workflowSteps": [
+      {
+        "id": "extract-facts",
+        "action": "Extract verifiable facts and label direct inferences."
+      },
+      {
+        "id": "mark-unknowns",
+        "action": "Identify missing or ambiguous information."
+      },
+      {
+        "id": "identify-risks",
+        "action": "List risks arising from knowledge gaps without mitigation advice."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "forbid",
+      "instructions": "Remain observational; do not cross into solutioning."
+    },
+    "output": {
+      "mode": "chat",
+      "fields": [
+        {
+          "name": "Observations",
+          "required": true,
+          "description": "Facts and labeled direct inferences."
+        },
+        {
+          "name": "Uncertainties",
+          "required": true,
+          "description": "Missing or ambiguous information."
+        },
+        {
+          "name": "Potential risks",
+          "required": true,
+          "description": "Risks caused by gaps."
+        }
+      ],
+      "order": [
+        "Observations",
+        "Uncertainties",
+        "Potential risks"
+      ],
+      "severityLevels": []
+    },
+    "validation": [
+      "Confirm the three fields appear in order.",
+      "Confirm no recommendation language or fabricated fact appears."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "missing input",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "missing input",
+        "safe next action"
+      ]
+    }
+  },
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "defaultDecision": "deny",
+  "projectPolicyPath": ".nova/shell-policy.json",
+  "maxCommandBytes": 16384,
+  "rules": [
+    {
+      "id": "tool-version",
+      "type": "exact-tail",
+      "executables": ["node", "npm", "git", "bash", "shellcheck", "rg"],
+      "tails": [["--version"], ["-v"]]
+    },
+    {
+      "id": "git-read-only",
+      "type": "git-subcommand",
+      "subcommands": ["status", "diff", "show", "log", "rev-parse", "describe", "ls-files"],
+      "forbiddenArguments": ["--output", "--exec", "--ext-diff", "--textconv", "--git-dir", "--work-tree", "-C"]
+    },
+    {
+      "id": "ripgrep-read-only",
+      "type": "read-only-executable",
+      "executables": ["rg"],
+      "forbiddenArguments": ["--pre", "--pre-glob"]
+    },
+    {
+      "id": "bash-syntax",
+      "type": "syntax-check",
+      "executable": "bash",
+      "requiredPrefix": ["-n"]
+    },
+    {
+      "id": "shellcheck-static-analysis",
+      "type": "read-only-executable",
+      "executables": ["shellcheck"],
+      "forbiddenArguments": []
+    }
+  ]
+}

@@ -35,9 +35,14 @@ A snapshot is promotable only when all required evidence exists.
 | Plugin install path | CI / isolated | `node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home` passes in CI or an isolated test-user environment. |
 | Workflow output quality | Manual | Five primary commands are evaluated and recorded, or an explicit not-applicable reason is accepted. |
 | Release publication | Manual / CI | GitHub release workflow completes for the pushed `v<plugin-version>` tag. |
+| Independent release review | Automated / GitHub | Candidate evidence contains a current approval from a reviewer distinct from the PR author and candidate actor. |
+| Recovery readiness | Manual workflow | The latest approved candidate passes `Release Recovery Drill`; absent drill evidence must be reported as not demonstrated. |
 
 If any required manual gate is missing, describe the target as an unreleased
 development snapshot, not a stable release.
+
+Operator recovery, signer rotation, and label-catalog procedures live in
+[operator-recovery-and-key-rotation.md](operator-recovery-and-key-rotation.md).
 
 ## Preflight
 
@@ -55,8 +60,9 @@ node scripts/generate-release-checksums.mjs
 git diff --check
 ```
 
-Maintainers can use the dependency-free wrapper for default validation,
-generated registry drift, and whitespace checks. Run coverage separately until
+Install the locked development-only validation dependencies with
+`npm ci --ignore-scripts`. Maintainers can then use the wrapper for default
+validation, generated registry drift, and whitespace checks. Run coverage separately until
 maintainers decide to fold coverage into the maintainer gate:
 
 ```bash
@@ -269,7 +275,9 @@ For publication, require `release-candidate.json` and its bound candidate
 evidence from `.github/workflows/release-candidate.yml`; it binds exact-tag
 installation, inventory, OAuth-authenticated `/nova-plugin:route`, coverage,
 source digests, artifact digests, tag, and commit. Stable promotion must verify
-this manifest and must not run the artifact builder again.
+the signed candidate tag, original candidate signer workflow attestation, and
+every required evidence record. It may run the artifact builder only in an
+isolated comparison step and must publish the downloaded candidate bytes.
 
 The scheduled `Claude Latest Drift` job intentionally fails its validation step
 when the latest CLI inventory changes, but it must still write

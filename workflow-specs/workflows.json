@@ -1,15 +1,6 @@
 {
   "$schema": "../schemas/workflow-spec.schema.json",
-  "schemaVersion": 3,
-  "pluginNamespace": "nova-plugin",
-  "knownGoodClaudeCli": "2.1.205",
-  "primaryEntrypoints": ["route", "explore", "produce-plan", "review", "implement-plan", "finalize-work"],
-  "toolVocabulary": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "NotebookEdit"],
-  "assistantEnforcement": {
-    "claude": "native-and-hook",
-    "codex": "adapter",
-    "generic": "advisory"
-  },
+  "schemaVersion": 4,
   "permissionProfiles": {
     "read-only": {
       "allowedTools": ["Read", "Glob", "Grep"],

@@ -27,6 +27,9 @@ independent Node compactor uses an atomic directory lock to append complete
 records to `audit.log` and rotate to `audit.log.1` after 5 MB. Concurrent hook
 processes therefore do not race on append/rotation. Compaction failures retain
 the spool record and emit a best-effort `audit-health.log` degraded event.
+Lock ownership records PID, host, start time, and process-start identity. An
+expired lock is recovered only when the owner is absent or the PID now refers
+to a different process; recovery also emits a degraded health event.
 The hook creates the state directory with `700` permissions and the log file with
 `600` permissions when the platform supports POSIX modes; the log
 rotates to `audit.log.1` after 5 MB.

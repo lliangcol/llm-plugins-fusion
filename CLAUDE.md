@@ -10,13 +10,13 @@ Do not edit this block by hand. It is synchronized by
 - Plugin: `nova-plugin@3.1.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
-- Workflow contract: schema v3, namespace `nova-plugin`, 21 workflows
+- Workflow contract: schema v4, namespace `nova-plugin`, 21 workflows
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`
+- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`, `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"`
 - Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
 <!-- generated:project-state:end -->
 
@@ -138,9 +138,11 @@ llm-plugins-fusion/
 |   |-- ci.yml
 |   |-- codeql.yml
 |   |-- dependency-review.yml
+|   |-- label-sync.yml
 |   |-- plugin-install-smoke.yml
-|   |-- release-candidate.yml
 |   |-- promote-release.yml
+|   |-- release-candidate.yml
+|   |-- release-recovery-drill.yml
 |   |-- release.yml
 |   `-- reusable-node-check.yml
 |-- docs/
@@ -207,7 +209,15 @@ node scripts/validate-workflow-fixtures.mjs
 node scripts/validate-docs.mjs
 ```
 
-Maintainer npm shortcuts are optional and dependency-free:
+Maintainer validation uses development-only Ajv dependencies. Install the
+locked toolchain first; the distributed `nova-plugin` archive itself remains
+free of Node package runtime dependencies:
+
+```bash
+npm ci --ignore-scripts
+```
+
+Maintainer npm shortcuts:
 
 ```bash
 npm run doctor
@@ -384,6 +394,11 @@ routing docs, migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
   secret, proposed Edit, and protected `hooks.json` validation. NotebookEdit
   fails closed because complete proposed notebook content cannot be
   reconstructed reliably.
+- A second `PreToolUse` entry matches `Bash` and blocks common write-bypass
+  forms such as redirection, compound shell programs, direct filesystem
+  mutators, inline interpreters, and mutating Git/package subcommands before
+  the normal Bash permission prompt. This narrows risk but is not a sandbox;
+  an allowed validation script can still have its own side effects.
 - `PostToolUse` synchronously rechecks actual `Write|Edit` targets after the
   runtime operation. A containment, target-type, hard-link, or protected
   `hooks.json` violation emits a high-severity failure and stops the subsequent

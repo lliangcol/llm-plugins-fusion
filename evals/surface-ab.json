@@ -6,273 +6,273 @@
     {
       "id": "backend-plan",
       "direct": {
-        "bytes": 1140,
-        "estimatedTokens": 285,
+        "bytes": 1246,
+        "estimatedTokens": 312,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 4933,
-        "estimatedTokens": 1220,
+        "bytes": 6109,
+        "estimatedTokens": 1510,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "codex-review-fix",
       "direct": {
-        "bytes": 1150,
-        "estimatedTokens": 288,
+        "bytes": 1260,
+        "estimatedTokens": 315,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 8060,
-        "estimatedTokens": 1426,
+        "bytes": 9520,
+        "estimatedTokens": 1784,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "codex-review-only",
       "direct": {
-        "bytes": 1127,
-        "estimatedTokens": 282,
+        "bytes": 1238,
+        "estimatedTokens": 310,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 3449,
-        "estimatedTokens": 727,
+        "bytes": 4693,
+        "estimatedTokens": 1034,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "codex-verify-only",
       "direct": {
-        "bytes": 1128,
-        "estimatedTokens": 282,
+        "bytes": 1239,
+        "estimatedTokens": 310,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 4352,
-        "estimatedTokens": 887,
+        "bytes": 5593,
+        "estimatedTokens": 1194,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "explore",
       "direct": {
-        "bytes": 1099,
-        "estimatedTokens": 275,
+        "bytes": 1200,
+        "estimatedTokens": 300,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 4827,
-        "estimatedTokens": 1206,
+        "bytes": 6075,
+        "estimatedTokens": 1514,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "explore-lite",
       "direct": {
-        "bytes": 1123,
-        "estimatedTokens": 281,
+        "bytes": 1229,
+        "estimatedTokens": 308,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 3513,
-        "estimatedTokens": 879,
+        "bytes": 4567,
+        "estimatedTokens": 1139,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "explore-review",
       "direct": {
-        "bytes": 1134,
-        "estimatedTokens": 284,
+        "bytes": 1242,
+        "estimatedTokens": 311,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 3534,
-        "estimatedTokens": 884,
+        "bytes": 4609,
+        "estimatedTokens": 1150,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "finalize-lite",
       "direct": {
-        "bytes": 1114,
-        "estimatedTokens": 279,
+        "bytes": 1221,
+        "estimatedTokens": 306,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 3036,
-        "estimatedTokens": 759,
+        "bytes": 4071,
+        "estimatedTokens": 1015,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "finalize-work",
       "direct": {
-        "bytes": 1122,
-        "estimatedTokens": 281,
+        "bytes": 1229,
+        "estimatedTokens": 308,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 6099,
-        "estimatedTokens": 1520,
+        "bytes": 7253,
+        "estimatedTokens": 1804,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "implement-lite",
       "direct": {
-        "bytes": 1133,
-        "estimatedTokens": 284,
+        "bytes": 1241,
+        "estimatedTokens": 311,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 3637,
-        "estimatedTokens": 910,
+        "bytes": 4817,
+        "estimatedTokens": 1200,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "implement-plan",
       "direct": {
-        "bytes": 1151,
-        "estimatedTokens": 288,
+        "bytes": 1259,
+        "estimatedTokens": 315,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 6219,
-        "estimatedTokens": 1553,
+        "bytes": 7430,
+        "estimatedTokens": 1851,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "implement-standard",
       "direct": {
-        "bytes": 1136,
-        "estimatedTokens": 284,
+        "bytes": 1248,
+        "estimatedTokens": 312,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 3723,
-        "estimatedTokens": 931,
+        "bytes": 4932,
+        "estimatedTokens": 1228,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "plan-lite",
       "direct": {
-        "bytes": 1072,
-        "estimatedTokens": 268,
+        "bytes": 1175,
+        "estimatedTokens": 294,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 3777,
-        "estimatedTokens": 945,
+        "bytes": 4958,
+        "estimatedTokens": 1234,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "plan-review",
       "direct": {
-        "bytes": 1115,
-        "estimatedTokens": 279,
+        "bytes": 1220,
+        "estimatedTokens": 305,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 3634,
-        "estimatedTokens": 909,
+        "bytes": 4763,
+        "estimatedTokens": 1187,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "produce-plan",
       "direct": {
-        "bytes": 1104,
-        "estimatedTokens": 276,
+        "bytes": 1210,
+        "estimatedTokens": 303,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 8600,
-        "estimatedTokens": 2146,
+        "bytes": 9982,
+        "estimatedTokens": 2487,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "review",
       "direct": {
-        "bytes": 1094,
-        "estimatedTokens": 274,
+        "bytes": 1194,
+        "estimatedTokens": 299,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 5885,
-        "estimatedTokens": 1470,
+        "bytes": 7154,
+        "estimatedTokens": 1783,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "review-lite",
       "direct": {
-        "bytes": 1093,
-        "estimatedTokens": 274,
+        "bytes": 1198,
+        "estimatedTokens": 300,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 4194,
-        "estimatedTokens": 1049,
+        "bytes": 5205,
+        "estimatedTokens": 1300,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "review-only",
       "direct": {
-        "bytes": 1132,
-        "estimatedTokens": 283,
+        "bytes": 1237,
+        "estimatedTokens": 310,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 4838,
-        "estimatedTokens": 1209,
+        "bytes": 5936,
+        "estimatedTokens": 1480,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "review-strict",
       "direct": {
-        "bytes": 1108,
-        "estimatedTokens": 277,
+        "bytes": 1215,
+        "estimatedTokens": 304,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 4838,
-        "estimatedTokens": 1209,
+        "bytes": 5948,
+        "estimatedTokens": 1483,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "route",
       "direct": {
-        "bytes": 1079,
-        "estimatedTokens": 270,
+        "bytes": 1178,
+        "estimatedTokens": 295,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 10147,
-        "estimatedTokens": 2537,
+        "bytes": 12039,
+        "estimatedTokens": 3004,
         "historicalDelegatedSkillToolCalls": 1
       }
     },
     {
       "id": "senior-explore",
       "direct": {
-        "bytes": 1152,
-        "estimatedTokens": 288,
+        "bytes": 1260,
+        "estimatedTokens": 315,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
-        "bytes": 7006,
-        "estimatedTokens": 1742,
+        "bytes": 8327,
+        "estimatedTokens": 2068,
         "historicalDelegatedSkillToolCalls": 1
       }
     }

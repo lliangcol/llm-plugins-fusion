@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "implement-plan",
   "stage": "implement",
   "ownerAgents": [
@@ -46,6 +46,134 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-implement-plan/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-implement-plan/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Execute an explicitly approved plan step by step with traceability and minimal deviation.",
+    "inputs": [
+      {
+        "name": "PLAN_INPUT_PATH",
+        "required": true,
+        "aliases": [
+          "PLAN_PATH"
+        ],
+        "description": "Approved plan artifact path."
+      },
+      {
+        "name": "PLAN_APPROVED",
+        "required": true,
+        "aliases": [
+          "APPROVED"
+        ],
+        "description": "Explicit execution approval.",
+        "exactValues": [
+          true,
+          "true"
+        ]
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "PLAN_APPROVED is exactly true and the plan is readable.",
+        "action": "Execute the approved plan in order."
+      },
+      {
+        "when": "PLAN_APPROVED is missing or not exactly true.",
+        "action": "Stop before modifying files."
+      }
+    ],
+    "invariants": [
+      "Treat the approved plan as execution scope.",
+      "Preserve unrelated user changes.",
+      "Run plan-required verification.",
+      "Do not publish or rewrite Git history."
+    ],
+    "stopConditions": [
+      "PLAN_INPUT_PATH is missing or unreadable.",
+      "PLAN_APPROVED is not exactly true.",
+      "A non-trivial deviation is required.",
+      "Permission, dependency, or overlapping-change blockers prevent safe execution."
+    ],
+    "workflowSteps": [
+      {
+        "id": "validate-approval",
+        "action": "Validate both required inputs and exact approval."
+      },
+      {
+        "id": "load-plan",
+        "action": "Read the plan as source of truth."
+      },
+      {
+        "id": "execute",
+        "action": "Implement plan steps in order within scope."
+      },
+      {
+        "id": "verify",
+        "action": "Run every plan-required verification and proportionate regression checks."
+      },
+      {
+        "id": "trace",
+        "action": "Map completed changes and deviations back to plan steps."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "approval-required",
+      "instructions": "Stop on any non-trivial deviation and request a plan update or explicit approval."
+    },
+    "output": {
+      "mode": "workspace-and-chat",
+      "fields": [
+        {
+          "name": "implemented changes",
+          "required": true,
+          "description": "Workspace edits aligned to the plan."
+        },
+        {
+          "name": "plan-step trace",
+          "required": true,
+          "description": "Completed and blocked plan steps."
+        },
+        {
+          "name": "validation",
+          "required": true,
+          "description": "Actual plan-required checks."
+        },
+        {
+          "name": "deviations",
+          "required": true,
+          "description": "Approved deviations or None."
+        }
+      ],
+      "order": [
+        "plan-step trace",
+        "validation",
+        "deviations"
+      ],
+      "severityLevels": []
+    },
+    "validation": [
+      "Confirm every change maps to a plan step.",
+      "Run plan-specified checks and report exact results.",
+      "Inspect the final diff for scope drift."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "completed plan steps",
+        "blocked plan step",
+        "blocker",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "completed plan steps",
+        "blocked plan step",
+        "blocker",
+        "safe next action"
+      ]
+    }
+  },
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

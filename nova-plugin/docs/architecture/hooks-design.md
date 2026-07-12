@@ -10,13 +10,13 @@ Do not edit this block by hand. It is synchronized by
 - Plugin: `nova-plugin@3.1.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
-- Workflow contract: schema v3, namespace `nova-plugin`, 21 workflows
+- Workflow contract: schema v4, namespace `nova-plugin`, 21 workflows
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`
+- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`, `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"`
 - Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
 <!-- generated:project-state:end -->
 
@@ -134,6 +134,22 @@ PostToolUse 额外包含：
 
 **Active implementation:** `nova-plugin/hooks/scripts/pre-write-check.mjs`
 
+### Hook 1B：PreToolUse — scoped Bash guard
+
+**目标：** 在正常 Bash 权限提示之前执行默认拒绝的 validation command broker。
+分发策略仅允许只读 Git、`rg`、`bash -n`、ShellCheck 和版本探测；项目验证器必须
+在仓库自己的 `.nova/shell-policy.json` 中按完整 argv 精确登记。组合命令、重定向、
+变量/命令替换、未登记解释器与包执行器一律拒绝。允许结果仍要经过 Claude 权限提示
+和外部 sandbox；项目策略是仓库审查面，不等于预授权。
+
+**Active launcher:** `nova-plugin/hooks/scripts/pre-bash-check.sh`
+
+**Active implementation:** `nova-plugin/hooks/scripts/pre-bash-check.mjs`
+
+**Distributed policy:** `nova-plugin/runtime/shell-command-policy.json`
+
+**Project exact policy:** `.nova/shell-policy.json`
+
 敏感信息检测规则由 `nova-plugin/runtime/secret-rules.mjs` 统一维护。Bash
 启动器只解析 Node 路径；Node 缺失时 fail closed。设置
 `NOVA_WRITE_GUARD_DISABLED=1` 会打印警告并返回“无决定”，仅用于显式临时
@@ -176,6 +192,8 @@ nova-plugin/hooks/
 └── scripts/
     ├── pre-write-check.sh        ← fail-closed Bash 启动器
     ├── pre-write-check.mjs       ← active Node PreToolUse 实现
+    ├── pre-bash-check.sh         ← fail-closed Bash scope launcher
+    ├── pre-bash-check.mjs        ← scoped Bash command policy
     ├── post-write-verify.mjs     ← synchronous actual-path/content verifier
     ├── audit-compactor.mjs       ← lock-protected spool compactor and rotation owner
     ├── post-audit-log.sh         ← compatibility and syntax-test helper; not active in hooks.json
@@ -218,10 +236,11 @@ audit logger 只报告 warning，因为操作已经完成。
 
 ## 安全边界
 
-PreToolUse matcher 不包含 Bash，因此 `cat > file`、`sed -i` 或脚本生成文件
-不会经过 proposed-content guard。PreToolUse 与 PostToolUse 之间仍存在 TOCTOU
-时间窗，且 PostToolUse 不能撤销已经完成的操作。该 hook 是 guardrail，不是
-sandbox；Bash 写入仍依赖 Claude 权限、sandbox、CI secret scan 和 release gate。
+PreToolUse 的 Bash matcher 会阻止常见的重定向、compound command 和直接 mutator，
+但无法证明允许脚本的内部副作用，也无法替代 OS sandbox。PreToolUse 与 PostToolUse
+之间仍存在 TOCTOU 时间窗，且 PostToolUse 不能撤销已经完成的操作。该 hook 是
+guardrail，不是 sandbox；剩余 Bash 风险仍依赖 Claude 权限、sandbox、CI secret
+scan 和 release gate。
 
 ---
 

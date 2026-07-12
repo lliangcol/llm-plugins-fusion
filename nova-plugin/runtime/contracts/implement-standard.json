@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "implement-standard",
   "stage": "implement",
   "ownerAgents": [
@@ -45,6 +45,133 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-implement-standard/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-implement-standard/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Execute confirmed implementation steps reliably with controlled scope and validation.",
+    "inputs": [
+      {
+        "name": "REQUEST",
+        "required": true,
+        "aliases": [
+          "STEPS",
+          "PLAN",
+          "STEPS/PLAN",
+          "TASK"
+        ],
+        "description": "Confirmed execution basis and acceptance criteria."
+      },
+      {
+        "name": "CONSTRAINTS",
+        "required": false,
+        "aliases": [
+          "BOUNDARIES"
+        ],
+        "description": "Compatibility and scope limits."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "REQUEST contains confirmed executable steps and acceptance criteria.",
+        "action": "Implement the steps in order."
+      },
+      {
+        "when": "Execution basis is ambiguous or material redesign is required.",
+        "action": "Stop and request clarification or a plan."
+      }
+    ],
+    "invariants": [
+      "Do not expand scope or redesign without approval.",
+      "Preserve unrelated user changes.",
+      "Validate changed behavior.",
+      "Do not publish or rewrite Git history."
+    ],
+    "stopConditions": [
+      "REQUEST lacks a confirmed execution basis.",
+      "A blocking issue prevents a step from being completed safely.",
+      "Required permission or capability is denied.",
+      "Overlapping user changes cannot be preserved."
+    ],
+    "workflowSteps": [
+      {
+        "id": "confirm-basis",
+        "action": "Confirm steps, acceptance, and constraints."
+      },
+      {
+        "id": "implement",
+        "action": "Execute confirmed steps in order."
+      },
+      {
+        "id": "handle-blockers",
+        "action": "Stop and report blockers without silently skipping required behavior."
+      },
+      {
+        "id": "validate",
+        "action": "Run proportionate tests and checks."
+      },
+      {
+        "id": "summarize",
+        "action": "Summarize outcomes and deviations."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "approval-required",
+      "instructions": "Request approval before scope, architecture, dependency, or data-model deviation."
+    },
+    "output": {
+      "mode": "workspace-and-chat",
+      "fields": [
+        {
+          "name": "code updates",
+          "required": true,
+          "description": "Scoped implementation changes."
+        },
+        {
+          "name": "Implementation Summary",
+          "required": true,
+          "description": "Completed behavior and files."
+        },
+        {
+          "name": "Validation",
+          "required": true,
+          "description": "Actual check results."
+        },
+        {
+          "name": "Deviations",
+          "required": true,
+          "description": "Approved deviations or None."
+        }
+      ],
+      "order": [
+        "Implementation Summary",
+        "Validation",
+        "Deviations"
+      ],
+      "severityLevels": []
+    },
+    "validation": [
+      "Run tests or checks for every changed behavior.",
+      "Inspect the final diff against REQUEST and CONSTRAINTS.",
+      "Report skipped checks and residual risk."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "completed steps",
+        "blocked step",
+        "blocker",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "completed steps",
+        "blocked step",
+        "blocker",
+        "safe next action"
+      ]
+    }
+  },
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

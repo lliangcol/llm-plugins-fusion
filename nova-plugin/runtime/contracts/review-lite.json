@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "review-lite",
   "stage": "review",
   "ownerAgents": [
@@ -45,6 +45,97 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-review-lite/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-review-lite/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Deliver concise daily-review feedback with high signal and bounded depth.",
+    "inputs": [
+      {
+        "name": "REVIEW_SCOPE",
+        "required": true,
+        "aliases": [
+          "INPUT",
+          "SCOPE"
+        ],
+        "description": "Small diff, code, config, or tests to review."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "At least one obvious issue exists.",
+        "action": "Emit concise tagged findings."
+      },
+      {
+        "when": "No obvious issue exists in scope.",
+        "action": "Emit the exact no-obvious-issues statement."
+      }
+    ],
+    "invariants": [
+      "Do not modify code or propose large refactors.",
+      "Stay inside REVIEW_SCOPE.",
+      "Prefer high-signal findings over completeness."
+    ],
+    "stopConditions": [
+      "REVIEW_SCOPE is unresolved.",
+      "The scope is too broad or high-risk for lightweight review.",
+      "The request requires implementation."
+    ],
+    "workflowSteps": [
+      {
+        "id": "scan",
+        "action": "Scan correctness, obvious risks, and readability red flags."
+      },
+      {
+        "id": "filter",
+        "action": "Keep concise actionable high-signal findings."
+      },
+      {
+        "id": "emit",
+        "action": "Emit tagged findings or the exact clean statement."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "forbid",
+      "instructions": "Do not turn lightweight review into architecture audit or implementation."
+    },
+    "output": {
+      "mode": "chat",
+      "fields": [
+        {
+          "name": "Findings",
+          "required": true,
+          "description": "Tagged bullets or exact clean statement."
+        }
+      ],
+      "order": [
+        "Findings"
+      ],
+      "severityLevels": [
+        "Bug",
+        "Risk",
+        "Readability",
+        "Overengineering"
+      ]
+    },
+    "validation": [
+      "Confirm findings are obvious and scoped.",
+      "If no finding exists, use exactly No obvious issues found in this review scope.",
+      "Confirm no code edits or large refactor proposal appears."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "blocker",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "blocker",
+        "safe next action"
+      ]
+    }
+  },
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

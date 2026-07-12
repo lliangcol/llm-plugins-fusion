@@ -176,6 +176,10 @@ function buildHookSyntaxTasks(hasBash) {
       '-n',
       'nova-plugin/hooks/scripts/pre-write-check.sh',
     ], 30_000),
+    commandTask('hooks.syntax.prebash', 'hook shell syntax nova-plugin/hooks/scripts/pre-bash-check.sh', 'bash', [
+      '-n',
+      'nova-plugin/hooks/scripts/pre-bash-check.sh',
+    ], 30_000),
     commandTask('hooks.syntax.audit', 'hook shell syntax nova-plugin/hooks/scripts/post-audit-log.sh', 'bash', [
       '-n',
       'nova-plugin/hooks/scripts/post-audit-log.sh',
@@ -295,9 +299,17 @@ async function main() {
     ),
     nodeTask('frontmatter.lint', 'lint frontmatter', 'scripts/lint-frontmatter.mjs'),
     nodeTask('workflow.permissions', 'validate workflow permissions', 'scripts/generate-workflow-permissions.mjs'),
-    nodeTask('workflow.contract.v3', 'validate workflow capability contract v3', 'scripts/validate-workflow-contract-v3.mjs'),
+    nodeTask('workflow.contract.v4', 'validate workflow capability contract v4', 'scripts/validate-workflow-contract-v4.mjs'),
     nodeTask('workflow.v2.compat', 'validate workflow v2 compatibility projection', 'scripts/generate-workflow-v2-compat.mjs'),
-    nodeTask('workflow.runtime.contracts', 'validate concise runtime contracts', 'scripts/generate-runtime-contracts.mjs'),
+    nodeTask('workflow.behavior.surfaces', 'validate generated behavior surfaces', 'scripts/generate-behavior-surfaces.mjs'),
+    nodeTask('workflow.runtime.contracts', 'validate behavior-complete runtime contracts', 'scripts/generate-runtime-contracts.mjs'),
+    nodeTask('workflow.runtime.behavior', 'validate direct command behavior contracts', 'scripts/validate-runtime-behavior-contracts.mjs'),
+    nodeTask('workflow.behavior.golden', 'validate behavior IR golden suites', 'scripts/validate-behavior-golden.mjs'),
+    nodeTask('workflow.live.dataset', 'validate live eval dataset', 'scripts/validate-live-eval-dataset.mjs'),
+    nodeTask('workflow.second-product', 'validate second-product full chain', 'scripts/validate-second-product-fixture.mjs'),
+    nodeTask('schemas.differential', 'validate standard schema engine differential', 'scripts/validate-schema-engine-differential.mjs'),
+    nodeTask('release.operations', 'validate release operations governance', 'scripts/validate-release-operations.mjs'),
+    nodeTask('platform.file.urls', 'validate portable file URL handling', 'scripts/validate-portable-paths.mjs'),
     nodeTask('workflow.surface.normalization', 'validate normalized workflow surfaces', 'scripts/normalize-workflow-surfaces.mjs'),
   ]);
 

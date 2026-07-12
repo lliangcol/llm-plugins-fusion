@@ -15,6 +15,7 @@ export function parseCandidateArgs(args, env = process.env) {
     commit: env.GITHUB_SHA ?? env.RELEASE_COMMIT,
     artifactDir: resolve(root, '.metrics/release-artifacts'),
     out: resolve(root, '.metrics/release-candidate/release-candidate.json'),
+    bundleRoot: resolve(root, '.metrics/release-candidate'),
     evidencePaths: [],
   };
   for (let index = 0; index < args.length; index += 1) {
@@ -24,6 +25,7 @@ export function parseCandidateArgs(args, env = process.env) {
     else if (arg === '--commit') options.commit = value();
     else if (arg === '--artifact-dir') options.artifactDir = resolve(root, value());
     else if (arg === '--out') options.out = resolve(root, value());
+    else if (arg === '--bundle-root') options.bundleRoot = resolve(root, value());
     else if (arg === '--evidence') options.evidencePaths.push(resolve(root, value()));
     else throw new Error(`unknown argument: ${arg}`);
     index += 1;

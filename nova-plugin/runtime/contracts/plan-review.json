@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "plan-review",
   "stage": "review",
   "ownerAgents": [
@@ -48,6 +48,112 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-plan-review/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-plan-review/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Assess plan decision clarity, assumptions, and execution risk without rewriting the plan.",
+    "inputs": [
+      {
+        "name": "PLAN_INPUT_PATH",
+        "required": true,
+        "aliases": [
+          "INPUT",
+          "PLAN_PATH"
+        ],
+        "description": "Plan artifact path or explicitly supplied plan content."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "PLAN_INPUT_PATH resolves to readable plan evidence.",
+        "action": "Review plan readiness."
+      },
+      {
+        "when": "The plan is missing or unreadable.",
+        "action": "Report the missing evidence and stop."
+      }
+    ],
+    "invariants": [
+      "Do not rewrite the plan.",
+      "Do not propose alternative designs.",
+      "Separate observed gaps from assumptions."
+    ],
+    "stopConditions": [
+      "Plan evidence cannot be resolved or read.",
+      "The request requires implementation or plan mutation."
+    ],
+    "workflowSteps": [
+      {
+        "id": "load-plan",
+        "action": "Resolve and read the plan evidence."
+      },
+      {
+        "id": "check-decisions",
+        "action": "Verify explicit goals, scope, and decisions."
+      },
+      {
+        "id": "identify-gaps",
+        "action": "Identify assumptions, missing inputs, and technical or operational risk."
+      },
+      {
+        "id": "ask-questions",
+        "action": "Produce review questions only."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "forbid",
+      "instructions": "Do not replace review findings with a rewritten or alternative plan."
+    },
+    "output": {
+      "mode": "chat",
+      "fields": [
+        {
+          "name": "Decision clarity check",
+          "required": true,
+          "description": "Explicitness of goals, scope, and decisions."
+        },
+        {
+          "name": "Assumptions & gaps",
+          "required": true,
+          "description": "Missing inputs and unsupported assumptions."
+        },
+        {
+          "name": "Risk signals",
+          "required": true,
+          "description": "Execution and operational risks."
+        },
+        {
+          "name": "Review questions",
+          "required": true,
+          "description": "Questions required for readiness."
+        }
+      ],
+      "order": [
+        "Decision clarity check",
+        "Assumptions & gaps",
+        "Risk signals",
+        "Review questions"
+      ],
+      "severityLevels": []
+    },
+    "validation": [
+      "Confirm all four output fields appear in order.",
+      "Confirm no plan rewrite, implementation, or alternative design appears."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "missing plan evidence",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "missing plan evidence",
+        "safe next action"
+      ]
+    }
+  },
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

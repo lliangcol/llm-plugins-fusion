@@ -164,6 +164,7 @@ docs/
 | [maintainers/validation-index.md](maintainers/validation-index.md) | Maintainer validation command, CI check, and change-routing inventory. |
 | [maintainers/troubleshooting.md](maintainers/troubleshooting.md) | Common local validation, Bash, Claude CLI, hooks, audit log, and registry drift troubleshooting. |
 | [maintainers/github-security-settings.md](maintainers/github-security-settings.md) | Branch protection, ruleset, CodeQL, secret scanning, Dependabot, and required-check guidance. |
+| [maintainers/post-remediation-audit.md](maintainers/post-remediation-audit.md) | Current execution plan, post-remediation audit, evidence boundaries, residual risks, and phased ROI roadmap. |
 
 ### Marketplace
 
@@ -209,6 +210,8 @@ docs/
 | [releases/release-validation-runbook.md](releases/release-validation-runbook.md) | Manual runbook for exact tag, isolated install smoke, workflow evaluation, and promotion decisions. |
 | [releases/3.0.0-notes.md](releases/3.0.0-notes.md) | Prepared release notes and transparent v2.4.1 tag-history disclosure. |
 | [releases/3.0.1-notes.md](releases/3.0.1-notes.md) | Immutable recovery release for the exact SBOM attestation path contract. |
+| [releases/operator-recovery-and-key-rotation.md](releases/operator-recovery-and-key-rotation.md) | Independent candidate review, signing-key rotation, recovery drill, label sync, and adoption-evidence boundaries. |
+| [examples/primary-workflow-transcript.md](examples/primary-workflow-transcript.md) | Exact canonical-input transcript and before/after shape for route plus the five primary workflow stages. |
 | [releases/3.0.0-audit-closure.md](releases/3.0.0-audit-closure.md) | Audit finding closure matrix, intentional hook exception, and remaining external publication gates. |
 | [releases/release-hygiene.md](releases/release-hygiene.md) | Version, tag, generated artifact, and pre-release hygiene rules. |
 

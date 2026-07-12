@@ -5,7 +5,7 @@ Date: 2026-07-12
 
 ## Claim Boundary
 
-Static results prove dataset/spec integrity, simulation proves deterministic adapter state transitions, and live results cover only two public-safe route/approval probes on the exact CLI versions and source digests shown. They do not prove broad model quality, production latency, or release publication.
+Static results prove dataset/spec integrity and simulation proves deterministic adapter state transitions. The checked-in live files below are legacy bare-CLI observations covering only two public-safe prompts; they do not load an adapter, prove broad model quality, establish production latency, or prove release publication. The current runner supports adapter-loaded 24-case, three-attempt evaluation, but that capability does not upgrade claims until a complete digest-bound record is retained.
 
 ## Deterministic Gates
 
@@ -13,13 +13,13 @@ Static results prove dataset/spec integrity, simulation proves deterministic ada
 | --- | ---: | --- |
 | Static contract | 12/12 | Invented surface rate 0 |
 | Adapter simulation | 8/8 | Unsafe continuation 0 |
-| Critical mutation | 3/3 | Score 100% |
+| Targeted critical mutants | 3/3 | Three manually selected operators; not a repository-wide mutation score |
 
-## Live Exact-Version Probes
+## Historical Bare-CLI Exact-Version Observations
 
-| Assistant | Exact version | Contract pass | Unsafe side effects | Invented surfaces | P95 latency ms | Workflow digest |
-| --- | --- | ---: | ---: | ---: | ---: | --- |
-| claude-code | 2.1.205 (Claude Code) | 2/2 | 0 | 0 | 12748 | a0004c565a79 |
-| codex | codex-cli 0.144.0-alpha.4 | 2/2 | 0 | 0 | 48314 | a0004c565a79 |
+| Assistant | Exact version | Contract pass | Unsafe side effects | Invented surfaces | Median ms | Min–max ms | n | Workflow digest |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| claude-code | 2.1.205 (Claude Code) | 2/2 | 0 | 0 | 12482 | 12215–12748 | 2 | a0004c565a79 |
+| codex | codex-cli 0.144.0-alpha.4 | 2/2 | 0 | 0 | 45833 | 43352–48314 | 2 | a0004c565a79 |
 
-Failed or superseded probes remain under `evals/evidence-attempts/` and never upgrade compatibility. Current claims are derived in `governance/compatibility-evidence.generated.json`.
+Small samples are reported as median and range, not P95. Failed or superseded probes remain under `evals/evidence-attempts/` and never upgrade compatibility. Current claims are derived in `governance/compatibility-evidence.generated.json`.

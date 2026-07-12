@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "review-only",
   "stage": "review",
   "ownerAgents": [
@@ -48,6 +48,119 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-review-only/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-review-only/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Perform standard evidence-grounded review and group findings by severity without implementation.",
+    "inputs": [
+      {
+        "name": "REVIEW_SCOPE",
+        "required": true,
+        "aliases": [
+          "INPUT",
+          "SCOPE"
+        ],
+        "description": "Code, design, tests, logs, or diff to review."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "A finding can cause data loss, security or financial harm, production instability, or incorrect core behavior.",
+        "action": "Classify it Critical."
+      },
+      {
+        "when": "A finding materially affects correctness, maintainability, scalability, or realistic bug risk.",
+        "action": "Classify it Major."
+      },
+      {
+        "when": "A finding is low-risk but affects clarity, consistency, or best practice.",
+        "action": "Classify it Minor."
+      }
+    ],
+    "invariants": [
+      "Do not write code or full implementation examples.",
+      "Review only REVIEW_SCOPE.",
+      "Distinguish facts from assumptions.",
+      "Do not approve, reject, or decide release readiness."
+    ],
+    "stopConditions": [
+      "REVIEW_SCOPE is unresolved.",
+      "Evidence needed for a finding is unavailable.",
+      "The request requires implementation."
+    ],
+    "workflowSteps": [
+      {
+        "id": "inspect",
+        "action": "Review correctness, complexity, performance, concurrency, errors, tests, and maintainability."
+      },
+      {
+        "id": "separate-evidence",
+        "action": "Separate observed facts from inference and assumptions."
+      },
+      {
+        "id": "classify",
+        "action": "Classify supported findings by severity."
+      },
+      {
+        "id": "emit",
+        "action": "Describe issue, impact, and directional improvement."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "forbid",
+      "instructions": "Do not expand scope, redesign the system, or implement fixes."
+    },
+    "output": {
+      "mode": "chat",
+      "fields": [
+        {
+          "name": "Critical",
+          "required": true,
+          "description": "Highest-impact supported findings."
+        },
+        {
+          "name": "Major",
+          "required": true,
+          "description": "Material supported findings."
+        },
+        {
+          "name": "Minor",
+          "required": true,
+          "description": "Low-risk supported findings."
+        }
+      ],
+      "order": [
+        "Critical",
+        "Major",
+        "Minor"
+      ],
+      "severityLevels": [
+        "Critical",
+        "Major",
+        "Minor"
+      ]
+    },
+    "validation": [
+      "Confirm every finding includes issue, impact, and directional improvement.",
+      "Confirm severity follows the decision table.",
+      "Confirm no implementation or release decision appears."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "missing evidence",
+        "reviewed scope",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "missing evidence",
+        "reviewed scope",
+        "safe next action"
+      ]
+    }
+  },
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

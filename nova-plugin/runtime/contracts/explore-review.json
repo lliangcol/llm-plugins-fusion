@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "explore-review",
   "stage": "explore",
   "ownerAgents": [
@@ -48,6 +48,98 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-explore-review/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-explore-review/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Surface clarity gaps and risk signals using a reviewer perspective without proposing solutions.",
+    "inputs": [
+      {
+        "name": "INPUT",
+        "required": true,
+        "aliases": [
+          "REQUEST",
+          "CONTEXT"
+        ],
+        "description": "Requirement, design, or review evidence."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "INPUT is resolved.",
+        "action": "Analyze it with the reviewer perspective."
+      }
+    ],
+    "invariants": [
+      "Do not redesign or recommend fixes.",
+      "Stay inside the supplied input scope.",
+      "Separate facts from interpretation."
+    ],
+    "stopConditions": [
+      "INPUT is unresolved.",
+      "The request asks for implementation or redesign."
+    ],
+    "workflowSteps": [
+      {
+        "id": "separate-evidence",
+        "action": "Separate confirmed facts from interpretations."
+      },
+      {
+        "id": "ask-questions",
+        "action": "Ask correctness, scope, and assumption questions."
+      },
+      {
+        "id": "identify-signals",
+        "action": "Emit risk signals without mitigation or next steps."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "forbid",
+      "instructions": "Do not cross from review questions into solution proposals."
+    },
+    "output": {
+      "mode": "chat",
+      "fields": [
+        {
+          "name": "What is clear",
+          "required": true,
+          "description": "Confirmed understanding."
+        },
+        {
+          "name": "Review questions",
+          "required": true,
+          "description": "Correctness, clarity, and assumption questions."
+        },
+        {
+          "name": "Risk signals",
+          "required": true,
+          "description": "Correctness, boundary, and operational risks."
+        }
+      ],
+      "order": [
+        "What is clear",
+        "Review questions",
+        "Risk signals"
+      ],
+      "severityLevels": []
+    },
+    "validation": [
+      "Confirm all three fields appear in order.",
+      "Confirm no solution, fix, or technology recommendation appears."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "missing input",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "missing input",
+        "safe next action"
+      ]
+    }
+  },
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

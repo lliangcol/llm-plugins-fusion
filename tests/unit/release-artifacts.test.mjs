@@ -9,6 +9,7 @@ import {
   main,
   tarPath,
 } from '../../scripts/build-release-artifacts.mjs';
+import { resolveFromModule } from '../../scripts/lib/repo-root.mjs';
 
 test('release archive and CycloneDX evidence are deterministic', async (t) => {
   const first = await mkdtemp(join(tmpdir(), 'nova-release-artifacts-'));
@@ -18,7 +19,8 @@ test('release archive and CycloneDX evidence are deterministic', async (t) => {
   const left = buildReleaseArtifacts({ outDir: first, now });
   const right = buildReleaseArtifacts({ outDir: second, now });
   assert.equal(left.archiveSha256, right.archiveSha256);
-  assert.deepEqual(deterministicTar(new URL('../../nova-plugin', import.meta.url).pathname), deterministicTar(new URL('../../nova-plugin', import.meta.url).pathname));
+  const pluginRoot = resolveFromModule(import.meta.url, '../../nova-plugin');
+  assert.deepEqual(deterministicTar(pluginRoot), deterministicTar(pluginRoot));
   const sbom = JSON.parse(await readFile(left.sbomPath, 'utf8'));
   assert.equal(sbom.bomFormat, 'CycloneDX');
   assert.equal(sbom.metadata.component.hashes[0].content, left.archiveSha256);

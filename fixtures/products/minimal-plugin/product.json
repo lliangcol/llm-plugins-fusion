@@ -1,0 +1,13 @@
+{
+  "$schema": "../../../schemas/workflow-product.schema.json",
+  "schemaVersion": 2,
+  "pluginNamespace": "acme-flow",
+  "expectedWorkflowCount": 3,
+  "stages": ["intake", "shape", "assure"],
+  "primaryEntrypoints": ["triage", "design", "verify"],
+  "runtimeCompatibility": { "mock-host": "1.0.0" },
+  "adapterDefinitions": ["adapters/mock.json"],
+  "agents": ["coordinator", "designer", "checker"],
+  "packs": ["logic"],
+  "tools": ["Inspect"]
+}

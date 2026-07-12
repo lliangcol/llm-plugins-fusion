@@ -8,8 +8,9 @@ import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { evaluateCapabilityPolicy } from '../framework/core/capability-policy.mjs';
 import { resolveRequiredInputs } from '../framework/core/input-resolution.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 
-const root = resolve(new URL('..', import.meta.url).pathname);
+const root = repoRoot(import.meta.url);
 const target = 'evals/baselines/adapter-simulation.json';
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 

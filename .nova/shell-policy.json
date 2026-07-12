@@ -1,0 +1,9 @@
+{
+  "$schema": "../schemas/shell-command-policy.schema.json",
+  "schemaVersion": 1,
+  "allowCommands": [
+    { "id": "npm-test", "argv": ["npm", "test"], "purpose": "Run the repository test suites." },
+    { "id": "npm-validate", "argv": ["npm", "run", "validate"], "purpose": "Run the repository validation suite." },
+    { "id": "node-validate-all", "argv": ["node", "scripts/validate-all.mjs"], "purpose": "Run the direct full validation entrypoint." }
+  ]
+}

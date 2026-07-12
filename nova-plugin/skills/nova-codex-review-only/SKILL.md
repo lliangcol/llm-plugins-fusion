@@ -33,6 +33,20 @@ This file is the supporting behavioral contract for `/nova-plugin:codex-review-o
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Produce an external Codex review artifact without modifying project code.
+- **Canonical inputs:** `REVIEW_SCOPE`(required aliases=INPUT,SCOPE); `BASE`(optional aliases=BASE_BRANCH); `REVIEW_MODE`(optional aliases=MODE default="branch" exact="branch","staged","full")
+- **Decision entries:** 3.
+- **Workflow steps:** `resolve-scope` → `run-review` → `retain-evidence` → `summarize`
+- **Output:** mode=`artifact`; order=`review artifact` → `runtime evidence` → `scope summary`; severity=`must-fix`, `should-fix`, `ignorable`.
+- **Deviation/failure:** mode=`forbid`; failure order=`status` → `blocker` → `review scope` → `safe next action`.
+- **Full IR:** `runtime/contracts/codex-review-only.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### 目的
 
 只运行 Codex review，不修改代码。

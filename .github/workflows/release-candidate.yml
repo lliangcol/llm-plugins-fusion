@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
 
 concurrency:
   group: release-candidate-${{ github.ref }}
@@ -21,6 +22,7 @@ jobs:
     permissions:
       contents: read
       checks: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
@@ -28,6 +30,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+      - run: npm ci --ignore-scripts
       - name: Verify immutable signed RC tag and protected main ancestry
         env:
           GH_TOKEN: ${{ github.token }}
@@ -48,6 +51,15 @@ jobs:
             exit 1
           fi
           node scripts/prepare-release.mjs
+      - name: Require independent merged-PR approval
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/verify-independent-release-review.mjs --out .metrics/candidate-preflight/independent-review.json
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: candidate-independent-review
+          path: .metrics/candidate-preflight/independent-review.json
+          include-hidden-files: true
 
   validate:
     name: Candidate Contracts, Tests, Coverage, And Package
@@ -59,6 +71,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+      - run: npm ci --ignore-scripts
       - run: npm run check:release
         env:
           NOVA_VALIDATE_WRITE_TIMINGS: '1'
@@ -88,6 +101,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+      - run: npm ci --ignore-scripts
       - run: npm install -g @anthropic-ai/claude-code@2.1.205
       - name: Validate exact candidate tag install, inventory, and route
         env:
@@ -109,7 +123,7 @@ jobs:
 
   assemble:
     name: Bind Candidate Manifest
-    needs: [validate, live]
+    needs: [preflight, validate, live]
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
@@ -117,6 +131,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+      - run: npm ci --ignore-scripts
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: candidate-validation
@@ -125,18 +140,30 @@ jobs:
         with:
           name: candidate-live
           path: .metrics/aggregate/live
+      - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
+        with:
+          name: candidate-independent-review
+          path: .metrics/aggregate/review
       - name: Generate candidate manifest and immutable bundle
         run: |
+          mkdir -p .metrics/candidate-bundle/artifacts .metrics/candidate-bundle/evidence
+          cp .metrics/aggregate/validation/release-artifacts/* .metrics/candidate-bundle/artifacts/
+          cp .metrics/aggregate/validation/SHA256SUMS.txt .metrics/candidate-bundle/evidence/SHA256SUMS.txt
+          cp .metrics/aggregate/validation/coverage-metadata.json .metrics/candidate-bundle/evidence/coverage-metadata.json
+          cp .metrics/aggregate/validation/validation-timings.json .metrics/candidate-bundle/evidence/validation-timings.json
+          cp .metrics/aggregate/live/inventory.json .metrics/candidate-bundle/evidence/inventory.json
+          cp .metrics/aggregate/live/route-smoke.json .metrics/candidate-bundle/evidence/route-smoke.json
+          cp .metrics/aggregate/review/independent-review.json .metrics/candidate-bundle/evidence/independent-review.json
           node scripts/generate-release-candidate.mjs \
-            --artifact-dir .metrics/aggregate/validation/release-artifacts \
-            --evidence .metrics/aggregate/validation/SHA256SUMS.txt \
-            --evidence .metrics/aggregate/validation/coverage-metadata.json \
-            --evidence .metrics/aggregate/validation/validation-timings.json \
-            --evidence .metrics/aggregate/live/inventory.json \
-            --evidence .metrics/aggregate/live/route-smoke.json \
+            --bundle-root .metrics/candidate-bundle \
+            --artifact-dir .metrics/candidate-bundle/artifacts \
+            --evidence .metrics/candidate-bundle/evidence/SHA256SUMS.txt \
+            --evidence .metrics/candidate-bundle/evidence/coverage-metadata.json \
+            --evidence .metrics/candidate-bundle/evidence/validation-timings.json \
+            --evidence .metrics/candidate-bundle/evidence/inventory.json \
+            --evidence .metrics/candidate-bundle/evidence/route-smoke.json \
+            --evidence .metrics/candidate-bundle/evidence/independent-review.json \
             --out .metrics/candidate-bundle/release-candidate.json
-          cp .metrics/aggregate/validation/SHA256SUMS.txt .metrics/candidate-bundle/SHA256SUMS.txt
-          cp .metrics/aggregate/validation/release-artifacts/* .metrics/candidate-bundle/
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: candidate-bundle
@@ -158,6 +185,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+      - run: npm ci --ignore-scripts
       - uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7
         with:
           name: candidate-bundle
@@ -168,25 +196,37 @@ jobs:
           RELEASE_TAG: ${{ github.ref_name }}
           RELEASE_CANDIDATE: '1'
         run: node scripts/prepare-release.mjs
-      - name: Resolve candidate archive and SBOM
+      - name: Resolve candidate archive, SBOM, and deterministic evidence bundle
         id: files
         run: |
           set -euo pipefail
           shopt -s nullglob
-          archives=(.metrics/candidate-bundle/nova-plugin-*.tar.gz)
-          sboms=(.metrics/candidate-bundle/nova-plugin-*.tar.gz.cdx.json)
+          archives=(.metrics/candidate-bundle/artifacts/nova-plugin-*.tar.gz)
+          sboms=(.metrics/candidate-bundle/artifacts/nova-plugin-*.tar.gz.cdx.json)
           test "${#archives[@]}" -eq 1
           test "${#sboms[@]}" -eq 1
+          version="${GITHUB_REF_NAME#v}"
+          version="${version%%-rc.*}"
+          bundle=".metrics/nova-plugin-${version}-candidate-bundle.tar.gz"
+          tar --sort=name --mtime='@0' --owner=0 --group=0 --numeric-owner \
+            -C .metrics/candidate-bundle -czf "${bundle}" .
           printf 'archive=%s\n' "${archives[0]}" >> "${GITHUB_OUTPUT}"
           printf 'sbom=%s\n' "${sboms[0]}" >> "${GITHUB_OUTPUT}"
+          printf 'bundle=%s\n' "${bundle}" >> "${GITHUB_OUTPUT}"
       - uses: actions/attest@f6bf1532d7d6793fce74eac584813a8eee607999 # v4
         with:
           subject-path: ${{ steps.files.outputs.archive }}
           sbom-path: ${{ steps.files.outputs.sbom }}
+      - name: Attest candidate bundle that binds manifest, artifacts, and evidence
+        uses: actions/attest@f6bf1532d7d6793fce74eac584813a8eee607999 # v4
+        with:
+          subject-path: ${{ steps.files.outputs.bundle }}
       - uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d # v3
         with:
           name: "nova-plugin ${{ github.ref_name }}"
           body_path: ${{ steps.release.outputs.notes_file }}
-          files: .metrics/candidate-bundle/*
+          files: |
+            ${{ steps.files.outputs.bundle }}
+            .metrics/candidate-bundle/artifacts/*
           draft: false
           prerelease: true

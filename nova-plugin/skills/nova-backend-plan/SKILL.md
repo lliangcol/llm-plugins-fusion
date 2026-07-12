@@ -32,6 +32,20 @@ This file is the supporting behavioral contract for `/nova-plugin:backend-plan` 
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Produce a complete Java and Spring backend design artifact for senior review without implementing code.
+- **Canonical inputs:** `REQUEST`(required aliases=BUSINESS_CONTEXT,PLAN_INTENT); `PLAN_OUTPUT_PATH`(required aliases=OUTPUT_PATH)
+- **Decision entries:** 1.
+- **Workflow steps:** `validate-inputs` → `extract-constraints` → `select-design` → `write-plan`
+- **Output:** mode=`artifact`; order=`artifact path` → `executive summary`; severity=none.
+- **Deviation/failure:** mode=`approval-required`; failure order=`status` → `blocker` → `required input` → `safe next action`.
+- **Full IR:** `runtime/contracts/backend-plan.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### Purpose
 
 Produce a complete Java/Spring backend design artifact for senior review.

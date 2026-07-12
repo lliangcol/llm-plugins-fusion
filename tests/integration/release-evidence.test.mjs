@@ -82,6 +82,7 @@ function fixtureInput() {
     now: () => new Date('2026-07-11T00:00:00Z'),
     requireLive: true,
     expectedRouteInventory,
+    knownGoodClaudeCli: '2.1.205',
   };
 }
 
@@ -227,9 +228,11 @@ test('release evidence CLI requires live inputs when requested', async (t) => {
   const root = await mkdtemp(join(tmpdir(), 'nova-release-evidence-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   await mkdir(resolve(root, 'nova-plugin/.claude-plugin'), { recursive: true });
+  await mkdir(resolve(root, 'workflow-specs'), { recursive: true });
   await mkdir(resolve(root, '.metrics/coverage'), { recursive: true });
   await mkdir(resolve(root, '.metrics/release-checksums'), { recursive: true });
   await writeFile(resolve(root, 'nova-plugin/.claude-plugin/plugin.json'), '{"version":"2.4.1"}\n');
+  await writeFile(resolve(root, 'workflow-specs/workflows.json'), '{"knownGoodClaudeCli":"2.1.205"}\n');
   await writeFile(resolve(root, '.metrics/coverage/coverage-summary.txt'), coverageSummary);
   await writeFile(resolve(root, '.metrics/coverage/metadata.json'), '{"exitCode":0,"node":"v20","thresholds":{}}\n');
   await writeFile(resolve(root, '.metrics/validation-timings.json'), '{"failed":0,"skipped":0,"timings":[]}\n');

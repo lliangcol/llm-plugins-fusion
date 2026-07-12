@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "codex-review-fix",
   "stage": "implement",
   "ownerAgents": [
@@ -63,6 +63,180 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-codex-review-fix/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-codex-review-fix/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Run an external Codex review, fix high-confidence findings, run project checks, and verify closure.",
+    "inputs": [
+      {
+        "name": "REVIEW_SCOPE",
+        "required": true,
+        "aliases": [
+          "INPUT",
+          "SCOPE"
+        ],
+        "description": "Git diff or repository scope to review and repair."
+      },
+      {
+        "name": "BASE",
+        "required": false,
+        "aliases": [
+          "BASE_BRANCH"
+        ],
+        "description": "Optional comparison base."
+      },
+      {
+        "name": "REVIEW_MODE",
+        "required": false,
+        "aliases": [
+          "MODE"
+        ],
+        "description": "Review selection mode.",
+        "default": "branch",
+        "exactValues": [
+          "branch",
+          "staged",
+          "full"
+        ]
+      },
+      {
+        "name": "INCLUDE_UNTRACKED_CONTENT",
+        "required": false,
+        "aliases": [],
+        "description": "Explicit opt-in for untracked file content in full mode.",
+        "default": false,
+        "exactValues": [
+          true,
+          false
+        ]
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "REVIEW_MODE is full and INCLUDE_UNTRACKED_CONTENT is true.",
+        "action": "Include untracked content in review and verification."
+      },
+      {
+        "when": "REVIEW_MODE is staged.",
+        "action": "Review only staged changes."
+      },
+      {
+        "when": "Otherwise.",
+        "action": "Review the current branch against BASE or the detected default base."
+      }
+    ],
+    "invariants": [
+      "Only fix high-confidence, high-priority findings within REVIEW_SCOPE.",
+      "Do not treat external review output as verified fact until locally checked.",
+      "Do not publish, deploy, clean Git state, or rewrite history."
+    ],
+    "stopConditions": [
+      "The directory is not a Git repository.",
+      "Required Node, Bash, Codex, network, or authentication capability is unavailable or denied.",
+      "A fix requires unrelated refactoring or destructive Git action.",
+      "User changes overlap and cannot be preserved safely."
+    ],
+    "workflowSteps": [
+      {
+        "id": "review",
+        "action": "Run the review script and retain review.md plus runtime evidence."
+      },
+      {
+        "id": "triage",
+        "action": "Select high-confidence must-fix and high-value should-fix findings."
+      },
+      {
+        "id": "repair",
+        "action": "Apply scoped fixes and add tests for behavioral gaps."
+      },
+      {
+        "id": "check",
+        "action": "Run project checks and retain their report."
+      },
+      {
+        "id": "verify",
+        "action": "Run directed verification against the review and checks evidence."
+      },
+      {
+        "id": "close",
+        "action": "Report resolved, unresolved, uncertain, and newly discovered high-risk findings."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "approval-required",
+      "instructions": "Request approval before broadening REVIEW_SCOPE or making a material design change not required by an accepted finding."
+    },
+    "output": {
+      "mode": "workspace-and-chat",
+      "fields": [
+        {
+          "name": "review artifact",
+          "required": true,
+          "description": "Structured review.md."
+        },
+        {
+          "name": "fix summary",
+          "required": true,
+          "description": "Applied and declined findings with rationale."
+        },
+        {
+          "name": "checks evidence",
+          "required": true,
+          "description": "Actual project check results."
+        },
+        {
+          "name": "verification artifact",
+          "required": true,
+          "description": "Structured verify.md."
+        },
+        {
+          "name": "merge recommendation",
+          "required": true,
+          "description": "Evidence-bounded closure recommendation."
+        },
+        {
+          "name": "residual risk",
+          "required": true,
+          "description": "Unresolved blockers and uncertainty."
+        }
+      ],
+      "order": [
+        "review artifact",
+        "fix summary",
+        "checks evidence",
+        "verification artifact",
+        "merge recommendation",
+        "residual risk"
+      ],
+      "severityLevels": [
+        "must-fix",
+        "should-fix",
+        "ignorable"
+      ]
+    },
+    "validation": [
+      "Confirm review.md and verify.md were produced by actual script executions.",
+      "Confirm checks are reported as passed, failed, or skipped without inference.",
+      "Confirm every applied change maps to an accepted finding or required test."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "completed phase",
+        "blocker",
+        "retained evidence",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "completed phase",
+        "blocker",
+        "retained evidence",
+        "safe next action"
+      ]
+    }
+  },
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

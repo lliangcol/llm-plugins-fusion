@@ -4,8 +4,9 @@ import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import test from 'node:test';
 import { runProcess } from '../../scripts/lib/process-runner.mjs';
+import { resolveFromModule } from '../../scripts/lib/repo-root.mjs';
 
-const root = resolve(new URL('../..', import.meta.url).pathname);
+const root = resolveFromModule(import.meta.url, '../..');
 const verifier = resolve(root, 'nova-plugin/hooks/scripts/post-write-verify.mjs');
 
 function payload(workspace, filePath, toolName = 'Write') {

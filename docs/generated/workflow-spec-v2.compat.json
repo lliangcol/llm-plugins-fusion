@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "sourceSchemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "source": "workflow-specs/workflows.json",
   "migrationBoundary": "Read-only compatibility projection; new consumers must use runtimeRequirements, permissionPolicy, and enforcement.",
   "pluginNamespace": "nova-plugin",

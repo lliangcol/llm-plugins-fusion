@@ -32,6 +32,20 @@ This file is the supporting behavioral contract for `/nova-plugin:review-only` a
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Perform standard evidence-grounded review and group findings by severity without implementation.
+- **Canonical inputs:** `REVIEW_SCOPE`(required aliases=INPUT,SCOPE)
+- **Decision entries:** 3.
+- **Workflow steps:** `inspect` → `separate-evidence` → `classify` → `emit`
+- **Output:** mode=`chat`; order=`Critical` → `Major` → `Minor`; severity=`Critical`, `Major`, `Minor`.
+- **Deviation/failure:** mode=`forbid`; failure order=`status` → `missing evidence` → `reviewed scope` → `safe next action`.
+- **Full IR:** `runtime/contracts/review-only.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### Purpose
 
 Run regular strict review and output severity-grouped issues.

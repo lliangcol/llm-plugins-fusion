@@ -32,6 +32,20 @@ This file is the supporting behavioral contract for `/nova-plugin:plan-review` a
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Assess plan decision clarity, assumptions, and execution risk without rewriting the plan.
+- **Canonical inputs:** `PLAN_INPUT_PATH`(required aliases=INPUT,PLAN_PATH)
+- **Decision entries:** 2.
+- **Workflow steps:** `load-plan` → `check-decisions` → `identify-gaps` → `ask-questions`
+- **Output:** mode=`chat`; order=`Decision clarity check` → `Assumptions & gaps` → `Risk signals` → `Review questions`; severity=none.
+- **Deviation/failure:** mode=`forbid`; failure order=`status` → `missing plan evidence` → `safe next action`.
+- **Full IR:** `runtime/contracts/plan-review.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### Purpose
 
 Assess plan quality and execution readiness from a reviewer perspective.

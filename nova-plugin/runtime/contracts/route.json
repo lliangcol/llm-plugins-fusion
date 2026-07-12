@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "route",
   "stage": "explore",
   "ownerAgents": [
@@ -45,6 +45,243 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-route/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-route/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Choose the shortest safe next workflow route before execution starts.",
+    "inputs": [
+      {
+        "name": "REQUEST",
+        "required": true,
+        "aliases": [
+          "INPUT",
+          "INTENT"
+        ],
+        "description": "User intent and available execution basis."
+      },
+      {
+        "name": "DEPTH",
+        "required": false,
+        "aliases": [
+          "MODE"
+        ],
+        "description": "Routing explanation depth.",
+        "default": "normal",
+        "exactValues": [
+          "brief",
+          "normal"
+        ]
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "Intent explicitly requires the external Codex review, fix, and verify closure loop.",
+        "action": "Route to the complete external closure workflow.",
+        "route": "codex-review-fix"
+      },
+      {
+        "when": "Intent explicitly requires external Codex review only with no fixes.",
+        "action": "Route to external review only.",
+        "route": "codex-review-only"
+      },
+      {
+        "when": "Intent explicitly requires verification of an existing external review artifact.",
+        "action": "Route to external verification only.",
+        "route": "codex-verify-only"
+      },
+      {
+        "when": "Intent requires a deep or systematic analysis artifact without solutioning.",
+        "action": "Route to senior exploration.",
+        "route": "senior-explore"
+      },
+      {
+        "when": "Intent requires reviewer-perspective exploration questions without solutions.",
+        "action": "Route to reviewer exploration.",
+        "route": "explore-review"
+      },
+      {
+        "when": "Intent requires factual understanding, unknowns, or risk without solutions.",
+        "action": "Route to the exploration hub.",
+        "route": "explore"
+      },
+      {
+        "when": "Intent explicitly requires a Java or Spring twelve-section backend design.",
+        "action": "Route to the specialized backend plan.",
+        "route": "backend-plan"
+      },
+      {
+        "when": "Intent requires review of an existing plan without rewriting it.",
+        "action": "Route to plan review.",
+        "route": "plan-review"
+      },
+      {
+        "when": "Intent requires a lightweight plan with no artifact file.",
+        "action": "Route to lightweight planning.",
+        "route": "plan-lite"
+      },
+      {
+        "when": "Intent requires a formal review-ready plan artifact at an explicit path.",
+        "action": "Route to plan production.",
+        "route": "produce-plan"
+      },
+      {
+        "when": "Intent requires a strict production-critical or security audit.",
+        "action": "Route to strict review.",
+        "route": "review-strict"
+      },
+      {
+        "when": "Intent requires a fast review of a small patch with only obvious findings.",
+        "action": "Route to lightweight review.",
+        "route": "review-lite"
+      },
+      {
+        "when": "Intent requires standard severity-grouped read-only review with no implementation.",
+        "action": "Route to review only.",
+        "route": "review-only"
+      },
+      {
+        "when": "Intent requires review but no narrower review contract is explicit.",
+        "action": "Route to the review hub.",
+        "route": "review"
+      },
+      {
+        "when": "Intent requires execution of an explicitly approved plan file.",
+        "action": "Route to approved-plan implementation.",
+        "route": "implement-plan"
+      },
+      {
+        "when": "Intent requires a small bounded fix with focused validation.",
+        "action": "Route to lightweight implementation.",
+        "route": "implement-lite"
+      },
+      {
+        "when": "Intent requires execution of explicit confirmed steps.",
+        "action": "Route to standard implementation.",
+        "route": "implement-standard"
+      },
+      {
+        "when": "Intent requires a short factual closure summary only.",
+        "action": "Route to lightweight finalization.",
+        "route": "finalize-lite"
+      },
+      {
+        "when": "Intent requires a complete handoff or pull-request-ready closeout.",
+        "action": "Route to full finalization.",
+        "route": "finalize-work"
+      }
+    ],
+    "invariants": [
+      "Recommend only existing commands, skills, agents, and packs.",
+      "Prefer an exact specialized route over a broader hub when its condition matches.",
+      "Do not modify files or execute downstream work.",
+      "Do not claim validation has run.",
+      "Begin exactly with ## Recommended Route and emit no preamble or trailing commentary.",
+      "Name required inputs using only the selected workflows' canonical UPPER_SNAKE_CASE input names, plus validation expectations and fallback."
+    ],
+    "stopConditions": [
+      "REQUEST is unresolved.",
+      "DEPTH is not an exact allowed value.",
+      "No safe route can be selected without a material user choice."
+    ],
+    "workflowSteps": [
+      {
+        "id": "resolve-intent",
+        "action": "Resolve request intent and execution basis."
+      },
+      {
+        "id": "classify",
+        "action": "Match the request to the decision table."
+      },
+      {
+        "id": "select",
+        "action": "Select one next command or the shortest safe sequence."
+      },
+      {
+        "id": "verify-surface",
+        "action": "Verify every named command, skill, agent, and pack exists."
+      },
+      {
+        "id": "emit",
+        "action": "Emit only the fixed route fields."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "forbid",
+      "instructions": "Do not invent surfaces, implementation steps, or validation claims."
+    },
+    "output": {
+      "mode": "chat",
+      "fields": [
+        {
+          "name": "Command",
+          "required": true,
+          "description": "Existing command or shortest safe sequence."
+        },
+        {
+          "name": "Skill",
+          "required": true,
+          "description": "One-to-one matching skill."
+        },
+        {
+          "name": "Core agent",
+          "required": true,
+          "description": "Existing owner agent."
+        },
+        {
+          "name": "Capability packs",
+          "required": true,
+          "description": "Existing relevant packs."
+        },
+        {
+          "name": "Required inputs",
+          "required": true,
+          "description": "Exact canonical UPPER_SNAKE_CASE inputs required by selected workflows."
+        },
+        {
+          "name": "Validation expectations",
+          "required": true,
+          "description": "Checks the downstream workflow must run."
+        },
+        {
+          "name": "Fallback path",
+          "required": true,
+          "description": "Safe blocked-state route."
+        }
+      ],
+      "order": [
+        "Command",
+        "Skill",
+        "Core agent",
+        "Capability packs",
+        "Required inputs",
+        "Validation expectations",
+        "Fallback path"
+      ],
+      "severityLevels": []
+    },
+    "validation": [
+      "Confirm the most specific matching route was selected before considering a hub.",
+      "Confirm selected commands and skills exist one-to-one.",
+      "Confirm agents and packs exist in the product inventory.",
+      "Confirm required inputs exactly equal the canonical names and order of the selected workflows.",
+      "Confirm the response contains routing only."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "ambiguous intent",
+        "required choice",
+        "safe fallback"
+      ],
+      "order": [
+        "status",
+        "ambiguous intent",
+        "required choice",
+        "safe fallback"
+      ]
+    }
+  },
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

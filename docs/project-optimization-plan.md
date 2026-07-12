@@ -10,13 +10,13 @@ Do not edit this block by hand. It is synchronized by
 - Plugin: `nova-plugin@3.1.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
-- Workflow contract: schema v3, namespace `nova-plugin`, 21 workflows
+- Workflow contract: schema v4, namespace `nova-plugin`, 21 workflows
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`
+- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`, `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"`
 - Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
 <!-- generated:project-state:end -->
 
@@ -94,9 +94,10 @@ Live facts checked for this plan:
 - Keep public content free of private consumer names, local machine paths,
   endpoints, credentials, repository addresses, runtime flags, business rules,
   and private knowledge-base content.
-- Preserve the dependency-free maintainer baseline by default. Any npm
-  dependency requires an explicit supply-chain decision and a lower-risk
-  no-dependency alternative review.
+- Preserve a zero-package-runtime distributed plugin. Development-only npm
+  dependencies require an explicit supply-chain decision, an exact lockfile,
+  install scripts disabled in CI, and a lower-risk alternative review. Ajv is
+  the approved exception for standards-complete schema validation.
 - Do not commit `.codex/`, `.metrics/`, coverage output, logs, caches, or local
   runtime artifacts unless a file is deliberately promoted as a documented,
   source-controlled fixture.
@@ -629,7 +630,7 @@ validation commands, expected output artifacts, and residual risk format.
 
 | Decision | Default | When to change |
 | --- | --- | --- |
-| Coverage implementation | Node built-in or dependency-free script | Only add npm tooling after supply-chain review |
+| Coverage implementation | Node built-in coverage script | Change only after supply-chain review; Ajv remains development-only for schema validation |
 | Coverage gate mode | Enforce the recorded global baseline | Add per-module and mutation gates after a supported-runtime baseline |
 | Active hook runtime | Bash fail-closed PreToolUse launcher and exec-form Node post-use hooks | Change only with docs, validators, and semver review |
 | Release evidence | Checksums, SBOM, provenance, and attestation | Promote only identical candidate artifacts after full rehearsal |

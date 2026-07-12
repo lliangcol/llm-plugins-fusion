@@ -66,11 +66,11 @@ gate is added, renamed, removed, or moved.
 | CI check | Source command or workflow | Coverage |
 | --- | --- | --- |
 | Required / Contracts | `.github/workflows/ci.yml` | Schemas, generated drift, docs/frontmatter, adapters, workflow contracts, inventory, agents, and workflow trust checks in one checkout. |
-| Required / Tests | `npm test`, coverage, critical mutation | Unit/integration/e2e, global and critical coverage, and mutation score; uploads `.metrics/coverage/`. |
+| Required / Tests | `npm test`, coverage, targeted critical mutation | Unit/integration/e2e, global and critical coverage, and three manually selected high-risk mutants; uploads `.metrics/coverage/`. |
 | Required / Security | hooks, ShellCheck, fault injection, secret/distribution scans | Security guardrails and SARIF evidence in one scoped-permission job. |
 | Required / Platform | Linux Node 22/24, Windows Node 22, macOS Node 22 matrix | Cross-platform contracts, Windows PowerShell/Bash, and macOS system Bash. |
 | Required / Package | install dry-run and double artifact build | Package inventory, deterministic archive/SBOM/provenance build, and reproducibility. |
-| Conditional / Live Evidence | `node scripts/validate-assistant-evidence.mjs` | Runs on `main`; PRs use checked-in digest validation through Contracts. |
+| Conditional / Evidence Registry Integrity | `node scripts/validate-assistant-evidence.mjs` | Runs on `main`; validates checked-in evidence and never claims to execute an assistant. |
 | Required / Aggregate | result aggregation | The only CI branch-protection check; fails unless every required consolidated lane succeeds. |
 | Release Evidence | `node scripts/generate-release-evidence.mjs` | Machine-readable validation, coverage, install, live route, and checksum aggregation. |
 | Validate GitHub Workflows | `node scripts/validate-github-workflows.mjs` | Workflow permissions, inventory, action SHA pinning, required checks, NPM Test gate, and smoke boundaries. |

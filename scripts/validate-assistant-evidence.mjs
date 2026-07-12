@@ -5,8 +5,9 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { checkOrWrite, buildRegistry } from './generate-compatibility-evidence.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 
-const root = resolve(new URL('..', import.meta.url).pathname);
+const root = repoRoot(import.meta.url);
 const files = readdirSync(resolve(root, 'evals/evidence')).filter((name) => name.endsWith('.json')).sort();
 assert.ok(files.length >= 1, 'at least one versioned evidence record is required');
 

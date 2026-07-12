@@ -1,0 +1,10 @@
+{
+  "$schema": "../../../../schemas/workflow-adapter.schema.json",
+  "schemaVersion": 1,
+  "id": "mock",
+  "enforcement": "advisory",
+  "declaredLevel": "L1",
+  "maximumSupportedLevel": "L2",
+  "invocation": { "kind": "contract-manifest", "prefix": "acme:" },
+  "evidenceRequiredFor": ["L2"]
+}

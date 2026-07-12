@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "finalize-lite",
   "stage": "finalize",
   "ownerAgents": [
@@ -47,6 +47,100 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-finalize-lite/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-finalize-lite/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Provide a short factual closure summary without making new changes or decisions.",
+    "inputs": [
+      {
+        "name": "WORK_SUMMARY",
+        "required": true,
+        "aliases": [
+          "WORK_SCOPE"
+        ],
+        "description": "Completed work context; current task context may satisfy this input explicitly."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "Known limitations exist.",
+        "action": "List them factually."
+      },
+      {
+        "when": "No limitations are known from evidence.",
+        "action": "Use the exact statement No known limitations."
+      }
+    ],
+    "invariants": [
+      "Do not modify code or configuration.",
+      "Do not introduce new decisions or work claims."
+    ],
+    "stopConditions": [
+      "WORK_SUMMARY cannot be resolved from explicit input or current task evidence.",
+      "Completion claims cannot be supported by evidence."
+    ],
+    "workflowSteps": [
+      {
+        "id": "freeze-scope",
+        "action": "Freeze the completed work scope."
+      },
+      {
+        "id": "summarize",
+        "action": "Summarize factual changes and motivation."
+      },
+      {
+        "id": "limitations",
+        "action": "List known limitations or the exact no-known-limitations statement."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "forbid",
+      "instructions": "Do not add follow-up implementation, release, or new scope."
+    },
+    "output": {
+      "mode": "chat",
+      "fields": [
+        {
+          "name": "What changed",
+          "required": true,
+          "description": "Factual completed changes."
+        },
+        {
+          "name": "Why",
+          "required": true,
+          "description": "Evidence-based motivation."
+        },
+        {
+          "name": "Limitations",
+          "required": true,
+          "description": "Known limits or exact absence statement."
+        }
+      ],
+      "order": [
+        "What changed",
+        "Why",
+        "Limitations"
+      ],
+      "severityLevels": []
+    },
+    "validation": [
+      "Confirm claims match actual completed evidence.",
+      "Confirm no new work or decision is introduced."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "missing evidence",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "missing evidence",
+        "safe next action"
+      ]
+    }
+  },
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

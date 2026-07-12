@@ -32,6 +32,20 @@ This file is the supporting behavioral contract for `/nova-plugin:review` and th
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Route code or design review to the requested depth and emit evidence-grounded findings without implementation.
+- **Canonical inputs:** `REVIEW_SCOPE`(required aliases=INPUT,SCOPE); `LEVEL`(optional aliases=DEPTH default="standard" exact="lite","standard","strict")
+- **Decision entries:** 3; exact routes: `review-lite`, `review-only`, `review-strict`.
+- **Workflow steps:** `resolve-scope` → `route` → `inspect` → `emit`
+- **Output:** mode=`chat`; order=`findings` → `impact rationale` → `directional guidance`; severity=`Critical`, `Major`, `Minor`.
+- **Deviation/failure:** mode=`forbid`; failure order=`status` → `missing input` → `allowed values` → `safe next action`.
+- **Full IR:** `runtime/contracts/review.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### Purpose
 
 Provide structured review findings for code/design artifacts, with routing by requested depth.

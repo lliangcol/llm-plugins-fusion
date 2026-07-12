@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "source": "workflow-specs/workflows.json",
+  "source": "workflow-specs/adapters/generic.json",
   "maximumSupportedLevel": "L4",
   "declaredLevel": "L1",
   "evidenceRequiredFor": [
@@ -13,6 +13,7 @@
     {
       "id": "backend-plan",
       "contract": "../../nova-plugin/skills/nova-backend-plan/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/backend-plan.json",
       "stage": "plan",
       "risk": "low",
       "requiredInputs": [
@@ -50,6 +51,7 @@
     {
       "id": "codex-review-fix",
       "contract": "../../nova-plugin/skills/nova-codex-review-fix/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/codex-review-fix.json",
       "stage": "implement",
       "risk": "medium",
       "requiredInputs": [
@@ -102,6 +104,7 @@
     {
       "id": "codex-review-only",
       "contract": "../../nova-plugin/skills/nova-codex-review-only/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/codex-review-only.json",
       "stage": "review",
       "risk": "low",
       "requiredInputs": [
@@ -154,6 +157,7 @@
     {
       "id": "codex-verify-only",
       "contract": "../../nova-plugin/skills/nova-codex-verify-only/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/codex-verify-only.json",
       "stage": "review",
       "risk": "low",
       "requiredInputs": [
@@ -206,6 +210,7 @@
     {
       "id": "explore",
       "contract": "../../nova-plugin/skills/nova-explore/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/explore.json",
       "stage": "explore",
       "risk": "none",
       "requiredInputs": [
@@ -242,6 +247,7 @@
     {
       "id": "explore-lite",
       "contract": "../../nova-plugin/skills/nova-explore-lite/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/explore-lite.json",
       "stage": "explore",
       "risk": "none",
       "requiredInputs": [
@@ -278,6 +284,7 @@
     {
       "id": "explore-review",
       "contract": "../../nova-plugin/skills/nova-explore-review/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/explore-review.json",
       "stage": "explore",
       "risk": "none",
       "requiredInputs": [
@@ -314,6 +321,7 @@
     {
       "id": "finalize-lite",
       "contract": "../../nova-plugin/skills/nova-finalize-lite/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/finalize-lite.json",
       "stage": "finalize",
       "risk": "none",
       "requiredInputs": [
@@ -350,6 +358,7 @@
     {
       "id": "finalize-work",
       "contract": "../../nova-plugin/skills/nova-finalize-work/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/finalize-work.json",
       "stage": "finalize",
       "risk": "none",
       "requiredInputs": [
@@ -386,6 +395,7 @@
     {
       "id": "implement-lite",
       "contract": "../../nova-plugin/skills/nova-implement-lite/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/implement-lite.json",
       "stage": "implement",
       "risk": "medium",
       "requiredInputs": [
@@ -422,6 +432,7 @@
     {
       "id": "implement-plan",
       "contract": "../../nova-plugin/skills/nova-implement-plan/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/implement-plan.json",
       "stage": "implement",
       "risk": "medium",
       "requiredInputs": [
@@ -459,6 +470,7 @@
     {
       "id": "implement-standard",
       "contract": "../../nova-plugin/skills/nova-implement-standard/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/implement-standard.json",
       "stage": "implement",
       "risk": "medium",
       "requiredInputs": [
@@ -495,6 +507,7 @@
     {
       "id": "plan-lite",
       "contract": "../../nova-plugin/skills/nova-plan-lite/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/plan-lite.json",
       "stage": "plan",
       "risk": "none",
       "requiredInputs": [
@@ -531,6 +544,7 @@
     {
       "id": "plan-review",
       "contract": "../../nova-plugin/skills/nova-plan-review/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/plan-review.json",
       "stage": "review",
       "risk": "none",
       "requiredInputs": [
@@ -567,6 +581,7 @@
     {
       "id": "produce-plan",
       "contract": "../../nova-plugin/skills/nova-produce-plan/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/produce-plan.json",
       "stage": "plan",
       "risk": "low",
       "requiredInputs": [
@@ -604,6 +619,7 @@
     {
       "id": "review",
       "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/review.json",
       "stage": "review",
       "risk": "none",
       "requiredInputs": [
@@ -640,6 +656,7 @@
     {
       "id": "review-lite",
       "contract": "../../nova-plugin/skills/nova-review-lite/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/review-lite.json",
       "stage": "review",
       "risk": "none",
       "requiredInputs": [
@@ -676,6 +693,7 @@
     {
       "id": "review-only",
       "contract": "../../nova-plugin/skills/nova-review-only/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/review-only.json",
       "stage": "review",
       "risk": "none",
       "requiredInputs": [
@@ -712,6 +730,7 @@
     {
       "id": "review-strict",
       "contract": "../../nova-plugin/skills/nova-review-strict/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/review-strict.json",
       "stage": "review",
       "risk": "none",
       "requiredInputs": [
@@ -748,6 +767,7 @@
     {
       "id": "route",
       "contract": "../../nova-plugin/skills/nova-route/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/route.json",
       "stage": "explore",
       "risk": "none",
       "requiredInputs": [
@@ -784,6 +804,7 @@
     {
       "id": "senior-explore",
       "contract": "../../nova-plugin/skills/nova-senior-explore/SKILL.md",
+      "runtimeContract": "../../nova-plugin/runtime/contracts/senior-explore.json",
       "stage": "explore",
       "risk": "low",
       "requiredInputs": [

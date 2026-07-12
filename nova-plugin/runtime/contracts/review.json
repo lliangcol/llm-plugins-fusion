@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "review",
   "stage": "review",
   "ownerAgents": [
@@ -48,6 +48,135 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-review/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-review/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Route code or design review to the requested depth and emit evidence-grounded findings without implementation.",
+    "inputs": [
+      {
+        "name": "REVIEW_SCOPE",
+        "required": true,
+        "aliases": [
+          "INPUT",
+          "SCOPE"
+        ],
+        "description": "Code, design, tests, logs, or diff to review."
+      },
+      {
+        "name": "LEVEL",
+        "required": false,
+        "aliases": [
+          "DEPTH"
+        ],
+        "description": "Review depth.",
+        "default": "standard",
+        "exactValues": [
+          "lite",
+          "standard",
+          "strict"
+        ]
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "LEVEL equals lite.",
+        "action": "Use concise high-signal review.",
+        "route": "review-lite"
+      },
+      {
+        "when": "LEVEL equals standard.",
+        "action": "Use normal severity-grouped review.",
+        "route": "review-only"
+      },
+      {
+        "when": "LEVEL equals strict.",
+        "action": "Use exhaustive failure-cost-aware review.",
+        "route": "review-strict"
+      }
+    ],
+    "invariants": [
+      "Do not modify code or provide implementation patches.",
+      "Review only supplied or approved evidence.",
+      "Clearly label facts, inferences, and assumptions."
+    ],
+    "stopConditions": [
+      "REVIEW_SCOPE is unresolved.",
+      "LEVEL is not an exact allowed value.",
+      "The request requires implementation rather than review."
+    ],
+    "workflowSteps": [
+      {
+        "id": "resolve-scope",
+        "action": "Resolve review scope and exact level."
+      },
+      {
+        "id": "route",
+        "action": "Select the matching review workflow."
+      },
+      {
+        "id": "inspect",
+        "action": "Inspect required dimensions at the selected depth."
+      },
+      {
+        "id": "emit",
+        "action": "Emit findings with impact rationale and directional guidance only."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "forbid",
+      "instructions": "Do not expand the review scope, implement fixes, or decide release readiness."
+    },
+    "output": {
+      "mode": "chat",
+      "fields": [
+        {
+          "name": "findings",
+          "required": true,
+          "description": "Route-specific concise or severity-grouped findings."
+        },
+        {
+          "name": "impact rationale",
+          "required": true,
+          "description": "Why each finding matters."
+        },
+        {
+          "name": "directional guidance",
+          "required": true,
+          "description": "Conceptual improvement direction, not code."
+        }
+      ],
+      "order": [
+        "findings",
+        "impact rationale",
+        "directional guidance"
+      ],
+      "severityLevels": [
+        "Critical",
+        "Major",
+        "Minor"
+      ]
+    },
+    "validation": [
+      "Confirm the selected route matches LEVEL.",
+      "Confirm findings are grounded in reviewed evidence.",
+      "Confirm no implementation patch or release decision appears."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "missing input",
+        "allowed values",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "missing input",
+        "allowed values",
+        "safe next action"
+      ]
+    }
+  },
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

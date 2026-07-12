@@ -97,3 +97,8 @@ that are safe for that project-local context.
 - Run validation commands from the consumer profile when available; otherwise,
   report the missing validation source instead of inventing project-specific
   commands.
+- Register validation commands that may run through the plugin Bash hook as
+  complete argv arrays in consumer-owned `.nova/shell-policy.json`. Keep the
+  list minimal and reviewed: a script named `test` is not proof that it is
+  side-effect free. An allowlist entry still follows normal Bash permission
+  handling and is not implicit approval.

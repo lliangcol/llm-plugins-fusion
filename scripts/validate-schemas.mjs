@@ -4,16 +4,17 @@
  * Validates plugin.json, registry.source.json, marketplace.json, and
  * marketplace.metadata.json against their JSON schemas, then checks
  * name/version alignment and generated registry/catalog drift.
- * Dependencies: none (uses built-in fetch/readFile only)
+ * Development dependencies: Ajv and ajv-formats. The distributed plugin archive remains dependency-free.
  *
  * Usage: node scripts/validate-schemas.mjs
  */
 
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { generateRegistryFiles } from './generate-registry.mjs';
 import { SEMVER_PATTERN_SOURCE } from './lib/semver.mjs';
+import { compileStandardSchema, validateStandardSchema } from './lib/schema-engine.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -35,13 +36,40 @@ function isValidIsoDate(value) {
   return month >= 1 && month <= 12 && day >= 1 && day <= daysInMonth[month - 1];
 }
 
-// Minimal JSON Schema draft-07 validator
-// Supports: required/type/pattern/format/minLength/additionalProperties/properties/items/minItems/uniqueItems/enum/oneOf/const
-function validate(schema, data, path = '') {
+const supportedSchemaKeywords = new Set([
+  '$schema', '$id', 'title', 'description', 'type', 'required', 'pattern', 'format',
+  'minLength', 'minimum', 'additionalProperties', 'properties', 'items', 'minItems',
+  'uniqueItems', 'enum', 'oneOf', 'const',
+]);
+
+export function validateLegacySchemaKeywords(schema, path = '(root)') {
+  const errors = [];
+  for (const key of Object.keys(schema)) {
+    if (!supportedSchemaKeywords.has(key)) errors.push(`${path}: unsupported schema keyword ${key}`);
+  }
+  for (const [key, child] of Object.entries(schema.properties ?? {})) {
+    errors.push(...validateLegacySchemaKeywords(child, `${path}.properties.${key}`));
+  }
+  if (schema.format && !['uri', 'date', 'date-time', 'email'].includes(schema.format)) errors.push(`${path}: unsupported schema format ${schema.format}`);
+  if (schema.items && typeof schema.items === 'object') errors.push(...validateLegacySchemaKeywords(schema.items, `${path}.items`));
+  for (const [index, child] of (schema.oneOf ?? []).entries()) errors.push(...validateLegacySchemaKeywords(child, `${path}.oneOf[${index}]`));
+  return errors;
+}
+
+function canonicalJson(value) {
+  if (Array.isArray(value)) return `[${value.map(canonicalJson).join(',')}]`;
+  if (value && typeof value === 'object') {
+    return `{${Object.keys(value).sort().map((key) => `${JSON.stringify(key)}:${canonicalJson(value[key])}`).join(',')}}`;
+  }
+  return JSON.stringify(value);
+}
+
+// Dependency-free schema subset. Unsupported keywords fail closed above.
+export function validateLegacySubset(schema, data, path = '') {
   const errors = [];
 
   if (schema.oneOf) {
-    const matchCount = schema.oneOf.reduce((acc, sub) => acc + (validate(sub, data, path).length === 0 ? 1 : 0), 0);
+    const matchCount = schema.oneOf.reduce((acc, sub) => acc + (validateLegacySubset(sub, data, path).length === 0 ? 1 : 0), 0);
     if (matchCount !== 1) {
       errors.push(`${path || '(root)'}: value must match exactly one of oneOf branches (matched ${matchCount})`);
     }
@@ -59,7 +87,8 @@ function validate(schema, data, path = '') {
   if (schema.type) {
     const types = Array.isArray(schema.type) ? schema.type : [schema.type];
     const jsType = Array.isArray(data) ? 'array' : (data === null ? 'null' : typeof data);
-    if (!types.includes(jsType)) {
+    const typeMatches = types.some((type) => type === jsType || (type === 'integer' && jsType === 'number' && Number.isInteger(data)));
+    if (!typeMatches) {
       errors.push(`${path || '(root)'}: expected type ${types.join('|')}, got ${jsType}`);
       return errors;
     }
@@ -80,9 +109,16 @@ function validate(schema, data, path = '') {
     if (schema.format === 'date' && !isValidIsoDate(data)) {
       errors.push(`${path}: value "${data}" is not a valid ISO-8601 date (YYYY-MM-DD)`);
     }
+    if (schema.format === 'date-time' && (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/u.test(data) || Number.isNaN(Date.parse(data)))) {
+      errors.push(`${path}: value "${data}" is not a valid RFC 3339 date-time`);
+    }
     if (schema.format === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data)) {
       errors.push(`${path}: value "${data}" is not a valid email`);
     }
+  }
+
+  if ((typeof data === 'number') && schema.minimum !== undefined && data < schema.minimum) {
+    errors.push(`${path}: number ${data} < minimum ${schema.minimum}`);
   }
 
   if ((schema.type === 'object' || typeof data === 'object') && !Array.isArray(data) && data !== null) {
@@ -103,7 +139,7 @@ function validate(schema, data, path = '') {
     if (schema.properties) {
       for (const [key, subSchema] of Object.entries(schema.properties)) {
         if (key in data) {
-          errors.push(...validate(subSchema, data[key], `${path}.${key}`));
+          errors.push(...validateLegacySubset(subSchema, data[key], `${path}.${key}`));
         }
       }
     }
@@ -113,12 +149,12 @@ function validate(schema, data, path = '') {
     if (schema.minItems !== undefined && data.length < schema.minItems) {
       errors.push(`${path}: array length ${data.length} < minItems ${schema.minItems}`);
     }
-    if (schema.uniqueItems && new Set(data).size !== data.length) {
+    if (schema.uniqueItems && new Set(data.map(canonicalJson)).size !== data.length) {
       errors.push(`${path}: array items must be unique`);
     }
     if (schema.items) {
       data.forEach((item, i) => {
-        errors.push(...validate(schema.items, item, `${path}[${i}]`));
+        errors.push(...validateLegacySubset(schema.items, item, `${path}[${i}]`));
       });
     }
   }
@@ -126,6 +162,15 @@ function validate(schema, data, path = '') {
   return errors;
 }
 
+export function validateSchemaKeywords(schema) {
+  try { compileStandardSchema(schema); return []; } catch (error) { return [`schema compilation failed: ${error.message}`]; }
+}
+
+export function validate(schema, data) {
+  return validateStandardSchema(schema, data);
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
 const targets = [
   {
     schema: loadJson('schemas/plugin.schema.json'),
@@ -153,9 +198,54 @@ const targets = [
     label: 'workflow-specs/workflows.json',
   },
   {
+    schema: loadJson('schemas/workflow-framework.schema.json'),
+    data: loadJson('workflow-specs/framework.json'),
+    label: 'workflow-specs/framework.json',
+  },
+  {
+    schema: loadJson('schemas/workflow-behaviors.schema.json'),
+    data: loadJson('workflow-specs/behaviors.json'),
+    label: 'workflow-specs/behaviors.json',
+  },
+  {
     schema: loadJson('schemas/workflow-product.schema.json'),
     data: loadJson('workflow-specs/nova.product.json'),
     label: 'workflow-specs/nova.product.json',
+  },
+  ...['claude', 'codex', 'generic'].map((id) => ({
+    schema: loadJson('schemas/workflow-adapter.schema.json'),
+    data: loadJson(`workflow-specs/adapters/${id}.json`),
+    label: `workflow-specs/adapters/${id}.json`,
+  })),
+  {
+    schema: loadJson('schemas/shell-command-policy.schema.json'),
+    data: loadJson('.nova/shell-policy.json'),
+    label: '.nova/shell-policy.json',
+  },
+  {
+    schema: loadJson('schemas/workflow-framework.schema.json'),
+    data: loadJson('fixtures/products/minimal-plugin/framework.json'),
+    label: 'fixtures/products/minimal-plugin/framework.json',
+  },
+  {
+    schema: loadJson('schemas/workflow-spec.schema.json'),
+    data: loadJson('fixtures/products/minimal-plugin/workflows.json'),
+    label: 'fixtures/products/minimal-plugin/workflows.json',
+  },
+  {
+    schema: loadJson('schemas/workflow-behaviors.schema.json'),
+    data: loadJson('fixtures/products/minimal-plugin/behaviors.json'),
+    label: 'fixtures/products/minimal-plugin/behaviors.json',
+  },
+  {
+    schema: loadJson('schemas/workflow-product.schema.json'),
+    data: loadJson('fixtures/products/minimal-plugin/product.json'),
+    label: 'fixtures/products/minimal-plugin/product.json',
+  },
+  {
+    schema: loadJson('schemas/workflow-adapter.schema.json'),
+    data: loadJson('fixtures/products/minimal-plugin/adapters/mock.json'),
+    label: 'fixtures/products/minimal-plugin/adapters/mock.json',
   },
   {
     schema: loadJson('schemas/workflow-permissions.schema.json'),
@@ -202,14 +292,18 @@ if (versionPatterns.some((pattern) => pattern !== SEMVER_PATTERN_SOURCE)) {
 console.log('✓ schema SemVer pattern alignment');
 
 let allPassed = true;
-for (const schemaPath of [
+const schemaPaths = [
   'schemas/plugin.schema.json',
   'schemas/registry-source.schema.json',
   'schemas/marketplace.schema.json',
   'schemas/marketplace-metadata.schema.json',
   'schemas/workflow-permissions.schema.json',
   'schemas/workflow-spec.schema.json',
+  'schemas/workflow-framework.schema.json',
+  'schemas/workflow-behaviors.schema.json',
+  'schemas/workflow-adapter.schema.json',
   'schemas/workflow-product.schema.json',
+  'schemas/shell-command-policy.schema.json',
   'schemas/validation-report.schema.json',
   'schemas/release-evidence.schema.json',
   'schemas/product-lanes.schema.json',
@@ -217,7 +311,8 @@ for (const schemaPath of [
   'schemas/release-candidate.schema.json',
   'schemas/adapter-evidence.schema.json',
   'schemas/eval-result.schema.json',
-]) {
+];
+for (const schemaPath of schemaPaths) {
   const schema = loadJson(schemaPath);
   const fileName = schemaPath.split('/').at(-1);
   const expectedId = `https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/${fileName}`;
@@ -227,6 +322,12 @@ for (const schemaPath of [
     console.error(`  - got ${schema.$id ?? '(missing)'}, expected ${expectedId}`);
   } else {
     console.log(`✓ ${schemaPath} $id`);
+  }
+  const keywordErrors = validateSchemaKeywords(schema);
+  if (keywordErrors.length) {
+    allPassed = false;
+    console.error(`✗ ${schemaPath} supported keyword boundary`);
+    for (const error of keywordErrors) console.error(`  - ${error}`);
   }
 }
 
@@ -333,4 +434,5 @@ try {
 
 if (!allPassed) {
   process.exit(1);
+}
 }

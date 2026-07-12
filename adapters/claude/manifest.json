@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "source": "workflow-specs/workflows.json",
+  "source": "workflow-specs/adapters/claude.json",
   "maximumSupportedLevel": "L4",
   "declaredLevel": "L2",
   "evidenceRequiredFor": [

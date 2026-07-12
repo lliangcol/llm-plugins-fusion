@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/workflow-adapter.schema.json",
+  "title": "Assistant adapter definition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "id", "enforcement", "declaredLevel", "maximumSupportedLevel", "invocation", "evidenceRequiredFor"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "enforcement": { "enum": ["native-and-hook", "adapter", "advisory", "unsupported"] },
+    "declaredLevel": { "enum": ["L1", "L2", "L3", "L4"] },
+    "maximumSupportedLevel": { "enum": ["L1", "L2", "L3", "L4"] },
+    "invocation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "prefix"],
+      "properties": {
+        "kind": { "enum": ["namespaced-command", "repository-adapter", "contract-manifest"] },
+        "prefix": { "type": "string" }
+      }
+    },
+    "evidenceRequiredFor": { "type": "array", "uniqueItems": true, "items": { "enum": ["L2", "L3", "L4"] } }
+  }
+}

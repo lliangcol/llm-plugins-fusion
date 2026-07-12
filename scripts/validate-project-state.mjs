@@ -7,8 +7,9 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { checkOrWriteProjectState } from './generate-project-state.mjs';
 import { projectFactDocuments, syncDocFacts } from './sync-doc-facts.mjs';
+import { repoRoot } from './lib/repo-root.mjs';
 
-const root = resolve(new URL('..', import.meta.url).pathname);
+const root = repoRoot(import.meta.url);
 
 export const staleNarrativeRules = Object.freeze([
   { id: 'missing-check-script', pattern: /(?:no|without|does not declare|仍不声明)\s+`?check`?\s*(?:\/|or|、)\s*`?build`?\s+(?:script|脚本|脚本名)/iu },

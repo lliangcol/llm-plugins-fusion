@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "executionMode": "deterministic-second-product-full-chain",
+  "namespace": "acme-flow",
+  "stages": [
+    "intake",
+    "shape",
+    "assure"
+  ],
+  "workflowCount": 3,
+  "adapter": {
+    "id": "mock",
+    "declaredLevel": "L1"
+  },
+  "sourceDigests": {
+    "framework.json": "73a24979564d9a155dc8fd1b4446ada15ffc9ba1b3f84311b79763e66d6cb298",
+    "product.json": "850774432f6c3e1dd6e6dcd77a121e5eab762428adc535238ac7010da15919e5",
+    "workflows.json": "bdd0bf2c3d134fd393f64b0269d62ff5c79a7b1ecfe75dfdcb42a9a3e7a02e96",
+    "behaviors.json": "de2b9c1fe643f01f395d2fa00fc584be0713937300fdf9d98f825bf9db40dbc2",
+    "adapters/mock.json": "0f072ca43cf063a38a0099600af7a3e66824b0b019478526b12884a5495dece6",
+    "contracts/triage.md": "84f62861cab819ccbbe424a070d56209e604227499617ddd440d61718dc7b127",
+    "contracts/design.md": "0cc5ac3c079f4af378ee6e37be72c27daf0f3f559e5e794c55c706f9e047253e",
+    "contracts/verify.md": "06f04f26d8bda8c811b85247da75776ab8de8135a7c8e21e34c3a86fd77c08e5"
+  },
+  "compiledArtifactSha256": "815d3ad53529c3e0a3a3ee88c3f2741f56d055b4bcf5af47a1532a5f657aef3f",
+  "gates": {
+    "frameworkLoaded": true,
+    "productLoaded": true,
+    "adapterLoaded": true,
+    "behaviorCompiled": true,
+    "stagesValidated": true,
+    "deterministicRebuild": true,
+    "forbiddenProductConstants": 0,
+    "releaseEvidenceBound": true
+  },
+  "claimBoundary": "Deterministic fixture evidence only; it proves framework/product/adapter/compiler generality, not publication or a live assistant integration."
+}

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "codex-verify-only",
   "stage": "review",
   "ownerAgents": [
@@ -61,6 +61,130 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-codex-verify-only/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-codex-verify-only/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Verify known findings from an existing Codex review without doing new implementation.",
+    "inputs": [
+      {
+        "name": "REVIEW_FILE",
+        "required": true,
+        "aliases": [
+          "REVIEW_PATH"
+        ],
+        "description": "Existing review.md to verify."
+      },
+      {
+        "name": "CHECKS_FILE",
+        "required": false,
+        "aliases": [
+          "CHECKS_PATH"
+        ],
+        "description": "Optional local checks evidence."
+      },
+      {
+        "name": "BASE",
+        "required": false,
+        "aliases": [
+          "BASE_BRANCH"
+        ],
+        "description": "Optional comparison base."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "CHECKS_FILE is supplied.",
+        "action": "Use it as supporting evidence while independently verifying review items."
+      },
+      {
+        "when": "CHECKS_FILE is absent.",
+        "action": "Mark local-check conclusions unavailable instead of inferring them."
+      }
+    ],
+    "invariants": [
+      "Do not modify project code.",
+      "Focus on findings in REVIEW_FILE.",
+      "Report new high-risk issues only when confidence is high."
+    ],
+    "stopConditions": [
+      "REVIEW_FILE is missing, unreadable, or outside approved scope.",
+      "Required external verification capability is unavailable or denied.",
+      "Verification would require implementation changes."
+    ],
+    "workflowSteps": [
+      {
+        "id": "load-review",
+        "action": "Validate and read REVIEW_FILE plus optional checks evidence."
+      },
+      {
+        "id": "run-verify",
+        "action": "Run the bundled verify script against current changes."
+      },
+      {
+        "id": "retain-evidence",
+        "action": "Retain verify.md and runtime evidence."
+      },
+      {
+        "id": "summarize",
+        "action": "Report resolved, unresolved, uncertain, and new high-risk findings."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "forbid",
+      "instructions": "Do not reopen the task as an unbounded review or implementation run."
+    },
+    "output": {
+      "mode": "artifact",
+      "fields": [
+        {
+          "name": "verification artifact",
+          "required": true,
+          "description": "Structured verify.md."
+        },
+        {
+          "name": "runtime evidence",
+          "required": true,
+          "description": "Actual verifier environment."
+        },
+        {
+          "name": "merge recommendation",
+          "required": true,
+          "description": "Evidence-bounded recommendation."
+        }
+      ],
+      "order": [
+        "verification artifact",
+        "runtime evidence",
+        "merge recommendation"
+      ],
+      "severityLevels": [
+        "resolved",
+        "unresolved",
+        "uncertain",
+        "new-high-risk"
+      ]
+    },
+    "validation": [
+      "Confirm verification references REVIEW_FILE.",
+      "Confirm no project code changed.",
+      "Confirm unavailable checks are explicitly marked unavailable."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "blocker",
+        "review file",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "blocker",
+        "review file",
+        "safe next action"
+      ]
+    }
+  },
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

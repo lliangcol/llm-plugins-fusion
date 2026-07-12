@@ -1,0 +1,10 @@
+{
+  "$schema": "../../schemas/workflow-adapter.schema.json",
+  "schemaVersion": 1,
+  "id": "claude",
+  "enforcement": "native-and-hook",
+  "declaredLevel": "L2",
+  "maximumSupportedLevel": "L4",
+  "invocation": { "kind": "namespaced-command", "prefix": "/nova-plugin:" },
+  "evidenceRequiredFor": ["L3", "L4"]
+}

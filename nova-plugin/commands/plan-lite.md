@@ -14,7 +14,7 @@ disable-model-invocation: false
 
 Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-plan-lite` through the Skill tool.
 
-Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/plan-lite.json` as the compiled runtime contract, then apply it directly. The full compatibility skill is a maintainer reference and is not required for ordinary direct execution.
+Before answering, use Read to load both `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/plan-lite.json` as the machine-readable policy summary and `${CLAUDE_PLUGIN_ROOT}/skills/nova-plan-lite/SKILL.md` as the authoritative behavioral contract, then execute the workflow directly. If either contract cannot be loaded or they conflict, fail closed and report contract drift.
 
 - Stage: plan
 - Owner agents: architect
@@ -23,4 +23,4 @@ Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/plan
 - Risk: none
 - Recommended packs: None
 
-Preserve all safety, approval, output, failure, and validation requirements in the compiled contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.
+Preserve all safety, approval, output, failure, and validation requirements in both contracts. If a required input or safety boundary is missing, stop before side effects and report the blocker.

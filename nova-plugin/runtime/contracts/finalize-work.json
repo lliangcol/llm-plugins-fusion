@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 1,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "finalize-work",
   "stage": "finalize",
   "ownerAgents": [
@@ -48,6 +48,121 @@
     "Preserve the named output contract and report skipped validation honestly.",
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
-  "authoredBehaviorReference": "../../skills/nova-finalize-work/SKILL.md",
-  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+  "behaviorContract": {
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-finalize-work/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Package completed work into review-ready handoff text without changing the completed state.",
+    "inputs": [
+      {
+        "name": "WORK_SUMMARY",
+        "required": true,
+        "aliases": [
+          "WORK_SCOPE"
+        ],
+        "description": "Completed changes and validation context; current task context may satisfy it explicitly."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "The workspace is a Git repository.",
+        "action": "Produce a conventional commit message and PR description."
+      },
+      {
+        "when": "The workspace is not a Git repository.",
+        "action": "Produce a local change summary and manual handoff steps."
+      }
+    ],
+    "invariants": [
+      "Read-only packaging only.",
+      "Mark follow-up items out of scope.",
+      "Do not claim skipped validation passed."
+    ],
+    "stopConditions": [
+      "WORK_SUMMARY cannot be resolved.",
+      "Workspace evidence is insufficient to distinguish completed, skipped, and blocked validation.",
+      "A requested action would publish or mutate the workspace."
+    ],
+    "workflowSteps": [
+      {
+        "id": "freeze-state",
+        "action": "Freeze the current completed state."
+      },
+      {
+        "id": "detect-mode",
+        "action": "Detect Git availability using permitted read-only inspection."
+      },
+      {
+        "id": "package",
+        "action": "Generate the mode-specific handoff artifact."
+      },
+      {
+        "id": "verify-sections",
+        "action": "Verify all mandatory fields and validation truthfulness."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "forbid",
+      "instructions": "Do not edit files, commit, push, publish, or add implementation during finalization."
+    },
+    "output": {
+      "mode": "chat",
+      "fields": [
+        {
+          "name": "title or commit message",
+          "required": true,
+          "description": "Concise conventional summary."
+        },
+        {
+          "name": "change summary",
+          "required": true,
+          "description": "Completed work."
+        },
+        {
+          "name": "validation",
+          "required": true,
+          "description": "Actual passed, failed, skipped, and blocked checks."
+        },
+        {
+          "name": "handoff",
+          "required": true,
+          "description": "PR description or manual delivery steps."
+        },
+        {
+          "name": "out-of-scope follow-up",
+          "required": true,
+          "description": "Residual work explicitly separated."
+        }
+      ],
+      "order": [
+        "title or commit message",
+        "change summary",
+        "validation",
+        "handoff",
+        "out-of-scope follow-up"
+      ],
+      "severityLevels": []
+    },
+    "validation": [
+      "Confirm workspace mode was actually detected or clearly unavailable.",
+      "Confirm every completion and validation claim has evidence.",
+      "Confirm no mutation occurred."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "missing evidence",
+        "available handoff",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "missing evidence",
+        "available handoff",
+        "safe next action"
+      ]
+    }
+  },
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

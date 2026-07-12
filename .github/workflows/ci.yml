@@ -23,7 +23,9 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+      - run: npm ci --ignore-scripts
       - run: npm run ci:quick
+      - run: npm run validate:portable-paths
       - run: node scripts/generate-workflow-permissions.mjs
       - run: node scripts/generate-workflow-v2-compat.mjs
       - run: node scripts/generate-runtime-contracts.mjs
@@ -44,6 +46,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+      - run: npm ci --ignore-scripts
       - run: npm test
       - run: npm run test:coverage:check
       - run: npm run test:mutation:critical
@@ -70,6 +73,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+      - run: npm ci --ignore-scripts
       - name: Install ShellCheck
         run: |
           archive="$RUNNER_TEMP/shellcheck.tar.xz"
@@ -105,7 +109,11 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ matrix.node }}
+      - run: npm ci --ignore-scripts
       - run: npm run ci:quick
+      - run: npm run validate:portable-paths
+      - if: runner.os == 'Windows'
+        run: node scripts/generate-runtime-contracts.mjs && node scripts/generate-adapters.mjs && node scripts/generate-compatibility-evidence.mjs && node scripts/generate-quality-report.mjs
       - if: runner.os != 'Windows'
         run: bash scripts/verify-agents.sh
       - if: runner.os == 'Windows'
@@ -126,6 +134,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+      - run: npm ci --ignore-scripts
       - run: node scripts/validate-plugin-install.mjs --dry-run
       - run: node scripts/build-release-artifacts.mjs
       - run: gzip -t .metrics/release-artifacts/*.tar.gz && tar -tzf .metrics/release-artifacts/*.tar.gz >/dev/null
@@ -134,7 +143,7 @@ jobs:
       - run: diff -ru .metrics/release-artifacts-first .metrics/release-artifacts
 
   live-evidence:
-    name: Conditional / Live Evidence
+    name: Conditional / Evidence Registry Integrity
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -143,6 +152,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+      - run: npm ci --ignore-scripts
       - run: node scripts/validate-assistant-evidence.mjs
 
   aggregate:

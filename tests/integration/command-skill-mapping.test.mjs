@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { access, readdir } from 'node:fs/promises';
+import { access, readFile, readdir } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -33,4 +33,15 @@ test('command and skill ids stay one-to-one', async () => {
 
   assert.equal(commands.length, 21);
   assert.deepEqual(skills, commands);
+});
+
+test('every direct command requires its full authored behavior contract', async () => {
+  const commands = await markdownIds('nova-plugin/commands');
+  for (const id of commands) {
+    const source = await readFile(resolve(repoRoot, 'nova-plugin/commands', `${id}.md`), 'utf8');
+    assert.match(source, new RegExp(`runtime/contracts/${id}\\.json`));
+    assert.match(source, new RegExp(`skills/nova-${id}/SKILL\\.md`));
+    assert.match(source, /authoritative behavioral contract/iu);
+    assert.match(source, /fail closed/iu);
+  }
 });

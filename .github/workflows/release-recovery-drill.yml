@@ -1,0 +1,62 @@
+name: Release Recovery Drill
+
+on:
+  workflow_dispatch:
+    inputs:
+      candidate-tag:
+        description: Signed immutable candidate tag to recover and verify
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  attestations: read
+
+concurrency:
+  group: release-recovery-${{ inputs.candidate-tag }}
+  cancel-in-progress: false
+
+jobs:
+  recover:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts
+      - name: Download, authenticate, and safely extract candidate bundle
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_TAG: ${{ inputs.candidate-tag }}
+        run: |
+          set -euo pipefail
+          git fetch origin "refs/tags/${CANDIDATE_TAG}:refs/tags/${CANDIDATE_TAG}"
+          test "$(git cat-file -t "refs/tags/${CANDIDATE_TAG}")" = tag
+          git config gpg.format ssh
+          git config gpg.ssh.allowedSignersFile .github/release-signers
+          git verify-tag "${CANDIDATE_TAG}"
+          mkdir -p .metrics/recovery/download .metrics/recovery/bundle
+          gh release download "${CANDIDATE_TAG}" --dir .metrics/recovery/download
+          mapfile -t bundles < <(find .metrics/recovery/download -name 'nova-plugin-*-candidate-bundle.tar.gz' -type f -print)
+          test "${#bundles[@]}" -eq 1
+          bundle="${bundles[0]}"
+          gh attestation verify "${bundle}" --repo "${GITHUB_REPOSITORY}" --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" --source-ref "refs/tags/${CANDIDATE_TAG}"
+          if tar -tzf "${bundle}" | grep -Eq '(^/|(^|/)\.\.(/|$))'; then exit 1; fi
+          tar -xzf "${bundle}" -C .metrics/recovery/bundle
+          commit="$(git rev-list -n 1 "${CANDIDATE_TAG}")"
+          mapfile -t archives < <(find .metrics/recovery/bundle/artifacts -name 'nova-plugin-*.tar.gz' -type f ! -name '*candidate-bundle*' -print)
+          test "${#archives[@]}" -eq 1
+          archive="${archives[0]}"
+          gh attestation verify "${archive}" --repo "${GITHUB_REPOSITORY}" --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" --source-ref "refs/tags/${CANDIDATE_TAG}" --source-digest "${commit}"
+          stable_tag="${CANDIDATE_TAG%%-rc.*}"
+          node scripts/verify-release-promotion.mjs --stable-tag "${stable_tag}" --candidate-tag "${CANDIDATE_TAG}" --commit "${commit}" --manifest .metrics/recovery/bundle/release-candidate.json --bundle-root .metrics/recovery/bundle --artifact-dir .metrics/recovery/bundle/artifacts
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: release-recovery-drill-${{ inputs.candidate-tag }}
+          path: .metrics/recovery/
+          include-hidden-files: true
