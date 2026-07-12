@@ -268,6 +268,11 @@ const targets = [
     label: 'governance/release-channels.json',
   },
   {
+    schema: loadJson('schemas/stable-install-proof.schema.json'),
+    data: loadJson('governance/stable-install-proof.json'),
+    label: 'governance/stable-install-proof.json',
+  },
+  {
     schema: loadJson('schemas/complexity-budget.schema.json'),
     data: loadJson('governance/complexity-budget.json'),
     label: 'governance/complexity-budget.json',
@@ -404,6 +409,7 @@ const registrySource = loadJson('.claude-plugin/registry.source.json');
 const marketplace = loadJson('.claude-plugin/marketplace.json');
 const metadata = loadJson('.claude-plugin/marketplace.metadata.json');
 const releaseChannels = loadJson('governance/release-channels.json');
+const stableInstallProof = loadJson('governance/stable-install-proof.json');
 validateUniqueValues(registrySource.plugins ?? [], '.claude-plugin/registry.source.json', 'plugin source', (entry) => entry?.localSource);
 validateUniqueValues(marketplace.plugins ?? [], '.claude-plugin/marketplace.json', 'plugin name', (entry) => entry?.name);
 validateUniqueValues(metadata.plugins ?? [], '.claude-plugin/marketplace.metadata.json', 'plugin name', (entry) => entry?.name);
@@ -434,6 +440,23 @@ if (
 
 if (marketplaceEntry && metadataEntry && marketplaceEntry.version === releaseChannels.stable.version && metadataEntry.version === releaseChannels.stable.version) {
   console.log('✓ marketplace name/version alignment');
+}
+
+if (releaseChannels.stable.state === 'INSTALL_PROVEN') {
+  const expectedProofPath = 'governance/stable-install-proof.json';
+  const identityMatches = stableInstallProof.stable?.version === releaseChannels.stable.version
+    && stableInstallProof.stable?.tag === releaseChannels.stable.tag
+    && stableInstallProof.stable?.commit === releaseChannels.stable.commit;
+  const digestMatches = stableInstallProof.candidateTreeDigest === releaseChannels.stable.pluginTreeSha256
+    && stableInstallProof.installedTreeDigest === releaseChannels.stable.pluginTreeSha256
+    && stableInstallProof.matches === true;
+  if (releaseChannels.stable.stableInstallProof !== expectedProofPath || !identityMatches || !digestMatches) {
+    allPassed = false;
+    console.error('✗ stable install proof alignment');
+    console.error('  - INSTALL_PROVEN requires the canonical proof path, matching stable identity, and matching plugin tree digests');
+  } else {
+    console.log('✓ stable install proof alignment');
+  }
 }
 
 function normalizeNewlines(value) {

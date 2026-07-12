@@ -9,27 +9,27 @@
     "release.stable.version": {
       "value": "4.0.0",
       "source": "governance/release-channels.json#/stable/version",
-      "sourceSha256": "3130a2de7465401565b67f69a8d2ddd0d99c8c6ebed802165ff472ce8c890347"
+      "sourceSha256": "d51513ae4a5d50a4fe3a9e8463517dda77bfb1a5c191efd25051fda27f5f2b83"
     },
     "release.stable.tag": {
       "value": "v4.0.0",
       "source": "governance/release-channels.json#/stable/tag",
-      "sourceSha256": "3130a2de7465401565b67f69a8d2ddd0d99c8c6ebed802165ff472ce8c890347"
+      "sourceSha256": "d51513ae4a5d50a4fe3a9e8463517dda77bfb1a5c191efd25051fda27f5f2b83"
     },
     "release.stable.commit": {
       "value": "367beb25666d6b15e5c3d9b85d0c6c22650c2669",
       "source": "governance/release-channels.json#/stable/commit",
-      "sourceSha256": "3130a2de7465401565b67f69a8d2ddd0d99c8c6ebed802165ff472ce8c890347"
+      "sourceSha256": "d51513ae4a5d50a4fe3a9e8463517dda77bfb1a5c191efd25051fda27f5f2b83"
     },
     "release.stable.state": {
-      "value": "STABLE_CHANNEL_PINNED",
+      "value": "INSTALL_PROVEN",
       "source": "governance/release-channels.json#/stable/state",
-      "sourceSha256": "3130a2de7465401565b67f69a8d2ddd0d99c8c6ebed802165ff472ce8c890347"
+      "sourceSha256": "d51513ae4a5d50a4fe3a9e8463517dda77bfb1a5c191efd25051fda27f5f2b83"
     },
     "release.canary.ref": {
       "value": "main",
       "source": "governance/release-channels.json#/canary/ref",
-      "sourceSha256": "3130a2de7465401565b67f69a8d2ddd0d99c8c6ebed802165ff472ce8c890347"
+      "sourceSha256": "d51513ae4a5d50a4fe3a9e8463517dda77bfb1a5c191efd25051fda27f5f2b83"
     },
     "compatibility.effectiveLevels": {
       "value": {
