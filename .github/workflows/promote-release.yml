@@ -139,6 +139,7 @@ jobs:
       - name: Rebuild candidate bytes for deterministic comparison only
         env:
           GITHUB_REF_NAME: ${{ steps.candidate.outputs.candidate_tag }}
+          GITHUB_SHA: ${{ steps.release.outputs.commit }}
         run: |
           npm run release:artifacts
           cmp .metrics/release-artifacts/nova-plugin-*.tar.gz .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz
