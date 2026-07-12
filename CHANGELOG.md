@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [4.0.0] - 2026-07-13
+
 ### Added
 - Added explicit stable/canary release-channel facts, pinned `git-subdir` distribution metadata, install-tree proof tooling, a digest-bound release state machine, promotion intent, deterministic control bundle, safe tar extraction, release reconciliation, and split build/runtime supply-chain records.
 - Added 24-case deterministic evaluation, eight critical-live fixtures, paired enabled/disabled aggregation, fact graph, control-plane complexity budget, capability-level doctor output, and independent Workflow IR/runtime/adapter SemVer contracts.

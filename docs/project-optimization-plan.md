@@ -641,7 +641,7 @@ validation commands, expected output artifacts, and residual risk format.
 
 - `nova-plugin` is the only production plugin. Multi-plugin behavior is covered
   by registry fixtures, not by production plugin directories.
-- Exact `v3.2.0` is the current stable promotion baseline. Moving `main` may
+- Exact `v4.0.0` is the current stable promotion baseline. Moving `main` may
   contain later unreleased maintenance work and must not be promoted as stable
   release content.
 - README already presents the main workflow path:

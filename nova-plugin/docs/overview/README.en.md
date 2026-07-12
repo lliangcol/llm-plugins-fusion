@@ -118,7 +118,7 @@ On Windows without Bash, `validate-all` warns and skips local Bash-dependent hoo
 
 ## Stable Promotion Boundary
 
-Promote formal release tags such as `v3.2.0`, not a moving `main` branch.
+Promote formal release tags such as `v4.0.0`, not a moving `main` branch.
 Current `main` may contain follow-up work under `CHANGELOG.md` `Unreleased`,
 so it should be described as an unreleased development snapshot until tagged.
 
