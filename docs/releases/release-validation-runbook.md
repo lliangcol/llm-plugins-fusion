@@ -87,8 +87,9 @@ an explicit installed `--plugin-dir`. The gate fails when `ANTHROPIC_API_KEY`,
 also present, so release evidence cannot silently use a higher-precedence
 credential.
 With `dontAsk`, the gate pre-approves only the exact read-only set
-`Skill(nova-plugin:route)` plus the canonical route profile's `Read`, `Glob`,
-and `Grep`: the direct command surface and its supporting contract. `Write`, `Edit`,
+`Skill(nova-plugin:route)`, its canonical `Skill(nova-plugin:nova-route)`
+implementation, plus the route profile's `Read`, `Glob`, and `Grep`: the direct
+command surface and its supporting contract. `Write`, `Edit`,
 `NotebookEdit`, and `Bash` remain explicitly denied. Release evidence records
 and validates this exact allow/deny policy instead of treating `dontAsk` as
 sufficient by itself.

@@ -178,6 +178,8 @@ test('OAuth route invocation isolates configuration without bare mode', (t) => {
   assert.equal(args.includes('--bare'), false);
   assert.deepEqual(args.slice(0, 2), ['--plugin-dir', '/installed/nova-plugin']);
   assert.ok(args.includes('dontAsk'));
+  assert.ok(routeAllowedTools.includes('Skill(nova-plugin:route)'));
+  assert.ok(routeAllowedTools.includes('Skill(nova-plugin:nova-route)'));
   assert.deepEqual(
     args.slice(args.indexOf('--allowedTools'), args.indexOf('--allowedTools') + 2),
     ['--allowedTools', routeAllowedTools.join(',')],

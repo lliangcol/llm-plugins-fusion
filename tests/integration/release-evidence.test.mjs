@@ -60,7 +60,7 @@ function fixtureInput() {
       authenticationMode: 'claude-code-oauth-token',
       configurationIsolation: 'temporary-home',
       permissionMode: 'dontAsk',
-      allowedTools: ['Skill(nova-plugin:route)', 'Read', 'Glob', 'Grep'],
+      allowedTools: ['Skill(nova-plugin:route)', 'Skill(nova-plugin:nova-route)', 'Read', 'Glob', 'Grep'],
       disallowedTools: ['Write', 'Edit', 'NotebookEdit', 'Bash'],
       outputContract: routeOutputContract.id,
       systemPromptSha256: routeSystemPromptSha256,
@@ -115,7 +115,7 @@ test('release evidence aggregates machine facts without raw model output', () =>
   assert.deepEqual(evidence.tests.coverage, { lines: 88.05, branches: 70.01, functions: 92.89 });
   assert.doesNotMatch(JSON.stringify(evidence), /Recommended Route/);
   assert.equal(evidence.route.authenticationMode, 'claude-code-oauth-token');
-  assert.deepEqual(evidence.route.allowedTools, ['Skill(nova-plugin:route)', 'Read', 'Glob', 'Grep']);
+  assert.deepEqual(evidence.route.allowedTools, ['Skill(nova-plugin:route)', 'Skill(nova-plugin:nova-route)', 'Read', 'Glob', 'Grep']);
   assert.deepEqual(evidence.route.disallowedTools, ['Write', 'Edit', 'NotebookEdit', 'Bash']);
   assert.equal(evidence.route.outputContract, routeOutputContract.id);
   assert.match(evidence.route.systemPromptSha256, /^[a-f0-9]{64}$/);
