@@ -12,7 +12,7 @@ For the step-by-step manual operation sequence, use
 
 ## Target Rules
 
-- Promote exact release tags such as `v3.0.1`; do not promote moving `main` as stable.
+- Promote exact release tags such as `v3.1.0`; do not promote moving `main` as stable.
 - If `Exact tag` is `none`, the target is an unreleased development snapshot.
 - If local validation reports skipped checks, name each skipped check and the replacement CI/Linux evidence.
 - For minor releases, attach the manual five-command workflow evaluation record or explain why it is not applicable.

@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-07-12
+
 ### Added
 - Added machine-derived project state and generated documentation facts, capability contract v3 with a v2 compatibility projection, product-instance registries, concise runtime contracts, and an assistant-neutral framework kernel.
 - Added immutable release-candidate manifests and stable promotion verification, SLSA Provenance v1 statements, non-empty CycloneDX dependency graphs, double-build reproducibility checks, and candidate/promotion workflows.
