@@ -10,6 +10,7 @@ import {
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { requireSemVer } from './lib/semver.mjs';
+import { parseCandidateTag } from './lib/release-candidate.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
@@ -33,18 +34,21 @@ export function extractReleaseNotes(changelog, version) {
 export function prepareRelease({
   root = defaultRoot,
   releaseTag,
+  candidate = false,
   githubOutput = '',
   notesPath = resolve(root, '.metrics/release/release-notes.md'),
 } = {}) {
   if (typeof releaseTag !== 'string' || !releaseTag.startsWith('v')) {
     throw new Error('RELEASE_TAG must use v<semver>');
   }
-  const version = releaseTag.slice(1);
-  const parsed = requireSemVer(version, 'release tag version');
+  const tagVersion = releaseTag.slice(1);
+  const parsed = candidate ? null : requireSemVer(tagVersion, 'release tag version');
+  const candidateDetails = candidate ? parseCandidateTag(releaseTag) : null;
+  const version = candidateDetails?.stableVersion ?? tagVersion;
   const plugin = readJson(resolve(root, 'nova-plugin/.claude-plugin/plugin.json'));
   requireSemVer(plugin.version, 'plugin version');
   if (plugin.version !== version) {
-    throw new Error(`release tag version ${version} does not match plugin version ${plugin.version}`);
+    throw new Error(`release base version ${version} does not match plugin version ${plugin.version}`);
   }
 
   const changelog = readFileSync(resolve(root, 'CHANGELOG.md'), 'utf8');
@@ -54,14 +58,14 @@ export function prepareRelease({
 
   const result = {
     version,
-    prerelease: parsed.isPrerelease,
+    prerelease: candidate || parsed.isPrerelease,
     notesFile: notesPath,
   };
   if (githubOutput) {
     if (/[\r\n]/.test(notesPath)) throw new Error('release notes path must not contain newlines');
     appendFileSync(
       githubOutput,
-      `version=${version}\nprerelease=${parsed.isPrerelease}\nnotes_file=${notesPath}\n`,
+      `version=${version}\nprerelease=${candidate || parsed.isPrerelease}\nnotes_file=${notesPath}\n`,
       'utf8',
     );
   }
@@ -71,6 +75,7 @@ export function prepareRelease({
 export function main(env = process.env) {
   const result = prepareRelease({
     releaseTag: env.RELEASE_TAG,
+    candidate: env.RELEASE_CANDIDATE === '1',
     githubOutput: env.GITHUB_OUTPUT || '',
   });
   console.log(JSON.stringify(result));

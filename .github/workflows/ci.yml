@@ -14,66 +14,39 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  verify-agents:
-    name: Verify Agents
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-      - run: bash scripts/verify-agents.sh
-
-  validate-schemas:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Validate Schemas
-      command: node scripts/validate-schemas.mjs
-
-  validate-registry-fixtures:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Validate Registry Fixtures
-      command: node scripts/validate-registry-fixtures.mjs
-
-  validate-generated-drift:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Validate Generated Drift
-      command: npm run validate:drift
-
-  validate-packs:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Validate Capability Packs
-      command: node scripts/validate-packs.mjs
-
-  validate-claude-compat:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Claude Manifest Static
-      command: node scripts/validate-claude-compat.mjs
-
-  validate-workflow-permissions:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Validate Workflow Permissions
-      command: node scripts/generate-workflow-permissions.mjs
-
-  npm-test:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: NPM Test
-      command: npm test
-
-  test-coverage:
-    name: Test Coverage
-    runs-on: ubuntu-latest
+  contracts:
+    name: Required / Contracts
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+      - run: npm run ci:quick
+      - run: node scripts/generate-workflow-permissions.mjs
+      - run: node scripts/generate-workflow-v2-compat.mjs
+      - run: node scripts/generate-runtime-contracts.mjs
+      - run: node scripts/generate-adapters.mjs
+      - run: node scripts/generate-compatibility-evidence.mjs
+      - run: node scripts/generate-quality-report.mjs
+      - run: node scripts/validate-community-governance.mjs
+      - run: node scripts/generate-surface-inventory.mjs
+      - run: bash scripts/verify-agents.sh
+      - run: node scripts/validate-github-workflows.mjs
+
+  tests:
+    name: Required / Tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+      - run: npm test
       - run: npm run test:coverage:check
+      - run: npm run test:mutation:critical
       - name: Upload coverage evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -82,40 +55,21 @@ jobs:
           path: .metrics/coverage/
           include-hidden-files: true
 
-  plugin-install-dry-run:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Plugin Install Dry Run
-      command: node scripts/validate-plugin-install.mjs --dry-run
-
-  lint-frontmatter:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Lint Frontmatter
-      command: node scripts/lint-frontmatter.mjs
-
-  validate-hooks:
-    name: Validate Hooks
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        with:
-          node-version: '22'
-      - run: node scripts/validate-hooks.mjs
-      - run: bash -n nova-plugin/hooks/scripts/pre-write-check.sh
-      - run: bash -n nova-plugin/hooks/scripts/post-audit-log.sh
-
-  shellcheck:
-    name: ShellCheck
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+  security:
+    name: Required / Security
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
     env:
       SHELLCHECK_VERSION: 0.11.0
       SHELLCHECK_SHA256: 8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
       - name: Install ShellCheck
         run: |
           archive="$RUNNER_TEMP/shellcheck.tar.xz"
@@ -123,53 +77,10 @@ jobs:
           echo "${SHELLCHECK_SHA256}  ${archive}" | sha256sum --check --strict
           tar -xJf "$archive" -C "$RUNNER_TEMP"
           echo "$RUNNER_TEMP/shellcheck-v${SHELLCHECK_VERSION}" >> "$GITHUB_PATH"
-      - name: Run ShellCheck
-        run: |
-          shellcheck -x -P nova-plugin/skills/nova-codex-review-fix/scripts \
-            scripts/verify-agents.sh \
-            nova-plugin/hooks/scripts/pre-write-check.sh \
-            nova-plugin/hooks/scripts/post-audit-log.sh \
-            nova-plugin/skills/nova-codex-review-fix/scripts/codex-common.sh \
-            nova-plugin/skills/nova-codex-review-fix/scripts/codex-review.sh \
-            nova-plugin/skills/nova-codex-review-fix/scripts/codex-verify.sh \
-            nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh
-
-  validate-github-workflows:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Validate GitHub Workflows
-      command: node scripts/validate-github-workflows.mjs
-
-  validate-runtime-smoke:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Validate Runtime Smoke
-      command: node scripts/validate-runtime-smoke.mjs
-
-  validate-surface-budget:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Validate Surface Budget
-      command: node scripts/validate-surface-budget.mjs
-
-  validate-surface-inventory:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Validate Surface Inventory
-      command: node scripts/generate-surface-inventory.mjs
-
-  scan-distribution-risk:
-    name: Scan Distribution Risk
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    permissions:
-      contents: read
-      security-events: write
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        with:
-          node-version: '22'
+      - run: shellcheck -x -P nova-plugin/skills/nova-codex-review-fix/scripts scripts/verify-agents.sh nova-plugin/hooks/scripts/*.sh nova-plugin/skills/nova-codex-review-fix/scripts/*.sh
+      - run: node scripts/validate-hooks.mjs
+      - run: npm run test:fault-injection
+      - run: npm run scan:secrets
       - run: node scripts/scan-distribution-risk.mjs --sarif .metrics/distribution-risk.sarif
       - name: Upload distribution risk SARIF
         if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
@@ -177,99 +88,71 @@ jobs:
         with:
           sarif_file: .metrics/distribution-risk.sarif
 
-  secret-scan:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Secret Scan
-      command: npm run scan:secrets
+  platform:
+    name: Required / Platform (${{ matrix.label }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-24.04, node: '22', label: Linux Node 22 }
+          - { os: ubuntu-24.04, node: '24', label: Linux Node 24 }
+          - { os: windows-latest, node: '22', label: Windows Node 22 }
+          - { os: macos-latest, node: '22', label: macOS Node 22 }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm run ci:quick
+      - if: runner.os != 'Windows'
+        run: bash scripts/verify-agents.sh
+      - if: runner.os == 'Windows'
+        run: .\scripts\verify-agents.ps1
+        shell: pwsh
+      - if: runner.os == 'Windows'
+        run: bash -n nova-plugin/hooks/scripts/pre-write-check.sh && bash -n nova-plugin/hooks/scripts/post-audit-log.sh
+        shell: bash
+      - if: runner.os == 'macOS'
+        run: /bin/bash nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh --test-only
 
-  validate-regression:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Validate Regression
-      command: node scripts/validate-regression.mjs
-
-  validate-workflow-fixtures:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Validate Workflow Fixtures
-      command: node scripts/validate-workflow-fixtures.mjs
-
-  validate-docs:
-    uses: ./.github/workflows/reusable-node-check.yml
-    with:
-      label: Validate Docs
-      command: node scripts/validate-docs.mjs
-
-  windows-node-smoke:
-    name: Windows Node Smoke
-    runs-on: windows-latest
+  package:
+    name: Required / Package
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
-      - run: node scripts/validate-schemas.mjs
-      - run: node scripts/validate-docs.mjs
-      - run: node scripts/lint-frontmatter.mjs
-      - run: .\scripts\verify-agents.ps1
-        shell: pwsh
+      - run: node scripts/validate-plugin-install.mjs --dry-run
+      - run: node scripts/build-release-artifacts.mjs
+      - run: gzip -t .metrics/release-artifacts/*.tar.gz && tar -tzf .metrics/release-artifacts/*.tar.gz >/dev/null
+      - run: cp -R .metrics/release-artifacts .metrics/release-artifacts-first
+      - run: node scripts/build-release-artifacts.mjs
+      - run: diff -ru .metrics/release-artifacts-first .metrics/release-artifacts
 
-  psscriptanalyzer:
-    name: PSScriptAnalyzer
-    runs-on: windows-latest
+  live-evidence:
+    name: Conditional / Live Evidence
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-      - name: Install PSScriptAnalyzer
-        shell: pwsh
-        run: |
-          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
-          Install-Module -Name PSScriptAnalyzer -RequiredVersion 1.23.0 -Scope CurrentUser -Force
-          Get-Module -ListAvailable PSScriptAnalyzer | Select-Object -First 1 Name,Version
-      - name: Run PSScriptAnalyzer
-        shell: pwsh
-        run: Invoke-ScriptAnalyzer -Path .\scripts\verify-agents.ps1 -Severity Warning,Error -EnableExit
-
-  windows-bash-smoke:
-    name: Windows Bash Smoke
-    runs-on: windows-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
-      - run: bash --version
-      - run: bash -n nova-plugin/hooks/scripts/pre-write-check.sh
-      - run: bash -n nova-plugin/hooks/scripts/post-audit-log.sh
-      - run: node scripts/validate-runtime-smoke.mjs
+      - run: node scripts/validate-assistant-evidence.mjs
 
-  macos-smoke:
-    name: macOS Smoke
-    runs-on: macos-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        with:
-          node-version: '22'
-      - run: node scripts/validate-schemas.mjs
-      - run: node scripts/lint-frontmatter.mjs
-      - run: node scripts/validate-docs.mjs
-      - run: bash scripts/verify-agents.sh
-      - run: node scripts/validate-runtime-smoke.mjs
-      - name: Exercise project checks with macOS system Bash
-        run: /bin/bash nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh --test-only
-
-  node24-compatibility:
-    name: Node 24 Compatibility
+  aggregate:
+    name: Required / Aggregate
+    if: always()
+    needs: [contracts, tests, security, platform, package, live-evidence]
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        with:
-          node-version: '24'
-      - run: npm run check
+      - name: Verify required results
+        env:
+          REQUIRED_RESULTS: ${{ toJson(needs) }}
+        run: |
+          node -e 'const needs=JSON.parse(process.env.REQUIRED_RESULTS); const bad=Object.entries(needs).filter(([id,v])=>id!=="live-evidence"&&v.result!=="success"); if(bad.length){console.error(bad);process.exit(1)} const live=needs["live-evidence"]?.result; if(!["success","skipped"].includes(live)){process.exit(1)}'

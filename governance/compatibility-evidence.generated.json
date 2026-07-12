@@ -1,0 +1,104 @@
+{
+  "$schema": "../schemas/adapter-evidence.schema.json",
+  "schemaVersion": 1,
+  "generatedFrom": "static adapter declarations plus digest-bound evals/evidence records",
+  "sourceDigests": {
+    "workflow-specs/workflows.json": "a0004c565a7984f7e1b3a24187c4d3961755d7f7c06bd04efcd5d2f5d3878608",
+    "adapters/claude/manifest.json": "5713a1ddafb8ee8e421d7a3e9df157a705881b394f27a419a4843fd2b09ad735",
+    "adapters/codex/AGENTS.md": "3eec24f936272b570580c5c7b2609df012f6446ab4292c9fd16518af27474d9d",
+    "adapters/generic-agent-skills/manifest.json": "bd8d25fecea6812d511500985609acdfdcb7319cfb6e532cb00e792b02b3e5b9",
+    "governance/assistant-support.json": "7d13cc15f4aa790e87c64b538193161b73a74d5b16e90d2feee75855e2eed853"
+  },
+  "knownGoodLanes": [
+    {
+      "assistant": "claude-code",
+      "version": "2.1.205",
+      "blocking": true,
+      "lane": "known-good"
+    },
+    {
+      "assistant": "codex",
+      "version": "0.144.0-alpha.4",
+      "blocking": true,
+      "lane": "known-good"
+    },
+    {
+      "assistant": "claude-code",
+      "versionSelector": "latest",
+      "blocking": false,
+      "lane": "latest-canary"
+    },
+    {
+      "assistant": "codex",
+      "versionSelector": "latest",
+      "blocking": false,
+      "lane": "latest-canary"
+    }
+  ],
+  "currentClaims": [
+    {
+      "assistant": "claude-code",
+      "declaredLevel": "L2",
+      "maximumSupportedLevel": "L4",
+      "adapter": "adapters/claude/manifest.json",
+      "scope": "stable Claude command invocation; hooks and release verification require current evidence",
+      "effectiveLevel": "L4-local",
+      "evidenceStatus": "current",
+      "currentEvidence": "evals/evidence/2026-07-12-claude-code-live.json"
+    },
+    {
+      "assistant": "codex",
+      "declaredLevel": "L2",
+      "maximumSupportedLevel": "L4",
+      "adapter": "adapters/codex/AGENTS.md",
+      "scope": "generated local adapter; enforcement and live behavior require current evidence",
+      "effectiveLevel": "L4-local",
+      "evidenceStatus": "current",
+      "currentEvidence": "evals/evidence/2026-07-12-codex-live.json"
+    },
+    {
+      "assistant": "generic",
+      "declaredLevel": "L1",
+      "maximumSupportedLevel": "L4",
+      "adapter": "adapters/generic-agent-skills/manifest.json",
+      "scope": "parseable contracts only; consumer owns invocation and enforcement",
+      "effectiveLevel": "L1",
+      "evidenceStatus": "declaration-only",
+      "currentEvidence": null
+    }
+  ],
+  "historicalEvidence": [
+    {
+      "assistant": "claude-code",
+      "assistantVersion": "2.1.205",
+      "observedLevel": "L4-local",
+      "recordedAt": "2026-07-12T02:38:38+08:00",
+      "source": "evals/evidence/2026-07-12-assistant-conformance.json",
+      "releaseTag": null,
+      "commit": "31aaa3915075640c87c83cc2869fab87fa536c4c",
+      "status": "historical",
+      "staleReasons": [
+        "workflow-specs/workflows.json:digest-changed",
+        "adapters/codex/AGENTS.md:digest-changed",
+        "adapters/claude/manifest.json:digest-changed",
+        "adapters/generic-agent-skills/manifest.json:digest-changed"
+      ]
+    },
+    {
+      "assistant": "codex",
+      "assistantVersion": "0.144.0-alpha.4",
+      "observedLevel": "L4-local",
+      "recordedAt": "2026-07-12T02:38:38+08:00",
+      "source": "evals/evidence/2026-07-12-assistant-conformance.json",
+      "releaseTag": null,
+      "commit": "31aaa3915075640c87c83cc2869fab87fa536c4c",
+      "status": "historical",
+      "staleReasons": [
+        "workflow-specs/workflows.json:digest-changed",
+        "adapters/codex/AGENTS.md:digest-changed",
+        "adapters/claude/manifest.json:digest-changed",
+        "adapters/generic-agent-skills/manifest.json:digest-changed"
+      ]
+    }
+  ]
+}

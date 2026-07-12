@@ -152,7 +152,7 @@ test('GitHub security settings printout includes workflow permission checks', ()
     shell: false,
   });
   assert.equal(printed.status, 0, printed.stderr || printed.stdout);
-  assert.match(printed.stdout, /Validate Hooks[\s\S]*Validate GitHub Workflows[\s\S]*Validate Runtime Smoke/);
+  assert.match(printed.stdout, /Required \/ Aggregate[\s\S]*Dependency Review[\s\S]*CodeQL \/ Analyze JavaScript/);
 });
 
 test('distribution risk scan detects expanded active secret signals and redacts output', () => {
@@ -400,6 +400,45 @@ test('release distribution risk uses tracked files and includes tracked IDE file
   }
 });
 
+test('release distribution risk fails closed when a tracked file cannot be read', () => {
+  const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-risk-release-unreadable-'));
+  try {
+    assert.equal(spawnSync('git', ['init'], { cwd: tempRoot, encoding: 'utf8', shell: false }).status, 0);
+    const trackedFile = resolve(tempRoot, 'tracked.txt');
+    writeFileSync(trackedFile, 'public fixture\n', 'utf8');
+    assert.equal(spawnSync('git', ['add', 'tracked.txt'], { cwd: tempRoot, encoding: 'utf8', shell: false }).status, 0);
+
+    const releaseResult = scanDistributionRisk({
+      rootDir: tempRoot,
+      mode: 'release',
+      readTextFile(file, encoding) {
+        if (file === trackedFile) throw new Error('injected read failure');
+        return readFileSync(file, encoding);
+      },
+    });
+    assert.equal(releaseResult.errors.some((finding) => (
+      finding.path === 'tracked.txt'
+      && finding.label === 'release file could not be read during distribution scan'
+      && finding.redacted === '<not scanned>'
+    )), true);
+
+    const workspaceResult = scanDistributionRisk({
+      rootDir: tempRoot,
+      readTextFile(file, encoding) {
+        if (file === trackedFile) throw new Error('injected read failure');
+        return readFileSync(file, encoding);
+      },
+    });
+    assert.equal(workspaceResult.errors.some((finding) => finding.path === 'tracked.txt'), false);
+    assert.equal(workspaceResult.warnings.some((finding) => (
+      finding.path === 'tracked.txt'
+      && finding.label === 'workspace file could not be read during distribution scan'
+    )), true);
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test('command, skill, and command-doc surfaces stay one-to-one', () => {
   const commandsDir = resolve(root, 'nova-plugin/commands');
   const skillsDir = resolve(root, 'nova-plugin/skills');
@@ -563,12 +602,19 @@ test('validate-github-workflows enforces least-privilege workflow contracts', ()
 
     const releaseWorkflowPath = resolve(fixtureRoot, '.github/workflows/release.yml');
     const releaseWorkflow = readFileSync(releaseWorkflowPath, 'utf8');
-    assert.match(releaseWorkflow, /  release:\r?\n[\s\S]*?    permissions:\r?\n      contents: write/);
+    assert.match(releaseWorkflow, /  promote:\r?\n[\s\S]*?    permissions:\r?\n      contents: write/);
     writeFileSync(
       releaseWorkflowPath,
       releaseWorkflow
-        .replace(/    permissions:\r?\n      contents: write\r?\n/, '')
-        .replace('run: node scripts/prepare-release.mjs', 'run: echo "${{ github.ref_name }}"'),
+        .replace(/    permissions:\r?\n      contents: write\r?\n      checks: read\r?\n      id-token: write\r?\n      attestations: write\r?\n/, ''),
+      'utf8',
+    );
+
+    const promotionWorkflowPath = resolve(fixtureRoot, '.github/workflows/promote-release.yml');
+    const promotionWorkflow = readFileSync(promotionWorkflowPath, 'utf8');
+    writeFileSync(
+      promotionWorkflowPath,
+      promotionWorkflow.replace('set -euo pipefail', 'echo "${{ github.ref_name }}"\n          set -euo pipefail'),
       'utf8',
     );
 
@@ -594,17 +640,17 @@ test('validate-github-workflows enforces least-privilege workflow contracts', ()
     const output = `${drifted.stdout}${drifted.stderr}`;
     assert.match(output, /workflow trigger safety contract forbids pull_request_target/);
     assert.match(output, /CI workflow top-level permissions/);
-    assert.match(output, /release job scoped write permission/);
-    assert.match(output, /release shell scripts must receive GitHub contexts and step outputs through env/);
+    assert.match(output, /stable promotion caller scoped permission/);
+    assert.match(output, /promotion shell scripts must receive GitHub contexts and step outputs through env/);
     assert.match(output, /plugin install smoke isolation contract/);
     assert.match(output, /explicitly upload hidden \.metrics\/coverage content/);
-    assert.match(output, /normal project-check path with system \/bin\/bash/);
+    assert.match(output, /platform matrix must exercise the normal project-check path/);
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }
 });
 
-test('validate-github-workflows rejects unpinned actions and missing NPM Test gate', () => {
+test('validate-github-workflows rejects unpinned actions and missing consolidated Tests gate', () => {
   const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-workflow-pinning-'));
   const fixtureRoot = resolve(tempRoot, 'repo');
   try {
@@ -632,11 +678,11 @@ test('validate-github-workflows rejects unpinned actions and missing NPM Test ga
 
     const ciWorkflowPath = resolve(fixtureRoot, '.github/workflows/ci.yml');
     const ciWorkflow = readFileSync(ciWorkflowPath, 'utf8');
-    assert.match(ciWorkflow, /\n  npm-test:\r?\n/);
+    assert.match(ciWorkflow, /\n  tests:\r?\n/);
     writeFileSync(
       ciWorkflowPath,
       ciWorkflow.replace(
-        /\r?\n  npm-test:\r?\n    uses: \.\/\.github\/workflows\/reusable-node-check\.yml\r?\n    with:\r?\n      label: NPM Test\r?\n      command: npm test\r?\n/,
+        /\r?\n  tests:\r?\n[\s\S]*?(?=\r?\n  security:)/,
         '\n',
       ),
       'utf8',
@@ -654,7 +700,7 @@ test('validate-github-workflows rejects unpinned actions and missing NPM Test ga
     assert.notEqual(drifted.status, 0, 'validate-github-workflows should reject unpinned actions and missing npm test gate');
     const output = `${drifted.stdout}${drifted.stderr}`;
     assert.match(output, /external action "actions\/checkout" must pin a full 40-character commit SHA instead of "v7"/);
-    assert.match(output, /missing required CI job "npm-test"/);
+    assert.match(output, /missing required CI job "tests"/);
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }
@@ -682,19 +728,19 @@ test('validate-github-workflows syncs required-check docs and print output with 
       'docs/maintainers/github-security-settings.md',
     );
     const githubSecuritySettings = readFileSync(githubSecuritySettingsPath, 'utf8');
-    assert.match(githubSecuritySettings, /Validate GitHub Workflows\r?\n/);
+    assert.match(githubSecuritySettings, /Required \/ Aggregate\r?\n/);
     writeFileSync(
       githubSecuritySettingsPath,
-      githubSecuritySettings.replace(/Validate GitHub Workflows\r?\n/, ''),
+      githubSecuritySettings.replace(/Required \/ Aggregate\r?\n/, ''),
       'utf8',
     );
 
     const printSettingsPath = resolve(fixtureRoot, 'scripts/print-github-security-settings.mjs');
     const printSettings = readFileSync(printSettingsPath, 'utf8');
-    assert.match(printSettings, /  'Validate GitHub Workflows',\r?\n/);
+    assert.match(printSettings, /  'Required \/ Aggregate',\r?\n/);
     writeFileSync(
       printSettingsPath,
-      printSettings.replace(/  'Validate GitHub Workflows',\r?\n/, ''),
+      printSettings.replace(/  'Required \/ Aggregate',\r?\n/, ''),
       'utf8',
     );
 
@@ -880,7 +926,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
         /contribution and issue intake contracts, /,
         '',
       ).replace(
-        /docs index navigation contracts,[\s\S]*?v3 readiness evidence\s+contracts, /,
+        /docs index navigation contracts,[\s\S]*?multi-plugin readiness evidence\s+contracts, /,
         '',
       ),
       'utf8',
@@ -1059,7 +1105,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
           /## Manual Settings Boundary[\s\S]*?## Required Repository Settings\r?\n/,
           '## Required Repository Settings\n',
         )
-        .replace(/Validate GitHub Workflows\r?\n/, ''),
+        .replace(/Required \/ Aggregate\r?\n/, ''),
       'utf8',
     );
 
@@ -1072,7 +1118,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
         /## 公开贡献边界[\s\S]*?## 提交 Pull Request\r?\n/,
         '## 提交 Pull Request\n',
       ).replace(
-        /`package\.json` 包含 dependency-free 的\s+`lint` 和 `test` 入口，仍不声明 `check` \/ `build` 脚本名。/,
+        /`package\.json` 包含 dependency-free 的\s+`lint`、`test` 和 `check` 入口。[\s\S]*?`release:artifacts` 构建。/,
         '`package.json` 不声明 `check` / `lint` /\n   `test` / `build` 脚本名，避免被 Codex 项目检查脚本重复自动发现。',
       ),
       'utf8',
@@ -1297,7 +1343,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
         /contribution and\s+issue intake contracts, /g,
         '',
       ).replace(
-        /, docs\r?\n  index navigation contracts, consumer profile privacy contracts, prompt\r?\n  template privacy contracts, workflow evidence contracts, showcase\r?\n  public-safety contracts, growth metrics privacy contracts, assets capture\r?\n  privacy contracts, deferred portal IA contracts, and v3 readiness evidence\r?\n  contracts/,
+        /, docs\r?\n  index navigation contracts, consumer profile privacy contracts, prompt\r?\n  template privacy contracts, workflow evidence contracts, showcase\r?\n  public-safety contracts, growth metrics privacy contracts, assets capture\r?\n  privacy contracts, deferred portal IA contracts, and multi-plugin readiness evidence\r?\n  contracts/,
         '',
       ),
       'utf8',
@@ -1615,13 +1661,13 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const v3ReadinessPath = resolve(fixtureRoot, 'docs/marketplace/v3-readiness-evidence.md');
-    const v3Readiness = readFileSync(v3ReadinessPath, 'utf8');
-    assert.match(v3Readiness, /Registry fixtures may prove generator behavior/);
+    const multiPluginReadinessPath = resolve(fixtureRoot, 'docs/marketplace/multi-plugin-readiness.md');
+    const multiPluginReadiness = readFileSync(multiPluginReadinessPath, 'utf8');
+    assert.match(multiPluginReadiness, /Registry fixtures prove that generators can process/);
     writeFileSync(
-      v3ReadinessPath,
-      v3Readiness.replace(
-        /Registry fixtures may prove generator behavior,[\s\S]*?paths\.\r?\n\r?\n/,
+      multiPluginReadinessPath,
+      multiPluginReadiness.replace(
+        /Registry fixtures prove that generators can process[\s\S]*?should change\.\r?\n\r?\n/,
         '',
       ),
       'utf8',
@@ -1801,7 +1847,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     assert.match(output, /showcase README private consumer boundary/);
     assert.match(output, /growth metrics no portal automation boundary/);
     assert.match(output, /assets no portal automation boundary/);
-    assert.match(output, /v3 readiness fixture-only evidence boundary/);
+    assert.match(output, /multi-plugin readiness fixture-only evidence boundary/);
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }

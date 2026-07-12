@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "knownGood": [
+    { "assistant": "claude-code", "version": "2.1.205", "blocking": true },
+    { "assistant": "codex", "version": "0.144.0-alpha.4", "blocking": true }
+  ],
+  "latestCanary": [
+    { "assistant": "claude-code", "versionSelector": "latest", "blocking": false },
+    { "assistant": "codex", "versionSelector": "latest", "blocking": false }
+  ]
+}

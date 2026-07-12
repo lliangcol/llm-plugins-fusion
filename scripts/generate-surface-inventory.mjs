@@ -286,12 +286,12 @@ ${markdownTable(
 ## Commands
 
 ${markdownTable(
-  ['ID', 'Stage', 'Destructive actions', 'Invoked skill'],
+  ['ID', 'Stage', 'Destructive actions', 'Compatibility skill'],
   inventory.commands.map((command) => [
     `\`${command.id}\``,
     command.stage,
     command.destructiveActions,
-    `\`${command.invokesSkill}\``,
+    `\`${command.compatibilitySkill}\``,
   ]),
 )}
 

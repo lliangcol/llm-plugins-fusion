@@ -1,5 +1,25 @@
 # CLAUDE.md
 
+<!-- generated:project-state:start -->
+## Current Machine-Derived Project Facts
+
+Do not edit this block by hand. It is synchronized by
+`node scripts/sync-doc-facts.mjs --write` from repository domain sources and
+`governance/product-lanes.json`.
+
+- Plugin: `nova-plugin@3.0.1`; production plugins: 1; public path: `nova-plugin/`
+- Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
+- Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
+- Workflow contract: schema v3, namespace `nova-plugin`, 21 workflows
+- Package scripts: `check` is present; `build` is absent
+- Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
+- Planned product lanes: None
+- Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
+- Release model: `candidate-and-promotion`
+- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`
+- Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
+<!-- generated:project-state:end -->
+
 This file provides canonical Claude Code guidance for this repository. Keep
 `AGENTS.md` as a short Codex / generic-agent adapter that references this file
 instead of copying it wholesale. When repository structure, command counts,
@@ -45,6 +65,8 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 - Repository docs index: `docs/README.md`
 - Project optimization plan: `docs/project-optimization-plan.md`
 - Release evidence template: `docs/releases/release-evidence-template.md`
+- Product-lane decisions: `governance/product-lanes.json`
+- Generated project-state aggregate: `governance/project-state.generated.json`
 - Maintainer npm shortcuts: `package.json` (`doctor`, `demo:route`,
   `demo:review`, `validate`,
   `test`, `test:coverage`, `test:coverage:check`, `test:unit`,
@@ -52,8 +74,10 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
   `ci:quick`, `ci:full`, `validate:maintainer`,
   `validate:drift`, `validate:docs`, `validate:schemas`,
   `validate:github-workflows`, `validate:runtime`, `validate:regression`,
-  `validate:surface`, `validate:workflow`, `scan:secrets`, `scan:distribution`,
-  `scaffold:consumer`; no `check`/`build` script names)
+  `validate:surface`, `validate:workflow`, `validate:project-state`,
+  `scan:secrets`, `scan:distribution`, `scaffold:consumer`, and `check`;
+  `build` is intentionally absent because the distributable plugin is assembled
+  by `release:artifacts`)
 - Repository validation scripts require Node.js 22+. Distributed shell helpers
   support Bash 3.2+. Hook shell syntax and runtime smoke checks require Bash;
   Windows without Bash may warning-skip
@@ -85,6 +109,8 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 | Workflow guidance | `docs/workflows/` |
 | Project optimization record | `docs/project-optimization-plan.md` |
 | Release evidence and hygiene | `docs/releases/` |
+| Product-lane decisions | `governance/product-lanes.json` |
+| Generated project truth | `governance/project-state.generated.json` |
 
 Generated marketplace files must be updated from their sources with:
 
@@ -113,6 +139,8 @@ llm-plugins-fusion/
 |   |-- codeql.yml
 |   |-- dependency-review.yml
 |   |-- plugin-install-smoke.yml
+|   |-- release-candidate.yml
+|   |-- promote-release.yml
 |   |-- release.yml
 |   `-- reusable-node-check.yml
 |-- docs/
@@ -274,8 +302,9 @@ title: /<id>
 description: "When to use this command..."
 destructive-actions: none|low|medium|high
 allowed-tools: <space-separated tool list>
-invokes:
-  skill: nova-<id>
+disallowed-tools: <space-separated tool list>
+user-invocable: true
+disable-model-invocation: true|false
 ```
 
 Skill frontmatter must include:
@@ -286,11 +315,10 @@ description: "..."
 license: MIT
 allowed-tools: <space-separated tool list>
 metadata:
-  novaPlugin:
-    userInvocable: true
-    autoLoad: false
-    subagentSafe: true|false
-    destructiveActions: none|low|medium|high
+  nova-user-invocable: "true"
+  nova-model-invocable: "true|false"
+  nova-subagent-safe: "true|false"
+  nova-destructive-actions: "none|low|medium|high"
 ```
 
 Read-only commands normally pre-approve `Read Glob Grep`. Write-capable
@@ -352,11 +380,17 @@ routing docs, migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
 
 - `PreToolUse`: matches `Write|Edit|NotebookEdit` and runs the thin
   fail-closed Bash launcher. Node.js 22+ performs the
-  fail-closed payload, target-type, secret, proposed Edit, and `hooks.json`
-  validation. NotebookEdit fails closed because complete proposed notebook
-  content cannot be reconstructed reliably.
-- `PostToolUse`: matches `Write|Edit|NotebookEdit|Bash` and asynchronously runs the thin
-  `hooks/scripts/post-audit-log.sh` launcher backed by the Node audit logger.
+  fail-closed payload, workspace-containment, path-component, target-type,
+  secret, proposed Edit, and protected `hooks.json` validation. NotebookEdit
+  fails closed because complete proposed notebook content cannot be
+  reconstructed reliably.
+- `PostToolUse` synchronously rechecks actual `Write|Edit` targets after the
+  runtime operation. A containment, target-type, hard-link, or protected
+  `hooks.json` violation emits a high-severity failure and stops the subsequent
+  workflow, but cannot roll back the completed write.
+- `PostToolUse`, `PostToolUseFailure`, and `PermissionDenied` also match
+  `Write|Edit|NotebookEdit|Bash` and asynchronously invoke
+  `hooks/scripts/post-audit-log.mjs` through exec-form Node.
 
 Post-use audit hooks use exec-form Node.js 22+ with `CLAUDE_PLUGIN_ROOT`.
 PreToolUse retains a Bash 3.2+ launcher because a missing exec-form Node command
@@ -458,7 +492,7 @@ review contracts, contribution and issue intake contracts, docs index
 navigation contracts, consumer profile privacy contracts, prompt template
 privacy contracts, local data handling privacy contracts, workflow evidence contracts, showcase public-safety
 contracts, growth metrics privacy contracts, assets capture privacy contracts,
-deferred portal IA contracts, v3 readiness evidence contracts, security support
+deferred portal IA contracts, multi-plugin readiness evidence contracts, security support
 range, stale active planning labels, and
 non-archived report status.
 
@@ -480,8 +514,10 @@ smoke job for schemas, frontmatter, docs, agent verification, and runtime
 smoke. Repeated Node jobs route through
 `.github/workflows/reusable-node-check.yml`. Real user-scope plugin install
 smoke is isolated in `.github/workflows/plugin-install-smoke.yml` for manual or
-scheduled evidence and in `.github/workflows/release.yml` as an exact-tag
-release blocker; it is not a default merge blocker.
+scheduled evidence and in `.github/workflows/release-candidate.yml` as an
+exact-RC-tag blocker. Stable `.github/workflows/release.yml` only delegates
+promotion of the already verified candidate; install smoke is not a default
+merge blocker.
 
 ## Do Not Edit
 

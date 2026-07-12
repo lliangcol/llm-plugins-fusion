@@ -1,0 +1,13 @@
+# Default review owner
+* @lliangcol
+
+# Security, release, workflow, and generated-contract boundaries
+/.github/ @lliangcol
+/SECURITY.md @lliangcol
+/schemas/ @lliangcol
+/workflow-specs/ @lliangcol
+/framework/ @lliangcol
+/nova-plugin/hooks/ @lliangcol
+/nova-plugin/runtime/ @lliangcol
+/scripts/build-release-artifacts.mjs @lliangcol
+/scripts/generate-release-evidence.mjs @lliangcol

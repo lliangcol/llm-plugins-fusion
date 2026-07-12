@@ -1,5 +1,25 @@
 # LLM Plugins Fusion Maintenance Status
 
+<!-- generated:project-state:start -->
+## Current Machine-Derived Project Facts
+
+Do not edit this block by hand. It is synchronized by
+`node scripts/sync-doc-facts.mjs --write` from repository domain sources and
+`governance/product-lanes.json`.
+
+- Plugin: `nova-plugin@3.0.1`; production plugins: 1; public path: `nova-plugin/`
+- Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
+- Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
+- Workflow contract: schema v3, namespace `nova-plugin`, 21 workflows
+- Package scripts: `check` is present; `build` is absent
+- Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
+- Planned product lanes: None
+- Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
+- Release model: `candidate-and-promotion`
+- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`
+- Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
+<!-- generated:project-state:end -->
+
 Status: active
 Date: 2026-07-11
 Scope: context-safe maintenance snapshot for small-step optimization rounds
@@ -166,8 +186,8 @@ for CI or isolated test-user environments.
   checks are essential when any inventory or release fact changes.
 - Windows local runs may skip Bash-dependent checks. CI/Linux remains the
   authoritative environment for hook shell syntax and Bash runtime smoke.
-- `v3.0.0`, production multi-plugin layout, public portal, paid marketplace,
-  large domain command families, and runtime dynamic loading remain deferred.
+- Production multi-plugin layout, public portal, paid marketplace, large domain
+  command families, and runtime dynamic loading remain deferred product lanes.
   Fixture-only registry support is not production migration evidence.
 
 ## Backlog

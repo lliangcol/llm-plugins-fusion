@@ -15,6 +15,18 @@
     ],
     "PostToolUse": [
       {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs"],
+            "timeout": 10,
+            "statusMessage": "复验实际写入路径与受保护配置..."
+          }
+        ]
+      },
+      {
         "matcher": "Write|Edit|NotebookEdit|Bash",
         "hooks": [
           {

@@ -1,0 +1,52 @@
+{
+  "$schema": "../schemas/product-lanes.schema.json",
+  "schemaVersion": 1,
+  "updatedAt": "2026-07-12",
+  "lanes": [
+    {
+      "id": "workflow-framework",
+      "status": "active",
+      "summary": "Canonical workflow contracts, generated command and skill surfaces, adapters, validation, and release evidence."
+    },
+    {
+      "id": "single-plugin-delivery",
+      "status": "active",
+      "summary": "nova-plugin remains the only production plugin and the stable public installation path for the 3.x line."
+    },
+    {
+      "id": "release-candidate-promotion",
+      "status": "active",
+      "summary": "Build and verify immutable release candidates before promoting identical artifacts to stable releases."
+    },
+    {
+      "id": "live-assistant-evaluation",
+      "status": "active",
+      "summary": "Versioned static, simulation, and live evaluation with evidence-derived compatibility claims."
+    },
+    {
+      "id": "generic-framework-kernel",
+      "status": "active",
+      "summary": "Extract generic schemas and compiler code without moving the nova-plugin public path."
+    },
+    {
+      "id": "production-multi-plugin-layout",
+      "status": "deferred",
+      "summary": "Requires at least two independently maintained production plugin specifications and demonstrated release pressure."
+    },
+    {
+      "id": "public-portal",
+      "status": "deferred",
+      "summary": "Generated Markdown catalogs remain sufficient until public demand and an approved hosting model exist."
+    },
+    {
+      "id": "runtime-dynamic-loading",
+      "status": "deferred",
+      "summary": "Capability packs remain documentation and routing guidance, not dynamically loaded runtime modules."
+    },
+    {
+      "id": "broad-domain-command-expansion",
+      "status": "deferred",
+      "summary": "Domain variation remains in packs and consumer profiles unless repeated evidence proves new workflow surfaces are necessary."
+    }
+  ]
+}

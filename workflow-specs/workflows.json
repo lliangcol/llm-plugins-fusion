@@ -1,37 +1,52 @@
 {
   "$schema": "../schemas/workflow-spec.schema.json",
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "pluginNamespace": "nova-plugin",
   "knownGoodClaudeCli": "2.1.205",
   "primaryEntrypoints": ["route", "explore", "produce-plan", "review", "implement-plan", "finalize-work"],
   "toolVocabulary": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "NotebookEdit"],
+  "assistantEnforcement": {
+    "claude": "native-and-hook",
+    "codex": "adapter",
+    "generic": "advisory"
+  },
   "permissionProfiles": {
     "read-only": {
       "allowedTools": ["Read", "Glob", "Grep"],
       "disallowedTools": ["Write", "Edit", "NotebookEdit", "Bash"],
-      "capabilities": { "workspaceRead": true, "workspaceWrite": false, "shell": "denied", "network": false, "credentials": false, "userScopeMutation": false, "externalPublish": false, "gitHistoryMutation": false }
+      "permissionPolicy": { "workspaceRead": "preapproved", "workspaceWrite": "denied", "shell": "denied", "network": "denied", "credentials": "denied", "userScopeMutation": "denied", "externalPublish": "denied", "gitHistoryMutation": "denied" }
     },
     "read-only-shell-prompt": {
       "allowedTools": ["Read", "Glob", "Grep"],
       "disallowedTools": ["Write", "Edit", "NotebookEdit"],
-      "capabilities": { "workspaceRead": true, "workspaceWrite": false, "shell": "prompt", "network": false, "credentials": false, "userScopeMutation": false, "externalPublish": false, "gitHistoryMutation": false }
+      "permissionPolicy": { "workspaceRead": "preapproved", "workspaceWrite": "denied", "shell": "prompt", "network": "denied", "credentials": "denied", "userScopeMutation": "denied", "externalPublish": "denied", "gitHistoryMutation": "denied" }
     },
     "artifact-write": {
       "allowedTools": ["Read", "Glob", "Grep", "Write", "Edit"],
       "disallowedTools": ["NotebookEdit", "Bash"],
-      "capabilities": { "workspaceRead": true, "workspaceWrite": true, "shell": "denied", "network": false, "credentials": false, "userScopeMutation": false, "externalPublish": false, "gitHistoryMutation": false }
+      "permissionPolicy": { "workspaceRead": "preapproved", "workspaceWrite": "preapproved", "shell": "denied", "network": "denied", "credentials": "denied", "userScopeMutation": "denied", "externalPublish": "denied", "gitHistoryMutation": "denied" }
     },
     "implementation": {
       "allowedTools": ["Read", "Glob", "Grep", "Write", "Edit"],
       "disallowedTools": ["NotebookEdit"],
-      "capabilities": { "workspaceRead": true, "workspaceWrite": true, "shell": "prompt", "network": false, "credentials": false, "userScopeMutation": false, "externalPublish": false, "gitHistoryMutation": false }
+      "permissionPolicy": { "workspaceRead": "preapproved", "workspaceWrite": "preapproved", "shell": "prompt", "network": "denied", "credentials": "denied", "userScopeMutation": "denied", "externalPublish": "denied", "gitHistoryMutation": "denied" }
+    },
+    "external-review-read-only": {
+      "allowedTools": ["Read", "Glob", "Grep"],
+      "disallowedTools": ["Write", "Edit", "NotebookEdit"],
+      "permissionPolicy": { "workspaceRead": "preapproved", "workspaceWrite": "denied", "shell": "prompt", "network": "prompt", "credentials": "explicit", "userScopeMutation": "denied", "externalPublish": "denied", "gitHistoryMutation": "denied" }
+    },
+    "external-review-implementation": {
+      "allowedTools": ["Read", "Glob", "Grep", "Write", "Edit"],
+      "disallowedTools": ["NotebookEdit"],
+      "permissionPolicy": { "workspaceRead": "preapproved", "workspaceWrite": "preapproved", "shell": "prompt", "network": "prompt", "credentials": "explicit", "userScopeMutation": "denied", "externalPublish": "denied", "gitHistoryMutation": "denied" }
     }
   },
   "workflows": [
     { "id": "backend-plan", "stage": "plan", "ownerAgents": ["architect"], "recommendedPacks": ["java", "security", "dependency"], "requiredInputs": ["REQUEST", "PLAN_OUTPUT_PATH"], "outputContract": "backend-plan-v2", "risk": "low", "modelInvocable": false, "subagentSafe": true, "permissionProfile": "artifact-write", "legacyAlias": "nova-backend-plan", "contractPath": "skills/nova-backend-plan/SKILL.md" },
-    { "id": "codex-review-fix", "stage": "implement", "ownerAgents": ["reviewer", "builder", "verifier"], "recommendedPacks": [], "requiredInputs": ["REVIEW_SCOPE"], "outputContract": "codex-review-fix-v2", "risk": "medium", "modelInvocable": false, "subagentSafe": false, "permissionProfile": "implementation", "legacyAlias": "nova-codex-review-fix", "contractPath": "skills/nova-codex-review-fix/SKILL.md", "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access for the external review/fix/verify loop." },
-    { "id": "codex-review-only", "stage": "review", "ownerAgents": ["reviewer"], "recommendedPacks": [], "requiredInputs": ["REVIEW_SCOPE"], "outputContract": "codex-review-only-v2", "risk": "low", "modelInvocable": false, "subagentSafe": true, "permissionProfile": "read-only-shell-prompt", "legacyAlias": "nova-codex-review-only", "contractPath": "skills/nova-codex-review-only/SKILL.md", "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved." },
-    { "id": "codex-verify-only", "stage": "review", "ownerAgents": ["verifier"], "recommendedPacks": [], "requiredInputs": ["REVIEW_FILE"], "outputContract": "codex-verify-only-v2", "risk": "low", "modelInvocable": false, "subagentSafe": true, "permissionProfile": "read-only-shell-prompt", "legacyAlias": "nova-codex-verify-only", "contractPath": "skills/nova-codex-verify-only/SKILL.md", "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved." },
+    { "id": "codex-review-fix", "stage": "implement", "ownerAgents": ["reviewer", "builder", "verifier"], "recommendedPacks": [], "requiredInputs": ["REVIEW_SCOPE"], "outputContract": "codex-review-fix-v2", "risk": "medium", "modelInvocable": false, "subagentSafe": false, "permissionProfile": "external-review-implementation", "legacyAlias": "nova-codex-review-fix", "contractPath": "skills/nova-codex-review-fix/SKILL.md", "runtimeRequirements": { "executables": [{ "name": "node", "required": true, "versionEvidence": "versioned-evidence" }, { "name": "bash", "required": true, "versionEvidence": "versioned-evidence" }, { "name": "codex", "required": true, "versionEvidence": "versioned-evidence" }], "network": { "need": "required", "purpose": "external review, fix, and verification" }, "credentials": { "need": "required", "source": "assistant-owned-authentication" } }, "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access for the external review/fix/verify loop." },
+    { "id": "codex-review-only", "stage": "review", "ownerAgents": ["reviewer"], "recommendedPacks": [], "requiredInputs": ["REVIEW_SCOPE"], "outputContract": "codex-review-only-v2", "risk": "low", "modelInvocable": false, "subagentSafe": true, "permissionProfile": "external-review-read-only", "legacyAlias": "nova-codex-review-only", "contractPath": "skills/nova-codex-review-only/SKILL.md", "runtimeRequirements": { "executables": [{ "name": "node", "required": true, "versionEvidence": "versioned-evidence" }, { "name": "bash", "required": true, "versionEvidence": "versioned-evidence" }, { "name": "codex", "required": true, "versionEvidence": "versioned-evidence" }], "network": { "need": "required", "purpose": "external review" }, "credentials": { "need": "required", "source": "assistant-owned-authentication" } }, "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved." },
+    { "id": "codex-verify-only", "stage": "review", "ownerAgents": ["verifier"], "recommendedPacks": [], "requiredInputs": ["REVIEW_FILE"], "outputContract": "codex-verify-only-v2", "risk": "low", "modelInvocable": false, "subagentSafe": true, "permissionProfile": "external-review-read-only", "legacyAlias": "nova-codex-verify-only", "contractPath": "skills/nova-codex-verify-only/SKILL.md", "runtimeRequirements": { "executables": [{ "name": "node", "required": true, "versionEvidence": "versioned-evidence" }, { "name": "bash", "required": true, "versionEvidence": "versioned-evidence" }, { "name": "codex", "required": true, "versionEvidence": "versioned-evidence" }], "network": { "need": "required", "purpose": "external verification" }, "credentials": { "need": "required", "source": "assistant-owned-authentication" } }, "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved." },
     { "id": "explore", "stage": "explore", "ownerAgents": ["orchestrator", "reviewer"], "recommendedPacks": [], "requiredInputs": ["INPUT"], "outputContract": "exploration-v2", "risk": "none", "modelInvocable": true, "subagentSafe": true, "permissionProfile": "read-only", "legacyAlias": "nova-explore", "contractPath": "skills/nova-explore/SKILL.md" },
     { "id": "explore-lite", "stage": "explore", "ownerAgents": ["orchestrator"], "recommendedPacks": [], "requiredInputs": ["INPUT"], "outputContract": "exploration-lite-v2", "risk": "none", "modelInvocable": true, "subagentSafe": true, "permissionProfile": "read-only", "legacyAlias": "nova-explore-lite", "contractPath": "skills/nova-explore-lite/SKILL.md" },
     { "id": "explore-review", "stage": "explore", "ownerAgents": ["reviewer"], "recommendedPacks": ["security", "dependency"], "requiredInputs": ["INPUT"], "outputContract": "exploration-review-v2", "risk": "none", "modelInvocable": true, "subagentSafe": true, "permissionProfile": "read-only", "legacyAlias": "nova-explore-review", "contractPath": "skills/nova-explore-review/SKILL.md" },

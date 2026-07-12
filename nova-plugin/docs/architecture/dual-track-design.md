@@ -7,7 +7,9 @@
 - `nova-plugin/commands/*.md`：面向用户的 slash command 入口和兼容 API。
 - `nova-plugin/skills/nova-*/SKILL.md`：行为事实源，承载参数解析、安全边界、输出契约和工作流。
 
-本仓库当前采用 **skill-first + thin command + shared policy**。Command 不再是完整 prompt 的主要承载处；它只负责稳定的 `/command` 入口、frontmatter 元数据和指向对应 skill 的薄包装。
+本仓库当前采用 **direct command + compatibility skill + shared policy**。
+Command 直接执行 workflow，并读取对应 `SKILL.md` 作为行为契约；它不再通过
+Skill tool 或 frontmatter 运行时委派。
 
 ---
 
@@ -23,15 +25,17 @@ Command 文件必须保留：
 - `description`
 - `destructive-actions`
 - `allowed-tools`
-- `invokes.skill`
+- `disallowed-tools`
+- `user-invocable`
+- `disable-model-invocation`
 
 正文保持薄包装，例如：
 
 ```md
-Invoke `nova-<id>` with `$ARGUMENTS`.
+Execute this workflow directly from `$ARGUMENTS`.
 
-The skill is the source of truth for parameter resolution, execution rules,
-output format, artifact policy, and safety boundaries.
+Read `${CLAUDE_PLUGIN_ROOT}/skills/nova-<id>/SKILL.md` as the supporting
+behavioral contract. Do not invoke it through the Skill tool.
 ```
 
 Command 的职责是：
@@ -39,7 +43,7 @@ Command 的职责是：
 - 保留用户熟悉的 slash command 名称。
 - 保持旧入口兼容，例如 `/nova-plugin:explore-lite`、`/nova-plugin:review-only`、`/nova-plugin:finalize-lite`。
 - 暴露 Claude command `description`，帮助命令菜单和发现。
-- 将执行语义交给 `invokes.skill` 指向的 skill。
+- 直接应用对应 `SKILL.md` 的参数、安全、输出和失败契约，不做运行时委派。
 
 ---
 

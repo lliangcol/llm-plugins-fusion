@@ -10,7 +10,7 @@ function normalize(path) {
 export function sourceModuleInventory(root, runner = spawnSync, pathExists = existsSync) {
   const result = runner(
     'git',
-    ['ls-files', '-z', '--cached', '--', '*.mjs'],
+    ['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '*.mjs'],
     { cwd: root, encoding: 'buffer', shell: false },
   );
   if (result.error || result.status !== 0) {

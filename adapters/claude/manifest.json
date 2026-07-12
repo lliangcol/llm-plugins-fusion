@@ -1,8 +1,13 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "source": "workflow-specs/workflows.json",
-  "compatibilityLevel": "L4-verified",
-  "evidence": [
+  "maximumSupportedLevel": "L4",
+  "declaredLevel": "L2",
+  "evidenceRequiredFor": [
+    "L3",
+    "L4"
+  ],
+  "verificationEntrypoints": [
     "../../scripts/validate-plugin-install.mjs",
     "../../scripts/validate-plugin-route-live.mjs",
     "../../.github/workflows/release.yml"

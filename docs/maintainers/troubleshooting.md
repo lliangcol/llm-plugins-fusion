@@ -111,7 +111,7 @@ scope to hide missing local tools or unavailable GitHub platform checks.
 
 ## Audit Log Location
 
-`post-audit-log.sh` writes to:
+The active exec-form `post-audit-log.mjs` hook writes to:
 
 ```text
 ${CLAUDE_PLUGIN_DATA:-${XDG_STATE_HOME:-$HOME/.local/state}/nova-plugin}/audit.log

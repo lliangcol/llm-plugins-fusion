@@ -96,7 +96,7 @@ failures:
 | `Claude CLI: WARN` | Default repository gates can still run, but live Claude plugin validation and user-scope install smoke are not proven locally. | Use `node scripts/validate-plugin-install.mjs --dry-run` for preview and collect mutation smoke evidence only in CI or an isolated test user. |
 | `Codex CLI: WARN` | Ordinary five-stage workflow checks can still run, but Codex loop commands are not locally executable. | Do not claim Codex review/fix/verify runtime behavior was proven. |
 | `Bash: WARN` or `skipped>0` | Windows local validation may skip Bash-dependent hook syntax or runtime smoke checks. | Record the skipped checks and rely on CI/Linux Bash evidence before promotion. |
-| `Exact release tag: WARN` | The current checkout is a development snapshot, not stable release evidence. | Do not promote as stable until an exact `v<plugin-version>` tag is verified. |
+| `Exact release tag: WARN` | The current checkout is a development snapshot, not release evidence. | Build and verify a signed `v<plugin-version>-rc.<number>` candidate before creating the stable tag at the same commit. |
 | `Git working tree: WARN` | Local edits are present. | Acceptable during development; release evidence must name the changed files or use a clean tagged checkout. |
 
 `npm run validate:maintainer` fails only on hard gate failures. A passing

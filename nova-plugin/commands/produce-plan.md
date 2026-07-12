@@ -14,7 +14,7 @@ disable-model-invocation: true
 
 Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-produce-plan` through the Skill tool.
 
-Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-produce-plan/SKILL.md` as the supporting behavioral contract, then apply it directly.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/produce-plan.json` as the compiled runtime contract, then apply it directly. The full compatibility skill is a maintainer reference and is not required for ordinary direct execution.
 
 - Stage: plan
 - Owner agents: architect
@@ -23,4 +23,4 @@ Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-produce-pl
 - Risk: low
 - Recommended packs: docs
 
-Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.
+Preserve all safety, approval, output, failure, and validation requirements in the compiled contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

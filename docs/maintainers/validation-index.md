@@ -27,9 +27,11 @@ gate is added, renamed, removed, or moved.
 - `.github/workflows/plugin-install-smoke.yml` owns isolated mutating install
   smoke evidence and is not a default merge blocker. It uploads smoke context
   for both passing and failing runs.
-- `.github/workflows/release.yml` uploads release validation evidence from the
-  pre-release validation job and blocks release publication on isolated install
-  smoke for the exact tag. It also publishes SHA-256 checksums for selected
+- `.github/workflows/release-candidate.yml` uploads candidate validation
+  evidence and blocks prerelease publication on isolated install smoke for the
+  exact RC tag. `.github/workflows/release.yml` delegates stable promotion to
+  `.github/workflows/promote-release.yml`, which reuses the verified candidate
+  assets. The candidate bundle also publishes SHA-256 checksums for selected
   source-controlled release artifacts.
 - Do not report a skipped local Bash-dependent check as passed. Use CI/Linux or
   CI/Windows Bash evidence when local Bash is unavailable.
@@ -63,33 +65,15 @@ gate is added, renamed, removed, or moved.
 
 | CI check | Source command or workflow | Coverage |
 | --- | --- | --- |
-| Verify Agents | `bash scripts/verify-agents.sh` | Active agent inventory and retired path checks. |
-| Validate Schemas | `node scripts/validate-schemas.mjs` | Plugin, registry, generated metadata, and schema drift. |
-| Validate Registry Fixtures | `node scripts/validate-registry-fixtures.mjs` | Registry fixture safety and generated-output fixture shape. |
-| Validate Generated Drift | `npm run validate:drift` | Generated marketplace, metadata, and catalog outputs match source. |
-| Validate Capability Packs | `node scripts/validate-packs.mjs` | Pack documentation, enhanced/fallback boundaries, and inventory. |
-| Claude Manifest Static | `node scripts/validate-claude-compat.mjs` | Claude marketplace manifest compatibility. |
-| Validate Workflow Permissions | `node scripts/generate-workflow-permissions.mjs` | Native invocation/tool policy and 42-entry effective permission drift. |
+| Required / Contracts | `.github/workflows/ci.yml` | Schemas, generated drift, docs/frontmatter, adapters, workflow contracts, inventory, agents, and workflow trust checks in one checkout. |
+| Required / Tests | `npm test`, coverage, critical mutation | Unit/integration/e2e, global and critical coverage, and mutation score; uploads `.metrics/coverage/`. |
+| Required / Security | hooks, ShellCheck, fault injection, secret/distribution scans | Security guardrails and SARIF evidence in one scoped-permission job. |
+| Required / Platform | Linux Node 22/24, Windows Node 22, macOS Node 22 matrix | Cross-platform contracts, Windows PowerShell/Bash, and macOS system Bash. |
+| Required / Package | install dry-run and double artifact build | Package inventory, deterministic archive/SBOM/provenance build, and reproducibility. |
+| Conditional / Live Evidence | `node scripts/validate-assistant-evidence.mjs` | Runs on `main`; PRs use checked-in digest validation through Contracts. |
+| Required / Aggregate | result aggregation | The only CI branch-protection check; fails unless every required consolidated lane succeeds. |
 | Release Evidence | `node scripts/generate-release-evidence.mjs` | Machine-readable validation, coverage, install, live route, and checksum aggregation. |
-| NPM Test | `npm test` | Node unit, integration, and e2e test suite. |
-| Test Coverage | `npm run test:coverage:check` | Node built-in coverage on the Node 22 lane for the complete maintenance `.mjs` inventory; uploads `.metrics/coverage/` as `test-coverage-evidence`. |
-| Plugin Install Dry Run | `node scripts/validate-plugin-install.mjs --dry-run` | Safe preview of isolated install, ref, tree digest, and 42-item inventory checks. |
-| Lint Frontmatter | `node scripts/lint-frontmatter.mjs` | Command and skill frontmatter contracts. |
-| Validate Hooks | `node scripts/validate-hooks.mjs` plus hook `bash -n` | Hook config structure and Bash syntax. |
-| ShellCheck | `.github/workflows/ci.yml` | Static analysis for tracked shell scripts. |
 | Validate GitHub Workflows | `node scripts/validate-github-workflows.mjs` | Workflow permissions, inventory, action SHA pinning, required checks, NPM Test gate, and smoke boundaries. |
-| Validate Runtime Smoke | `node scripts/validate-runtime-smoke.mjs` | Codex loop Bash script syntax, guards, and safe failure paths. |
-| Validate Surface Budget | `node scripts/validate-surface-budget.mjs` | Prompt-surface size guardrails and allowlist discipline. |
-| Validate Surface Inventory | `node scripts/generate-surface-inventory.mjs` | Generated public surface inventory drift for commands, skills, agents, packs, and marketplace outputs. |
-| Scan Distribution Risk | `node scripts/scan-distribution-risk.mjs` | Public/private boundary and tracked runtime artifact scan. |
-| Secret Scan | `npm run scan:secrets` | Source-owned PR signal for secret-like tokens, real `.env` values, private endpoints, and machine-local paths. |
-| Validate Regression | `node scripts/validate-regression.mjs` | Contract regression suite for validators, docs, scaffold, and scans. |
-| Validate Workflow Fixtures | `node scripts/validate-workflow-fixtures.mjs` | Workflow fixture integrity and redaction boundaries. |
-| Validate Docs | `node scripts/validate-docs.mjs` | Documentation contracts, links, navigation, and public-safe wording. |
-| Windows Node Smoke | `.github/workflows/ci.yml` | Windows schemas, docs, frontmatter, and PowerShell agent verification. |
-| PSScriptAnalyzer | `.github/workflows/ci.yml` | Static analysis for tracked PowerShell scripts. |
-| Windows Bash Smoke | `.github/workflows/ci.yml` | Windows Bash syntax and runtime smoke evidence. |
-| macOS Smoke | `.github/workflows/ci.yml` | macOS schemas, frontmatter, docs, agent verification, and runtime smoke evidence. |
 | Dependency Review | `.github/workflows/dependency-review.yml` | Dependency graph comparison and dependency-review action. |
 | CodeQL / Analyze JavaScript | `.github/workflows/codeql.yml` | Code scanning for JavaScript. |
 

@@ -56,7 +56,7 @@ for (const [label, command, args] of [
     assert.equal(result.ok, true, result.stderr);
     assert.equal((await stat(join(root, 'audit.log.1'))).size, before);
     const record = JSON.parse((await readFile(join(root, 'audit.log'), 'utf8')).trim());
-    assert.equal(record.schemaVersion, 2);
+    assert.equal(record.schemaVersion, 3);
     assert.equal(record.tool, 'Write');
     assert.equal(record.outcome, 'success');
     assert.equal(record.summary, 'README.md');
@@ -91,6 +91,48 @@ for (const [label, command, args] of [
   });
 
 }
+
+test('concurrent audit writers preserve every atomic spool record', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'nova-audit-concurrent-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const runs = Array.from({ length: 12 }, (_, index) => runProcess(`concurrent audit ${index}`, process.execPath, ['nova-plugin/hooks/scripts/post-audit-log.mjs'], {
+    cwd: repoRoot,
+    env: { ...process.env, CLAUDE_PLUGIN_DATA: root },
+    input: JSON.stringify({
+      hook_event_name: 'PostToolUse',
+      session_id: 'session-concurrent',
+      tool_use_id: `tool-${index}`,
+      tool_name: 'Write',
+      tool_input: { file_path: `fixtures/${index}.txt` },
+      tool_response: { success: true },
+    }),
+  }));
+  const results = await Promise.all(runs);
+  assert.equal(results.every((entry) => entry.ok), true);
+  const finalCompact = await runProcess('final audit compaction', process.execPath, ['nova-plugin/hooks/scripts/audit-compactor.mjs'], {
+    cwd: repoRoot,
+    env: { ...process.env, CLAUDE_PLUGIN_DATA: root },
+  });
+  assert.equal(finalCompact.ok, true, finalCompact.stderr);
+  const records = (await readFile(join(root, 'audit.log'), 'utf8')).trim().split('\n').map(JSON.parse);
+  assert.equal(records.length, 12);
+  assert.equal(new Set(records.map((record) => record.toolUseId)).size, 12);
+  assert.equal(new Set(records.map((record) => record.sequence)).size, 12);
+});
+
+test('audit logger hashes paths outside the project root', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'nova-audit-external-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const result = await runProcess('external path audit', process.execPath, ['nova-plugin/hooks/scripts/post-audit-log.mjs'], {
+    cwd: repoRoot,
+    env: { ...process.env, CLAUDE_PLUGIN_DATA: root },
+    input: JSON.stringify({ ...JSON.parse(payload), cwd: repoRoot, tool_input: { file_path: resolve(tmpdir(), 'private-consumer/file.txt') } }),
+  });
+  assert.equal(result.ok, true, result.stderr);
+  const record = JSON.parse((await readFile(join(root, 'audit.log'), 'utf8')).trim());
+  assert.match(record.summary, /^external-path:[a-f0-9]{16}$/);
+  assert.equal(record.summary.includes(tmpdir()), false);
+});
 
 test('audit logger distinguishes failed, denied, and unknown outcomes', async (t) => {
   const root = await mkdtemp(join(tmpdir(), 'nova-audit-outcomes-'));

@@ -1,5 +1,25 @@
 # Security Policy
 
+<!-- generated:project-state:start -->
+## Current Machine-Derived Project Facts
+
+Do not edit this block by hand. It is synchronized by
+`node scripts/sync-doc-facts.mjs --write` from repository domain sources and
+`governance/product-lanes.json`.
+
+- Plugin: `nova-plugin@3.0.1`; production plugins: 1; public path: `nova-plugin/`
+- Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
+- Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
+- Workflow contract: schema v3, namespace `nova-plugin`, 21 workflows
+- Package scripts: `check` is present; `build` is absent
+- Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
+- Planned product lanes: None
+- Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
+- Release model: `candidate-and-promotion`
+- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`
+- Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
+<!-- generated:project-state:end -->
+
 ## 支持范围
 
 | 版本 | 安全修复 |
@@ -15,6 +35,9 @@
 ## 报告漏洞
 
 **请不要在 GitHub 公开 issue 中披露漏洞。** 请通过以下渠道私下联系：
+
+优先使用 GitHub repository 的 **Private vulnerability reporting**（Security
+tab -> Report a vulnerability）；若该入口对报告者不可用，再使用下方邮件。
 
 - Email: `lliangcoder@gmail.com`
 - 邮件主题请以 `[SECURITY]` 开头
@@ -41,6 +64,7 @@
 3. **Codex 闭环的安全边界**：`codex-review-fix` 等命令在 SKILL.md 中显式禁止 `git reset --hard`、`git clean -fd`、批量删除等操作。
 4. **供应链**：仓库级脚本尽量使用 Node.js 内置模块与 Bash/PowerShell；CI 持续执行 schema、frontmatter 与 active agent 校验。
 5. **Marketplace metadata 分层**：`trust-level`、`risk-level`、`deprecated`、`last-updated`、maintainer 与 review evidence 保留在 repository-local metadata，不写入 Claude-compatible marketplace manifest。
+6. **Workspace 路径封闭**：Write/Edit guard 同时执行词法与物理路径包含检查，拒绝父路径 symlink/junction、workspace 外目标和受保护文件 hard link；PostToolUse 对实际结果再次复验。该机制是 guardrail，不是原子 filesystem sandbox，已完成的写入无法由 PostToolUse 回滚。
 
 安全敏感的插件、registry、hook、脚本或 write-capable command 变更应按
 [Security Review Route](./docs/marketplace/security-review-route.md) 执行评审。

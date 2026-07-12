@@ -1,0 +1,8 @@
+labels:
+  - { name: "area: contracts", color: "1d76db", description: "Canonical workflow, schema, or generated-contract changes" }
+  - { name: "area: security", color: "b60205", description: "Public-safe security hardening; vulnerabilities use private reporting" }
+  - { name: "area: release", color: "5319e7", description: "Candidate, promotion, artifact, or provenance work" }
+  - { name: "area: adapters", color: "0e8a16", description: "Assistant adapter or compatibility evidence" }
+  - { name: "area: evals", color: "fbca04", description: "Static, simulation, or live evaluation" }
+  - { name: "good first issue", color: "7057ff", description: "Bounded first contribution with maintainer guidance" }
+  - { name: "needs evidence", color: "d4c5f9", description: "Claim requires reproducible current evidence" }

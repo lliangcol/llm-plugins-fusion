@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import { link, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -10,9 +10,18 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const guard = 'nova-plugin/hooks/scripts/pre-write-check.mjs';
 
 async function runGuard(payload, options = {}) {
-  return runProcess('pre-write guard test', options.command ?? process.execPath, options.args ?? [guard], {
+  const payloadPath = typeof payload === 'object'
+    ? (payload.tool_input?.file_path ?? payload.tool_input?.notebook_path)
+    : null;
+  const inferredRoot = payloadPath && isAbsolute(payloadPath) ? dirname(payloadPath) : (options.cwd ?? root);
+  return runProcess('pre-write guard test', options.command ?? process.execPath, options.args ?? [resolve(root, guard)], {
     cwd: options.cwd ?? root,
-    env: { ...process.env, CLAUDE_PLUGIN_ROOT: resolve(root, 'nova-plugin'), ...(options.env ?? {}) },
+    env: {
+      ...process.env,
+      CLAUDE_PLUGIN_ROOT: resolve(root, 'nova-plugin'),
+      CLAUDE_PROJECT_DIR: options.projectRoot ?? inferredRoot,
+      ...(options.env ?? {}),
+    },
     input: typeof payload === 'string' ? payload : JSON.stringify(payload),
   });
 }
@@ -54,14 +63,15 @@ test('write guard fails closed for malformed payloads and secrets', async () => 
 test('write guard reconstructs Edit content before validating hooks.json', async (t) => {
   const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-edit-'));
   t.after(() => rm(temp, { recursive: true, force: true }));
-  const hooksPath = join(temp, 'hooks.json');
+  await mkdir(join(temp, '.claude'));
+  const hooksPath = join(temp, '.claude/hooks.json');
   const hooks = await readFile(resolve(root, 'nova-plugin/hooks/hooks.json'), 'utf8');
   await writeFile(hooksPath, hooks);
 
-  const valid = await runGuard(editPayload(hooksPath, '"timeout": 10', '"timeout": 12'));
+  const valid = await runGuard(editPayload(hooksPath, '检查文件写入规范...', '检查文件写入策略...'), { projectRoot: temp });
   assert.equal(valid.ok, true, valid.stderr);
 
-  const invalid = await runGuard(editPayload(hooksPath, '"hooks": {', '"hooks": ['));
+  const invalid = await runGuard(editPayload(hooksPath, '"hooks": {', '"hooks": ['), { projectRoot: temp });
   assert.equal(invalid.code, 2);
   assert.match(invalid.stderr, /hooks\.json 结构无效/);
 });
@@ -141,11 +151,11 @@ test('write guard rejects missing and symlink Edit targets', async (t) => {
 
   const missing = await runGuard(editPayload(join(temp, 'missing.txt'), 'old', 'new'));
   assert.equal(missing.code, 2);
-  assert.match(missing.stderr, /不存在/);
+  assert.match(missing.stderr, /does not exist/);
 
   const linked = await runGuard(editPayload(link, 'old', 'new'));
   assert.equal(linked.code, 2);
-  assert.match(linked.stderr, /符号链接/);
+  assert.match(linked.stderr, /symlink or junction/);
 });
 
 test('write guard rejects unsafe existing Write targets', async (t) => {
@@ -160,11 +170,11 @@ test('write guard rejects unsafe existing Write targets', async (t) => {
 
   const linked = await runGuard(writePayload(link, 'new'));
   assert.equal(linked.code, 2);
-  assert.match(linked.stderr, /符号链接/);
+  assert.match(linked.stderr, /symlink or junction/);
 
   const nonFile = await runGuard(writePayload(directory, 'new'));
   assert.equal(nonFile.code, 2);
-  assert.match(nonFile.stderr, /普通文件/);
+  assert.match(nonFile.stderr, /regular file/);
 
   const regular = await runGuard(writePayload(target, 'new'));
   assert.equal(regular.ok, true, regular.stderr);
@@ -183,10 +193,64 @@ test('write guard fails closed for NotebookEdit', async () => {
   assert.match(malformed.stderr, /缺少 notebook_path/);
 });
 
-test('write guard recognizes Windows hooks.json paths for full Write payloads', async () => {
-  const hooks = await readFile(resolve(root, 'nova-plugin/hooks/hooks.json'), 'utf8');
-  const result = await runGuard(writePayload('C:\\project\\nova-plugin\\hooks\\hooks.json', hooks));
+test('write guard applies nova schema only to exact protected hooks paths', async (t) => {
+  const temp = await mkdtemp(join(tmpdir(), 'nova-unrelated-hooks-'));
+  t.after(() => rm(temp, { recursive: true, force: true }));
+  await mkdir(join(temp, 'config'));
+  const unrelated = join(temp, 'config/hooks.json');
+  await writeFile(unrelated, '{"ordinary":true}\n');
+  const result = await runGuard(writePayload(unrelated, '{"ordinary":false}\n'), { projectRoot: temp });
   assert.equal(result.ok, true, result.stderr);
+});
+
+test('write guard contains targets to workspace or explicit artifact roots', async (t) => {
+  const temp = await mkdtemp(join(tmpdir(), 'nova-containment-'));
+  t.after(() => rm(temp, { recursive: true, force: true }));
+  const workspace = join(temp, 'workspace');
+  const outside = join(temp, 'outside');
+  await Promise.all([mkdir(workspace), mkdir(outside)]);
+
+  const inside = await runGuard(writePayload(join(workspace, 'new.txt'), 'ok'), { projectRoot: workspace });
+  assert.equal(inside.ok, true, inside.stderr);
+  for (const filePath of ['../outside/escape.txt', join(outside, 'escape.txt')]) {
+    const escaped = await runGuard(writePayload(filePath, 'blocked'), { projectRoot: workspace, cwd: workspace });
+    assert.equal(escaped.code, 2);
+    assert.match(escaped.stderr, /outside explicit allowed roots/);
+  }
+  const artifact = await runGuard(writePayload(join(outside, 'report.md'), 'allowed'), {
+    projectRoot: workspace,
+    env: { NOVA_EXPLICIT_ARTIFACT_ROOT: outside },
+  });
+  assert.equal(artifact.ok, true, artifact.stderr);
+});
+
+test('write guard rejects parent symlink escapes and protected hard links', { skip: process.platform === 'win32' }, async (t) => {
+  const temp = await mkdtemp(join(tmpdir(), 'nova-containment-links-'));
+  t.after(() => rm(temp, { recursive: true, force: true }));
+  const workspace = join(temp, 'workspace');
+  const outside = join(temp, 'outside');
+  await Promise.all([mkdir(workspace), mkdir(outside)]);
+  await symlink(outside, join(workspace, 'link'));
+  const linkedParent = await runGuard(writePayload(join(workspace, 'link/escape.txt'), 'blocked'), { projectRoot: workspace });
+  assert.equal(linkedParent.code, 2);
+  assert.match(linkedParent.stderr, /symlink or junction/);
+
+  await mkdir(join(workspace, '.claude'));
+  const hooksPath = join(workspace, '.claude/hooks.json');
+  const hooks = await readFile(resolve(root, 'nova-plugin/hooks/hooks.json'), 'utf8');
+  await writeFile(hooksPath, hooks);
+  await link(hooksPath, join(workspace, 'hooks-copy.json'));
+  const hardLinked = await runGuard(editPayload(hooksPath, '"timeout": 10', '"timeout": 12'), { projectRoot: workspace });
+  assert.equal(hardLinked.code, 2);
+  assert.match(hardLinked.stderr, /multiple hard links/);
+});
+
+test('write guard rejects oversized Write payloads', async (t) => {
+  const temp = await mkdtemp(join(tmpdir(), 'nova-write-size-'));
+  t.after(() => rm(temp, { recursive: true, force: true }));
+  const result = await runGuard(writePayload(join(temp, 'large.txt'), 'x'.repeat(10 * 1024 * 1024 + 1)), { projectRoot: temp });
+  assert.equal(result.code, 2);
+  assert.match(result.stderr, /Write 内容超过安全扫描大小上限/);
 });
 
 test('Bash launcher fails closed without Node and honors explicit opt-out', async () => {

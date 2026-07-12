@@ -43,7 +43,7 @@ for (const entry of fixture.cases) {
     for (const command of entry.commands) {
       const workflow = workflows.get(command);
       const profile = spec.permissionProfiles[workflow.permissionProfile];
-      assert.equal(profile.capabilities.workspaceWrite, false, `${entry.id}: zero-write route selects ${command}`);
+      assert.equal(profile.permissionPolicy.workspaceWrite, 'denied', `${entry.id}: zero-write route selects ${command}`);
     }
   }
 }

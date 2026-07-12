@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "sourceSchemaVersion": 3,
+  "id": "plan-lite",
+  "stage": "plan",
+  "ownerAgents": [
+    "architect"
+  ],
+  "recommendedPacks": [],
+  "requiredInputs": [
+    "REQUEST"
+  ],
+  "outputContract": "plan-lite-v2",
+  "risk": "none",
+  "runtimeRequirements": {
+    "executables": [],
+    "network": {
+      "need": "none",
+      "purpose": "none"
+    },
+    "credentials": {
+      "need": "none",
+      "source": "none"
+    }
+  },
+  "permissionPolicy": {
+    "workspaceRead": "preapproved",
+    "workspaceWrite": "denied",
+    "shell": "denied",
+    "network": "denied",
+    "credentials": "denied",
+    "userScopeMutation": "denied",
+    "externalPublish": "denied",
+    "gitHistoryMutation": "denied"
+  },
+  "enforcement": {
+    "claude": "native-and-hook",
+    "codex": "adapter",
+    "generic": "advisory"
+  },
+  "instructions": [
+    "Resolve every required input before side effects.",
+    "Stop when a required capability is denied, unsupported, or awaiting approval.",
+    "Stay within the project or an explicitly approved artifact root.",
+    "Preserve the named output contract and report skipped validation honestly.",
+    "Do not publish externally, mutate user scope, or rewrite Git history."
+  ],
+  "authoredBehaviorReference": "../../skills/nova-plan-lite/SKILL.md",
+  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+}

@@ -84,6 +84,7 @@ function gitValue(root, args) {
 export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/release-artifacts', now = () => new Date(0) } = {}) {
   const pluginRoot = resolve(root, 'nova-plugin');
   const plugin = JSON.parse(readFileSync(resolve(pluginRoot, '.claude-plugin/plugin.json'), 'utf8'));
+  const workflows = JSON.parse(readFileSync(resolve(root, 'workflow-specs/workflows.json'), 'utf8'));
   const outputRoot = resolve(root, outDir);
   mkdirSync(outputRoot, { recursive: true });
   const archiveName = `nova-plugin-${plugin.version}.tar.gz`;
@@ -104,23 +105,64 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
         type: 'application',
         name: 'nova-plugin',
         version: plugin.version,
+        'bom-ref': `pkg:generic/nova-plugin@${plugin.version}`,
         hashes: [{ alg: 'SHA-256', content: archiveSha256 }],
       },
     },
-    components: [],
+    components: [
+      {
+        type: 'platform',
+        name: 'Node.js',
+        version: '>=22',
+        'bom-ref': 'runtime:node>=22',
+        scope: 'required',
+        properties: [{ name: 'nova:purpose', value: 'hook and validation runtime' }],
+      },
+      {
+        type: 'application',
+        name: 'Bash',
+        version: '>=3.2',
+        'bom-ref': 'runtime:bash>=3.2',
+        scope: 'required',
+        properties: [{ name: 'nova:purpose', value: 'fail-closed launcher and Codex helpers' }],
+      },
+      {
+        type: 'application',
+        name: 'Claude Code',
+        version: workflows.knownGoodClaudeCli,
+        'bom-ref': 'host:claude-code',
+        scope: 'required',
+        properties: [{ name: 'nova:purpose', value: 'plugin host; exact compatible version is release-evidence-bound' }],
+      },
+    ],
+    dependencies: [
+      { ref: `pkg:generic/nova-plugin@${plugin.version}`, dependsOn: ['runtime:node>=22', 'runtime:bash>=3.2', 'host:claude-code'] },
+      { ref: 'runtime:node>=22', dependsOn: [] },
+      { ref: 'runtime:bash>=3.2', dependsOn: [] },
+      { ref: 'host:claude-code', dependsOn: [] },
+    ],
   };
   const sbomPath = resolve(outputRoot, `${archiveName}.cdx.json`);
   writeFileSync(sbomPath, `${JSON.stringify(sbom, null, 2)}\n`, 'utf8');
+  const commit = process.env.GITHUB_SHA ?? gitValue(root, ['rev-parse', 'HEAD']);
+  const tag = process.env.GITHUB_REF_NAME ?? gitValue(root, ['describe', '--tags', '--exact-match', 'HEAD']);
   const provenance = {
-    schemaVersion: 1,
-    generatedAt: now().toISOString(),
-    builder: 'scripts/build-release-artifacts.mjs',
-    node: process.version,
-    commit: process.env.GITHUB_SHA ?? gitValue(root, ['rev-parse', 'HEAD']),
-    tag: process.env.GITHUB_REF_NAME ?? gitValue(root, ['describe', '--tags', '--exact-match', 'HEAD']),
-    pluginVersion: plugin.version,
-    archive: { path: archiveName, sha256: archiveSha256 },
-    treeManifest: { version: 2, sha256: manifestSha256, entries: manifest.length },
+    _type: 'https://in-toto.io/Statement/v1',
+    subject: [{ name: archiveName, digest: { sha256: archiveSha256 } }],
+    predicateType: 'https://slsa.dev/provenance/v1',
+    predicate: {
+      buildDefinition: {
+        buildType: 'https://github.com/lliangcol/llm-plugins-fusion/build-types/nova-plugin-release/v1',
+        externalParameters: { pluginVersion: plugin.version, tag },
+        internalParameters: { node: process.version, deterministicTarVersion: 1 },
+        resolvedDependencies: [{ uri: 'git+https://github.com/lliangcol/llm-plugins-fusion', digest: { gitCommit: commit } }],
+      },
+      runDetails: {
+        builder: { id: 'https://github.com/lliangcol/llm-plugins-fusion/.github/workflows/release-candidate.yml' },
+        metadata: { invocationId: `${commit}:${tag}`, startedOn: now().toISOString(), finishedOn: now().toISOString() },
+        byproducts: [{ name: 'tree-manifest-v2', digest: { sha256: manifestSha256 }, entries: manifest.length }],
+      },
+    },
   };
   const provenancePath = resolve(outputRoot, `${archiveName}.provenance.json`);
   writeFileSync(provenancePath, `${JSON.stringify(provenance, null, 2)}\n`, 'utf8');
@@ -129,7 +171,7 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
 
 function main() {
   try {
-    const result = buildReleaseArtifacts({ now: () => new Date() });
+    const result = buildReleaseArtifacts();
     for (const path of [result.archivePath, result.sbomPath, result.provenancePath]) {
       console.log(`Wrote ${relative(defaultRoot, path).replaceAll('\\', '/')}`);
     }

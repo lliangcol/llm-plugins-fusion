@@ -1,10 +1,15 @@
 #!/usr/bin/env node
 /** Fail-closed PreToolUse write guard for Write, Edit, and unsupported NotebookEdit. */
 
-import { lstatSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findSensitiveText, newSensitiveFindings } from '../../runtime/secret-rules.mjs';
+import {
+  configuredArtifactRoots,
+  isProtectedHooksPath,
+  resolveWorkspaceTarget,
+} from '../../runtime/safe-workspace-path.mjs';
 import { validateHooksJsonText } from './hooks-schema.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -80,23 +85,12 @@ function readGuardedText(target, displayPath) {
   }
 }
 
-function proposedEditContent(input) {
+function proposedEditContent(input, target) {
   if (typeof input.old_string !== 'string' || input.old_string.length === 0) {
     block('Edit payload 的 old_string 必须是非空字符串。');
   }
   if (typeof input.new_string !== 'string') {
     block('Edit payload 的 new_string 必须是字符串。');
-  }
-
-  const target = resolve(input.file_path);
-  let stat;
-  try {
-    stat = lstatSync(target);
-  } catch {
-    block('Edit 目标文件不存在或不可读取。', [`目标: ${input.file_path}`]);
-  }
-  if (stat.isSymbolicLink() || !stat.isFile()) {
-    block('Edit 目标必须是普通文件且不能是符号链接。', [`目标: ${input.file_path}`]);
   }
 
   const current = readGuardedText(target, input.file_path);
@@ -113,25 +107,6 @@ function proposedEditContent(input) {
   return { current, proposed };
 }
 
-function validateWriteTarget(input) {
-  const target = resolve(input.file_path);
-  let stat;
-  try {
-    stat = lstatSync(target);
-  } catch (error) {
-    if (error?.code === 'ENOENT') return;
-    block('Write 目标无法可靠检查。', [`目标: ${input.file_path}`]);
-  }
-  if (stat.isSymbolicLink() || !stat.isFile()) {
-    block('已存在的 Write 目标必须是普通文件且不能是符号链接。', [`目标: ${input.file_path}`]);
-  }
-}
-
-function isHooksJson(filePath) {
-  const normalized = filePath.replaceAll('\\', '/');
-  return normalized === 'hooks.json' || normalized.endsWith('/hooks.json');
-}
-
 const major = Number.parseInt(process.versions.node.split('.')[0], 10);
 if (!Number.isInteger(major) || major < 22) {
   block(`Node.js 22+ is required by the write guard; found ${process.version}.`);
@@ -139,15 +114,37 @@ if (!Number.isInteger(major) || major < 22) {
 
 const payload = parsePayload();
 const input = payload.tool_input;
+const projectRoot = resolve(process.env.CLAUDE_PROJECT_DIR || payload.cwd || process.cwd());
+const effectiveCwd = resolve(payload.cwd || projectRoot);
+const lexicalTarget = resolve(effectiveCwd, input.file_path);
+const protectedTarget = isProtectedHooksPath(lexicalTarget, { projectRoot, pluginRoot });
+let pathPolicy;
+try {
+  pathPolicy = resolveWorkspaceTarget({
+    filePath: input.file_path,
+    projectRoot,
+    cwd: effectiveCwd,
+    artifactRoots: configuredArtifactRoots(),
+    mustExist: payload.tool_name === 'Edit',
+    protectedTarget,
+  });
+} catch (error) {
+  block('写入目标不满足 workspace 路径安全策略。', [
+    `目标: ${input.file_path}`,
+    `原因: ${error.message}`,
+  ]);
+}
 let proposedContent;
 let beforeFindings = [];
 
 if (payload.tool_name === 'Write') {
   if (typeof input.content !== 'string') block('Write payload 的 content 必须是字符串。');
-  validateWriteTarget(input);
+  if (Buffer.byteLength(input.content, 'utf8') > MAX_GUARDED_TEXT_BYTES) {
+    block('Write 内容超过安全扫描大小上限。', [`目标: ${input.file_path}`]);
+  }
   proposedContent = input.content;
 } else {
-  const edit = proposedEditContent(input);
+  const edit = proposedEditContent(input, pathPolicy.target);
   proposedContent = edit.proposed;
   beforeFindings = findSensitiveText(edit.current);
 }
@@ -164,7 +161,7 @@ if (introducedFindings.length > 0) {
   ]);
 }
 
-if (isHooksJson(input.file_path)) {
+if (protectedTarget) {
   const errors = validateHooksJsonText(proposedContent, { pluginRootDir: pluginRoot });
   if (errors.length > 0) {
     block('hooks.json 结构无效，写入已阻止。', [

@@ -38,10 +38,19 @@ function referencedHookScript(hook) {
 }
 
 const REQUIRED_NOVA_EVENTS = new Map([
-  ['PreToolUse', { matcher: 'Write|Edit|NotebookEdit', script: 'hooks/scripts/pre-write-check.sh', command: 'bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"' }],
-  ['PostToolUse', { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/post-audit-log.mjs', command: 'node' }],
-  ['PostToolUseFailure', { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/post-audit-log.mjs', command: 'node' }],
-  ['PermissionDenied', { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/post-audit-log.mjs', command: 'node' }],
+  ['PreToolUse', [
+    { matcher: 'Write|Edit|NotebookEdit', script: 'hooks/scripts/pre-write-check.sh', command: 'bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"', async: false },
+  ]],
+  ['PostToolUse', [
+    { matcher: 'Write|Edit', script: 'hooks/scripts/post-write-verify.mjs', command: 'node', async: false },
+    { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/post-audit-log.mjs', command: 'node', async: true },
+  ]],
+  ['PostToolUseFailure', [
+    { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/post-audit-log.mjs', command: 'node', async: true },
+  ]],
+  ['PermissionDenied', [
+    { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/post-audit-log.mjs', command: 'node', async: true },
+  ]],
 ]);
 
 export function validateUpstreamHooksConfig(config, options = {}) {
@@ -142,22 +151,32 @@ export function validateUpstreamHooksConfig(config, options = {}) {
 
 export function validateNovaHooksPolicy(config) {
   const errors = [];
-  for (const [event, expected] of REQUIRED_NOVA_EVENTS) {
+  for (const [event, expectedEntries] of REQUIRED_NOVA_EVENTS) {
     const entries = config?.hooks?.[event];
-    if (!Array.isArray(entries) || entries.length !== 1 || entries[0]?.matcher !== expected.matcher) {
-      record(errors, `${event} must contain exactly one entry with matcher ${expected.matcher}`);
+    if (!Array.isArray(entries) || entries.length !== expectedEntries.length) {
+      record(errors, `${event} must contain exactly ${expectedEntries.length} required hook entries`);
       continue;
     }
-    const hooks = entries[0].hooks;
-    if (!Array.isArray(hooks) || hooks.length !== 1) continue;
-    const hook = hooks[0];
-    if (hook.command !== expected.command) record(errors, `${event} must use the required command form`);
-    if (expected.command === 'node' && (!Array.isArray(hook.args) || hook.args.length !== 1 || hook.args[0] !== `\${CLAUDE_PLUGIN_ROOT}/${expected.script}`)) {
-      record(errors, `${event} must pass ${expected.script} as the only Node argument`);
-    }
-    if (expected.command !== 'node' && hook.args !== undefined) {
-      record(errors, `${event} compatibility launcher must not declare exec args`);
-    }
+    expectedEntries.forEach((expected, index) => {
+      const entry = entries[index];
+      if (entry?.matcher !== expected.matcher) record(errors, `${event}[${index}] must use matcher ${expected.matcher}`);
+      const hooks = entry?.hooks;
+      if (!Array.isArray(hooks) || hooks.length !== 1) {
+        record(errors, `${event}[${index}] must contain exactly one hook`);
+        return;
+      }
+      const hook = hooks[0];
+      if (hook.command !== expected.command) record(errors, `${event}[${index}] must use the required command form`);
+      if (expected.command === 'node' && (!Array.isArray(hook.args) || hook.args.length !== 1 || hook.args[0] !== `\${CLAUDE_PLUGIN_ROOT}/${expected.script}`)) {
+        record(errors, `${event}[${index}] must pass ${expected.script} as the only Node argument`);
+      }
+      if (expected.command !== 'node' && hook.args !== undefined) {
+        record(errors, `${event}[${index}] compatibility launcher must not declare exec args`);
+      }
+      if ((hook.async === true) !== expected.async) {
+        record(errors, `${event}[${index}] async behavior differs from policy`);
+      }
+    });
   }
   return errors;
 }

@@ -273,7 +273,7 @@ llm-plugins-fusion/
 - `.claude-plugin/registry.source.json`：registry、marketplace 展示字段和 trust/risk/maintainer/evidence 元数据事实源
 - `.claude-plugin/marketplace.json`、`.claude-plugin/marketplace.metadata.json`、`docs/marketplace/catalog.md`：生成输出，不要手工编辑
 - `CHANGELOG.md`、`SECURITY.md`、`CLAUDE.md`、`AGENTS.md`：版本、支持范围、库存或行为边界变化时同步
-- `package.json`：维护者便捷脚本；包含 dependency-free 的 `test`、`test:unit`、`test:integration`、`test:e2e`、`lint`、`ci:quick`、`ci:full` 别名，仍不声明 `check` / `build` 脚本名
+- `package.json`：维护者便捷脚本；包含 dependency-free 的 `test`、`test:unit`、`test:integration`、`test:e2e`、`lint`、`ci:quick`、`ci:full` 和 `check`；发布归档使用 `release:artifacts` 而不是通用 `build`
 
 Command 与 skill 必须一对一：
 

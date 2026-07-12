@@ -11,6 +11,7 @@ for (const script of [
   'scripts/profile-validation.mjs',
   'scripts/run-node-tests.mjs',
   'scripts/run-test-coverage.mjs',
+  'scripts/run-critical-fault-injection.mjs',
 ]) {
   test(`${script} exposes a non-mutating help path`, async () => {
     const result = await runProcess(`${script} help`, process.execPath, [script, '--help'], { cwd: repoRoot });

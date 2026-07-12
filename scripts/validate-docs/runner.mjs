@@ -11,7 +11,7 @@
  * handling privacy contracts, workflow
  * evidence contracts, showcase
  * public-safety contracts, growth metrics privacy contracts, assets capture
- * privacy contracts, deferred portal IA contracts, v3 readiness evidence
+ * privacy contracts, deferred portal IA contracts, multi-plugin readiness evidence
  * contracts, security support range, stale active
  * planning labels, and stale
  * non-archived reports.
@@ -471,9 +471,9 @@ function validateInventoryFacts() {
     },
     {
       file: 'ROADMAP.md',
-      pattern: /\| 插件能力面 \| (\d+) 个 slash commands 与 (\d+) 个一对一 `nova-\*` skills。 \|/,
+      pattern: /generated:project-state:start[\s\S]*Inventory: (\d+) commands, (\d+) skills/,
       values: [commandCount, skillCount],
-      label: 'ROADMAP current command/skill count',
+      label: 'ROADMAP generated command/skill count',
     },
     {
       file: 'docs/marketplace/compatibility-matrix.md',
@@ -552,13 +552,13 @@ function validateProjectPositioningContracts() {
     },
     {
       file: 'ROADMAP.md',
-      pattern: /仍以一个主插件 `nova-plugin` 为核心/,
+      pattern: /single-production-plugin workflow framework centered\s+on `nova-plugin`/,
       label: 'ROADMAP nova-plugin core boundary',
     },
     {
       file: 'ROADMAP.md',
-      pattern: /状态：Deferred。[\s\S]*仓库仍只有一个\s+主插件/,
-      label: 'ROADMAP deferred v3 public portal boundary',
+      pattern: /## Deferred Product Lanes[\s\S]*production multi-plugin layout[\s\S]*hosted public portal/,
+      label: 'ROADMAP deferred product-lane boundary',
     },
     {
       file: 'docs/project-optimization-plan.md',
@@ -567,7 +567,7 @@ function validateProjectPositioningContracts() {
     },
     {
       file: 'docs/project-optimization-plan.md',
-      pattern: /Public portal work and production multi-plugin directory migration remain\s+deferred[\s\S]*`v3\.0\.0` workflow and\s+security hardening does not activate either deferred product surface/,
+      pattern: /Public portal work and production multi-plugin directory migration remain\s+deferred[\s\S]*independently\s+named product lanes[\s\S]*not coupled to an already released version number/,
       label: 'optimization plan deferred portal and multi-plugin boundary',
     },
     {
@@ -629,10 +629,8 @@ function validateReleasePromotionContracts() {
     },
     {
       file: 'ROADMAP.md',
-      pattern: new RegExp('当前稳定推广版本为 exact release tag `'
-        + tagPattern
-        + '`[\\s\\S]*移动 `main`[\\s\\S]*不能替代正式 tag'),
-      label: 'ROADMAP exact release tag promotion boundary',
+      pattern: /A stable tag never serves as the first complete integration test of a release\s+workflow/,
+      label: 'ROADMAP rehearsed stable promotion boundary',
     },
     {
       file: 'docs/project-optimization-plan.md',
@@ -756,7 +754,7 @@ function validateMaintainerDiagnosticContracts() {
     },
     {
       file: 'docs/maintainers/quickstart.md',
-      pattern: /`Exact release tag: WARN`[\s\S]*development snapshot[\s\S]*exact `v<plugin-version>` tag/,
+      pattern: /`Exact release tag: WARN`[\s\S]*development snapshot[\s\S]*signed `v<plugin-version>-rc\.<number>` candidate[\s\S]*stable tag at the same commit/,
       label: 'maintainer quickstart exact-tag warning boundary',
     },
     {
@@ -856,7 +854,7 @@ function validateMaintainerDiagnosticContracts() {
     },
     {
       file: 'docs/maintainers/github-security-settings.md',
-      pattern: /## Suggested Required Checks[\s\S]*Validate Hooks[\s\S]*Validate GitHub Workflows[\s\S]*Validate Runtime Smoke[\s\S]*Dependency Review[\s\S]*CodeQL \/ Analyze JavaScript/,
+      pattern: /## Suggested Required Checks[\s\S]*Required \/ Aggregate[\s\S]*Dependency Review[\s\S]*CodeQL \/ Analyze JavaScript[\s\S]*Contracts,[\s\S]*Tests,[\s\S]*Security,[\s\S]*platform matrix,[\s\S]*Package/,
       label: 'GitHub security settings required workflow checks',
     },
   ];
@@ -1023,7 +1021,7 @@ function validateContributionContracts() {
     },
     {
       file: 'CONTRIBUTING.md',
-      pattern: /`package\.json` 包含 dependency-free 的\s+`lint` 和 `test` 入口[\s\S]*仍不声明 `check` \/ `build` 脚本名/,
+      pattern: /`package\.json` 包含 dependency-free 的\s+`lint`、`test` 和 `check` 入口[\s\S]*不使用通用 `build` 名称[\s\S]*`release:artifacts` 构建/,
       label: 'contributing npm shortcut facts',
     },
     {
@@ -1224,7 +1222,7 @@ function validateValidatorCoverageNarrative() {
   const checks = [
     {
       file: 'CLAUDE.md',
-      pattern: /`node scripts\/validate-docs\.mjs` validates[\s\S]*project\s+positioning\s+contracts,[\s\S]*exact-tag\s+release\s+promotion\s+boundaries,[\s\S]*maintainer\s+diagnostic\s+and\s+security\s+setting\s+semantics,[\s\S]*public\s+API\s+compatibility\s+contracts,[\s\S]*marketplace\s+trust,[\s\S]*author\s+workflow,[\s\S]*compatibility,[\s\S]*security\s+review\s+contracts,[\s\S]*contribution\s+and\s+issue\s+intake\s+contracts,[\s\S]*docs\s+index\s+navigation\s+contracts,[\s\S]*consumer\s+profile\s+privacy\s+contracts,[\s\S]*prompt\s+template\s+privacy\s+contracts,[\s\S]*local\s+data\s+handling\s+privacy\s+contracts,[\s\S]*workflow\s+evidence\s+contracts,[\s\S]*showcase\s+public-safety\s+contracts,[\s\S]*growth\s+metrics\s+privacy\s+contracts,[\s\S]*assets\s+capture\s+privacy\s+contracts,[\s\S]*deferred\s+portal\s+IA\s+contracts,[\s\S]*v3\s+readiness\s+evidence\s+contracts/,
+      pattern: /`node scripts\/validate-docs\.mjs` validates[\s\S]*project\s+positioning\s+contracts,[\s\S]*exact-tag\s+release\s+promotion\s+boundaries,[\s\S]*maintainer\s+diagnostic\s+and\s+security\s+setting\s+semantics,[\s\S]*public\s+API\s+compatibility\s+contracts,[\s\S]*marketplace\s+trust,[\s\S]*author\s+workflow,[\s\S]*compatibility,[\s\S]*security\s+review\s+contracts,[\s\S]*contribution\s+and\s+issue\s+intake\s+contracts,[\s\S]*docs\s+index\s+navigation\s+contracts,[\s\S]*consumer\s+profile\s+privacy\s+contracts,[\s\S]*prompt\s+template\s+privacy\s+contracts,[\s\S]*local\s+data\s+handling\s+privacy\s+contracts,[\s\S]*workflow\s+evidence\s+contracts,[\s\S]*showcase\s+public-safety\s+contracts,[\s\S]*growth\s+metrics\s+privacy\s+contracts,[\s\S]*assets\s+capture\s+privacy\s+contracts,[\s\S]*deferred\s+portal\s+IA\s+contracts,[\s\S]*multi-plugin\s+readiness\s+evidence\s+contracts/,
       label: 'CLAUDE validate-docs coverage narrative',
     },
     {
@@ -1239,7 +1237,7 @@ function validateValidatorCoverageNarrative() {
     },
     {
       file: 'docs/project-optimization-plan.md',
-      pattern: /`validate-docs` checks[\s\S]*project\s+positioning\s+contracts,[\s\S]*exact-tag\s+release\s+promotion\s+boundaries,[\s\S]*maintainer\s+diagnostic\s+and\s+security\s+setting\s+semantics,[\s\S]*public\s+API\s+compatibility\s+contracts,[\s\S]*marketplace\s+trust,[\s\S]*author\s+workflow,[\s\S]*compatibility,[\s\S]*security\s+review\s+contracts,[\s\S]*contribution\s+and\s+issue\s+intake\s+contracts,[\s\S]*docs\s+index\s+navigation\s+contracts,[\s\S]*consumer\s+profile\s+privacy\s+contracts,[\s\S]*prompt\s+template\s+privacy\s+contracts,[\s\S]*local\s+data\s+handling\s+privacy\s+contracts,[\s\S]*workflow\s+evidence\s+contracts,[\s\S]*showcase\s+public-safety\s+contracts,[\s\S]*growth\s+metrics\s+privacy\s+contracts,[\s\S]*assets\s+capture\s+privacy\s+contracts,[\s\S]*deferred\s+portal\s+IA\s+contracts,[\s\S]*v3\s+readiness\s+evidence\s+contracts/,
+      pattern: /`validate-docs` checks[\s\S]*project\s+positioning\s+contracts,[\s\S]*exact-tag\s+release\s+promotion\s+boundaries,[\s\S]*maintainer\s+diagnostic\s+and\s+security\s+setting\s+semantics,[\s\S]*public\s+API\s+compatibility\s+contracts,[\s\S]*marketplace\s+trust,[\s\S]*author\s+workflow,[\s\S]*compatibility,[\s\S]*security\s+review\s+contracts,[\s\S]*contribution\s+and\s+issue\s+intake\s+contracts,[\s\S]*docs\s+index\s+navigation\s+contracts,[\s\S]*consumer\s+profile\s+privacy\s+contracts,[\s\S]*prompt\s+template\s+privacy\s+contracts,[\s\S]*local\s+data\s+handling\s+privacy\s+contracts,[\s\S]*workflow\s+evidence\s+contracts,[\s\S]*showcase\s+public-safety\s+contracts,[\s\S]*growth\s+metrics\s+privacy\s+contracts,[\s\S]*assets\s+capture\s+privacy\s+contracts,[\s\S]*deferred\s+portal\s+IA\s+contracts,[\s\S]*multi-plugin\s+readiness\s+evidence\s+contracts/,
       label: 'optimization plan validate-docs coverage narrative',
     },
     {
@@ -1672,27 +1670,27 @@ function validateDeferredPortalIaContracts() {
   }
 }
 
-function validateV3ReadinessEvidenceContracts() {
+function validateMultiPluginReadinessEvidenceContracts() {
   const checks = [
     {
-      file: 'docs/marketplace/v3-readiness-evidence.md',
-      pattern: /current decision is to keep `v3\.0\.0` deferred[\s\S]*must not move `nova-plugin\/`, introduce a public portal\s+frontend, or change plugin installation paths/,
-      label: 'v3 readiness deferred decision boundary',
+      file: 'docs/marketplace/multi-plugin-readiness.md',
+      pattern: /product lane in\s+`governance\/product-lanes\.json`[\s\S]*independent of plugin version numbers/,
+      label: 'multi-plugin readiness version-independent decision boundary',
     },
     {
-      file: 'docs/marketplace/v3-readiness-evidence.md',
-      pattern: /Registry fixtures may prove generator behavior,[\s\S]*not production\s+plugin directories,[\s\S]*`v3\.0\.0` activation evidence,[\s\S]*reason to move install\s+paths/,
-      label: 'v3 readiness fixture-only evidence boundary',
+      file: 'docs/marketplace/multi-plugin-readiness.md',
+      pattern: /Registry fixtures prove that generators can process\s+multiple entries[\s\S]*do not prove that production directories,[\s\S]*ownership,[\s\S]*release cadence,[\s\S]*installation paths should change/,
+      label: 'multi-plugin readiness fixture-only evidence boundary',
     },
     {
-      file: 'docs/marketplace/v3-readiness-evidence.md',
-      pattern: /One production plugin: `nova-plugin`[\s\S]*Multi-entry behavior is covered by fixtures only[\s\S]*Do not migrate real directories/,
-      label: 'v3 readiness one production plugin boundary',
+      file: 'docs/marketplace/multi-plugin-readiness.md',
+      pattern: /production layout remains single-plugin[\s\S]*`nova-plugin\/` is the only public\s+production plugin path/,
+      label: 'multi-plugin readiness one production plugin boundary',
     },
     {
-      file: 'docs/marketplace/v3-readiness-evidence.md',
-      pattern: /## Not Allowed Without Activation[\s\S]*Moving, renaming, or copying `nova-plugin\/`[\s\S]*Introducing `plugins\/\*` as the production install path[\s\S]*public portal dependency[\s\S]*Treating fixture-only multi-plugin support as evidence that production\s+migration is necessary/,
-      label: 'v3 readiness activation non-goals',
+      file: 'docs/marketplace/multi-plugin-readiness.md',
+      pattern: /## Not Allowed Without Activation[\s\S]*Moving, renaming, or copying the production `nova-plugin\/` path[\s\S]*Treating `plugins\/\*` as a production install location[\s\S]*Claiming fixture-only behavior as a mature multi-plugin ecosystem[\s\S]*Coupling this product decision to a future version number/,
+      label: 'multi-plugin readiness activation non-goals',
     },
   ];
 
@@ -1819,7 +1817,7 @@ validateShowcaseContracts();
 validateGrowthMetricsContracts();
 validateAssetsContracts();
 validateDeferredPortalIaContracts();
-validateV3ReadinessEvidenceContracts();
+validateMultiPluginReadinessEvidenceContracts();
 validateReviewLevelLiteContract();
 validateNamespacedCommandInvocations();
 validateToolVocabularyProse();

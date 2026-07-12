@@ -17,7 +17,11 @@ test('release archive and CycloneDX evidence are deterministic', async (t) => {
   const sbom = JSON.parse(await readFile(left.sbomPath, 'utf8'));
   assert.equal(sbom.bomFormat, 'CycloneDX');
   assert.equal(sbom.metadata.component.hashes[0].content, left.archiveSha256);
+  assert.equal(sbom.components.length, 3);
+  assert.equal(sbom.dependencies[0].dependsOn.length, 3);
   const provenance = JSON.parse(await readFile(left.provenancePath, 'utf8'));
-  assert.equal(provenance.treeManifest.version, 2);
-  assert.equal(provenance.archive.sha256, left.archiveSha256);
+  assert.equal(provenance._type, 'https://in-toto.io/Statement/v1');
+  assert.equal(provenance.predicateType, 'https://slsa.dev/provenance/v1');
+  assert.equal(provenance.subject[0].digest.sha256, left.archiveSha256);
+  assert.equal(provenance.predicate.runDetails.byproducts[0].name, 'tree-manifest-v2');
 });

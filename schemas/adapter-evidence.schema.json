@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/adapter-evidence.schema.json",
+  "title": "Generated assistant compatibility evidence registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "generatedFrom", "sourceDigests", "knownGoodLanes", "currentClaims", "historicalEvidence"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "generatedFrom": { "type": "string" },
+    "sourceDigests": { "type": "object" },
+    "knownGoodLanes": { "type": "array", "minItems": 2, "items": { "type": "object" } },
+    "currentClaims": { "type": "array", "minItems": 3, "items": { "type": "object" } },
+    "historicalEvidence": { "type": "array", "items": { "type": "object" } }
+  }
+}
