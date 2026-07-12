@@ -153,6 +153,41 @@ test('promotion fails closed for missing, replaced, or skipped required evidence
   }), /failed or skipped gates/);
 });
 
+test('promotion accepts only the bounded Claude compatibility skip with exact-tag live install proof', async (t) => {
+  const fixture = await candidateFixture(t);
+  const timingPath = fixture.evidence.find((path) => path.endsWith('validation-timings.json'));
+  const boundedSkip = {
+    failed: 0,
+    skipped: 1,
+    gates: [
+      { id: 'docs.validate', status: 'passed' },
+      { id: 'claude.manifest.static', status: 'skipped', reasonCode: 'LOCAL_RUNTIME_UNAVAILABLE' },
+    ],
+  };
+  await writeFile(timingPath, JSON.stringify(boundedSkip));
+  const timing = fixture.manifest.evidence.find((entry) => entry.kind === 'validation-timings');
+  timing.sha256 = sha256File(timingPath);
+  timing.bytes = (await readFile(timingPath)).length;
+  assert.doesNotThrow(() => verifyReleasePromotion({
+    root, stableTag: 'v3.2.0', commit, manifest: fixture.manifest, artifactDir: fixture.artifactDir,
+  }));
+
+  for (const mutate of [
+    (data) => { data.gates[1].id = 'another.gate'; },
+    (data) => { data.gates[1].reasonCode = 'UNKNOWN'; },
+    (data) => { data.skipped = 2; },
+  ]) {
+    const data = structuredClone(boundedSkip);
+    mutate(data);
+    await writeFile(timingPath, JSON.stringify(data));
+    timing.sha256 = sha256File(timingPath);
+    timing.bytes = (await readFile(timingPath)).length;
+    assert.throws(() => verifyReleasePromotion({
+      root, stableTag: 'v3.2.0', commit, manifest: fixture.manifest, artifactDir: fixture.artifactDir,
+    }), /failed or skipped gates/);
+  }
+});
+
 test('candidate and promotion CLI parsers preserve explicit evidence paths', async (t) => {
   const fixture = await candidateFixture(t);
   const out = join(fixture.temp, 'candidate.json');
