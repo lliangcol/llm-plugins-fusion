@@ -7,7 +7,7 @@ Do not edit this block by hand. It is synchronized by
 `node scripts/sync-doc-facts.mjs --write` from repository domain sources and
 `governance/product-lanes.json`.
 
-- Plugin: `nova-plugin@3.1.0`; production plugins: 1; public path: `nova-plugin/`
+- Plugin: `nova-plugin@3.2.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
 - Workflow contract: schema v4, namespace `nova-plugin`, 21 workflows
@@ -246,7 +246,7 @@ scan 和 release gate。
 
 ## 扩展计划
 
-以下事项从 `2.1.0` 起一直是未排期候选，在当前 `3.1.0` 中仍未发布，
+以下事项从 `2.1.0` 起一直是未排期候选，在当前 `3.2.0` 中仍未发布，
 也不作为下一版本承诺。
 
 | 状态 | 计划 |

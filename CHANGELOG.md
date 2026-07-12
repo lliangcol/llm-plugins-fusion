@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-07-12
+
 ### Added
 - Added a 21/21 direct-command behavior-contract gate, Windows-safe file URL validation, a non-Nova three-workflow compiler fixture, fail-closed schema keyword checks, deep `uniqueItems` validation, and stale audit-lock recovery.
 - Added a scoped PreToolUse Bash guard that blocks common redirection, shell composition, filesystem mutators, inline interpreters, and mutating Git/package subcommands before the normal permission prompt.
@@ -708,7 +710,11 @@ must not replace the exact release tag as stable evidence.
 - MIT 开源协议
 - 中英双语 README 文档
 
-[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.4.1...HEAD
+[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.2.0...HEAD
+[3.2.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.1.0...v3.2.0
+[3.1.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.0.1...v3.1.0
+[3.0.1]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.0.0...v3.0.1
+[3.0.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.4.1...v3.0.0
 [2.4.1]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.4.0...v2.4.1
 [2.4.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.4.0-rc.1...v2.4.0
 [2.4.0-rc.1]: https://github.com/lliangcol/llm-plugins-fusion/compare/v2.3.0...v2.4.0-rc.1
