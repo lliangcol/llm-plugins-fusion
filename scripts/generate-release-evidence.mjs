@@ -232,6 +232,11 @@ export function buildReleaseEvidence({
       ![0, 1].includes(route.processExitCode)
       || (route.processExitCode === 0 && route.processCompletion !== 'zero-exit')
       || (route.processExitCode === 1 && route.processCompletion !== 'claude-json-success-completed')
+      || typeof route.processStderrPresent !== 'boolean'
+      || !Number.isInteger(route.processStderrBytes)
+      || route.processStderrBytes < 0
+      || route.processStderrPresent !== (route.processStderrBytes > 0)
+      || !sha256Pattern.test(route.processStderrSha256 ?? '')
     ) {
       throw new Error('route smoke does not prove a recognized completed process state');
     }
@@ -349,6 +354,9 @@ export function buildReleaseEvidence({
       outputStructureValid: route.outputStructureValid,
       processExitCode: route.processExitCode,
       processCompletion: route.processCompletion,
+      processStderrPresent: route.processStderrPresent,
+      processStderrBytes: route.processStderrBytes,
+      processStderrSha256: route.processStderrSha256,
       projectChanged: route.projectChanged,
       gitStatus: route.gitStatus,
       commands: route.commands,

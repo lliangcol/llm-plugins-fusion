@@ -270,9 +270,12 @@ test('OAuth route completion accepts only zero-exit or explicit Claude success J
   }).result, result);
   for (const invocation of [
     { code: 2, timedOut: false, signal: null, stderr: '', stdout: JSON.stringify({ subtype: 'success', terminal_reason: 'completed', result }) },
-    { code: 1, timedOut: false, signal: null, stderr: 'error', stdout: JSON.stringify({ subtype: 'success', terminal_reason: 'completed', result }) },
     { code: 1, timedOut: false, signal: null, stderr: '', stdout: JSON.stringify({ subtype: 'error_max_turns', terminal_reason: 'max_turns', result }) },
     { code: 1, timedOut: false, signal: null, stderr: '', stdout: JSON.stringify({ subtype: 'success', terminal_reason: 'completed', result, is_error: true }) },
     { code: 1, timedOut: false, signal: null, stderr: '', stdout: JSON.stringify({ subtype: 'success', terminal_reason: 'completed', result, permission_denials: [{}] }) },
   ]) assert.equal(successfulRouteResponse(invocation), null);
+  assert.equal(successfulRouteResponse({
+    code: 1, timedOut: false, signal: null, stderr: 'warning',
+    stdout: JSON.stringify({ subtype: 'success', terminal_reason: 'completed', result }),
+  }).result, result);
 });

@@ -125,6 +125,11 @@ function verifyEvidenceRecord(root, bundleRoot, record, candidate) {
       || ![0, 1].includes(data.processExitCode)
       || (data.processExitCode === 0 && data.processCompletion !== 'zero-exit')
       || (data.processExitCode === 1 && data.processCompletion !== 'claude-json-success-completed')
+      || typeof data.processStderrPresent !== 'boolean'
+      || !Number.isInteger(data.processStderrBytes)
+      || data.processStderrBytes < 0
+      || data.processStderrPresent !== (data.processStderrBytes > 0)
+      || !/^[a-f0-9]{64}$/u.test(data.processStderrSha256 ?? '')
       || data.projectChanged !== false
       || data.gitStatus !== ''
       || data.authenticationMode !== 'claude-code-oauth-token'

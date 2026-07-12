@@ -270,7 +270,6 @@ export function routeFailureDetails(invocation) {
 
 export function successfulRouteResponse(invocation) {
   if (invocation.timedOut || invocation.signal || ![0, 1].includes(invocation.code)) return null;
-  if (invocation.stderr?.trim()) return null;
   let response;
   try {
     response = JSON.parse(invocation.stdout ?? '');
@@ -362,6 +361,9 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       maxTurns: routeMaxTurns,
       processExitCode: invocation.code,
       processCompletion: invocation.code === 0 ? 'zero-exit' : 'claude-json-success-completed',
+      processStderrPresent: Boolean(invocation.stderr?.length),
+      processStderrBytes: Buffer.byteLength(invocation.stderr ?? '', 'utf8'),
+      processStderrSha256: sha256(invocation.stderr ?? ''),
       outputStructureValid: true,
       commands: validation.commandMatches,
       skills: validation.skills,

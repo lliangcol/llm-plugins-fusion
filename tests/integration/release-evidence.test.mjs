@@ -67,6 +67,9 @@ function fixtureInput() {
       maxTurns: routeMaxTurns,
       processExitCode: 0,
       processCompletion: 'zero-exit',
+      processStderrPresent: false,
+      processStderrBytes: 0,
+      processStderrSha256: createHash('sha256').update('').digest('hex'),
       outputStructureValid: true,
       projectChanged: false,
       gitStatus: '',
@@ -130,6 +133,9 @@ test('release evidence binds an explicit Claude success completion after exit 1'
   const input = fixtureInput();
   input.route.processExitCode = 1;
   input.route.processCompletion = 'claude-json-success-completed';
+  input.route.processStderrPresent = true;
+  input.route.processStderrBytes = 7;
+  input.route.processStderrSha256 = createHash('sha256').update('warning').digest('hex');
   const evidence = buildReleaseEvidence(input);
   assert.equal(evidence.route.processExitCode, 1);
   assert.equal(evidence.route.processCompletion, 'claude-json-success-completed');
@@ -142,7 +148,7 @@ test('release evidence rejects ambiguous route authentication evidence', () => {
       coverageSummary,
       coverageMetadata: { exitCode: 0, node: 'v20', thresholds: {} },
       timings: { failed: 0, skipped: 0, timings: [] },
-      route: { processExitCode: 0, processCompletion: 'zero-exit', projectChanged: false, gitStatus: '', authenticationMode: 'api-key', configurationIsolation: 'temporary-home' },
+      route: { processExitCode: 0, processCompletion: 'zero-exit', processStderrPresent: false, processStderrBytes: 0, processStderrSha256: createHash('sha256').update('').digest('hex'), projectChanged: false, gitStatus: '', authenticationMode: 'api-key', configurationIsolation: 'temporary-home' },
       checksums: 'abc  file\n',
     }),
     /does not prove Claude Code OAuth authentication/,
@@ -164,6 +170,9 @@ test('release evidence rejects skipped gates and inconsistent live inputs', () =
     (input) => { input.route.processExitCode = 2; },
     (input) => { input.route.processCompletion = 'wrong'; },
     (input) => { input.route.processExitCode = 1; input.route.processCompletion = 'zero-exit'; },
+    (input) => { input.route.processStderrPresent = true; },
+    (input) => { input.route.processStderrBytes = -1; },
+    (input) => { input.route.processStderrSha256 = ''; },
     (input) => { input.route.outputStructureValid = false; },
     (input) => { input.route.permissionMode = 'default'; },
     (input) => { input.route.allowedTools = ['Skill']; },
