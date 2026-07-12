@@ -1,5 +1,25 @@
 # Hooks 设计文档
 
+<!-- generated:project-state:start -->
+## Current Machine-Derived Project Facts
+
+Do not edit this block by hand. It is synchronized by
+`node scripts/sync-doc-facts.mjs --write` from repository domain sources and
+`governance/product-lanes.json`.
+
+- Plugin: `nova-plugin@3.0.1`; production plugins: 1; public path: `nova-plugin/`
+- Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
+- Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
+- Workflow contract: schema v3, namespace `nova-plugin`, 21 workflows
+- Package scripts: `check` is present; `build` is absent
+- Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
+- Planned product lanes: None
+- Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
+- Release model: `candidate-and-promotion`
+- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`
+- Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
+<!-- generated:project-state:end -->
+
 ## 概述
 
 本文档描述 nova-plugin 的 hook 设计，基于 Claude Code Hooks 官方规范中的
@@ -90,7 +110,7 @@ PostToolUse 额外包含：
 | Hook 类型 | `type: "command"` |
 | Hook 字段 | `type`, `command`, `timeout`, `statusMessage`, `async` |
 | Shell 调用 | `.sh` 脚本必须通过 `bash "${CLAUDE_PLUGIN_ROOT}/..."` 调用 |
-| Active runtime | Node.js 22+ `.mjs` files own hook business logic; PreToolUse keeps a Bash fail-closed launcher, while post-use audit events use direct Node exec form. |
+| Active runtime | Node.js 22+ `.mjs` files own hook business logic; PreToolUse keeps a Bash fail-closed launcher, while post-use verification and audit events use direct Node exec form. |
 
 `Stop`、`Notification`、非 command hook 类型、额外字段或其它 Claude Code
 未来 schema 字段必须先补 fixture、脚本行为和文档，再放开校验。不要为了兼容
@@ -104,9 +124,11 @@ PostToolUse 额外包含：
 |--------|------|------|
 | 敏感信息检测 | 内容含 `password|secret|token|api_key`（硬编码模式）| exit 2 阻断 |
 | payload/runtime 校验 | Node 缺失、payload 非法或 Edit 无法可靠重构 | exit 2 阻断 |
-| 目标类型检查 | 已存在的 Write/Edit 目标是符号链接或非普通文件 | exit 2 阻断 |
+| 路径封闭 | 目标不在 project/显式 artifact root、父路径经 symlink/junction 跳转 | exit 2 阻断 |
+| 目标类型检查 | 已存在的 Write/Edit 目标是符号链接、非普通文件，或受保护目标有多个 hard links | exit 2 阻断 |
+| 内容大小 | Write 或重构后的 Edit 内容超过 10 MiB | exit 2 阻断 |
 | NotebookEdit | 无法从 payload 可靠重构完整 notebook proposed content | exit 2 阻断 |
-| hooks.json 结构校验 | 对 Write 内容或 Edit proposed content 验证 JSON/schema | exit 2 阻断 |
+| hooks.json 结构校验 | 仅对 project/plugin 的受保护 hooks 配置验证 JSON/schema；无关的 `config/hooks.json` 不套用 nova schema | exit 2 阻断 |
 
 **Active launcher:** `nova-plugin/hooks/scripts/pre-write-check.sh`
 
@@ -117,7 +139,16 @@ PostToolUse 额外包含：
 `NOVA_WRITE_GUARD_DISABLED=1` 会打印警告并返回“无决定”，仅用于显式临时
 bypass，不得作为 release evidence。
 
-### Hook 2：PostToolUse — 审计日志
+### Hook 2：PostToolUse — 写入后复验
+
+**目标：** 对已经完成的 Write / Edit 重新执行 workspace containment、路径组件、
+目标类型、hard-link 和受保护 `hooks.json` 内容检查。失败时以 exit 2 和
+high-severity 信息停止后续 workflow。PostToolUse 发生在实际操作之后，因此该
+复验不能回滚写入；它用于发现 preflight 与实际写入之间的路径替换或结果漂移。
+
+**Active implementation:** `nova-plugin/hooks/scripts/post-write-verify.mjs`
+
+### Hook 3：PostToolUse — 审计日志
 
 **目标：** 记录所有 Write / Edit / NotebookEdit / Bash 操作的审计日志，格式：
 
@@ -126,11 +157,12 @@ bypass，不得作为 release evidence。
 [2026-03-18T07:00:01Z] Bash  node scripts/validate-schemas.mjs SUCCESS
 ```
 
-日志写入：`${CLAUDE_PLUGIN_DATA}/audit.log`（本地，不提交 git）。日志位置、
-权限、轮转、禁用方式与 best-effort redaction 边界见
+事件先原子写入 `${CLAUDE_PLUGIN_DATA}/audit-spool/`，再由独立 compactor 在
+跨进程目录锁下汇总到 `audit.log`（本地，不提交 git）。日志位置、权限、轮转、
+health 事件、路径哈希与 best-effort redaction 边界见
 [`docs/privacy/data-handling.md`](../../../docs/privacy/data-handling.md)。
 
-**Active launcher:** `nova-plugin/hooks/scripts/post-audit-log.sh`
+**Active launcher:** exec-form `node`
 
 **Active implementation:** `nova-plugin/hooks/scripts/post-audit-log.mjs`
 
@@ -144,7 +176,9 @@ nova-plugin/hooks/
 └── scripts/
     ├── pre-write-check.sh        ← fail-closed Bash 启动器
     ├── pre-write-check.mjs       ← active Node PreToolUse 实现
-    ├── post-audit-log.sh         ← non-blocking Bash 启动器
+    ├── post-write-verify.mjs     ← synchronous actual-path/content verifier
+    ├── audit-compactor.mjs       ← lock-protected spool compactor and rotation owner
+    ├── post-audit-log.sh         ← compatibility and syntax-test helper; not active in hooks.json
     └── post-audit-log.mjs        ← active Node PostToolUse 实现
 ```
 
@@ -179,13 +213,15 @@ audit logger 只报告 warning，因为操作已经完成。
 | `${CLAUDE_PLUGIN_ROOT}` | 插件目录（`nova-plugin/`） |
 | `${CLAUDE_PLUGIN_DATA}` | 插件数据目录（持久存储，不在项目内） |
 | `NOVA_WRITE_GUARD_DISABLED=1` | 显式临时禁用 write guard；不属于可接受发布证据 |
+| `NOVA_EXPLICIT_ARTIFACT_ROOT` / `NOVA_EXPLICIT_ARTIFACT_ROOTS` | 显式批准的 project 外 artifact root；多值形式使用平台 path delimiter |
 | `NOVA_AUDIT_DISABLED=1` | 禁用本地 audit log |
 
 ## 安全边界
 
 PreToolUse matcher 不包含 Bash，因此 `cat > file`、`sed -i` 或脚本生成文件
-不会经过 proposed-content guard。该 hook 是 guardrail，不是 sandbox；Bash
-写入仍依赖 Claude 权限、sandbox、CI secret scan 和 release gate。
+不会经过 proposed-content guard。PreToolUse 与 PostToolUse 之间仍存在 TOCTOU
+时间窗，且 PostToolUse 不能撤销已经完成的操作。该 hook 是 guardrail，不是
+sandbox；Bash 写入仍依赖 Claude 权限、sandbox、CI secret scan 和 release gate。
 
 ---
 

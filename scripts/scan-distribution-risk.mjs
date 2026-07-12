@@ -225,7 +225,7 @@ function shouldSkipDir(rootDir, absPath) {
   return !hasTrackedFilesUnder(rootDir, absPath);
 }
 
-function isTextCandidate(absPath, fileName, size) {
+function isTextCandidate(absPath, fileName, size, { strict = false } = {}) {
   const ext = extname(fileName).toLowerCase();
   if (textExtensions.has(ext) || fileName.startsWith('.env')) return true;
   if (binaryExtensions.has(ext)) return false;
@@ -236,7 +236,8 @@ function isTextCandidate(absPath, fileName, size) {
     fd = openSync(absPath, 'r');
     const bytesRead = readSync(fd, sample, 0, sample.length, 0);
     return !sample.subarray(0, bytesRead).includes(0);
-  } catch {
+  } catch (error) {
+    if (strict) throw error;
     return false;
   } finally {
     if (fd !== undefined) closeSync(fd);
@@ -356,6 +357,7 @@ export function scanDistributionRisk(options = {}) {
   const mode = options.mode ?? 'workspace';
   if (!['workspace', 'release'].includes(mode)) throw new Error(`unsupported scan mode: ${mode}`);
   const allowlist = loadAllowlist(rootDir, options.allowlistPath ?? DEFAULT_ALLOWLIST_PATH);
+  const readTextFile = options.readTextFile ?? readFileSync;
   const errors = [];
   const warnings = [];
 
@@ -386,7 +388,7 @@ export function scanDistributionRisk(options = {}) {
       }
       if (!lstat.isFile()) continue;
       const stats = statSync(file);
-      if (!isTextCandidate(file, basename(file), stats.size)) continue;
+      if (!isTextCandidate(file, basename(file), stats.size, { strict: mode === 'release' })) continue;
       if (stats.size > MAX_TEXT_FILE_BYTES) {
         recordPathFinding({
           rootDir,
@@ -397,8 +399,17 @@ export function scanDistributionRisk(options = {}) {
         });
         continue;
       }
-      src = readFileSync(file, 'utf8');
+      src = readTextFile(file, 'utf8');
     } catch {
+      const finding = {
+        path: rel(rootDir, file),
+        line: 1,
+        label: `${mode} file could not be read during distribution scan`,
+        redacted: '<not scanned>',
+        scope: mode === 'release' ? 'active' : 'workspace',
+      };
+      if (mode === 'release') errors.push(finding);
+      else warnings.push(finding);
       continue;
     }
 

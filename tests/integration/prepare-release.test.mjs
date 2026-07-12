@@ -39,6 +39,14 @@ test('prepareRelease treats build-only versions as stable', async (t) => {
   assert.equal(prepareRelease({ root, releaseTag: 'v2.4.0+build-7' }).prerelease, false);
 });
 
+test('prepareRelease accepts an RC tag whose base equals the stable plugin version', async (t) => {
+  const root = await releaseRoot(t, '3.0.1');
+  const result = prepareRelease({ root, releaseTag: 'v3.0.1-rc.2', candidate: true });
+  assert.equal(result.version, '3.0.1');
+  assert.equal(result.prerelease, true);
+  assert.equal(await readFile(result.notesFile, 'utf8'), '- release notes\n');
+});
+
 test('2.4.1 release notes include every post-tag release blocker fix', async () => {
   const changelog = await readFile(resolve(repositoryRoot, 'CHANGELOG.md'), 'utf8');
   const notes = extractReleaseNotes(changelog, '2.4.1');

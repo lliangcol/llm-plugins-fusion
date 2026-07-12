@@ -1,10 +1,23 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import {
+  criticalCoverageFailures,
   coverageThresholdFailures,
+  parseCoverageFileRows,
   parseCoverageSummary,
   resolveCoverageThresholds,
 } from '../../scripts/lib/coverage-thresholds.mjs';
+
+test('coverage parser and critical floors preserve per-module evidence', () => {
+  const rows = parseCoverageFileRows('ℹ   safe-workspace-path.mjs | 93.01 | 78.43 | 100.00 | 26-27\n');
+  assert.deepEqual(rows.get('safe-workspace-path.mjs'), { lines: 93.01, branches: 78.43, functions: 100 });
+  assert.deepEqual(criticalCoverageFailures(rows, { 'safe-workspace-path.mjs': { lines: 90, branches: 75, functions: 100 } }), []);
+  assert.deepEqual(criticalCoverageFailures(rows, { 'safe-workspace-path.mjs': { lines: 95, branches: 80, functions: 100 }, 'missing.mjs': { lines: 1, branches: 1, functions: 1 } }), [
+    'safe-workspace-path.mjs lines coverage 93.01% is below required 95%',
+    'safe-workspace-path.mjs branches coverage 78.43% is below required 80%',
+    'missing.mjs coverage row is missing',
+  ]);
+});
 
 test('coverage summary parsing supports Node test report prefixes', () => {
   const output = [

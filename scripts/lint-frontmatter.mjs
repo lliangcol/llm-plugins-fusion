@@ -251,7 +251,9 @@ function lintCommands() {
     if (!workflow) recordError(rel, 'missing canonical workflow spec entry');
     else {
       if (!src.includes('Execute this workflow directly from `$ARGUMENTS`')) recordError(rel, 'missing direct execution adapter contract');
-      if (!src.includes(`\${CLAUDE_PLUGIN_ROOT}/${workflow.contractPath}`)) recordError(rel, `missing supporting contract ${workflow.contractPath}`);
+      const runtimeContract = `runtime/contracts/${workflow.id}.json`;
+      if (!src.includes(`\${CLAUDE_PLUGIN_ROOT}/${runtimeContract}`)) recordError(rel, `missing compiled runtime contract ${runtimeContract}`);
+      if (!existsSync(resolve(root, 'nova-plugin', runtimeContract))) recordError(rel, `compiled runtime contract file missing: ${runtimeContract}`);
       if (!src.includes(`Do not invoke the compatibility skill \`${workflow.legacyAlias}\``)) recordError(rel, 'missing no-delegation compatibility boundary');
     }
 

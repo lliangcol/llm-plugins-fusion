@@ -35,6 +35,7 @@ knowledge-base content in the consumer-owned workspace.
 | Maintain repository checks and release gates | [maintainers/quickstart.md](maintainers/quickstart.md) |
 | Understand public compatibility boundaries | [compatibility/public-api.md](compatibility/public-api.md) |
 | Understand assistant L1-L4 evidence claims | [compatibility/assistant-levels.md](compatibility/assistant-levels.md) |
+| Inspect reproducible workflow quality evidence | [quality/benchmark.md](quality/benchmark.md) |
 | Choose a nova command or inspect plugin docs | [../nova-plugin/docs/README.md](../nova-plugin/docs/README.md) |
 | Understand core agents and capability pack routing | [agents/ROUTING.md](agents/ROUTING.md) |
 | Reuse public-safe workflow prompts | [prompts/README.md](prompts/README.md) |
@@ -80,11 +81,12 @@ docs/
 | [assets/](assets/) | Public-safe social preview and demo capture guidance. |
 | [consumers/](consumers/) | Public-safe consumer profile contracts, redacted project templates, and cross-tool setup notes. |
 | [compatibility/](compatibility/) | Public API and compatibility boundaries. |
+| [quality/](quality/) | Generated static, simulation, mutation, and exact-version live benchmark evidence. |
 | [examples/](examples/) | Redacted Java backend/frontend examples and workflow evaluation templates. |
 | [generated/](generated/) | Generated public surface inventory for commands, skills, agents, packs, and marketplace outputs. |
 | [growth/](growth/) | Growth metrics, traffic collection cadence, and manual channel record format. |
 | [maintainers/](maintainers/) | Maintainer checks, troubleshooting, and GitHub security settings. |
-| [marketplace/](marketplace/) | Marketplace catalog output, registry author workflow, compatibility, trust, security review, and v3 readiness evidence. |
+| [marketplace/](marketplace/) | Marketplace catalog output, registry author workflow, compatibility, trust, security review, and multi-plugin readiness evidence. |
 | [privacy/](privacy/) | Local audit log behavior, redaction boundary, and public data handling rules. |
 | [prompts/](prompts/) | Copyable prompt templates for Codex, Claude Code, delivery docs, HTML artifacts, and workbench cleanup. |
 | [releases/](releases/) | Release evidence templates, validation runbooks, and release hygiene rules. |
@@ -175,7 +177,7 @@ docs/
 | [marketplace/trust-policy.md](marketplace/trust-policy.md) | Trust, risk, deprecation, freshness, maintainer, and review metadata policy. |
 | [marketplace/security-review-route.md](marketplace/security-review-route.md) | Security-sensitive marketplace change review route. |
 | [marketplace/portal-information-architecture.md](marketplace/portal-information-architecture.md) | Deferred public portal information architecture. |
-| [marketplace/v3-readiness-evidence.md](marketplace/v3-readiness-evidence.md) | Evidence ledger for whether v3 multi-plugin or portal work should start. |
+| [marketplace/multi-plugin-readiness.md](marketplace/multi-plugin-readiness.md) | Version-independent evidence ledger for production multi-plugin activation. |
 
 ### Privacy
 

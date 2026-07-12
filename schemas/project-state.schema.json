@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/project-state.schema.json",
+  "title": "Generated project state",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "generatedFrom", "plugin", "runtime", "inventory", "workflow", "repositoryScripts", "productLanes", "hooks", "release", "sourceDigests"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "generatedFrom": { "const": "repository-domain-sources" },
+    "plugin": { "type": "object" },
+    "runtime": { "type": "object" },
+    "inventory": { "type": "object" },
+    "workflow": { "type": "object" },
+    "repositoryScripts": { "type": "object" },
+    "productLanes": { "type": "object" },
+    "hooks": { "type": "object" },
+    "release": { "type": "object" },
+    "sourceDigests": { "type": "object" }
+  }
+}

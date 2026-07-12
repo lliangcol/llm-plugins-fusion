@@ -6,8 +6,8 @@
     {
       "id": "backend-plan",
       "direct": {
-        "bytes": 1039,
-        "estimatedTokens": 260,
+        "bytes": 1140,
+        "estimatedTokens": 285,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -19,8 +19,8 @@
     {
       "id": "codex-review-fix",
       "direct": {
-        "bytes": 1049,
-        "estimatedTokens": 263,
+        "bytes": 1150,
+        "estimatedTokens": 288,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -32,8 +32,8 @@
     {
       "id": "codex-review-only",
       "direct": {
-        "bytes": 1026,
-        "estimatedTokens": 257,
+        "bytes": 1127,
+        "estimatedTokens": 282,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -45,8 +45,8 @@
     {
       "id": "codex-verify-only",
       "direct": {
-        "bytes": 1027,
-        "estimatedTokens": 257,
+        "bytes": 1128,
+        "estimatedTokens": 282,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -58,8 +58,8 @@
     {
       "id": "explore",
       "direct": {
-        "bytes": 998,
-        "estimatedTokens": 250,
+        "bytes": 1099,
+        "estimatedTokens": 275,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -71,8 +71,8 @@
     {
       "id": "explore-lite",
       "direct": {
-        "bytes": 1022,
-        "estimatedTokens": 256,
+        "bytes": 1123,
+        "estimatedTokens": 281,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -84,8 +84,8 @@
     {
       "id": "explore-review",
       "direct": {
-        "bytes": 1033,
-        "estimatedTokens": 259,
+        "bytes": 1134,
+        "estimatedTokens": 284,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -97,8 +97,8 @@
     {
       "id": "finalize-lite",
       "direct": {
-        "bytes": 1013,
-        "estimatedTokens": 254,
+        "bytes": 1114,
+        "estimatedTokens": 279,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -110,8 +110,8 @@
     {
       "id": "finalize-work",
       "direct": {
-        "bytes": 1021,
-        "estimatedTokens": 256,
+        "bytes": 1122,
+        "estimatedTokens": 281,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -123,8 +123,8 @@
     {
       "id": "implement-lite",
       "direct": {
-        "bytes": 1032,
-        "estimatedTokens": 258,
+        "bytes": 1133,
+        "estimatedTokens": 284,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -136,8 +136,8 @@
     {
       "id": "implement-plan",
       "direct": {
-        "bytes": 1050,
-        "estimatedTokens": 263,
+        "bytes": 1151,
+        "estimatedTokens": 288,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -149,8 +149,8 @@
     {
       "id": "implement-standard",
       "direct": {
-        "bytes": 1035,
-        "estimatedTokens": 259,
+        "bytes": 1136,
+        "estimatedTokens": 284,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -162,8 +162,8 @@
     {
       "id": "plan-lite",
       "direct": {
-        "bytes": 971,
-        "estimatedTokens": 243,
+        "bytes": 1072,
+        "estimatedTokens": 268,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -175,8 +175,8 @@
     {
       "id": "plan-review",
       "direct": {
-        "bytes": 1014,
-        "estimatedTokens": 254,
+        "bytes": 1115,
+        "estimatedTokens": 279,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -188,8 +188,8 @@
     {
       "id": "produce-plan",
       "direct": {
-        "bytes": 1003,
-        "estimatedTokens": 251,
+        "bytes": 1104,
+        "estimatedTokens": 276,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -201,8 +201,8 @@
     {
       "id": "review",
       "direct": {
-        "bytes": 993,
-        "estimatedTokens": 249,
+        "bytes": 1094,
+        "estimatedTokens": 274,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -214,8 +214,8 @@
     {
       "id": "review-lite",
       "direct": {
-        "bytes": 992,
-        "estimatedTokens": 248,
+        "bytes": 1093,
+        "estimatedTokens": 274,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -227,8 +227,8 @@
     {
       "id": "review-only",
       "direct": {
-        "bytes": 1031,
-        "estimatedTokens": 258,
+        "bytes": 1132,
+        "estimatedTokens": 283,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -240,8 +240,8 @@
     {
       "id": "review-strict",
       "direct": {
-        "bytes": 1007,
-        "estimatedTokens": 252,
+        "bytes": 1108,
+        "estimatedTokens": 277,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -253,8 +253,8 @@
     {
       "id": "route",
       "direct": {
-        "bytes": 978,
-        "estimatedTokens": 245,
+        "bytes": 1079,
+        "estimatedTokens": 270,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {
@@ -266,8 +266,8 @@
     {
       "id": "senior-explore",
       "direct": {
-        "bytes": 1051,
-        "estimatedTokens": 263,
+        "bytes": 1152,
+        "estimatedTokens": 288,
         "delegatedSkillToolCalls": 0
       },
       "compatibilityContract": {

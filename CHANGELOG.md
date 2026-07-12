@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+- Added machine-derived project state and generated documentation facts, capability contract v3 with a v2 compatibility projection, product-instance registries, concise runtime contracts, and an assistant-neutral framework kernel.
+- Added immutable release-candidate manifests and stable promotion verification, SLSA Provenance v1 statements, non-empty CycloneDX dependency graphs, double-build reproducibility checks, and candidate/promotion workflows.
+- Added static, adapter-simulation, and exact-version live Claude/Codex evaluation layers, evidence-derived compatibility claims, public benchmark output, per-module critical coverage floors, targeted mutation testing, and fault-injection aggregation.
+- Added CODEOWNERS, labels-as-code, an architecture decision record, and private vulnerability reporting guidance.
+
+### Changed
+- Consolidated pull-request CI into Contracts, Tests, Security, Platform, Package, conditional Live Evidence, and one branch-protection Aggregate check.
+- Direct commands now load generated minimum runtime contracts instead of always loading full compatibility skills; the measured static prompt reduction is 77.5% without changing the 21 command/skill public inventory.
+- Post-use audit logging now uses atomic spool records and a lock-protected compactor; external paths are hashed and degraded health events remain observable.
+
+### Fixed
+- Closed workspace path escapes through parent symlinks/junctions, outside absolute paths, protected hard links, broad `hooks.json` matching, oversized Write payloads, and preflight/post-write drift detection.
+- Made release distribution scans fail closed on tracked-file read failures and hardened process execution for stdin early exit, absolute watchdog termination evidence, and UTF-8-safe truncation.
+- Removed stale Node/check/frontmatter/version narratives and validators that previously protected obsolete natural-language wording.
+
 ## [3.0.1] - 2026-07-12
 
 ### Fixed

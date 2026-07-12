@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "executionMode": "deterministic-adapter-simulation",
+  "cases": [
+    { "id": "missing-required-input", "assistant": "generic", "workflow": "implement-plan", "providedInputs": ["PLAN_INPUT_PATH"], "available": { "workspaceWrite": "prompt", "shell": "prompt", "network": "prompt" }, "approved": [], "expectedDecision": "blocked-missing-input" },
+    { "id": "write-approval-absent", "assistant": "codex", "workflow": "implement-plan", "providedInputs": ["PLAN_INPUT_PATH", "PLAN_APPROVED"], "available": { "workspaceWrite": "prompt", "shell": "prompt", "network": "prompt" }, "approved": [], "expectedDecision": "blocked-approval" },
+    { "id": "read-only-review", "assistant": "generic", "workflow": "review-only", "providedInputs": ["REVIEW_SCOPE"], "available": { "workspaceWrite": "unsupported", "shell": "unsupported", "network": "unsupported" }, "approved": [], "expectedDecision": "ready" },
+    { "id": "required-network-unavailable", "assistant": "codex", "workflow": "codex-review-only", "providedInputs": ["REVIEW_SCOPE"], "available": { "workspaceWrite": "denied", "shell": "prompt", "network": "unsupported", "credentials": "explicit" }, "approved": ["shell", "credentials"], "expectedDecision": "fallback-unsupported-capability" },
+    { "id": "required-credentials-unapproved", "assistant": "codex", "workflow": "codex-verify-only", "providedInputs": ["REVIEW_FILE"], "available": { "workspaceWrite": "denied", "shell": "prompt", "network": "prompt", "credentials": "explicit" }, "approved": ["shell", "network"], "expectedDecision": "blocked-approval" },
+    { "id": "external-review-approved", "assistant": "codex", "workflow": "codex-review-only", "providedInputs": ["REVIEW_SCOPE"], "available": { "workspaceWrite": "denied", "shell": "prompt", "network": "prompt", "credentials": "explicit" }, "approved": ["shell", "network", "credentials"], "expectedDecision": "ready" },
+    { "id": "unknown-assistant", "assistant": "unknown", "workflow": "route", "providedInputs": ["REQUEST"], "available": {}, "approved": [], "expectedDecision": "fallback-advisory" },
+    { "id": "unknown-workflow", "assistant": "generic", "workflow": "invented-command", "providedInputs": [], "available": {}, "approved": [], "expectedDecision": "blocked-unknown-workflow" }
+  ]
+}

@@ -284,6 +284,7 @@ async function main() {
 
   await runTaskGroup([
     nodeTask('schema.validate', 'validate schemas', 'scripts/validate-schemas.mjs'),
+    nodeTask('project.state', 'validate project state', 'scripts/validate-project-state.mjs'),
     nodeTask('registry.fixtures', 'validate registry fixtures', 'scripts/validate-registry-fixtures.mjs'),
     nodeTask(
       'claude.manifest.static',
@@ -294,6 +295,9 @@ async function main() {
     ),
     nodeTask('frontmatter.lint', 'lint frontmatter', 'scripts/lint-frontmatter.mjs'),
     nodeTask('workflow.permissions', 'validate workflow permissions', 'scripts/generate-workflow-permissions.mjs'),
+    nodeTask('workflow.contract.v3', 'validate workflow capability contract v3', 'scripts/validate-workflow-contract-v3.mjs'),
+    nodeTask('workflow.v2.compat', 'validate workflow v2 compatibility projection', 'scripts/generate-workflow-v2-compat.mjs'),
+    nodeTask('workflow.runtime.contracts', 'validate concise runtime contracts', 'scripts/generate-runtime-contracts.mjs'),
     nodeTask('workflow.surface.normalization', 'validate normalized workflow surfaces', 'scripts/normalize-workflow-surfaces.mjs'),
   ]);
 
@@ -313,10 +317,16 @@ async function main() {
     nodeTask('regression.validate', 'validate regression', 'scripts/validate-regression.mjs'),
     nodeTask('workflow.fixtures', 'validate workflow fixtures', 'scripts/validate-workflow-fixtures.mjs'),
     nodeTask('workflow.route.conformance', 'validate route conformance cases', 'scripts/validate-route-conformance.mjs'),
+    nodeTask('workflow.static.contract', 'validate static contract baseline', 'scripts/evaluate-static-contracts.mjs'),
+    nodeTask('workflow.adapter.simulation', 'validate adapter simulation baseline', 'scripts/evaluate-adapter-simulation.mjs'),
     nodeTask('workflow.surface.ab', 'validate workflow surface A/B evidence', 'scripts/evaluate-workflow-surfaces.mjs'),
     nodeTask('assistant.adapters', 'validate assistant adapter conformance', 'scripts/validate-adapter-conformance.mjs'),
     nodeTask('workflow.quality.dataset', 'validate workflow quality dataset', 'scripts/validate-workflow-quality-evals.mjs'),
     nodeTask('assistant.live.evidence', 'validate assistant live evidence', 'scripts/validate-assistant-evidence.mjs'),
+    nodeTask('assistant.compatibility.registry', 'validate compatibility evidence registry', 'scripts/generate-compatibility-evidence.mjs'),
+    nodeTask('quality.public.report', 'validate public quality report', 'scripts/generate-quality-report.mjs'),
+    nodeTask('community.governance', 'validate community governance', 'scripts/validate-community-governance.mjs'),
+    nodeTask('critical.mutation', 'validate critical mutation score', 'scripts/run-critical-mutations.mjs'),
     nodeTask('docs.validate', 'validate docs', 'scripts/validate-docs.mjs'),
   ]);
 

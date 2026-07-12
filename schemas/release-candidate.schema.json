@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/release-candidate.schema.json",
+  "title": "Release candidate manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "candidate", "sourceDigests", "artifacts", "evidence"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tag", "number", "stableVersion", "commit", "createdAt"],
+      "properties": {
+        "tag": { "type": "string" },
+        "number": { "type": "number" },
+        "stableVersion": { "type": "string" },
+        "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "sourceDigests": { "type": "object" },
+    "artifacts": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "sha256", "bytes", "kind"],
+        "properties": {
+          "name": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "bytes": { "type": "number" },
+          "kind": { "enum": ["archive", "sbom", "provenance"] }
+        }
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "sha256", "bytes"],
+        "properties": {
+          "name": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+          "bytes": { "type": "number" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "executionMode": "targeted-source-mutation",
+  "results": [
+    {
+      "id": "path-containment-always-allow",
+      "source": "nova-plugin/runtime/safe-workspace-path.mjs",
+      "killed": true,
+      "reason": "outside path accepted"
+    },
+    {
+      "id": "protected-hardlink-check-disabled",
+      "source": "nova-plugin/runtime/safe-workspace-path.mjs",
+      "killed": true,
+      "reason": "protected hard link accepted"
+    },
+    {
+      "id": "secret-detection-disabled",
+      "source": "nova-plugin/runtime/secret-rules.mjs",
+      "killed": true,
+      "reason": "secret not detected"
+    }
+  ],
+  "score": 1,
+  "targetScore": 0.8
+}

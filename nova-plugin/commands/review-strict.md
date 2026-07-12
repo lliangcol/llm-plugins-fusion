@@ -14,7 +14,7 @@ disable-model-invocation: false
 
 Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-review-strict` through the Skill tool.
 
-Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-review-strict/SKILL.md` as the supporting behavioral contract, then apply it directly.
+Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/review-strict.json` as the compiled runtime contract, then apply it directly. The full compatibility skill is a maintainer reference and is not required for ordinary direct execution.
 
 - Stage: review
 - Owner agents: reviewer
@@ -23,4 +23,4 @@ Before answering, use Read to load `${CLAUDE_PLUGIN_ROOT}/skills/nova-review-str
 - Risk: none
 - Recommended packs: security, dependency
 
-Preserve all safety, approval, output, failure, and validation requirements in the supporting contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.
+Preserve all safety, approval, output, failure, and validation requirements in the compiled contract. If a required input or safety boundary is missing, stop before side effects and report the blocker.

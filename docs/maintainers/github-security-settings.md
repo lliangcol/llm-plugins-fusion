@@ -38,36 +38,16 @@ promoting a release.
 Use the live GitHub check names if they differ, but keep the coverage equivalent:
 
 ```text
-Verify Agents
-Validate Schemas
-Validate Registry Fixtures
-Validate Generated Drift
-Validate Capability Packs
-Claude Manifest Static
-Validate Workflow Permissions
-NPM Test
-Test Coverage
-Plugin Install Dry Run
-Lint Frontmatter
-Validate Hooks
-ShellCheck
-Validate GitHub Workflows
-Validate Runtime Smoke
-Validate Surface Budget
-Validate Surface Inventory
-Scan Distribution Risk
-Secret Scan
-Validate Regression
-Validate Workflow Fixtures
-Validate Docs
-Windows Node Smoke
-PSScriptAnalyzer
-Windows Bash Smoke
-macOS Smoke
-Node 24 Compatibility
+Required / Aggregate
 Dependency Review
 CodeQL / Analyze JavaScript
 ```
+
+`Required / Aggregate` fails unless Contracts, Tests, Security, the full
+platform matrix, and Package all succeed. The conditional live-evidence lane
+may be skipped on pull requests but may not fail on `main`. This keeps branch
+protection stable while retaining structured evidence within each consolidated
+lane.
 
 The mutating `Plugin Install Smoke` workflow is not a default required check.
 It is release or promotion evidence for disposable CI runners or isolated

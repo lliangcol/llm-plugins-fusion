@@ -1,0 +1,100 @@
+name: Promote Verified Release Candidate
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  promote:
+    name: Promote Identical Candidate Artifacts
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: release
+    permissions:
+      contents: write
+      checks: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+      - name: Verify immutable stable tag and protected main ancestry
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          test "$(git cat-file -t "refs/tags/${RELEASE_TAG}")" = "tag"
+          git config gpg.format ssh
+          git config gpg.ssh.allowedSignersFile .github/release-signers
+          git verify-tag "${RELEASE_TAG}"
+          release_commit="$(git rev-list -n 1 "${RELEASE_TAG}")"
+          git fetch origin main
+          git merge-base --is-ancestor "${release_commit}" origin/main
+          test "${release_commit}" = "${GITHUB_SHA}"
+          if gh release view "${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo "Release ${RELEASE_TAG} already exists; immutable promotion refused."
+            exit 1
+          fi
+          node scripts/prepare-release.mjs
+      - name: Resolve latest matching candidate release
+        id: candidate
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          escaped_version="${version//./\\.}"
+          candidate_tag="$(gh api --paginate "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            --jq '.[] | select(.prerelease == true) | .tag_name' \
+            | grep -E "^v${escaped_version}-rc\\.[0-9]+$" \
+            | sort -V \
+            | tail -n 1)"
+          test -n "${candidate_tag}"
+          mkdir -p .metrics/promotion
+          gh release download "${candidate_tag}" --dir .metrics/promotion
+          printf 'candidate_tag=%s\n' "${candidate_tag}" >> "${GITHUB_OUTPUT}"
+      - name: Verify candidate manifest, commit, sources, and artifact digests
+        id: verify
+        run: >-
+          node scripts/verify-release-promotion.mjs
+          --stable-tag "${GITHUB_REF_NAME}"
+          --commit "${GITHUB_SHA}"
+          --manifest .metrics/promotion/release-candidate.json
+          --artifact-dir .metrics/promotion
+      - name: Resolve exactly one promoted archive and SBOM
+        id: release-files
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          archives=(.metrics/promotion/nova-plugin-*.tar.gz)
+          sboms=(.metrics/promotion/nova-plugin-*.tar.gz.cdx.json)
+          test "${#archives[@]}" -eq 1
+          test "${#sboms[@]}" -eq 1
+          printf 'archive=%s\n' "${archives[0]}" >> "${GITHUB_OUTPUT}"
+          printf 'sbom=%s\n' "${sboms[0]}" >> "${GITHUB_OUTPUT}"
+      - name: Attest promoted archive and SBOM
+        uses: actions/attest@f6bf1532d7d6793fce74eac584813a8eee607999 # v4
+        with:
+          subject-path: ${{ steps.release-files.outputs.archive }}
+          sbom-path: ${{ steps.release-files.outputs.sbom }}
+      - name: Publish stable release without rebuilding
+        uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d # v3
+        with:
+          name: "nova-plugin v${{ github.ref_name }}"
+          body_path: .metrics/release/release-notes.md
+          files: |
+            .metrics/promotion/SHA256SUMS.txt
+            .metrics/promotion/nova-plugin-*.tar.gz
+            .metrics/promotion/nova-plugin-*.tar.gz.cdx.json
+            .metrics/promotion/nova-plugin-*.tar.gz.provenance.json
+            .metrics/promotion/release-candidate.json
+          draft: false
+          prerelease: false

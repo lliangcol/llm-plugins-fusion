@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "sourceSchemaVersion": 3,
+  "id": "codex-verify-only",
+  "stage": "review",
+  "ownerAgents": [
+    "verifier"
+  ],
+  "recommendedPacks": [],
+  "requiredInputs": [
+    "REVIEW_FILE"
+  ],
+  "outputContract": "codex-verify-only-v2",
+  "risk": "low",
+  "runtimeRequirements": {
+    "executables": [
+      {
+        "name": "node",
+        "required": true,
+        "versionEvidence": "versioned-evidence"
+      },
+      {
+        "name": "bash",
+        "required": true,
+        "versionEvidence": "versioned-evidence"
+      },
+      {
+        "name": "codex",
+        "required": true,
+        "versionEvidence": "versioned-evidence"
+      }
+    ],
+    "network": {
+      "need": "required",
+      "purpose": "external verification"
+    },
+    "credentials": {
+      "need": "required",
+      "source": "assistant-owned-authentication"
+    }
+  },
+  "permissionPolicy": {
+    "workspaceRead": "preapproved",
+    "workspaceWrite": "denied",
+    "shell": "prompt",
+    "network": "prompt",
+    "credentials": "explicit",
+    "userScopeMutation": "denied",
+    "externalPublish": "denied",
+    "gitHistoryMutation": "denied"
+  },
+  "enforcement": {
+    "claude": "native-and-hook",
+    "codex": "adapter",
+    "generic": "advisory"
+  },
+  "instructions": [
+    "Resolve every required input before side effects.",
+    "Stop when a required capability is denied, unsupported, or awaiting approval.",
+    "Stay within the project or an explicitly approved artifact root.",
+    "Preserve the named output contract and report skipped validation honestly.",
+    "Do not publish externally, mutate user scope, or rewrite Git history."
+  ],
+  "authoredBehaviorReference": "../../skills/nova-codex-verify-only/SKILL.md",
+  "claimBoundary": "Compiled minimum runtime contract; the authored skill remains the compatibility and maintainer reference."
+}

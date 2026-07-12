@@ -88,6 +88,16 @@ const WORKFLOW_CONTRACTS = [
     permissions: [['contents', 'read']],
     label: 'release workflow top-level permissions',
   },
+  {
+    file: '.github/workflows/release-candidate.yml',
+    permissions: [['contents', 'read']],
+    label: 'release candidate workflow top-level permissions',
+  },
+  {
+    file: '.github/workflows/promote-release.yml',
+    permissions: [['contents', 'read']],
+    label: 'release promotion workflow top-level permissions',
+  },
 ];
 const EXPECTED_WORKFLOW_FILES = WORKFLOW_CONTRACTS
   .map((workflow) => workflow.file)
@@ -331,7 +341,9 @@ function extractCiRequiredChecks() {
     recordError(file, `CI required check labels contain duplicates: ${duplicates.join(', ')}`);
   }
 
-  return checks;
+  const required = checks.filter((check) => check === 'Required / Aggregate');
+  if (required.length !== 1) recordError(file, 'CI must expose exactly one branch-protection aggregator named "Required / Aggregate"');
+  return required;
 }
 
 function extractCiJobLines(jobId) {
@@ -369,22 +381,13 @@ function extractCiJobLines(jobId) {
 
 function validateNpmTestGate() {
   const file = '.github/workflows/ci.yml';
-  const jobLines = extractCiJobLines('npm-test');
+  const jobLines = extractCiJobLines('tests');
   if (!jobLines) return;
-
-  const uses = findYamlScalar(jobLines, 'uses', 4);
-  const label = findYamlScalar(jobLines, 'label', 6);
-  const command = findYamlScalar(jobLines, 'command', 6);
-
-  if (uses !== './.github/workflows/reusable-node-check.yml') {
-    recordError(file, `NPM Test gate must use reusable-node-check.yml; got "${uses ?? 'none'}"`);
-  }
-  if (label !== 'NPM Test') {
-    recordError(file, `NPM Test gate label must be "NPM Test"; got "${label ?? 'none'}"`);
-  }
-  if (!['npm test', 'npm run test'].includes(command)) {
-    recordError(file, `NPM Test gate command must be "npm test" or "npm run test"; got "${command ?? 'none'}"`);
-  }
+  const text = jobLines.join('\n');
+  if (!/name:\s*Required \/ Tests/.test(text)) recordError(file, 'tests job must expose "Required / Tests"');
+  if (!/run:\s*npm test/.test(text)) recordError(file, 'Required / Tests must run npm test');
+  if (!/run:\s*npm run test:coverage:check/.test(text)) recordError(file, 'Required / Tests must run the coverage gate');
+  if (!/run:\s*npm run test:mutation:critical/.test(text)) recordError(file, 'Required / Tests must run critical mutation testing');
 }
 
 function parseSuggestedRequiredChecks() {
@@ -515,33 +518,18 @@ function validateWorkflowContracts() {
   const releaseFile = '.github/workflows/release.yml';
   const releaseSrc = readWorkflow(releaseFile);
   if (releaseSrc) {
-    if (extractRunScripts(releaseSrc).some((script) => /\$\{\{\s*(?:github\.|steps\.[^.\s]+\.outputs\.)/.test(script))) {
-      recordError(releaseFile, 'release shell scripts must receive GitHub contexts and step outputs through env, not direct expression interpolation');
+    if (!/uses:\s*\.\/\.github\/workflows\/promote-release\.yml/.test(releaseSrc)) {
+      recordError(releaseFile, 'stable release trigger must delegate to promote-release.yml');
     }
-    if (!/id:\s*release[\s\S]*?RELEASE_TAG:\s*\$\{\{\s*github\.ref_name\s*\}\}[\s\S]*?run:\s*node scripts\/prepare-release\.mjs/.test(releaseSrc)) {
-      recordError(releaseFile, 'release workflow must prepare validated metadata through scripts/prepare-release.mjs');
-    }
-    if (!/prerelease:\s*\$\{\{\s*steps\.release\.outputs\.prerelease\s*\}\}/.test(releaseSrc)) {
-      recordError(releaseFile, 'release action must use the validated prerelease output');
-    }
-    if (!/CLAUDE_CODE_OAUTH_TOKEN:\s*\$\{\{\s*secrets\.CLAUDE_CODE_OAUTH_TOKEN\s*\}\}/.test(releaseSrc)) {
-      recordError(releaseFile, 'release live route gate must receive CLAUDE_CODE_OAUTH_TOKEN from repository secrets');
-    }
-    if (/ANTHROPIC_API_KEY/.test(releaseSrc)) {
-      recordError(releaseFile, 'release live route gate must not use ANTHROPIC_API_KEY when OAuth CI is required');
-    }
-    if (!/id:\s*release-files[\s\S]*archives=\(\.metrics\/release-inputs\/release-artifacts\/nova-plugin-\*\.tar\.gz\)[\s\S]*sboms=\(\.metrics\/release-inputs\/release-artifacts\/nova-plugin-\*\.tar\.gz\.cdx\.json\)[\s\S]*test "\$\{#archives\[@\]\}" -eq 1[\s\S]*test "\$\{#sboms\[@\]\}" -eq 1/.test(releaseSrc)) {
-      recordError(releaseFile, 'release workflow must resolve exactly one archive and SBOM before attestation');
-    }
-    if (!/subject-path:\s*\$\{\{\s*steps\.release-files\.outputs\.archive\s*\}\}[\s\S]*sbom-path:\s*\$\{\{\s*steps\.release-files\.outputs\.sbom\s*\}\}/.test(releaseSrc)) {
-      recordError(releaseFile, 'release attestation must use exact resolved archive and SBOM paths');
+    if (!/if:\s*\$\{\{\s*!contains\(github\.ref_name, '-'\)\s*\}\}/.test(releaseSrc)) {
+      recordError(releaseFile, 'stable release trigger must reject prerelease tags');
     }
     const releaseJob = extractYamlBlock(
       releaseFile,
       releaseSrc,
-      'release',
+      'promote',
       2,
-      'release job block',
+      'stable promotion caller job block',
     );
     if (releaseJob) {
       expectPermissionSet(
@@ -549,11 +537,46 @@ function validateWorkflowContracts() {
         releaseSrc,
         'permissions',
         4,
-        [['contents', 'write'], ['id-token', 'write'], ['attestations', 'write']],
-        'release job scoped write permission',
+        [['contents', 'write'], ['checks', 'read'], ['id-token', 'write'], ['attestations', 'write']],
+        'stable promotion caller scoped permission',
         releaseJob.start + 1,
         releaseJob.end,
       );
+    }
+  }
+
+  const candidateFile = '.github/workflows/release-candidate.yml';
+  const candidateSrc = readWorkflow(candidateFile);
+  if (candidateSrc) {
+    if (extractRunScripts(candidateSrc).some((script) => /\$\{\{\s*(?:github\.|steps\.[^.\s]+\.outputs\.)/.test(script))) {
+      recordError(candidateFile, 'candidate shell scripts must receive GitHub contexts and step outputs through env');
+    }
+    for (const [pattern, message] of [
+      [/RELEASE_CANDIDATE:\s*'1'[\s\S]*run:\s*node scripts\/prepare-release\.mjs/, 'candidate workflow must prepare RC notes from the stable base version'],
+      [/CLAUDE_CODE_OAUTH_TOKEN:\s*\$\{\{\s*secrets\.CLAUDE_CODE_OAUTH_TOKEN\s*\}\}/, 'candidate live gate must use the OAuth repository secret'],
+      [/node scripts\/generate-release-candidate\.mjs[\s\S]*--artifact-dir[\s\S]*--evidence[\s\S]*--out/, 'candidate workflow must bind artifacts and evidence into a manifest'],
+      [/archives=\(\.metrics\/candidate-bundle\/nova-plugin-\*\.tar\.gz\)[\s\S]*sboms=\(\.metrics\/candidate-bundle\/nova-plugin-\*\.tar\.gz\.cdx\.json\)[\s\S]*test "\$\{#archives\[@\]\}" -eq 1[\s\S]*test "\$\{#sboms\[@\]\}" -eq 1/, 'candidate workflow must resolve exactly one archive and SBOM'],
+      [/subject-path:\s*\$\{\{\s*steps\.files\.outputs\.archive\s*\}\}[\s\S]*sbom-path:\s*\$\{\{\s*steps\.files\.outputs\.sbom\s*\}\}/, 'candidate attestation must use resolved concrete paths'],
+      [/prerelease:\s*true/, 'candidate publication must be a prerelease'],
+    ]) if (!pattern.test(candidateSrc)) recordError(candidateFile, message);
+    if (/ANTHROPIC_API_KEY/.test(candidateSrc)) recordError(candidateFile, 'candidate live gate must not use ANTHROPIC_API_KEY');
+  }
+
+  const promotionFile = '.github/workflows/promote-release.yml';
+  const promotionSrc = readWorkflow(promotionFile);
+  if (promotionSrc) {
+    if (extractRunScripts(promotionSrc).some((script) => /\$\{\{\s*(?:github\.|steps\.[^.\s]+\.outputs\.)/.test(script))) {
+      recordError(promotionFile, 'promotion shell scripts must receive GitHub contexts and step outputs through env');
+    }
+    for (const [pattern, message] of [
+      [/gh release download "\$\{candidate_tag\}" --dir \.metrics\/promotion/, 'promotion must download existing candidate assets'],
+      [/node scripts\/verify-release-promotion\.mjs[\s\S]*--manifest[\s\S]*--artifact-dir/, 'promotion must verify manifest, source, commit, and artifact digests'],
+      [/node scripts\/prepare-release\.mjs/, 'promotion must prepare stable release metadata'],
+      [/subject-path:\s*\$\{\{\s*steps\.release-files\.outputs\.archive\s*\}\}[\s\S]*sbom-path:\s*\$\{\{\s*steps\.release-files\.outputs\.sbom\s*\}\}/, 'promotion attestation must use resolved concrete paths'],
+      [/prerelease:\s*false/, 'stable promotion must publish a non-prerelease'],
+    ]) if (!pattern.test(promotionSrc)) recordError(promotionFile, message);
+    if (/release:artifacts|build-release-artifacts\.mjs/.test(promotionSrc)) {
+      recordError(promotionFile, 'stable promotion must not rebuild candidate artifacts');
     }
   }
 
@@ -641,11 +664,11 @@ function validateCiRuntimeEvidenceContracts() {
   const src = readWorkflow(file);
   if (!src) return;
 
-  const coverageLines = extractCiJobLines('test-coverage');
+  const coverageLines = extractCiJobLines('tests');
   if (coverageLines) {
     const coverage = coverageLines.join('\n');
     if (!/node-version:\s*['"]22['"]/.test(coverage)) {
-      recordError(file, 'Test Coverage must run on the minimum supported Node 22 lane');
+      recordError(file, 'Required / Tests must run on the minimum supported Node 22 lane');
     }
     if (!/run:\s*npm run test:coverage:check/.test(coverage)) {
       recordError(file, 'Test Coverage must run npm run test:coverage:check');
@@ -655,12 +678,19 @@ function validateCiRuntimeEvidenceContracts() {
     }
   }
 
-  const macosLines = extractCiJobLines('macos-smoke');
-  if (macosLines) {
-    const macos = macosLines.join('\n');
-    if (!/\/bin\/bash nova-plugin\/skills\/nova-codex-review-fix\/scripts\/run-project-checks\.sh --test-only/.test(macos)) {
-      recordError(file, 'macOS Smoke must exercise the normal project-check path with system /bin/bash');
+  const platformLines = extractCiJobLines('platform');
+  if (platformLines) {
+    const platform = platformLines.join('\n');
+    for (const required of ['Linux Node 22', 'Linux Node 24', 'Windows Node 22', 'macOS Node 22']) {
+      if (!platform.includes(required)) recordError(file, `platform matrix is missing ${required}`);
     }
+    if (!/\/bin\/bash nova-plugin\/skills\/nova-codex-review-fix\/scripts\/run-project-checks\.sh --test-only/.test(platform)) {
+      recordError(file, 'platform matrix must exercise the normal project-check path with macOS system /bin/bash');
+    }
+  }
+  const aggregateLines = extractCiJobLines('aggregate');
+  if (aggregateLines && !/needs:\s*\[contracts, tests, security, platform, package, live-evidence\]/.test(aggregateLines.join('\n'))) {
+    recordError(file, 'Required / Aggregate must depend on every consolidated CI lane');
   }
 }
 

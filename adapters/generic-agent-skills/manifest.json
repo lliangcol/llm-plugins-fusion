@@ -1,7 +1,13 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "source": "workflow-specs/workflows.json",
-  "compatibilityLevel": "L1-parseable",
+  "maximumSupportedLevel": "L4",
+  "declaredLevel": "L1",
+  "evidenceRequiredFor": [
+    "L2",
+    "L3",
+    "L4"
+  ],
   "claimBoundary": "Invocation and enforcement require an assistant-specific adapter and conformance evidence.",
   "workflows": [
     {
@@ -14,15 +20,31 @@
         "PLAN_OUTPUT_PATH"
       ],
       "outputContract": "backend-plan-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": true,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "preapproved",
         "shell": "denied",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -34,15 +56,47 @@
         "REVIEW_SCOPE"
       ],
       "outputContract": "codex-review-fix-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": true,
+      "runtimeRequirements": {
+        "executables": [
+          {
+            "name": "node",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          },
+          {
+            "name": "bash",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          },
+          {
+            "name": "codex",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          }
+        ],
+        "network": {
+          "need": "required",
+          "purpose": "external review, fix, and verification"
+        },
+        "credentials": {
+          "need": "required",
+          "source": "assistant-owned-authentication"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "preapproved",
         "shell": "prompt",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "prompt",
+        "credentials": "explicit",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -54,15 +108,47 @@
         "REVIEW_SCOPE"
       ],
       "outputContract": "codex-review-only-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": false,
+      "runtimeRequirements": {
+        "executables": [
+          {
+            "name": "node",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          },
+          {
+            "name": "bash",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          },
+          {
+            "name": "codex",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          }
+        ],
+        "network": {
+          "need": "required",
+          "purpose": "external review"
+        },
+        "credentials": {
+          "need": "required",
+          "source": "assistant-owned-authentication"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
         "shell": "prompt",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "prompt",
+        "credentials": "explicit",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -74,15 +160,47 @@
         "REVIEW_FILE"
       ],
       "outputContract": "codex-verify-only-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": false,
+      "runtimeRequirements": {
+        "executables": [
+          {
+            "name": "node",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          },
+          {
+            "name": "bash",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          },
+          {
+            "name": "codex",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          }
+        ],
+        "network": {
+          "need": "required",
+          "purpose": "external verification"
+        },
+        "credentials": {
+          "need": "required",
+          "source": "assistant-owned-authentication"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
         "shell": "prompt",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "prompt",
+        "credentials": "explicit",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -94,15 +212,31 @@
         "INPUT"
       ],
       "outputContract": "exploration-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": false,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
         "shell": "denied",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -114,15 +248,31 @@
         "INPUT"
       ],
       "outputContract": "exploration-lite-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": false,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
         "shell": "denied",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -134,15 +284,31 @@
         "INPUT"
       ],
       "outputContract": "exploration-review-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": false,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
         "shell": "denied",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -154,15 +320,31 @@
         "WORK_SUMMARY"
       ],
       "outputContract": "finalize-lite-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": false,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
         "shell": "denied",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -174,15 +356,31 @@
         "WORK_SUMMARY"
       ],
       "outputContract": "finalize-work-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": false,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
         "shell": "prompt",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -194,15 +392,31 @@
         "REQUEST"
       ],
       "outputContract": "implementation-lite-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": true,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "preapproved",
         "shell": "prompt",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -215,15 +429,31 @@
         "PLAN_APPROVED"
       ],
       "outputContract": "implementation-plan-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": true,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "preapproved",
         "shell": "prompt",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -235,15 +465,31 @@
         "REQUEST"
       ],
       "outputContract": "implementation-standard-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": true,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "preapproved",
         "shell": "prompt",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -255,15 +501,31 @@
         "REQUEST"
       ],
       "outputContract": "plan-lite-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": false,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
         "shell": "denied",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -275,15 +537,31 @@
         "PLAN_INPUT_PATH"
       ],
       "outputContract": "plan-review-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": false,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
         "shell": "denied",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -296,15 +574,31 @@
         "PLAN_OUTPUT_PATH"
       ],
       "outputContract": "produce-plan-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": true,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "preapproved",
         "shell": "denied",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -316,15 +610,31 @@
         "REVIEW_SCOPE"
       ],
       "outputContract": "review-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": false,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
         "shell": "denied",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -336,15 +646,31 @@
         "REVIEW_SCOPE"
       ],
       "outputContract": "review-lite-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": false,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
         "shell": "denied",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -356,15 +682,31 @@
         "REVIEW_SCOPE"
       ],
       "outputContract": "review-only-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": false,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
         "shell": "denied",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -376,15 +718,31 @@
         "REVIEW_SCOPE"
       ],
       "outputContract": "review-strict-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": false,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
         "shell": "denied",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -396,15 +754,31 @@
         "REQUEST"
       ],
       "outputContract": "recommended-route-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": false,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
         "shell": "denied",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     },
     {
@@ -417,15 +791,31 @@
         "CONTEXT"
       ],
       "outputContract": "senior-exploration-v2",
-      "capabilities": {
-        "workspaceRead": true,
-        "workspaceWrite": true,
+      "runtimeRequirements": {
+        "executables": [],
+        "network": {
+          "need": "none",
+          "purpose": "none"
+        },
+        "credentials": {
+          "need": "none",
+          "source": "none"
+        }
+      },
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "preapproved",
         "shell": "denied",
-        "network": false,
-        "credentials": false,
-        "userScopeMutation": false,
-        "externalPublish": false,
-        "gitHistoryMutation": false
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      },
+      "enforcement": {
+        "claude": "native-and-hook",
+        "codex": "adapter",
+        "generic": "advisory"
       }
     }
   ]

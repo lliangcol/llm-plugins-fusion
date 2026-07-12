@@ -31,12 +31,17 @@ L3 enforced, and L4 verified. A level applies only to the exact adapter and
 evidence named below; Markdown portability alone is L1, not proof of equivalent
 runtime safety.
 
-| Assistant | Current public claim | Evidence boundary |
-| --- | --- | --- |
-| Claude Code | L4 at an exact tag whose isolated install and live route release gates pass | `adapters/claude/manifest.json`, `.github/workflows/release.yml` |
-| Codex | L4-local for `0.144.0-alpha.4`; publication-grade L4 remains exact-release gated | `adapters/codex/AGENTS.md`, `evals/evidence/2026-07-12-assistant-conformance.json` |
-| Generic Agent Skills consumers | L1 | `adapters/generic-agent-skills/manifest.json`; invocation and enforcement are consumer-owned |
-| Cursor, Gemini CLI, OpenCode, Copilot, Aider, Cline, OpenHands | L1 unless a separate versioned adapter evidence record exists | Consumer setup docs are guidance, not live conformance proof |
+<!-- generated:assistant-compatibility:start -->
+| Assistant | Effective current level | Maximum | Evidence state | Claim boundary |
+| --- | --- | --- | --- | --- |
+| claude-code | L4-local | L4 | current | stable Claude command invocation; hooks and release verification require current evidence |
+| codex | L4-local | L4 | current | generated local adapter; enforcement and live behavior require current evidence |
+| generic | L1 | L4 | declaration-only | parseable contracts only; consumer owns invocation and enforcement |
+<!-- generated:assistant-compatibility:end -->
+
+Other assistants such as Cursor, Gemini CLI, OpenCode, Copilot, Aider, Cline,
+and OpenHands remain L1 unless a separate versioned adapter and current evidence
+record exists. Consumer setup guidance is not live conformance proof.
 
 | Surface | Requirement | Evidence | Notes |
 | --- | --- | --- | --- |

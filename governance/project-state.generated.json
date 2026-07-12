@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": "repository-domain-sources",
+  "plugin": {
+    "name": "nova-plugin",
+    "version": "3.0.1",
+    "productionPluginCount": 1,
+    "publicPath": "nova-plugin/"
+  },
+  "runtime": {
+    "node": ">=22",
+    "distributedBash": "3.2+"
+  },
+  "inventory": {
+    "commands": 21,
+    "skills": 21,
+    "activeAgents": 6,
+    "capabilityPacks": 8,
+    "installedClaudeSkills": 42
+  },
+  "workflow": {
+    "schemaVersion": 3,
+    "namespace": "nova-plugin",
+    "count": 21
+  },
+  "repositoryScripts": {
+    "names": [
+      "check",
+      "check:contracts",
+      "check:coverage",
+      "check:release",
+      "check:tests",
+      "ci:full",
+      "ci:quick",
+      "demo:review",
+      "demo:route",
+      "doctor",
+      "eval:adapters",
+      "eval:contracts",
+      "eval:dataset-integrity",
+      "eval:evidence",
+      "eval:live",
+      "eval:quality",
+      "eval:route",
+      "eval:simulation",
+      "eval:surfaces",
+      "generate:adapters",
+      "generate:compatibility-evidence",
+      "generate:quality-report",
+      "generate:runtime-contracts",
+      "generate:workflow-v2-compat",
+      "lint",
+      "normalize:surfaces",
+      "release:artifacts",
+      "release:candidate",
+      "release:evidence",
+      "release:promotion:verify",
+      "scaffold:consumer",
+      "scan:distribution",
+      "scan:secrets",
+      "sync:project-state",
+      "test",
+      "test:coverage",
+      "test:coverage:check",
+      "test:e2e",
+      "test:fault-injection",
+      "test:integration",
+      "test:mutation:critical",
+      "test:unit",
+      "validate",
+      "validate:community",
+      "validate:compatibility-evidence",
+      "validate:docs",
+      "validate:drift",
+      "validate:github-workflows",
+      "validate:maintainer",
+      "validate:permissions",
+      "validate:project-state",
+      "validate:regression",
+      "validate:runtime",
+      "validate:schemas",
+      "validate:surface",
+      "validate:workflow",
+      "validate:workflow-contract"
+    ],
+    "check": "npm run validate:maintainer && npm run test:coverage:check",
+    "build": null
+  },
+  "productLanes": {
+    "workflow-framework": {
+      "status": "active",
+      "summary": "Canonical workflow contracts, generated command and skill surfaces, adapters, validation, and release evidence."
+    },
+    "single-plugin-delivery": {
+      "status": "active",
+      "summary": "nova-plugin remains the only production plugin and the stable public installation path for the 3.x line."
+    },
+    "release-candidate-promotion": {
+      "status": "active",
+      "summary": "Build and verify immutable release candidates before promoting identical artifacts to stable releases."
+    },
+    "live-assistant-evaluation": {
+      "status": "active",
+      "summary": "Versioned static, simulation, and live evaluation with evidence-derived compatibility claims."
+    },
+    "generic-framework-kernel": {
+      "status": "active",
+      "summary": "Extract generic schemas and compiler code without moving the nova-plugin public path."
+    },
+    "production-multi-plugin-layout": {
+      "status": "deferred",
+      "summary": "Requires at least two independently maintained production plugin specifications and demonstrated release pressure."
+    },
+    "public-portal": {
+      "status": "deferred",
+      "summary": "Generated Markdown catalogs remain sufficient until public demand and an approved hosting model exist."
+    },
+    "runtime-dynamic-loading": {
+      "status": "deferred",
+      "summary": "Capability packs remain documentation and routing guidance, not dynamically loaded runtime modules."
+    },
+    "broad-domain-command-expansion": {
+      "status": "deferred",
+      "summary": "Domain variation remains in packs and consumer profiles unless repeated evidence proves new workflow surfaces are necessary."
+    }
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|NotebookEdit",
+        "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh\"",
+        "args": [],
+        "async": false
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "command": "node",
+        "args": [
+          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs"
+        ],
+        "async": false
+      },
+      {
+        "matcher": "Write|Edit|NotebookEdit|Bash",
+        "command": "node",
+        "args": [
+          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs"
+        ],
+        "async": true
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Write|Edit|NotebookEdit|Bash",
+        "command": "node",
+        "args": [
+          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs"
+        ],
+        "async": true
+      }
+    ],
+    "PermissionDenied": [
+      {
+        "matcher": "Write|Edit|NotebookEdit|Bash",
+        "command": "node",
+        "args": [
+          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs"
+        ],
+        "async": true
+      }
+    ]
+  },
+  "release": {
+    "model": "candidate-and-promotion",
+    "immutableSignedTags": true,
+    "exactTagInstallGate": true
+  },
+  "sourceDigests": {
+    "package.json": "37a075710e2651de25b08998ccf0f3a93c99ca36b8ca23026fc8a738986528dd",
+    "nova-plugin/.claude-plugin/plugin.json": "2575851761ad7e12581bf0116dc61468420f00bb6db19323176f9421b901b535",
+    "workflow-specs/workflows.json": "a0004c565a7984f7e1b3a24187c4d3961755d7f7c06bd04efcd5d2f5d3878608",
+    "workflow-specs/nova.product.json": "b3a274d7d266d382551a7dae5f282d46cbc199a55c2127f81e2156e1f2790daa",
+    "docs/generated/surface-inventory.json": "3fb9efde085b04165e271177765354dcac83280b243368f52b71fd96e3cba0a6",
+    "governance/product-lanes.json": "ada36f3719d3cd745ccef06c594226de26f01329414b0ed7e7d25a8110868c39",
+    "nova-plugin/hooks/hooks.json": "46e0eb97aa9e42b4071ca7dff55bb0efd66e53097f9230090e59fc94e279567f"
+  }
+}

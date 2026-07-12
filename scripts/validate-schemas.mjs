@@ -153,9 +153,39 @@ const targets = [
     label: 'workflow-specs/workflows.json',
   },
   {
+    schema: loadJson('schemas/workflow-product.schema.json'),
+    data: loadJson('workflow-specs/nova.product.json'),
+    label: 'workflow-specs/nova.product.json',
+  },
+  {
     schema: loadJson('schemas/workflow-permissions.schema.json'),
     data: loadJson('nova-plugin/runtime/workflow-permissions.json'),
     label: 'nova-plugin/runtime/workflow-permissions.json',
+  },
+  {
+    schema: loadJson('schemas/product-lanes.schema.json'),
+    data: loadJson('governance/product-lanes.json'),
+    label: 'governance/product-lanes.json',
+  },
+  {
+    schema: loadJson('schemas/project-state.schema.json'),
+    data: loadJson('governance/project-state.generated.json'),
+    label: 'governance/project-state.generated.json',
+  },
+  {
+    schema: loadJson('schemas/adapter-evidence.schema.json'),
+    data: loadJson('governance/compatibility-evidence.generated.json'),
+    label: 'governance/compatibility-evidence.generated.json',
+  },
+  {
+    schema: loadJson('schemas/eval-result.schema.json'),
+    data: loadJson('evals/baselines/static-contract.json'),
+    label: 'evals/baselines/static-contract.json',
+  },
+  {
+    schema: loadJson('schemas/eval-result.schema.json'),
+    data: loadJson('evals/baselines/adapter-simulation.json'),
+    label: 'evals/baselines/adapter-simulation.json',
   },
 ];
 
@@ -179,8 +209,14 @@ for (const schemaPath of [
   'schemas/marketplace-metadata.schema.json',
   'schemas/workflow-permissions.schema.json',
   'schemas/workflow-spec.schema.json',
+  'schemas/workflow-product.schema.json',
   'schemas/validation-report.schema.json',
   'schemas/release-evidence.schema.json',
+  'schemas/product-lanes.schema.json',
+  'schemas/project-state.schema.json',
+  'schemas/release-candidate.schema.json',
+  'schemas/adapter-evidence.schema.json',
+  'schemas/eval-result.schema.json',
 ]) {
   const schema = loadJson(schemaPath);
   const fileName = schemaPath.split('/').at(-1);

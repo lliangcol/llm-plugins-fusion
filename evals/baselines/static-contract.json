@@ -1,0 +1,101 @@
+{
+  "$schema": "../../schemas/eval-result.schema.json",
+  "schemaVersion": 1,
+  "layer": "static-contract",
+  "executionMode": "deterministic-dataset-integrity",
+  "workflowSpecSha256": "a0004c565a7984f7e1b3a24187c4d3961755d7f7c06bd04efcd5d2f5d3878608",
+  "cases": [
+    {
+      "id": "quick-exploration",
+      "inventedSurface": [],
+      "mappingValid": true,
+      "inputsValid": true,
+      "passed": true
+    },
+    {
+      "id": "multi-stage-delivery",
+      "inventedSurface": [],
+      "mappingValid": true,
+      "inputsValid": true,
+      "passed": true
+    },
+    {
+      "id": "implementation-missing-approval",
+      "inventedSurface": [],
+      "mappingValid": true,
+      "inputsValid": true,
+      "passed": true
+    },
+    {
+      "id": "high-risk-security-review",
+      "inventedSurface": [],
+      "mappingValid": true,
+      "inputsValid": true,
+      "passed": true
+    },
+    {
+      "id": "no-specialized-pack",
+      "inventedSurface": [],
+      "mappingValid": true,
+      "inputsValid": true,
+      "passed": true
+    },
+    {
+      "id": "non-claude-assistant",
+      "inventedSurface": [],
+      "mappingValid": true,
+      "inputsValid": true,
+      "passed": true
+    },
+    {
+      "id": "codex-review-loop",
+      "inventedSurface": [],
+      "mappingValid": true,
+      "inputsValid": true,
+      "passed": true
+    },
+    {
+      "id": "lightweight-plan",
+      "inventedSurface": [],
+      "mappingValid": true,
+      "inputsValid": true,
+      "passed": true
+    },
+    {
+      "id": "read-only-environment",
+      "inventedSurface": [],
+      "mappingValid": true,
+      "inputsValid": true,
+      "passed": true
+    },
+    {
+      "id": "ambiguous-input",
+      "inventedSurface": [],
+      "mappingValid": true,
+      "inputsValid": true,
+      "passed": true
+    },
+    {
+      "id": "backend-plan",
+      "inventedSurface": [],
+      "mappingValid": true,
+      "inputsValid": true,
+      "passed": true
+    },
+    {
+      "id": "finalize-release",
+      "inventedSurface": [],
+      "mappingValid": true,
+      "inputsValid": true,
+      "passed": true
+    }
+  ],
+  "summary": {
+    "total": 12,
+    "passed": 12,
+    "inventedSurfaceRate": 0,
+    "mappingValidity": 1,
+    "inputContractValidity": 1
+  },
+  "claimBoundary": "Static dataset and specification integrity only; this is not routing accuracy, model quality, latency, cost, or runtime enforcement evidence."
+}

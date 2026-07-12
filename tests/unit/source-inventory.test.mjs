@@ -17,7 +17,7 @@ test('source inventory includes every repository maintenance module deterministi
   assert.deepEqual(sources, [...sources].sort());
 });
 
-test('source inventory is defined by Git-tracked files only', () => {
+test('source inventory includes tracked and untracked non-ignored modules', () => {
   let captured = null;
   const sources = sourceModuleInventory(
     '/repo',
@@ -27,7 +27,7 @@ test('source inventory is defined by Git-tracked files only', () => {
     },
     () => true,
   );
-  assert.deepEqual(captured.args, ['ls-files', '-z', '--cached', '--', '*.mjs']);
+  assert.deepEqual(captured.args, ['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '*.mjs']);
   assert.equal(captured.options.shell, false);
   assert.deepEqual(sources, ['scripts/a.mjs']);
 });

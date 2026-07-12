@@ -1,5 +1,25 @@
 # Project Optimization Plan
 
+<!-- generated:project-state:start -->
+## Current Machine-Derived Project Facts
+
+Do not edit this block by hand. It is synchronized by
+`node scripts/sync-doc-facts.mjs --write` from repository domain sources and
+`governance/product-lanes.json`.
+
+- Plugin: `nova-plugin@3.0.1`; production plugins: 1; public path: `nova-plugin/`
+- Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
+- Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
+- Workflow contract: schema v3, namespace `nova-plugin`, 21 workflows
+- Package scripts: `check` is present; `build` is absent
+- Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
+- Planned product lanes: None
+- Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
+- Release model: `candidate-and-promotion`
+- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`
+- Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
+<!-- generated:project-state:end -->
+
 Status: active
 Date: 2026-07-09
 Scope: post-`v2.3.0` optimization roadmap for `llm-plugins-fusion`
@@ -9,8 +29,8 @@ Scope: post-`v2.3.0` optimization roadmap for `llm-plugins-fusion`
 Continue the project as a `nova-plugin` centered AI engineering workflow
 framework. Promote released tags, not unreleased `main` snapshots. Keep
 Public portal work and production multi-plugin directory migration remain
-deferred until real maintenance pressure appears; the `v3.0.0` workflow and
-security hardening does not activate either deferred product surface.
+deferred until real maintenance pressure appears. These are independently
+named product lanes and are not coupled to an already released version number.
 
 This document is the active optimization record. Tracks 1 through 5 have been
 implemented for the `v2.2.0` release-ready work. Track 6 has been resolved by
@@ -55,7 +75,7 @@ Live facts checked for this plan:
   implementation has started moving under `scripts/validate-docs/` so rule
   families can be reviewed without changing the command contract.
 - Tests are split across unit, integration, and e2e suites with explicit
-  Node 20-compatible discovery. Coverage checks enforce the recorded 85% lines,
+  Node.js 22+ discovery. Coverage checks enforce the recorded 85% lines,
   60% branches, and 90% functions baseline.
 - `package.json` still declares no `dependencies` or `devDependencies`.
 - `validate-all` timing support, workflow fixtures, issue forms, release
@@ -98,7 +118,7 @@ Live facts checked for this plan:
 | DR2 | P0 | Coverage and timing evidence | Complete: full maintenance source inventory and blocking thresholds enforced | 2-3 days | tests, coverage, workflow validation |
 | DR3 | P0 | Hook portability and Bash boundary | Started; Node helpers added while Bash remains active | 4-6 days | hooks, runtime smoke, tests, Windows CI |
 | DR4 | P1 | Headless public-safe demo harness | Implemented for route, review, and verification fixtures | 3-5 days | workflow fixtures, docs, demos |
-| DR5 | P1 | Toolchain and release-proof artifacts | Implemented for `.node-version` and checksums; SBOM/signing deferred | 2-4 days | workflow validation, release dry run |
+| DR5 | P1 | Toolchain and release-proof artifacts | Implemented for `.node-version`, checksums, SBOM, provenance, and attestation; candidate promotion remains active work | 2-4 days | workflow validation, release dry run |
 | DR6 | P1 | First-contribution and issue flow | Started with public-safe first-contribution guidance | 1-2 days | docs validation |
 | DR7 | P2 | README information-density pass | Started; continue as positioning-only refinements | 1 day | docs validation |
 | DR8 | P0 | Final review and release readiness | Pending final local review and CI evidence | 1-2 days | maintainer gate, CI, release evidence |
@@ -169,7 +189,7 @@ Execution steps:
    - maintainer, marketplace, contribution, issue intake, and docs index
      contracts
    - consumer, prompt, data handling, workflow evidence, showcase, growth,
-     assets, deferred portal, v3 readiness, security range, stale planning, and
+     assets, deferred portal, multi-plugin readiness, security range, stale planning, and
      report archive contracts
 5. Run focused tests after each extraction batch and the maintainer gate before
    merge.
@@ -221,7 +241,7 @@ Primary files:
 
 Execution steps:
 
-1. Verify the minimum supported Node 20 CI lane supports the selected coverage
+1. Verify the minimum supported Node.js 22 CI lane supports the selected coverage
    approach. Local newer Node behavior is not enough.
 2. Prefer Node's built-in test coverage path or a dependency-free normalizer.
    Add npm tooling only after a supply-chain review.
@@ -238,9 +258,9 @@ Execution steps:
 
 Acceptance criteria:
 
-- Coverage can be collected on the Node 20 CI lane.
+- Coverage can be collected on the Node.js 22 CI lane.
 - Blocking thresholds are conservative, cover the full maintenance inventory,
-  and pass on the Node 20 CI lane.
+  and pass on the Node.js 22 CI lane.
 - Validation timing evidence is available from CI or release artifacts.
 - No npm dependency is added without an explicit decision.
 
@@ -383,8 +403,8 @@ Rollback:
 
 ### DR5: Toolchain And Release-Proof Artifacts
 
-Objective: improve reproducibility and release trust without adding heavy
-release automation or making SBOM/signing a blocker.
+Objective: improve reproducibility and release trust while keeping SBOM,
+provenance, and attestation as verified release evidence.
 
 Primary files:
 
@@ -408,8 +428,8 @@ Execution steps:
    `docs/marketplace/catalog.md`.
 3. Upload checksum artifacts in release workflow. Do not include local runtime
    paths or machine-specific data.
-4. Keep SBOM, signing, and automated release notes deferred unless a maintainer
-   explicitly promotes them after checksums prove useful.
+4. Validate SBOM, provenance, attestation inputs, and release notes before
+   candidate promotion; stable publication must reuse candidate artifacts.
 5. Update release docs so evidence separates exact-tag validation,
    generated-output drift, dry-run plugin install, isolated mutating install
    smoke, checksums, and optional future provenance.
@@ -419,7 +439,8 @@ Acceptance criteria:
 - Maintainers can see the intended Node baseline before running checks.
 - Release workflow publishes checksums for selected release artifacts.
 - No new package dependency is added solely to produce checksums.
-- Docs do not claim SBOM, signing, or public portal capabilities as current.
+- Docs describe the implemented SBOM and attestation boundary without claiming
+  that provenance alone proves artifact safety.
 
 Validation:
 
@@ -546,7 +567,7 @@ Steps:
    Bash, macOS, CodeQL, dependency review, plugin install smoke, and release
    exact-tag checks as applicable.
 7. Record residual risks, including skipped local Bash gates, coverage
-   collection mode, inactive Node hook path, or deferred SBOM/signing.
+   collection mode, hook enforcement limits, or unavailable live evidence.
 
 Acceptance criteria:
 
@@ -559,13 +580,13 @@ Acceptance criteria:
 
 1. Continue DR1 validator modularization in small rule-family batches.
 2. Keep the completed DR2 coverage baseline at 85% lines, 60% branches, and 90%
-   functions; raise it only with observed Node 20 evidence.
+   functions; raise it only with observed supported-runtime evidence.
 3. Continue DR3 by deciding whether hooks stay Bash-active or switch to Node;
    do not update `hooks.json` until docs, validators, and semver review agree.
 4. Use DR4 demo fixtures as public-safe examples, not as model-output quality
    proof.
-5. Use DR5 checksums as lightweight release evidence; keep SBOM, signing, and
-   attestations deferred until maintainers explicitly promote them.
+5. Extend DR5 from checksums to candidate-bound SBOM, provenance, attestation,
+   and reproducibility evidence.
 6. Continue DR6 and DR7 as positioning-preserving documentation refinements.
 7. Run DR8 final review and prepare release or promotion evidence only after CI
    confirms required gates.
@@ -609,9 +630,9 @@ validation commands, expected output artifacts, and residual risk format.
 | Decision | Default | When to change |
 | --- | --- | --- |
 | Coverage implementation | Node built-in or dependency-free script | Only add npm tooling after supply-chain review |
-| Coverage gate mode | Collect first, enforce later | Enforce immediately only if Node 20 CI baseline is green |
-| Active hook runtime | Keep current runtime until compatibility is decided | Switch to Node only with docs, validators, and semver review |
-| Release checksums | Add lightweight checksums first | Add SBOM/signing only after explicit maintainer decision |
+| Coverage gate mode | Enforce the recorded global baseline | Add per-module and mutation gates after a supported-runtime baseline |
+| Active hook runtime | Bash fail-closed PreToolUse launcher and exec-form Node post-use hooks | Change only with docs, validators, and semver review |
+| Release evidence | Checksums, SBOM, provenance, and attestation | Promote only identical candidate artifacts after full rehearsal |
 | Community channels | Existing issues and PRs | Add Discussions only if maintainers commit to monitoring it |
 | README rewrite depth | Reorder and compress only | Larger positioning rewrite only with validator updates |
 
@@ -641,7 +662,7 @@ validation commands, expected output artifacts, and residual risk format.
   consumer profile privacy contracts, prompt template privacy contracts,
   local data handling privacy contracts, workflow evidence contracts, showcase
   public-safety contracts, growth metrics privacy contracts, assets capture
-  privacy contracts, deferred portal IA contracts, and v3 readiness evidence
+  privacy contracts, deferred portal IA contracts, and multi-plugin readiness evidence
   contracts.
 - On Windows without Bash, `node scripts/validate-all.mjs` may report
   skipped Bash-dependent checks for local hook shell syntax and runtime smoke.
@@ -661,7 +682,7 @@ Existing Coverage:
 
 - README states that marketplace is the distribution mechanism and that the
   repository is not a mature multi-plugin ecosystem.
-- Roadmap and v3 readiness evidence keep public portal and multi-plugin
+- Roadmap and multi-plugin readiness evidence keep public portal and multi-plugin
   migration deferred.
 
 Completed Work:
@@ -769,7 +790,7 @@ Existing Coverage:
   privacy contracts, prompt template privacy contracts, local data handling
   privacy contracts, workflow evidence contracts, showcase public-safety
   contracts, growth metrics privacy contracts, assets capture privacy
-  contracts, deferred portal IA contracts, and v3 readiness evidence contracts.
+  contracts, deferred portal IA contracts, and multi-plugin readiness evidence contracts.
 - `validate-github-workflows` checks GitHub workflow token scope, workflow file
   inventory, required-check docs and print output, forbids `pull_request_target`,
   keeps release write permission scoped to the release job, and keeps mutating
@@ -939,8 +960,8 @@ A release or promotion pass is stable only when all of these are true:
 - If local Windows validation reports skipped Bash-dependent checks, CI/Linux
   release validation shows hook shell syntax and runtime smoke checks passed.
 - `git diff --check` passes.
-- Active docs do not describe deferred `v3.0.0`, public portal, or production
-  multi-plugin migration as current capability.
+- Active docs keep released versions separate from deferred public portal and
+  production multi-plugin product lanes.
 - README still describes one production plugin.
 
 Release level guidance:

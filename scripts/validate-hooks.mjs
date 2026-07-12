@@ -16,6 +16,7 @@ const root = resolve(__dir, '..');
 const hooksPath = resolve(root, 'nova-plugin/hooks/hooks.json');
 const compatibilityHelpers = [
   'nova-plugin/hooks/scripts/pre-write-check.mjs',
+  'nova-plugin/hooks/scripts/post-write-verify.mjs',
   'nova-plugin/hooks/scripts/post-audit-log.mjs',
 ];
 
@@ -31,15 +32,15 @@ try {
   errors.push(`  - hooks.json is not valid JSON: ${error.message}`);
 }
 
-for (const [event, expectedMatcher] of [
-  ['PreToolUse', 'Write|Edit|NotebookEdit'],
-  ['PostToolUse', 'Write|Edit|NotebookEdit|Bash'],
-  ['PostToolUseFailure', 'Write|Edit|NotebookEdit|Bash'],
-  ['PermissionDenied', 'Write|Edit|NotebookEdit|Bash'],
+for (const [event, expectedMatchers] of [
+  ['PreToolUse', ['Write|Edit|NotebookEdit']],
+  ['PostToolUse', ['Write|Edit', 'Write|Edit|NotebookEdit|Bash']],
+  ['PostToolUseFailure', ['Write|Edit|NotebookEdit|Bash']],
+  ['PermissionDenied', ['Write|Edit|NotebookEdit|Bash']],
 ]) {
   const entries = config?.hooks?.[event];
-  if (!Array.isArray(entries) || entries.length !== 1 || entries[0]?.matcher !== expectedMatcher) {
-    errors.push(`  - ${event} must contain exactly one entry with matcher ${expectedMatcher}`);
+  if (!Array.isArray(entries) || JSON.stringify(entries.map((entry) => entry.matcher)) !== JSON.stringify(expectedMatchers)) {
+    errors.push(`  - ${event} matcher sequence must be ${expectedMatchers.join(' then ')}`);
   }
 }
 

@@ -331,7 +331,7 @@ llm-plugins-fusion/
 | [Plugin-aware routing](../../../docs/agents/PLUGIN_AWARE_ROUTING.md) | Enhanced / fallback mode and pack activation rules | Maintaining pack routing |
 | [Marketplace catalog](../../../docs/marketplace/catalog.md) | Generated plugin catalog and compatibility evidence | Browsing marketplace entries |
 | [Marketplace portal IA](../../../docs/marketplace/portal-information-architecture.md) | Marketplace portal information architecture, data sources, current `v3.0.1` single-plugin boundary, and deferred multi-plugin boundary | Evaluating the deferred portal boundary |
-| [v3 readiness evidence](../../../docs/marketplace/v3-readiness-evidence.md) | Evidence ledger for whether multi-plugin directories or a public portal should start | Evaluating whether v3.0.0 should move into planning |
+| [multi-plugin readiness evidence](../../../docs/marketplace/multi-plugin-readiness.md) | Version-independent evidence ledger for production multi-plugin activation | Evaluating demonstrated ownership and release pressure |
 | [Registry author workflow](../../../docs/marketplace/registry-author-workflow.md) | Plugin entry updates, scaffold dry-run, profiles, and validation flow | Plugin authors and maintainers |
 | [Compatibility matrix](../../../docs/marketplace/compatibility-matrix.md) | Claude Code, Codex CLI, Bash, Node.js, and optional enhanced tools | Reviewing compatibility |
 | [Trust policy](../../../docs/marketplace/trust-policy.md) | Trust/risk/deprecation/last-updated/maintainer semantics and review requirements | Reviewing marketplace metadata |

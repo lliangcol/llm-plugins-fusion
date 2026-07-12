@@ -30,6 +30,31 @@ export function parseCoverageSummary(output) {
   return { lines: columns[0], branches: columns[1], functions: columns[2] };
 }
 
+export function parseCoverageFileRows(output) {
+  const rows = new Map();
+  for (const line of output.split(/\r?\n/)) {
+    const match = line.match(/(?:^|[ℹ#]\s+)\s*([A-Za-z0-9_.-]+\.mjs)\s*\|\s*([0-9.]+)\s*\|\s*([0-9.]+)\s*\|\s*([0-9.]+)/);
+    if (!match) continue;
+    rows.set(match[1], { lines: Number(match[2]), branches: Number(match[3]), functions: Number(match[4]) });
+  }
+  return rows;
+}
+
+export function criticalCoverageFailures(rows, requirements) {
+  const failures = [];
+  for (const [module, required] of Object.entries(requirements)) {
+    const actual = rows.get(module);
+    if (!actual) {
+      failures.push(`${module} coverage row is missing`);
+      continue;
+    }
+    for (const metric of ['lines', 'branches', 'functions']) {
+      if (actual[metric] < required[metric]) failures.push(`${module} ${metric} coverage ${actual[metric]}% is below required ${required[metric]}%`);
+    }
+  }
+  return failures;
+}
+
 export function coverageThresholdFailures(actual, required) {
   return ['lines', 'branches', 'functions']
     .filter((metric) => actual[metric] < required[metric])

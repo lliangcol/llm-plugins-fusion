@@ -22,9 +22,14 @@ Default path:
 ${CLAUDE_PLUGIN_DATA:-${XDG_STATE_HOME:-$HOME/.local/state}/nova-plugin}/audit.log
 ```
 
-The hook creates the directory with `700` permissions and the log file with
-`600` permissions when the platform allows it. The log rotates to
-`audit.log.1` after 5 MB.
+The hook writes one `600`-mode atomic record under `audit-spool/`; an
+independent Node compactor uses an atomic directory lock to append complete
+records to `audit.log` and rotate to `audit.log.1` after 5 MB. Concurrent hook
+processes therefore do not race on append/rotation. Compaction failures retain
+the spool record and emit a best-effort `audit-health.log` degraded event.
+The hook creates the state directory with `700` permissions and the log file with
+`600` permissions when the platform supports POSIX modes; the log
+rotates to `audit.log.1` after 5 MB.
 
 Set this environment variable to disable local audit logging in an environment:
 
@@ -36,6 +41,8 @@ NOVA_AUDIT_DISABLED=1
 
 Audit summaries use best-effort redaction for common token, bearer header, JWT,
 npm token, GitHub token, Slack token, OpenAI key, and secret-assignment shapes.
+Workspace paths are recorded relative to the payload project root. Paths
+outside that root are represented only as a short SHA-256-derived identifier.
 Untrusted tool names and summaries are normalized to one line after redaction:
 control characters become spaces, repeated whitespace is collapsed, tool names
 are limited to 32 characters, and summaries are limited to 200 characters.

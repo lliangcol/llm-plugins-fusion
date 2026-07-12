@@ -43,32 +43,47 @@ function normalizeOutputLimit(value) {
   return Number.isFinite(value) && value >= 0 ? value : DEFAULT_MAX_OUTPUT_BYTES;
 }
 
-function appendCapturedChunk(current, chunk, state, maxBytes) {
+function appendCapturedChunk(chunk, state, maxBytes) {
   const buffer = Buffer.isBuffer(chunk) ? chunk : Buffer.from(String(chunk));
   if (maxBytes === Number.POSITIVE_INFINITY) {
     state.bytes += buffer.length;
-    return current + buffer.toString('utf8');
+    state.chunks.push(buffer);
+    return;
   }
 
   const remaining = maxBytes - state.bytes;
   if (remaining <= 0) {
     state.truncated = true;
     state.omittedBytes += buffer.length;
-    return current;
+    return;
   }
 
   if (buffer.length <= remaining) {
     state.bytes += buffer.length;
-    return current + buffer.toString('utf8');
+    state.chunks.push(buffer);
+    return;
   }
 
   state.bytes += remaining;
   state.truncated = true;
   state.omittedBytes += buffer.length - remaining;
-  return current + buffer.subarray(0, remaining).toString('utf8');
+  state.chunks.push(buffer.subarray(0, remaining));
 }
 
-function capturedOutput(value, state, maxBytes) {
+function utf8WithoutPartialCodePoint(buffer, state) {
+  for (let trim = 0; trim <= Math.min(3, buffer.length); trim += 1) {
+    try {
+      const candidate = trim ? buffer.subarray(0, buffer.length - trim) : buffer;
+      const value = new TextDecoder('utf-8', { fatal: true }).decode(candidate);
+      if (trim) state.omittedBytes += trim;
+      return value;
+    } catch { /* trim a partial trailing code point */ }
+  }
+  return buffer.toString('utf8');
+}
+
+function capturedOutput(state, maxBytes) {
+  const value = utf8WithoutPartialCodePoint(Buffer.concat(state.chunks), state);
   if (!state.truncated) return value;
   return `${value}\n[output truncated after ${maxBytes} bytes; ${state.omittedBytes} bytes omitted]\n`;
 }
@@ -88,23 +103,25 @@ export function runProcess(label, command, args = [], options = {}) {
 
   const startedAt = Date.now();
   const outputLimit = normalizeOutputLimit(maxOutputBytes);
-  const stdoutState = { bytes: 0, omittedBytes: 0, truncated: false };
-  const stderrState = { bytes: 0, omittedBytes: 0, truncated: false };
-  let stdout = '';
-  let stderr = '';
+  const stdoutState = { bytes: 0, omittedBytes: 0, truncated: false, chunks: [] };
+  const stderrState = { bytes: 0, omittedBytes: 0, truncated: false, chunks: [] };
   let spawnError = null;
+  let stdinError = null;
   let timedOut = false;
+  const terminationAttempts = [];
 
   return new Promise((resolve) => {
     let settled = false;
     let child;
     let timer;
     let forceKillTimer;
+    let absoluteWatchdog;
     const settle = (result) => {
       if (settled) return;
       settled = true;
       if (timer) clearTimeout(timer);
       if (forceKillTimer) clearTimeout(forceKillTimer);
+      if (absoluteWatchdog) clearTimeout(absoluteWatchdog);
       resolve(result);
     };
 
@@ -128,10 +145,12 @@ export function runProcess(label, command, args = [], options = {}) {
         timedOut: false,
         error,
         errorMessage: error.message,
-        stdout: capturedOutput(stdout, stdoutState, outputLimit),
-        stderr: capturedOutput(stderr, stderrState, outputLimit),
+        stdout: capturedOutput(stdoutState, outputLimit),
+        stderr: capturedOutput(stderrState, outputLimit),
         stdoutTruncated: stdoutState.truncated,
         stderrTruncated: stderrState.truncated,
+        stdinError: null,
+        terminationAttempts,
         ms: Date.now() - startedAt,
       });
       return;
@@ -139,10 +158,19 @@ export function runProcess(label, command, args = [], options = {}) {
 
     timer = setTimeout(() => {
       timedOut = true;
-      terminateProcessTree(child, 'SIGTERM');
+      terminationAttempts.push({ signal: 'SIGTERM', requested: terminateProcessTree(child, 'SIGTERM') });
       forceKillTimer = setTimeout(() => {
-        terminateProcessTree(child, 'SIGKILL');
+        terminationAttempts.push({ signal: 'SIGKILL', requested: terminateProcessTree(child, 'SIGKILL') });
       }, 5_000);
+      absoluteWatchdog = setTimeout(() => {
+        settle({
+          label, command, args: sanitizedArgs(args), ok: false, code: null, signal: null,
+          timedOut: true, error: null, errorMessage: `process did not close within absolute watchdog after ${timeoutMs}ms timeout`,
+          stdout: capturedOutput(stdoutState, outputLimit), stderr: capturedOutput(stderrState, outputLimit),
+          stdoutTruncated: stdoutState.truncated, stderrTruncated: stderrState.truncated,
+          stdinError: stdinError?.message ?? null, terminationAttempts, ms: Date.now() - startedAt,
+        });
+      }, 10_000);
     }, timeoutMs);
 
     child.on('error', (error) => {
@@ -157,25 +185,30 @@ export function runProcess(label, command, args = [], options = {}) {
         timedOut,
         error,
         errorMessage: error.message,
-        stdout: capturedOutput(stdout, stdoutState, outputLimit),
-        stderr: capturedOutput(stderr, stderrState, outputLimit),
+        stdout: capturedOutput(stdoutState, outputLimit),
+        stderr: capturedOutput(stderrState, outputLimit),
         stdoutTruncated: stdoutState.truncated,
         stderrTruncated: stderrState.truncated,
+        stdinError: stdinError?.message ?? null,
+        terminationAttempts,
         ms: Date.now() - startedAt,
       });
     });
 
     if (capture) {
       child.stdout?.on('data', (chunk) => {
-        stdout = appendCapturedChunk(stdout, chunk, stdoutState, outputLimit);
+        appendCapturedChunk(chunk, stdoutState, outputLimit);
       });
       child.stderr?.on('data', (chunk) => {
-        stderr = appendCapturedChunk(stderr, chunk, stderrState, outputLimit);
+        appendCapturedChunk(chunk, stderrState, outputLimit);
       });
     }
 
+    child.stdin?.on('error', (error) => {
+      stdinError = error;
+    });
     if (input !== undefined && child.stdin) {
-      child.stdin.end(input);
+      try { child.stdin.end(input); } catch (error) { stdinError = error; }
     } else {
       child.stdin?.end();
     }
@@ -193,10 +226,12 @@ export function runProcess(label, command, args = [], options = {}) {
         timedOut,
         error: spawnError,
         errorMessage,
-        stdout: capturedOutput(stdout, stdoutState, outputLimit),
-        stderr: capturedOutput(stderr, stderrState, outputLimit),
+        stdout: capturedOutput(stdoutState, outputLimit),
+        stderr: capturedOutput(stderrState, outputLimit),
         stdoutTruncated: stdoutState.truncated,
         stderrTruncated: stderrState.truncated,
+        stdinError: stdinError?.message ?? null,
+        terminationAttempts,
         ms: Date.now() - startedAt,
       });
     });

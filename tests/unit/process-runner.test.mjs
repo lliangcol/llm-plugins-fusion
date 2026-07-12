@@ -56,6 +56,26 @@ test('runProcess caps captured output with an explicit truncation marker', async
   assert.equal(result.stderrTruncated, false);
 });
 
+test('runProcess truncates split UTF-8 output on a complete code-point boundary', async () => {
+  const result = await runProcess('utf8 truncation sample', process.execPath, [
+    '-e',
+    'process.stdout.write(Buffer.from("A😀B"));',
+  ], { maxOutputBytes: 4 });
+  assert.equal(result.ok, true);
+  assert.equal(result.stdoutTruncated, true);
+  assert.equal(result.stdout.includes('�'), false);
+  assert.match(result.stdout, /^A\n\[output truncated/);
+});
+
+test('runProcess handles a child that exits before a large stdin write completes', async () => {
+  const result = await runProcess('early stdin exit', process.execPath, ['-e', 'process.exit(0)'], {
+    input: 'x'.repeat(4 * 1024 * 1024),
+  });
+  assert.equal(result.ok, true);
+  assert.equal(result.code, 0);
+  assert.equal(result.stdinError === null || /EPIPE|write/i.test(result.stdinError), true);
+});
+
 test('runProcess terminates commands that exceed the timeout', async () => {
   const result = await runProcess('timeout sample', process.execPath, [
     '-e',
@@ -67,6 +87,7 @@ test('runProcess terminates commands that exceed the timeout', async () => {
   assert.equal(result.ok, false);
   assert.equal(result.timedOut, true);
   assert.match(result.errorMessage, /timed out/);
+  assert.equal(result.terminationAttempts.some((entry) => entry.signal === 'SIGTERM' && entry.requested), true);
 });
 
 test('runProcess timeout terminates spawned descendants', { skip: process.platform === 'win32' }, async (t) => {

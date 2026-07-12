@@ -109,8 +109,8 @@ Expected conditions:
   Diagnostic threshold overrides are not acceptable promotion evidence.
 - `node scripts/generate-release-checksums.mjs` writes
   `.metrics/release-checksums/SHA256SUMS.txt` for the selected release
-  artifacts. SBOM, signing, and attestations remain deferred until maintainers
-  explicitly promote them.
+  artifacts. SBOM, provenance, and attestation are active release evidence and
+  must remain bound to the resolved archive path and exact artifact digest.
 - `node scripts/generate-registry.mjs` reports current generated outputs after
   any regeneration.
 - `node scripts/generate-surface-inventory.mjs` reports current generated
@@ -120,7 +120,7 @@ Expected conditions:
   warning has an explicit rationale and split plan.
 - If `skipped` is non-zero, each skipped check has replacement CI/Linux
   evidence before promotion.
-- 自动聚合器仅接受一个精确替代场景：Node.js 20 pre-release job 中标签为
+- 自动聚合器仅接受一个精确替代场景：candidate validation 中标签为
   `validate Claude compatibility` 的唯一 skip，必须由 exact-tag Node.js 22
   live install evidence 同时记录 marketplace 和 plugin 的
   `claude plugin validate` 成功结果。任何其他 skip、多个 skip、计数不一致或
@@ -200,12 +200,13 @@ validation evidence are correct:
 git push origin "v${PLUGIN_VERSION}"
 ```
 
-The release workflow listens for `v*.*.*` tags, including SemVer prerelease and
-build metadata. `scripts/prepare-release.mjs` validates `RELEASE_TAG` against
-the plugin manifest, extracts the exact matching changelog section, and emits
-the canonical version, prerelease flag, and release-notes path. It blocks
-GitHub Release creation on pre-release validation and isolated install smoke
-for the exact tag. Do not use `claude plugin tag` for this repository release
+The candidate workflow listens for `v*.*.*-rc.*` tags. The RC tag base must
+match the stable plugin manifest version. It builds artifacts once, binds them
+to `release-candidate.json`, performs isolated exact-tag install and route
+validation, and publishes a GitHub prerelease. The stable trigger accepts only
+`v*.*.*` tags without a prerelease suffix and delegates to the promotion
+workflow, which verifies and republishes the identical candidate artifacts.
+Do not use `claude plugin tag` for this repository release
 unless the release policy changes, because that CLI creates plugin-scoped tags
 that do not match the current GitHub release trigger.
 
@@ -264,9 +265,11 @@ Expected script behavior:
   removes that temporary profile when the script exits.
 
 Record the final success line and the installed version in release evidence.
-For normal tag publication, require the `release-evidence` artifact from
-`.github/workflows/release.yml`; it binds exact-tag installation, 42-item
-inventory, OAuth-authenticated `/nova-plugin:route`, coverage, tag, and commit.
+For publication, require `release-candidate.json` and its bound candidate
+evidence from `.github/workflows/release-candidate.yml`; it binds exact-tag
+installation, inventory, OAuth-authenticated `/nova-plugin:route`, coverage,
+source digests, artifact digests, tag, and commit. Stable promotion must verify
+this manifest and must not run the artifact builder again.
 
 The scheduled `Claude Latest Drift` job intentionally fails its validation step
 when the latest CLI inventory changes, but it must still write

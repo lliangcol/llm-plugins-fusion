@@ -1,9 +1,11 @@
-import { mkdirSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { requireOptionValue } from './cli-args.mjs';
 import {
+  criticalCoverageFailures,
   coverageThresholdFailures,
+  parseCoverageFileRows,
   parseCoverageSummary,
   resolveCoverageThresholds,
 } from './coverage-thresholds.mjs';
@@ -179,6 +181,12 @@ export function runCoverage({
     for (const failure of thresholdFailures) console.error(`ERROR ${failure}`);
     return 1;
   }
+  const criticalConfig = JSON.parse(readFileSync(resolve(root, 'governance/critical-coverage.json'), 'utf8'));
+  const criticalFailures = criticalCoverageFailures(parseCoverageFileRows(stdout), criticalConfig.modules);
+  if (criticalFailures.length > 0) {
+    for (const failure of criticalFailures) console.error(`ERROR ${failure}`);
+    return 1;
+  }
 
   const coverageFiles = readdirSync(v8Dir).filter((entry) => entry.endsWith('.json'));
   if (coverageFiles.length === 0) {
@@ -194,6 +202,7 @@ export function runCoverage({
   }
 
   console.log(`Coverage baseline passed: lines=${actual.lines} branches=${actual.branches} functions=${actual.functions}`);
+  console.log(`Critical module coverage passed: ${Object.keys(criticalConfig.modules).length} per-module floors`);
   console.log(`Coverage source inventory passed: ${expectedSources.length}/${expectedSources.length} maintenance modules loaded`);
   console.log(`Coverage evidence written to ${relative(root, options.coverageDir)}`);
   return 0;

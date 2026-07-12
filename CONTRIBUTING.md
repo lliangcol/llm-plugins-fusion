@@ -1,5 +1,25 @@
 # Contributing to llm-plugins-fusion
 
+<!-- generated:project-state:start -->
+## Current Machine-Derived Project Facts
+
+Do not edit this block by hand. It is synchronized by
+`node scripts/sync-doc-facts.mjs --write` from repository domain sources and
+`governance/product-lanes.json`.
+
+- Plugin: `nova-plugin@3.0.1`; production plugins: 1; public path: `nova-plugin/`
+- Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
+- Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
+- Workflow contract: schema v3, namespace `nova-plugin`, 21 workflows
+- Package scripts: `check` is present; `build` is absent
+- Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
+- Planned product lanes: None
+- Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
+- Release model: `candidate-and-promotion`
+- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`
+- Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
+<!-- generated:project-state:end -->
+
 感谢你对 **nova-plugin** 的兴趣。本指南说明如何提交 issue、PR，以及本仓库的工程约定。
 
 ## 行为准则
@@ -65,7 +85,8 @@ issue。
    node scripts/validate-all.mjs
    ```
 5. 可选使用维护者 npm 便捷入口；`package.json` 包含 dependency-free 的
-   `lint` 和 `test` 入口，仍不声明 `check` / `build` 脚本名。
+   `lint`、`test` 和 `check` 入口。仓库不使用通用 `build` 名称；发布归档由
+   `release:artifacts` 构建。
    ```bash
    npm run validate
    npm run validate:drift
@@ -74,6 +95,7 @@ issue。
    npm run validate:github-workflows
    npm run validate:runtime
    npm run validate:regression
+   npm run validate:project-state
    npm run scan:secrets
    npm run scan:distribution
    ```
@@ -87,8 +109,8 @@ issue。
 
 - **Agent 与 pack 数量**：`nova-plugin/agents/` 目录内 6 个 core agents 由 `scripts/verify-agents.sh` / `scripts/verify-agents.ps1` 校验；`nova-plugin/packs/` 目录内 8 个 capability packs 由 `scripts/validate-packs.mjs` 校验。
 - **Frontmatter 规范**：
-  - `commands/*.md` 必需字段：`id`、`stage`、`title`、`description`、`destructive-actions`（枚举 `none|low|medium|high`）、`allowed-tools`、`invokes.skill`。
-  - `skills/*/SKILL.md` 必需字段：`name`、`description`、`license`、`allowed-tools`（空格分隔字符串）、`metadata.novaPlugin.*`（`userInvocable` / `autoLoad` / `subagentSafe` / `destructiveActions`）。
+  - `commands/*.md` 必需字段：`id`、`stage`、`title`、`description`、`destructive-actions`（枚举 `none|low|medium|high`）、`allowed-tools`、`disallowed-tools`、`user-invocable` 和 `disable-model-invocation`。运行时 `invokes` 委派已禁止。
+  - `skills/*/SKILL.md` 必需字段：`name`、`description`、`license`、`allowed-tools`、`disallowed-tools`、调用控制字段，以及扁平字符串 metadata：`nova-user-invocable`、`nova-model-invocable`、`nova-subagent-safe`、`nova-destructive-actions`。
 - **JSON Schema**：`registry.source.json` / `marketplace.json` / `marketplace.metadata.json` / `plugin.json` 改动后必须通过 `node scripts/validate-schemas.mjs`。
 - **Registry 生成**：`.claude-plugin/marketplace.json` 与 `.claude-plugin/marketplace.metadata.json` 是生成产物。维护 registry 时改 `nova-plugin/.claude-plugin/plugin.json` 与 `.claude-plugin/registry.source.json`，再运行 `node scripts/generate-registry.mjs --write`。
 - **Catalog 生成**：`docs/marketplace/catalog.md` 同样由 registry source 生成，不手工编辑。它展示当前插件 entry、maintainer、trust/risk、compatibility evidence 和 review policy 链接。
@@ -103,6 +125,7 @@ issue。
   `node scripts/generate-surface-inventory.mjs --write`，再运行
   `node scripts/generate-surface-inventory.mjs`。
 - **文档校验**：用户文档、命令文档、版本日期、安全支持范围、活跃规划文字或报告归档改动后运行 `node scripts/validate-docs.mjs`；它会校验 Markdown 本地链接与锚点、命令文档 stage 位置、版本日期同步、`SECURITY.md` 当前 MINOR 支持范围、活跃文档中的陈旧规划标签和非归档报告状态。
+- **项目事实校验**：版本、runtime、inventory、脚本、product lane 或 hook launcher 变化后运行 `npm run sync:project-state`，并用 `npm run validate:project-state` 检查生成聚合、文档事实块和过时叙事。
 - **Pack 校验**：capability pack 或 plugin-aware routing 改动后运行 `node scripts/validate-packs.mjs`；每个 pack 必须包含 enhanced mode 和 fallback mode。
 - **命令文档组织**：常规命令文档按工作流 stage 放在 `nova-plugin/docs/commands/<stage>/`；Codex 三个命令文档集中放在 `nova-plugin/docs/commands/codex/`，这是维护规则的明确例外。
 

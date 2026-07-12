@@ -1,0 +1,9 @@
+{
+  "$schema": "../schemas/workflow-product.schema.json",
+  "schemaVersion": 1,
+  "pluginNamespace": "nova-plugin",
+  "expectedWorkflowCount": 21,
+  "agents": ["architect", "builder", "orchestrator", "publisher", "reviewer", "verifier"],
+  "packs": ["dependency", "docs", "frontend", "java", "marketplace", "mcp", "release", "security"],
+  "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "NotebookEdit"]
+}

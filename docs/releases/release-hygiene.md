@@ -13,13 +13,21 @@ tag or publishing release notes.
 
 - `nova-plugin/.claude-plugin/plugin.json` is the plugin version source of
   truth.
-- Release tags must be `v<plugin-version>` and match `plugin.json` exactly.
-- Stable promotion targets must be exact release tags. A moving `main` branch,
+- Candidate tags use `v<plugin-version>-rc.<number>` while the plugin manifest
+  keeps the stable base version. Stable tags use `v<plugin-version>`. Candidate
+  and stable tags must be signed, immutable, and point to the same commit.
+- Stable promotion targets must be exact release tags backed by a verified
+  candidate manifest. A moving `main` branch,
   especially one with `CHANGELOG.md` `Unreleased` content, is an unreleased
   development snapshot rather than stable release material.
 - Public SemVer tags are immutable. Never overwrite, delete, reuse, or move an
-  existing `v*` tag, including with maintainer approval; publish a new patch
-  version instead.
+existing `v*` tag, including with maintainer approval; publish a new patch
+version instead.
+
+Candidate bundles include a non-empty CycloneDX dependency graph and an
+in-toto statement using the SLSA Provenance v1 predicate. Stable promotion
+reuses those exact bytes and does not rebuild the archive, SBOM, or provenance.
+The package CI lane performs two builds and requires byte-for-byte equality.
 - Release tags must be signed annotated tags created by the designated release
   actor and verified against `.github/release-signers`.
 - A changelog release section is required before publishing a release.
@@ -85,6 +93,16 @@ only the dry-run install preview.
 For the full manual sequence, including exact tag creation, isolated install
 smoke cleanup, workflow evaluation recording, and final promotion decisions, use
 [Release validation runbook](release-validation-runbook.md).
+
+The release workflow is split by responsibility:
+
+1. `.github/workflows/release-candidate.yml` validates a signed RC tag, builds
+   artifacts once, performs exact-tag live validation, and publishes a
+   prerelease candidate manifest.
+2. `.github/workflows/release.yml` accepts only stable tags and delegates to
+   `.github/workflows/promote-release.yml`.
+3. Promotion downloads the candidate assets, verifies commit, source, artifact,
+   SBOM, and provenance digests, and publishes without rebuilding.
 
 ## Review Before Release
 
