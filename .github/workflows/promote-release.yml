@@ -137,7 +137,7 @@ jobs:
           subject-path: ${{ steps.release-files.outputs.archive }}
           sbom-path: ${{ steps.release-files.outputs.sbom }}
       - name: Publish stable release without rebuilding
-        uses: softprops/action-gh-release@7c4723f7a335432393329f8f1c564994ce50185d # v3
+        uses: softprops/action-gh-release@718ea10b132b3b2eba29c1007bb80653f286566b # v3
         with:
           name: "nova-plugin ${{ github.ref_name }}"
           body_path: .metrics/release/release-notes.md
