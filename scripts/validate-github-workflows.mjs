@@ -588,6 +588,7 @@ function validateWorkflowContracts() {
       [/node scripts\/verify-release-promotion\.mjs[\s\S]*--manifest[\s\S]*--artifact-dir/, 'promotion must verify manifest, source, commit, and artifact digests'],
       [/gh attestation verify[\s\S]*--signer-workflow[\s\S]*--source-ref[\s\S]*--source-digest/, 'promotion must verify original candidate attestations and signer identity'],
       [/--predicate-type\s+"https:\/\/cyclonedx\.org\/bom"/, 'promotion must verify the candidate archive as a CycloneDX SBOM attestation'],
+      [/Stage reviewed recovery verifier control[\s\S]*RUNNER_TEMP[\s\S]*Check out immutable stable release source[\s\S]*ref:\s*\$\{\{\s*inputs\.release-tag\s*\}\}[\s\S]*Restore reviewed recovery verifier control/, 'promotion recovery must combine reviewed verifier control with immutable release source'],
       [/Extract verified candidate bundle with safe paths[\s\S]*tar -tzf[\s\S]*grep -Eq[\s\S]*tar -xzf/, 'promotion must verify archive paths before extracting the attested candidate bundle'],
       [/Rebuild candidate bytes for deterministic comparison only[\s\S]*npm run release:artifacts[\s\S]*cmp /, 'promotion must rebuild only for byte comparison against candidate artifacts'],
       [/node scripts\/prepare-release\.mjs/, 'promotion must prepare stable release metadata'],

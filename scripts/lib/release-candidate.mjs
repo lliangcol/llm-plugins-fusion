@@ -93,7 +93,30 @@ function evidenceRecords(paths, bundleRoot) {
   });
 }
 
-function verifyEvidenceRecord(root, bundleRoot, record, candidate) {
+function installInventoryProvesExactTagValidation(data, candidate) {
+  return data.validation?.passed === true
+    && !data.validation?.errors?.length
+    && data.inventoryDiff?.matches === true
+    && data.manifestValidation?.marketplace === true
+    && data.manifestValidation?.plugin === true
+    && data.sourceTreeDigest === data.installedTreeDigest
+    && data.plugin?.version === candidate.stableVersion
+    && data.marketplace?.ref === candidate.tag;
+}
+
+function validationTimingsArePromotable(data, exactTagInstall, candidate) {
+  if (data.failed !== 0 || !Array.isArray(data.gates) || data.gates.length === 0) return false;
+  const skipped = data.gates.filter((gate) => gate.status === 'skipped');
+  if (data.skipped !== skipped.length) return false;
+  if (data.gates.some((gate) => !['passed', 'skipped'].includes(gate.status))) return false;
+  if (skipped.length === 0) return true;
+  return skipped.length === 1
+    && skipped[0].id === 'claude.manifest.static'
+    && skipped[0].reasonCode === 'LOCAL_RUNTIME_UNAVAILABLE'
+    && installInventoryProvesExactTagValidation(exactTagInstall ?? {}, candidate);
+}
+
+function verifyEvidenceRecord(root, bundleRoot, record, candidate, exactTagInstall) {
   if (record.requiredForPromotion !== true) throw new Error(`${record.kind}: promotion evidence must be required`);
   const path = resolve(bundleRoot, record.path);
   portableRelative(bundleRoot, path);
@@ -105,19 +128,10 @@ function verifyEvidenceRecord(root, bundleRoot, record, candidate) {
     if (record.kind === 'coverage-metadata' && (data.check !== true || data.exitCode !== 0 || !data.thresholds || !data.summaryPath)) {
       throw new Error('coverage evidence does not prove a passing checked run');
     }
-    if (record.kind === 'validation-timings' && (data.failed !== 0 || data.skipped !== 0 || !Array.isArray(data.gates) || data.gates.length === 0 || data.gates.some((gate) => gate.status !== 'passed'))) {
+    if (record.kind === 'validation-timings' && !validationTimingsArePromotable(data, exactTagInstall, candidate)) {
       throw new Error('validation timing evidence contains failed or skipped gates');
     }
-    if (record.kind === 'install-inventory' && (
-      data.validation?.passed !== true
-      || data.validation?.errors?.length
-      || data.inventoryDiff?.matches !== true
-      || data.manifestValidation?.marketplace !== true
-      || data.manifestValidation?.plugin !== true
-      || data.sourceTreeDigest !== data.installedTreeDigest
-      || data.plugin?.version !== candidate.stableVersion
-      || data.marketplace?.ref !== candidate.tag
-    )) {
+    if (record.kind === 'install-inventory' && !installInventoryProvesExactTagValidation(data, candidate)) {
       throw new Error('install inventory evidence does not prove an identical validated install');
     }
     if (record.kind === 'route-smoke' && (
@@ -227,7 +241,16 @@ export function verifyReleasePromotion({ root, stableTag, expectedCandidateTag =
     if (!actualKinds.includes(kind)) throw new Error(`candidate required promotion evidence is missing: ${kind}`);
   }
   if (new Set(actualKinds).size !== actualKinds.length) throw new Error('candidate evidence kinds must be unique');
-  for (const record of manifest.evidence) verifyEvidenceRecord(root, bundleRoot, record, manifest.candidate);
+  const installRecord = manifest.evidence.find((entry) => entry.kind === 'install-inventory');
+  let exactTagInstall = null;
+  if (installRecord) {
+    const installPath = resolve(bundleRoot, installRecord.path);
+    portableRelative(bundleRoot, installPath);
+    if (sha256File(installPath) === installRecord.sha256 && statSync(installPath).size === installRecord.bytes) {
+      exactTagInstall = JSON.parse(readFileSync(installPath, 'utf8'));
+    }
+  }
+  for (const record of manifest.evidence) verifyEvidenceRecord(root, bundleRoot, record, manifest.candidate, exactTagInstall);
   return {
     candidateTag: manifest.candidate.tag,
     stableTag,
