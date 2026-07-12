@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - Closed workspace path escapes through parent symlinks/junctions, outside absolute paths, protected hard links, broad `hooks.json` matching, oversized Write payloads, and preflight/post-write drift detection.
 - Made release distribution scans fail closed on tracked-file read failures and hardened process execution for stdin early exit, absolute watchdog termination evidence, and UTF-8-safe truncation.
 - Removed stale Node/check/frontmatter/version narratives and validators that previously protected obsolete natural-language wording.
+- Raised the exact-tag route validation budget from five to eight turns while retaining its five-minute timeout, read-only tool policy, and strict output contract.
 
 ## [3.0.1] - 2026-07-12
 

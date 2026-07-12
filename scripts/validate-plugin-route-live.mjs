@@ -31,7 +31,7 @@ export const routeOutputContract = Object.freeze({
 });
 export const routeSystemPrompt = `This is an automated contract validation of an explicitly invoked /nova-plugin:route command. Follow the loaded route command and nova-route skill. The final response MUST start with exactly "${routeOutputContract.heading}" and then contain exactly these seven Markdown bullet labels in this order: ${routeOutputContract.requiredFields.join(' ')} Use no preface, alternate heading level, table, renamed field, or closing text. Fill every value using only the installed nova inventory.`;
 export const routeSystemPromptSha256 = sha256(routeSystemPrompt);
-export const routeMaxTurns = 5;
+export const routeMaxTurns = 8;
 export const routeAllowedTools = Object.freeze([
   'Skill(nova-plugin:route)',
   ...routePermission.allowedTools,

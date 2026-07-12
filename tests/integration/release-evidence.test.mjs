@@ -10,7 +10,11 @@ import {
   parseArgs,
   renderReleaseEvidenceMarkdown,
 } from '../../scripts/generate-release-evidence.mjs';
-import { routeOutputContract, routeSystemPromptSha256 } from '../../scripts/validate-plugin-route-live.mjs';
+import {
+  routeMaxTurns,
+  routeOutputContract,
+  routeSystemPromptSha256,
+} from '../../scripts/validate-plugin-route-live.mjs';
 
 const coverageSummary = `# tests 80
 # pass 80
@@ -60,7 +64,7 @@ function fixtureInput() {
       disallowedTools: ['Write', 'Edit', 'NotebookEdit', 'Bash'],
       outputContract: routeOutputContract.id,
       systemPromptSha256: routeSystemPromptSha256,
-      maxTurns: 5,
+      maxTurns: routeMaxTurns,
       outputStructureValid: true,
       projectChanged: false,
       gitStatus: '',
@@ -109,7 +113,7 @@ test('release evidence aggregates machine facts without raw model output', () =>
   assert.deepEqual(evidence.route.disallowedTools, ['Write', 'Edit', 'NotebookEdit', 'Bash']);
   assert.equal(evidence.route.outputContract, routeOutputContract.id);
   assert.match(evidence.route.systemPromptSha256, /^[a-f0-9]{64}$/);
-  assert.equal(evidence.route.maxTurns, 5);
+  assert.equal(evidence.route.maxTurns, routeMaxTurns);
   assert.match(renderReleaseEvidenceMarkdown(evidence), /OAuth route: passed with temporary-home isolation and zero project writes/);
 });
 
