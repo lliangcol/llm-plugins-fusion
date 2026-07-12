@@ -121,7 +121,7 @@ jobs:
         run: |
           mkdir candidate-source
           tar -xzf source/candidate-source.tar.gz -C candidate-source
-          npm install -g cli/claude-code.tgz --ignore-scripts
+          npm install -g ./cli/claude-code.tgz --ignore-scripts
       - name: Validate exact candidate install and critical route safety
         working-directory: candidate-source
         env:
