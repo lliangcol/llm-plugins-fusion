@@ -2,14 +2,14 @@
   "$schema": "../schemas/release-channels.schema.json",
   "schemaVersion": 1,
   "stable": {
-    "version": "3.2.0",
-    "tag": "v3.2.0",
-    "commit": "1a52cea609fc6dbe20d12385b473e89ae8aefbbf",
-    "candidateTag": "v3.2.0-rc.3",
-    "candidateManifestSha256": "01b45da3c332d49037992850b27e6fa494ff6f8fe124c0ffc0a0c5dc32b8db19",
-    "pluginTreeSha256": "6195bcd61cd16ad03c76be56a0e1794f11674599fd32e38d599add9fdf28409a",
-    "state": "RELEASE_PUBLISHED",
-    "publishedAt": "2026-07-12T12:44:20Z",
+    "version": "4.0.0",
+    "tag": "v4.0.0",
+    "commit": "367beb25666d6b15e5c3d9b85d0c6c22650c2669",
+    "candidateTag": "v4.0.0-rc.8",
+    "candidateManifestSha256": "b7e894b92314d07ba5dd8990add7345c40ea9e034a2e49610522efa0be7a88b5",
+    "pluginTreeSha256": "4d4df0f13c80424d324c475910b8a2e311f4c4da27a4ce5e29dd3c58cc8c99b8",
+    "state": "STABLE_CHANNEL_PINNED",
+    "publishedAt": "2026-07-12T17:31:24Z",
     "stableInstallProof": null
   },
   "canary": {

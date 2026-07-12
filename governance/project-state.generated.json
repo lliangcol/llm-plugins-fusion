@@ -220,7 +220,7 @@
     "workflow-specs/adapters/claude.json": "0c29cf82eff110b0f85cb81b0b0aa019032cbb1e9fa08075c385b76fa3647195",
     "workflow-specs/adapters/codex.json": "2c0d0497ab9c5a2bbf9a8539d4dc695976a7aa49333657a6e427bc2925806cf8",
     "workflow-specs/adapters/generic.json": "d243b936a99689f5dd495ff9bc4664f292a78ead46b145a638254f438417793f",
-    "docs/generated/surface-inventory.json": "ab78dfe03b9f52f45a42cb5888081111a03e25645304081883d80cf5a78a208d",
+    "docs/generated/surface-inventory.json": "f75f36f04a29f6d3531c378c7933a5e6e06e40cf28f60f3c1cb29ac086344446",
     "governance/product-lanes.json": "ada36f3719d3cd745ccef06c594226de26f01329414b0ed7e7d25a8110868c39",
     "governance/release-operations.json": "866099dd063a19b8e07f8e068a4ec0605e05ed32a6e398ee94c23d47a310969a",
     "governance/adoption-evidence.json": "9c8c5d640e3ef9f80c9cb2d3f002360bf467b0b532194b4e7b8b91f48299a024",

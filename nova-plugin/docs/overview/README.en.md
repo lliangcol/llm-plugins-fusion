@@ -8,7 +8,7 @@ English | [中文](../../../README.md)
 
 [![CI](https://github.com/lliangcol/llm-plugins-fusion/actions/workflows/ci.yml/badge.svg)](https://github.com/lliangcol/llm-plugins-fusion/actions/workflows/ci.yml)
 [![Release](https://img.shields.io/github/v/release/lliangcol/llm-plugins-fusion?label=release)](https://github.com/lliangcol/llm-plugins-fusion/releases/latest)
-[![Version](https://img.shields.io/badge/version-3.2.0-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion/releases/tag/v3.2.0)
+[![Version](https://img.shields.io/badge/version-4.0.0-blue.svg)](https://github.com/lliangcol/llm-plugins-fusion/releases/tag/v4.0.0)
 [![License](https://img.shields.io/github/license/lliangcol/llm-plugins-fusion)](../../../LICENSE)
 
 </div>
@@ -30,7 +30,7 @@ Marketplace metadata is the current installation and distribution mechanism. Thi
 Regular `nova-plugin` workflows only require the Claude Code plugin. Repository maintenance and local validation require Node.js 22+. Codex loop commands also require a locally callable Codex CLI and Bash.
 
 ```text
-/plugin marketplace add lliangcol/llm-plugins-fusion@v3.2.0
+/plugin marketplace add lliangcol/llm-plugins-fusion@v4.0.0
 /plugin install nova-plugin@llm-plugins-fusion
 /nova-plugin:route This task touches docs, versioning, and install validation; recommend the next nova workflow step
 ```
@@ -88,7 +88,7 @@ Demo capture guidance lives in [docs/assets/README.md](../../../docs/assets/READ
 <table>
 <tr>
 <td><strong>Plugin version</strong></td>
-<td>3.2.0</td>
+<td>4.0.0</td>
 </tr>
 <tr>
 <td><strong>Main plugin</strong></td>
@@ -144,7 +144,7 @@ checks.
 Add the marketplace in Claude Code:
 
 ```bash
-/plugin marketplace add lliangcol/llm-plugins-fusion@v3.2.0
+/plugin marketplace add lliangcol/llm-plugins-fusion@v4.0.0
 ```
 
 Install the plugin:
@@ -330,7 +330,7 @@ llm-plugins-fusion/
 | [Core agent routing](../../../docs/agents/ROUTING.md) | Routing rules for 6 core agents and capability packs | Choosing or maintaining agents |
 | [Plugin-aware routing](../../../docs/agents/PLUGIN_AWARE_ROUTING.md) | Enhanced / fallback mode and pack activation rules | Maintaining pack routing |
 | [Marketplace catalog](../../../docs/marketplace/catalog.md) | Generated plugin catalog and compatibility evidence | Browsing marketplace entries |
-| [Marketplace portal IA](../../../docs/marketplace/portal-information-architecture.md) | Marketplace portal information architecture, data sources, current `v3.2.0` single-plugin boundary, and deferred multi-plugin boundary | Evaluating the deferred portal boundary |
+| [Marketplace portal IA](../../../docs/marketplace/portal-information-architecture.md) | Marketplace portal information architecture, data sources, current `v4.0.0` single-plugin boundary, and deferred multi-plugin boundary | Evaluating the deferred portal boundary |
 | [multi-plugin readiness evidence](../../../docs/marketplace/multi-plugin-readiness.md) | Version-independent evidence ledger for production multi-plugin activation | Evaluating demonstrated ownership and release pressure |
 | [Registry author workflow](../../../docs/marketplace/registry-author-workflow.md) | Plugin entry updates, scaffold dry-run, profiles, and validation flow | Plugin authors and maintainers |
 | [Compatibility matrix](../../../docs/marketplace/compatibility-matrix.md) | Claude Code, Codex CLI, Bash, Node.js, and optional enhanced tools | Reviewing compatibility |

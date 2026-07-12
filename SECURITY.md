@@ -24,7 +24,7 @@ Do not edit this block by hand. It is synchronized by
 
 | 版本 | 安全修复 |
 | --- | --- |
-| 最新 MINOR 版本（当前 `3.2.x`） | ✅ |
+| 最新 MINOR 版本（当前 `4.0.x`） | ✅ |
 | 上一 MINOR 版本 | ⚠️ 仅高危漏洞 |
 | 更早版本 | ❌ |
 

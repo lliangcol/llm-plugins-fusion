@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
-## [4.0.0] - 2026-07-13
+## [4.0.0] - 2026-07-12
 
 ### Added
 - Added explicit stable/canary release-channel facts, pinned `git-subdir` distribution metadata, install-tree proof tooling, a digest-bound release state machine, promotion intent, deterministic control bundle, safe tar extraction, release reconciliation, and split build/runtime supply-chain records.
@@ -726,7 +726,8 @@ must not replace the exact release tag as stable evidence.
 - MIT 开源协议
 - 中英双语 README 文档
 
-[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.2.0...HEAD
+[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v4.0.0...HEAD
+[4.0.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.0.1...v3.1.0
 [3.0.1]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.0.0...v3.0.1

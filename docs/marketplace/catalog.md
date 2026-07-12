@@ -16,8 +16,8 @@ Source data:
 
 ## nova-plugin
 
-- Version: `3.2.0`
-- Source: `{"source":"git-subdir","url":"https://github.com/lliangcol/llm-plugins-fusion.git","path":"nova-plugin","ref":"v3.2.0","sha":"1a52cea609fc6dbe20d12385b473e89ae8aefbbf"}`
+- Version: `4.0.0`
+- Source: `{"source":"git-subdir","url":"https://github.com/lliangcol/llm-plugins-fusion.git","path":"nova-plugin","ref":"v4.0.0","sha":"367beb25666d6b15e5c3d9b85d0c6c22650c2669"}`
 - Category: `workflow`
 - Tags: `workflow`, `ai-coding`, `claude-code`, `codex-review`
 - Trust: `author-verified`

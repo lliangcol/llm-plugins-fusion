@@ -38,7 +38,7 @@ removing stale archive documentation from the public working tree rather than
 keeping a second active archive surface. The 2026-05-12 unattended P0-P2 pass
 added maintainer npm shortcuts, consumer profile scaffolding, regression
 checks, workflow evaluation fixtures, and expanded distribution-risk scanning.
-The exact `v3.2.0` tag and GitHub release provide the current stable promotion
+The exact `v4.0.0` tag and GitHub release provide the current stable promotion
 baseline; later `main` commits remain development snapshots until the next
 release tag.
 
