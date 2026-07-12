@@ -30,26 +30,26 @@ When routing, prefer the first exact specialized condition below over a broader 
 | Intent requires a short factual closure summary only. | finalize-lite | Route to lightweight finalization. |
 | Intent requires a complete handoff or pull-request-ready closeout. | finalize-work | Route to full finalization. |
 
-| Workflow | Compatibility skill | Stage | Owner agents | Recommended packs | Risk | Required inputs | Output contract |
+| Workflow | Canonical skill | Stage | Owner agents | Recommended packs | Risk | Required inputs | Output contract |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| backend-plan | nova-backend-plan | plan | architect | java, security, dependency | low | REQUEST, PLAN_OUTPUT_PATH | backend-plan-v2 |
-| codex-review-fix | nova-codex-review-fix | implement | reviewer, builder, verifier | None | medium | REVIEW_SCOPE | codex-review-fix-v2 |
-| codex-review-only | nova-codex-review-only | review | reviewer | None | low | REVIEW_SCOPE | codex-review-only-v2 |
-| codex-verify-only | nova-codex-verify-only | review | verifier | None | low | REVIEW_FILE | codex-verify-only-v2 |
+| backend-plan | nova-produce-plan | plan | architect | java, security, dependency | low | REQUEST, PLAN_OUTPUT_PATH | backend-plan-v2 |
+| codex-review-fix | nova-implement-plan | implement | reviewer, builder, verifier | None | medium | REVIEW_SCOPE | codex-review-fix-v2 |
+| codex-review-only | nova-review | review | reviewer | None | low | REVIEW_SCOPE | codex-review-only-v2 |
+| codex-verify-only | nova-review | review | verifier | None | low | REVIEW_FILE | codex-verify-only-v2 |
 | explore | nova-explore | explore | orchestrator, reviewer | None | none | INPUT | exploration-v2 |
-| explore-lite | nova-explore-lite | explore | orchestrator | None | none | INPUT | exploration-lite-v2 |
-| explore-review | nova-explore-review | explore | reviewer | security, dependency | none | INPUT | exploration-review-v2 |
-| finalize-lite | nova-finalize-lite | finalize | publisher | docs | none | WORK_SUMMARY | finalize-lite-v2 |
+| explore-lite | nova-explore | explore | orchestrator | None | none | INPUT | exploration-lite-v2 |
+| explore-review | nova-explore | explore | reviewer | security, dependency | none | INPUT | exploration-review-v2 |
+| finalize-lite | nova-finalize-work | finalize | publisher | docs | none | WORK_SUMMARY | finalize-lite-v2 |
 | finalize-work | nova-finalize-work | finalize | publisher | release, docs | none | WORK_SUMMARY | finalize-work-v2 |
-| implement-lite | nova-implement-lite | implement | builder | None | medium | REQUEST | implementation-lite-v2 |
+| implement-lite | nova-implement-plan | implement | builder | None | medium | REQUEST | implementation-lite-v2 |
 | implement-plan | nova-implement-plan | implement | builder | None | medium | PLAN_INPUT_PATH, PLAN_APPROVED | implementation-plan-v2 |
-| implement-standard | nova-implement-standard | implement | builder | None | medium | REQUEST | implementation-standard-v2 |
-| plan-lite | nova-plan-lite | plan | architect | None | none | REQUEST | plan-lite-v2 |
-| plan-review | nova-plan-review | review | reviewer | docs, security | none | PLAN_INPUT_PATH | plan-review-v2 |
+| implement-standard | nova-implement-plan | implement | builder | None | medium | REQUEST | implementation-standard-v2 |
+| plan-lite | nova-produce-plan | plan | architect | None | none | REQUEST | plan-lite-v2 |
+| plan-review | nova-review | review | reviewer | docs, security | none | PLAN_INPUT_PATH | plan-review-v2 |
 | produce-plan | nova-produce-plan | plan | architect | docs | low | REQUEST, PLAN_OUTPUT_PATH | produce-plan-v2 |
 | review | nova-review | review | reviewer | security, dependency | none | REVIEW_SCOPE | review-v2 |
-| review-lite | nova-review-lite | review | reviewer | None | none | REVIEW_SCOPE | review-lite-v2 |
-| review-only | nova-review-only | review | reviewer | security, dependency | none | REVIEW_SCOPE | review-only-v2 |
-| review-strict | nova-review-strict | review | reviewer | security, dependency | none | REVIEW_SCOPE | review-strict-v2 |
+| review-lite | nova-review | review | reviewer | None | none | REVIEW_SCOPE | review-lite-v2 |
+| review-only | nova-review | review | reviewer | security, dependency | none | REVIEW_SCOPE | review-only-v2 |
+| review-strict | nova-review | review | reviewer | security, dependency | none | REVIEW_SCOPE | review-strict-v2 |
 | route | nova-route | explore | orchestrator | None | none | REQUEST | recommended-route-v2 |
-| senior-explore | nova-senior-explore | explore | architect, reviewer | None | low | INTENT, CONTEXT | senior-exploration-v2 |
+| senior-explore | nova-explore | explore | architect, reviewer | None | low | INTENT, CONTEXT | senior-exploration-v2 |

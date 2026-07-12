@@ -35,27 +35,29 @@
     "/nova-plugin:route",
     "/nova-plugin:senior-explore"
   ],
-  "legacyAliases": [
-    "/nova-plugin:nova-backend-plan",
-    "/nova-plugin:nova-codex-review-fix",
-    "/nova-plugin:nova-codex-review-only",
-    "/nova-plugin:nova-codex-verify-only",
+  "canonicalSkills": [
     "/nova-plugin:nova-explore",
-    "/nova-plugin:nova-explore-lite",
-    "/nova-plugin:nova-explore-review",
-    "/nova-plugin:nova-finalize-lite",
     "/nova-plugin:nova-finalize-work",
-    "/nova-plugin:nova-implement-lite",
     "/nova-plugin:nova-implement-plan",
-    "/nova-plugin:nova-implement-standard",
-    "/nova-plugin:nova-plan-lite",
-    "/nova-plugin:nova-plan-review",
     "/nova-plugin:nova-produce-plan",
     "/nova-plugin:nova-review",
-    "/nova-plugin:nova-review-lite",
-    "/nova-plugin:nova-review-only",
-    "/nova-plugin:nova-review-strict",
-    "/nova-plugin:nova-route",
-    "/nova-plugin:nova-senior-explore"
+    "/nova-plugin:nova-route"
+  ],
+  "compatibilityCommandAliases": [
+    "/nova-plugin:backend-plan",
+    "/nova-plugin:codex-review-fix",
+    "/nova-plugin:codex-review-only",
+    "/nova-plugin:codex-verify-only",
+    "/nova-plugin:explore-lite",
+    "/nova-plugin:explore-review",
+    "/nova-plugin:finalize-lite",
+    "/nova-plugin:implement-lite",
+    "/nova-plugin:implement-standard",
+    "/nova-plugin:plan-lite",
+    "/nova-plugin:plan-review",
+    "/nova-plugin:review-lite",
+    "/nova-plugin:review-only",
+    "/nova-plugin:review-strict",
+    "/nova-plugin:senior-explore"
   ]
 }

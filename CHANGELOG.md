@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+- Added explicit stable/canary release-channel facts, pinned `git-subdir` distribution metadata, install-tree proof tooling, a digest-bound release state machine, promotion intent, deterministic control bundle, safe tar extraction, release reconciliation, and split build/runtime supply-chain records.
+- Added 24-case deterministic evaluation, eight critical-live fixtures, paired enabled/disabled aggregation, fact graph, control-plane complexity budget, capability-level doctor output, and independent Workflow IR/runtime/adapter SemVer contracts.
+
+### Changed
+- Set the development version to `4.0.0` while keeping the published stable channel pinned to `v3.2.0`; no 4.0 release or compatibility upgrade is claimed.
+- Made six skills the canonical runtime surface. All 21 command files are generated wrappers and 15 specialized entries are deprecated variant aliases for the 4.x migration window.
+- Kept PreToolUse on fail-closed Bash exec-form launchers while Node owns guard logic, reduced audit compaction frequency, split mutable external CLI execution from write tokens and secrets, and moved release identity semantics from YAML into the Node state machine.
+
+### Security
+- Reject path-qualified Bash executables and unquoted shell expansion, and require every existing Write/Edit target to be a regular file with exactly one hard link.
+- Reject unsafe archive entry types, traversal, duplicate paths, malformed numeric fields, pre-existing extraction links, and overlong ustar symlink targets; verify actual control-bundle bytes and inventory; keep PreToolUse fail-closed when Node is unavailable; recovery no longer imports release control files from moving `main`.
+
 ## [3.2.0] - 2026-07-12
 
 ### Added

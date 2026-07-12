@@ -155,6 +155,7 @@ docs/
 | --- | --- |
 | [compatibility/public-api.md](compatibility/public-api.md) | Stable commands, plugin identifiers, validation CLIs, generated file contracts, and breaking-change triggers. |
 | [compatibility/assistant-levels.md](compatibility/assistant-levels.md) | Evidence definitions for parseable, invocable, enforced, and verified assistant adapters. |
+| [compatibility/contract-semver.md](compatibility/contract-semver.md) | Independent Workflow IR, runtime contract, and adapter contract SemVer ranges and 4.x alias migration policy. |
 
 ### Maintainers
 

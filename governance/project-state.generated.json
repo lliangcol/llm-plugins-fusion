@@ -3,7 +3,7 @@
   "generatedFrom": "repository-domain-sources",
   "plugin": {
     "name": "nova-plugin",
-    "version": "3.2.0",
+    "version": "4.0.0",
     "productionPluginCount": 1,
     "publicPath": "nova-plugin/"
   },
@@ -13,13 +13,13 @@
   },
   "inventory": {
     "commands": 21,
-    "skills": 21,
+    "skills": 6,
     "activeAgents": 6,
     "capabilityPacks": 8,
-    "installedClaudeSkills": 42
+    "installedClaudeSkills": 27
   },
   "workflow": {
-    "schemaVersion": 4,
+    "schemaVersion": 5,
     "namespace": "nova-plugin",
     "count": 21
   },
@@ -42,6 +42,7 @@
       "eval:evidence",
       "eval:live",
       "eval:live:dataset",
+      "eval:paired:dry-run",
       "eval:quality",
       "eval:route",
       "eval:simulation",
@@ -49,14 +50,16 @@
       "generate:adapters",
       "generate:behavior-surfaces",
       "generate:compatibility-evidence",
+      "generate:facts",
       "generate:quality-report",
       "generate:runtime-contracts",
-      "generate:workflow-v2-compat",
       "lint",
       "normalize:surfaces",
       "release:artifacts",
       "release:candidate",
+      "release:control",
       "release:evidence",
+      "release:orchestrate",
       "release:promotion:verify",
       "scaffold:consumer",
       "scan:distribution",
@@ -74,8 +77,10 @@
       "validate:behavior-contracts",
       "validate:community",
       "validate:compatibility-evidence",
+      "validate:complexity",
       "validate:docs",
       "validate:drift",
+      "validate:facts",
       "validate:github-workflows",
       "validate:maintainer",
       "validate:permissions",
@@ -136,14 +141,18 @@
     "PreToolUse": [
       {
         "matcher": "Write|Edit|NotebookEdit",
-        "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh\"",
-        "args": [],
+        "command": "bash",
+        "args": [
+          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"
+        ],
         "async": false
       },
       {
         "matcher": "Bash",
-        "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh\"",
-        "args": [],
+        "command": "bash",
+        "args": [
+          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"
+        ],
         "async": false
       }
     ],
@@ -184,6 +193,16 @@
         ],
         "async": true
       }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "*",
+        "command": "node",
+        "args": [
+          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/audit-compactor.mjs"
+        ],
+        "async": false
+      }
     ]
   },
   "release": {
@@ -192,20 +211,20 @@
     "exactTagInstallGate": true
   },
   "sourceDigests": {
-    "package.json": "71f71bc7e91ba3700d2ec6addd9a83d00929b4a629eb6e38eb80649795849f0a",
-    "nova-plugin/.claude-plugin/plugin.json": "2b6c9391e044925b29deae3a34dab46e336752c400b5df6c622d7d98015b2b2c",
-    "workflow-specs/workflows.json": "562b6645143dba698f298a683b04d52e93527256bce3fa7dee9d4b019d199041",
+    "package.json": "d1713b7750dd1bdadff0d021bc5393bb29c8a2b59f6a37d17569f0fae65d01f6",
+    "nova-plugin/.claude-plugin/plugin.json": "54f3b9616d6acbb466a8774eeaccdf80c689adab6f7af2570dcd340446ac28f1",
+    "workflow-specs/workflows.json": "c6dfaf7c60184db60c55e7e45ddce08d0c1d9beb29ea72232baac4f4695ebb9e",
     "workflow-specs/nova.product.json": "250595cc5bdd366682fcc53c20b0c037d068bad2461749fb7410e8c74f32d9bd",
     "workflow-specs/framework.json": "61f2d433646c3e0ca96bcc148be3a3ef90f1b1cd75b39f0f69d21f60dec82010",
-    "workflow-specs/behaviors.json": "bb60b0bf8b214b6dfcbdfefaaf38200eaa2ed84870ac67a6bc9accf0fad71b1a",
+    "workflow-specs/behaviors.json": "11689d1c57acd852fd6b7cbc94eb9063b4fd46fdf521daffe889f44a31a37e0e",
     "workflow-specs/adapters/claude.json": "0c29cf82eff110b0f85cb81b0b0aa019032cbb1e9fa08075c385b76fa3647195",
     "workflow-specs/adapters/codex.json": "2c0d0497ab9c5a2bbf9a8539d4dc695976a7aa49333657a6e427bc2925806cf8",
     "workflow-specs/adapters/generic.json": "d243b936a99689f5dd495ff9bc4664f292a78ead46b145a638254f438417793f",
-    "docs/generated/surface-inventory.json": "f8102f53441a68caa539962ecef36915ce14fdd5335b64ca999d4e95dbf338bf",
+    "docs/generated/surface-inventory.json": "ab78dfe03b9f52f45a42cb5888081111a03e25645304081883d80cf5a78a208d",
     "governance/product-lanes.json": "ada36f3719d3cd745ccef06c594226de26f01329414b0ed7e7d25a8110868c39",
     "governance/release-operations.json": "866099dd063a19b8e07f8e068a4ec0605e05ed32a6e398ee94c23d47a310969a",
     "governance/adoption-evidence.json": "9c8c5d640e3ef9f80c9cb2d3f002360bf467b0b532194b4e7b8b91f48299a024",
-    "nova-plugin/hooks/hooks.json": "29d429ea12d93126ce41490f27bbc3256962743aaca357254fdd6575a84e19aa",
+    "nova-plugin/hooks/hooks.json": "aefa00ccba719be989caa22f310697a167a229eb99e78049aecd8675b0f2547a",
     "nova-plugin/runtime/shell-command-policy.json": "6565702576f00740b49442f36214155da1da54a5741d88640a2f512a9bb4ef44",
     ".nova/shell-policy.json": "b03b4ad3452bd13f95f14823b2a0e695d8de6f46f11b5b2d434d91f285d1279d"
   }

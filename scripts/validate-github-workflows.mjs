@@ -13,6 +13,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
 import { requireOptionValue } from './lib/cli-args.mjs';
+import { parseDocument } from 'yaml';
 
 assertNodeVersion({ label: 'GitHub workflow validation' });
 
@@ -62,11 +63,6 @@ const WORKFLOW_CONTRACTS = [
     file: '.github/workflows/ci.yml',
     permissions: [['contents', 'read']],
     label: 'CI workflow top-level permissions',
-  },
-  {
-    file: '.github/workflows/reusable-node-check.yml',
-    permissions: [['contents', 'read']],
-    label: 'reusable node check workflow top-level permissions',
   },
   {
     file: '.github/workflows/plugin-install-smoke.yml',
@@ -124,6 +120,21 @@ function readWorkflow(file) {
     return null;
   }
   return readFileSync(abs, 'utf8');
+}
+
+function parseWorkflow(file, src) {
+  try {
+    const document = parseDocument(src, { uniqueKeys: true });
+    if (document.errors.length) throw new Error(document.errors.map((error) => error.message).join('; '));
+    return document.toJS();
+  } catch (error) {
+    recordError(file, `workflow YAML AST parse failed: ${error.message}`);
+    return null;
+  }
+}
+
+function allSteps(model) {
+  return Object.values(model?.jobs ?? {}).flatMap((job) => job?.steps ?? []);
 }
 
 function readRequiredFile(file) {
@@ -515,6 +526,7 @@ function validateWorkflowContracts() {
   for (const workflow of WORKFLOW_CONTRACTS) {
     const src = readWorkflow(workflow.file);
     if (!src) continue;
+    const model = parseWorkflow(workflow.file, src);
     validatePinnedExternalActions(workflow.file, src);
     if (/^\s*pull_request_target\s*:/m.test(src)) {
       recordError(workflow.file, 'workflow trigger safety contract forbids pull_request_target');
@@ -523,80 +535,58 @@ function validateWorkflowContracts() {
       recordError(workflow.file, 'workflow permission contract forbids broad read-all/write-all shortcuts');
     }
     expectPermissionSet(workflow.file, src, 'permissions', 0, workflow.permissions, workflow.label);
+    if (allSteps(model).some((step) => typeof step.run === 'string' && /\$\{\{\s*inputs\.command\s*\}\}/u.test(step.run))) {
+      recordError(workflow.file, 'workflow must not execute a free shell command input');
+    }
+    if (allSteps(model).some((step) => typeof step.run === 'string' && /\$\{\{\s*(?:github\.|steps\.[^.]+\.outputs\.)/u.test(step.run))) {
+      recordError(workflow.file, 'promotion shell scripts must receive GitHub contexts and step outputs through env');
+    }
+    if (['.github/workflows/plugin-install-smoke.yml', '.github/workflows/release.yml', '.github/workflows/release-candidate.yml', '.github/workflows/promote-release.yml', '.github/workflows/release-recovery-drill.yml'].includes(workflow.file)) {
+      for (const step of allSteps(model).filter((entry) => String(entry.uses ?? '').startsWith('actions/checkout@'))) {
+        if (step.with?.['persist-credentials'] !== false) recordError(workflow.file, 'trust-boundary checkout must set persist-credentials: false');
+      }
+    }
   }
 
   const releaseFile = '.github/workflows/release.yml';
   const releaseSrc = readWorkflow(releaseFile);
   if (releaseSrc) {
-    if (!/uses:\s*\.\/\.github\/workflows\/promote-release\.yml/.test(releaseSrc)) {
-      recordError(releaseFile, 'stable release trigger must delegate to promote-release.yml');
-    }
-    if (!/if:\s*\$\{\{\s*github\.event_name == 'push' && !contains\(github\.ref_name, '-'\)\s*\}\}/.test(releaseSrc)) {
-      recordError(releaseFile, 'stable release trigger must reject prerelease tags');
-    }
-    if (!/workflow_dispatch:[\s\S]*stable-tag:[\s\S]*uses:\s*\.\/\.github\/workflows\/promote-release\.yml[\s\S]*release-tag:\s*\$\{\{\s*inputs\.stable-tag\s*\}\}/.test(releaseSrc)) {
-      recordError(releaseFile, 'stable release trigger must support forward recovery of an existing immutable stable tag');
-    }
-    const releaseJob = extractYamlBlock(
-      releaseFile,
-      releaseSrc,
-      'promote',
-      2,
-      'stable promotion caller job block',
-    );
-    if (releaseJob) {
-      expectPermissionSet(
-        releaseFile,
-        releaseSrc,
-        'permissions',
-        4,
-        [['contents', 'write'], ['checks', 'read'], ['id-token', 'write'], ['attestations', 'write']],
-        'stable promotion caller scoped permission',
-        releaseJob.start + 1,
-        releaseJob.end,
-      );
-    }
+    const model = parseWorkflow(releaseFile, releaseSrc);
+    const inputs = model?.on?.workflow_dispatch?.inputs ?? {};
+    if (model?.on?.push) recordError(releaseFile, 'stable release must require explicit promotion intent instead of inferring identity from a push');
+    if (!inputs['stable-tag']?.required || !inputs['candidate-tag']?.required) recordError(releaseFile, 'stable release dispatch must require exact stable and candidate tags');
+    const caller = model?.jobs?.recover;
+    if (caller?.uses !== './.github/workflows/promote-release.yml') recordError(releaseFile, 'stable release trigger must delegate to promote-release.yml');
+    if (caller?.with?.['release-tag'] !== '${{ inputs.stable-tag }}' || caller?.with?.['candidate-tag'] !== '${{ inputs.candidate-tag }}') recordError(releaseFile, 'stable release caller must pass both explicit identities');
+    const callerPermissions = caller?.permissions ?? {};
+    const expectedCallerPermissions = { contents: 'write', checks: 'read', 'id-token': 'write', attestations: 'write' };
+    if (JSON.stringify(callerPermissions) !== JSON.stringify(expectedCallerPermissions)) recordError(releaseFile, 'stable promotion caller scoped permission must be exact');
+    if (releaseSrc.includes('secrets: inherit')) recordError(releaseFile, 'stable release caller must not inherit repository secrets');
   }
 
   const candidateFile = '.github/workflows/release-candidate.yml';
   const candidateSrc = readWorkflow(candidateFile);
   if (candidateSrc) {
-    if (extractRunScripts(candidateSrc).some((script) => /\$\{\{\s*(?:github\.|steps\.[^.\s]+\.outputs\.)/.test(script))) {
-      recordError(candidateFile, 'candidate shell scripts must receive GitHub contexts and step outputs through env');
-    }
-    for (const [pattern, message] of [
-      [/RELEASE_CANDIDATE:\s*'1'[\s\S]*run:\s*node scripts\/prepare-release\.mjs/, 'candidate workflow must prepare RC notes from the stable base version'],
-      [/CLAUDE_CODE_OAUTH_TOKEN:\s*\$\{\{\s*secrets\.CLAUDE_CODE_OAUTH_TOKEN\s*\}\}/, 'candidate live gate must use the OAuth repository secret'],
-      [/node scripts\/generate-release-candidate\.mjs[\s\S]*--artifact-dir[\s\S]*--evidence[\s\S]*--out/, 'candidate workflow must bind artifacts and evidence into a manifest'],
-      [/archives=\(\.metrics\/candidate-bundle\/artifacts\/nova-plugin-\*\.tar\.gz\)[\s\S]*sboms=\(\.metrics\/candidate-bundle\/artifacts\/nova-plugin-\*\.tar\.gz\.cdx\.json\)[\s\S]*test "\$\{#archives\[@\]\}" -eq 1[\s\S]*test "\$\{#sboms\[@\]\}" -eq 1/, 'candidate workflow must resolve exactly one archive and SBOM'],
-      [/candidate-bundle\.tar\.gz[\s\S]*--sort=name[\s\S]*--mtime='@0'/, 'candidate workflow must create a deterministic evidence bundle'],
-      [/subject-path:\s*\$\{\{\s*steps\.files\.outputs\.bundle\s*\}\}/, 'candidate workflow must attest the evidence bundle'],
-      [/subject-path:\s*\$\{\{\s*steps\.files\.outputs\.archive\s*\}\}[\s\S]*sbom-path:\s*\$\{\{\s*steps\.files\.outputs\.sbom\s*\}\}/, 'candidate attestation must use resolved concrete paths'],
-      [/prerelease:\s*true/, 'candidate publication must be a prerelease'],
-    ]) if (!pattern.test(candidateSrc)) recordError(candidateFile, message);
-    if (/ANTHROPIC_API_KEY/.test(candidateSrc)) recordError(candidateFile, 'candidate live gate must not use ANTHROPIC_API_KEY');
+    const model = parseWorkflow(candidateFile, candidateSrc);
+    if (!model?.jobs?.['claude-package'] || model.jobs['claude-package'].environment) recordError(candidateFile, 'candidate must verify the mutable CLI package in an unprivileged no-secret job');
+    if (allSteps(model?.jobs?.['claude-package'] ? { jobs: { only: model.jobs['claude-package'] } } : {}).some((step) => step.env && Object.keys(step.env).some((key) => /TOKEN|SECRET/u.test(key)))) recordError(candidateFile, 'CLI package verification job must not receive secrets');
+    if (!model?.jobs?.live?.needs?.includes?.('claude-package')) recordError(candidateFile, 'secret-bearing live job must consume the verified CLI package artifact');
+    if (allSteps({ jobs: { live: model?.jobs?.live } }).some((step) => String(step.uses ?? '').startsWith('actions/checkout@'))) recordError(candidateFile, 'secret-bearing live job must not checkout repository credentials or source');
+    if (!candidateSrc.includes('build-release-control-bundle.mjs') || !candidateSrc.includes('promotion-intent.json') || !candidateSrc.includes('--control-bundle-manifest')) recordError(candidateFile, 'candidate must bind promotion intent and a content-addressed control bundle');
+    if (!candidateSrc.includes('build-candidate-bundle.mjs')) recordError(candidateFile, 'candidate bundle must use the deterministic Node archive builder');
+    if (/ANTHROPIC_API_KEY/u.test(candidateSrc)) recordError(candidateFile, 'candidate live gate must not use ANTHROPIC_API_KEY');
   }
 
   const promotionFile = '.github/workflows/promote-release.yml';
   const promotionSrc = readWorkflow(promotionFile);
   if (promotionSrc) {
-    if (extractRunScripts(promotionSrc).some((script) => /\$\{\{\s*(?:github\.|steps\.[^.\s]+\.outputs\.)/.test(script))) {
-      recordError(promotionFile, 'promotion shell scripts must receive GitHub contexts and step outputs through env');
-    }
-    for (const [pattern, message] of [
-      [/gh release download "\$\{candidate_tag\}" --dir \.metrics\/promotion/, 'promotion must download existing candidate assets'],
-      [/node scripts\/verify-release-promotion\.mjs[\s\S]*--manifest[\s\S]*--artifact-dir/, 'promotion must verify manifest, source, commit, and artifact digests'],
-      [/gh attestation verify[\s\S]*--signer-workflow[\s\S]*--source-ref[\s\S]*--source-digest/, 'promotion must verify original candidate attestations and signer identity'],
-      [/--predicate-type\s+"https:\/\/cyclonedx\.org\/bom"/, 'promotion must verify the candidate archive as a CycloneDX SBOM attestation'],
-      [/Stage reviewed recovery verifier control[\s\S]*release-candidate\.mjs[\s\S]*build-release-artifacts\.mjs[\s\S]*Check out immutable stable release source[\s\S]*ref:\s*\$\{\{\s*inputs\.release-tag\s*\}\}[\s\S]*Restore reviewed recovery verifier control[\s\S]*release-candidate\.mjs[\s\S]*build-release-artifacts\.mjs/, 'promotion recovery must combine reviewed verifier and provenance control with immutable release source'],
-      [/Extract verified candidate bundle with safe paths[\s\S]*tar -tzf[\s\S]*grep -Eq[\s\S]*tar -xzf/, 'promotion must verify archive paths before extracting the attested candidate bundle'],
-      [/Rebuild candidate bytes for deterministic comparison only[\s\S]*RELEASE_TAG:\s*\$\{\{\s*steps\.candidate\.outputs\.candidate_tag\s*\}\}[\s\S]*RELEASE_COMMIT:\s*\$\{\{\s*steps\.release\.outputs\.commit\s*\}\}[\s\S]*npm run release:artifacts[\s\S]*cmp /, 'promotion must rebuild only for byte comparison against candidate artifacts and bind candidate provenance to the verified release context'],
-      [/node scripts\/prepare-release\.mjs/, 'promotion must prepare stable release metadata'],
-      [/subject-path:\s*\$\{\{\s*steps\.release-files\.outputs\.archive\s*\}\}[\s\S]*sbom-path:\s*\$\{\{\s*steps\.release-files\.outputs\.sbom\s*\}\}/, 'promotion attestation must use resolved concrete paths'],
-      [/prerelease:\s*false/, 'stable promotion must publish a non-prerelease'],
-    ]) if (!pattern.test(promotionSrc)) recordError(promotionFile, message);
-    if (/files:[\s\S]*\.metrics\/release-artifacts\/nova-plugin-/u.test(promotionSrc)) {
-      recordError(promotionFile, 'stable promotion must publish candidate bytes rather than rebuilt artifacts');
+    const model = parseWorkflow(promotionFile, promotionSrc);
+    const inputs = model?.on?.workflow_call?.inputs ?? {};
+    if (!inputs['release-tag']?.required || !inputs['candidate-tag']?.required) recordError(promotionFile, 'promotion must require exact stable and candidate tags');
+    if (/latest matching candidate|tail -n 1|sort -V/u.test(promotionSrc)) recordError(promotionFile, 'promotion must not infer the latest matching candidate');
+    if (/Stage reviewed recovery verifier|Restore reviewed recovery verifier|cp scripts\/lib\/release-candidate/u.test(promotionSrc)) recordError(promotionFile, 'promotion must not mix current-main control with immutable release source');
+    for (const required of ['extract-release-bundle.mjs', 'verify-release-promotion.mjs', 'release-orchestrator.mjs', 'reconcile-github-release.mjs', '--candidate-core', '--promotion-intent', '--control-bundle-manifest']) {
+      if (!promotionSrc.includes(required)) recordError(promotionFile, `promotion is missing state-machine control ${required}`);
     }
   }
 

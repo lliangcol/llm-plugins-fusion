@@ -52,7 +52,7 @@ public/private boundary described in [CLAUDE.md](../../CLAUDE.md) and
 When changing these controls:
 
 - Keep `/nova-plugin:route` read-only and first-stage.
-- Preserve the command/skill one-to-one mapping.
+- Preserve canonical skill ownership and generated command/preset projection.
 - Update user-facing docs when command behavior, validation expectations, or
   safety boundaries change.
 - Put reusable private-work resumability prompts under `docs/prompts/`, not in

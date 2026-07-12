@@ -51,8 +51,9 @@ tag. It performs no publication. The workflow:
 2. downloads the candidate bundle from GitHub Release;
 3. verifies the GitHub artifact attestation and signer workflow;
 4. rejects unsafe archive paths before extraction;
-5. verifies manifest, commit, source, evidence, SBOM, provenance, and artifact
-   digests with the normal promotion verifier; and
+5. verifies the candidate envelope, promotion intent, control-bundle bytes and
+   inventory, commit, source, evidence, build/runtime BOMs, build record, and
+   artifact digests with the normal promotion verifier; and
 6. uploads the recovered evidence as a drill artifact.
 
 Record the successful run URL and date in

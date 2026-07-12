@@ -41,7 +41,7 @@ This file is the supporting behavioral contract for `/nova-plugin:route` and the
 - **Canonical inputs:** `REQUEST`(required aliases=INPUT,INTENT); `DEPTH`(optional aliases=MODE default="normal" exact="brief","normal")
 - **Decision entries:** 19; exact routes: `codex-review-fix`, `codex-review-only`, `codex-verify-only`, `senior-explore`, `explore-review`, `explore`, `backend-plan`, `plan-review`, `plan-lite`, `produce-plan`, `review-strict`, `review-lite`, `review-only`, `review`, `implement-plan`, `implement-lite`, `implement-standard`, `finalize-lite`, `finalize-work`.
 - **Workflow steps:** `resolve-intent` → `classify` → `select` → `verify-surface` → `emit`
-- **Output:** mode=`chat`; order=`Command` → `Skill` → `Core agent` → `Capability packs` → `Required inputs` → `Validation expectations` → `Fallback path`; severity=none.
+- **Output:** mode=`chat`; order=`Canonical skill` → `Command alias (optional)` → `Variant parameters` → `Core agent` → `Capability packs` → `Required inputs` → `Validation expectations` → `Fallback path`; severity=none.
 - **Deviation/failure:** mode=`forbid`; failure order=`status` → `ambiguous intent` → `required choice` → `safe fallback`.
 - **Full IR:** `runtime/contracts/route.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
 <!-- END GENERATED BEHAVIOR CONTRACT -->
@@ -63,43 +63,44 @@ Use this as the first-stage keyword router before selecting the specific command
 | Finalize | summarize, handoff, release notes, delivery, close out | `/nova-plugin:finalize-work` or `/nova-plugin:finalize-lite` |
 | Codex loop | Codex, external review, review artifact, verify artifact, closed loop | `/nova-plugin:codex-review-fix`, `/nova-plugin:codex-review-only`, or `/nova-plugin:codex-verify-only` |
 
-| Request signal | Command | Skill | Core agent | Pack hints |
-| --- | --- | --- | --- | --- |
-| Understand facts, unknowns, or risk only | `/nova-plugin:explore` | `nova-explore` | `orchestrator` or `reviewer` | Domain packs from context |
-| Deep investigation or analysis artifact | `/nova-plugin:senior-explore` | `nova-senior-explore` | `architect` or `reviewer` | Domain packs from context |
-| Write a reviewable plan | `/nova-plugin:produce-plan` | `nova-produce-plan` | `architect` | `docs`, plus domain packs |
-| Lightweight task outline | `/nova-plugin:plan-lite` | `nova-plan-lite` | `architect` | Domain packs from context |
-| Review code, plan, or risk | `/nova-plugin:review` | `nova-review` | `reviewer` | `security`, `dependency`, `frontend`, `marketplace`, or other domain packs |
-| Implement approved plan | `/nova-plugin:implement-plan` | `nova-implement-plan` | `builder` | Domain packs from touched files |
-| Implement explicit steps | `/nova-plugin:implement-standard` | `nova-implement-standard` | `builder` | Domain packs from touched files |
-| Small low-risk fix | `/nova-plugin:implement-lite` | `nova-implement-lite` | `builder` | Domain packs from touched files |
-| Codex review/fix/verify loop | `/nova-plugin:codex-review-fix` | `nova-codex-review-fix` | `reviewer` then `builder` then `verifier` | Domain packs from diff |
-| Delivery summary or handoff | `/nova-plugin:finalize-work` | `nova-finalize-work` | `publisher` | `release`, `docs`, `marketplace` when metadata changed |
+| Request signal | Optional command alias | Canonical skill | Variant preset | Core agent | Pack hints |
+| --- | --- | --- | --- | --- | --- |
+| Understand facts, unknowns, or risk only | `/nova-plugin:explore` | `nova-explore` | `{}` | `orchestrator` or `reviewer` | Domain packs from context |
+| Deep investigation or analysis artifact | `/nova-plugin:senior-explore` | `nova-explore` | `{"DEPTH":"deep"}` | `architect` or `reviewer` | Domain packs from context |
+| Write a reviewable plan | `/nova-plugin:produce-plan` | `nova-produce-plan` | `{}` | `architect` | `docs`, plus domain packs |
+| Lightweight task outline | `/nova-plugin:plan-lite` | `nova-produce-plan` | `{"PLAN_PROFILE":"lite"}` | `architect` | Domain packs from context |
+| Review code, plan, or risk | `/nova-plugin:review` | `nova-review` | `{}` | `reviewer` | `security`, `dependency`, `frontend`, `marketplace`, or other domain packs |
+| Implement approved plan | `/nova-plugin:implement-plan` | `nova-implement-plan` | `{}` | `builder` | Domain packs from touched files |
+| Implement explicit steps | `/nova-plugin:implement-standard` | `nova-implement-plan` | `{"EXECUTION_PROFILE":"standard"}` | `builder` | Domain packs from touched files |
+| Small low-risk fix | `/nova-plugin:implement-lite` | `nova-implement-plan` | `{"EXECUTION_PROFILE":"lite"}` | `builder` | Domain packs from touched files |
+| Codex review/fix/verify loop | `/nova-plugin:codex-review-fix` | `nova-implement-plan` | `{"EXECUTION_PROFILE":"codex-review-fix"}` | `reviewer` then `builder` then `verifier` | Domain packs from diff |
+| Delivery summary or handoff | `/nova-plugin:finalize-work` | `nova-finalize-work` | `{}` | `publisher` | `release`, `docs`, `marketplace` when metadata changed |
 
 Specialized and compatibility commands are still valid routes. Use them only
 when their narrower contract fits better than the primary command.
 
-| Specialized signal | Command | Skill | Core agent | Pack hints |
+| Specialized signal | Optional command alias | Canonical skill | Variant preset | Core agent | Pack hints |
 | --- | --- | --- | --- | --- |
-| Need only a route recommendation | `/nova-plugin:route` | `nova-route` | `orchestrator` | Packs implied by request context |
-| Lightweight fact gathering | `/nova-plugin:explore-lite` | `nova-explore-lite` | `orchestrator` | Domain packs from context |
-| Exploration scoped to review readiness | `/nova-plugin:explore-review` | `nova-explore-review` | `reviewer` | `security`, `dependency`, or domain packs |
-| Review an implementation plan before edits | `/nova-plugin:plan-review` | `nova-plan-review` | `reviewer` | `docs`, `security`, or domain packs |
-| Java/Spring backend plan | `/nova-plugin:backend-plan` | `nova-backend-plan` | `architect` | `java`, `security`, `dependency` |
-| Fast review with bounded depth | `/nova-plugin:review-lite` | `nova-review-lite` | `reviewer` | Domain packs from diff |
-| Review-only artifact or findings | `/nova-plugin:review-only` | `nova-review-only` | `reviewer` | `security`, `dependency`, or domain packs |
-| Strict/high-risk review | `/nova-plugin:review-strict` | `nova-review-strict` | `reviewer` | `security`, `dependency`, plus domain packs |
-| Codex read-only review artifact | `/nova-plugin:codex-review-only` | `nova-codex-review-only` | `reviewer` | Domain packs from diff |
-| Codex verification of existing review | `/nova-plugin:codex-verify-only` | `nova-codex-verify-only` | `verifier` | Domain packs from review scope |
-| Lightweight closeout | `/nova-plugin:finalize-lite` | `nova-finalize-lite` | `publisher` | `docs` or `release` when relevant |
+| Need only a route recommendation | `/nova-plugin:route` | `nova-route` | `{}` | `orchestrator` | Packs implied by request context |
+| Lightweight fact gathering | `/nova-plugin:explore-lite` | `nova-explore` | `{"PERSPECTIVE":"observer","DEPTH":"lite"}` | `orchestrator` | Domain packs from context |
+| Exploration scoped to review readiness | `/nova-plugin:explore-review` | `nova-explore` | `{"PERSPECTIVE":"reviewer"}` | `reviewer` | `security`, `dependency`, or domain packs |
+| Review an implementation plan before edits | `/nova-plugin:plan-review` | `nova-review` | `{"REVIEW_PROFILE":"plan"}` | `reviewer` | `docs`, `security`, or domain packs |
+| Java/Spring backend plan | `/nova-plugin:backend-plan` | `nova-produce-plan` | `{"PLAN_PROFILE":"java-backend"}` | `architect` | `java`, `security`, `dependency` |
+| Fast review with bounded depth | `/nova-plugin:review-lite` | `nova-review` | `{"LEVEL":"lite"}` | `reviewer` | Domain packs from diff |
+| Review-only artifact or findings | `/nova-plugin:review-only` | `nova-review` | `{"LEVEL":"standard"}` | `reviewer` | `security`, `dependency`, or domain packs |
+| Strict/high-risk review | `/nova-plugin:review-strict` | `nova-review` | `{"LEVEL":"strict"}` | `reviewer` | `security`, `dependency`, plus domain packs |
+| Codex read-only review artifact | `/nova-plugin:codex-review-only` | `nova-review` | `{"REVIEW_PROFILE":"codex-review-only"}` | `reviewer` | Domain packs from diff |
+| Codex verification of existing review | `/nova-plugin:codex-verify-only` | `nova-review` | `{"REVIEW_PROFILE":"codex-verify-only"}` | `verifier` | Domain packs from review scope |
+| Lightweight closeout | `/nova-plugin:finalize-lite` | `nova-finalize-work` | `{"DEPTH":"lite"}` | `publisher` | `docs` or `release` when relevant |
 
 ### Output Format
 
 ```markdown
 ## Recommended Route
 
-- Command:
-- Skill:
+- Canonical skill:
+- Command alias (optional):
+- Variant parameters:
 - Core agent:
 - Capability packs:
 - Required inputs:
@@ -114,7 +115,7 @@ them into prose or substitute aliases.
 
 For `DEPTH=normal`, include a one-sentence rationale inside the appropriate
 fixed field. For `DEPTH=brief`, keep every field concise. Do not add content
-outside the heading and seven fixed bullets.
+outside the heading and eight fixed bullets.
 
 If the work requires a sequence, output the shortest safe sequence and keep the
 same fixed fields for the immediate next step:
@@ -122,8 +123,9 @@ same fixed fields for the immediate next step:
 ```markdown
 ## Recommended Route
 
-- Command: `/nova-plugin:explore` -> `/nova-plugin:produce-plan` -> `/nova-plugin:review`
-- Skill: `nova-explore` -> `nova-produce-plan` -> `nova-review`
+- Canonical skill: `nova-explore` -> `nova-produce-plan` -> `nova-review`
+- Command alias (optional): `/nova-plugin:explore` -> `/nova-plugin:produce-plan` -> `/nova-plugin:review`
+- Variant parameters: `{}` -> `{}` -> `{}`
 - Core agent: `orchestrator` -> `architect` -> `reviewer`
 - Capability packs: packs implied by request context
 - Required inputs: `INPUT`, then `REQUEST` and `PLAN_OUTPUT_PATH`, then `REVIEW_SCOPE`
@@ -168,8 +170,12 @@ same fixed fields for the immediate next step:
 ## Verification
 
 - [ ] `REQUEST` was resolved or the missing input was named.
-- [ ] The command and skill exist and preserve one-to-one naming.
+- [ ] The canonical skill is one of the six 4.0 surfaces; any command alias and variant preset exist in the generated catalog.
 - [ ] The core agent is one of `orchestrator`, `architect`, `builder`, `reviewer`, `verifier`, or `publisher`.
 - [ ] Capability packs are selected only from the existing pack set.
 - [ ] Required inputs use the selected workflows' exact canonical UPPER_SNAKE_CASE names and validation expectations are explicit.
 - [ ] The output is read-only and does not include implementation work.
+
+## 4.0 Skill-First Output
+
+Emit `Canonical skill`, optional `Command alias`, `Variant parameters`, `Core agent`, `Capability packs`, `Required inputs`, `Validation expectations`, and `Fallback path`. Commands are generated compatibility wrappers and must never be treated as independent behavior sources.

@@ -32,5 +32,10 @@ assert.ok(['not-demonstrated', 'demonstrated'].includes(adoption.status));
 assert.ok(Array.isArray(adoption.records));
 if (adoption.status === 'demonstrated') assert.ok(adoption.records.length >= adoption.minimumForDemonstrated, 'adoption cannot be demonstrated without minimum records');
 for (const record of adoption.records) for (const field of adoption.requiredRecordFields) assert.ok(record[field], `adoption record missing ${field}`);
+if (adoption.status !== 'demonstrated') {
+  for (const forbidden of ['packages/workflow-kernel', 'scripts/plugin-author.mjs', 'plugins', 'portal']) {
+    assert.equal(existsSync(resolve(root, forbidden)), false, `KERNEL-001 blocks public productization while adoption is ${adoption.status}: ${forbidden}`);
+  }
+}
 
 console.log(`OK release operations governance (independent approvals=${operations.independentReview.minimumApprovals}, signers=${signers.length}, labels=${parseLabelCatalog(readFileSync(resolve(root, operations.labels.source), 'utf8')).length}, adoption=${adoption.status})`);

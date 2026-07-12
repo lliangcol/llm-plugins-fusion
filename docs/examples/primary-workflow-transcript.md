@@ -24,7 +24,8 @@ succeeds. No plan artifact or approval exists yet.
 /nova-plugin:route REQUEST="Investigate the invoice ordering defect and prepare a safe fix." DEPTH=brief
 ```
 
-Expected shape: `## Recommended Route` plus the seven fixed fields. `Required
+Expected shape: `## Recommended Route` plus the eight fixed fields, beginning
+with `Canonical skill`, optional `Command alias`, and `Variant parameters`. `Required
 inputs` must use downstream canonical names such as `INPUT`, never prose or an
 alias.
 

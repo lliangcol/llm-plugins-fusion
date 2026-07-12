@@ -20,6 +20,7 @@ const sha256 = (path) => createHash('sha256').update(readFileSync(resolve(root, 
 const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false }).stdout?.trim() ?? null;
 const minimumLiveCases = 20;
 const minimumLiveAttempts = 3;
+const canaryTtlMs = 14 * 24 * 60 * 60 * 1000;
 
 const declarations = Object.freeze({
   'claude-code': { declaredLevel: 'L2', maximumSupportedLevel: 'L4', adapter: 'adapters/claude/manifest.json', scope: 'stable Claude command invocation; hooks and release verification require current evidence' },
@@ -41,7 +42,16 @@ function evidenceStatus(path, evidence, assistant, eligibilityReasons = []) {
     else if (sha256(sourcePath) !== expected) staleReasons.push(`${sourcePath}:digest-changed`);
   }
   if (evidence.sourceState && evidence.sourceState !== 'clean-commit') staleReasons.push('source-state:not-clean-commit');
-  if (evidence.baseCommit && head && evidence.baseCommit !== head) staleReasons.push('base-commit:not-current-head');
+  const recordedAt = evidence.recordedAt ? Date.parse(evidence.recordedAt) : Number.NaN;
+  const expired = evidence.lane === 'latest-canary' && (!Number.isFinite(recordedAt) || Date.now() - recordedAt > canaryTtlMs);
+  let status = 'historical';
+  if (expired) status = 'expired';
+  else if (staleReasons.length === 0) {
+    const tagCommit = evidence.releaseTag
+      ? spawnSync('git', ['rev-list', '-n', '1', evidence.releaseTag], { cwd: root, encoding: 'utf8', shell: false }).stdout?.trim()
+      : null;
+    status = tagCommit && tagCommit === evidence.baseCommit ? 'exact' : 'carried-forward';
+  }
   return {
     assistant: assistant.id,
     assistantVersion: assistant.version,
@@ -50,7 +60,7 @@ function evidenceStatus(path, evidence, assistant, eligibilityReasons = []) {
     source: path,
     releaseTag: evidence.releaseTag ?? null,
     commit: evidence.baseCommit ?? evidence.commit ?? null,
-    status: staleReasons.length ? 'historical' : 'current',
+    status,
     staleReasons,
   };
 }
@@ -80,6 +90,8 @@ export function buildRegistry() {
         sourceDigests: evidence.sourceDigests,
         baseCommit: evidence.baseCommit,
         sourceState: evidence.sourceState,
+        releaseTag: evidence.releaseTag,
+        lane: evidence.lane,
       }, {
         id: evidence.assistant.id,
         version: exactVersion,
@@ -89,12 +101,12 @@ export function buildRegistry() {
     return (evidence.assistants ?? []).map((assistant) => evidenceStatus(path, evidence, assistant));
   });
   const claims = Object.entries(declarations).map(([assistant, declaration]) => {
-    const current = records.filter((record) => record.assistant === assistant && record.status === 'current').at(-1) ?? null;
+    const current = records.filter((record) => record.assistant === assistant && ['exact', 'carried-forward'].includes(record.status)).at(-1) ?? null;
     return {
       assistant,
       ...declaration,
       effectiveLevel: current?.observedLevel ?? declaration.declaredLevel,
-      evidenceStatus: current ? 'current' : 'declaration-only',
+      evidenceStatus: current?.status ?? 'declaration-only',
       currentEvidence: current?.source ?? null,
     };
   });
@@ -114,7 +126,7 @@ export function buildRegistry() {
       ...support.latestCanary.map((entry) => ({ ...entry, lane: 'latest-canary' })),
     ],
     currentClaims: claims,
-    historicalEvidence: records.filter((record) => record.status === 'historical'),
+    historicalEvidence: records.filter((record) => !['exact', 'carried-forward'].includes(record.status)),
   };
 }
 
@@ -125,7 +137,7 @@ function table(registry) {
 
 function summary(registry) {
   const historical = registry.historicalEvidence.length
-    ? registry.historicalEvidence.map((record) => `- ${record.assistant}@${record.assistantVersion}: ${record.observedLevel}, now historical (${record.staleReasons.join(', ')})`).join('\n')
+    ? registry.historicalEvidence.map((record) => `- ${record.assistant}@${record.assistantVersion}: ${record.observedLevel}, now ${record.status} (${record.staleReasons.join(', ')})`).join('\n')
     : '- None';
   return `# Assistant Compatibility Evidence\n\nStatus: generated\n\nCompatibility levels are derived from current source digests. Static manifests declare only a baseline and a maximum; L3/L4 require current evidence.\n\n${table(registry)}\n\n## Evidence Lanes\n\n- Known-good lanes are blocking and pinned to exact versions.\n- Latest-canary lanes are non-blocking drift detectors.\n\n## Historical Evidence\n\n${historical}\n`;
 }

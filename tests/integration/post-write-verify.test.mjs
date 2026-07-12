@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import { link, mkdir, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import test from 'node:test';
@@ -47,6 +47,16 @@ test('post-write verifier accepts a regular in-workspace actual target', async (
   await writeFile(target, 'actual');
   const result = await runVerifier(workspace, target);
   assert.equal(result.ok, true, result.stderr);
+});
+
+test('post-write verifier rejects an ordinary hard-linked target', { skip: process.platform === 'win32' }, async (t) => {
+  const { workspace, outside } = await fixture(t);
+  const target = join(workspace, 'file.txt');
+  await writeFile(target, 'actual');
+  await link(target, join(outside, 'linked.txt'));
+  const result = await runVerifier(workspace, target);
+  assert.equal(result.code, 2);
+  assert.match(result.stderr, /exactly one hard link/);
 });
 
 test('post-write verifier detects outside targets and parent replacement links', { skip: process.platform === 'win32' }, async (t) => {

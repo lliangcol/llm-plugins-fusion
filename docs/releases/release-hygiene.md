@@ -24,13 +24,14 @@ tag or publishing release notes.
 existing `v*` tag, including with maintainer approval; publish a new patch
 version instead.
 
-Candidate bundles include the manifest, required promotion evidence, a non-empty
-CycloneDX dependency graph, and an in-toto statement using the SLSA Provenance
-v1 predicate. Stable promotion verifies the original candidate tag and signer
-workflow attestation, validates every required evidence digest and status, and
-publishes those exact bytes. It performs a deterministic rebuild only as a
-byte-comparison verifier; rebuilt files are never publication inputs.
-The package CI lane performs two builds and requires byte-for-byte equality.
+Candidate bundles include the envelope, promotion intent, content-addressed
+control bundle, required promotion evidence, build SBOM, runtime-capability BOM,
+and build record. GitHub artifact attestations bind the plugin archive and the
+candidate bundle; no standalone provenance file is claimed. Stable promotion
+verifies both signed tags, the original candidate signer workflow attestation,
+every required digest and status, and the actual control-bundle archive and
+file inventory before publishing those exact candidate bytes. Deterministic
+artifact tests build twice and require byte-for-byte equality.
 - Release tags must be signed annotated tags created by the designated release
   actor and verified against `.github/release-signers`.
 - A changelog release section is required before publishing a release.
@@ -103,11 +104,14 @@ The release workflow is split by responsibility:
 1. `.github/workflows/release-candidate.yml` validates a signed RC tag, builds
    artifacts once, performs exact-tag live validation, and publishes a
    prerelease candidate manifest.
-2. `.github/workflows/release.yml` accepts only stable tags and delegates to
-   `.github/workflows/promote-release.yml`.
+2. `.github/workflows/release.yml` is manually dispatched with an exact stable
+   tag and its exact candidate tag, then delegates to
+   `.github/workflows/promote-release.yml`; pushing a stable tag alone does not
+   publish a release.
 3. Promotion downloads the candidate bundle, verifies signed tag, original
-   attestation signer, commit, source, artifact, SBOM, provenance, and required
-   evidence, then rebuilds only for byte comparison and publishes candidate bytes.
+   attestation signer, commit, source, artifact, build/runtime BOMs, build
+   record, control bundle, and required evidence, then reconciles a draft,
+   downloads every asset for exact verification, and publishes candidate bytes.
 
 ## Review Before Release
 

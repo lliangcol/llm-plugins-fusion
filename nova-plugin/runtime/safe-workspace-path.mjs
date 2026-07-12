@@ -116,8 +116,12 @@ export function resolveWorkspaceTarget({
     if (!isPathInside(allowed.real, physicalTarget)) {
       throw new Error(`existing target resolves outside allowed root: ${filePath}`);
     }
-    if (protectedTarget && statSync(target).nlink > 1) {
-      throw new Error(`protected target must not have multiple hard links: ${filePath}`);
+    const links = statSync(target).nlink;
+    if (!Number.isInteger(links) || links < 1) {
+      throw new Error(`existing write target hard-link semantics are unsupported: ${filePath}`);
+    }
+    if (links !== 1) {
+      throw new Error(`existing write target must have exactly one hard link: ${filePath}`);
     }
   }
 

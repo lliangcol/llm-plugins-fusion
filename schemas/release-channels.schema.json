@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/release-channels.schema.json",
+  "title": "Release Channels",
+  "type": "object",
+  "required": ["schemaVersion", "stable", "canary"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "stable": {
+      "type": "object",
+      "required": ["version", "tag", "commit", "candidateTag", "candidateManifestSha256", "pluginTreeSha256", "state", "publishedAt", "stableInstallProof"],
+      "additionalProperties": false,
+      "properties": {
+        "version": { "type": "string" },
+        "tag": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "candidateTag": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+-rc\\.[0-9]+$" },
+        "candidateManifestSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "pluginTreeSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "state": { "enum": ["DRAFT", "CANDIDATE_TAGGED", "CANDIDATE_VERIFIED", "PROMOTION_READY", "STABLE_TAG_VERIFIED", "RELEASE_DRAFT_CREATED", "ASSETS_RECONCILED", "RELEASE_PUBLISHED", "STABLE_CHANNEL_PINNED", "INSTALL_PROVEN"] },
+        "publishedAt": { "type": "string", "format": "date-time" },
+        "stableInstallProof": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "minLength": 1 }
+          ]
+        }
+      }
+    },
+    "canary": {
+      "type": "object",
+      "required": ["ref"],
+      "additionalProperties": false,
+      "properties": { "ref": { "const": "main" } }
+    }
+  }
+}

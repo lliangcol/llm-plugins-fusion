@@ -12,16 +12,16 @@ function report() {
   const spec = JSON.parse(readFileSync(resolve(root, 'workflow-specs/workflows.json'), 'utf8'));
   const cases = spec.workflows.map((workflow) => {
     const direct = readFileSync(resolve(root, `nova-plugin/commands/${workflow.id}.md`), 'utf8');
-    const compatibility = readFileSync(resolve(root, `nova-plugin/skills/nova-${workflow.id}/SKILL.md`), 'utf8');
-    if (!direct.includes('Execute this workflow directly')) throw new Error(`${workflow.id}: direct adapter marker missing`);
+    const canonical = readFileSync(resolve(root, `nova-plugin/${workflow.contractPath}`), 'utf8');
+    if (!direct.includes(`canonical surface \`nova-${workflow.canonicalSurfaceId}\``)) throw new Error(`${workflow.id}: canonical wrapper marker missing`);
     if (/\bInvoke\b[\s\S]{0,80}\bnova-/.test(direct) || /Skill\(nova-plugin:nova-/.test(direct)) {
       throw new Error(`${workflow.id}: runtime delegation remains`);
     }
-    if (!compatibility.includes('deprecated')) throw new Error(`${workflow.id}: compatibility deprecation notice missing`);
+    if (workflow.compatibilityAlias && !direct.includes('Deprecated compatibility alias')) throw new Error(`${workflow.id}: compatibility deprecation notice missing`);
     return {
       id: workflow.id,
-      direct: { bytes: Buffer.byteLength(direct), estimatedTokens: Math.ceil(direct.length / 4), delegatedSkillToolCalls: 0 },
-      compatibilityContract: { bytes: Buffer.byteLength(compatibility), estimatedTokens: Math.ceil(compatibility.length / 4), historicalDelegatedSkillToolCalls: 1 },
+      commandWrapper: { bytes: Buffer.byteLength(direct), estimatedTokens: Math.ceil(direct.length / 4), canonicalSurfaceId: workflow.canonicalSurfaceId, variantPreset: workflow.variantPreset, deprecated: workflow.compatibilityAlias },
+      canonicalSkill: { bytes: Buffer.byteLength(canonical), estimatedTokens: Math.ceil(canonical.length / 4), id: workflow.canonicalSurfaceId },
     };
   });
   return {

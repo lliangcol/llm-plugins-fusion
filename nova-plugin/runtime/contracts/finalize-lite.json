@@ -1,7 +1,17 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "finalize-lite",
+  "canonicalSurfaceId": "finalize-work",
+  "variantPreset": {
+    "DEPTH": "lite"
+  },
+  "compatibilityAlias": true,
   "stage": "finalize",
   "ownerAgents": [
     "publisher"
@@ -50,7 +60,7 @@
   "behaviorContract": {
     "schemaVersion": 1,
     "source": "workflow-specs/behaviors.json",
-    "guidanceReference": "../../skills/nova-finalize-lite/SKILL.md",
+    "guidanceReference": "../../skills/nova-finalize-work/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Provide a short factual closure summary without making new changes or decisions.",
     "inputs": [

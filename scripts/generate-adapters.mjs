@@ -25,6 +25,9 @@ function genericManifest(model) {
     claimBoundary: 'Invocation and enforcement require an assistant-specific adapter and conformance evidence.',
     workflows: spec.workflows.map((workflow) => ({
       id: workflow.id,
+      canonicalSurfaceId: workflow.canonicalSurfaceId,
+      variantPreset: workflow.variantPreset,
+      compatibilityAlias: workflow.compatibilityAlias,
       contract: `../../nova-plugin/${workflow.contractPath}`,
       runtimeContract: `../../nova-plugin/runtime/contracts/${workflow.id}.json`,
       stage: workflow.stage,
@@ -45,7 +48,7 @@ function genericManifest(model) {
 function codexAgents(model) {
   const { spec, adapterById, behaviorSpec } = model;
   const adapter = adapterById.codex;
-  const rows = spec.workflows.map((workflow) => `| ${workflow.id} | nova-${workflow.id} | ${workflow.stage} | ${workflow.ownerAgents.join(', ')} | ${workflow.recommendedPacks.join(', ') || 'None'} | ${workflow.risk} | ${workflow.requiredInputs.join(', ') || 'None'} | ${workflow.outputContract} |`).join('\n');
+  const rows = spec.workflows.map((workflow) => `| ${workflow.id} | nova-${workflow.canonicalSurfaceId} | ${workflow.stage} | ${workflow.ownerAgents.join(', ')} | ${workflow.recommendedPacks.join(', ') || 'None'} | ${workflow.risk} | ${workflow.requiredInputs.join(', ') || 'None'} | ${workflow.outputContract} |`).join('\n');
   const routeBehavior = behaviorSpec.behaviors.find((behavior) => behavior.id === 'route');
   if (!routeBehavior) throw new Error('route behavior IR missing');
   const routeRows = routeBehavior.decisionTable.map((entry) => `| ${entry.when} | ${entry.route} | ${entry.action} |`).join('\n');
@@ -63,7 +66,7 @@ When routing, prefer the first exact specialized condition below over a broader 
 | --- | --- | --- |
 ${routeRows}
 
-| Workflow | Compatibility skill | Stage | Owner agents | Recommended packs | Risk | Required inputs | Output contract |
+| Workflow | Canonical skill | Stage | Owner agents | Recommended packs | Risk | Required inputs | Output contract |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 ${rows}
 `;
@@ -84,7 +87,8 @@ function claudeManifest(model) {
       '../../.github/workflows/release.yml',
     ],
     commands: spec.workflows.map((workflow) => `/${product.pluginNamespace}:${workflow.id}`),
-    legacyAliases: spec.workflows.map((workflow) => `/${product.pluginNamespace}:${workflow.legacyAlias}`),
+    canonicalSkills: spec.workflows.filter((workflow) => !workflow.compatibilityAlias).map((workflow) => `/${product.pluginNamespace}:nova-${workflow.id}`),
+    compatibilityCommandAliases: spec.workflows.filter((workflow) => workflow.compatibilityAlias).map((workflow) => `/${product.pluginNamespace}:${workflow.id}`),
   };
 }
 

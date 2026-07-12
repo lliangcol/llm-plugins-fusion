@@ -29,7 +29,7 @@ export const routeOutputContract = Object.freeze({
   requiredFields: Object.freeze(routeContractSource.fields.map((field) => field.label)),
   ownerAgents: Object.freeze(Object.fromEntries(Object.entries(routeContractSource.ownerAgents).map(([id, agents]) => [id, Object.freeze(agents)]))),
 });
-export const routeSystemPrompt = `This is an automated contract validation of an explicitly invoked /nova-plugin:route command. Follow the loaded route command and nova-route skill. The final response MUST start with exactly "${routeOutputContract.heading}" and then contain exactly these seven Markdown bullet labels in this order: ${routeOutputContract.requiredFields.join(' ')} Use no preface, alternate heading level, table, renamed field, or closing text. Copy these four lines verbatim: "- Command: /nova-plugin:review" "- Skill: nova-review" "- Core agent: reviewer" "- Capability packs: docs". Fill the remaining three values without adding any other lines.`;
+export const routeSystemPrompt = `This is an automated installation/invocation/safety smoke for an explicitly invoked /nova-plugin:route command; it is not workflow-quality evidence. Follow the loaded route command and nova-route skill. The final response MUST start with exactly "${routeOutputContract.heading}" and then contain exactly these eight Markdown bullet labels in this order: ${routeOutputContract.requiredFields.join(' ')} Use no preface, alternate heading level, table, renamed field, or closing text. Copy these five lines verbatim: "- Canonical skill: nova-review" "- Command alias (optional): /nova-plugin:review" "- Variant parameters: {}" "- Core agent: reviewer" "- Capability packs: docs". Fill the remaining three values without adding any other lines.`;
 export const routeSystemPromptSha256 = sha256(routeSystemPrompt);
 export const routeMaxTurns = 8;
 export const routeAllowedTools = Object.freeze([
@@ -78,6 +78,11 @@ export function loadRouteInventory(pluginDir, permissionSpec) {
   return {
     commandIds: [...permissionSpec.expectedInventory.commandIds],
     skillNames: [...permissionSpec.expectedInventory.skillNames],
+    workflows: permissionSpec.workflows.map((workflow) => ({
+      id: workflow.id,
+      canonicalSkill: `nova-${workflow.canonicalSurfaceId}`,
+      ownerAgents: [...(routeOutputContract.ownerAgents[workflow.id] ?? [])],
+    })),
     agents,
     packs,
   };
@@ -93,7 +98,7 @@ export function validateRouteResult(result, routeInventory) {
     if (!result.includes(field)) throw new Error(`route output is missing ${field}`);
   }
   if (nonEmptyLines.length !== requiredFields.length + 1) {
-    throw new Error('route output does not contain exactly the heading and seven field lines');
+    throw new Error('route output does not contain exactly the heading and eight field lines');
   }
   for (let index = 0; index < requiredFields.length; index += 1) {
     const field = requiredFields[index];
@@ -102,18 +107,17 @@ export function validateRouteResult(result, routeInventory) {
     if (!line.startsWith(prefix)) throw new Error(`route output field order or label differs at ${field}`);
     if (!line.slice(prefix.length).trim()) throw new Error(`route output ${field} value is empty`);
   }
-  const commandField = fieldValue(result, 'Command:');
-  const skillField = fieldValue(result, 'Skill:');
+  const skillField = fieldValue(result, 'Canonical skill:');
+  const commandField = fieldValue(result, 'Command alias (optional):');
+  fieldValue(result, 'Variant parameters:');
   const agentField = fieldValue(result, 'Core agent:');
   const packField = fieldValue(result, 'Capability packs:');
   const allCommandMatches = [...result.matchAll(/\/nova-plugin:([a-z0-9]+(?:-[a-z0-9]+)*)/g)]
     .map((match) => match[1]);
   const commandMatches = [...commandField.matchAll(/\/nova-plugin:([a-z0-9]+(?:-[a-z0-9]+)*)/g)]
     .map((match) => match[1]);
-  if (commandMatches.length === 0) throw new Error('route output did not contain a namespaced nova-plugin command');
-  if (!/\/nova-plugin:[a-z0-9]+(?:-[a-z0-9]+)*/.test(commandField)) {
-    throw new Error('route output Command field did not contain a namespaced nova-plugin command');
-  }
+  const aliasOmitted = /^(?:none|n\/a|-|not required)$/iu.test(commandField);
+  if (!aliasOmitted && commandMatches.length === 0) throw new Error('route output command alias did not contain a namespaced nova-plugin command');
   const commandIds = new Set(routeInventory.commandIds);
   for (const command of allCommandMatches) {
     if (!commandIds.has(command)) throw new Error(`route output invented command ${command}`);
@@ -122,11 +126,18 @@ export function validateRouteResult(result, routeInventory) {
   const agents = validateInventoryField(agentField, new Set(routeInventory.agents), 'core agent');
   const packs = validateInventoryField(packField, new Set(routeInventory.packs), 'capability pack');
   const uniqueCommands = [...new Set(commandMatches)].sort();
-  const expectedSkills = uniqueCommands.map((command) => `nova-${command}`).sort();
-  if (JSON.stringify(skills) !== JSON.stringify(expectedSkills)) {
-    throw new Error(`route output command-skill relationship differs: expected ${expectedSkills.join(', ')}`);
+  if (uniqueCommands.length > 1) throw new Error('route output command alias must contain at most one command');
+  const workflowById = new Map(routeInventory.workflows.map((workflow) => [workflow.id, workflow]));
+  if (!aliasOmitted) {
+    const expectedSkill = workflowById.get(uniqueCommands[0])?.canonicalSkill;
+    if (skills.length !== 1 || skills[0] !== expectedSkill) {
+      throw new Error(`route output alias-canonical relationship differs: expected ${expectedSkill ?? 'unknown'}`);
+    }
   }
-  const allowedAgents = new Set(uniqueCommands.flatMap((command) => routeOutputContract.ownerAgents[command] ?? []));
+  const relevantWorkflows = aliasOmitted
+    ? routeInventory.workflows.filter((workflow) => skills.includes(workflow.canonicalSkill))
+    : uniqueCommands.map((command) => workflowById.get(command)).filter(Boolean);
+  const allowedAgents = new Set(relevantWorkflows.flatMap((workflow) => workflow.ownerAgents));
   const invalidOwners = agents.filter((agent) => !allowedAgents.has(agent));
   if (invalidOwners.length > 0) {
     throw new Error(`route output command-agent relationship differs: ${invalidOwners.join(', ')}`);
@@ -155,7 +166,7 @@ export function routeOutputShape(result) {
 export function routeValidationFailureCode(error) {
   const message = String(error?.message ?? error);
   if (message.includes('does not start with')) return 'heading';
-  if (message.includes('exactly the heading and seven field lines')) return 'line-count';
+  if (message.includes('exactly the heading and eight field lines')) return 'line-count';
   if (message.includes('field order or label differs')) return 'field-layout';
   if (message.includes('value is empty')) return 'empty-field-value';
   if (message.includes('is missing')) return 'required-field';
@@ -164,7 +175,7 @@ export function routeValidationFailureCode(error) {
   if (message.includes('invented skill')) return 'skill-inventory';
   if (message.includes('invented core agent')) return 'agent-inventory';
   if (message.includes('invented capability pack')) return 'pack-inventory';
-  if (message.includes('command-skill relationship')) return 'command-skill-relationship';
+  if (message.includes('alias-canonical relationship')) return 'alias-canonical-relationship';
   if (message.includes('command-agent relationship')) return 'command-agent-relationship';
   if (message.includes(' is empty')) return 'empty-inventory-field';
   return 'unknown';

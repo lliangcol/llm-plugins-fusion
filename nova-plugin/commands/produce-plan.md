@@ -12,9 +12,9 @@ disable-model-invocation: true
 
 # /nova-plugin:produce-plan
 
-Execute this workflow directly from `$ARGUMENTS`. Do not invoke the compatibility skill `nova-produce-plan` through the Skill tool.
+Canonical command wrapper.
 
-Before answering, use Read to load both `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/produce-plan.json` as the machine-readable policy summary and `${CLAUDE_PLUGIN_ROOT}/skills/nova-produce-plan/SKILL.md` as the authoritative behavioral contract, then execute the workflow directly. If either contract cannot be loaded or they conflict, fail closed and report contract drift.
+Load `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/produce-plan.json` and canonical skill `${CLAUDE_PLUGIN_ROOT}/skills/nova-produce-plan/SKILL.md`, then execute canonical surface `nova-produce-plan` with variant preset `{}` merged beneath explicit non-conflicting `$ARGUMENTS`. Never copy or override behavior in this wrapper; the runtime contract and canonical skill are authoritative. If they differ, fail closed.
 
 - Stage: plan
 - Owner agents: architect
@@ -23,4 +23,4 @@ Before answering, use Read to load both `${CLAUDE_PLUGIN_ROOT}/runtime/contracts
 - Risk: low
 - Recommended packs: docs
 
-Preserve all safety, approval, output, failure, and validation requirements in both contracts. If a required input or safety boundary is missing, stop before side effects and report the blocker.
+If required input, approval, capability, or safety state is unresolved, stop before side effects.

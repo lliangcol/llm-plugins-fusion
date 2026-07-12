@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/stable-install-proof.schema.json",
+  "title": "Stable Install Proof",
+  "type": "object",
+  "required": ["schemaVersion", "stable", "claudeVersion", "treeManifestVersion", "candidateTreeDigest", "installedTreeDigest", "matches", "generatedAt"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "stable": {
+      "type": "object",
+      "required": ["version", "tag", "commit", "channelFactsSha256"],
+      "additionalProperties": false,
+      "properties": {
+        "version": { "type": "string" },
+        "tag": { "type": "string" },
+        "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "channelFactsSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "claudeVersion": { "type": "string", "minLength": 1 },
+    "treeManifestVersion": { "const": 2 },
+    "candidateTreeDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "installedTreeDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "ignoredInstalledPaths": { "type": "array", "items": { "type": "string" }, "uniqueItems": true },
+    "matches": { "const": true },
+    "generatedAt": { "type": "string", "format": "date-time" }
+  }
+}

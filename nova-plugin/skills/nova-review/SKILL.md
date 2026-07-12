@@ -3,7 +3,7 @@ name: nova-review
 description: Unified review Hub Skill. Route by LEVEL to lite, standard, or strict review outputs; no code modification.
 license: MIT
 allowed-tools: Read Glob Grep
-disallowed-tools: Write Edit NotebookEdit Bash
+disallowed-tools: Write Edit NotebookEdit
 user-invocable: true
 disable-model-invocation: false
 metadata:
@@ -244,5 +244,13 @@ This command does NOT:
 It only **evaluates and documents issues**.
 
 ---
+
+#### 4.0 VARIANT PROFILES
+
+- `LEVEL=lite|standard|strict` replaces `review-lite`, `review-only`, and `review-strict`.
+- `REVIEW_PROFILE=plan` replaces `plan-review`.
+- `REVIEW_PROFILE=codex-review-only|codex-verify-only` uses the retained compatibility assets under `skills/nova-codex-review-fix/` and requires explicit shell, network, and assistant-owned authentication approval.
+
+All review variants remain non-implementation workflows and must not modify project files.
 
 #### END OF COMMAND

@@ -11,7 +11,8 @@
   },
   "plugins": [
     {
-      "source": "./alpha-plugin",
+      "localSource": "./alpha-plugin",
+      "distributionSource": "./alpha-plugin",
       "category": "development",
       "tags": ["alpha", "workflow"],
       "metadata": {
@@ -39,7 +40,8 @@
       }
     },
     {
-      "source": "./plugins/beta-plugin",
+      "localSource": "./plugins/beta-plugin",
+      "distributionSource": "./plugins/beta-plugin",
       "category": "testing",
       "tags": ["beta", "validation"],
       "metadata": {

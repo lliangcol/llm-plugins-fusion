@@ -27,7 +27,7 @@ export function buildSecondProductEvidence() {
   const loaded = model();
   assert.equal(loaded.framework.schemaVersion, 4);
   assert.equal(loaded.product.schemaVersion, 2);
-  assert.equal(loaded.workflows.schemaVersion, 4);
+  assert.equal(loaded.workflows.schemaVersion, 5);
   assert.equal(loaded.behaviors.schemaVersion, 1);
   assert.equal(loaded.product.expectedWorkflowCount, loaded.spec.workflows.length);
   assert.deepEqual([...new Set(loaded.spec.workflows.map((entry) => entry.stage))], loaded.product.stages);

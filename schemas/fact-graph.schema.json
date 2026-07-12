@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/fact-graph.schema.json",
+  "title": "Generated Fact Graph",
+  "type": "object",
+  "required": ["schemaVersion", "facts"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "facts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["value", "source", "sourceSha256"],
+        "additionalProperties": false,
+        "properties": {
+          "value": {},
+          "source": { "type": "string", "pattern": "^[^#]+#/" },
+          "sourceSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    }
+  }
+}

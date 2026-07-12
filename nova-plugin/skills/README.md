@@ -1,6 +1,8 @@
 # nova-plugin Skills Index
 
-This directory provides one-to-one Skill mappings for all commands in `nova-plugin/commands`.
+This directory provides the six canonical runtime Skills. The 21 files in
+`nova-plugin/commands` are generated wrappers; 15 are deprecated compatibility
+aliases whose preset selects a canonical Skill without copying its behavior.
 
 Shared policy files live in `nova-plugin/skills/_shared/` and are referenced by
 the command-specific skills for parameter resolution, safety preflight, output

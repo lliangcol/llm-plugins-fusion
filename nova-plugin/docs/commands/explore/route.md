@@ -21,8 +21,9 @@
 ```markdown
 ## Recommended Route
 
-- Command:
-- Skill:
+- Canonical skill:
+- Command alias (optional):
+- Variant parameters:
 - Core agent:
 - Capability packs:
 - Required inputs:

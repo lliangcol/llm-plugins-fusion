@@ -11,7 +11,7 @@
     { "id": "route-codex-decision", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "Codex review fix verify" }, "expectedDecisionRoute": "codex-review-fix" },
     { "id": "route-default-depth", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "triage this" }, "expectedNormalized": { "DEPTH": "normal" } },
     { "id": "route-request-alias", "suite": "route", "workflow": "route", "providedInputs": { "INPUT": "triage this" }, "expectedNormalized": { "REQUEST": "triage this" } },
-    { "id": "route-fixed-output", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "triage this" }, "expectedOutputOrder": ["Command", "Skill", "Core agent", "Capability packs", "Required inputs", "Validation expectations", "Fallback path"] },
+    { "id": "route-fixed-output", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "triage this" }, "expectedOutputOrder": ["Canonical skill", "Command alias (optional)", "Variant parameters", "Core agent", "Capability packs", "Required inputs", "Validation expectations", "Fallback path"] },
 
     { "id": "review-default-level", "suite": "review", "workflow": "review", "providedInputs": { "REVIEW_SCOPE": "diff" }, "expectedNormalized": { "LEVEL": "standard" }, "expectedDecisionRoute": "review-only" },
     { "id": "review-scope-alias", "suite": "review", "workflow": "review", "providedInputs": { "INPUT": "diff" }, "expectedNormalized": { "REVIEW_SCOPE": "diff" } },

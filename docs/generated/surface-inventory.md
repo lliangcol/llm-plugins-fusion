@@ -11,63 +11,48 @@ The JSON form is [surface-inventory.json](surface-inventory.json).
 | Surface | Count |
 | --- | --- |
 | Commands | 21 |
-| Skills | 21 |
+| Skills | 6 |
 | Active agents | 6 |
 | Capability packs | 8 |
-| Generated marketplace outputs | 3 |
-| Installed Claude Skills | 42 |
+| Generated marketplace outputs | 4 |
+| Installed Claude Skills | 27 |
 
 ## Commands
 
-| ID | Stage | Destructive actions | Compatibility skill |
-| --- | --- | --- | --- |
-| `backend-plan` | plan | low | `nova-backend-plan` |
-| `codex-review-fix` | implement | medium | `nova-codex-review-fix` |
-| `codex-review-only` | review | low | `nova-codex-review-only` |
-| `codex-verify-only` | review | low | `nova-codex-verify-only` |
-| `explore` | explore | none | `nova-explore` |
-| `explore-lite` | explore | none | `nova-explore-lite` |
-| `explore-review` | explore | none | `nova-explore-review` |
-| `finalize-lite` | finalize | none | `nova-finalize-lite` |
-| `finalize-work` | finalize | none | `nova-finalize-work` |
-| `implement-lite` | implement | medium | `nova-implement-lite` |
-| `implement-plan` | implement | medium | `nova-implement-plan` |
-| `implement-standard` | implement | medium | `nova-implement-standard` |
-| `plan-lite` | plan | none | `nova-plan-lite` |
-| `plan-review` | plan | none | `nova-plan-review` |
-| `produce-plan` | plan | low | `nova-produce-plan` |
-| `review` | review | none | `nova-review` |
-| `review-lite` | review | none | `nova-review-lite` |
-| `review-only` | review | none | `nova-review-only` |
-| `review-strict` | review | none | `nova-review-strict` |
-| `route` | explore | none | `nova-route` |
-| `senior-explore` | explore | low | `nova-senior-explore` |
+| ID | Stage | Destructive actions | Canonical skill | Deprecated alias |
+| --- | --- | --- | --- | --- |
+| `backend-plan` | plan | low | `nova-produce-plan` | true |
+| `codex-review-fix` | implement | medium | `nova-implement-plan` | true |
+| `codex-review-only` | review | low | `nova-review` | true |
+| `codex-verify-only` | review | low | `nova-review` | true |
+| `explore` | explore | none | `nova-explore` | false |
+| `explore-lite` | explore | none | `nova-explore` | true |
+| `explore-review` | explore | none | `nova-explore` | true |
+| `finalize-lite` | finalize | none | `nova-finalize-work` | true |
+| `finalize-work` | finalize | none | `nova-finalize-work` | false |
+| `implement-lite` | implement | medium | `nova-implement-plan` | true |
+| `implement-plan` | implement | medium | `nova-implement-plan` | false |
+| `implement-standard` | implement | medium | `nova-implement-plan` | true |
+| `plan-lite` | plan | none | `nova-produce-plan` | true |
+| `plan-review` | plan | none | `nova-review` | true |
+| `produce-plan` | plan | low | `nova-produce-plan` | false |
+| `review` | review | none | `nova-review` | false |
+| `review-lite` | review | none | `nova-review` | true |
+| `review-only` | review | none | `nova-review` | true |
+| `review-strict` | review | none | `nova-review` | true |
+| `route` | explore | none | `nova-route` | false |
+| `senior-explore` | explore | low | `nova-explore` | true |
 
 ## Skills
 
 | Name | Command ID | Model invocable | Subagent safe | Destructive actions |
 | --- | --- | --- | --- | --- |
-| `nova-backend-plan` | `backend-plan` | false | true | low |
-| `nova-codex-review-fix` | `codex-review-fix` | false | false | medium |
-| `nova-codex-review-only` | `codex-review-only` | false | true | low |
-| `nova-codex-verify-only` | `codex-verify-only` | false | true | low |
 | `nova-explore` | `explore` | true | true | none |
-| `nova-explore-lite` | `explore-lite` | true | true | none |
-| `nova-explore-review` | `explore-review` | true | true | none |
-| `nova-finalize-lite` | `finalize-lite` | true | true | none |
 | `nova-finalize-work` | `finalize-work` | true | true | none |
-| `nova-implement-lite` | `implement-lite` | false | true | medium |
 | `nova-implement-plan` | `implement-plan` | false | true | medium |
-| `nova-implement-standard` | `implement-standard` | false | true | medium |
-| `nova-plan-lite` | `plan-lite` | true | true | none |
-| `nova-plan-review` | `plan-review` | true | true | none |
 | `nova-produce-plan` | `produce-plan` | false | true | low |
 | `nova-review` | `review` | true | true | none |
-| `nova-review-lite` | `review-lite` | true | true | none |
-| `nova-review-only` | `review-only` | true | true | none |
-| `nova-review-strict` | `review-strict` | true | true | none |
 | `nova-route` | `route` | true | true | none |
-| `nova-senior-explore` | `senior-explore` | false | true | low |
 
 ## Runtime Compatibility
 
@@ -104,5 +89,6 @@ The JSON form is [surface-inventory.json](surface-inventory.json).
 | Path | Plugin versions |
 | --- | --- |
 | `.claude-plugin/marketplace.json` | `nova-plugin@3.2.0` |
+| `.claude-plugin/marketplace.canary.json` | `nova-plugin@4.0.0` |
 | `.claude-plugin/marketplace.metadata.json` | `nova-plugin@3.2.0` |
 | `docs/marketplace/catalog.md` | `nova-plugin@3.2.0` |

@@ -4,10 +4,20 @@
   "title": "Generic canonical workflow specification",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "permissionProfiles", "workflows"],
+  "required": ["schemaVersion", "contractVersions", "permissionProfiles", "workflows"],
   "properties": {
     "$schema": { "type": "string" },
-    "schemaVersion": { "const": 4 },
+    "schemaVersion": { "const": 5 },
+    "contractVersions": {
+      "type": "object",
+      "required": ["workflow", "runtime", "adapter"],
+      "additionalProperties": false,
+      "properties": {
+        "workflow": { "type": "string", "pattern": "^5\\." },
+        "runtime": { "type": "string", "pattern": "^3\\." },
+        "adapter": { "type": "string", "pattern": "^2\\." }
+      }
+    },
     "permissionProfiles": {
       "type": "object"
     },
@@ -17,7 +27,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "stage", "ownerAgents", "recommendedPacks", "requiredInputs", "outputContract", "risk", "modelInvocable", "subagentSafe", "permissionProfile", "legacyAlias", "contractPath"],
+        "required": ["id", "stage", "ownerAgents", "recommendedPacks", "requiredInputs", "outputContract", "risk", "modelInvocable", "subagentSafe", "permissionProfile", "legacyAlias", "contractPath", "canonicalSurfaceId", "variantPreset", "compatibilityAlias"],
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
           "stage": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
@@ -31,6 +41,9 @@
           "permissionProfile": { "type": "string" },
           "legacyAlias": { "type": "string" },
           "contractPath": { "type": "string" },
+          "canonicalSurfaceId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "variantPreset": { "type": "object" },
+          "compatibilityAlias": { "type": "boolean" },
           "compatibility": { "type": "string" },
           "runtimeRequirements": {
             "type": "object",

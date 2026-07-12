@@ -15,6 +15,8 @@
     "baseCommit": { "type": "string" },
     "sourceState": { "type": "string" },
     "releaseTag": { "type": ["string", "null"] },
+    "condition": { "enum": ["plugin-enabled", "plugin-disabled"] },
+    "profile": { "enum": ["critical", "full"] },
     "assistant": {
       "type": "object",
       "additionalProperties": false,
@@ -77,6 +79,8 @@
             "required": ["caseId", "attempt", "processExit", "processFailure", "timedOut", "latencyMs", "projectDigestBefore", "projectDigestAfter", "zeroProjectWrites", "adapterLoaded", "adapterLoadProof", "unexpectedToolUse", "unexpectedNetworkUse", "selectedRoute", "requiredInputs", "routeValid", "requiredInputsValid", "approvalValid", "shapeValid", "inventedSurfaces", "contractValid", "observedOutput", "parseError", "outputSha256"],
             "properties": {
               "caseId": { "type": "string", "minLength": 1 },
+              "kind": { "type": "string" },
+              "approvalExpected": { "type": "boolean" },
               "attempt": { "type": "integer", "minimum": 1 },
               "processExit": { "type": ["integer", "null"] },
               "processFailure": { "type": ["string", "null"], "enum": [null, "timeout", "rate-limit", "authentication", "nonzero-exit"] },
@@ -92,6 +96,7 @@
               "selectedRoute": { "type": "array", "items": { "type": "string" } },
               "requiredInputs": { "type": "array", "items": { "type": "string" } },
               "routeValid": { "type": "boolean" },
+              "top2RouteValid": { "type": "boolean" },
               "requiredInputsValid": { "type": "boolean" },
               "approvalValid": { "type": "boolean" },
               "shapeValid": { "type": "boolean" },
@@ -100,6 +105,10 @@
               "observedOutput": { "type": ["object", "null"] },
               "parseError": { "type": ["string", "null"] },
               "outputSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+              ,"inputTokens": { "type": ["integer", "null"], "minimum": 0 }
+              ,"outputTokens": { "type": ["integer", "null"], "minimum": 0 }
+              ,"totalTokens": { "type": ["integer", "null"], "minimum": 0 }
+              ,"costUsd": { "type": ["number", "null"], "minimum": 0 }
             }
           }
         ]

@@ -41,7 +41,7 @@ and they do not replace review, planning, implementation, or release evidence.
 2. recommend one next command when possible;
 3. return a short sequence only when the request genuinely spans multiple
    workflow stages;
-4. name the one-to-one skill, core agent, capability packs, required inputs,
+4. name the canonical skill, optional command alias and variant parameters, core agent, capability packs, required inputs,
    validation expectations, and fallback path;
 5. avoid implementation details, plan content, test execution, Git operations,
    and artifact writes.

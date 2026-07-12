@@ -231,4 +231,12 @@ Do NOT:
 
 ---
 
+#### 4.0 VARIANT PROFILES
+
+- Default: execute an explicitly approved plan.
+- `EXECUTION_PROFILE=lite|standard` replaces `implement-lite` and `implement-standard`.
+- `EXECUTION_PROFILE=codex-review-fix` runs the retained review/fix/verify closure assets under `skills/nova-codex-review-fix/`; it requires explicit shell, network, credentials, and write approval and may not broaden repository scope.
+
+Compatibility presets never satisfy `PLAN_APPROVED` or other approval inputs.
+
 #### END OF COMMAND

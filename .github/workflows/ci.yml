@@ -27,7 +27,6 @@ jobs:
       - run: npm run ci:quick
       - run: npm run validate:portable-paths
       - run: node scripts/generate-workflow-permissions.mjs
-      - run: node scripts/generate-workflow-v2-compat.mjs
       - run: node scripts/generate-runtime-contracts.mjs
       - run: node scripts/generate-adapters.mjs
       - run: node scripts/generate-compatibility-evidence.mjs

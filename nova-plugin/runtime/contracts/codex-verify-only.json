@@ -1,7 +1,17 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "codex-verify-only",
+  "canonicalSurfaceId": "review",
+  "variantPreset": {
+    "REVIEW_PROFILE": "codex-verify-only"
+  },
+  "compatibilityAlias": true,
   "stage": "review",
   "ownerAgents": [
     "verifier"
@@ -64,7 +74,7 @@
   "behaviorContract": {
     "schemaVersion": 1,
     "source": "workflow-specs/behaviors.json",
-    "guidanceReference": "../../skills/nova-codex-verify-only/SKILL.md",
+    "guidanceReference": "../../skills/nova-review/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Verify known findings from an existing Codex review without doing new implementation.",
     "inputs": [

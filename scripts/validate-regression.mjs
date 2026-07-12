@@ -439,7 +439,7 @@ test('release distribution risk fails closed when a tracked file cannot be read'
   }
 });
 
-test('command, skill, and command-doc surfaces stay one-to-one', () => {
+test('commands stay documented while skills converge to six canonical surfaces', () => {
   const commandsDir = resolve(root, 'nova-plugin/commands');
   const skillsDir = resolve(root, 'nova-plugin/skills');
   const docsDir = resolve(root, 'nova-plugin/docs/commands');
@@ -448,11 +448,14 @@ test('command, skill, and command-doc surfaces stay one-to-one', () => {
     .map((file) => basename(file, '.md'))
     .sort();
   const skillIds = readdirSync(skillsDir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory() && entry.name.startsWith('nova-'))
+    .filter((entry) => entry.isDirectory() && entry.name.startsWith('nova-') && existsSync(resolve(skillsDir, entry.name, 'SKILL.md')))
     .map((entry) => entry.name.replace(/^nova-/, ''))
     .sort();
 
-  assert.deepEqual(skillIds, commandIds);
+  assert.deepEqual(skillIds, ['explore', 'finalize-work', 'implement-plan', 'produce-plan', 'review', 'route']);
+  const workflowSpec = JSON.parse(readFileSync(resolve(root, 'workflow-specs/workflows.json'), 'utf8'));
+  assert.equal(workflowSpec.workflows.filter((workflow) => workflow.compatibilityAlias).length, 15);
+  assert.equal(workflowSpec.workflows.every((workflow) => skillIds.includes(workflow.canonicalSurfaceId)), true);
 
   for (const id of commandIds) {
     const stage = commandStage(resolve(commandsDir, `${id}.md`));
@@ -602,7 +605,7 @@ test('validate-github-workflows enforces least-privilege workflow contracts', ()
 
     const releaseWorkflowPath = resolve(fixtureRoot, '.github/workflows/release.yml');
     const releaseWorkflow = readFileSync(releaseWorkflowPath, 'utf8');
-    assert.match(releaseWorkflow, /  promote:\r?\n[\s\S]*?    permissions:\r?\n      contents: write/);
+    assert.match(releaseWorkflow, /  recover:\r?\n[\s\S]*?    permissions:\r?\n      contents: write/);
     writeFileSync(
       releaseWorkflowPath,
       releaseWorkflow
@@ -667,21 +670,13 @@ test('validate-github-workflows rejects unpinned actions and missing consolidate
     });
     assert.equal(clean.status, 0, clean.stderr || clean.stdout);
 
-    const reusableWorkflowPath = resolve(fixtureRoot, '.github/workflows/reusable-node-check.yml');
-    const reusableWorkflow = readFileSync(reusableWorkflowPath, 'utf8');
-    assert.match(reusableWorkflow, /actions\/checkout@[a-f0-9]{40} # v7/);
-    writeFileSync(
-      reusableWorkflowPath,
-      reusableWorkflow.replace(/actions\/checkout@[a-f0-9]{40} # v7/, 'actions/checkout@v7'),
-      'utf8',
-    );
-
     const ciWorkflowPath = resolve(fixtureRoot, '.github/workflows/ci.yml');
     const ciWorkflow = readFileSync(ciWorkflowPath, 'utf8');
+    assert.match(ciWorkflow, /actions\/checkout@[a-f0-9]{40} # v7/);
     assert.match(ciWorkflow, /\n  tests:\r?\n/);
     writeFileSync(
       ciWorkflowPath,
-      ciWorkflow.replace(
+      ciWorkflow.replace(/actions\/checkout@[a-f0-9]{40} # v7/, 'actions/checkout@v7').replace(
         /\r?\n  tests:\r?\n[\s\S]*?(?=\r?\n  security:)/,
         '\n',
       ),

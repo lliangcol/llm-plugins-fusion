@@ -21,7 +21,7 @@
     "NotebookEdit"
   ],
   "expectedInventory": {
-    "combinedSkillCount": 42,
+    "combinedSkillCount": 27,
     "commandIds": [
       "backend-plan",
       "codex-review-fix",
@@ -46,32 +46,22 @@
       "senior-explore"
     ],
     "skillNames": [
-      "nova-backend-plan",
-      "nova-codex-review-fix",
-      "nova-codex-review-only",
-      "nova-codex-verify-only",
       "nova-explore",
-      "nova-explore-lite",
-      "nova-explore-review",
-      "nova-finalize-lite",
       "nova-finalize-work",
-      "nova-implement-lite",
       "nova-implement-plan",
-      "nova-implement-standard",
-      "nova-plan-lite",
-      "nova-plan-review",
       "nova-produce-plan",
       "nova-review",
-      "nova-review-lite",
-      "nova-review-only",
-      "nova-review-strict",
-      "nova-route",
-      "nova-senior-explore"
+      "nova-route"
     ]
   },
   "workflows": [
     {
       "id": "backend-plan",
+      "canonicalSurfaceId": "produce-plan",
+      "variantPreset": {
+        "PLAN_PROFILE": "java-backend"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "low",
       "modelInvocable": false,
       "subagentSafe": true,
@@ -125,6 +115,11 @@
     },
     {
       "id": "codex-review-fix",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {
+        "EXECUTION_PROFILE": "codex-review-fix"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "medium",
       "modelInvocable": false,
       "subagentSafe": false,
@@ -194,6 +189,11 @@
     },
     {
       "id": "codex-review-only",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "REVIEW_PROFILE": "codex-review-only"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "low",
       "modelInvocable": false,
       "subagentSafe": true,
@@ -263,6 +263,11 @@
     },
     {
       "id": "codex-verify-only",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "REVIEW_PROFILE": "codex-verify-only"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "low",
       "modelInvocable": false,
       "subagentSafe": true,
@@ -332,6 +337,9 @@
     },
     {
       "id": "explore",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "destructiveActions": "none",
       "modelInvocable": true,
       "subagentSafe": true,
@@ -385,6 +393,12 @@
     },
     {
       "id": "explore-lite",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {
+        "PERSPECTIVE": "observer",
+        "DEPTH": "lite"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "none",
       "modelInvocable": true,
       "subagentSafe": true,
@@ -438,6 +452,11 @@
     },
     {
       "id": "explore-review",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {
+        "PERSPECTIVE": "reviewer"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "none",
       "modelInvocable": true,
       "subagentSafe": true,
@@ -491,6 +510,11 @@
     },
     {
       "id": "finalize-lite",
+      "canonicalSurfaceId": "finalize-work",
+      "variantPreset": {
+        "DEPTH": "lite"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "none",
       "modelInvocable": true,
       "subagentSafe": true,
@@ -544,6 +568,9 @@
     },
     {
       "id": "finalize-work",
+      "canonicalSurfaceId": "finalize-work",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "destructiveActions": "none",
       "modelInvocable": true,
       "subagentSafe": true,
@@ -597,6 +624,11 @@
     },
     {
       "id": "implement-lite",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {
+        "EXECUTION_PROFILE": "lite"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "medium",
       "modelInvocable": false,
       "subagentSafe": true,
@@ -650,6 +682,9 @@
     },
     {
       "id": "implement-plan",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "destructiveActions": "medium",
       "modelInvocable": false,
       "subagentSafe": true,
@@ -678,8 +713,8 @@
         "workspaceRead": "preapproved",
         "workspaceWrite": "preapproved",
         "shell": "prompt",
-        "network": "denied",
-        "credentials": "denied",
+        "network": "prompt",
+        "credentials": "explicit",
         "userScopeMutation": "denied",
         "externalPublish": "denied",
         "gitHistoryMutation": "denied"
@@ -703,6 +738,11 @@
     },
     {
       "id": "implement-standard",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {
+        "EXECUTION_PROFILE": "standard"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "medium",
       "modelInvocable": false,
       "subagentSafe": true,
@@ -756,6 +796,11 @@
     },
     {
       "id": "plan-lite",
+      "canonicalSurfaceId": "produce-plan",
+      "variantPreset": {
+        "PLAN_PROFILE": "lite"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "none",
       "modelInvocable": true,
       "subagentSafe": true,
@@ -809,6 +854,11 @@
     },
     {
       "id": "plan-review",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "REVIEW_PROFILE": "plan"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "none",
       "modelInvocable": true,
       "subagentSafe": true,
@@ -862,6 +912,9 @@
     },
     {
       "id": "produce-plan",
+      "canonicalSurfaceId": "produce-plan",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "destructiveActions": "low",
       "modelInvocable": false,
       "subagentSafe": true,
@@ -915,6 +968,9 @@
     },
     {
       "id": "review",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "destructiveActions": "none",
       "modelInvocable": true,
       "subagentSafe": true,
@@ -926,8 +982,7 @@
       "disallowedTools": [
         "Write",
         "Edit",
-        "NotebookEdit",
-        "Bash"
+        "NotebookEdit"
       ],
       "runtimeRequirements": {
         "executables": [],
@@ -943,9 +998,9 @@
       "permissionPolicy": {
         "workspaceRead": "preapproved",
         "workspaceWrite": "denied",
-        "shell": "denied",
-        "network": "denied",
-        "credentials": "denied",
+        "shell": "prompt",
+        "network": "prompt",
+        "credentials": "explicit",
         "userScopeMutation": "denied",
         "externalPublish": "denied",
         "gitHistoryMutation": "denied"
@@ -958,7 +1013,7 @@
       "legacyCapabilities": {
         "workspaceRead": true,
         "workspaceWrite": false,
-        "shell": "denied",
+        "shell": "prompt",
         "network": false,
         "credentials": false,
         "userScopeMutation": false,
@@ -968,6 +1023,11 @@
     },
     {
       "id": "review-lite",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "LEVEL": "lite"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "none",
       "modelInvocable": true,
       "subagentSafe": true,
@@ -1021,6 +1081,11 @@
     },
     {
       "id": "review-only",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "LEVEL": "standard"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "none",
       "modelInvocable": true,
       "subagentSafe": true,
@@ -1074,6 +1139,11 @@
     },
     {
       "id": "review-strict",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "LEVEL": "strict"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "none",
       "modelInvocable": true,
       "subagentSafe": true,
@@ -1127,6 +1197,9 @@
     },
     {
       "id": "route",
+      "canonicalSurfaceId": "route",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "destructiveActions": "none",
       "modelInvocable": true,
       "subagentSafe": true,
@@ -1180,6 +1253,11 @@
     },
     {
       "id": "senior-explore",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {
+        "DEPTH": "deep"
+      },
+      "compatibilityAlias": true,
       "destructiveActions": "low",
       "modelInvocable": false,
       "subagentSafe": true,

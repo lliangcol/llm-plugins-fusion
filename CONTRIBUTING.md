@@ -7,16 +7,16 @@ Do not edit this block by hand. It is synchronized by
 `node scripts/sync-doc-facts.mjs --write` from repository domain sources and
 `governance/product-lanes.json`.
 
-- Plugin: `nova-plugin@3.2.0`; production plugins: 1; public path: `nova-plugin/`
+- Plugin: `nova-plugin@4.0.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
-- Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
-- Workflow contract: schema v4, namespace `nova-plugin`, 21 workflows
+- Inventory: 21 commands, 6 skills, 6 active agents, 8 capability packs
+- Workflow contract: schema v5, namespace `nova-plugin`, 21 workflows
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"`, `bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"`
+- Active PreToolUse launcher: `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh`, `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh`
 - Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
 <!-- generated:project-state:end -->
 

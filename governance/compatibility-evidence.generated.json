@@ -3,16 +3,17 @@
   "schemaVersion": 1,
   "generatedFrom": "static adapter declarations plus digest-bound evals/evidence records",
   "sourceDigests": {
-    "workflow-specs/workflows.json": "562b6645143dba698f298a683b04d52e93527256bce3fa7dee9d4b019d199041",
-    "adapters/claude/manifest.json": "45247ee269f4dd35d654c863ba6830644e426b5c20b514c77b1f42db8a85e665",
-    "adapters/codex/AGENTS.md": "02df12273cd92a4589b19dd583da800e81c3fd219a07b3aba5fa14b0dbc7f732",
-    "adapters/generic-agent-skills/manifest.json": "b6132955350c39abd42618820188a79296d80edd9264f958242e3b18c77b739a",
-    "governance/assistant-support.json": "7d13cc15f4aa790e87c64b538193161b73a74d5b16e90d2feee75855e2eed853"
+    "workflow-specs/workflows.json": "c6dfaf7c60184db60c55e7e45ddce08d0c1d9beb29ea72232baac4f4695ebb9e",
+    "adapters/claude/manifest.json": "2ebd2f407913a4aa9381f9375cc7e4d5b0392fd644844de2cc901494284d7e34",
+    "adapters/codex/AGENTS.md": "893f2149941d1fc01c0f31cd880ff255130f88a107a345d38d4153aa0f5a33a5",
+    "adapters/generic-agent-skills/manifest.json": "a5bf71951a9a639e04c7eb2061d8c688dd31af4f71531a835d9f4814aad8b8ba",
+    "governance/assistant-support.json": "d24356d1e875f83d9dde9e24bf9442b5aec290da7232907468dfc6ef40b0881c"
   },
   "knownGoodLanes": [
     {
       "assistant": "claude-code",
       "version": "2.1.205",
+      "npmIntegrity": "sha512-riShT8jUKjYFupfYtFJF8JelKmJzAm+fHDvqUadfEAjzRAJ3AatZm5gtzWT3pEBmSXPIjoIjOHOXBGzo5wpuCw==",
       "blocking": true,
       "lane": "known-good"
     },
@@ -82,8 +83,7 @@
         "adapters/codex/AGENTS.md:digest-changed",
         "adapters/claude/manifest.json:digest-changed",
         "adapters/generic-agent-skills/manifest.json:digest-changed",
-        "source-state:not-clean-commit",
-        "base-commit:not-current-head"
+        "source-state:not-clean-commit"
       ]
     },
     {
@@ -100,8 +100,7 @@
         "adapters/codex/AGENTS.md:digest-changed",
         "adapters/claude/manifest.json:digest-changed",
         "adapters/generic-agent-skills/manifest.json:digest-changed",
-        "source-state:not-clean-commit",
-        "base-commit:not-current-head"
+        "source-state:not-clean-commit"
       ]
     },
     {
@@ -122,8 +121,7 @@
         "live-dataset:fewer-than-3-attempts",
         "workflow-specs/workflows.json:digest-changed",
         "adapters/claude/manifest.json:digest-changed",
-        "source-state:not-clean-commit",
-        "base-commit:not-current-head"
+        "source-state:not-clean-commit"
       ]
     },
     {
@@ -144,8 +142,7 @@
         "live-dataset:fewer-than-3-attempts",
         "workflow-specs/workflows.json:digest-changed",
         "adapters/codex/AGENTS.md:digest-changed",
-        "source-state:not-clean-commit",
-        "base-commit:not-current-head"
+        "source-state:not-clean-commit"
       ]
     }
   ]

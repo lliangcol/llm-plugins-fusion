@@ -1,28 +1,9 @@
-import { readFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-
-function readJson(path) {
-  return JSON.parse(readFileSync(path, 'utf8'));
-}
+import { loadProductBundle } from '../../framework/io/load-product-bundle.mjs';
+import { compileProductBundle } from '../../framework/compiler/compile-product-bundle.mjs';
 
 export function loadWorkflowModel({ root, frameworkPath, productPath, workflowsPath, behaviorsPath }) {
-  const framework = readJson(resolve(root, frameworkPath));
-  const productFullPath = resolve(root, productPath);
-  const product = readJson(productFullPath);
-  const workflows = readJson(resolve(root, workflowsPath));
-  const behaviors = readJson(resolve(root, behaviorsPath));
-  const adapterBase = dirname(productFullPath);
-  const adapters = product.adapterDefinitions.map((path) => readJson(resolve(adapterBase, path)));
-  const adapterById = Object.fromEntries(adapters.map((adapter) => [adapter.id, adapter]));
-  const assistantEnforcement = Object.fromEntries(adapters.map((adapter) => [adapter.id, adapter.enforcement]));
-  const spec = {
-    ...workflows,
-    pluginNamespace: product.pluginNamespace,
-    knownGoodClaudeCli: product.runtimeCompatibility['claude-code'] ?? null,
-    primaryEntrypoints: product.primaryEntrypoints,
-    toolVocabulary: product.tools,
-    assistantEnforcement,
-  };
+  const compiled = compileProductBundle(loadProductBundle({ root, frameworkPath, productPath, workflowsPath, behaviorsPath }));
+  const { framework, product, adapters, adapterById, workflows, behaviors, spec } = compiled;
 
   return {
     framework,
@@ -39,7 +20,7 @@ export function loadWorkflowModel({ root, frameworkPath, productPath, workflowsP
     knownGoodClaudeCli: product.runtimeCompatibility['claude-code'] ?? null,
     primaryEntrypoints: product.primaryEntrypoints,
     toolVocabulary: product.tools,
-    assistantEnforcement,
+    assistantEnforcement: spec.assistantEnforcement,
     permissionProfiles: workflows.permissionProfiles,
     workflowEntries: workflows.workflows,
   };

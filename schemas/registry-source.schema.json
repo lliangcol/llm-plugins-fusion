@@ -36,14 +36,16 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": ["source", "category", "tags", "metadata"],
+        "required": ["localSource", "distributionSource", "category", "tags", "metadata"],
         "additionalProperties": false,
         "properties": {
-          "source": {
+          "localSource": {
             "type": "string",
             "minLength": 1,
             "description": "Relative path to the local plugin directory whose .claude-plugin/plugin.json provides plugin-owned fields."
           },
+          "distributionSource": { "$ref": "#/$defs/distributionSource" },
+          "canarySource": { "$ref": "#/$defs/distributionSource" },
           "category": {
             "type": "string",
             "enum": [
@@ -129,6 +131,25 @@
           }
         }
       }
+    }
+  },
+  "$defs": {
+    "distributionSource": {
+      "oneOf": [
+        { "type": "string", "minLength": 1 },
+        {
+          "type": "object",
+          "required": ["source", "url", "path", "ref"],
+          "additionalProperties": false,
+          "properties": {
+            "source": { "const": "git-subdir" },
+            "url": { "type": "string", "format": "uri" },
+            "path": { "type": "string", "minLength": 1 },
+            "ref": { "type": "string", "minLength": 1 },
+            "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
+          }
+        }
+      ]
     }
   }
 }

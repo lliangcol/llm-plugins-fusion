@@ -102,12 +102,12 @@ Component inventory
   assert.throws(() => parsePluginDetails('Skills (2) route'), /reported 2 Skills but listed 1/);
 });
 
-test('known-good Claude inventory snapshot records the dual surface', async () => {
+test('known-good Claude inventory snapshot records commands plus canonical skills', async () => {
   const snapshot = JSON.parse(await import('node:fs/promises').then(({ readFile }) => readFile(
     new URL('../../fixtures/runtime/claude-2.1.205-inventory.json', import.meta.url),
     'utf8',
   )));
-  assert.equal(snapshot.skillsCount, 42);
+  assert.equal(snapshot.skillsCount, 27);
   assert.equal(snapshot.skills.includes('route'), true);
   assert.equal(snapshot.skills.includes('nova-route'), true);
   assert.equal(snapshot.primaryEntrypoints.includes('/nova-plugin:nova-route'), false);

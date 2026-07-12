@@ -124,6 +124,13 @@ async function runNodePostAuditSmoke() {
       input: payload,
       timeoutMs: 60_000,
     });
+    await runProcess('compact node audit spool', process.execPath, [
+      'nova-plugin/hooks/scripts/audit-compactor.mjs',
+    ], {
+      cwd: root,
+      env: { ...process.env, CLAUDE_PLUGIN_DATA: tmpRoot },
+      timeoutMs: 60_000,
+    });
     const logPath = resolve(tmpRoot, 'audit.log');
     const log = existsSync(logPath) ? readFileSync(logPath, 'utf8') : '';
     const lines = log.trimEnd().split(/\r?\n/);
@@ -364,6 +371,7 @@ auth_name="Authorization:"
 auth_type="Bearer"
 payload="$(printf '{"tool_name":"Bash","tool_input":{"command":"curl -H %s %s %s https://example.test"},"tool_response":{"success":true}}' "$auth_name" "$auth_type" "$token")"
 printf '%s' "$payload" | bash nova-plugin/hooks/scripts/post-audit-log.sh
+node nova-plugin/hooks/scripts/audit-compactor.mjs
 grep -q '<redacted>' "$log_dir/audit.log"
 ! grep -q "$token" "$log_dir/audit.log"
 `);
@@ -374,6 +382,7 @@ mkdir "$log_dir"
 export CLAUDE_PLUGIN_DATA="$log_dir"
 payload='{"tool_name":"Bash\\nFORGED_TOOL","tool_input":{"file_path":"src/example.js\\nFORGED_STATUS"},"tool_response":{"success":true}}'
 printf '%s' "$payload" | bash nova-plugin/hooks/scripts/post-audit-log.sh
+node nova-plugin/hooks/scripts/audit-compactor.mjs
 [ "$(wc -l < "$log_dir/audit.log" | tr -d ' ')" = "1" ]
 ! grep -q '^FORGED_' "$log_dir/audit.log"
 `);

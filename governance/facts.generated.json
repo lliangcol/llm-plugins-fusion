@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "facts": {
+    "development.version": {
+      "value": "4.0.0",
+      "source": "nova-plugin/.claude-plugin/plugin.json#/version",
+      "sourceSha256": "54f3b9616d6acbb466a8774eeaccdf80c689adab6f7af2570dcd340446ac28f1"
+    },
+    "release.stable.version": {
+      "value": "3.2.0",
+      "source": "governance/release-channels.json#/stable/version",
+      "sourceSha256": "1a54661c80776ea0c4968d0eb05f17d40468a0ffd0d29a9245996156c4adbf11"
+    },
+    "release.stable.tag": {
+      "value": "v3.2.0",
+      "source": "governance/release-channels.json#/stable/tag",
+      "sourceSha256": "1a54661c80776ea0c4968d0eb05f17d40468a0ffd0d29a9245996156c4adbf11"
+    },
+    "release.stable.commit": {
+      "value": "1a52cea609fc6dbe20d12385b473e89ae8aefbbf",
+      "source": "governance/release-channels.json#/stable/commit",
+      "sourceSha256": "1a54661c80776ea0c4968d0eb05f17d40468a0ffd0d29a9245996156c4adbf11"
+    },
+    "release.stable.state": {
+      "value": "RELEASE_PUBLISHED",
+      "source": "governance/release-channels.json#/stable/state",
+      "sourceSha256": "1a54661c80776ea0c4968d0eb05f17d40468a0ffd0d29a9245996156c4adbf11"
+    },
+    "release.canary.ref": {
+      "value": "main",
+      "source": "governance/release-channels.json#/canary/ref",
+      "sourceSha256": "1a54661c80776ea0c4968d0eb05f17d40468a0ffd0d29a9245996156c4adbf11"
+    },
+    "compatibility.effectiveLevels": {
+      "value": {
+        "claude-code": "L2",
+        "codex": "L2",
+        "generic": "L1"
+      },
+      "source": "governance/compatibility-evidence.generated.json#/currentClaims",
+      "sourceSha256": "215ff19b96ca69eaa94a8efdbc730fa214bec7766fa746c76ebec86b8ff377f2"
+    },
+    "inventory.commands": {
+      "value": 21,
+      "source": "governance/project-state.generated.json#/inventory/commands",
+      "sourceSha256": "b99eeb2126767bba635250cb8c15d9d1242db687ae669dc992c37fe436ba5910"
+    },
+    "inventory.skills": {
+      "value": 6,
+      "source": "governance/project-state.generated.json#/inventory/skills",
+      "sourceSha256": "b99eeb2126767bba635250cb8c15d9d1242db687ae669dc992c37fe436ba5910"
+    },
+    "runtime.node": {
+      "value": ">=22",
+      "source": "governance/project-state.generated.json#/runtime/node",
+      "sourceSha256": "b99eeb2126767bba635250cb8c15d9d1242db687ae669dc992c37fe436ba5910"
+    },
+    "runtime.bash": {
+      "value": "3.2+",
+      "source": "governance/project-state.generated.json#/runtime/distributedBash",
+      "sourceSha256": "b99eeb2126767bba635250cb8c15d9d1242db687ae669dc992c37fe436ba5910"
+    }
+  }
+}

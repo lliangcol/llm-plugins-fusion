@@ -58,11 +58,13 @@ finalize-work
 finalize-lite
 ```
 
-Each command must keep the one-to-one skill mapping:
+The six skills are the canonical behavior API. Commands are generated wrappers
+and compatibility aliases; their presets are part of the 4.x migration API:
 
 ```text
-nova-plugin/commands/<id>.md
-nova-plugin/skills/nova-<id>/SKILL.md
+workflow-specs/workflows.json
+  -> nova-plugin/skills/nova-<canonical-surface>/SKILL.md
+  -> nova-plugin/commands/<id>.md
 ```
 
 ## Stable Validation Entrypoints

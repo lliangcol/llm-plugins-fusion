@@ -28,7 +28,7 @@ consumer profiles belong in the consumer project's own `AGENTS.md`,
 ## Current Inventory
 
 - Commands: 21 files under `nova-plugin/commands/*.md`
-- Skills: 21 files under `nova-plugin/skills/nova-*/SKILL.md`
+- Skills: 6 files under `nova-plugin/skills/nova-*/SKILL.md`
 - Active agents: 6 core files under `nova-plugin/agents/*.md`
 - Capability packs: 8 documentation packs under `nova-plugin/packs/*/README.md`
 
@@ -76,11 +76,14 @@ node scripts/generate-registry.mjs --write
 - Do not hand-edit generated marketplace outputs. Edit
   `.claude-plugin/registry.source.json` or
   `nova-plugin/.claude-plugin/plugin.json`, then run the generator.
-- Preserve command/skill one-to-one mapping:
+- Preserve the skill-first projection: six canonical skills own behavior and
+  all 21 command files are generated wrappers. Fifteen compatibility aliases
+  carry only a canonical skill id and variant preset:
 
 ```text
-nova-plugin/commands/<id>.md
-nova-plugin/skills/nova-<id>/SKILL.md
+workflow-specs/workflows.json
+  -> nova-plugin/skills/nova-<canonical-surface>/SKILL.md
+  -> nova-plugin/commands/<id>.md
 ```
 
 ## Non-Claude Execution Notes

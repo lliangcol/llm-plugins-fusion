@@ -9,10 +9,10 @@
       "reason": "outside path accepted"
     },
     {
-      "id": "protected-hardlink-check-disabled",
+      "id": "all-target-hardlink-check-disabled",
       "source": "nova-plugin/runtime/safe-workspace-path.mjs",
       "killed": true,
-      "reason": "protected hard link accepted"
+      "reason": "ordinary hard link accepted"
     },
     {
       "id": "secret-detection-disabled",

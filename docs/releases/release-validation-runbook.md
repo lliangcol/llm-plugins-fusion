@@ -209,9 +209,12 @@ git push origin "v${PLUGIN_VERSION}"
 The candidate workflow listens for `v*.*.*-rc.*` tags. The RC tag base must
 match the stable plugin manifest version. It builds artifacts once, binds them
 to `release-candidate.json`, performs isolated exact-tag install and route
-validation, and publishes a GitHub prerelease. The stable trigger accepts only
-`v*.*.*` tags without a prerelease suffix and delegates to the promotion
-workflow, which verifies and republishes the identical candidate artifacts.
+validation, then reconciles a draft GitHub prerelease and publishes it only
+after an exact asset download verifies the draft. Stable
+publication is then started manually through `.github/workflows/release.yml`
+with both the signed stable tag and the exact candidate tag. The delegated
+promotion workflow verifies both tags and republishes the identical candidate
+artifacts; pushing a stable tag alone does not publish a release.
 Do not use `claude plugin tag` for this repository release
 unless the release policy changes, because that CLI creates plugin-scoped tags
 that do not match the current GitHub release trigger.
@@ -275,9 +278,10 @@ For publication, require `release-candidate.json` and its bound candidate
 evidence from `.github/workflows/release-candidate.yml`; it binds exact-tag
 installation, inventory, OAuth-authenticated `/nova-plugin:route`, coverage,
 source digests, artifact digests, tag, and commit. Stable promotion must verify
-the signed candidate tag, original candidate signer workflow attestation, and
-every required evidence record. It may run the artifact builder only in an
-isolated comparison step and must publish the downloaded candidate bytes.
+the signed candidate tag, original candidate signer workflow attestation,
+candidate envelope, promotion intent, actual control-bundle bytes and file
+inventory, and every required evidence record. It must publish the downloaded
+candidate bytes and must not substitute a rebuild.
 
 The scheduled `Claude Latest Drift` job intentionally fails its validation step
 when the latest CLI inventory changes, but it must still write

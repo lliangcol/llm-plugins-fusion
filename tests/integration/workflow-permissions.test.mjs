@@ -11,7 +11,7 @@ import {
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '../..');
 
-test('workflow permission source defines the exact dual runtime surface', async () => {
+test('workflow permission source defines the 21-command plus six-skill runtime surface', async () => {
   const spec = JSON.parse(await readFile(
     resolve(root, 'nova-plugin/runtime/workflow-permissions.json'),
     'utf8',
@@ -19,7 +19,7 @@ test('workflow permission source defines the exact dual runtime surface', async 
   const report = buildEffectivePermissions(spec);
 
   assert.equal(spec.workflows.length, 21);
-  assert.equal(report.entries.length, 42);
+  assert.equal(report.entries.length, 27);
   assert.ok(report.entries.some((entry) => entry.invocation === '/nova-plugin:route'));
   assert.ok(report.entries.some((entry) => entry.invocation === '/nova-plugin:nova-route'));
 
@@ -54,7 +54,7 @@ test('workflow classes retain the native permission contract', async () => {
   };
 
   assertTools(
-    ['explore', 'explore-lite', 'explore-review', 'plan-lite', 'plan-review', 'review', 'review-lite', 'review-only', 'review-strict', 'route', 'finalize-lite'],
+    ['explore', 'explore-lite', 'explore-review', 'plan-lite', 'plan-review', 'review-lite', 'review-only', 'review-strict', 'route', 'finalize-lite'],
     ['Read', 'Glob', 'Grep'],
     ['Write', 'Edit', 'NotebookEdit', 'Bash'],
     true,
@@ -70,6 +70,12 @@ test('workflow classes retain the native permission contract', async () => {
     ['Read', 'Glob', 'Grep'],
     ['Write', 'Edit', 'NotebookEdit'],
     false,
+  );
+  assertTools(
+    ['review'],
+    ['Read', 'Glob', 'Grep'],
+    ['Write', 'Edit', 'NotebookEdit'],
+    true,
   );
   assertTools(
     ['implement-lite', 'implement-plan', 'implement-standard', 'codex-review-fix'],

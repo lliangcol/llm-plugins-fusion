@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/release-event.schema.json",
+  "title": "Release State Transition Event",
+  "type": "object",
+  "required": ["schemaVersion", "transition", "stableTag", "candidateTag", "sourceCommit", "candidateManifestSha256", "controlBundleSha256", "inputDigests", "outputDigests", "runId", "createdAt", "previousEventSha256"],
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "transition": { "type": "string", "pattern": "^[A-Z_]+->[A-Z_]+$" },
+    "stableTag": { "type": "string" },
+    "candidateTag": { "type": "string" },
+    "sourceCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "candidateManifestSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "controlBundleSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "inputDigests": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" } },
+    "outputDigests": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" } },
+    "runId": { "type": "string", "minLength": 1 },
+    "createdAt": { "type": "string", "format": "date-time" },
+    "previousEventSha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" }
+  }
+}

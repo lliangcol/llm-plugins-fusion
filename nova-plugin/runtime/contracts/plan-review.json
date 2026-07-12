@@ -1,7 +1,17 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "plan-review",
+  "canonicalSurfaceId": "review",
+  "variantPreset": {
+    "REVIEW_PROFILE": "plan"
+  },
+  "compatibilityAlias": true,
   "stage": "review",
   "ownerAgents": [
     "reviewer"
@@ -51,7 +61,7 @@
   "behaviorContract": {
     "schemaVersion": 1,
     "source": "workflow-specs/behaviors.json",
-    "guidanceReference": "../../skills/nova-plan-review/SKILL.md",
+    "guidanceReference": "../../skills/nova-review/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Assess plan decision clarity, assumptions, and execution risk without rewriting the plan.",
     "inputs": [

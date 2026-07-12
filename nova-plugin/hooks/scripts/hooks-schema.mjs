@@ -6,6 +6,7 @@ const SUPPORTED_EVENTS = new Set([
   'PostToolUse',
   'PostToolUseFailure',
   'PermissionDenied',
+  'SessionEnd',
 ]);
 
 const ENTRY_KEYS = new Set([
@@ -39,8 +40,8 @@ function referencedHookScript(hook) {
 
 const REQUIRED_NOVA_EVENTS = new Map([
   ['PreToolUse', [
-    { matcher: 'Write|Edit|NotebookEdit', script: 'hooks/scripts/pre-write-check.sh', command: 'bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"', async: false },
-    { matcher: 'Bash', script: 'hooks/scripts/pre-bash-check.sh', command: 'bash "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"', async: false },
+    { matcher: 'Write|Edit|NotebookEdit', script: 'hooks/scripts/pre-write-check.sh', command: 'bash', async: false },
+    { matcher: 'Bash', script: 'hooks/scripts/pre-bash-check.sh', command: 'bash', async: false },
   ]],
   ['PostToolUse', [
     { matcher: 'Write|Edit', script: 'hooks/scripts/post-write-verify.mjs', command: 'node', async: false },
@@ -51,6 +52,9 @@ const REQUIRED_NOVA_EVENTS = new Map([
   ]],
   ['PermissionDenied', [
     { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/post-audit-log.mjs', command: 'node', async: true },
+  ]],
+  ['SessionEnd', [
+    { matcher: '*', script: 'hooks/scripts/audit-compactor.mjs', command: 'node', async: false },
   ]],
 ]);
 
@@ -168,11 +172,8 @@ export function validateNovaHooksPolicy(config) {
       }
       const hook = hooks[0];
       if (hook.command !== expected.command) record(errors, `${event}[${index}] must use the required command form`);
-      if (expected.command === 'node' && (!Array.isArray(hook.args) || hook.args.length !== 1 || hook.args[0] !== `\${CLAUDE_PLUGIN_ROOT}/${expected.script}`)) {
-        record(errors, `${event}[${index}] must pass ${expected.script} as the only Node argument`);
-      }
-      if (expected.command !== 'node' && hook.args !== undefined) {
-        record(errors, `${event}[${index}] compatibility launcher must not declare exec args`);
+      if (!Array.isArray(hook.args) || hook.args.length !== 1 || hook.args[0] !== `\${CLAUDE_PLUGIN_ROOT}/${expected.script}`) {
+        record(errors, `${event}[${index}] must pass ${expected.script} as the only ${expected.command} argument`);
       }
       if ((hook.async === true) !== expected.async) {
         record(errors, `${event}[${index}] async behavior differs from policy`);

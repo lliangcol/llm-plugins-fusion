@@ -1,6 +1,6 @@
 {
   "name": "llm-plugins-fusion-maintenance",
-  "version": "3.2.0",
+  "version": "4.0.0",
   "private": true,
   "description": "Maintainer shortcuts for validating the llm-plugins-fusion repository.",
   "type": "module",
@@ -24,7 +24,11 @@
     "eval:evidence": "node scripts/validate-assistant-evidence.mjs",
     "generate:compatibility-evidence": "node scripts/generate-compatibility-evidence.mjs --write",
     "validate:compatibility-evidence": "node scripts/generate-compatibility-evidence.mjs",
-    "validate:workflow-contract": "node scripts/validate-workflow-contract-v4.mjs && node scripts/generate-workflow-v2-compat.mjs",
+    "validate:workflow-contract": "node scripts/validate-workflow-contract-v5.mjs",
+    "eval:paired:dry-run": "node scripts/evaluate-paired-live.mjs --dry-run",
+    "validate:complexity": "node scripts/validate-control-plane-complexity.mjs",
+    "generate:facts": "node scripts/generate-fact-graph.mjs --write",
+    "validate:facts": "node scripts/generate-fact-graph.mjs",
     "validate:second-product": "node scripts/validate-second-product-fixture.mjs",
     "test:unit": "node scripts/run-node-tests.mjs --suite unit",
     "test:integration": "node scripts/run-node-tests.mjs --suite integration",
@@ -60,7 +64,6 @@
     "validate:portable-paths": "node scripts/validate-portable-paths.mjs",
     "normalize:surfaces": "node scripts/normalize-workflow-surfaces.mjs --write",
     "generate:adapters": "node scripts/generate-adapters.mjs --write",
-    "generate:workflow-v2-compat": "node scripts/generate-workflow-v2-compat.mjs --write",
     "generate:runtime-contracts": "node scripts/generate-runtime-contracts.mjs --write",
     "generate:behavior-surfaces": "node scripts/generate-behavior-surfaces.mjs --write",
     "generate:quality-report": "node scripts/generate-quality-report.mjs --write",
@@ -70,12 +73,15 @@
     "scan:distribution": "node scripts/scan-distribution-risk.mjs",
     "release:evidence": "node scripts/generate-release-evidence.mjs",
     "release:artifacts": "node scripts/build-release-artifacts.mjs",
+    "release:control": "node scripts/build-release-control-bundle.mjs",
+    "release:orchestrate": "node scripts/release-orchestrator.mjs",
     "release:candidate": "node scripts/generate-release-candidate.mjs",
     "release:promotion:verify": "node scripts/verify-release-promotion.mjs",
     "scaffold:consumer": "node scripts/scaffold-consumer-profile.mjs"
   },
   "devDependencies": {
     "ajv": "8.20.0",
-    "ajv-formats": "3.0.1"
+    "ajv-formats": "3.0.1",
+    "yaml": "2.9.0"
   }
 }

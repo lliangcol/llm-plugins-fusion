@@ -50,7 +50,7 @@ for (const workflow of spec.workflows) {
   assert.deepEqual(compiledBehavior, Object.fromEntries(Object.entries(behavior).filter(([key]) => key !== 'id')), `${workflow.id}: compiled behavior differs from IR`);
   assert.equal(command.includes(runtimeReference), true, `${workflow.id}: command does not load runtime summary`);
   assert.equal(command.includes(skillReference), true, `${workflow.id}: command does not load authored behavior`);
-  assert.match(command, /authoritative behavioral contract/iu, `${workflow.id}: authored behavior authority is unclear`);
+  assert.match(command, /runtime contract and canonical skill are authoritative/iu, `${workflow.id}: authored behavior authority is unclear`);
   assert.match(command, /fail closed/iu, `${workflow.id}: conflict handling is not fail closed`);
   assert.match(skill, /## Workflow Contract/iu, `${workflow.id}: authored behavior has no workflow contract`);
   assert.match(skill, /BEGIN GENERATED BEHAVIOR CONTRACT/u, `${workflow.id}: generated behavior surface missing`);

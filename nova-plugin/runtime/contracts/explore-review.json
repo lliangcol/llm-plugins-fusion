@@ -1,7 +1,17 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "explore-review",
+  "canonicalSurfaceId": "explore",
+  "variantPreset": {
+    "PERSPECTIVE": "reviewer"
+  },
+  "compatibilityAlias": true,
   "stage": "explore",
   "ownerAgents": [
     "reviewer"
@@ -51,7 +61,7 @@
   "behaviorContract": {
     "schemaVersion": 1,
     "source": "workflow-specs/behaviors.json",
-    "guidanceReference": "../../skills/nova-explore-review/SKILL.md",
+    "guidanceReference": "../../skills/nova-explore/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Surface clarity gaps and risk signals using a reviewer perspective without proposing solutions.",
     "inputs": [

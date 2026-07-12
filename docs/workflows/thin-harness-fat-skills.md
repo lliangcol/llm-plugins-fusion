@@ -19,7 +19,7 @@ Source inputs:
 
 ## Why This Exists
 
-`nova-plugin` already has commands, one-to-one skills, core agents, capability
+`nova-plugin` already has generated commands, six canonical skills, core agents, capability
 packs, prompt templates, and validation scripts. What was missing was an
 explicit decision rule for where new workflow knowledge belongs.
 
@@ -189,7 +189,7 @@ Keep the workflow in a private consumer profile when:
 
 Before upstreaming new agent workflow guidance:
 
-- Does it preserve command/skill one-to-one mapping when commands change?
+- Does it preserve canonical skill ownership and generated alias/preset mapping when commands change?
 - Does it keep public docs free of consumer-specific facts?
 - Does it state whether the workflow may modify project files?
 - Does it include output artifacts or checkpoints for long work?

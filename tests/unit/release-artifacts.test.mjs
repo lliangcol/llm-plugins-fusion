@@ -11,7 +11,7 @@ import {
 } from '../../scripts/build-release-artifacts.mjs';
 import { resolveFromModule } from '../../scripts/lib/repo-root.mjs';
 
-test('release archive and CycloneDX evidence are deterministic', async (t) => {
+test('release archive, manifest, build SBOM, runtime BOM, and build record are deterministic', async (t) => {
   const first = await mkdtemp(join(tmpdir(), 'nova-release-artifacts-'));
   const second = await mkdtemp(join(tmpdir(), 'nova-release-artifacts-'));
   t.after(() => Promise.all([rm(first, { recursive: true, force: true }), rm(second, { recursive: true, force: true })]));
@@ -21,16 +21,18 @@ test('release archive and CycloneDX evidence are deterministic', async (t) => {
   assert.equal(left.archiveSha256, right.archiveSha256);
   const pluginRoot = resolveFromModule(import.meta.url, '../../nova-plugin');
   assert.deepEqual(deterministicTar(pluginRoot), deterministicTar(pluginRoot));
-  const sbom = JSON.parse(await readFile(left.sbomPath, 'utf8'));
+  const sbom = JSON.parse(await readFile(left.buildSbomPath, 'utf8'));
   assert.equal(sbom.bomFormat, 'CycloneDX');
-  assert.equal(sbom.metadata.component.hashes[0].content, left.archiveSha256);
-  assert.equal(sbom.components.length, 3);
-  assert.equal(sbom.dependencies[0].dependsOn.length, 3);
-  const provenance = JSON.parse(await readFile(left.provenancePath, 'utf8'));
-  assert.equal(provenance._type, 'https://in-toto.io/Statement/v1');
-  assert.equal(provenance.predicateType, 'https://slsa.dev/provenance/v1');
-  assert.equal(provenance.subject[0].digest.sha256, left.archiveSha256);
-  assert.equal(provenance.predicate.runDetails.byproducts[0].name, 'tree-manifest-v2');
+  assert.equal(sbom.specVersion, '1.7');
+  assert.ok(sbom.components.some((component) => component.name === 'ajv'));
+  const runtime = JSON.parse(await readFile(left.runtimeCapabilitiesPath, 'utf8'));
+  assert.equal(runtime.metadata.component.hashes[0].content, left.archiveSha256);
+  assert.equal(runtime.components.length, 4);
+  const manifest = JSON.parse(await readFile(left.artifactManifestPath, 'utf8'));
+  assert.equal(manifest.archive.sha256, left.archiveSha256);
+  const buildRecord = JSON.parse(await readFile(left.buildRecordPath, 'utf8'));
+  assert.equal(buildRecord.subject.sha256, left.archiveSha256);
+  assert.match(buildRecord.workflow.sha256, /^[a-f0-9]{64}$/u);
 
   const recoveryDir = await mkdtemp(join(tmpdir(), 'nova-release-artifacts-'));
   t.after(() => rm(recoveryDir, { recursive: true, force: true }));
@@ -44,9 +46,9 @@ test('release archive and CycloneDX evidence are deterministic', async (t) => {
       RELEASE_COMMIT: 'a'.repeat(40),
     },
   });
-  const recoveryProvenance = JSON.parse(await readFile(recovery.provenancePath, 'utf8'));
-  assert.equal(recoveryProvenance.predicate.buildDefinition.externalParameters.tag, 'v3.2.0-rc.3');
-  assert.equal(recoveryProvenance.predicate.buildDefinition.resolvedDependencies[0].digest.gitCommit, 'a'.repeat(40));
+  const recoveryRecord = JSON.parse(await readFile(recovery.buildRecordPath, 'utf8'));
+  assert.equal(recoveryRecord.candidateTag, 'v3.2.0-rc.3');
+  assert.equal(recoveryRecord.sourceCommit, 'a'.repeat(40));
 });
 
 test('release artifact helpers cover long archive paths and CLI outcomes', () => {
@@ -61,11 +63,13 @@ test('release artifact helpers cover long archive paths and CLI outcomes', () =>
   const output = [];
   const result = {
     archivePath: '/tmp/archive.tar.gz',
-    sbomPath: '/tmp/archive.cdx.json',
-    provenancePath: '/tmp/archive.provenance.json',
+    artifactManifestPath: '/tmp/artifact-manifest.json',
+    buildSbomPath: '/tmp/build-sbom.cdx.json',
+    runtimeCapabilitiesPath: '/tmp/runtime-capabilities.cdx.json',
+    buildRecordPath: '/tmp/nova-build-record.json',
   };
   assert.equal(main({ build: () => result, log: (line) => output.push(line) }), 0);
-  assert.equal(output.length, 3);
+  assert.equal(output.length, 5);
   const errors = [];
   assert.equal(main({ build: () => { throw new Error('boom'); }, errorLog: (line) => errors.push(line) }), 1);
   assert.deepEqual(errors, ['ERROR boom']);

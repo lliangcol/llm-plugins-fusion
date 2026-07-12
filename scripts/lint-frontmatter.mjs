@@ -250,17 +250,17 @@ function lintCommands() {
     const workflow = workflowById.get(expectedId);
     if (!workflow) recordError(rel, 'missing canonical workflow spec entry');
     else {
-      if (!src.includes('Execute this workflow directly from `$ARGUMENTS`')) recordError(rel, 'missing direct execution adapter contract');
+      if (!src.includes(`canonical surface \`nova-${workflow.canonicalSurfaceId}\``)) recordError(rel, 'missing canonical skill wrapper contract');
       const runtimeContract = `runtime/contracts/${workflow.id}.json`;
       if (!src.includes(`\${CLAUDE_PLUGIN_ROOT}/${runtimeContract}`)) recordError(rel, `missing compiled runtime contract ${runtimeContract}`);
       if (!existsSync(resolve(root, 'nova-plugin', runtimeContract))) recordError(rel, `compiled runtime contract file missing: ${runtimeContract}`);
-      if (!src.includes(`Do not invoke the compatibility skill \`${workflow.legacyAlias}\``)) recordError(rel, 'missing no-delegation compatibility boundary');
+      if (!src.includes(`variant preset \`${JSON.stringify(workflow.variantPreset)}\``)) recordError(rel, 'missing generated variant preset');
     }
 
     commandContracts.set(expectedId, {
       rel,
       id: expectedId,
-      skill: `nova-${expectedId}`,
+      skill: `nova-${workflow?.canonicalSurfaceId ?? expectedId}`,
       allowedTools: obj['allowed-tools'],
       disallowedTools: obj['disallowed-tools'],
       modelInvocable: !obj['disable-model-invocation'],
@@ -284,17 +284,6 @@ function lintSkills() {
       [/`Write`, `Edit`, `Edit`/, 'duplicate Edit in prose tool vocabulary'],
     ]) {
       if (pattern.test(src)) recordError(rel, message);
-    }
-    if (entry === 'nova-senior-explore') {
-      if (/normal or deep\./.test(src) || !/quick(?:,|`\/`|\/).*normal(?:,|`\/`|\/).*deep/i.test(src)) {
-        recordError(rel, 'DEPTH must consistently allow quick, normal, and deep');
-      }
-      if (/Output in chat ONLY/i.test(src)) {
-        recordError(rel, 'chat-only wording conflicts with optional EXPORT_PATH behavior');
-      }
-      if (!/Chat output is always required[\s\S]*EXPORT_PATH[\s\S]*exact same content/i.test(src)) {
-        recordError(rel, 'missing required chat output plus identical optional export contract');
-      }
     }
     const fm = splitFrontmatter(src);
     if (!fm) { recordError(rel, 'missing frontmatter'); continue; }
@@ -383,7 +372,7 @@ function lintCommandSkillContracts() {
   const skillsDir = resolve(root, 'nova-plugin/skills');
 
   for (const [commandId, command] of commandContracts.entries()) {
-    const expectedSkill = `nova-${commandId}`;
+    const expectedSkill = command.skill;
     const skillFile = resolve(skillsDir, expectedSkill, 'SKILL.md');
     if (!existsSync(skillFile)) {
       recordError(command.rel, `invoked skill file missing: skills/${expectedSkill}/SKILL.md`);
@@ -393,18 +382,7 @@ function lintCommandSkillContracts() {
     const skill = skillContracts.get(expectedSkill);
     if (!skill) continue;
 
-    if (!sameToolSet(command.allowedTools, skill.allowedTools)) {
-      recordError(command.rel, `allowed-tools differ from ${skill.rel}`);
-    }
-    if (!sameToolSet(command.disallowedTools, skill.disallowedTools)) {
-      recordError(command.rel, `disallowed-tools differ from ${skill.rel}`);
-    }
-    if (command.modelInvocable !== skill.modelInvocable) {
-      recordError(command.rel, `model invocation policy differs from ${skill.rel}`);
-    }
-    if (String(command.destructiveActions) !== String(skill.destructiveActions)) {
-      recordError(command.rel, `destructive-actions "${command.destructiveActions}" differ from ${skill.rel} metadata.nova-destructive-actions "${skill.destructiveActions}"`);
-    }
+    if (!workflowById.get(commandId)?.canonicalSurfaceId) recordError(command.rel, 'missing canonical surface mapping');
   }
 
   for (const [skillName, skill] of skillContracts.entries()) {

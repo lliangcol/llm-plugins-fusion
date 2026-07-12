@@ -24,7 +24,8 @@ assert.equal(generic.maximumSupportedLevel, 'L4');
 assert.equal(claude.maximumSupportedLevel, 'L4');
 assert.deepEqual(generic.workflows.map((entry) => entry.id), spec.workflows.map((entry) => entry.id));
 assert.equal(claude.commands.length, 21);
-assert.equal(claude.legacyAliases.length, 21);
+assert.equal(claude.canonicalSkills.length, 6);
+assert.equal(claude.compatibilityCommandAliases.length, 15);
 assert.match(codex, /Never claim Claude hooks or permissions are active in Codex/);
 
 for (const workflow of generic.workflows) {

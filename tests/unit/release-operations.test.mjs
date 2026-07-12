@@ -7,9 +7,8 @@ import test from 'node:test';
 import { diffLabels, parseLabelCatalog } from '../../scripts/lib/label-catalog.mjs';
 import { evaluateIndependentReview } from '../../scripts/lib/release-review.mjs';
 import { syncLabels } from '../../scripts/sync-github-labels.mjs';
-import { main as validateWorkflowContractV4 } from '../../scripts/validate-workflow-contract-v4.mjs';
+import { main as validateWorkflowContractV5 } from '../../scripts/validate-workflow-contract-v5.mjs';
 import { verifyIndependentReview } from '../../scripts/verify-independent-release-review.mjs';
-import '../../scripts/validate-workflow-contract-v3.mjs';
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
 
@@ -79,8 +78,8 @@ test('independent review verifier writes current merged-PR evidence', async () =
   }
 });
 
-test('workflow contract v4 entrypoint remains callable through the v3 compatibility surface', () => {
-  const result = validateWorkflowContractV4();
+test('workflow contract v5 entrypoint validates the canonical six-skill surface', () => {
+  const result = validateWorkflowContractV5();
   assert.equal(result.workflows, 21);
   assert.equal(result.adapters, 3);
 });

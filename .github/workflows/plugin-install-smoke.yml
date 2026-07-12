@@ -19,6 +19,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
@@ -47,15 +49,16 @@ jobs:
           name: plugin-install-smoke-context
           path: .metrics/plugin-install-smoke/
 
-  latest-drift:
-    name: Claude Latest Drift
+  latest-drift-check:
+    name: Claude Latest Drift / Unprivileged Check
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
       contents: read
-      issues: write
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
@@ -66,10 +69,18 @@ jobs:
           mkdir -p .metrics/plugin-latest-drift
           claude --version | tee .metrics/plugin-latest-drift/claude-version.txt
       - name: Record latest inventory drift
+        id: drift
+        continue-on-error: true
         run: |
           mkdir -p .metrics/plugin-latest-drift
           set -o pipefail
           node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home --inventory-out .metrics/plugin-latest-drift/inventory.json 2>&1 | tee .metrics/plugin-latest-drift/run.log
+      - name: Write sanitized fixed-schema drift report
+        if: always()
+        env:
+          DRIFT_OUTCOME: ${{ steps.drift.outcome }}
+        run: |
+          node -e 'const fs=require("fs"); const passed=process.env.DRIFT_OUTCOME==="success"; fs.writeFileSync(".metrics/plugin-latest-drift/drift-report.json", JSON.stringify({schemaVersion:1,check:"claude-latest-install",passed,runId:process.env.GITHUB_RUN_ID,repository:process.env.GITHUB_REPOSITORY})+"\n")'
       - name: Upload latest drift evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -77,19 +88,36 @@ jobs:
           name: claude-latest-drift
           path: .metrics/plugin-latest-drift/
           include-hidden-files: true
-      - name: Create or update compatibility drift issue
-        if: failure()
+      - name: Fail after evidence upload when drift was detected
+        if: steps.drift.outcome != 'success'
+        run: exit 1
+
+  latest-drift-report:
+    name: Claude Latest Drift / Issue Reporter
+    if: always()
+    needs: latest-drift-check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: claude-latest-drift
+          path: drift
+      - name: Validate sanitized drift report
+        run: |
+          jq -e 'keys == ["check","passed","repository","runId","schemaVersion"] and .schemaVersion == 1 and .check == "claude-latest-install" and (.passed|type) == "boolean"' drift/drift-report.json
+      - name: Reconcile compatibility drift issue
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          passed="$(jq -r .passed drift/drift-report.json)"
           title="Claude latest compatibility drift"
           issue="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')"
-          body="Scheduled compatibility validation failed in workflow run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Response SLO: 7 days."
-          if [ -n "${issue}" ]; then gh issue comment "${issue}" --body "${body}"; else gh issue create --title "${title}" --body "${body}"; fi
-      - name: Close recovered compatibility drift issue
-        if: success()
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          issue="$(gh issue list --state open --search 'Claude latest compatibility drift in:title' --json number --jq '.[0].number // empty')"
-          if [ -n "${issue}" ]; then gh issue close "${issue}" --comment "Compatibility recovered in run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."; fi
+          if [ "${passed}" = "true" ]; then
+            if [ -n "${issue}" ]; then gh issue close "${issue}" --comment "Compatibility recovered in run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."; fi
+          else
+            body="Scheduled compatibility validation failed in workflow run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Response SLO: 7 days."
+            if [ -n "${issue}" ]; then gh issue comment "${issue}" --body "${body}"; else gh issue create --title "${title}" --body "${body}"; fi
+          fi

@@ -25,7 +25,7 @@ maintainer gate again.
 | Signal | First command | Boundary |
 | --- | --- | --- |
 | Markdown link, anchor, inventory, positioning, or release wording failure | `npm run validate:docs` | Fix active public docs only; do not patch generated marketplace outputs by hand. |
-| Command or skill frontmatter failure | `node scripts/lint-frontmatter.mjs` | Preserve command/skill one-to-one mapping and existing tool permission intent. |
+| Command or skill frontmatter failure | `node scripts/lint-frontmatter.mjs` | Preserve canonical skill ownership, generated alias mapping, and existing tool permission intent. |
 | GitHub workflow permission, inventory, or required-check drift | `npm run validate:github-workflows` | Do not broaden default token scope or move mutating plugin install smoke into default PR/push checks. |
 | `generated registry drift check` or generated marketplace drift | `node scripts/generate-registry.mjs --write` | Edit registry or plugin metadata sources first, then regenerate outputs. |
 | Distribution risk scan secret, private path, or `.codex/` artifact finding | `npm run scan:distribution` | Remove or redact the active public content; use allowlists only for intentional historical warnings. |
@@ -72,8 +72,8 @@ only in a disposable CI runner or test OS user.
 
 ## Hooks Fail Before Writing
 
-`pre-write-check.mjs` is the direct Node.js 22+ write guard. The retained shell
-launcher is compatibility-only. It
+`pre-write-check.sh` is the active fail-closed exec-form launcher and
+`pre-write-check.mjs` is the Node.js 22+ write-guard implementation. The launcher
 blocks malformed payloads, unavailable Node, likely hardcoded secrets, unsafe
 Write/Edit targets, unsafe Edit reconstruction, unsupported NotebookEdit, and
 invalid proposed `hooks.json` content. Exit 0 means

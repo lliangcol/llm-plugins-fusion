@@ -11,14 +11,15 @@ function shouldSkipStalePlanningScan(absPath, context) {
   const relPath = context.rel(absPath);
   return relPath === 'CHANGELOG.md'
     || context.isArchivePath(absPath)
-    || context.hasPathSegments(absPath, context.HISTORY_SEGMENTS);
+    || context.hasPathSegments(absPath, context.HISTORY_SEGMENTS)
+    || /^Status:\s*archived\b/imu.test(readFileSync(absPath, 'utf8'));
 }
 
 export function validateSecuritySupportRange(context) {
-  const plugin = context.readJson('nova-plugin/.claude-plugin/plugin.json');
-  const expectedRange = expectedCurrentMinorRange(plugin.version);
+  const releaseChannels = context.readJson('governance/release-channels.json');
+  const expectedRange = expectedCurrentMinorRange(releaseChannels.stable.version);
   if (!expectedRange) {
-    context.recordError('nova-plugin/.claude-plugin/plugin.json', `version "${plugin.version}" cannot derive current MINOR support range`);
+    context.recordError('governance/release-channels.json', `stable version "${releaseChannels.stable.version}" cannot derive current MINOR support range`);
     return;
   }
 
@@ -30,7 +31,7 @@ export function validateSecuritySupportRange(context) {
     return;
   }
   if (match[1] !== expectedRange) {
-    context.recordError(file, `current MINOR support range is "${match[1]}", expected "${expectedRange}" from plugin version ${plugin.version}`);
+    context.recordError(file, `current MINOR support range is "${match[1]}", expected "${expectedRange}" from stable channel ${releaseChannels.stable.version}`);
   }
 }
 

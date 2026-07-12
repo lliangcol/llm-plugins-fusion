@@ -1,7 +1,15 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "implement-plan",
+  "canonicalSurfaceId": "implement-plan",
+  "variantPreset": {},
+  "compatibilityAlias": false,
   "stage": "implement",
   "ownerAgents": [
     "builder"
@@ -28,8 +36,8 @@
     "workspaceRead": "preapproved",
     "workspaceWrite": "preapproved",
     "shell": "prompt",
-    "network": "denied",
-    "credentials": "denied",
+    "network": "prompt",
+    "credentials": "explicit",
     "userScopeMutation": "denied",
     "externalPublish": "denied",
     "gitHistoryMutation": "denied"

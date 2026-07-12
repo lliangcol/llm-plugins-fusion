@@ -21,6 +21,11 @@
       "risk": "low",
       "primary": false,
       "legacyAlias": "nova-backend-plan",
+      "canonicalSurfaceId": "produce-plan",
+      "variantPreset": {
+        "PLAN_PROFILE": "java-backend"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     },
     {
@@ -39,6 +44,11 @@
       "risk": "medium",
       "primary": false,
       "legacyAlias": "nova-codex-review-fix",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {
+        "EXECUTION_PROFILE": "codex-review-fix"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     },
     {
@@ -55,6 +65,11 @@
       "risk": "low",
       "primary": false,
       "legacyAlias": "nova-codex-review-only",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "REVIEW_PROFILE": "codex-review-only"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     },
     {
@@ -71,6 +86,11 @@
       "risk": "low",
       "primary": false,
       "legacyAlias": "nova-codex-verify-only",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "REVIEW_PROFILE": "codex-verify-only"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     },
     {
@@ -88,6 +108,9 @@
       "risk": "none",
       "primary": true,
       "legacyAlias": "nova-explore",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "runtimeDelegation": false
     },
     {
@@ -104,6 +127,12 @@
       "risk": "none",
       "primary": false,
       "legacyAlias": "nova-explore-lite",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {
+        "PERSPECTIVE": "observer",
+        "DEPTH": "lite"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     },
     {
@@ -123,6 +152,11 @@
       "risk": "none",
       "primary": false,
       "legacyAlias": "nova-explore-review",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {
+        "PERSPECTIVE": "reviewer"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     },
     {
@@ -141,6 +175,11 @@
       "risk": "none",
       "primary": false,
       "legacyAlias": "nova-finalize-lite",
+      "canonicalSurfaceId": "finalize-work",
+      "variantPreset": {
+        "DEPTH": "lite"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     },
     {
@@ -160,6 +199,9 @@
       "risk": "none",
       "primary": true,
       "legacyAlias": "nova-finalize-work",
+      "canonicalSurfaceId": "finalize-work",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "runtimeDelegation": false
     },
     {
@@ -176,6 +218,11 @@
       "risk": "medium",
       "primary": false,
       "legacyAlias": "nova-implement-lite",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {
+        "EXECUTION_PROFILE": "lite"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     },
     {
@@ -193,6 +240,9 @@
       "risk": "medium",
       "primary": true,
       "legacyAlias": "nova-implement-plan",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "runtimeDelegation": false
     },
     {
@@ -209,6 +259,11 @@
       "risk": "medium",
       "primary": false,
       "legacyAlias": "nova-implement-standard",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {
+        "EXECUTION_PROFILE": "standard"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     },
     {
@@ -225,6 +280,11 @@
       "risk": "none",
       "primary": false,
       "legacyAlias": "nova-plan-lite",
+      "canonicalSurfaceId": "produce-plan",
+      "variantPreset": {
+        "PLAN_PROFILE": "lite"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     },
     {
@@ -244,6 +304,11 @@
       "risk": "none",
       "primary": false,
       "legacyAlias": "nova-plan-review",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "REVIEW_PROFILE": "plan"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     },
     {
@@ -263,6 +328,9 @@
       "risk": "low",
       "primary": true,
       "legacyAlias": "nova-produce-plan",
+      "canonicalSurfaceId": "produce-plan",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "runtimeDelegation": false
     },
     {
@@ -282,6 +350,9 @@
       "risk": "none",
       "primary": true,
       "legacyAlias": "nova-review",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "runtimeDelegation": false
     },
     {
@@ -298,6 +369,11 @@
       "risk": "none",
       "primary": false,
       "legacyAlias": "nova-review-lite",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "LEVEL": "lite"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     },
     {
@@ -317,6 +393,11 @@
       "risk": "none",
       "primary": false,
       "legacyAlias": "nova-review-only",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "LEVEL": "standard"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     },
     {
@@ -336,6 +417,11 @@
       "risk": "none",
       "primary": false,
       "legacyAlias": "nova-review-strict",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "LEVEL": "strict"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     },
     {
@@ -352,6 +438,9 @@
       "risk": "none",
       "primary": true,
       "legacyAlias": "nova-route",
+      "canonicalSurfaceId": "route",
+      "variantPreset": {},
+      "compatibilityAlias": false,
       "runtimeDelegation": false
     },
     {
@@ -370,6 +459,11 @@
       "risk": "low",
       "primary": false,
       "legacyAlias": "nova-senior-explore",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {
+        "DEPTH": "deep"
+      },
+      "compatibilityAlias": true,
       "runtimeDelegation": false
     }
   ]

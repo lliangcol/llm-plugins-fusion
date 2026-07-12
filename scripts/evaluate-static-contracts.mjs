@@ -19,7 +19,7 @@ export function buildResult() {
   const workflows = new Map(spec.workflows.map((entry) => [entry.id, entry]));
   const cases = dataset.cases.map((entry) => {
     const invented = entry.commands.filter((id) => !workflows.has(id));
-    const mappingValid = entry.commands.every((id, index) => entry.skills[index] === `nova-${id}`);
+    const mappingValid = entry.commands.every((id, index) => entry.skills[index] === `nova-${workflows.get(id)?.canonicalSurfaceId}`);
     const required = [...new Set(entry.commands.flatMap((id) => workflows.get(id)?.requiredInputs ?? []))];
     const inputsValid = JSON.stringify(required) === JSON.stringify(entry.requiredInputs);
     return { id: entry.id, inventedSurface: invented, mappingValid, inputsValid, passed: invented.length === 0 && mappingValid && inputsValid };

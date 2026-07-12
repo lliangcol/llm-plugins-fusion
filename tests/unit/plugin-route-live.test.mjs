@@ -36,8 +36,9 @@ test('live route result validator accepts fixed structure and real inventory', a
   const inventory = await routeInventory();
   const result = `## Recommended Route
 
-- Command: /nova-plugin:review
-- Skill: nova-review
+- Canonical skill: nova-review
+- Command alias (optional): /nova-plugin:review
+- Variant parameters: {}
 - Core agent: reviewer
 - Capability packs: docs
 - Required inputs: README diff
@@ -54,8 +55,9 @@ test('live route result validator accepts fixed structure and real inventory', a
 test('live route result validator enforces command relationships', async () => {
   const inventory = await routeInventory();
   const valid = `## Recommended Route
-- Command: /nova-plugin:review
-- Skill: nova-review
+- Canonical skill: nova-review
+- Command alias (optional): /nova-plugin:review
+- Variant parameters: {}
 - Core agent: reviewer
 - Capability packs: docs
 - Required inputs: diff
@@ -64,7 +66,7 @@ test('live route result validator enforces command relationships', async () => {
 `;
   assert.throws(
     () => validateRouteResult(valid.replace('nova-review', 'nova-explore'), inventory),
-    /command-skill relationship differs/,
+    /alias-canonical relationship differs/,
   );
   assert.throws(
     () => validateRouteResult(valid.replace('reviewer', 'builder'), inventory),
@@ -74,10 +76,11 @@ test('live route result validator enforces command relationships', async () => {
 
 test('live route result validator rejects bare, invented, or incomplete output', async () => {
   const inventory = await routeInventory();
-  assert.throws(() => validateRouteResult('## Recommended Route\n- Command: /review', inventory), /missing Skill:/);
+  assert.throws(() => validateRouteResult('## Recommended Route\n- Command alias \(optional\): /review', inventory), /missing Canonical skill:/);
   const invented = `## Recommended Route
-- Command: /nova-plugin:invented
-- Skill: invented
+- Canonical skill: invented
+- Command alias (optional): /nova-plugin:invented
+- Variant parameters: {}
 - Core agent: reviewer
 - Capability packs: docs
 - Required inputs: diff
@@ -87,8 +90,9 @@ test('live route result validator rejects bare, invented, or incomplete output',
   assert.throws(() => validateRouteResult(invented, inventory), /invented command/);
 
   const valid = `## Recommended Route
-- Command: /nova-plugin:review
-- Skill: nova-review
+- Canonical skill: nova-review
+- Command alias (optional): /nova-plugin:review
+- Variant parameters: {}
 - Core agent: reviewer
 - Capability packs: docs
 - Required inputs: diff
@@ -97,10 +101,10 @@ test('live route result validator rejects bare, invented, or incomplete output',
 `;
   assert.throws(
     () => validateRouteResult(`${valid}- Closing: extra\n`, inventory),
-    /exactly the heading and seven field lines/,
+    /exactly the heading and eight field lines/,
   );
   assert.throws(
-    () => validateRouteResult(valid.replace('- Command:', '- Skill:').replace('- Skill: nova-review', '- Command: /nova-plugin:review'), inventory),
+    () => validateRouteResult(valid.replace('- Canonical skill:', '- Core agent:').replace('- Core agent: reviewer', '- Canonical skill: nova-review'), inventory),
     /field order or label differs/,
   );
   assert.throws(
@@ -109,13 +113,14 @@ test('live route result validator rejects bare, invented, or incomplete output',
   );
 
   for (const [field, value, message] of [
-    ['Skill', 'nova-does-not-exist', /invented skill/],
+    ['Canonical skill', 'nova-does-not-exist', /invented skill/],
     ['Core agent', 'imaginary-agent', /invented core agent/],
     ['Capability packs', 'imaginary-pack', /invented capability pack/],
   ]) {
     const invalid = `## Recommended Route
-- Command: /nova-plugin:review
-- Skill: ${field === 'Skill' ? value : 'nova-review'}
+- Canonical skill: ${field === 'Canonical skill' ? value : 'nova-review'}
+- Command alias (optional): /nova-plugin:review
+- Variant parameters: {}
 - Core agent: ${field === 'Core agent' ? value : 'reviewer'}
 - Capability packs: ${field === 'Capability packs' ? value : 'docs'}
 - Required inputs: diff
@@ -181,8 +186,8 @@ test('OAuth route invocation isolates configuration without bare mode', (t) => {
     args.slice(args.indexOf('--append-system-prompt'), args.indexOf('--append-system-prompt') + 2),
     ['--append-system-prompt', routeSystemPrompt],
   );
-  assert.match(routeSystemPrompt, /Copy these four lines verbatim/);
-  assert.match(routeSystemPrompt, /- Skill: nova-review/);
+  assert.match(routeSystemPrompt, /Copy these five lines verbatim/);
+  assert.match(routeSystemPrompt, /- Canonical skill: nova-review/);
   assert.match(routeSystemPrompt, /- Core agent: reviewer/);
   assert.match(routeSystemPrompt, /- Capability packs: docs/);
   assert.deepEqual(
@@ -193,10 +198,10 @@ test('OAuth route invocation isolates configuration without bare mode', (t) => {
 });
 
 test('route output shape diagnostics expose structure without response text', () => {
-  const result = `Alternate heading\n- Command: /nova-plugin:review\n- Skill: nova-review\nprivate response text`;
+  const result = `Alternate heading\n- Canonical skill: nova-review\n- Command alias (optional): /nova-plugin:review\nprivate response text`;
   const shape = routeOutputShape(result);
   assert.equal(shape.startsWithRequiredHeading, false);
-  assert.deepEqual(shape.requiredFieldsPresent, ['Command:', 'Skill:']);
+  assert.deepEqual(shape.requiredFieldsPresent, ['Canonical skill:', 'Command alias (optional):']);
   assert.equal(shape.namespacedCommandCount, 1);
   assert.match(shape.sha256, /^[a-f0-9]{64}$/);
   assert.doesNotMatch(JSON.stringify(shape), /private response text|nova-review/);
@@ -204,8 +209,8 @@ test('route output shape diagnostics expose structure without response text', ()
 
 test('stable route command executes directly and preserves the strict output boundary', async () => {
   const command = await readFile(resolve(root, 'nova-plugin/commands/route.md'), 'utf8');
-  assert.match(command, /Execute this workflow directly from `\$ARGUMENTS`/);
-  assert.match(command, /Do not invoke the compatibility skill `nova-route`/);
+  assert.match(command, /canonical skill `\$\{CLAUDE_PLUGIN_ROOT\}\/skills\/nova-route\/SKILL\.md`/);
+  assert.match(command, /execute canonical surface `nova-route`/);
   assert.doesNotMatch(command, /Skill\(nova-plugin:nova-route\)/);
   const contract = await readFile(resolve(root, 'nova-plugin/skills/nova-route/SKILL.md'), 'utf8');
   assert.ok(contract.includes(routeOutputContract.heading));
@@ -215,15 +220,15 @@ test('stable route command executes directly and preserves the strict output bou
 test('route validation diagnostics classify failures without output values', () => {
   for (const [message, code] of [
     ['route output does not start with heading', 'heading'],
-    ['route output does not contain exactly the heading and seven field lines', 'line-count'],
-    ['route output field order or label differs at Command:', 'field-layout'],
-    ['route output Command: value is empty', 'empty-field-value'],
-    ['route output is missing Command:', 'required-field'],
+    ['route output does not contain exactly the heading and eight field lines', 'line-count'],
+    ['route output field order or label differs at Canonical skill:', 'field-layout'],
+    ['route output Canonical skill: value is empty', 'empty-field-value'],
+    ['route output is missing Canonical skill:', 'required-field'],
     ['route output invented command private-value', 'command-inventory'],
     ['route output invented skill private-value', 'skill-inventory'],
     ['route output invented core agent private-value', 'agent-inventory'],
     ['route output invented capability pack private-value', 'pack-inventory'],
-    ['route output command-skill relationship differs', 'command-skill-relationship'],
+    ['route output alias-canonical relationship differs', 'alias-canonical-relationship'],
     ['route output command-agent relationship differs', 'command-agent-relationship'],
   ]) assert.equal(routeValidationFailureCode(new Error(message)), code);
 });

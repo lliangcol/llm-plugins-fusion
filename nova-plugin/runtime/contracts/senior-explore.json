@@ -1,7 +1,17 @@
 {
   "schemaVersion": 3,
-  "sourceSchemaVersion": 4,
+  "sourceSchemaVersion": 5,
+  "contractVersions": {
+    "workflow": "5.0.0",
+    "runtime": "3.0.0",
+    "adapter": "2.0.0"
+  },
   "id": "senior-explore",
+  "canonicalSurfaceId": "explore",
+  "variantPreset": {
+    "DEPTH": "deep"
+  },
+  "compatibilityAlias": true,
   "stage": "explore",
   "ownerAgents": [
     "architect",
@@ -50,7 +60,7 @@
   "behaviorContract": {
     "schemaVersion": 1,
     "source": "workflow-specs/behaviors.json",
-    "guidanceReference": "../../skills/nova-senior-explore/SKILL.md",
+    "guidanceReference": "../../skills/nova-explore/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Conduct systematic analysis and optionally export an identical evidence-grounded analysis artifact.",
     "inputs": [
