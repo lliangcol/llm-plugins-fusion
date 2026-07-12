@@ -123,6 +123,7 @@ jobs:
         run: |
           mkdir candidate-source
           tar -xzf source/candidate-source.tar.gz -C candidate-source
+          node -e 'const fs=require("fs"); const p="candidate-source/.claude-plugin/marketplace.json"; const m=JSON.parse(fs.readFileSync("candidate-source/.claude-plugin/marketplace.canary.json")); m.name=m.name.replace(/-canary$/,""); for(const plugin of m.plugins){plugin.source.ref=process.env.GITHUB_REF_NAME; plugin.source.sha=process.env.GITHUB_SHA;} fs.writeFileSync(p,JSON.stringify(m,null,2)+"\n")'
           npm install -g ./cli/claude-code.tgz
       - name: Validate exact candidate install and critical route safety
         working-directory: candidate-source
@@ -130,7 +131,8 @@ jobs:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
           node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home \
-            --marketplace-source "lliangcol/llm-plugins-fusion@${GITHUB_REF_NAME}" --expected-ref "${GITHUB_REF_NAME}" \
+            --marketplace-source . --expected-ref "${GITHUB_REF_NAME}" --expected-commit "${GITHUB_SHA}" \
+            --evidence-source "lliangcol/llm-plugins-fusion@${GITHUB_REF_NAME}" \
             --inventory-out .metrics/candidate-live/inventory.json --route-smoke-out .metrics/candidate-live/route-smoke.json
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:

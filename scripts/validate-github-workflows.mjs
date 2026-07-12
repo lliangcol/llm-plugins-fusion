@@ -577,6 +577,7 @@ function validateWorkflowContracts() {
     if (!candidateSrc.includes("NOVA_VALIDATE_WRITE_TIMINGS: '1'")) recordError(candidateFile, 'candidate validation must persist machine-readable validation timings');
     if (!candidateSrc.includes('npm install -g ./cli/claude-code.tgz')) recordError(candidateFile, 'candidate live gate must install the verified Claude package through an explicit local path');
     if (candidateSrc.includes('npm install -g ./cli/claude-code.tgz --ignore-scripts')) recordError(candidateFile, 'candidate live gate must allow the verified Claude package to install its native binary');
+    if (!candidateSrc.includes('marketplace.canary.json') || !candidateSrc.includes('--expected-commit "${GITHUB_SHA}"') || !candidateSrc.includes('--evidence-source "lliangcol/llm-plugins-fusion@${GITHUB_REF_NAME}"')) recordError(candidateFile, 'candidate live gate must bind its temporary marketplace to the exact tag and commit');
     if (/ANTHROPIC_API_KEY/u.test(candidateSrc)) recordError(candidateFile, 'candidate live gate must not use ANTHROPIC_API_KEY');
   }
 

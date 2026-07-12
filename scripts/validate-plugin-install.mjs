@@ -28,7 +28,7 @@ const root = resolve(__dir, '..');
 assertNodeVersion({ label: 'plugin install smoke' });
 
 function usage() {
-  return 'Usage: node scripts/validate-plugin-install.mjs [--dry-run | --accept-user-scope-mutation] --isolated-home [--marketplace-source <path|owner/repo@ref>] [--expected-ref <ref>] [--inventory-out <path>] [--route-smoke-out <path>]';
+  return 'Usage: node scripts/validate-plugin-install.mjs [--dry-run | --accept-user-scope-mutation] --isolated-home [--marketplace-source <path|owner/repo@ref>] [--expected-ref <ref>] [--expected-commit <sha>] [--evidence-source <source>] [--inventory-out <path>] [--route-smoke-out <path>]';
 }
 
 export function parseArgs(args) {
@@ -38,6 +38,8 @@ export function parseArgs(args) {
     isolatedHome: false,
     marketplaceSource: './',
     expectedRef: null,
+    expectedCommit: null,
+    evidenceSource: null,
     inventoryOut: null,
     routeSmokeOut: null,
     help: false,
@@ -53,6 +55,12 @@ export function parseArgs(args) {
       index += 1;
     } else if (arg === '--expected-ref') {
       options.expectedRef = requireOptionValue(args, index, arg);
+      index += 1;
+    } else if (arg === '--expected-commit') {
+      options.expectedCommit = requireOptionValue(args, index, arg);
+      index += 1;
+    } else if (arg === '--evidence-source') {
+      options.evidenceSource = requireOptionValue(args, index, arg);
       index += 1;
     } else if (arg === '--inventory-out') {
       options.inventoryOut = requireOptionValue(args, index, arg);
@@ -95,6 +103,12 @@ export function assertMarketplaceRef(entry, expectedRef, localSource) {
   if (entry.ref !== expectedRef) {
     throw new Error(`marketplace ref is ${JSON.stringify(entry.ref)}, expected ${JSON.stringify(expectedRef)}`);
   }
+}
+
+export function assertCandidateMarketplaceSource(marketplace, expectedRef, expectedCommit) {
+  const source = marketplace.plugins?.find((entry) => entry.name === 'nova-plugin')?.source;
+  if (source?.ref !== expectedRef) throw new Error(`candidate marketplace plugin ref is ${JSON.stringify(source?.ref)}, expected ${JSON.stringify(expectedRef)}`);
+  if (source?.sha !== expectedCommit) throw new Error(`candidate marketplace plugin commit is ${JSON.stringify(source?.sha)}, expected ${JSON.stringify(expectedCommit)}`);
 }
 
 function manifestMode(stat, type) {
@@ -284,6 +298,7 @@ export async function main(args = process.argv.slice(2)) {
   const expectedSkills = normalizeExpectedInventory(permissionSpec);
   const marketplaceSource = normalizeMarketplaceSource(options.marketplaceSource);
   const localMarketplaceSource = existsSync(marketplaceSource);
+  const evidenceSource = options.evidenceSource ?? marketplaceSource;
   if (
     knownGoodSnapshot.claudeCliVersion !== permissionSpec.knownGoodClaudeCli
     || knownGoodSnapshot.skillsCount !== permissionSpec.expectedInventory.combinedSkillCount
@@ -346,7 +361,12 @@ export async function main(args = process.argv.slice(2)) {
     );
     const addedMarketplace = marketplaceEntry(marketplaces, marketplaceName);
     if (!addedMarketplace) throw new Error(`marketplace ${marketplaceName} was not listed after add`);
-    assertMarketplaceRef(addedMarketplace, options.expectedRef, localMarketplaceSource);
+    if (localMarketplaceSource && options.expectedRef && options.expectedRef !== 'local') {
+      if (!options.expectedCommit) throw new Error('an exact candidate marketplace requires --expected-commit');
+      assertCandidateMarketplaceSource(marketplace, options.expectedRef, options.expectedCommit);
+    } else {
+      assertMarketplaceRef(addedMarketplace, options.expectedRef, localMarketplaceSource);
+    }
 
     await run('install plugin', 'claude', ['plugin', 'install', pluginId, '--scope', 'user'], isolated.env);
     await run('update plugin', 'claude', ['plugin', 'update', pluginId, '--scope', 'user'], isolated.env);
@@ -403,7 +423,12 @@ export async function main(args = process.argv.slice(2)) {
       claudeVersion,
       knownGoodClaudeCli: permissionSpec.knownGoodClaudeCli,
       manifestValidation,
-      marketplace: { name: marketplaceName, source: marketplaceSource, ref: addedMarketplace.ref ?? null },
+      marketplace: {
+        name: marketplaceName,
+        source: evidenceSource,
+        ref: options.expectedRef === 'local' ? null : (options.expectedRef ?? addedMarketplace.ref ?? null),
+        installSourceType: localMarketplaceSource ? 'local-exact-tag-archive' : 'remote-ref',
+      },
       plugin: { id: pluginId, version: installed.version, installPath: installed.installPath },
       inventory,
       inventoryDiff,
