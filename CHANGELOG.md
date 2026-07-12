@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - Removed stale Node/check/frontmatter/version narratives and validators that previously protected obsolete natural-language wording.
 - Raised the exact-tag route validation budget from five to eight turns while retaining its five-minute timeout, read-only tool policy, and strict output contract.
 - Constrained exact-tag route inventory fields to canonical IDs without explanatory prose so live evidence remains machine-verifiable without weakening unknown-value rejection.
+- Made the fixed README-review release gate copy its canonical command, skill, agent, and pack lines verbatim while leaving the remaining route evidence model-generated and strictly validated.
 
 ## [3.0.1] - 2026-07-12
 

@@ -180,8 +180,10 @@ test('OAuth route invocation isolates configuration without bare mode', (t) => {
     args.slice(args.indexOf('--append-system-prompt'), args.indexOf('--append-system-prompt') + 2),
     ['--append-system-prompt', routeSystemPrompt],
   );
-  assert.match(routeSystemPrompt, /output only installed canonical IDs separated by commas/);
-  assert.match(routeSystemPrompt, /do not add prose, labels, parentheses, or descriptions/);
+  assert.match(routeSystemPrompt, /Copy these four lines verbatim/);
+  assert.match(routeSystemPrompt, /- Skill: nova-review/);
+  assert.match(routeSystemPrompt, /- Core agent: reviewer/);
+  assert.match(routeSystemPrompt, /- Capability packs: docs/);
   assert.deepEqual(
     args.slice(args.indexOf('--max-turns'), args.indexOf('--max-turns') + 2),
     ['--max-turns', String(routeMaxTurns)],
