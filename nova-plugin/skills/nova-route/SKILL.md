@@ -32,6 +32,20 @@ This file is the supporting behavioral contract for `/nova-plugin:route` and the
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Choose the shortest safe next workflow route before execution starts.
+- **Canonical inputs:** `REQUEST`(required aliases=INPUT,INTENT); `DEPTH`(optional aliases=MODE default="normal" exact="brief","normal")
+- **Decision entries:** 19; exact routes: `codex-review-fix`, `codex-review-only`, `codex-verify-only`, `senior-explore`, `explore-review`, `explore`, `backend-plan`, `plan-review`, `plan-lite`, `produce-plan`, `review-strict`, `review-lite`, `review-only`, `review`, `implement-plan`, `implement-lite`, `implement-standard`, `finalize-lite`, `finalize-work`.
+- **Workflow steps:** `resolve-intent` → `classify` → `select` → `verify-surface` → `emit`
+- **Output:** mode=`chat`; order=`Command` → `Skill` → `Core agent` → `Capability packs` → `Required inputs` → `Validation expectations` → `Fallback path`; severity=none.
+- **Deviation/failure:** mode=`forbid`; failure order=`status` → `ambiguous intent` → `required choice` → `safe fallback`.
+- **Full IR:** `runtime/contracts/route.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### Purpose
 
 Choose the next workflow step before work starts. This skill improves routing quality for agents that do not natively invoke Claude Code slash commands.
@@ -93,6 +107,11 @@ when their narrower contract fits better than the primary command.
 - Fallback path:
 ```
 
+`Required inputs` names the selected downstream workflow's canonical inputs,
+not the route command's own `REQUEST`. Use the exact UPPER_SNAKE_CASE names
+from the generated behavior contract and runtime contract. Do not translate
+them into prose or substitute aliases.
+
 For `DEPTH=normal`, include a one-sentence rationale inside the appropriate
 fixed field. For `DEPTH=brief`, keep every field concise. Do not add content
 outside the heading and seven fixed bullets.
@@ -107,7 +126,7 @@ same fixed fields for the immediate next step:
 - Skill: `nova-explore` -> `nova-produce-plan` -> `nova-review`
 - Core agent: `orchestrator` -> `architect` -> `reviewer`
 - Capability packs: packs implied by request context
-- Required inputs: request context, then approved exploration evidence and plan target
+- Required inputs: `INPUT`, then `REQUEST` and `PLAN_OUTPUT_PATH`, then `REVIEW_SCOPE`
 - Validation expectations: each stage validates its artifact before the next stage
 - Fallback path: stop at the first blocked stage and report the missing input
 ```
@@ -152,5 +171,5 @@ same fixed fields for the immediate next step:
 - [ ] The command and skill exist and preserve one-to-one naming.
 - [ ] The core agent is one of `orchestrator`, `architect`, `builder`, `reviewer`, `verifier`, or `publisher`.
 - [ ] Capability packs are selected only from the existing pack set.
-- [ ] Required inputs and validation expectations are explicit.
+- [ ] Required inputs use the selected workflows' exact canonical UPPER_SNAKE_CASE names and validation expectations are explicit.
 - [ ] The output is read-only and does not include implementation work.

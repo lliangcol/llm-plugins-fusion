@@ -4,6 +4,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
@@ -30,11 +31,11 @@ function usage() {
 }
 
 function loadSpec(root) {
-  return JSON.parse(readFileSync(resolve(root, sourcePath), 'utf8'));
+  return loadNovaWorkflowModel(root).spec;
 }
 
 function loadProduct(root) {
-  return JSON.parse(readFileSync(resolve(root, productPath), 'utf8'));
+  return loadNovaWorkflowModel(root).product;
 }
 
 function emptyRequirements() {

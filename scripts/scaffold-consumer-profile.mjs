@@ -18,16 +18,19 @@ const TYPES = {
     source: 'docs/consumers/private-java-backend-template.md',
     target: 'AGENTS.md',
     title: 'Java Backend Consumer Profile',
+    shellCommands: [{ id: 'maven-test', argv: ['./mvnw', 'test'], purpose: 'Run the reviewed Maven test entrypoint.' }],
   },
   frontend: {
     source: 'docs/consumers/frontend-project-template.md',
     target: 'AGENTS.md',
     title: 'Frontend Consumer Profile',
+    shellCommands: [{ id: 'npm-test', argv: ['npm', 'test'], purpose: 'Run the reviewed frontend test entrypoint.' }],
   },
   workbench: {
     source: 'docs/consumers/workbench-template.md',
     target: 'workbench/README.md',
     title: 'Workbench Consumer Profile',
+    shellCommands: [],
   },
 };
 
@@ -123,6 +126,10 @@ ${template}
 `;
 }
 
+function buildShellPolicyContent(typeConfig) {
+  return `${JSON.stringify({ schemaVersion: 1, allowCommands: typeConfig.shellCommands }, null, 2)}\n`;
+}
+
 function main(argv) {
   const options = parseArgs(argv);
   if (options.help) {
@@ -139,30 +146,34 @@ function main(argv) {
   const outDir = resolve(options.out);
   const config = TYPES[type];
   const outputPath = targetPath(outDir, config.target);
+  const shellPolicyPath = targetPath(outDir, '.nova/shell-policy.json');
   const content = buildContent(config);
+  const shellPolicyContent = buildShellPolicyContent(config);
 
   if (!options.write) {
     console.log('Dry run. File that would be written:');
     console.log(`  - ${outputPath}`);
+    console.log(`  - ${shellPolicyPath}`);
     console.log('');
     console.log('Use --write to create the file.');
     return 0;
   }
 
-  if (isInsideRepository(outputPath)) {
+  if (isInsideRepository(outputPath) || isInsideRepository(shellPolicyPath)) {
     fail(
       'refusing to write a consumer profile inside the public llm-plugins-fusion repository; '
       + 'choose a consumer-owned workspace outside this checkout',
     );
   }
 
-  if (existsSync(outputPath) && !options.force) {
-    fail(`refusing to overwrite existing file: ${outputPath}`);
-  }
+  for (const path of [outputPath, shellPolicyPath]) if (existsSync(path) && !options.force) fail(`refusing to overwrite existing file: ${path}`);
 
   mkdirSync(dirname(outputPath), { recursive: true });
   writeFileSync(outputPath, content, 'utf8');
+  mkdirSync(dirname(shellPolicyPath), { recursive: true });
+  writeFileSync(shellPolicyPath, shellPolicyContent, 'utf8');
   console.log(`Wrote ${outputPath}`);
+  console.log(`Wrote ${shellPolicyPath}`);
   return 0;
 }
 

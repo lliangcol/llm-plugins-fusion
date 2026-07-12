@@ -273,7 +273,7 @@ llm-plugins-fusion/
 - `.claude-plugin/registry.source.json`：registry、marketplace 展示字段和 trust/risk/maintainer/evidence 元数据事实源
 - `.claude-plugin/marketplace.json`、`.claude-plugin/marketplace.metadata.json`、`docs/marketplace/catalog.md`：生成输出，不要手工编辑
 - `CHANGELOG.md`、`SECURITY.md`、`CLAUDE.md`、`AGENTS.md`：版本、支持范围、库存或行为边界变化时同步
-- `package.json`：维护者便捷脚本；包含 dependency-free 的 `test`、`test:unit`、`test:integration`、`test:e2e`、`lint`、`ci:quick`、`ci:full` 和 `check`；发布归档使用 `release:artifacts` 而不是通用 `build`
+- `package.json` / `package-lock.json`：维护者便捷脚本与锁定的开发期 Ajv schema 工具链；先运行 `npm ci --ignore-scripts`。分发的 `nova-plugin` 归档不携带 Node package 运行时依赖；发布归档使用 `release:artifacts` 而不是通用 `build`
 
 Command 与 skill 必须一对一：
 

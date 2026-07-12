@@ -1,8 +1,12 @@
 {
   "$schema": "../schemas/workflow-product.schema.json",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "pluginNamespace": "nova-plugin",
   "expectedWorkflowCount": 21,
+  "stages": ["explore", "plan", "review", "implement", "finalize"],
+  "primaryEntrypoints": ["route", "explore", "produce-plan", "review", "implement-plan", "finalize-work"],
+  "runtimeCompatibility": { "claude-code": "2.1.205" },
+  "adapterDefinitions": ["adapters/claude.json", "adapters/codex.json", "adapters/generic.json"],
   "agents": ["architect", "builder", "orchestrator", "publisher", "reviewer", "verifier"],
   "packs": ["dependency", "docs", "frontend", "java", "marketplace", "mcp", "release", "security"],
   "tools": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "NotebookEdit"]

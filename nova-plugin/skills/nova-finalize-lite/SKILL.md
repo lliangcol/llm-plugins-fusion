@@ -32,6 +32,20 @@ This file is the supporting behavioral contract for `/nova-plugin:finalize-lite`
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Provide a short factual closure summary without making new changes or decisions.
+- **Canonical inputs:** `WORK_SUMMARY`(required aliases=WORK_SCOPE)
+- **Decision entries:** 2.
+- **Workflow steps:** `freeze-scope` → `summarize` → `limitations`
+- **Output:** mode=`chat`; order=`What changed` → `Why` → `Limitations`; severity=none.
+- **Deviation/failure:** mode=`forbid`; failure order=`status` → `missing evidence` → `safe next action`.
+- **Full IR:** `runtime/contracts/finalize-lite.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### Purpose
 
 Provide a short and factual closure summary.

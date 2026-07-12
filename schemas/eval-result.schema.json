@@ -11,7 +11,7 @@
     "layer": { "enum": ["static-contract", "adapter-simulation", "live-assistant"] },
     "executionMode": { "type": "string" },
     "workflowSpecSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-    "sourceDigests": { "type": "object" },
+    "sourceDigests": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" } },
     "baseCommit": { "type": "string" },
     "sourceState": { "type": "string" },
     "releaseTag": { "type": ["string", "null"] },
@@ -40,24 +40,89 @@
         "datasetSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
       }
     },
-    "startedAt": { "type": "string" },
-    "completedAt": { "type": "string" },
+    "startedAt": { "type": "string", "format": "date-time" },
+    "completedAt": { "type": "string", "format": "date-time" },
     "cases": {
       "type": "array",
       "minItems": 1,
       "items": {
         "oneOf": [
-          { "type": "object", "required": ["id", "passed"] },
-          { "type": "object", "required": ["caseId", "attempt", "contractValid", "zeroProjectWrites"] }
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "inventedSurface", "mappingValid", "inputsValid", "passed"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "inventedSurface": { "type": "array", "items": { "type": "string" } },
+              "mappingValid": { "type": "boolean" },
+              "inputsValid": { "type": "boolean" },
+              "passed": { "type": "boolean" }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "expectedDecision", "decision", "reasons", "passed"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "expectedDecision": { "type": "string", "minLength": 1 },
+              "decision": { "type": "string", "minLength": 1 },
+              "reasons": { "type": "array", "items": { "type": "string" } },
+              "passed": { "type": "boolean" }
+            }
+          },
+          {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["caseId", "attempt", "processExit", "processFailure", "timedOut", "latencyMs", "projectDigestBefore", "projectDigestAfter", "zeroProjectWrites", "adapterLoaded", "adapterLoadProof", "unexpectedToolUse", "unexpectedNetworkUse", "selectedRoute", "requiredInputs", "routeValid", "requiredInputsValid", "approvalValid", "shapeValid", "inventedSurfaces", "contractValid", "observedOutput", "parseError", "outputSha256"],
+            "properties": {
+              "caseId": { "type": "string", "minLength": 1 },
+              "attempt": { "type": "integer", "minimum": 1 },
+              "processExit": { "type": ["integer", "null"] },
+              "processFailure": { "type": ["string", "null"], "enum": [null, "timeout", "rate-limit", "authentication", "nonzero-exit"] },
+              "timedOut": { "type": "boolean" },
+              "latencyMs": { "type": "number", "minimum": 0 },
+              "projectDigestBefore": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "projectDigestAfter": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "zeroProjectWrites": { "type": "boolean" },
+              "adapterLoaded": { "type": "boolean" },
+              "adapterLoadProof": { "type": ["string", "null"] },
+              "unexpectedToolUse": { "type": "array", "items": { "type": "string" } },
+              "unexpectedNetworkUse": { "type": "boolean" },
+              "selectedRoute": { "type": "array", "items": { "type": "string" } },
+              "requiredInputs": { "type": "array", "items": { "type": "string" } },
+              "routeValid": { "type": "boolean" },
+              "requiredInputsValid": { "type": "boolean" },
+              "approvalValid": { "type": "boolean" },
+              "shapeValid": { "type": "boolean" },
+              "inventedSurfaces": { "type": "array", "items": { "type": "string" } },
+              "contractValid": { "type": "boolean" },
+              "observedOutput": { "type": ["object", "null"] },
+              "parseError": { "type": ["string", "null"] },
+              "outputSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+            }
+          }
         ]
       }
     },
     "summary": {
       "type": "object",
+      "additionalProperties": false,
       "required": ["total", "passed"],
       "properties": {
         "total": { "type": "integer", "minimum": 1 },
-        "passed": { "type": "integer", "minimum": 0 }
+        "passed": { "type": "integer", "minimum": 0 },
+        "inventedSurfaceRate": { "type": "number", "minimum": 0 },
+        "mappingValidity": { "type": "number", "minimum": 0 },
+        "inputContractValidity": { "type": "number", "minimum": 0 },
+        "fallbackCases": { "type": "integer", "minimum": 0 },
+        "unsafeContinuation": { "type": "integer", "minimum": 0 },
+        "attemptsPerCase": { "type": "integer", "minimum": 1 },
+        "uniqueCases": { "type": "integer", "minimum": 1 },
+        "unexpectedWrites": { "type": "integer", "minimum": 0 },
+        "unexpectedToolUses": { "type": "integer", "minimum": 0 },
+        "inventedSurfaces": { "type": "integer", "minimum": 0 },
+        "adapterLoadFailures": { "type": "integer", "minimum": 0 }
       }
     },
     "claimBoundary": { "type": "string", "minLength": 1 }

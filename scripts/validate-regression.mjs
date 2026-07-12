@@ -884,7 +884,7 @@ test('validate-docs enforces the deferred portal implementation boundary', () =>
   }
 });
 
-test('validate-docs enforces positioning, maintenance status, release, maintainer, public API, marketplace, contribution/issue intake, docs-index, consumer setup, prompt template, workflow evidence, showcase, growth, assets, portal, and v3 contracts', () => {
+test('validate-docs enforces positioning, maintenance status, release, maintainer, public API, marketplace, contribution/issue intake, docs-index, consumer setup, prompt template, workflow evidence, showcase, growth, assets, portal, and v4 contracts', () => {
   const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-docs-contract-'));
   const fixtureRoot = resolve(tempRoot, 'repo');
   try {

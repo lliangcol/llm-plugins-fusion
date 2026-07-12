@@ -90,13 +90,23 @@ const WORKFLOW_CONTRACTS = [
   },
   {
     file: '.github/workflows/release-candidate.yml',
-    permissions: [['contents', 'read']],
+    permissions: [['contents', 'read'], ['pull-requests', 'read']],
     label: 'release candidate workflow top-level permissions',
   },
   {
     file: '.github/workflows/promote-release.yml',
     permissions: [['contents', 'read']],
     label: 'release promotion workflow top-level permissions',
+  },
+  {
+    file: '.github/workflows/label-sync.yml',
+    permissions: [['contents', 'read'], ['issues', 'write']],
+    label: 'label sync workflow top-level permissions',
+  },
+  {
+    file: '.github/workflows/release-recovery-drill.yml',
+    permissions: [['contents', 'read'], ['attestations', 'read']],
+    label: 'release recovery drill workflow top-level permissions',
   },
 ];
 const EXPECTED_WORKFLOW_FILES = WORKFLOW_CONTRACTS

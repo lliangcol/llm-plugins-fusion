@@ -4,10 +4,11 @@ import { readFileSync } from 'node:fs';
 import { resolveFromModule } from '../../scripts/lib/repo-root.mjs';
 import { evaluateCapabilityPolicy } from '../../framework/core/capability-policy.mjs';
 import { evidenceFreshness } from '../../framework/core/evidence-registry.mjs';
-import { resolveRequiredInputs } from '../../framework/core/input-resolution.mjs';
+import { resolveBehaviorInputs, resolveRequiredInputs } from '../../framework/core/input-resolution.mjs';
 import { validateOutputFields } from '../../framework/core/output-validation.mjs';
 import { compileRuntimeContract } from '../../framework/compiler/compile-runtime-contracts.mjs';
 import { compileRuntimeContracts } from '../../framework/compiler/compile-runtime-contracts.mjs';
+import { loadWorkflowModel } from '../../scripts/lib/workflow-model.mjs';
 
 test('framework core separates inputs, capability availability, and approvals', () => {
   assert.deepEqual(resolveRequiredInputs(['A', 'B'], ['A']), { complete: false, missing: ['B'] });
@@ -17,12 +18,24 @@ test('framework core separates inputs, capability availability, and approvals', 
   assert.equal(evaluateCapabilityPolicy({ workflow, permissionPolicy: policy, available: { shell: 'prompt', network: 'prompt' }, approved: ['shell'] }).decision, 'blocked-approval');
 });
 
+test('behavior input resolution handles aliases, defaults, exact values, and conflicts', () => {
+  const behavior = { inputs: [
+    { name: 'REQUEST', required: true, aliases: ['INPUT'], description: 'request' },
+    { name: 'MODE', required: false, aliases: [], description: 'mode', default: 'safe', exactValues: ['safe', 'fast'] },
+  ] };
+  assert.deepEqual(resolveBehaviorInputs(behavior, { INPUT: 'work' }), { valid: true, normalizedInputs: { REQUEST: 'work', MODE: 'safe' }, missingRequired: [], invalidExactValues: [] });
+  assert.equal(resolveBehaviorInputs(behavior, { REQUEST: 'a', INPUT: 'b' }).invalidExactValues[0].reason, 'conflicting-alias-values');
+  assert.equal(resolveBehaviorInputs(behavior, { REQUEST: 'work', MODE: 'unsafe' }).invalidExactValues[0].reason, 'not-an-exact-value');
+});
+
 test('runtime compiler supports a non-Nova, non-Claude three-workflow product fixture', () => {
-  const spec = JSON.parse(readFileSync(resolveFromModule(import.meta.url, '../../fixtures/products/minimal-plugin/workflows.json'), 'utf8'));
-  const contracts = compileRuntimeContracts(spec);
+  const root = resolveFromModule(import.meta.url, '../../fixtures/products/minimal-plugin');
+  const loaded = loadWorkflowModel({ root, frameworkPath: 'framework.json', productPath: 'product.json', workflowsPath: 'workflows.json', behaviorsPath: 'behaviors.json' });
+  const contracts = compileRuntimeContracts(loaded.spec, loaded.behaviorSpec);
   assert.equal(contracts.length, 3);
   assert.deepEqual(contracts.map((entry) => entry.stage), ['intake', 'shape', 'assure']);
-  assert.deepEqual(contracts.map((entry) => entry.behaviorContract.reference), ['../../contracts/triage.md', '../../contracts/design.md', '../../contracts/verify.md']);
+  assert.deepEqual(contracts.map((entry) => entry.behaviorContract.guidanceReference), ['../../contracts/triage.md', '../../contracts/design.md', '../../contracts/verify.md']);
+  assert.deepEqual(contracts.map((entry) => entry.behaviorContract.output.order), [['next step'], ['design'], ['verified', 'skipped', 'residual risk']]);
   assert.doesNotMatch(JSON.stringify(contracts), /nova|claude|codex/iu);
 });
 
@@ -33,10 +46,11 @@ test('framework output and evidence helpers expose explicit failures', () => {
 
 test('runtime compiler emits policy plus a required product-defined behavior reference', () => {
   const workflow = { id: 'review', stage: 'review', ownerAgents: ['reviewer'], recommendedPacks: [], requiredInputs: ['SCOPE'], outputContract: 'review-v1', risk: 'none', permissionProfile: 'read', contractPath: 'skills/acme-review/SKILL.md' };
-  const contract = compileRuntimeContract({ schemaVersion: 3, permissionProfiles: { read: { permissionPolicy: { workspaceWrite: 'denied' } } }, assistantEnforcement: { generic: 'advisory' } }, workflow);
+  const behavior = { id: 'review', purpose: 'Review scope.', inputs: [{ name: 'SCOPE', required: true, aliases: [], description: 'Scope.' }], decisionTable: [{ when: 'SCOPE exists.', action: 'Review it.' }], invariants: ['No writes.'], stopConditions: ['SCOPE missing.'], workflowSteps: [{ id: 'review', action: 'Review.' }], deviationPolicy: { mode: 'forbid', instructions: 'No deviations.' }, output: { mode: 'chat', fields: [{ name: 'findings', required: true, description: 'Findings.' }], order: ['findings'], severityLevels: [] }, validation: ['Check evidence.'], failureOutput: { fields: ['status'], order: ['status'] } };
+  const contract = compileRuntimeContract({ schemaVersion: 3, permissionProfiles: { read: { permissionPolicy: { workspaceWrite: 'denied' } } }, assistantEnforcement: { generic: 'advisory' } }, workflow, behavior);
   assert.equal(contract.id, 'review');
   assert.equal(contract.permissionPolicy.workspaceWrite, 'denied');
-  assert.equal(contract.behaviorContract.reference, '../../skills/acme-review/SKILL.md');
-  assert.equal(contract.behaviorContract.loadRequired, true);
+  assert.equal(contract.behaviorContract.guidanceReference, '../../skills/acme-review/SKILL.md');
+  assert.equal(contract.behaviorContract.purpose, 'Review scope.');
   assert.equal(contract.behaviorContract.conflictPolicy, 'fail-closed');
 });

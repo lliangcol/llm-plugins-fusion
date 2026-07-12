@@ -4,16 +4,17 @@
  * Validates plugin.json, registry.source.json, marketplace.json, and
  * marketplace.metadata.json against their JSON schemas, then checks
  * name/version alignment and generated registry/catalog drift.
- * Dependencies: none (uses built-in fetch/readFile only)
+ * Development dependencies: Ajv and ajv-formats. The distributed plugin archive remains dependency-free.
  *
  * Usage: node scripts/validate-schemas.mjs
  */
 
 import { readFileSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { generateRegistryFiles } from './generate-registry.mjs';
 import { SEMVER_PATTERN_SOURCE } from './lib/semver.mjs';
+import { compileStandardSchema, validateStandardSchema } from './lib/schema-engine.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -41,17 +42,17 @@ const supportedSchemaKeywords = new Set([
   'uniqueItems', 'enum', 'oneOf', 'const',
 ]);
 
-export function validateSchemaKeywords(schema, path = '(root)') {
+export function validateLegacySchemaKeywords(schema, path = '(root)') {
   const errors = [];
   for (const key of Object.keys(schema)) {
     if (!supportedSchemaKeywords.has(key)) errors.push(`${path}: unsupported schema keyword ${key}`);
   }
   for (const [key, child] of Object.entries(schema.properties ?? {})) {
-    errors.push(...validateSchemaKeywords(child, `${path}.properties.${key}`));
+    errors.push(...validateLegacySchemaKeywords(child, `${path}.properties.${key}`));
   }
   if (schema.format && !['uri', 'date', 'date-time', 'email'].includes(schema.format)) errors.push(`${path}: unsupported schema format ${schema.format}`);
-  if (schema.items && typeof schema.items === 'object') errors.push(...validateSchemaKeywords(schema.items, `${path}.items`));
-  for (const [index, child] of (schema.oneOf ?? []).entries()) errors.push(...validateSchemaKeywords(child, `${path}.oneOf[${index}]`));
+  if (schema.items && typeof schema.items === 'object') errors.push(...validateLegacySchemaKeywords(schema.items, `${path}.items`));
+  for (const [index, child] of (schema.oneOf ?? []).entries()) errors.push(...validateLegacySchemaKeywords(child, `${path}.oneOf[${index}]`));
   return errors;
 }
 
@@ -64,11 +65,11 @@ function canonicalJson(value) {
 }
 
 // Dependency-free schema subset. Unsupported keywords fail closed above.
-export function validate(schema, data, path = '') {
+export function validateLegacySubset(schema, data, path = '') {
   const errors = [];
 
   if (schema.oneOf) {
-    const matchCount = schema.oneOf.reduce((acc, sub) => acc + (validate(sub, data, path).length === 0 ? 1 : 0), 0);
+    const matchCount = schema.oneOf.reduce((acc, sub) => acc + (validateLegacySubset(sub, data, path).length === 0 ? 1 : 0), 0);
     if (matchCount !== 1) {
       errors.push(`${path || '(root)'}: value must match exactly one of oneOf branches (matched ${matchCount})`);
     }
@@ -138,7 +139,7 @@ export function validate(schema, data, path = '') {
     if (schema.properties) {
       for (const [key, subSchema] of Object.entries(schema.properties)) {
         if (key in data) {
-          errors.push(...validate(subSchema, data[key], `${path}.${key}`));
+          errors.push(...validateLegacySubset(subSchema, data[key], `${path}.${key}`));
         }
       }
     }
@@ -153,7 +154,7 @@ export function validate(schema, data, path = '') {
     }
     if (schema.items) {
       data.forEach((item, i) => {
-        errors.push(...validate(schema.items, item, `${path}[${i}]`));
+        errors.push(...validateLegacySubset(schema.items, item, `${path}[${i}]`));
       });
     }
   }
@@ -161,6 +162,15 @@ export function validate(schema, data, path = '') {
   return errors;
 }
 
+export function validateSchemaKeywords(schema) {
+  try { compileStandardSchema(schema); return []; } catch (error) { return [`schema compilation failed: ${error.message}`]; }
+}
+
+export function validate(schema, data) {
+  return validateStandardSchema(schema, data);
+}
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
 const targets = [
   {
     schema: loadJson('schemas/plugin.schema.json'),
@@ -188,9 +198,54 @@ const targets = [
     label: 'workflow-specs/workflows.json',
   },
   {
+    schema: loadJson('schemas/workflow-framework.schema.json'),
+    data: loadJson('workflow-specs/framework.json'),
+    label: 'workflow-specs/framework.json',
+  },
+  {
+    schema: loadJson('schemas/workflow-behaviors.schema.json'),
+    data: loadJson('workflow-specs/behaviors.json'),
+    label: 'workflow-specs/behaviors.json',
+  },
+  {
     schema: loadJson('schemas/workflow-product.schema.json'),
     data: loadJson('workflow-specs/nova.product.json'),
     label: 'workflow-specs/nova.product.json',
+  },
+  ...['claude', 'codex', 'generic'].map((id) => ({
+    schema: loadJson('schemas/workflow-adapter.schema.json'),
+    data: loadJson(`workflow-specs/adapters/${id}.json`),
+    label: `workflow-specs/adapters/${id}.json`,
+  })),
+  {
+    schema: loadJson('schemas/shell-command-policy.schema.json'),
+    data: loadJson('.nova/shell-policy.json'),
+    label: '.nova/shell-policy.json',
+  },
+  {
+    schema: loadJson('schemas/workflow-framework.schema.json'),
+    data: loadJson('fixtures/products/minimal-plugin/framework.json'),
+    label: 'fixtures/products/minimal-plugin/framework.json',
+  },
+  {
+    schema: loadJson('schemas/workflow-spec.schema.json'),
+    data: loadJson('fixtures/products/minimal-plugin/workflows.json'),
+    label: 'fixtures/products/minimal-plugin/workflows.json',
+  },
+  {
+    schema: loadJson('schemas/workflow-behaviors.schema.json'),
+    data: loadJson('fixtures/products/minimal-plugin/behaviors.json'),
+    label: 'fixtures/products/minimal-plugin/behaviors.json',
+  },
+  {
+    schema: loadJson('schemas/workflow-product.schema.json'),
+    data: loadJson('fixtures/products/minimal-plugin/product.json'),
+    label: 'fixtures/products/minimal-plugin/product.json',
+  },
+  {
+    schema: loadJson('schemas/workflow-adapter.schema.json'),
+    data: loadJson('fixtures/products/minimal-plugin/adapters/mock.json'),
+    label: 'fixtures/products/minimal-plugin/adapters/mock.json',
   },
   {
     schema: loadJson('schemas/workflow-permissions.schema.json'),
@@ -244,7 +299,11 @@ const schemaPaths = [
   'schemas/marketplace-metadata.schema.json',
   'schemas/workflow-permissions.schema.json',
   'schemas/workflow-spec.schema.json',
+  'schemas/workflow-framework.schema.json',
+  'schemas/workflow-behaviors.schema.json',
+  'schemas/workflow-adapter.schema.json',
   'schemas/workflow-product.schema.json',
+  'schemas/shell-command-policy.schema.json',
   'schemas/validation-report.schema.json',
   'schemas/release-evidence.schema.json',
   'schemas/product-lanes.schema.json',
@@ -375,4 +434,5 @@ try {
 
 if (!allPassed) {
   process.exit(1);
+}
 }

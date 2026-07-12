@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 2,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "explore",
   "stage": "explore",
   "ownerAgents": [
@@ -47,9 +47,124 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "loadRequired": true,
-    "reference": "../../skills/nova-explore/SKILL.md",
-    "conflictPolicy": "fail-closed"
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-explore/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Align understanding and identify unknowns or risks without proposing solutions.",
+    "inputs": [
+      {
+        "name": "INPUT",
+        "required": true,
+        "aliases": [
+          "REQUEST",
+          "CONTEXT"
+        ],
+        "description": "Requirement, diff, logs, or design text to explore."
+      },
+      {
+        "name": "PERSPECTIVE",
+        "required": false,
+        "aliases": [
+          "MODE"
+        ],
+        "description": "Exploration perspective.",
+        "default": "observer",
+        "exactValues": [
+          "observer",
+          "reviewer"
+        ]
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "PERSPECTIVE equals observer.",
+        "action": "Use neutral fact-gathering behavior.",
+        "route": "explore-lite"
+      },
+      {
+        "when": "PERSPECTIVE equals reviewer.",
+        "action": "Use review-question behavior.",
+        "route": "explore-review"
+      }
+    ],
+    "invariants": [
+      "Do not propose solutions, implementation plans, or code.",
+      "Separate facts, inferences, and assumptions.",
+      "Produce chat output only."
+    ],
+    "stopConditions": [
+      "INPUT is unresolved.",
+      "PERSPECTIVE is not an exact allowed value.",
+      "The request requires writes or implementation rather than exploration."
+    ],
+    "workflowSteps": [
+      {
+        "id": "resolve-input",
+        "action": "Resolve INPUT and PERSPECTIVE."
+      },
+      {
+        "id": "route",
+        "action": "Select the exact perspective route from the decision table."
+      },
+      {
+        "id": "analyze",
+        "action": "Analyze only the supplied or approved evidence."
+      },
+      {
+        "id": "emit",
+        "action": "Emit the route-specific fixed output fields."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "forbid",
+      "instructions": "Do not turn exploration into planning, recommendations, or implementation."
+    },
+    "output": {
+      "mode": "chat",
+      "fields": [
+        {
+          "name": "observations or what is clear",
+          "required": true,
+          "description": "Evidence-grounded understanding."
+        },
+        {
+          "name": "uncertainties or review questions",
+          "required": true,
+          "description": "Missing or ambiguous information."
+        },
+        {
+          "name": "potential risks or risk signals",
+          "required": true,
+          "description": "Risks caused by current evidence or gaps."
+        }
+      ],
+      "order": [
+        "observations or what is clear",
+        "uncertainties or review questions",
+        "potential risks or risk signals"
+      ],
+      "severityLevels": []
+    },
+    "validation": [
+      "Confirm every assertion is a fact, labeled inference, or explicit assumption.",
+      "Confirm the output contains no solution or implementation advice.",
+      "Confirm the selected route matches PERSPECTIVE."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "missing input",
+        "allowed values",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "missing input",
+        "allowed values",
+        "safe next action"
+      ]
+    }
   },
-  "claimBoundary": "Machine-readable policy summary only; the referenced authored skill is required for complete workflow behavior."
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

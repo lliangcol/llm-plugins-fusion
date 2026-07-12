@@ -22,6 +22,11 @@
 - [ ] This PR does not present public portal, paid marketplace, production multi-plugin directory, runtime dynamic loading, or broad domain-command expansion as current capability unless roadmap and release evidence explicitly activate it.
 - [ ] Skipped or unavailable checks are recorded as skipped, pending, or not run with a reason; this PR does not broaden global permissions, agent sandbox settings, or workflow token scope to hide missing tools.
 
+## Release Independence
+
+- [ ] If this changes release, signing, provenance, workflows, or candidate evidence, a reviewer distinct from the PR author and future candidate actor has approved it. Candidate publication will verify this from GitHub review history; this checkbox is not evidence by itself.
+- [ ] Signing-key or recovery changes follow `docs/releases/operator-recovery-and-key-rotation.md` and do not claim a drill or rotation occurred without a run/evidence record.
+
 ## Validation
 
 Paste the commands run and summarize the result:

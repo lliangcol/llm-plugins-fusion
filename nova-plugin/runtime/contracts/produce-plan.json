@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 2,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "produce-plan",
   "stage": "plan",
   "ownerAgents": [
@@ -49,9 +49,151 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "loadRequired": true,
-    "reference": "../../skills/nova-produce-plan/SKILL.md",
-    "conflictPolicy": "fail-closed"
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-produce-plan/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Write a review-ready plan artifact from explicit intent and constraints without implementing code.",
+    "inputs": [
+      {
+        "name": "REQUEST",
+        "required": true,
+        "aliases": [
+          "PLAN_INTENT",
+          "INPUT"
+        ],
+        "description": "Goal and intent of the plan."
+      },
+      {
+        "name": "PLAN_OUTPUT_PATH",
+        "required": true,
+        "aliases": [
+          "OUTPUT_PATH"
+        ],
+        "description": "Repository-relative plan artifact destination."
+      },
+      {
+        "name": "PLAN_PROFILE",
+        "required": false,
+        "aliases": [
+          "PROFILE"
+        ],
+        "description": "Plan template profile.",
+        "default": "general",
+        "exactValues": [
+          "general",
+          "java-backend"
+        ]
+      },
+      {
+        "name": "ANALYSIS_INPUTS",
+        "required": false,
+        "aliases": [
+          "EVIDENCE"
+        ],
+        "description": "Prior analysis references."
+      },
+      {
+        "name": "CONSTRAINTS",
+        "required": false,
+        "aliases": [
+          "BOUNDARIES"
+        ],
+        "description": "Scope and compatibility constraints."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "PLAN_PROFILE equals general.",
+        "action": "Use the general plan structure."
+      },
+      {
+        "when": "PLAN_PROFILE equals java-backend.",
+        "action": "Use the Java backend design profile.",
+        "route": "backend-plan"
+      }
+    ],
+    "invariants": [
+      "Design only; do not change implementation code.",
+      "Write only to PLAN_OUTPUT_PATH within the approved artifact root.",
+      "Return only the path and executive summary in chat."
+    ],
+    "stopConditions": [
+      "REQUEST or PLAN_OUTPUT_PATH is unresolved.",
+      "PLAN_PROFILE is not an exact allowed value.",
+      "The destination is outside the approved artifact root.",
+      "Repository policy forbids the write."
+    ],
+    "workflowSteps": [
+      {
+        "id": "validate-inputs",
+        "action": "Resolve required fields, profile, and output path."
+      },
+      {
+        "id": "load-evidence",
+        "action": "Read approved analysis and constraints."
+      },
+      {
+        "id": "select-profile",
+        "action": "Select the exact plan profile."
+      },
+      {
+        "id": "write-plan",
+        "action": "Produce a complete plan with explicit trade-offs and write it."
+      },
+      {
+        "id": "summarize",
+        "action": "Return the artifact path and constrained executive summary."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "approval-required",
+      "instructions": "Stop before changing scope, profile, destination, or the design-only boundary."
+    },
+    "output": {
+      "mode": "artifact",
+      "fields": [
+        {
+          "name": "plan artifact",
+          "required": true,
+          "description": "Complete review-ready plan."
+        },
+        {
+          "name": "artifact path",
+          "required": true,
+          "description": "PLAN_OUTPUT_PATH written."
+        },
+        {
+          "name": "executive summary",
+          "required": true,
+          "description": "Concise summary bullets."
+        }
+      ],
+      "order": [
+        "artifact path",
+        "executive summary"
+      ],
+      "severityLevels": []
+    },
+    "validation": [
+      "Confirm the artifact exists and is complete for the selected profile.",
+      "Confirm no implementation files changed.",
+      "Confirm chat output does not duplicate the full plan."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "blocker",
+        "required input",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "blocker",
+        "required input",
+        "safe next action"
+      ]
+    }
   },
-  "claimBoundary": "Machine-readable policy summary only; the referenced authored skill is required for complete workflow behavior."
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

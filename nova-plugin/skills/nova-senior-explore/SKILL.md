@@ -32,6 +32,20 @@ This file is the supporting behavioral contract for `/nova-plugin:senior-explore
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Conduct systematic analysis and optionally export an identical evidence-grounded analysis artifact.
+- **Canonical inputs:** `INTENT`(required aliases=REQUEST); `CONTEXT`(required aliases=INPUT,EVIDENCE); `CONSTRAINTS`(optional aliases=BOUNDARIES); `DEPTH`(optional aliases=MODE default="normal" exact="quick","normal","deep"); `EXPORT_PATH`(optional aliases=OUTPUT_PATH)
+- **Decision entries:** 3.
+- **Workflow steps:** `resolve-scope` → `analyze` → `label-evidence` → `emit` → `export`
+- **Output:** mode=`artifact`; order=`Key findings` → `Open questions` → `Potential risks`; severity=none.
+- **Deviation/failure:** mode=`forbid`; failure order=`status` → `missing input` → `allowed values` → `safe next action`.
+- **Full IR:** `runtime/contracts/senior-explore.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### Purpose
 
 Conduct systematic analysis and surface findings/open questions/risks.

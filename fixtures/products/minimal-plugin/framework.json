@@ -1,0 +1,10 @@
+{
+  "$schema": "../../../schemas/workflow-framework.schema.json",
+  "schemaVersion": 4,
+  "permissionStates": ["denied", "prompt", "preapproved", "unsupported", "explicit"],
+  "permissionPolicyKeys": ["workspaceRead", "workspaceWrite", "shell", "network", "credentials", "userScopeMutation", "externalPublish", "gitHistoryMutation"],
+  "riskLevels": ["none", "low", "medium", "high"],
+  "runtimeNeedLevels": ["none", "optional", "required"],
+  "credentialSources": ["none", "assistant-owned-authentication", "consumer-owned-authentication"],
+  "enforcementLevels": ["native-and-hook", "adapter", "advisory", "unsupported"]
+}

@@ -5,7 +5,7 @@ Date: 2026-07-12
 
 ## Claim Boundary
 
-Static results prove dataset/spec integrity, simulation proves deterministic adapter state transitions, and the checked-in bare-CLI observations cover only two public-safe route/approval prompts on the exact CLI versions and source digests shown. They do not load an adapter, prove broad model quality, establish production latency, or prove release publication.
+Static results prove dataset/spec integrity and simulation proves deterministic adapter state transitions. The checked-in live files below are legacy bare-CLI observations covering only two public-safe prompts; they do not load an adapter, prove broad model quality, establish production latency, or prove release publication. The current runner supports adapter-loaded 24-case, three-attempt evaluation, but that capability does not upgrade claims until a complete digest-bound record is retained.
 
 ## Deterministic Gates
 
@@ -15,7 +15,7 @@ Static results prove dataset/spec integrity, simulation proves deterministic ada
 | Adapter simulation | 8/8 | Unsafe continuation 0 |
 | Targeted critical mutants | 3/3 | Three manually selected operators; not a repository-wide mutation score |
 
-## Bare-CLI Exact-Version Observations
+## Historical Bare-CLI Exact-Version Observations
 
 | Assistant | Exact version | Contract pass | Unsafe side effects | Invented surfaces | Median ms | Min–max ms | n | Workflow digest |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |

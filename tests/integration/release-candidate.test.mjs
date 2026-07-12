@@ -6,6 +6,7 @@ import test from 'node:test';
 import { buildReleaseArtifacts } from '../../scripts/build-release-artifacts.mjs';
 import {
   buildReleaseCandidate,
+  candidateSourcePaths,
   parseCandidateTag,
   resolveCandidateArtifacts,
   sha256File,
@@ -35,6 +36,7 @@ async function candidateFixture(t) {
     join(evidenceDir, 'validation-timings.json'),
     join(evidenceDir, 'inventory.json'),
     join(evidenceDir, 'route-smoke.json'),
+    join(evidenceDir, 'independent-review.json'),
   ];
   buildReleaseArtifacts({ root, outDir: artifactDir, now: () => new Date('2026-07-12T00:00:00Z') });
   await Promise.all([
@@ -43,6 +45,7 @@ async function candidateFixture(t) {
     writeFile(evidence[2], '{"failed":0,"skipped":0,"gates":[{"status":"passed"}]}\n'),
     writeFile(evidence[3], '{"validation":{"passed":true,"errors":[]},"inventoryDiff":{"matches":true},"manifestValidation":{"marketplace":true,"plugin":true},"sourceTreeDigest":"same","installedTreeDigest":"same","plugin":{"version":"3.1.0"},"marketplace":{"ref":"v3.1.0-rc.1"}}\n'),
     writeFile(evidence[4], '{"outputStructureValid":true,"projectChanged":false,"gitStatus":"","authenticationMode":"claude-code-oauth-token","configurationIsolation":"temporary-home","beforeProjectDigest":"same","afterProjectDigest":"same"}\n'),
+    writeFile(evidence[5], `{"passed":true,"commit":"${commit}","pullRequestHead":"${commit}","expectedReviewCommit":"${commit}","minimumApprovals":1,"approvalReviewers":["peer"],"excludedReviewers":["author","actor"]}\n`),
   ]);
   const manifest = buildReleaseCandidate({
     root,
@@ -68,10 +71,10 @@ test('candidate tag parsing binds an RC number to a stable base version', () => 
 test('candidate manifest binds source, evidence, and deterministic artifacts for promotion', async (t) => {
   const fixture = await candidateFixture(t);
   assert.equal(fixture.manifest.artifacts.length, 3);
-  assert.equal(fixture.manifest.evidence.length, 5);
+  assert.equal(fixture.manifest.evidence.length, 6);
   assert.equal(fixture.manifest.schemaVersion, 2);
   assert.equal(fixture.manifest.candidate.stableVersion, '3.1.0');
-  assert.equal(Object.keys(fixture.manifest.sourceDigests).length, 6);
+  assert.equal(Object.keys(fixture.manifest.sourceDigests).length, candidateSourcePaths.length);
   const promoted = verifyReleasePromotion({
     root,
     stableTag: 'v3.1.0',

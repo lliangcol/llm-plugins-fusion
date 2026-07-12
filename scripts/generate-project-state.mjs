@@ -6,6 +6,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
+import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
 
 assertNodeVersion({ label: 'project state generation' });
 
@@ -16,9 +17,18 @@ const sourcePaths = [
   'nova-plugin/.claude-plugin/plugin.json',
   'workflow-specs/workflows.json',
   'workflow-specs/nova.product.json',
+  'workflow-specs/framework.json',
+  'workflow-specs/behaviors.json',
+  'workflow-specs/adapters/claude.json',
+  'workflow-specs/adapters/codex.json',
+  'workflow-specs/adapters/generic.json',
   'docs/generated/surface-inventory.json',
   'governance/product-lanes.json',
+  'governance/release-operations.json',
+  'governance/adoption-evidence.json',
   'nova-plugin/hooks/hooks.json',
+  'nova-plugin/runtime/shell-command-policy.json',
+  '.nova/shell-policy.json',
 ];
 
 function readJson(repoRoot, path) {
@@ -45,7 +55,8 @@ function hookLaunchers(hooks) {
 export function buildProjectState(repoRoot = root) {
   const pkg = readJson(repoRoot, 'package.json');
   const plugin = readJson(repoRoot, 'nova-plugin/.claude-plugin/plugin.json');
-  const workflows = readJson(repoRoot, 'workflow-specs/workflows.json');
+  const model = loadNovaWorkflowModel(repoRoot);
+  const workflows = model.workflows;
   const inventory = readJson(repoRoot, 'docs/generated/surface-inventory.json');
   const productLanes = readJson(repoRoot, 'governance/product-lanes.json');
   const hooks = readJson(repoRoot, 'nova-plugin/hooks/hooks.json');
@@ -73,7 +84,7 @@ export function buildProjectState(repoRoot = root) {
     },
     workflow: {
       schemaVersion: workflows.schemaVersion,
-      namespace: workflows.pluginNamespace,
+      namespace: model.product.pluginNamespace,
       count: workflows.workflows.length,
     },
     repositoryScripts: {

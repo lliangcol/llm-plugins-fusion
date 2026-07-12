@@ -32,6 +32,20 @@ This file is the supporting behavioral contract for `/nova-plugin:review-lite` a
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Deliver concise daily-review feedback with high signal and bounded depth.
+- **Canonical inputs:** `REVIEW_SCOPE`(required aliases=INPUT,SCOPE)
+- **Decision entries:** 2.
+- **Workflow steps:** `scan` → `filter` → `emit`
+- **Output:** mode=`chat`; order=`Findings`; severity=`Bug`, `Risk`, `Readability`, `Overengineering`.
+- **Deviation/failure:** mode=`forbid`; failure order=`status` → `blocker` → `safe next action`.
+- **Full IR:** `runtime/contracts/review-lite.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### Purpose
 
 Deliver concise daily-review feedback with high signal and low friction.

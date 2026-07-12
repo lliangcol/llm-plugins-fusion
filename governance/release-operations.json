@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "independentReview": {
+    "requiredForCandidate": true,
+    "minimumApprovals": 1,
+    "reviewerMustDifferFrom": ["pull-request-author", "candidate-actor"],
+    "evidenceName": "independent-review.json"
+  },
+  "signing": {
+    "allowedSignersFile": ".github/release-signers",
+    "minimumActiveSigners": 1,
+    "inventoryReviewedAt": "2026-07-12",
+    "rotationReviewCadenceDays": 90,
+    "overlapRequired": true,
+    "lastRotationEvidence": null
+  },
+  "recovery": {
+    "workflow": ".github/workflows/release-recovery-drill.yml",
+    "drillCadenceDays": 90,
+    "lastSuccessfulDrill": null
+  },
+  "labels": {
+    "source": ".github/labels.yml",
+    "workflow": ".github/workflows/label-sync.yml",
+    "mode": "create-update-no-delete"
+  }
+}

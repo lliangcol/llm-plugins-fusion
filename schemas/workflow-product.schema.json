@@ -4,12 +4,20 @@
   "title": "Workflow product instance inventory",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "pluginNamespace", "expectedWorkflowCount", "agents", "packs", "tools"],
+  "required": ["schemaVersion", "pluginNamespace", "expectedWorkflowCount", "stages", "primaryEntrypoints", "runtimeCompatibility", "adapterDefinitions", "agents", "packs", "tools"],
   "properties": {
     "$schema": { "type": "string" },
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "pluginNamespace": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
     "expectedWorkflowCount": { "type": "number" },
+    "stages": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+    "primaryEntrypoints": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+    "runtimeCompatibility": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" }
+    },
+    "adapterDefinitions": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
     "agents": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
     "packs": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
     "tools": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } }

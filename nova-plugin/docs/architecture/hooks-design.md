@@ -10,7 +10,7 @@ Do not edit this block by hand. It is synchronized by
 - Plugin: `nova-plugin@3.1.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
-- Workflow contract: schema v3, namespace `nova-plugin`, 21 workflows
+- Workflow contract: schema v4, namespace `nova-plugin`, 21 workflows
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
@@ -136,14 +136,19 @@ PostToolUse 额外包含：
 
 ### Hook 1B：PreToolUse — scoped Bash guard
 
-**目标：** 在正常 Bash 权限提示之前拒绝常见的写入绕过形式，包括重定向、管道/
-compound shell、直接文件系统 mutator、inline interpreter、mutating Git/package
-subcommand。允许通过的单命令仍受 Claude 权限提示和外部 sandbox 约束；脚本内部
-副作用无法由词法检查完整证明，因此该 guard 不是 command sandbox。
+**目标：** 在正常 Bash 权限提示之前执行默认拒绝的 validation command broker。
+分发策略仅允许只读 Git、`rg`、`bash -n`、ShellCheck 和版本探测；项目验证器必须
+在仓库自己的 `.nova/shell-policy.json` 中按完整 argv 精确登记。组合命令、重定向、
+变量/命令替换、未登记解释器与包执行器一律拒绝。允许结果仍要经过 Claude 权限提示
+和外部 sandbox；项目策略是仓库审查面，不等于预授权。
 
 **Active launcher:** `nova-plugin/hooks/scripts/pre-bash-check.sh`
 
 **Active implementation:** `nova-plugin/hooks/scripts/pre-bash-check.mjs`
+
+**Distributed policy:** `nova-plugin/runtime/shell-command-policy.json`
+
+**Project exact policy:** `.nova/shell-policy.json`
 
 敏感信息检测规则由 `nova-plugin/runtime/secret-rules.mjs` 统一维护。Bash
 启动器只解析 Node 路径；Node 缺失时 fail closed。设置

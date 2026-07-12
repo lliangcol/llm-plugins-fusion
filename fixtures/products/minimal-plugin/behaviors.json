@@ -1,0 +1,45 @@
+{
+  "$schema": "../../../schemas/workflow-behaviors.schema.json",
+  "schemaVersion": 1,
+  "behaviors": [
+    {
+      "id": "triage",
+      "purpose": "Choose one next step without side effects.",
+      "inputs": [{ "name": "REQUEST", "required": true, "aliases": ["INPUT"], "description": "Request to triage." }],
+      "decisionTable": [{ "when": "REQUEST is resolved.", "action": "Choose one bounded next step." }],
+      "invariants": ["Do not modify the workspace."],
+      "stopConditions": ["REQUEST is unresolved."],
+      "workflowSteps": [{ "id": "triage", "action": "Inspect the request and select one next step." }],
+      "deviationPolicy": { "mode": "forbid", "instructions": "Do not execute the selected step." },
+      "output": { "mode": "chat", "fields": [{ "name": "next step", "required": true, "description": "Single recommendation." }], "order": ["next step"], "severityLevels": [] },
+      "validation": ["Confirm exactly one next step is returned."],
+      "failureOutput": { "fields": ["status", "missing input"], "order": ["status", "missing input"] }
+    },
+    {
+      "id": "design",
+      "purpose": "Create a bounded design artifact without side effects.",
+      "inputs": [{ "name": "REQUEST", "required": true, "aliases": ["INPUT"], "description": "Request to design." }],
+      "decisionTable": [{ "when": "REQUEST is resolved.", "action": "Create the bounded design." }],
+      "invariants": ["Do not modify implementation files."],
+      "stopConditions": ["REQUEST is unresolved."],
+      "workflowSteps": [{ "id": "design", "action": "Produce the bounded design response." }],
+      "deviationPolicy": { "mode": "forbid", "instructions": "Do not implement the design." },
+      "output": { "mode": "chat", "fields": [{ "name": "design", "required": true, "description": "Bounded design response." }], "order": ["design"], "severityLevels": [] },
+      "validation": ["Confirm the response remains design-only."],
+      "failureOutput": { "fields": ["status", "missing input"], "order": ["status", "missing input"] }
+    },
+    {
+      "id": "verify",
+      "purpose": "Report verification evidence and residual risk.",
+      "inputs": [{ "name": "RESULT", "required": true, "aliases": ["OUTPUT"], "description": "Result to verify." }],
+      "decisionTable": [{ "when": "RESULT is resolved.", "action": "Verify supported claims." }],
+      "invariants": ["Do not infer skipped checks passed."],
+      "stopConditions": ["RESULT is unresolved."],
+      "workflowSteps": [{ "id": "verify", "action": "Check evidence and report outcomes." }],
+      "deviationPolicy": { "mode": "report", "instructions": "Report unavailable evidence explicitly." },
+      "output": { "mode": "chat", "fields": [{ "name": "verified", "required": true, "description": "Supported conclusions." }, { "name": "skipped", "required": true, "description": "Checks not executed." }, { "name": "residual risk", "required": true, "description": "Remaining uncertainty." }], "order": ["verified", "skipped", "residual risk"], "severityLevels": [] },
+      "validation": ["Confirm verified, skipped, and residual risk are distinct."],
+      "failureOutput": { "fields": ["status", "missing input"], "order": ["status", "missing input"] }
+    }
+  ]
+}

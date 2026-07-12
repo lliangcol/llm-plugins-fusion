@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 2,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "implement-lite",
   "stage": "implement",
   "ownerAgents": [
@@ -46,9 +46,130 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "loadRequired": true,
-    "reference": "../../skills/nova-implement-lite/SKILL.md",
-    "conflictPolicy": "fail-closed"
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-implement-lite/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Deliver a small bounded implementation with focused validation and no unrelated refactoring.",
+    "inputs": [
+      {
+        "name": "REQUEST",
+        "required": true,
+        "aliases": [
+          "TASK",
+          "INPUT"
+        ],
+        "description": "Target implementation request and acceptance criteria."
+      },
+      {
+        "name": "CONSTRAINTS",
+        "required": false,
+        "aliases": [
+          "BOUNDARIES"
+        ],
+        "description": "Scope and compatibility boundaries."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "The request is small, bounded, and has a safe execution basis.",
+        "action": "Implement the minimum necessary change."
+      },
+      {
+        "when": "The request expands into material design work.",
+        "action": "Stop and request a plan or explicit direction."
+      }
+    ],
+    "invariants": [
+      "Preserve unrelated user changes.",
+      "Avoid unrelated refactors.",
+      "Validate in proportion to changed behavior.",
+      "Do not publish or rewrite Git history."
+    ],
+    "stopConditions": [
+      "REQUEST or acceptance criteria are unresolved.",
+      "Required permission or capability is denied.",
+      "Changes overlap user work and cannot be preserved safely.",
+      "The task is no longer small or bounded."
+    ],
+    "workflowSteps": [
+      {
+        "id": "resolve-goal",
+        "action": "Resolve goal, acceptance, and constraints."
+      },
+      {
+        "id": "inspect",
+        "action": "Inspect only the context required for the change."
+      },
+      {
+        "id": "implement",
+        "action": "Apply the minimum necessary edits."
+      },
+      {
+        "id": "validate",
+        "action": "Run focused validation for changed behavior."
+      },
+      {
+        "id": "report",
+        "action": "Report changes and any approved adjustments."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "approval-required",
+      "instructions": "Stop before a non-trivial scope, architecture, dependency, or data-model deviation."
+    },
+    "output": {
+      "mode": "workspace-and-chat",
+      "fields": [
+        {
+          "name": "implemented changes",
+          "required": true,
+          "description": "Scoped workspace edits."
+        },
+        {
+          "name": "Changes Summary",
+          "required": true,
+          "description": "Behavior and files changed."
+        },
+        {
+          "name": "Validation",
+          "required": true,
+          "description": "Actual checks and outcomes."
+        },
+        {
+          "name": "Adjustments",
+          "required": true,
+          "description": "Approved deviations or None."
+        }
+      ],
+      "order": [
+        "Changes Summary",
+        "Validation",
+        "Adjustments"
+      ],
+      "severityLevels": []
+    },
+    "validation": [
+      "Run the narrowest meaningful automated tests or checks.",
+      "Inspect the final diff for unrelated changes.",
+      "Report any skipped validation and residual risk."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "completed work",
+        "blocker",
+        "workspace state",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "completed work",
+        "blocker",
+        "workspace state",
+        "safe next action"
+      ]
+    }
   },
-  "claimBoundary": "Machine-readable policy summary only; the referenced authored skill is required for complete workflow behavior."
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

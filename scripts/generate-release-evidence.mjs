@@ -19,6 +19,12 @@ import {
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
 
+function knownGoodClaudeCli(root) {
+  const productPath = resolve(root, 'workflow-specs/nova.product.json');
+  if (existsSync(productPath)) return readJson(productPath).runtimeCompatibility?.['claude-code'] ?? null;
+  return readJson(resolve(root, 'workflow-specs/workflows.json')).knownGoodClaudeCli ?? null;
+}
+
 function usage() {
   return 'Usage: node scripts/generate-release-evidence.mjs [--coverage-summary <path>] [--coverage-metadata <path>] [--timings <path>] [--install <path>] [--route <path>] [--checksums <path>] [--artifact-dir <path>] [--out-dir <path>] [--require-live]';
 }
@@ -396,7 +402,7 @@ export function generateReleaseEvidence({ root = defaultRoot, args = [], env = p
     })),
     requireLive: options.requireLive,
     expectedRouteInventory,
-    knownGoodClaudeCli: readJson(resolve(root, 'workflow-specs/workflows.json')).knownGoodClaudeCli,
+    knownGoodClaudeCli: knownGoodClaudeCli(root),
   });
   mkdirSync(options.outDir, { recursive: true });
   const jsonPath = resolve(options.outDir, 'release-evidence.json');

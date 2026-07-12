@@ -11,8 +11,10 @@ test('schema validator enforces integer, minimum, date-time, and deep uniqueItem
   assert.notDeepEqual(validate({ type: 'array', uniqueItems: true }, [{ a: 1, b: 2 }, { b: 2, a: 1 }]), []);
 });
 
-test('schema validator rejects unsupported keywords before accepting data', () => {
+test('standard schema engine supports registered keywords and rejects unknown ones', () => {
   assert.deepEqual(validateSchemaKeywords({ type: 'string' }), []);
-  assert.match(validateSchemaKeywords({ type: 'string', contains: { const: 'x' } })[0], /unsupported schema keyword contains/);
-  assert.match(validateSchemaKeywords({ type: 'string', format: 'hostname' })[0], /unsupported schema format hostname/);
+  assert.deepEqual(validateSchemaKeywords({ type: 'array', contains: { const: 'x' } }), []);
+  assert.deepEqual(validateSchemaKeywords({ type: 'string', format: 'hostname' }), []);
+  assert.match(validateSchemaKeywords({ type: 'string', inventedKeyword: true })[0], /strict mode: unknown keyword/);
+  assert.notDeepEqual(validate({ type: 'array', contains: { const: 'x' } }, ['y']), []);
 });

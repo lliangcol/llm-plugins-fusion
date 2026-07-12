@@ -33,6 +33,20 @@ This file is the supporting behavioral contract for `/nova-plugin:implement-lite
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Deliver a small bounded implementation with focused validation and no unrelated refactoring.
+- **Canonical inputs:** `REQUEST`(required aliases=TASK,INPUT); `CONSTRAINTS`(optional aliases=BOUNDARIES)
+- **Decision entries:** 2.
+- **Workflow steps:** `resolve-goal` → `inspect` → `implement` → `validate` → `report`
+- **Output:** mode=`workspace-and-chat`; order=`Changes Summary` → `Validation` → `Adjustments`; severity=none.
+- **Deviation/failure:** mode=`approval-required`; failure order=`status` → `completed work` → `blocker` → `workspace state` → `safe next action`.
+- **Full IR:** `runtime/contracts/implement-lite.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### Purpose
 
 Deliver quick, correct implementation for scoped changes.

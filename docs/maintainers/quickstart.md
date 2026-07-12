@@ -55,7 +55,8 @@ committed.
 `package.json` `engines.node` as the canonical support contract when the two
 ever need reconciliation.
 
-To collect dependency-free test coverage evidence on the local Node runtime:
+After `npm ci --ignore-scripts`, collect test coverage evidence with Node's
+built-in coverage runtime:
 
 ```bash
 npm run test:coverage:check

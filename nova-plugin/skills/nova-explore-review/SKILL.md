@@ -32,6 +32,20 @@ This file is the supporting behavioral contract for `/nova-plugin:explore-review
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Surface clarity gaps and risk signals using a reviewer perspective without proposing solutions.
+- **Canonical inputs:** `INPUT`(required aliases=REQUEST,CONTEXT)
+- **Decision entries:** 1.
+- **Workflow steps:** `separate-evidence` → `ask-questions` → `identify-signals`
+- **Output:** mode=`chat`; order=`What is clear` → `Review questions` → `Risk signals`; severity=none.
+- **Deviation/failure:** mode=`forbid`; failure order=`status` → `missing input` → `safe next action`.
+- **Full IR:** `runtime/contracts/explore-review.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### Purpose
 
 Apply reviewer mindset to surface clarity gaps and risk signals.

@@ -5,8 +5,18 @@ import { requireSemVer } from './semver.mjs';
 
 export const candidateSourcePaths = Object.freeze([
   'package.json',
+  'package-lock.json',
   'nova-plugin/.claude-plugin/plugin.json',
+  'workflow-specs/framework.json',
+  'workflow-specs/nova.product.json',
   'workflow-specs/workflows.json',
+  'workflow-specs/behaviors.json',
+  'workflow-specs/adapters/claude.json',
+  'workflow-specs/adapters/codex.json',
+  'workflow-specs/adapters/generic.json',
+  'governance/release-operations.json',
+  'scripts/verify-independent-release-review.mjs',
+  'scripts/lib/release-review.mjs',
   '.github/workflows/release-candidate.yml',
   '.github/workflows/promote-release.yml',
   '.github/workflows/release.yml',
@@ -65,6 +75,7 @@ const evidenceKinds = Object.freeze({
   'inventory.json': 'install-inventory',
   'route-smoke.json': 'route-smoke',
   'quality-summary.json': 'quality-summary',
+  'independent-review.json': 'independent-review',
 });
 
 function evidenceRecords(paths, bundleRoot) {
@@ -118,6 +129,19 @@ function verifyEvidenceRecord(root, bundleRoot, record, candidate) {
       || data.beforeProjectDigest !== data.afterProjectDigest
     )) {
       throw new Error('route smoke evidence does not prove valid zero-write execution');
+    }
+    if (record.kind === 'independent-review' && (
+      data.passed !== true
+      || data.commit !== candidate.commit
+      || !/^[a-f0-9]{40}$/u.test(data.pullRequestHead ?? '')
+      || data.expectedReviewCommit !== data.pullRequestHead
+      || !Number.isInteger(data.minimumApprovals)
+      || data.minimumApprovals < 1
+      || !Array.isArray(data.approvalReviewers)
+      || data.approvalReviewers.length < data.minimumApprovals
+      || data.approvalReviewers.some((reviewer) => data.excludedReviewers?.includes(reviewer))
+    )) {
+      throw new Error('independent review evidence does not prove a distinct approved reviewer');
     }
   }
   if (record.kind === 'checksums') {
@@ -189,7 +213,7 @@ export function verifyReleasePromotion({ root, stableTag, expectedCandidateTag =
   if (JSON.stringify(actualArtifacts) !== JSON.stringify(manifest.artifacts)) {
     throw new Error('candidate artifact digest or size differs during promotion');
   }
-  const requiredKinds = ['checksums', 'coverage-metadata', 'validation-timings', 'install-inventory', 'route-smoke'];
+  const requiredKinds = ['checksums', 'coverage-metadata', 'validation-timings', 'install-inventory', 'route-smoke', 'independent-review'];
   const actualKinds = (manifest.evidence ?? []).map((entry) => entry.kind).sort();
   for (const kind of requiredKinds) {
     if (!actualKinds.includes(kind)) throw new Error(`candidate required promotion evidence is missing: ${kind}`);

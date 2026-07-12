@@ -149,3 +149,7 @@ Use [Registry Author Workflow](../marketplace/registry-author-workflow.md),
 [Trust Policy](../marketplace/trust-policy.md), and
 [Security Review Route](../marketplace/security-review-route.md) for the
 review inputs.
+
+Independent review, signing-key overlap/rotation, recovery drills, label sync,
+and the honest external-adoption evidence boundary are defined in
+[Release Operator Recovery And Signing-Key Rotation](operator-recovery-and-key-rotation.md).

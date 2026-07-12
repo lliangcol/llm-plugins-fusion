@@ -32,6 +32,20 @@ This file is the supporting behavioral contract for `/nova-plugin:review-strict`
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Perform exhaustive production-critical review with explicit failure-cost reasoning and no implementation.
+- **Canonical inputs:** `REVIEW_SCOPE`(required aliases=INPUT,SCOPE)
+- **Decision entries:** 3.
+- **Workflow steps:** `inspect` → `model-failure-cost` → `classify` → `emit`
+- **Output:** mode=`chat`; order=`Critical` → `Major` → `Minor`; severity=`Critical`, `Major`, `Minor`.
+- **Deviation/failure:** mode=`forbid`; failure order=`status` → `missing evidence` → `reviewed scope` → `safe next action`.
+- **Full IR:** `runtime/contracts/review-strict.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### Purpose
 
 Perform production-critical audit with failure-cost awareness.

@@ -200,7 +200,7 @@ await runNode('node pre-bash hook blocks redirection bypass', [
 ], {
   input: JSON.stringify({ tool_name: 'Bash', tool_input: { command: 'cat input > output' } }),
   expectFailure: true,
-  outputPattern: /shell composition, redirection/,
+  outputPattern: /shell composition, expansion, redirection/,
 });
 
 await runNode('node pre-bash hook allows a bounded validation command', [

@@ -6,19 +6,20 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkOrWrite } from './generate-adapters.mjs';
+import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFileSync(resolve(root, path), 'utf8');
 const readJson = (path) => JSON.parse(read(path));
 
 checkOrWrite();
-const spec = readJson('workflow-specs/workflows.json');
+const { spec, adapterById } = loadNovaWorkflowModel(root);
 const generic = readJson('adapters/generic-agent-skills/manifest.json');
 const claude = readJson('adapters/claude/manifest.json');
 const codex = read('adapters/codex/AGENTS.md');
 
-assert.equal(generic.declaredLevel, 'L1');
-assert.equal(claude.declaredLevel, 'L2');
+assert.equal(generic.declaredLevel, adapterById.generic.declaredLevel);
+assert.equal(claude.declaredLevel, adapterById.claude.declaredLevel);
 assert.equal(generic.maximumSupportedLevel, 'L4');
 assert.equal(claude.maximumSupportedLevel, 'L4');
 assert.deepEqual(generic.workflows.map((entry) => entry.id), spec.workflows.map((entry) => entry.id));
@@ -28,6 +29,7 @@ assert.match(codex, /Never claim Claude hooks or permissions are active in Codex
 
 for (const workflow of generic.workflows) {
   assert.equal(existsSync(resolve(root, 'adapters/generic-agent-skills', workflow.contract)), true, `${workflow.id}: contract missing`);
+  assert.equal(existsSync(resolve(root, 'adapters/generic-agent-skills', workflow.runtimeContract)), true, `${workflow.id}: runtime contract missing`);
   assert.notEqual(workflow.permissionPolicy.credentials, 'preapproved', `${workflow.id}: credentials must not be implicit`);
   assert.equal(workflow.permissionPolicy.externalPublish, 'denied', `${workflow.id}: publish must not be implicit`);
   assert.equal(workflow.permissionPolicy.gitHistoryMutation, 'denied', `${workflow.id}: history mutation must not be implicit`);

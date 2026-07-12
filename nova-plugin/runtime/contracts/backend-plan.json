@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 2,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "backend-plan",
   "stage": "plan",
   "ownerAgents": [
@@ -51,9 +51,112 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "loadRequired": true,
-    "reference": "../../skills/nova-backend-plan/SKILL.md",
-    "conflictPolicy": "fail-closed"
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-backend-plan/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Produce a complete Java and Spring backend design artifact for senior review without implementing code.",
+    "inputs": [
+      {
+        "name": "REQUEST",
+        "required": true,
+        "aliases": [
+          "BUSINESS_CONTEXT",
+          "PLAN_INTENT"
+        ],
+        "description": "Problem, goals, and constraints to design for."
+      },
+      {
+        "name": "PLAN_OUTPUT_PATH",
+        "required": true,
+        "aliases": [
+          "OUTPUT_PATH"
+        ],
+        "description": "Repository-relative destination for the plan artifact."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "All required inputs are resolved and the destination is within the approved artifact root.",
+        "action": "Create the backend design plan."
+      }
+    ],
+    "invariants": [
+      "Do not modify implementation code.",
+      "Choose one design and explain rejected alternatives.",
+      "Keep chat output to the artifact path and three to five executive bullets."
+    ],
+    "stopConditions": [
+      "REQUEST is unresolved.",
+      "PLAN_OUTPUT_PATH is unresolved or outside the approved artifact root.",
+      "Repository policy forbids the artifact write."
+    ],
+    "workflowSteps": [
+      {
+        "id": "validate-inputs",
+        "action": "Resolve the request and validate the output path."
+      },
+      {
+        "id": "extract-constraints",
+        "action": "Extract assumptions, constraints, and acceptance concerns."
+      },
+      {
+        "id": "select-design",
+        "action": "Select one design and record rejection rationale for alternatives."
+      },
+      {
+        "id": "write-plan",
+        "action": "Write the complete twelve-section design document."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "approval-required",
+      "instructions": "Stop and request direction before changing the requested scope, destination, or design-only boundary."
+    },
+    "output": {
+      "mode": "artifact",
+      "fields": [
+        {
+          "name": "plan artifact",
+          "required": true,
+          "description": "Complete twelve-section backend design."
+        },
+        {
+          "name": "artifact path",
+          "required": true,
+          "description": "Path written."
+        },
+        {
+          "name": "executive summary",
+          "required": true,
+          "description": "Three to five bullets."
+        }
+      ],
+      "order": [
+        "artifact path",
+        "executive summary"
+      ],
+      "severityLevels": []
+    },
+    "validation": [
+      "Confirm the artifact exists at PLAN_OUTPUT_PATH.",
+      "Confirm all twelve required sections are present.",
+      "Confirm no implementation files changed."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "blocker",
+        "required input",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "blocker",
+        "required input",
+        "safe next action"
+      ]
+    }
   },
-  "claimBoundary": "Machine-readable policy summary only; the referenced authored skill is required for complete workflow behavior."
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

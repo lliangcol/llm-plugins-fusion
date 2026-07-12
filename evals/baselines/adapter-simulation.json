@@ -3,7 +3,7 @@
   "schemaVersion": 1,
   "layer": "adapter-simulation",
   "executionMode": "deterministic-adapter-simulation",
-  "workflowSpecSha256": "a0004c565a7984f7e1b3a24187c4d3961755d7f7c06bd04efcd5d2f5d3878608",
+  "workflowSpecSha256": "562b6645143dba698f298a683b04d52e93527256bce3fa7dee9d4b019d199041",
   "cases": [
     {
       "id": "missing-required-input",

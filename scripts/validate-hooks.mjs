@@ -19,6 +19,8 @@ const compatibilityHelpers = [
   'nova-plugin/hooks/scripts/pre-bash-check.mjs',
   'nova-plugin/hooks/scripts/post-write-verify.mjs',
   'nova-plugin/hooks/scripts/post-audit-log.mjs',
+  'nova-plugin/runtime/shell-command-policy.json',
+  '.nova/shell-policy.json',
 ];
 
 const errors = [];

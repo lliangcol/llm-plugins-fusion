@@ -1,0 +1,10 @@
+{
+  "$schema": "../../schemas/workflow-adapter.schema.json",
+  "schemaVersion": 1,
+  "id": "generic",
+  "enforcement": "advisory",
+  "declaredLevel": "L1",
+  "maximumSupportedLevel": "L4",
+  "invocation": { "kind": "contract-manifest", "prefix": "workflow:" },
+  "evidenceRequiredFor": ["L2", "L3", "L4"]
+}

@@ -9,6 +9,7 @@ import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { treeManifest } from './validate-plugin-install.mjs';
 import { assertNodeVersion } from './lib/node-version.mjs';
+import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
 
 assertNodeVersion({ label: 'release artifact build' });
 
@@ -84,7 +85,7 @@ function gitValue(root, args) {
 export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/release-artifacts', now = () => new Date(0) } = {}) {
   const pluginRoot = resolve(root, 'nova-plugin');
   const plugin = JSON.parse(readFileSync(resolve(pluginRoot, '.claude-plugin/plugin.json'), 'utf8'));
-  const workflows = JSON.parse(readFileSync(resolve(root, 'workflow-specs/workflows.json'), 'utf8'));
+  const { knownGoodClaudeCli } = loadNovaWorkflowModel(root);
   const outputRoot = resolve(root, outDir);
   mkdirSync(outputRoot, { recursive: true });
   const archiveName = `nova-plugin-${plugin.version}.tar.gz`;
@@ -129,7 +130,7 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
       {
         type: 'application',
         name: 'Claude Code',
-        version: workflows.knownGoodClaudeCli,
+        version: knownGoodClaudeCli,
         'bom-ref': 'host:claude-code',
         scope: 'required',
         properties: [{ name: 'nova:purpose', value: 'plugin host; exact compatible version is release-evidence-bound' }],

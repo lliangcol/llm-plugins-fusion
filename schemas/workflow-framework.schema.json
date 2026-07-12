@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/workflow-framework.schema.json",
+  "title": "Generic workflow framework vocabulary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "permissionStates", "permissionPolicyKeys", "riskLevels", "runtimeNeedLevels", "credentialSources", "enforcementLevels"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 4 },
+    "permissionStates": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+    "permissionPolicyKeys": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+    "riskLevels": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+    "runtimeNeedLevels": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+    "credentialSources": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+    "enforcementLevels": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } }
+  }
+}

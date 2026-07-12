@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 2,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "review-strict",
   "stage": "review",
   "ownerAgents": [
@@ -49,9 +49,118 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "loadRequired": true,
-    "reference": "../../skills/nova-review-strict/SKILL.md",
-    "conflictPolicy": "fail-closed"
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-review-strict/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Perform exhaustive production-critical review with explicit failure-cost reasoning and no implementation.",
+    "inputs": [
+      {
+        "name": "REVIEW_SCOPE",
+        "required": true,
+        "aliases": [
+          "INPUT",
+          "SCOPE"
+        ],
+        "description": "High-risk modules, stateful logic, or refactors to audit."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "A finding risks corruption, financial or security harm, production incidents, or incorrect core behavior.",
+        "action": "Classify it Critical."
+      },
+      {
+        "when": "A finding significantly raises maintenance cost or realistic bug, scalability, or testability risk.",
+        "action": "Classify it Major."
+      },
+      {
+        "when": "A finding affects clarity, consistency, or low-risk best practice.",
+        "action": "Classify it Minor."
+      }
+    ],
+    "invariants": [
+      "Do not write code or implementation-level fixes.",
+      "Make assumptions explicit.",
+      "Justify the risk or cost of every finding.",
+      "Do not approve or decide release readiness."
+    ],
+    "stopConditions": [
+      "REVIEW_SCOPE is unresolved.",
+      "Required evidence for a high-confidence conclusion is unavailable.",
+      "The request requires implementation."
+    ],
+    "workflowSteps": [
+      {
+        "id": "inspect",
+        "action": "Inspect correctness, edge cases, concurrency, performance, errors, observability, tests, boundaries, maintainability, and evolution risk."
+      },
+      {
+        "id": "model-failure-cost",
+        "action": "Explain realistic failure impact and uncertainty."
+      },
+      {
+        "id": "classify",
+        "action": "Classify each supported finding by severity."
+      },
+      {
+        "id": "emit",
+        "action": "Provide issue, risk or cost, and conceptual guidance."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "forbid",
+      "instructions": "Do not redesign end-to-end, implement fixes, or broaden REVIEW_SCOPE."
+    },
+    "output": {
+      "mode": "chat",
+      "fields": [
+        {
+          "name": "Critical",
+          "required": true,
+          "description": "Catastrophic or core-behavior risks."
+        },
+        {
+          "name": "Major",
+          "required": true,
+          "description": "Material realistic risks and costs."
+        },
+        {
+          "name": "Minor",
+          "required": true,
+          "description": "Low-risk quality gaps."
+        }
+      ],
+      "order": [
+        "Critical",
+        "Major",
+        "Minor"
+      ],
+      "severityLevels": [
+        "Critical",
+        "Major",
+        "Minor"
+      ]
+    },
+    "validation": [
+      "Confirm every finding includes evidence, impact, and conceptual direction.",
+      "Confirm severity follows the decision table.",
+      "Confirm assumptions are labeled and no implementation appears."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "missing evidence",
+        "reviewed scope",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "missing evidence",
+        "reviewed scope",
+        "safe next action"
+      ]
+    }
   },
-  "claimBoundary": "Machine-readable policy summary only; the referenced authored skill is required for complete workflow behavior."
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

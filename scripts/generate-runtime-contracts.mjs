@@ -1,15 +1,16 @@
 #!/usr/bin/env node
-/** Generate concise runtime contracts from the canonical workflow spec. */
+/** Generate behavior-complete runtime contracts from canonical v4 sources. */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { compileRuntimeContracts } from '../framework/compiler/compile-runtime-contracts.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
+import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
 
 const root = repoRoot(import.meta.url);
 export function generatedRuntimeContracts() {
-  const spec = JSON.parse(readFileSync(resolve(root, 'workflow-specs/workflows.json'), 'utf8'));
-  return compileRuntimeContracts(spec).map((contract) => ({ path: `nova-plugin/runtime/contracts/${contract.id}.json`, content: `${JSON.stringify(contract, null, 2)}\n` }));
+  const { spec, behaviorSpec } = loadNovaWorkflowModel(root);
+  return compileRuntimeContracts(spec, behaviorSpec).map((contract) => ({ path: `nova-plugin/runtime/contracts/${contract.id}.json`, content: `${JSON.stringify(contract, null, 2)}\n` }));
 }
 export function checkOrWrite({ write = false } = {}) {
   const stale = [];
@@ -25,6 +26,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const args = process.argv.slice(2);
     if (args.some((arg) => arg !== '--write')) throw new Error('Usage: node scripts/generate-runtime-contracts.mjs [--write]');
     checkOrWrite({ write: args.includes('--write') });
-    console.log(args.includes('--write') ? 'Wrote concise runtime contracts' : 'OK concise runtime contracts');
+    console.log(args.includes('--write') ? 'Wrote behavior-complete runtime contracts' : 'OK behavior-complete runtime contracts');
   } catch (error) { console.error(`ERROR ${error.message}`); process.exitCode = 1; }
 }

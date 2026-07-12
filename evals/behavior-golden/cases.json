@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "executionMode": "deterministic-ir-golden",
+  "claimBoundary": "These cases measure structured behavior-IR completeness, alias/default resolution, and required contract signals. They do not measure model output quality.",
+  "cases": [
+    { "id": "route-explore-decision", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "investigate unknowns" }, "expectedDecisionRoute": "explore" },
+    { "id": "route-plan-decision", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "design migration" }, "expectedDecisionRoute": "produce-plan" },
+    { "id": "route-review-decision", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "audit a PR" }, "expectedDecisionRoute": "review" },
+    { "id": "route-implement-decision", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "apply approved plan" }, "expectedDecisionRoute": "implement-plan" },
+    { "id": "route-finalize-decision", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "prepare handoff" }, "expectedDecisionRoute": "finalize-work" },
+    { "id": "route-codex-decision", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "Codex review fix verify" }, "expectedDecisionRoute": "codex-review-fix" },
+    { "id": "route-default-depth", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "triage this" }, "expectedNormalized": { "DEPTH": "normal" } },
+    { "id": "route-request-alias", "suite": "route", "workflow": "route", "providedInputs": { "INPUT": "triage this" }, "expectedNormalized": { "REQUEST": "triage this" } },
+    { "id": "route-fixed-output", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "triage this" }, "expectedOutputOrder": ["Command", "Skill", "Core agent", "Capability packs", "Required inputs", "Validation expectations", "Fallback path"] },
+
+    { "id": "review-default-level", "suite": "review", "workflow": "review", "providedInputs": { "REVIEW_SCOPE": "diff" }, "expectedNormalized": { "LEVEL": "standard" }, "expectedDecisionRoute": "review-only" },
+    { "id": "review-scope-alias", "suite": "review", "workflow": "review", "providedInputs": { "INPUT": "diff" }, "expectedNormalized": { "REVIEW_SCOPE": "diff" } },
+    { "id": "review-lite-route", "suite": "review", "workflow": "review", "providedInputs": { "REVIEW_SCOPE": "diff", "LEVEL": "lite" }, "expectedDecisionRoute": "review-lite" },
+    { "id": "review-strict-route", "suite": "review", "workflow": "review", "providedInputs": { "REVIEW_SCOPE": "diff", "LEVEL": "strict" }, "expectedDecisionRoute": "review-strict" },
+    { "id": "review-invalid-level", "suite": "review", "workflow": "review", "providedInputs": { "REVIEW_SCOPE": "diff", "LEVEL": "extreme" }, "expectedInvalidInput": "LEVEL" },
+    { "id": "review-only-severity", "suite": "review", "workflow": "review-only", "providedInputs": { "REVIEW_SCOPE": "diff" }, "expectedSeverityLevels": ["Critical", "Major", "Minor"] },
+    { "id": "review-only-no-code", "suite": "review", "workflow": "review-only", "providedInputs": { "REVIEW_SCOPE": "diff" }, "expectedInvariantContains": "Do not write code" },
+    { "id": "review-lite-clean-output", "suite": "review", "workflow": "review-lite", "providedInputs": { "REVIEW_SCOPE": "diff" }, "expectedValidationContains": "No obvious issues found in this review scope." },
+    { "id": "review-strict-assumptions", "suite": "review", "workflow": "review-strict", "providedInputs": { "REVIEW_SCOPE": "diff" }, "expectedInvariantContains": "assumptions explicit" },
+
+    { "id": "implement-plan-approval", "suite": "implement", "workflow": "implement-plan", "providedInputs": { "PLAN_INPUT_PATH": "plan.md", "PLAN_APPROVED": true }, "expectedNormalized": { "PLAN_APPROVED": true } },
+    { "id": "implement-plan-string-approval", "suite": "implement", "workflow": "implement-plan", "providedInputs": { "PLAN_PATH": "plan.md", "APPROVED": "true" }, "expectedNormalized": { "PLAN_INPUT_PATH": "plan.md", "PLAN_APPROVED": "true" } },
+    { "id": "implement-plan-missing-approval", "suite": "implement", "workflow": "implement-plan", "providedInputs": { "PLAN_INPUT_PATH": "plan.md" }, "expectedMissingInput": "PLAN_APPROVED" },
+    { "id": "implement-plan-invalid-approval", "suite": "implement", "workflow": "implement-plan", "providedInputs": { "PLAN_INPUT_PATH": "plan.md", "PLAN_APPROVED": "yes" }, "expectedInvalidInput": "PLAN_APPROVED" },
+    { "id": "implement-plan-invalid-capitalized-false", "suite": "implement", "workflow": "implement-plan", "providedInputs": { "PLAN_INPUT_PATH": "plan.md", "PLAN_APPROVED": "False" }, "expectedInvalidInput": "PLAN_APPROVED" },
+    { "id": "implement-plan-invalid-uppercase-true", "suite": "implement", "workflow": "implement-plan", "providedInputs": { "PLAN_INPUT_PATH": "plan.md", "PLAN_APPROVED": "TRUE" }, "expectedInvalidInput": "PLAN_APPROVED" },
+    { "id": "implement-plan-deviation", "suite": "implement", "workflow": "implement-plan", "providedInputs": { "PLAN_INPUT_PATH": "plan.md", "PLAN_APPROVED": true }, "expectedDeviationMode": "approval-required" },
+    { "id": "implement-lite-task-alias", "suite": "implement", "workflow": "implement-lite", "providedInputs": { "TASK": "small fix" }, "expectedNormalized": { "REQUEST": "small fix" } },
+    { "id": "implement-lite-scope-stop", "suite": "implement", "workflow": "implement-lite", "providedInputs": { "REQUEST": "large redesign" }, "expectedStopContains": "no longer small or bounded" },
+    { "id": "implement-standard-steps-alias", "suite": "implement", "workflow": "implement-standard", "providedInputs": { "STEPS": "A then B" }, "expectedNormalized": { "REQUEST": "A then B" } },
+    { "id": "implement-standard-validation", "suite": "implement", "workflow": "implement-standard", "providedInputs": { "REQUEST": "A then B" }, "expectedOutputOrder": ["Implementation Summary", "Validation", "Deviations"] }
+  ]
+}

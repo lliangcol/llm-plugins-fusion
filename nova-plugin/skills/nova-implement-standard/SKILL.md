@@ -33,6 +33,20 @@ This file is the supporting behavioral contract for `/nova-plugin:implement-stan
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Execute confirmed implementation steps reliably with controlled scope and validation.
+- **Canonical inputs:** `REQUEST`(required aliases=STEPS,PLAN,STEPS/PLAN,TASK); `CONSTRAINTS`(optional aliases=BOUNDARIES)
+- **Decision entries:** 2.
+- **Workflow steps:** `confirm-basis` → `implement` → `handle-blockers` → `validate` → `summarize`
+- **Output:** mode=`workspace-and-chat`; order=`Implementation Summary` → `Validation` → `Deviations`; severity=none.
+- **Deviation/failure:** mode=`approval-required`; failure order=`status` → `completed steps` → `blocked step` → `blocker` → `safe next action`.
+- **Full IR:** `runtime/contracts/implement-standard.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### Purpose
 
 Implement reliably with scoped execution discipline.

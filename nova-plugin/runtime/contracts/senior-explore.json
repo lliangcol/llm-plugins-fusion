@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 2,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "senior-explore",
   "stage": "explore",
   "ownerAgents": [
@@ -48,9 +48,161 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "loadRequired": true,
-    "reference": "../../skills/nova-senior-explore/SKILL.md",
-    "conflictPolicy": "fail-closed"
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-senior-explore/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Conduct systematic analysis and optionally export an identical evidence-grounded analysis artifact.",
+    "inputs": [
+      {
+        "name": "INTENT",
+        "required": true,
+        "aliases": [
+          "REQUEST"
+        ],
+        "description": "Analysis goal."
+      },
+      {
+        "name": "CONTEXT",
+        "required": true,
+        "aliases": [
+          "INPUT",
+          "EVIDENCE"
+        ],
+        "description": "Logs, files, modules, documents, or other evidence."
+      },
+      {
+        "name": "CONSTRAINTS",
+        "required": false,
+        "aliases": [
+          "BOUNDARIES"
+        ],
+        "description": "Analysis scope boundaries."
+      },
+      {
+        "name": "DEPTH",
+        "required": false,
+        "aliases": [
+          "MODE"
+        ],
+        "description": "Analysis depth.",
+        "default": "normal",
+        "exactValues": [
+          "quick",
+          "normal",
+          "deep"
+        ]
+      },
+      {
+        "name": "EXPORT_PATH",
+        "required": false,
+        "aliases": [
+          "OUTPUT_PATH"
+        ],
+        "description": "Optional approved artifact path."
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "DEPTH equals quick.",
+        "action": "Perform surface-level analysis of obvious gaps."
+      },
+      {
+        "when": "DEPTH equals normal.",
+        "action": "Perform standard senior-level analysis."
+      },
+      {
+        "when": "DEPTH equals deep.",
+        "action": "Perform systematic analysis of edges, assumptions, and unknowns."
+      }
+    ],
+    "invariants": [
+      "Analysis only; do not propose solutions, fixes, architecture, or code.",
+      "Label facts, inferences, and assumptions.",
+      "When exported, artifact content must be identical to chat content."
+    ],
+    "stopConditions": [
+      "INTENT or CONTEXT is unresolved.",
+      "DEPTH is not an exact allowed value.",
+      "EXPORT_PATH is outside the approved artifact root.",
+      "The request requires solutioning or implementation."
+    ],
+    "workflowSteps": [
+      {
+        "id": "resolve-scope",
+        "action": "Resolve intent, context, constraints, depth, and optional export path."
+      },
+      {
+        "id": "analyze",
+        "action": "Analyze evidence at the exact selected depth."
+      },
+      {
+        "id": "label-evidence",
+        "action": "Label facts, inferences, assumptions, and missing information."
+      },
+      {
+        "id": "emit",
+        "action": "Produce the fixed three-section analysis."
+      },
+      {
+        "id": "export",
+        "action": "If requested, write byte-equivalent analysis content to EXPORT_PATH."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "forbid",
+      "instructions": "Do not convert analysis into recommendations, design, planning, or implementation."
+    },
+    "output": {
+      "mode": "artifact",
+      "fields": [
+        {
+          "name": "Key findings",
+          "required": true,
+          "description": "Facts and labeled inferences."
+        },
+        {
+          "name": "Open questions",
+          "required": true,
+          "description": "Missing information that blocks confidence."
+        },
+        {
+          "name": "Potential risks",
+          "required": true,
+          "description": "Risks from evidence, ambiguity, or system characteristics."
+        },
+        {
+          "name": "export artifact",
+          "required": false,
+          "description": "Optional content-identical file."
+        }
+      ],
+      "order": [
+        "Key findings",
+        "Open questions",
+        "Potential risks"
+      ],
+      "severityLevels": []
+    },
+    "validation": [
+      "Confirm all three chat fields appear in order.",
+      "Confirm no solution or recommendation language appears.",
+      "When EXPORT_PATH is used, confirm exported content is identical to chat content."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "missing input",
+        "allowed values",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "missing input",
+        "allowed values",
+        "safe next action"
+      ]
+    }
   },
-  "claimBoundary": "Machine-readable policy summary only; the referenced authored skill is required for complete workflow behavior."
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

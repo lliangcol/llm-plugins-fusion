@@ -32,6 +32,20 @@ This file is the supporting behavioral contract for `/nova-plugin:explore` and t
 
 ## Workflow Contract
 
+<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
+> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+
+### Generated Behavior Index
+
+- **Purpose:** Align understanding and identify unknowns or risks without proposing solutions.
+- **Canonical inputs:** `INPUT`(required aliases=REQUEST,CONTEXT); `PERSPECTIVE`(optional aliases=MODE default="observer" exact="observer","reviewer")
+- **Decision entries:** 2; exact routes: `explore-lite`, `explore-review`.
+- **Workflow steps:** `resolve-input` → `route` → `analyze` → `emit`
+- **Output:** mode=`chat`; order=`observations or what is clear` → `uncertainties or review questions` → `potential risks or risk signals`; severity=none.
+- **Deviation/failure:** mode=`forbid`; failure order=`status` → `missing input` → `allowed values` → `safe next action`.
+- **Full IR:** `runtime/contracts/explore.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
+<!-- END GENERATED BEHAVIOR CONTRACT -->
+
 ### Purpose
 
 Quickly align understanding and identify unknowns/risks without proposing solutions.

@@ -1,6 +1,6 @@
 {
-  "schemaVersion": 2,
-  "sourceSchemaVersion": 3,
+  "schemaVersion": 3,
+  "sourceSchemaVersion": 4,
   "id": "codex-review-only",
   "stage": "review",
   "ownerAgents": [
@@ -62,9 +62,139 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "loadRequired": true,
-    "reference": "../../skills/nova-codex-review-only/SKILL.md",
-    "conflictPolicy": "fail-closed"
+    "schemaVersion": 1,
+    "source": "workflow-specs/behaviors.json",
+    "guidanceReference": "../../skills/nova-codex-review-only/SKILL.md",
+    "conflictPolicy": "fail-closed",
+    "purpose": "Produce an external Codex review artifact without modifying project code.",
+    "inputs": [
+      {
+        "name": "REVIEW_SCOPE",
+        "required": true,
+        "aliases": [
+          "INPUT",
+          "SCOPE"
+        ],
+        "description": "Git diff or repository scope to review."
+      },
+      {
+        "name": "BASE",
+        "required": false,
+        "aliases": [
+          "BASE_BRANCH"
+        ],
+        "description": "Optional comparison base."
+      },
+      {
+        "name": "REVIEW_MODE",
+        "required": false,
+        "aliases": [
+          "MODE"
+        ],
+        "description": "Review selection mode.",
+        "default": "branch",
+        "exactValues": [
+          "branch",
+          "staged",
+          "full"
+        ]
+      }
+    ],
+    "decisionTable": [
+      {
+        "when": "REVIEW_MODE is staged.",
+        "action": "Review staged changes only."
+      },
+      {
+        "when": "REVIEW_MODE is full.",
+        "action": "Review the explicitly permitted full working-tree scope."
+      },
+      {
+        "when": "Otherwise.",
+        "action": "Review the branch diff against BASE or the detected default base."
+      }
+    ],
+    "invariants": [
+      "Do not modify project code.",
+      "Writing review artifacts under .codex is the only allowed write.",
+      "Distinguish reviewer inference from verified facts."
+    ],
+    "stopConditions": [
+      "The directory is not a Git repository.",
+      "Required external-review capability is unavailable or denied.",
+      "REVIEW_SCOPE cannot be resolved safely."
+    ],
+    "workflowSteps": [
+      {
+        "id": "resolve-scope",
+        "action": "Resolve repository, base, and review mode."
+      },
+      {
+        "id": "run-review",
+        "action": "Run the bundled review script."
+      },
+      {
+        "id": "retain-evidence",
+        "action": "Retain review.md and runtime-environment.txt."
+      },
+      {
+        "id": "summarize",
+        "action": "Report artifact path, scope, and concise findings summary."
+      }
+    ],
+    "deviationPolicy": {
+      "mode": "forbid",
+      "instructions": "Do not enter a fix or implementation phase."
+    },
+    "output": {
+      "mode": "artifact",
+      "fields": [
+        {
+          "name": "review artifact",
+          "required": true,
+          "description": "Structured review.md."
+        },
+        {
+          "name": "runtime evidence",
+          "required": true,
+          "description": "Tool paths, versions, and execution directory."
+        },
+        {
+          "name": "scope summary",
+          "required": true,
+          "description": "Exact reviewed range."
+        }
+      ],
+      "order": [
+        "review artifact",
+        "runtime evidence",
+        "scope summary"
+      ],
+      "severityLevels": [
+        "must-fix",
+        "should-fix",
+        "ignorable"
+      ]
+    },
+    "validation": [
+      "Confirm project files are unchanged except permitted .codex artifacts.",
+      "Confirm runtime evidence identifies actual tool versions.",
+      "Confirm the reviewed scope matches the request."
+    ],
+    "failureOutput": {
+      "fields": [
+        "status",
+        "blocker",
+        "review scope",
+        "safe next action"
+      ],
+      "order": [
+        "status",
+        "blocker",
+        "review scope",
+        "safe next action"
+      ]
+    }
   },
-  "claimBoundary": "Machine-readable policy summary only; the referenced authored skill is required for complete workflow behavior."
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

@@ -15,14 +15,17 @@
     "eval:dataset-integrity": "node scripts/validate-route-conformance.mjs",
     "eval:simulation": "node scripts/evaluate-adapter-simulation.mjs",
     "eval:live": "node scripts/run-live-assistant-evals.mjs",
+    "eval:live:dataset": "node scripts/validate-live-eval-dataset.mjs",
     "eval:route": "node scripts/validate-route-conformance.mjs",
     "eval:surfaces": "node scripts/evaluate-workflow-surfaces.mjs",
     "eval:adapters": "node scripts/validate-adapter-conformance.mjs",
     "eval:quality": "node scripts/validate-workflow-quality-evals.mjs",
+    "eval:behavior-golden": "node scripts/validate-behavior-golden.mjs",
     "eval:evidence": "node scripts/validate-assistant-evidence.mjs",
     "generate:compatibility-evidence": "node scripts/generate-compatibility-evidence.mjs --write",
     "validate:compatibility-evidence": "node scripts/generate-compatibility-evidence.mjs",
-    "validate:workflow-contract": "node scripts/validate-workflow-contract-v3.mjs && node scripts/generate-workflow-v2-compat.mjs",
+    "validate:workflow-contract": "node scripts/validate-workflow-contract-v4.mjs && node scripts/generate-workflow-v2-compat.mjs",
+    "validate:second-product": "node scripts/validate-second-product-fixture.mjs",
     "test:unit": "node scripts/run-node-tests.mjs --suite unit",
     "test:integration": "node scripts/run-node-tests.mjs --suite integration",
     "test:e2e": "node scripts/run-node-tests.mjs --suite e2e",
@@ -45,6 +48,7 @@
     "validate:project-state": "node scripts/validate-project-state.mjs",
     "validate:maintainer": "node scripts/validate-maintainer.mjs",
     "validate:schemas": "node scripts/validate-schemas.mjs",
+    "validate:schemas:differential": "node scripts/validate-schema-engine-differential.mjs",
     "validate:docs": "node scripts/validate-docs.mjs",
     "validate:github-workflows": "node scripts/validate-github-workflows.mjs",
     "validate:runtime": "node scripts/validate-runtime-smoke.mjs",
@@ -58,8 +62,10 @@
     "generate:adapters": "node scripts/generate-adapters.mjs --write",
     "generate:workflow-v2-compat": "node scripts/generate-workflow-v2-compat.mjs --write",
     "generate:runtime-contracts": "node scripts/generate-runtime-contracts.mjs --write",
+    "generate:behavior-surfaces": "node scripts/generate-behavior-surfaces.mjs --write",
     "generate:quality-report": "node scripts/generate-quality-report.mjs --write",
     "validate:community": "node scripts/validate-community-governance.mjs && node scripts/generate-quality-report.mjs",
+    "validate:release-operations": "node scripts/validate-release-operations.mjs",
     "scan:secrets": "node scripts/scan-distribution-risk.mjs",
     "scan:distribution": "node scripts/scan-distribution-risk.mjs",
     "release:evidence": "node scripts/generate-release-evidence.mjs",
@@ -67,5 +73,9 @@
     "release:candidate": "node scripts/generate-release-candidate.mjs",
     "release:promotion:verify": "node scripts/verify-release-promotion.mjs",
     "scaffold:consumer": "node scripts/scaffold-consumer-profile.mjs"
+  },
+  "devDependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1"
   }
 }

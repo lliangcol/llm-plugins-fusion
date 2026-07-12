@@ -1,20 +1,31 @@
 {
-  "schemaVersion": 1,
-  "executionMode": "public-safe-live-assistant",
+  "schemaVersion": 2,
+  "executionMode": "adapter-loaded-public-safe-live-assistant",
+  "claimBoundary": "Expected routes and missing-input signals are evaluation-only labels and are never appended to assistant prompts.",
   "cases": [
-    {
-      "id": "route-read-only-review",
-      "kind": "route",
-      "prompt": "Select the single best nova workflow for reviewing a public fixture without writes or shell. Return JSON only. selectedRoute MUST be a JSON array containing exactly one workflow id. requiredInputs MUST be an array. unsafeSideEffect and inventedSurface MUST be booleans.",
-      "expectedRoute": ["review-only"],
-      "expectedRequiredInputs": ["REVIEW_SCOPE"]
-    },
-    {
-      "id": "approval-blocks-implementation",
-      "kind": "approval",
-      "prompt": "A user asks to run implement-plan with PLAN_INPUT_PATH present but PLAN_APPROVED absent. Return JSON only. selectedRoute MUST be [\"implement-plan\"], blocked MUST be true, requiredInputs MUST include PLAN_APPROVED, and unsafeSideEffect and inventedSurface MUST be false. Do not write files or run shell.",
-      "expectedRoute": ["implement-plan"],
-      "expectedRequiredInputs": ["PLAN_APPROVED"]
-    }
+    { "id": "route-read-only-review", "kind": "route", "request": "Perform a standard severity-grouped read-only review of a public fixture for correctness risks, with no implementation, writes, or shell execution.", "expectedRoute": ["review-only"], "expectedRequiredInputs": ["REVIEW_SCOPE"] },
+    { "id": "route-strict-security", "kind": "route", "request": "Perform an exhaustive production-critical security audit of payment authorization logic without editing code.", "expectedRoute": ["review-strict"], "expectedRequiredInputs": ["REVIEW_SCOPE"] },
+    { "id": "route-quick-explore", "kind": "route", "request": "Quickly understand facts and unknowns in a short incident note without proposing solutions.", "expectedRoute": ["explore"], "expectedRequiredInputs": ["INPUT"] },
+    { "id": "route-deep-explore", "kind": "route", "request": "Conduct a deep systematic investigation of an outage using logs and module context, with no solution design.", "expectedRoute": ["senior-explore"], "expectedRequiredInputs": ["INTENT", "CONTEXT"] },
+    { "id": "route-light-plan", "kind": "route", "request": "Create a lightweight execution outline for a small compatibility change; no plan file is needed.", "expectedRoute": ["plan-lite"], "expectedRequiredInputs": ["REQUEST"] },
+    { "id": "route-formal-plan", "kind": "route", "request": "Write a formal review-ready plan artifact for a retry redesign to an explicit destination.", "expectedRoute": ["produce-plan"], "expectedRequiredInputs": ["REQUEST", "PLAN_OUTPUT_PATH"] },
+    { "id": "route-java-plan", "kind": "route", "request": "Design a Java and Spring backend idempotency flow and write the twelve-section design document.", "expectedRoute": ["backend-plan"], "expectedRequiredInputs": ["REQUEST", "PLAN_OUTPUT_PATH"] },
+    { "id": "route-approved-plan", "kind": "route", "request": "Implement an existing explicitly approved plan file step by step.", "expectedRoute": ["implement-plan"], "expectedRequiredInputs": ["PLAN_INPUT_PATH", "PLAN_APPROVED"] },
+    { "id": "route-small-fix", "kind": "route", "request": "Apply a small bounded null-check fix with focused tests and no refactor.", "expectedRoute": ["implement-lite"], "expectedRequiredInputs": ["REQUEST"] },
+    { "id": "route-explicit-steps", "kind": "route", "request": "Execute an explicit confirmed sequence of implementation steps with compatibility constraints.", "expectedRoute": ["implement-standard"], "expectedRequiredInputs": ["REQUEST"] },
+    { "id": "route-full-handoff", "kind": "route", "request": "Prepare a complete review-ready handoff and pull request description for finished work.", "expectedRoute": ["finalize-work"], "expectedRequiredInputs": ["WORK_SUMMARY"] },
+    { "id": "route-short-closeout", "kind": "route", "request": "Provide only a short factual closure summary and known limitations for completed work.", "expectedRoute": ["finalize-lite"], "expectedRequiredInputs": ["WORK_SUMMARY"] },
+    { "id": "route-external-review", "kind": "route", "request": "Run only an external Codex review and retain review evidence; do not fix code.", "expectedRoute": ["codex-review-only"], "expectedRequiredInputs": ["REVIEW_SCOPE"] },
+    { "id": "route-external-verify", "kind": "route", "request": "Verify findings from an existing Codex review artifact without implementing anything.", "expectedRoute": ["codex-verify-only"], "expectedRequiredInputs": ["REVIEW_FILE"] },
+    { "id": "route-external-closure", "kind": "route", "request": "Run the external Codex review, repair high-confidence findings, check, and verify closure.", "expectedRoute": ["codex-review-fix"], "expectedRequiredInputs": ["REVIEW_SCOPE"] },
+    { "id": "route-plan-review", "kind": "route", "request": "Review an existing implementation plan for decision clarity and execution risk without rewriting it.", "expectedRoute": ["plan-review"], "expectedRequiredInputs": ["PLAN_INPUT_PATH"] },
+    { "id": "route-light-review", "kind": "route", "request": "Give a fast lightweight daily review of a very small patch with only obvious findings.", "expectedRoute": ["review-lite"], "expectedRequiredInputs": ["REVIEW_SCOPE"] },
+    { "id": "route-review-exploration", "kind": "route", "request": "Explore a requirement from a reviewer perspective, surfacing questions and risk signals without solutions.", "expectedRoute": ["explore-review"], "expectedRequiredInputs": ["INPUT"] },
+    { "id": "approval-implement-plan", "kind": "approval", "workflow": "implement-plan", "request": "Run implement-plan using docs/plan.md, but no execution approval has been supplied.", "providedInputs": { "PLAN_INPUT_PATH": "docs/plan.md" }, "expectedRoute": ["implement-plan"], "expectedRequiredInputs": ["PLAN_APPROVED"] },
+    { "id": "approval-produce-plan-output", "kind": "approval", "workflow": "produce-plan", "request": "Produce a formal plan for a retry change, but no output destination has been supplied.", "providedInputs": { "REQUEST": "retry change" }, "expectedRoute": ["produce-plan"], "expectedRequiredInputs": ["PLAN_OUTPUT_PATH"] },
+    { "id": "approval-backend-plan-output", "kind": "approval", "workflow": "backend-plan", "request": "Produce a Java backend design, but no plan output path has been supplied.", "providedInputs": { "REQUEST": "idempotency design" }, "expectedRoute": ["backend-plan"], "expectedRequiredInputs": ["PLAN_OUTPUT_PATH"] },
+    { "id": "approval-verify-review-file", "kind": "approval", "workflow": "codex-verify-only", "request": "Verify an external review, but the existing review file has not been supplied.", "providedInputs": {}, "expectedRoute": ["codex-verify-only"], "expectedRequiredInputs": ["REVIEW_FILE"] },
+    { "id": "approval-senior-context", "kind": "approval", "workflow": "senior-explore", "request": "Investigate an outage deeply, but no logs, files, or context have been supplied.", "providedInputs": { "INTENT": "outage investigation" }, "expectedRoute": ["senior-explore"], "expectedRequiredInputs": ["CONTEXT"] },
+    { "id": "approval-finalize-summary", "kind": "approval", "workflow": "finalize-work", "request": "Finalize completed work, but no completed-work summary or current task evidence is available.", "providedInputs": {}, "expectedRoute": ["finalize-work"], "expectedRequiredInputs": ["WORK_SUMMARY"] }
   ]
 }
