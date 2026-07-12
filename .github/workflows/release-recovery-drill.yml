@@ -51,7 +51,7 @@ jobs:
           mapfile -t archives < <(find .metrics/recovery/bundle/artifacts -name 'nova-plugin-*.tar.gz' -type f ! -name '*candidate-bundle*' -print)
           test "${#archives[@]}" -eq 1
           archive="${archives[0]}"
-          gh attestation verify "${archive}" --repo "${GITHUB_REPOSITORY}" --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" --source-ref "refs/tags/${CANDIDATE_TAG}" --source-digest "${commit}"
+          gh attestation verify "${archive}" --repo "${GITHUB_REPOSITORY}" --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" --source-ref "refs/tags/${CANDIDATE_TAG}" --source-digest "${commit}" --predicate-type "https://cyclonedx.org/bom"
           stable_tag="${CANDIDATE_TAG%%-rc.*}"
           node scripts/verify-release-promotion.mjs --stable-tag "${stable_tag}" --candidate-tag "${CANDIDATE_TAG}" --commit "${commit}" --manifest .metrics/recovery/bundle/release-candidate.json --bundle-root .metrics/recovery/bundle --artifact-dir .metrics/recovery/bundle/artifacts
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7

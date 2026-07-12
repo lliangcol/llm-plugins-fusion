@@ -531,8 +531,11 @@ function validateWorkflowContracts() {
     if (!/uses:\s*\.\/\.github\/workflows\/promote-release\.yml/.test(releaseSrc)) {
       recordError(releaseFile, 'stable release trigger must delegate to promote-release.yml');
     }
-    if (!/if:\s*\$\{\{\s*!contains\(github\.ref_name, '-'\)\s*\}\}/.test(releaseSrc)) {
+    if (!/if:\s*\$\{\{\s*github\.event_name == 'push' && !contains\(github\.ref_name, '-'\)\s*\}\}/.test(releaseSrc)) {
       recordError(releaseFile, 'stable release trigger must reject prerelease tags');
+    }
+    if (!/workflow_dispatch:[\s\S]*stable-tag:[\s\S]*uses:\s*\.\/\.github\/workflows\/promote-release\.yml[\s\S]*release-tag:\s*\$\{\{\s*inputs\.stable-tag\s*\}\}/.test(releaseSrc)) {
+      recordError(releaseFile, 'stable release trigger must support forward recovery of an existing immutable stable tag');
     }
     const releaseJob = extractYamlBlock(
       releaseFile,
@@ -584,6 +587,7 @@ function validateWorkflowContracts() {
       [/gh release download "\$\{candidate_tag\}" --dir \.metrics\/promotion/, 'promotion must download existing candidate assets'],
       [/node scripts\/verify-release-promotion\.mjs[\s\S]*--manifest[\s\S]*--artifact-dir/, 'promotion must verify manifest, source, commit, and artifact digests'],
       [/gh attestation verify[\s\S]*--signer-workflow[\s\S]*--source-ref[\s\S]*--source-digest/, 'promotion must verify original candidate attestations and signer identity'],
+      [/--predicate-type\s+"https:\/\/cyclonedx\.org\/bom"/, 'promotion must verify the candidate archive as a CycloneDX SBOM attestation'],
       [/Extract verified candidate bundle with safe paths[\s\S]*tar -tzf[\s\S]*grep -Eq[\s\S]*tar -xzf/, 'promotion must verify archive paths before extracting the attested candidate bundle'],
       [/Rebuild candidate bytes for deterministic comparison only[\s\S]*npm run release:artifacts[\s\S]*cmp /, 'promotion must rebuild only for byte comparison against candidate artifacts'],
       [/node scripts\/prepare-release\.mjs/, 'promotion must prepare stable release metadata'],
