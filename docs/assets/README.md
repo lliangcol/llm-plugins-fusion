@@ -46,7 +46,7 @@ or mock command results.
 
 ### Install And Route
 
-1. Show `/plugin marketplace add lliangcol/llm-plugins-fusion@v3.1.0`.
+1. Show `/plugin marketplace add lliangcol/llm-plugins-fusion@v3.2.0`.
 2. Show `/plugin install nova-plugin@llm-plugins-fusion`.
 3. Show `/plugin` listing enough context to confirm installation.
 4. Show `/nova-plugin:route` with a redacted task and the recommended next workflow step.

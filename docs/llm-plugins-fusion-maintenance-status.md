@@ -7,7 +7,7 @@ Do not edit this block by hand. It is synchronized by
 `node scripts/sync-doc-facts.mjs --write` from repository domain sources and
 `governance/product-lanes.json`.
 
-- Plugin: `nova-plugin@3.1.0`; production plugins: 1; public path: `nova-plugin/`
+- Plugin: `nova-plugin@3.2.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
 - Workflow contract: schema v4, namespace `nova-plugin`, 21 workflows
@@ -67,8 +67,8 @@ and update this file after the source is corrected.
 - Skills: 21 files under `nova-plugin/skills/nova-*/SKILL.md`.
 - Active agents: 6 core files under `nova-plugin/agents/*.md`.
 - Capability packs: 8 documentation packs under `nova-plugin/packs/*/README.md`.
-- Main plugin version: `3.1.0`.
-- Prepared promotion baseline: exact release tag `v3.1.0`; moving `main` is not
+- Main plugin version: `3.2.0`.
+- Prepared promotion baseline: exact release tag `v3.2.0`; moving `main` is not
   stable release evidence.
 
 ## Key Directories

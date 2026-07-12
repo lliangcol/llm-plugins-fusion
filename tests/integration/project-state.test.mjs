@@ -23,7 +23,7 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
 test('project state is generated from current repository domain sources', async () => {
   const state = buildProjectState(root);
-  assert.equal(state.plugin.version, '3.1.0');
+  assert.equal(state.plugin.version, '3.2.0');
   assert.equal(state.runtime.node, '>=22');
   assert.equal(state.inventory.commands, 21);
   assert.equal(state.inventory.skills, 21);

@@ -2,7 +2,7 @@
   "plugins": [
     {
       "name": "nova-plugin",
-      "version": "3.1.0",
+      "version": "3.2.0",
       "trust-level": "author-verified",
       "risk-level": "medium",
       "deprecated": false,

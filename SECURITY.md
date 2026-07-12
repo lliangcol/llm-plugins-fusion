@@ -7,7 +7,7 @@ Do not edit this block by hand. It is synchronized by
 `node scripts/sync-doc-facts.mjs --write` from repository domain sources and
 `governance/product-lanes.json`.
 
-- Plugin: `nova-plugin@3.1.0`; production plugins: 1; public path: `nova-plugin/`
+- Plugin: `nova-plugin@3.2.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 21 skills, 6 active agents, 8 capability packs
 - Workflow contract: schema v4, namespace `nova-plugin`, 21 workflows
@@ -24,7 +24,7 @@ Do not edit this block by hand. It is synchronized by
 
 | 版本 | 安全修复 |
 | --- | --- |
-| 最新 MINOR 版本（当前 `3.1.x`） | ✅ |
+| 最新 MINOR 版本（当前 `3.2.x`） | ✅ |
 | 上一 MINOR 版本 | ⚠️ 仅高危漏洞 |
 | 更早版本 | ❌ |
 
