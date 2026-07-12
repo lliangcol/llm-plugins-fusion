@@ -31,6 +31,22 @@ test('release archive and CycloneDX evidence are deterministic', async (t) => {
   assert.equal(provenance.predicateType, 'https://slsa.dev/provenance/v1');
   assert.equal(provenance.subject[0].digest.sha256, left.archiveSha256);
   assert.equal(provenance.predicate.runDetails.byproducts[0].name, 'tree-manifest-v2');
+
+  const recoveryDir = await mkdtemp(join(tmpdir(), 'nova-release-artifacts-'));
+  t.after(() => rm(recoveryDir, { recursive: true, force: true }));
+  const recovery = buildReleaseArtifacts({
+    outDir: recoveryDir,
+    now,
+    env: {
+      GITHUB_REF_NAME: 'main',
+      GITHUB_SHA: 'b'.repeat(40),
+      RELEASE_TAG: 'v3.2.0-rc.3',
+      RELEASE_COMMIT: 'a'.repeat(40),
+    },
+  });
+  const recoveryProvenance = JSON.parse(await readFile(recovery.provenancePath, 'utf8'));
+  assert.equal(recoveryProvenance.predicate.buildDefinition.externalParameters.tag, 'v3.2.0-rc.3');
+  assert.equal(recoveryProvenance.predicate.buildDefinition.resolvedDependencies[0].digest.gitCommit, 'a'.repeat(40));
 });
 
 test('release artifact helpers cover long archive paths and CLI outcomes', () => {

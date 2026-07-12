@@ -82,7 +82,7 @@ function gitValue(root, args) {
   return result.status === 0 ? result.stdout.trim() : 'unknown';
 }
 
-export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/release-artifacts', now = () => new Date(0) } = {}) {
+export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/release-artifacts', now = () => new Date(0), env = process.env } = {}) {
   const pluginRoot = resolve(root, 'nova-plugin');
   const plugin = JSON.parse(readFileSync(resolve(pluginRoot, '.claude-plugin/plugin.json'), 'utf8'));
   const { knownGoodClaudeCli } = loadNovaWorkflowModel(root);
@@ -145,8 +145,8 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
   };
   const sbomPath = resolve(outputRoot, `${archiveName}.cdx.json`);
   writeFileSync(sbomPath, `${JSON.stringify(sbom, null, 2)}\n`, 'utf8');
-  const commit = process.env.GITHUB_SHA ?? gitValue(root, ['rev-parse', 'HEAD']);
-  const tag = process.env.GITHUB_REF_NAME ?? gitValue(root, ['describe', '--tags', '--exact-match', 'HEAD']);
+  const commit = env.RELEASE_COMMIT ?? env.GITHUB_SHA ?? gitValue(root, ['rev-parse', 'HEAD']);
+  const tag = env.RELEASE_TAG ?? env.GITHUB_REF_NAME ?? gitValue(root, ['describe', '--tags', '--exact-match', 'HEAD']);
   const provenance = {
     _type: 'https://in-toto.io/Statement/v1',
     subject: [{ name: archiveName, digest: { sha256: archiveSha256 } }],
