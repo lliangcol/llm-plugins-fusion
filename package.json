@@ -1,6 +1,6 @@
 {
   "name": "llm-plugins-fusion-maintenance",
-  "version": "3.0.1",
+  "version": "3.1.0",
   "private": true,
   "description": "Maintainer shortcuts for validating the llm-plugins-fusion repository.",
   "type": "module",
