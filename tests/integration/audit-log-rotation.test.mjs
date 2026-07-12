@@ -120,6 +120,18 @@ test('concurrent audit writers preserve every atomic spool record', async (t) =>
   assert.equal(new Set(records.map((record) => record.sequence)).size, 12);
 });
 
+test('audit compactor exits cleanly when another process owns the lock', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'nova-audit-locked-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(join(root, '.audit-compact.lock'));
+  const result = await runProcess('locked audit compaction', process.execPath, ['nova-plugin/hooks/scripts/audit-compactor.mjs'], {
+    cwd: repoRoot,
+    env: { ...process.env, CLAUDE_PLUGIN_DATA: root },
+  });
+  assert.equal(result.ok, true, result.stderr);
+  await assert.rejects(() => stat(join(root, 'audit.log')), { code: 'ENOENT' });
+});
+
 test('audit logger hashes paths outside the project root', async (t) => {
   const root = await mkdtemp(join(tmpdir(), 'nova-audit-external-'));
   t.after(() => rm(root, { recursive: true, force: true }));
