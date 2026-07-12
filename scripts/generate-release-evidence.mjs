@@ -228,6 +228,13 @@ export function buildReleaseEvidence({
 
   if (route) {
     if (route.projectChanged !== false || route.gitStatus !== '') throw new Error('route smoke reports project changes');
+    if (
+      ![0, 1].includes(route.processExitCode)
+      || (route.processExitCode === 0 && route.processCompletion !== 'zero-exit')
+      || (route.processExitCode === 1 && route.processCompletion !== 'claude-json-success-completed')
+    ) {
+      throw new Error('route smoke does not prove a recognized completed process state');
+    }
     if (route.authenticationMode !== 'claude-code-oauth-token') {
       throw new Error('route smoke does not prove Claude Code OAuth authentication');
     }
@@ -340,6 +347,8 @@ export function buildReleaseEvidence({
       systemPromptSha256: route.systemPromptSha256,
       maxTurns: route.maxTurns,
       outputStructureValid: route.outputStructureValid,
+      processExitCode: route.processExitCode,
+      processCompletion: route.processCompletion,
       projectChanged: route.projectChanged,
       gitStatus: route.gitStatus,
       commands: route.commands,

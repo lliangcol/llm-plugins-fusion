@@ -122,6 +122,9 @@ function verifyEvidenceRecord(root, bundleRoot, record, candidate) {
     }
     if (record.kind === 'route-smoke' && (
       data.outputStructureValid !== true
+      || ![0, 1].includes(data.processExitCode)
+      || (data.processExitCode === 0 && data.processCompletion !== 'zero-exit')
+      || (data.processExitCode === 1 && data.processCompletion !== 'claude-json-success-completed')
       || data.projectChanged !== false
       || data.gitStatus !== ''
       || data.authenticationMode !== 'claude-code-oauth-token'

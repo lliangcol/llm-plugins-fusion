@@ -17,6 +17,7 @@ import {
   routeOutputShape,
   routeSystemPrompt,
   routeValidationFailureCode,
+  successfulRouteResponse,
   validateRouteResult,
 } from '../../scripts/validate-plugin-route-live.mjs';
 
@@ -255,4 +256,23 @@ test('OAuth route failures report safe permission diagnostics without model outp
   });
   assert.equal(fallback, 'exit=unknown processError=spawn failed stderrPresent=true');
   assert.doesNotMatch(fallback, /sensitive diagnostic/);
+});
+
+test('OAuth route completion accepts only zero-exit or explicit Claude success JSON', () => {
+  const result = 'strict route result';
+  assert.equal(successfulRouteResponse({
+    code: 0, timedOut: false, signal: null, stderr: '',
+    stdout: JSON.stringify({ result }),
+  }).result, result);
+  assert.equal(successfulRouteResponse({
+    code: 1, timedOut: false, signal: null, stderr: '',
+    stdout: JSON.stringify({ subtype: 'success', terminal_reason: 'completed', result, permission_denials: [] }),
+  }).result, result);
+  for (const invocation of [
+    { code: 2, timedOut: false, signal: null, stderr: '', stdout: JSON.stringify({ subtype: 'success', terminal_reason: 'completed', result }) },
+    { code: 1, timedOut: false, signal: null, stderr: 'error', stdout: JSON.stringify({ subtype: 'success', terminal_reason: 'completed', result }) },
+    { code: 1, timedOut: false, signal: null, stderr: '', stdout: JSON.stringify({ subtype: 'error_max_turns', terminal_reason: 'max_turns', result }) },
+    { code: 1, timedOut: false, signal: null, stderr: '', stdout: JSON.stringify({ subtype: 'success', terminal_reason: 'completed', result, is_error: true }) },
+    { code: 1, timedOut: false, signal: null, stderr: '', stdout: JSON.stringify({ subtype: 'success', terminal_reason: 'completed', result, permission_denials: [{}] }) },
+  ]) assert.equal(successfulRouteResponse(invocation), null);
 });

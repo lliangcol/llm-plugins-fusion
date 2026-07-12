@@ -268,6 +268,25 @@ export function routeFailureDetails(invocation) {
   return details.join(' ');
 }
 
+export function successfulRouteResponse(invocation) {
+  if (invocation.timedOut || invocation.signal || ![0, 1].includes(invocation.code)) return null;
+  if (invocation.stderr?.trim()) return null;
+  let response;
+  try {
+    response = JSON.parse(invocation.stdout ?? '');
+  } catch {
+    return null;
+  }
+  if (typeof response.result !== 'string') return null;
+  if (Array.isArray(response.permission_denials) && response.permission_denials.length) return null;
+  if (response.is_error === true) return null;
+  if (invocation.code === 1 && (
+    response.subtype !== 'success'
+    || response.terminal_reason !== 'completed'
+  )) return null;
+  return response;
+}
+
 async function gitStatus(cwd, env) {
   const result = await captureProcess('route smoke git status', 'git', ['status', '--short'], {
     cwd,
@@ -308,16 +327,10 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       env: routeEnv,
       timeoutMs: 300_000,
     });
-    if (!invocation.ok) {
+    const response = successfulRouteResponse(invocation);
+    if (!response) {
       throw new Error(`OAuth route invocation failed: ${routeFailureDetails(invocation)}`);
     }
-    let response;
-    try {
-      response = JSON.parse(invocation.stdout);
-    } catch (error) {
-      throw new Error(`route output was not JSON: ${error.message}`);
-    }
-    if (typeof response.result !== 'string') throw new Error('route JSON output is missing result text');
     let validation;
     try {
       validation = validateRouteResult(response.result, routeInventory);
@@ -347,6 +360,8 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       outputContract: routeOutputContract.id,
       systemPromptSha256: routeSystemPromptSha256,
       maxTurns: routeMaxTurns,
+      processExitCode: invocation.code,
+      processCompletion: invocation.code === 0 ? 'zero-exit' : 'claude-json-success-completed',
       outputStructureValid: true,
       commands: validation.commandMatches,
       skills: validation.skills,
