@@ -28,7 +28,9 @@ jobs:
           fetch-depth: 0
       - name: Stage reviewed recovery verifier control
         if: ${{ inputs.release-tag != '' }}
-        run: cp scripts/lib/release-candidate.mjs "${RUNNER_TEMP}/release-candidate.mjs"
+        run: |
+          cp scripts/lib/release-candidate.mjs "${RUNNER_TEMP}/release-candidate.mjs"
+          cp scripts/build-release-artifacts.mjs "${RUNNER_TEMP}/build-release-artifacts.mjs"
       - name: Check out immutable stable release source
         if: ${{ inputs.release-tag != '' }}
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
@@ -37,7 +39,9 @@ jobs:
           ref: ${{ inputs.release-tag }}
       - name: Restore reviewed recovery verifier control
         if: ${{ inputs.release-tag != '' }}
-        run: cp "${RUNNER_TEMP}/release-candidate.mjs" scripts/lib/release-candidate.mjs
+        run: |
+          cp "${RUNNER_TEMP}/release-candidate.mjs" scripts/lib/release-candidate.mjs
+          cp "${RUNNER_TEMP}/build-release-artifacts.mjs" scripts/build-release-artifacts.mjs
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
@@ -138,8 +142,8 @@ jobs:
           --artifact-dir .metrics/promotion/bundle/artifacts
       - name: Rebuild candidate bytes for deterministic comparison only
         env:
-          GITHUB_REF_NAME: ${{ steps.candidate.outputs.candidate_tag }}
-          GITHUB_SHA: ${{ steps.release.outputs.commit }}
+          RELEASE_TAG: ${{ steps.candidate.outputs.candidate_tag }}
+          RELEASE_COMMIT: ${{ steps.release.outputs.commit }}
         run: |
           npm run release:artifacts
           cmp .metrics/release-artifacts/nova-plugin-*.tar.gz .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz
