@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Fixed
 - Fixed stable release display names that could render as `vv<version>` and removed non-portable `file:` URL `.pathname` handling from maintenance scripts and tests.
 - Removed duplicate hard-coding of the known-good Claude CLI from release evidence generation; the workflow specification remains the single source.
+- Reconciled Claude Code 2.1.205 route runs that return exit 1 alongside an explicit `success`/`completed` JSON result; acceptance remains fail-closed on stderr, permission denials, malformed output, contract drift, or project writes, and the observed process state is now bound into candidate evidence.
 
 ## [3.1.0] - 2026-07-12
 
