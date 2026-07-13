@@ -25,6 +25,7 @@ const explicit = [
   'schemas/release-candidate.schema.json',
   'schemas/promotion-intent.schema.json',
   'schemas/release-event.schema.json',
+  'schemas/release-ledger.schema.json',
   'schemas/control-bundle.schema.json',
   'workflow-specs/framework.json',
   'workflow-specs/nova.product.json',
@@ -33,6 +34,8 @@ const explicit = [
   'tests/integration/release-candidate.test.mjs',
   'tests/unit/release-artifacts.test.mjs',
   'tests/unit/release-state-machine.test.mjs',
+  'tests/unit/release-ledger.test.mjs',
+  'tests/integration/release-recovery.test.mjs',
 ];
 
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');

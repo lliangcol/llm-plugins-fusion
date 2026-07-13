@@ -16,13 +16,12 @@ permissions:
   contents: read
 
 jobs:
-  promote:
-    name: Promote Exact Candidate Through Release State Machine
+  verify:
+    name: Verify Exact Candidate And Build Digest-Bound Handoff
     runs-on: ubuntu-24.04
     timeout-minutes: 25
-    environment: release
     permissions:
-      contents: write
+      contents: read
       checks: read
       id-token: write
       attestations: write
@@ -54,7 +53,7 @@ jobs:
           test "${stable_commit}" = "$(git rev-list -n 1 "${CANDIDATE_TAG}")"
           test "${stable_commit}" = "$(git rev-parse HEAD)"
           printf 'commit=%s\n' "${stable_commit}" >> "${GITHUB_OUTPUT}"
-      - name: Download exact authenticated candidate bundle
+      - name: Download and verify exact candidate bundle
         env:
           GH_TOKEN: ${{ github.token }}
           CANDIDATE_TAG: ${{ inputs.candidate-tag }}
@@ -77,68 +76,89 @@ jobs:
           SOURCE_COMMIT: ${{ steps.identity.outputs.commit }}
         run: |
           node scripts/verify-release-promotion.mjs \
-            --stable-tag "${STABLE_TAG}" \
-            --candidate-tag "${CANDIDATE_TAG}" \
-            --commit "${SOURCE_COMMIT}" \
+            --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --commit "${SOURCE_COMMIT}" \
             --manifest .metrics/promotion/bundle/release-candidate.json \
             --candidate-core .metrics/promotion/bundle/candidate-core.json \
             --promotion-intent .metrics/promotion/bundle/promotion-intent.json \
             --control-bundle-manifest .metrics/promotion/bundle/release-control-bundle.manifest.json \
-            --bundle-root .metrics/promotion/bundle \
-            --artifact-dir .metrics/promotion/bundle/artifacts
+            --bundle-root .metrics/promotion/bundle --artifact-dir .metrics/promotion/bundle/artifacts
           node scripts/release-orchestrator.mjs --mode promote --state DRAFT --target-state ASSETS_RECONCILED \
             --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}" \
             --promotion-intent .metrics/promotion/bundle/promotion-intent.json \
             --control-bundle .metrics/promotion/bundle/release-control-bundle.manifest.json \
             --event-dir .metrics/promotion/events --run-id "${GITHUB_RUN_ID}"
-      - name: Prepare draft release asset inventory
+      - name: Prepare immutable publication handoff
         env:
           RELEASE_TAG: ${{ inputs.release-tag }}
         run: |
           set -euo pipefail
           node scripts/prepare-release.mjs
-          mkdir -p .metrics/promotion/publish
-          cp .metrics/promotion/candidate-bundle.tar.gz .metrics/promotion/publish/
-          cp .metrics/promotion/bundle/artifacts/* .metrics/promotion/publish/
-          cp .metrics/promotion/bundle/evidence/* .metrics/promotion/publish/
-          cp .metrics/promotion/bundle/candidate-core.json .metrics/promotion/publish/
-          cp .metrics/promotion/bundle/promotion-intent.json .metrics/promotion/publish/
-          cp .metrics/promotion/bundle/release-candidate.json .metrics/promotion/publish/
-          cp .metrics/promotion/bundle/release-control-bundle.* .metrics/promotion/publish/
+          handoff=.metrics/promotion/handoff
+          mkdir -p "${handoff}/publish" "${handoff}/scripts/lib" "${handoff}/events"
+          cp .metrics/promotion/candidate-bundle.tar.gz "${handoff}/publish/"
+          cp .metrics/promotion/bundle/artifacts/* "${handoff}/publish/"
+          cp .metrics/promotion/bundle/evidence/* "${handoff}/publish/"
+          cp .metrics/promotion/bundle/candidate-core.json .metrics/promotion/bundle/promotion-intent.json .metrics/promotion/bundle/release-candidate.json .metrics/promotion/bundle/release-control-bundle.* "${handoff}/publish/"
+          cp .metrics/release/release-notes.md "${handoff}/release-notes.md"
+          cp .metrics/promotion/bundle/promotion-intent.json .metrics/promotion/bundle/release-control-bundle.manifest.json "${handoff}/"
+          cp .metrics/promotion/events/* "${handoff}/events/"
+          cp scripts/reconcile-github-release.mjs scripts/release-orchestrator.mjs "${handoff}/scripts/"
+          cp scripts/lib/canonical-json.mjs scripts/lib/cli-args.mjs scripts/lib/release-state-machine.mjs "${handoff}/scripts/lib/"
+          (cd "${handoff}" && find . -type f ! -name handoff.sha256 -print0 | sort -z | xargs -0 sha256sum > handoff.sha256)
       - name: Resolve promoted archive and build SBOM
         id: release-files
         run: |
           shopt -s nullglob
-          archives=(.metrics/promotion/publish/nova-plugin-*.tar.gz)
+          archives=(.metrics/promotion/handoff/publish/nova-plugin-*.tar.gz)
           filtered=()
           for archive in "${archives[@]}"; do [[ "${archive}" == *candidate-bundle* ]] || filtered+=("${archive}"); done
           test "${#filtered[@]}" -eq 1
-          archive="${filtered[0]}"
-          printf 'archive=%s\n' "${archive}" >> "${GITHUB_OUTPUT}"
-          printf 'sbom=%s\n' '.metrics/promotion/publish/build-sbom.cdx.json' >> "${GITHUB_OUTPUT}"
+          printf 'archive=%s\n' "${filtered[0]}" >> "${GITHUB_OUTPUT}"
+          printf 'sbom=%s\n' '.metrics/promotion/handoff/publish/build-sbom.cdx.json' >> "${GITHUB_OUTPUT}"
       - name: Attest promoted archive and build SBOM
         uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
         with:
           subject-path: ${{ steps.release-files.outputs.archive }}
           sbom-path: ${{ steps.release-files.outputs.sbom }}
-      - name: Draft, reconcile, verify, and publish release transaction
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: verified-promotion-handoff-${{ inputs.release-tag }}
+          path: .metrics/promotion/handoff/
+          include-hidden-files: true
+          if-no-files-found: error
+
+  publish:
+    name: Publish Exact Verified Handoff
+    needs: verify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    environment: release
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v8
+        with:
+          name: verified-promotion-handoff-${{ inputs.release-tag }}
+          path: handoff
+      - name: Verify digest-bound handoff
+        run: cd handoff && sha256sum -c handoff.sha256
+      - name: Publish release transaction
         env:
           GH_TOKEN: ${{ github.token }}
           STABLE_TAG: ${{ inputs.release-tag }}
-        run: node scripts/reconcile-github-release.mjs --tag "${STABLE_TAG}" --assets-dir .metrics/promotion/publish --notes .metrics/release/release-notes.md
-      - name: Record release published transition
-        env:
-          STABLE_TAG: ${{ inputs.release-tag }}
           CANDIDATE_TAG: ${{ inputs.candidate-tag }}
-          SOURCE_COMMIT: ${{ steps.identity.outputs.commit }}
         run: |
-          node scripts/release-orchestrator.mjs --mode promote --state ASSETS_RECONCILED --target-state RELEASE_PUBLISHED \
-            --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}" \
-            --promotion-intent .metrics/promotion/bundle/promotion-intent.json \
-            --control-bundle .metrics/promotion/bundle/release-control-bundle.manifest.json \
-            --event-dir .metrics/promotion/events --run-id "${GITHUB_RUN_ID}"
+          set -euo pipefail
+          source_commit="$(node -e "const i=require('./handoff/promotion-intent.json'); process.stdout.write(i.sourceCommit)")"
+          node handoff/scripts/reconcile-github-release.mjs --tag "${STABLE_TAG}" --assets-dir handoff/publish --notes handoff/release-notes.md
+          node handoff/scripts/release-orchestrator.mjs --mode promote --state ASSETS_RECONCILED --target-state RELEASE_PUBLISHED \
+            --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${source_commit}" \
+            --promotion-intent handoff/promotion-intent.json --control-bundle handoff/release-control-bundle.manifest.json \
+            --event-dir handoff/events --run-id "${GITHUB_RUN_ID}"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
           name: release-state-events-${{ inputs.release-tag }}
-          path: .metrics/promotion/events/
+          path: handoff/events/
+          include-hidden-files: true
+          if-no-files-found: error
