@@ -19,6 +19,30 @@
       "source": "nova-plugin/runtime/secret-rules.mjs",
       "killed": true,
       "reason": "secret not detected"
+    },
+    {
+      "id": "trusted-review-allowlist-disabled",
+      "source": "scripts/lib/release-review.mjs",
+      "killed": true,
+      "reason": "untrusted reviewer accepted"
+    },
+    {
+      "id": "release-ledger-digest-check-disabled",
+      "source": "scripts/lib/release-state-machine.mjs",
+      "killed": true,
+      "reason": "tampered ledger accepted"
+    },
+    {
+      "id": "unavailable-eval-metric-coerced-to-zero",
+      "source": "scripts/evaluate-paired-live.mjs",
+      "killed": true,
+      "reason": "unavailable metric coerced to zero"
+    },
+    {
+      "id": "git-injection-argument-check-disabled",
+      "source": "nova-plugin/hooks/scripts/pre-bash-check.mjs",
+      "killed": true,
+      "reason": "git config injection accepted"
     }
   ],
   "score": 1,

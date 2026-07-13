@@ -68,3 +68,16 @@ test('Bash policy rejects workspace PATH shadowing', (t) => {
   assert.equal(decision.allowed, false);
   assert.match(decision.reasons.join(' '), /inside the workspace/u);
 });
+
+test('Bash policy fails closed for missing executables and unknown rule types', (t) => {
+  const workspace = mkdtempSync(resolve(tmpdir(), 'nova-shell-missing-'));
+  const emptyPath = resolve(workspace, 'empty-bin');
+  t.after(() => rmSync(workspace, { recursive: true, force: true }));
+  mkdirSync(emptyPath);
+  const missing = authorizeBashCommand('git status', { workspaceRoot: workspace, env: { ...process.env, PATH: emptyPath } });
+  assert.equal(missing.allowed, false);
+  assert.match(missing.reasons.join(' '), /not found on PATH/u);
+  const unknownPolicy = { maxCommandBytes: 1000, projectPolicyPath: '.nova/missing.json', rules: [{ id: 'future', type: 'future-rule' }] };
+  const unknown = authorizeBashCommand('git status', { workspaceRoot: workspace, basePolicy: unknownPolicy });
+  assert.equal(unknown.allowed, false);
+});

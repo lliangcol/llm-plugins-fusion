@@ -14,6 +14,10 @@ const files = [
   'tests/integration/pre-write-hook.test.mjs',
   'tests/integration/post-write-verify.test.mjs',
   'tests/integration/release-candidate.test.mjs',
+  'tests/integration/release-recovery.test.mjs',
+  'tests/integration/independent-release-review.test.mjs',
+  'tests/integration/live-eval-proof.test.mjs',
+  'tests/unit/bash-command-policy.test.mjs',
 ];
 export function main(args = process.argv.slice(2), runner = spawnSync) {
   if (args.includes('--help') || args.includes('-h')) {
