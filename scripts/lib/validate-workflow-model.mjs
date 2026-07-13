@@ -1,8 +1,7 @@
 import assert from 'node:assert/strict';
 import { loadNovaWorkflowModel } from './workflow-model.mjs';
 
-export function validateWorkflowModel(root) {
-  const { spec, product, framework, adapters, behaviorSpec } = loadNovaWorkflowModel(root);
+export function validateCompiledWorkflowModel({ spec, product, framework, adapters, behaviorSpec }) {
   const permissionStates = new Set(framework.permissionStates);
   const policyKeys = framework.permissionPolicyKeys;
   assert.equal(spec.schemaVersion, 5);
@@ -40,5 +39,14 @@ export function validateWorkflowModel(root) {
   }
   for (const id of spec.primaryEntrypoints) assert.equal(ids.has(id), true, `unknown primary entrypoint ${id}`);
   if (product.pluginNamespace === 'nova-plugin') assert.deepEqual([...canonicalSurfaces].sort(), ['explore', 'finalize-work', 'implement-plan', 'produce-plan', 'review', 'route']);
+  if (product.pluginNamespace === 'nova-plugin') {
+    const workflows = new Map(spec.workflows.map((workflow) => [workflow.id, workflow]));
+    assert.equal(workflows.get('review')?.permissionProfile, 'read-only', 'review: canonical local review must use the read-only profile');
+    assert.equal(workflows.get('implement-plan')?.permissionProfile, 'implementation', 'implement-plan: canonical local implementation must use the implementation profile');
+  }
   return { workflows: spec.workflows.length, adapters: adapters.length, permissionProfiles: Object.keys(spec.permissionProfiles).length };
+}
+
+export function validateWorkflowModel(root) {
+  return validateCompiledWorkflowModel(loadNovaWorkflowModel(root));
 }

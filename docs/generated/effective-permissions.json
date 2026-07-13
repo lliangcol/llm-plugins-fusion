@@ -448,11 +448,10 @@
       "disallowedTools": [
         "Write",
         "Edit",
-        "NotebookEdit"
-      ],
-      "permissionPromptTools": [
+        "NotebookEdit",
         "Bash"
       ],
+      "permissionPromptTools": [],
       "compatibility": null
     },
     {
@@ -471,11 +470,10 @@
       "disallowedTools": [
         "Write",
         "Edit",
-        "NotebookEdit"
-      ],
-      "permissionPromptTools": [
+        "NotebookEdit",
         "Bash"
       ],
+      "permissionPromptTools": [],
       "compatibility": null
     },
     {

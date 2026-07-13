@@ -33,8 +33,8 @@ const mapping = Object.freeze({
 });
 const canonicalPolicy = Object.freeze({
   explore: { permissionProfile: 'read-only', risk: 'none' },
-  review: { permissionProfile: 'external-review-read-only', risk: 'none' },
-  'implement-plan': { permissionProfile: 'external-review-implementation', risk: 'medium' },
+  review: { permissionProfile: 'read-only', risk: 'none' },
+  'implement-plan': { permissionProfile: 'implementation', risk: 'medium' },
 });
 
 export function migrate(spec) {

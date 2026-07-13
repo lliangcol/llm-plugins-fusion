@@ -849,7 +849,7 @@
       "risk": "medium",
       "modelInvocable": false,
       "subagentSafe": true,
-      "permissionProfile": "external-review-implementation",
+      "permissionProfile": "implementation",
       "legacyAlias": "nova-implement-plan",
       "contractPath": "skills/nova-implement-plan/SKILL.md",
       "compatibility": "Designed for Claude Code; project validation through Bash follows the normal permission flow.",
@@ -884,16 +884,12 @@
         }
       ],
       "effects": [
-        "credentials",
-        "network",
         "shell",
         "workspace-read",
         "workspace-write"
       ],
-      "authorizationProfile": "external-review-implementation",
+      "authorizationProfile": "implementation",
       "enforcementRequirements": [
-        "enforce:credentials",
-        "enforce:network",
         "enforce:shell",
         "enforce:workspace-read",
         "enforce:workspace-write"
@@ -905,7 +901,7 @@
       ],
       "compatibilityProjection": {
         "sourceVersion": 5,
-        "permissionProfile": "external-review-implementation",
+        "permissionProfile": "implementation",
         "requiredInputs": [
           "PLAN_INPUT_PATH",
           "PLAN_APPROVED"
@@ -1189,7 +1185,7 @@
       "risk": "none",
       "modelInvocable": true,
       "subagentSafe": true,
-      "permissionProfile": "external-review-read-only",
+      "permissionProfile": "read-only",
       "legacyAlias": "nova-review",
       "contractPath": "skills/nova-review/SKILL.md",
       "canonicalSurfaceId": "review",
@@ -1213,16 +1209,10 @@
         }
       ],
       "effects": [
-        "credentials",
-        "network",
-        "shell",
         "workspace-read"
       ],
-      "authorizationProfile": "external-review-read-only",
+      "authorizationProfile": "read-only",
       "enforcementRequirements": [
-        "enforce:credentials",
-        "enforce:network",
-        "enforce:shell",
         "enforce:workspace-read"
       ],
       "evidenceRequirements": [
@@ -1232,7 +1222,7 @@
       ],
       "compatibilityProjection": {
         "sourceVersion": 5,
-        "permissionProfile": "external-review-read-only",
+        "permissionProfile": "read-only",
         "requiredInputs": [
           "REVIEW_SCOPE"
         ]

@@ -49,16 +49,12 @@
     }
   ],
   "effects": [
-    "credentials",
-    "network",
     "shell",
     "workspace-read",
     "workspace-write"
   ],
-  "authorizationProfile": "external-review-implementation",
+  "authorizationProfile": "implementation",
   "enforcementRequirements": [
-    "enforce:credentials",
-    "enforce:network",
     "enforce:shell",
     "enforce:workspace-read",
     "enforce:workspace-write"
@@ -85,8 +81,8 @@
     "workspaceRead": "preapproved",
     "workspaceWrite": "preapproved",
     "shell": "prompt",
-    "network": "prompt",
-    "credentials": "explicit",
+    "network": "denied",
+    "credentials": "denied",
     "userScopeMutation": "denied",
     "externalPublish": "denied",
     "gitHistoryMutation": "denied"

@@ -7,9 +7,27 @@ import {
   buildEffectivePermissions,
   generateWorkflowPermissionFiles,
 } from '../../scripts/generate-workflow-permissions.mjs';
+import { loadNovaWorkflowModel } from '../../scripts/lib/workflow-model.mjs';
+import { validateCompiledWorkflowModel } from '../../scripts/lib/validate-workflow-model.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '../..');
+
+test('canonical permissions reject overgrant and undergrant', () => {
+  const overgranted = structuredClone(loadNovaWorkflowModel(root));
+  overgranted.spec.workflows.find(({ id }) => id === 'review').permissionProfile = 'external-review-read-only';
+  assert.throws(
+    () => validateCompiledWorkflowModel(overgranted),
+    /review: canonical local review must use the read-only profile/,
+  );
+
+  const undergranted = structuredClone(loadNovaWorkflowModel(root));
+  undergranted.spec.workflows.find(({ id }) => id === 'implement-plan').permissionProfile = 'read-only';
+  assert.throws(
+    () => validateCompiledWorkflowModel(undergranted),
+    /implement-plan: canonical local implementation must use the implementation profile/,
+  );
+});
 
 test('workflow permission source defines the 21-command plus six-skill runtime surface', async () => {
   const spec = JSON.parse(await readFile(
@@ -54,7 +72,7 @@ test('workflow classes retain the native permission contract', async () => {
   };
 
   assertTools(
-    ['explore', 'explore-lite', 'explore-review', 'plan-lite', 'plan-review', 'review-lite', 'review-only', 'review-strict', 'route', 'finalize-lite'],
+    ['explore', 'explore-lite', 'explore-review', 'plan-lite', 'plan-review', 'review', 'review-lite', 'review-only', 'review-strict', 'route', 'finalize-lite'],
     ['Read', 'Glob', 'Grep'],
     ['Write', 'Edit', 'NotebookEdit', 'Bash'],
     true,
@@ -72,13 +90,13 @@ test('workflow classes retain the native permission contract', async () => {
     false,
   );
   assertTools(
-    ['review'],
-    ['Read', 'Glob', 'Grep'],
-    ['Write', 'Edit', 'NotebookEdit'],
-    true,
+    ['implement-lite', 'implement-plan', 'implement-standard'],
+    ['Read', 'Glob', 'Grep', 'Write', 'Edit'],
+    ['NotebookEdit'],
+    false,
   );
   assertTools(
-    ['implement-lite', 'implement-plan', 'implement-standard', 'codex-review-fix'],
+    ['codex-review-fix'],
     ['Read', 'Glob', 'Grep', 'Write', 'Edit'],
     ['NotebookEdit'],
     false,
