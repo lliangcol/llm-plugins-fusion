@@ -9,6 +9,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { basename, dirname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { checkOrWrite as checkPromptSurfaceReport, validatePromptSurfaceBudgets } from './generate-prompt-surface-report.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -143,6 +144,8 @@ function validate() {
 }
 
 const result = validate();
+const promptReport = checkPromptSurfaceReport();
+result.errors.push(...validatePromptSurfaceBudgets(promptReport));
 for (const warning of result.warnings) console.warn(`WARNING ${warning}`);
 if (result.errors.length) {
   console.error(`Surface budget validation failed (${result.errors.length} finding${result.errors.length === 1 ? '' : 's'}):`);

@@ -3,10 +3,13 @@
   "schemaVersion": 1,
   "generatedFrom": "static adapter declarations plus digest-bound evals/evidence records",
   "sourceDigests": {
-    "workflow-specs/workflows.json": "c6dfaf7c60184db60c55e7e45ddce08d0c1d9beb29ea72232baac4f4695ebb9e",
-    "adapters/claude/manifest.json": "2ebd2f407913a4aa9381f9375cc7e4d5b0392fd644844de2cc901494284d7e34",
-    "adapters/codex/AGENTS.md": "893f2149941d1fc01c0f31cd880ff255130f88a107a345d38d4153aa0f5a33a5",
-    "adapters/generic-agent-skills/manifest.json": "a5bf71951a9a639e04c7eb2061d8c688dd31af4f71531a835d9f4814aad8b8ba",
+    "workflow-specs/workflows.v6.json": "a74be2dd5e25be8924c0416c309ce10bbe8783ebcbe5d67ff32c49f1f9abea26",
+    "workflow-specs/adapters/claude.json": "8adf0089a12a10b672c8ac960df24536650aef03542399815725d2018e867065",
+    "workflow-specs/adapters/codex.json": "64d7d5750f5dfce4384d22f90fae5f6b5443ba22748bef7d944d3fddc5698e44",
+    "workflow-specs/adapters/generic.json": "8881cf695b931f345a570a7973ff1982973a7b7bd96a7a7a3d91c203a3daf2de",
+    "adapters/claude/manifest.json": "983c9ef396bee153b60c7d120bd5bf14167ec6252271cb3e4779fefef84fa335",
+    "adapters/codex/AGENTS.md": "a29f7da8791b0d06f0efc80f1aad8862be92736b2357ec1dbcb937f037d4af18",
+    "adapters/generic-agent-skills/manifest.json": "2006d3ebc5dcf2ce82138d284905ef823365fdca7f08a1a1430d8c5d328fee7e",
     "governance/assistant-support.json": "d24356d1e875f83d9dde9e24bf9442b5aec290da7232907468dfc6ef40b0881c"
   },
   "knownGoodLanes": [

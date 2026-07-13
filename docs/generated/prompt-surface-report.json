@@ -1,0 +1,1567 @@
+{
+  "schemaVersion": 1,
+  "source": "workflow-specs/workflows.v6.json",
+  "tokenEstimate": "ceil(UTF-16 code units / 4) per file; deterministic bloat guard, not tokenizer evidence",
+  "budgets": {
+    "maximumAggregateTokens": 20000,
+    "maximumAggregateFiles": 16,
+    "maximumCrossFileDuplicateRatio": 0.08
+  },
+  "workflowCount": 21,
+  "workflows": [
+    {
+      "id": "backend-plan",
+      "canonicalSurfaceId": "produce-plan",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/backend-plan.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/backend-plan.md",
+            "bytes": 1173,
+            "tokens": 294,
+            "sha256": "fddb3699ad9b257c731f4442379a286a5bc545a67c8f98cdf0aded9b64730e21"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/backend-plan.json",
+            "bytes": 5954,
+            "tokens": 1489,
+            "sha256": "70e313577d7a24eb28bbf9c19f70effb16bf24325b19d8d5e627b96a98688398"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-produce-plan/SKILL.md",
+            "bytes": 10296,
+            "tokens": 2566,
+            "sha256": "ef2546e894b2b72e78c64982dfa0ae94a617b37141e1206bef0be3f31c0642e4"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/architect.md",
+            "bytes": 899,
+            "tokens": 225,
+            "sha256": "527ec51824aa55747ec38b1214621dbcd754118556c6cac921dd94617ea6a726"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/java/README.md",
+            "bytes": 3155,
+            "tokens": 789,
+            "sha256": "ea32ca5de11fee3a9c4c4aecf7f519b26691e7ded87a59656fd94e0f97834f73"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/security/README.md",
+            "bytes": 2461,
+            "tokens": 616,
+            "sha256": "61c0bbf9b4672f2fac8c7e9460915938dd7c1512b77453c35ac1afbb1978187f"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/dependency/README.md",
+            "bytes": 1793,
+            "tokens": 449,
+            "sha256": "7948988ad4cad2863e9b1c6aa666ca56cc2dfeb442a8026caf72018862957545"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/backend-plan.md",
+            "to": "nova-plugin/runtime/contracts/backend-plan.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/backend-plan.md",
+            "to": "nova-plugin/skills/nova-produce-plan/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/backend-plan.md",
+            "to": "nova-plugin/agents/architect.md",
+            "relation": "recommended-owner-agent"
+          },
+          {
+            "from": "nova-plugin/commands/backend-plan.md",
+            "to": "nova-plugin/packs/java/README.md",
+            "relation": "recommended-capability-pack"
+          },
+          {
+            "from": "nova-plugin/commands/backend-plan.md",
+            "to": "nova-plugin/packs/security/README.md",
+            "relation": "recommended-capability-pack"
+          },
+          {
+            "from": "nova-plugin/commands/backend-plan.md",
+            "to": "nova-plugin/packs/dependency/README.md",
+            "relation": "recommended-capability-pack"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 7,
+        "bytes": 25731,
+        "tokens": 6428,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "codex-review-fix",
+      "canonicalSurfaceId": "implement-plan",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/codex-review-fix.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/codex-review-fix.md",
+            "bytes": 1192,
+            "tokens": 298,
+            "sha256": "8dd62a8ab5c6d34dacee1de02d46c09c3d801d92cda72f10d997e98cbf1c1436"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/codex-review-fix.json",
+            "bytes": 8786,
+            "tokens": 2197,
+            "sha256": "6bb03608df06cdb30e87299d14dc5260afa1dd5c0640f6fd87fce06d2633b01c"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-implement-plan/SKILL.md",
+            "bytes": 7912,
+            "tokens": 1971,
+            "sha256": "5e842659b3835f432c0f28dac255fa36742d5ae0e20e82dee5af9040e730f50b"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/reviewer.md",
+            "bytes": 846,
+            "tokens": 212,
+            "sha256": "670d15a94c224d71d34e2c97d40b1876694c7197df582013b0ce2693e13254d9"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/builder.md",
+            "bytes": 874,
+            "tokens": 219,
+            "sha256": "c24bc5ac6e2876f052c8eb4b6e122905cfc2c21aa69c469766a170b9c186d723"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/verifier.md",
+            "bytes": 867,
+            "tokens": 217,
+            "sha256": "b0d524f7d941ef9310b4c088ef40af29a66a9f050ac8eb54041b538670da849f"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/codex-review-fix.md",
+            "to": "nova-plugin/runtime/contracts/codex-review-fix.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/codex-review-fix.md",
+            "to": "nova-plugin/skills/nova-implement-plan/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/codex-review-fix.md",
+            "to": "nova-plugin/agents/reviewer.md",
+            "relation": "recommended-owner-agent"
+          },
+          {
+            "from": "nova-plugin/commands/codex-review-fix.md",
+            "to": "nova-plugin/agents/builder.md",
+            "relation": "recommended-owner-agent"
+          },
+          {
+            "from": "nova-plugin/commands/codex-review-fix.md",
+            "to": "nova-plugin/agents/verifier.md",
+            "relation": "recommended-owner-agent"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 6,
+        "bytes": 20477,
+        "tokens": 5114,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "codex-review-only",
+      "canonicalSurfaceId": "review",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/codex-review-only.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/codex-review-only.md",
+            "bytes": 1150,
+            "tokens": 288,
+            "sha256": "701d46fb4f114d23e0b6dc99212b04bfe4a0a3cac2605c60044c93bb278e8968"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/codex-review-only.json",
+            "bytes": 6939,
+            "tokens": 1735,
+            "sha256": "35a661c359b6911338dc53389aca452ab36c9793a9846d535b0a1f6052a414a6"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-review/SKILL.md",
+            "bytes": 7626,
+            "tokens": 1901,
+            "sha256": "d6f2dc809f5510925c7c8ef1782a64a9befdcf2947d7c6f3799df0a27640bf82"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/reviewer.md",
+            "bytes": 846,
+            "tokens": 212,
+            "sha256": "670d15a94c224d71d34e2c97d40b1876694c7197df582013b0ce2693e13254d9"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/codex-review-only.md",
+            "to": "nova-plugin/runtime/contracts/codex-review-only.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/codex-review-only.md",
+            "to": "nova-plugin/skills/nova-review/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/codex-review-only.md",
+            "to": "nova-plugin/agents/reviewer.md",
+            "relation": "recommended-owner-agent"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 4,
+        "bytes": 16561,
+        "tokens": 4136,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "codex-verify-only",
+      "canonicalSurfaceId": "review",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/codex-verify-only.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/codex-verify-only.md",
+            "bytes": 1151,
+            "tokens": 288,
+            "sha256": "0f4f418e79ca7b1ae40bbda5e2321ca5a22088c29872efa021ab2c3c990a66ba"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/codex-verify-only.json",
+            "bytes": 6624,
+            "tokens": 1656,
+            "sha256": "079ac54450c77617d5a88e130a03085f1bb0cfcc490e35f7058be2c4412d593c"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-review/SKILL.md",
+            "bytes": 7626,
+            "tokens": 1901,
+            "sha256": "d6f2dc809f5510925c7c8ef1782a64a9befdcf2947d7c6f3799df0a27640bf82"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/verifier.md",
+            "bytes": 867,
+            "tokens": 217,
+            "sha256": "b0d524f7d941ef9310b4c088ef40af29a66a9f050ac8eb54041b538670da849f"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/codex-verify-only.md",
+            "to": "nova-plugin/runtime/contracts/codex-verify-only.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/codex-verify-only.md",
+            "to": "nova-plugin/skills/nova-review/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/codex-verify-only.md",
+            "to": "nova-plugin/agents/verifier.md",
+            "relation": "recommended-owner-agent"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 4,
+        "bytes": 16268,
+        "tokens": 4062,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "explore",
+      "canonicalSurfaceId": "explore",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/explore.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/explore.md",
+            "bytes": 1038,
+            "tokens": 260,
+            "sha256": "8cafb7f6d41a6a210de56f9f638663a0dd36e387fe38b2720e4845d490fe129b"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/explore.json",
+            "bytes": 5908,
+            "tokens": 1477,
+            "sha256": "c0512df914681b766f20ac45561795b9de4e92fa107ff8d95ac3ea82f5b7ac75"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-explore/SKILL.md",
+            "bytes": 6581,
+            "tokens": 1641,
+            "sha256": "768acb554949cc6eff7afbb3b5551347a3d0a682c1b1150481f4efab1eebc632"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/orchestrator.md",
+            "bytes": 993,
+            "tokens": 249,
+            "sha256": "bd30f1e0d27fa3ce621ad1ff7cc35988e49c08cdad765492a183d403e2644067"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/reviewer.md",
+            "bytes": 846,
+            "tokens": 212,
+            "sha256": "670d15a94c224d71d34e2c97d40b1876694c7197df582013b0ce2693e13254d9"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/explore.md",
+            "to": "nova-plugin/runtime/contracts/explore.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/explore.md",
+            "to": "nova-plugin/skills/nova-explore/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/explore.md",
+            "to": "nova-plugin/agents/orchestrator.md",
+            "relation": "recommended-owner-agent"
+          },
+          {
+            "from": "nova-plugin/commands/explore.md",
+            "to": "nova-plugin/agents/reviewer.md",
+            "relation": "recommended-owner-agent"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 5,
+        "bytes": 15366,
+        "tokens": 3839,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "explore-lite",
+      "canonicalSurfaceId": "explore",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/explore-lite.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/explore-lite.md",
+            "bytes": 1156,
+            "tokens": 289,
+            "sha256": "950eeb5ebd20b43f48a8861e7a8fb5f4fa80c5e5b37de997165ab39045167a76"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/explore-lite.json",
+            "bytes": 4732,
+            "tokens": 1183,
+            "sha256": "fb19db184fd8a62c167c05b2fb4f1acee58ab09e105f1eb687b9a4aac989a5a6"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-explore/SKILL.md",
+            "bytes": 6581,
+            "tokens": 1641,
+            "sha256": "768acb554949cc6eff7afbb3b5551347a3d0a682c1b1150481f4efab1eebc632"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/orchestrator.md",
+            "bytes": 993,
+            "tokens": 249,
+            "sha256": "bd30f1e0d27fa3ce621ad1ff7cc35988e49c08cdad765492a183d403e2644067"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/explore-lite.md",
+            "to": "nova-plugin/runtime/contracts/explore-lite.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/explore-lite.md",
+            "to": "nova-plugin/skills/nova-explore/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/explore-lite.md",
+            "to": "nova-plugin/agents/orchestrator.md",
+            "relation": "recommended-owner-agent"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 4,
+        "bytes": 13462,
+        "tokens": 3362,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "explore-review",
+      "canonicalSurfaceId": "explore",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/explore-review.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/explore-review.md",
+            "bytes": 1150,
+            "tokens": 288,
+            "sha256": "410cdf8361a4ea6216cbdd05990d7adf0f01ab734bf41504d3d1b5c5b6703ba1"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/explore-review.json",
+            "bytes": 4806,
+            "tokens": 1202,
+            "sha256": "f952b1ae5859cf6b356c515a66e7c81e06fa7f3de2e3f2ff69f9a946ca202ff3"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-explore/SKILL.md",
+            "bytes": 6581,
+            "tokens": 1641,
+            "sha256": "768acb554949cc6eff7afbb3b5551347a3d0a682c1b1150481f4efab1eebc632"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/reviewer.md",
+            "bytes": 846,
+            "tokens": 212,
+            "sha256": "670d15a94c224d71d34e2c97d40b1876694c7197df582013b0ce2693e13254d9"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/security/README.md",
+            "bytes": 2461,
+            "tokens": 616,
+            "sha256": "61c0bbf9b4672f2fac8c7e9460915938dd7c1512b77453c35ac1afbb1978187f"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/dependency/README.md",
+            "bytes": 1793,
+            "tokens": 449,
+            "sha256": "7948988ad4cad2863e9b1c6aa666ca56cc2dfeb442a8026caf72018862957545"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/explore-review.md",
+            "to": "nova-plugin/runtime/contracts/explore-review.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/explore-review.md",
+            "to": "nova-plugin/skills/nova-explore/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/explore-review.md",
+            "to": "nova-plugin/agents/reviewer.md",
+            "relation": "recommended-owner-agent"
+          },
+          {
+            "from": "nova-plugin/commands/explore-review.md",
+            "to": "nova-plugin/packs/security/README.md",
+            "relation": "recommended-capability-pack"
+          },
+          {
+            "from": "nova-plugin/commands/explore-review.md",
+            "to": "nova-plugin/packs/dependency/README.md",
+            "relation": "recommended-capability-pack"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 6,
+        "bytes": 17637,
+        "tokens": 4408,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "finalize-lite",
+      "canonicalSurfaceId": "finalize-work",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/finalize-lite.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/finalize-lite.md",
+            "bytes": 1133,
+            "tokens": 284,
+            "sha256": "410c9ce6e34a7e45d40a3fe55120460b0e61c4813f5ca325c9666ecd88888550"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/finalize-lite.json",
+            "bytes": 5010,
+            "tokens": 1253,
+            "sha256": "6cbe57f137497f59123855f7903d23e9fc3fef78672d4009dfeaf6ec1ba12587"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-finalize-work/SKILL.md",
+            "bytes": 7464,
+            "tokens": 1856,
+            "sha256": "c2d6c50a8ffd67901b4583ced983bad8c431b141efc5b40afe7c108c549051e6"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/publisher.md",
+            "bytes": 886,
+            "tokens": 222,
+            "sha256": "9fd6d3737ff51a0b9e9dedafacc5eaa6f637a02c270aec1a763f65fa5bd002dd"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/docs/README.md",
+            "bytes": 2524,
+            "tokens": 631,
+            "sha256": "e11f226b3bf9405dc866493a7021e966e549d0a2b6da974678ba8a7764a3c0da"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/finalize-lite.md",
+            "to": "nova-plugin/runtime/contracts/finalize-lite.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/finalize-lite.md",
+            "to": "nova-plugin/skills/nova-finalize-work/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/finalize-lite.md",
+            "to": "nova-plugin/agents/publisher.md",
+            "relation": "recommended-owner-agent"
+          },
+          {
+            "from": "nova-plugin/commands/finalize-lite.md",
+            "to": "nova-plugin/packs/docs/README.md",
+            "relation": "recommended-capability-pack"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 5,
+        "bytes": 17017,
+        "tokens": 4246,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "finalize-work",
+      "canonicalSurfaceId": "finalize-work",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/finalize-work.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/finalize-work.md",
+            "bytes": 1067,
+            "tokens": 267,
+            "sha256": "adf5cc31c59b7dd9058946d65ee95038ca735af2c5f04200b6e9b7232b6c05b5"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/finalize-work.json",
+            "bytes": 5891,
+            "tokens": 1473,
+            "sha256": "9438fb36fbf206bef2c68079af221c07015b8c2d4691d5491ceeafb2c07206f4"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-finalize-work/SKILL.md",
+            "bytes": 7464,
+            "tokens": 1856,
+            "sha256": "c2d6c50a8ffd67901b4583ced983bad8c431b141efc5b40afe7c108c549051e6"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/publisher.md",
+            "bytes": 886,
+            "tokens": 222,
+            "sha256": "9fd6d3737ff51a0b9e9dedafacc5eaa6f637a02c270aec1a763f65fa5bd002dd"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/release/README.md",
+            "bytes": 2513,
+            "tokens": 629,
+            "sha256": "9a66d916232668019d7a868bafd74a2f14e34d37f072ed69a3b3991423079411"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/docs/README.md",
+            "bytes": 2524,
+            "tokens": 631,
+            "sha256": "e11f226b3bf9405dc866493a7021e966e549d0a2b6da974678ba8a7764a3c0da"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/finalize-work.md",
+            "to": "nova-plugin/runtime/contracts/finalize-work.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/finalize-work.md",
+            "to": "nova-plugin/skills/nova-finalize-work/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/finalize-work.md",
+            "to": "nova-plugin/agents/publisher.md",
+            "relation": "recommended-owner-agent"
+          },
+          {
+            "from": "nova-plugin/commands/finalize-work.md",
+            "to": "nova-plugin/packs/release/README.md",
+            "relation": "recommended-capability-pack"
+          },
+          {
+            "from": "nova-plugin/commands/finalize-work.md",
+            "to": "nova-plugin/packs/docs/README.md",
+            "relation": "recommended-capability-pack"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 6,
+        "bytes": 20345,
+        "tokens": 5078,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "implement-lite",
+      "canonicalSurfaceId": "implement-plan",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/implement-lite.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/implement-lite.md",
+            "bytes": 1165,
+            "tokens": 292,
+            "sha256": "e9fce4e0520d204050ad51bbbadeb5af2ebcf663d92dd56433afcaf8b6af8d25"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/implement-lite.json",
+            "bytes": 6096,
+            "tokens": 1524,
+            "sha256": "2bc11e0d426d31f05297a48bd817908968a58dedf6d8483294b98922c4153de1"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-implement-plan/SKILL.md",
+            "bytes": 7912,
+            "tokens": 1971,
+            "sha256": "5e842659b3835f432c0f28dac255fa36742d5ae0e20e82dee5af9040e730f50b"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/builder.md",
+            "bytes": 874,
+            "tokens": 219,
+            "sha256": "c24bc5ac6e2876f052c8eb4b6e122905cfc2c21aa69c469766a170b9c186d723"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/implement-lite.md",
+            "to": "nova-plugin/runtime/contracts/implement-lite.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/implement-lite.md",
+            "to": "nova-plugin/skills/nova-implement-plan/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/implement-lite.md",
+            "to": "nova-plugin/agents/builder.md",
+            "relation": "recommended-owner-agent"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 4,
+        "bytes": 16047,
+        "tokens": 4006,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "implement-plan",
+      "canonicalSurfaceId": "implement-plan",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/implement-plan.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/implement-plan.md",
+            "bytes": 1097,
+            "tokens": 275,
+            "sha256": "f5a12a32ac6945c349aee72d880c344534a46785f75caafbd4d9e958c851f6bb"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/implement-plan.json",
+            "bytes": 6871,
+            "tokens": 1718,
+            "sha256": "a7a9563ffc671381cf775bbcffee78cd8e8540bf08309fd218edec371bed3ada"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-implement-plan/SKILL.md",
+            "bytes": 7912,
+            "tokens": 1971,
+            "sha256": "5e842659b3835f432c0f28dac255fa36742d5ae0e20e82dee5af9040e730f50b"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/builder.md",
+            "bytes": 874,
+            "tokens": 219,
+            "sha256": "c24bc5ac6e2876f052c8eb4b6e122905cfc2c21aa69c469766a170b9c186d723"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/implement-plan.md",
+            "to": "nova-plugin/runtime/contracts/implement-plan.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/implement-plan.md",
+            "to": "nova-plugin/skills/nova-implement-plan/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/implement-plan.md",
+            "to": "nova-plugin/agents/builder.md",
+            "relation": "recommended-owner-agent"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 4,
+        "bytes": 16754,
+        "tokens": 4183,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "implement-standard",
+      "canonicalSurfaceId": "implement-plan",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/implement-standard.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/implement-standard.md",
+            "bytes": 1168,
+            "tokens": 292,
+            "sha256": "103c40caadfd8307de6e8a851faa43bf4f257cf93cd0b4315871b1e295abdbf9"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/implement-standard.json",
+            "bytes": 6141,
+            "tokens": 1536,
+            "sha256": "8c32677bc6f8582852afc12cf10c3f1cfbc4d04bf28b5b4d7ee69673d518a944"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-implement-plan/SKILL.md",
+            "bytes": 7912,
+            "tokens": 1971,
+            "sha256": "5e842659b3835f432c0f28dac255fa36742d5ae0e20e82dee5af9040e730f50b"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/builder.md",
+            "bytes": 874,
+            "tokens": 219,
+            "sha256": "c24bc5ac6e2876f052c8eb4b6e122905cfc2c21aa69c469766a170b9c186d723"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/implement-standard.md",
+            "to": "nova-plugin/runtime/contracts/implement-standard.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/implement-standard.md",
+            "to": "nova-plugin/skills/nova-implement-plan/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/implement-standard.md",
+            "to": "nova-plugin/agents/builder.md",
+            "relation": "recommended-owner-agent"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 4,
+        "bytes": 16095,
+        "tokens": 4018,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "plan-lite",
+      "canonicalSurfaceId": "produce-plan",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/plan-lite.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/plan-lite.md",
+            "bytes": 1100,
+            "tokens": 275,
+            "sha256": "93667496a64d367c7ac55a21bce641c22d2f5f9f779a7133a4bc0fde30688d80"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/plan-lite.json",
+            "bytes": 5893,
+            "tokens": 1474,
+            "sha256": "1a2402dc52ca37960c54fa9924e7a991280b20a7965ebf881901b3fa23297628"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-produce-plan/SKILL.md",
+            "bytes": 10296,
+            "tokens": 2566,
+            "sha256": "ef2546e894b2b72e78c64982dfa0ae94a617b37141e1206bef0be3f31c0642e4"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/architect.md",
+            "bytes": 899,
+            "tokens": 225,
+            "sha256": "527ec51824aa55747ec38b1214621dbcd754118556c6cac921dd94617ea6a726"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/plan-lite.md",
+            "to": "nova-plugin/runtime/contracts/plan-lite.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/plan-lite.md",
+            "to": "nova-plugin/skills/nova-produce-plan/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/plan-lite.md",
+            "to": "nova-plugin/agents/architect.md",
+            "relation": "recommended-owner-agent"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 4,
+        "bytes": 18188,
+        "tokens": 4540,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "plan-review",
+      "canonicalSurfaceId": "review",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/plan-review.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/plan-review.md",
+            "bytes": 1131,
+            "tokens": 283,
+            "sha256": "66eeb83f7d093df39492bb571b6da30cd105f76920952fbbce26de5aa48d8f50"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/plan-review.json",
+            "bytes": 5628,
+            "tokens": 1407,
+            "sha256": "c96054d2959fd0038e8d3579cc978d4cba1b2ffeb980b8de95b52cc010f45cb5"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-review/SKILL.md",
+            "bytes": 7626,
+            "tokens": 1901,
+            "sha256": "d6f2dc809f5510925c7c8ef1782a64a9befdcf2947d7c6f3799df0a27640bf82"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/reviewer.md",
+            "bytes": 846,
+            "tokens": 212,
+            "sha256": "670d15a94c224d71d34e2c97d40b1876694c7197df582013b0ce2693e13254d9"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/docs/README.md",
+            "bytes": 2524,
+            "tokens": 631,
+            "sha256": "e11f226b3bf9405dc866493a7021e966e549d0a2b6da974678ba8a7764a3c0da"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/security/README.md",
+            "bytes": 2461,
+            "tokens": 616,
+            "sha256": "61c0bbf9b4672f2fac8c7e9460915938dd7c1512b77453c35ac1afbb1978187f"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/plan-review.md",
+            "to": "nova-plugin/runtime/contracts/plan-review.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/plan-review.md",
+            "to": "nova-plugin/skills/nova-review/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/plan-review.md",
+            "to": "nova-plugin/agents/reviewer.md",
+            "relation": "recommended-owner-agent"
+          },
+          {
+            "from": "nova-plugin/commands/plan-review.md",
+            "to": "nova-plugin/packs/docs/README.md",
+            "relation": "recommended-capability-pack"
+          },
+          {
+            "from": "nova-plugin/commands/plan-review.md",
+            "to": "nova-plugin/packs/security/README.md",
+            "relation": "recommended-capability-pack"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 6,
+        "bytes": 20216,
+        "tokens": 5050,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "produce-plan",
+      "canonicalSurfaceId": "produce-plan",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/produce-plan.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/produce-plan.md",
+            "bytes": 1048,
+            "tokens": 262,
+            "sha256": "6082d6bf9077e7fa6241be338304ed5559aac42eb9dce38f34f480cef848b495"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/produce-plan.json",
+            "bytes": 7377,
+            "tokens": 1845,
+            "sha256": "cee16da4330ae4712d713dced757215d86208ad07530a0dbde7de311578b6781"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-produce-plan/SKILL.md",
+            "bytes": 10296,
+            "tokens": 2566,
+            "sha256": "ef2546e894b2b72e78c64982dfa0ae94a617b37141e1206bef0be3f31c0642e4"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/architect.md",
+            "bytes": 899,
+            "tokens": 225,
+            "sha256": "527ec51824aa55747ec38b1214621dbcd754118556c6cac921dd94617ea6a726"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/docs/README.md",
+            "bytes": 2524,
+            "tokens": 631,
+            "sha256": "e11f226b3bf9405dc866493a7021e966e549d0a2b6da974678ba8a7764a3c0da"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/produce-plan.md",
+            "to": "nova-plugin/runtime/contracts/produce-plan.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/produce-plan.md",
+            "to": "nova-plugin/skills/nova-produce-plan/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/produce-plan.md",
+            "to": "nova-plugin/agents/architect.md",
+            "relation": "recommended-owner-agent"
+          },
+          {
+            "from": "nova-plugin/commands/produce-plan.md",
+            "to": "nova-plugin/packs/docs/README.md",
+            "relation": "recommended-capability-pack"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 5,
+        "bytes": 22144,
+        "tokens": 5529,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "review",
+      "canonicalSurfaceId": "review",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/review.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/review.md",
+            "bytes": 1027,
+            "tokens": 257,
+            "sha256": "ac43deeb0a3a002ca8d648b829217de16dee662c221e0785661d745560722013"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/review.json",
+            "bytes": 6368,
+            "tokens": 1592,
+            "sha256": "1c9a2b90638e4c53ba271230f72a2e4025d5eb3db1e86dc0e0bf5b67b000576d"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-review/SKILL.md",
+            "bytes": 7626,
+            "tokens": 1901,
+            "sha256": "d6f2dc809f5510925c7c8ef1782a64a9befdcf2947d7c6f3799df0a27640bf82"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/reviewer.md",
+            "bytes": 846,
+            "tokens": 212,
+            "sha256": "670d15a94c224d71d34e2c97d40b1876694c7197df582013b0ce2693e13254d9"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/security/README.md",
+            "bytes": 2461,
+            "tokens": 616,
+            "sha256": "61c0bbf9b4672f2fac8c7e9460915938dd7c1512b77453c35ac1afbb1978187f"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/dependency/README.md",
+            "bytes": 1793,
+            "tokens": 449,
+            "sha256": "7948988ad4cad2863e9b1c6aa666ca56cc2dfeb442a8026caf72018862957545"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/review.md",
+            "to": "nova-plugin/runtime/contracts/review.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/review.md",
+            "to": "nova-plugin/skills/nova-review/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/review.md",
+            "to": "nova-plugin/agents/reviewer.md",
+            "relation": "recommended-owner-agent"
+          },
+          {
+            "from": "nova-plugin/commands/review.md",
+            "to": "nova-plugin/packs/security/README.md",
+            "relation": "recommended-capability-pack"
+          },
+          {
+            "from": "nova-plugin/commands/review.md",
+            "to": "nova-plugin/packs/dependency/README.md",
+            "relation": "recommended-capability-pack"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 6,
+        "bytes": 20121,
+        "tokens": 5027,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "review-lite",
+      "canonicalSurfaceId": "review",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/review-lite.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/review-lite.md",
+            "bytes": 1100,
+            "tokens": 275,
+            "sha256": "d7d111d5a3287885884bbdc53dc38383fbedafa9cb9c11b8306744d725539252"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/review-lite.json",
+            "bytes": 4867,
+            "tokens": 1217,
+            "sha256": "62077bf75473b5a74cee15783e75c3779558184e2a5bf974cf3d656bb2019a01"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-review/SKILL.md",
+            "bytes": 7626,
+            "tokens": 1901,
+            "sha256": "d6f2dc809f5510925c7c8ef1782a64a9befdcf2947d7c6f3799df0a27640bf82"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/reviewer.md",
+            "bytes": 846,
+            "tokens": 212,
+            "sha256": "670d15a94c224d71d34e2c97d40b1876694c7197df582013b0ce2693e13254d9"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/review-lite.md",
+            "to": "nova-plugin/runtime/contracts/review-lite.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/review-lite.md",
+            "to": "nova-plugin/skills/nova-review/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/review-lite.md",
+            "to": "nova-plugin/agents/reviewer.md",
+            "relation": "recommended-owner-agent"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 4,
+        "bytes": 14439,
+        "tokens": 3605,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "review-only",
+      "canonicalSurfaceId": "review",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/review-only.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/review-only.md",
+            "bytes": 1143,
+            "tokens": 286,
+            "sha256": "5aaa3f0485cfb4d2f4f003ce1f3d57bdd33c66318be55276a0ce2eccea03b47d"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/review-only.json",
+            "bytes": 5664,
+            "tokens": 1416,
+            "sha256": "9bfe14974649a5962c15a82f13f0f37fe98ed14eff271ca8049faa6548b79390"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-review/SKILL.md",
+            "bytes": 7626,
+            "tokens": 1901,
+            "sha256": "d6f2dc809f5510925c7c8ef1782a64a9befdcf2947d7c6f3799df0a27640bf82"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/reviewer.md",
+            "bytes": 846,
+            "tokens": 212,
+            "sha256": "670d15a94c224d71d34e2c97d40b1876694c7197df582013b0ce2693e13254d9"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/security/README.md",
+            "bytes": 2461,
+            "tokens": 616,
+            "sha256": "61c0bbf9b4672f2fac8c7e9460915938dd7c1512b77453c35ac1afbb1978187f"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/dependency/README.md",
+            "bytes": 1793,
+            "tokens": 449,
+            "sha256": "7948988ad4cad2863e9b1c6aa666ca56cc2dfeb442a8026caf72018862957545"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/review-only.md",
+            "to": "nova-plugin/runtime/contracts/review-only.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/review-only.md",
+            "to": "nova-plugin/skills/nova-review/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/review-only.md",
+            "to": "nova-plugin/agents/reviewer.md",
+            "relation": "recommended-owner-agent"
+          },
+          {
+            "from": "nova-plugin/commands/review-only.md",
+            "to": "nova-plugin/packs/security/README.md",
+            "relation": "recommended-capability-pack"
+          },
+          {
+            "from": "nova-plugin/commands/review-only.md",
+            "to": "nova-plugin/packs/dependency/README.md",
+            "relation": "recommended-capability-pack"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 6,
+        "bytes": 19533,
+        "tokens": 4880,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "review-strict",
+      "canonicalSurfaceId": "review",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/review-strict.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/review-strict.md",
+            "bytes": 1115,
+            "tokens": 279,
+            "sha256": "600d48458b9a352884dba613b8aa75b22706d81e47dc7e5a149aaffd422f863b"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/review-strict.json",
+            "bytes": 5768,
+            "tokens": 1442,
+            "sha256": "cbe10f7c90f0ff761850fcbc5022856add0204b3b354aa082152f01267be183c"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-review/SKILL.md",
+            "bytes": 7626,
+            "tokens": 1901,
+            "sha256": "d6f2dc809f5510925c7c8ef1782a64a9befdcf2947d7c6f3799df0a27640bf82"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/reviewer.md",
+            "bytes": 846,
+            "tokens": 212,
+            "sha256": "670d15a94c224d71d34e2c97d40b1876694c7197df582013b0ce2693e13254d9"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/security/README.md",
+            "bytes": 2461,
+            "tokens": 616,
+            "sha256": "61c0bbf9b4672f2fac8c7e9460915938dd7c1512b77453c35ac1afbb1978187f"
+          },
+          {
+            "kind": "capability-pack",
+            "path": "nova-plugin/packs/dependency/README.md",
+            "bytes": 1793,
+            "tokens": 449,
+            "sha256": "7948988ad4cad2863e9b1c6aa666ca56cc2dfeb442a8026caf72018862957545"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/review-strict.md",
+            "to": "nova-plugin/runtime/contracts/review-strict.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/review-strict.md",
+            "to": "nova-plugin/skills/nova-review/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/review-strict.md",
+            "to": "nova-plugin/agents/reviewer.md",
+            "relation": "recommended-owner-agent"
+          },
+          {
+            "from": "nova-plugin/commands/review-strict.md",
+            "to": "nova-plugin/packs/security/README.md",
+            "relation": "recommended-capability-pack"
+          },
+          {
+            "from": "nova-plugin/commands/review-strict.md",
+            "to": "nova-plugin/packs/dependency/README.md",
+            "relation": "recommended-capability-pack"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 6,
+        "bytes": 19609,
+        "tokens": 4899,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "route",
+      "canonicalSurfaceId": "route",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/route.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/route.md",
+            "bytes": 1016,
+            "tokens": 254,
+            "sha256": "e51e29687c731a6086d11f938793745797c69b141c7431695b0bc23c99bc1798"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/route.json",
+            "bytes": 12225,
+            "tokens": 3057,
+            "sha256": "b5c102f4de3f06cd88637642e9571e714e152cd9852a3b169a299864179c2e58"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-route/SKILL.md",
+            "bytes": 13129,
+            "tokens": 3276,
+            "sha256": "b9576d80b34ebaf2b5c277259dde9c5496ce57a46e46975a93e400ed2f2591f1"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/orchestrator.md",
+            "bytes": 993,
+            "tokens": 249,
+            "sha256": "bd30f1e0d27fa3ce621ad1ff7cc35988e49c08cdad765492a183d403e2644067"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/route.md",
+            "to": "nova-plugin/runtime/contracts/route.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/route.md",
+            "to": "nova-plugin/skills/nova-route/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/route.md",
+            "to": "nova-plugin/agents/orchestrator.md",
+            "relation": "recommended-owner-agent"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 4,
+        "bytes": 27363,
+        "tokens": 6836,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    },
+    {
+      "id": "senior-explore",
+      "canonicalSurfaceId": "explore",
+      "graph": {
+        "entrypoint": "nova-plugin/commands/senior-explore.md",
+        "nodes": [
+          {
+            "kind": "command",
+            "path": "nova-plugin/commands/senior-explore.md",
+            "bytes": 1158,
+            "tokens": 290,
+            "sha256": "c93c8208e161991e9a5df888f0e4f26e54b9cea27b39f1f1390b42025179b315"
+          },
+          {
+            "kind": "runtime-contract",
+            "path": "nova-plugin/runtime/contracts/senior-explore.json",
+            "bytes": 7786,
+            "tokens": 1947,
+            "sha256": "210fc81b883cb1073ce200741b614cb216a7f8740c1f79f55b93870a3209cbf1"
+          },
+          {
+            "kind": "canonical-skill",
+            "path": "nova-plugin/skills/nova-explore/SKILL.md",
+            "bytes": 6581,
+            "tokens": 1641,
+            "sha256": "768acb554949cc6eff7afbb3b5551347a3d0a682c1b1150481f4efab1eebc632"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/architect.md",
+            "bytes": 899,
+            "tokens": 225,
+            "sha256": "527ec51824aa55747ec38b1214621dbcd754118556c6cac921dd94617ea6a726"
+          },
+          {
+            "kind": "owner-agent",
+            "path": "nova-plugin/agents/reviewer.md",
+            "bytes": 846,
+            "tokens": 212,
+            "sha256": "670d15a94c224d71d34e2c97d40b1876694c7197df582013b0ce2693e13254d9"
+          }
+        ],
+        "edges": [
+          {
+            "from": "nova-plugin/commands/senior-explore.md",
+            "to": "nova-plugin/runtime/contracts/senior-explore.json",
+            "relation": "loads-runtime-contract"
+          },
+          {
+            "from": "nova-plugin/commands/senior-explore.md",
+            "to": "nova-plugin/skills/nova-explore/SKILL.md",
+            "relation": "loads-canonical-skill"
+          },
+          {
+            "from": "nova-plugin/commands/senior-explore.md",
+            "to": "nova-plugin/agents/architect.md",
+            "relation": "recommended-owner-agent"
+          },
+          {
+            "from": "nova-plugin/commands/senior-explore.md",
+            "to": "nova-plugin/agents/reviewer.md",
+            "relation": "recommended-owner-agent"
+          }
+        ]
+      },
+      "aggregate": {
+        "files": 5,
+        "bytes": 17270,
+        "tokens": 4315,
+        "repeatedParagraphs": 0,
+        "duplicateBytes": 0,
+        "duplicateRatio": 0
+      }
+    }
+  ]
+}
