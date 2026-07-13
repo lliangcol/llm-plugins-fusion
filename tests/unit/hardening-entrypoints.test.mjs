@@ -39,7 +39,10 @@ test('candidate bundle build and safe extraction entrypoints complete with expli
 test('v5 migration remains deterministic and stable-install proof rejects an unbound tree', () => {
   const workflows = JSON.parse(readFileSync(resolve(root, 'workflow-specs/workflows.json'), 'utf8'));
   const behaviors = JSON.parse(readFileSync(resolve(root, 'workflow-specs/behaviors.json'), 'utf8'));
-  assert.deepEqual(migrate(workflows), workflows);
+  const migrated = migrate(workflows);
+  assert.deepEqual(migrated, workflows);
+  assert.equal(migrated.workflows.find(({ id }) => id === 'review').permissionProfile, 'read-only');
+  assert.equal(migrated.workflows.find(({ id }) => id === 'implement-plan').permissionProfile, 'implementation');
   assert.deepEqual(migrateBehaviors(behaviors), behaviors);
   const tree = mkdtempSync(resolve(tmpdir(), 'nova-unbound-tree-'));
   try {

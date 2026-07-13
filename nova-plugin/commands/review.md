@@ -5,7 +5,7 @@ title: /nova-plugin:review
 description: "Unified review entry that routes by LEVEL for lite, standard, or strict review without fixes."
 destructive-actions: none
 allowed-tools: Read Glob Grep
-disallowed-tools: Write Edit NotebookEdit
+disallowed-tools: Write Edit NotebookEdit Bash
 user-invocable: true
 disable-model-invocation: false
 ---
