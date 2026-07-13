@@ -38,27 +38,27 @@
         "generic": "L1"
       },
       "source": "governance/compatibility-evidence.generated.json#/currentClaims",
-      "sourceSha256": "215ff19b96ca69eaa94a8efdbc730fa214bec7766fa746c76ebec86b8ff377f2"
+      "sourceSha256": "438273b6aff30ef99df54dd3145c5e291e42ba47f909d882158c9c1751c8168d"
     },
     "inventory.commands": {
       "value": 21,
       "source": "governance/project-state.generated.json#/inventory/commands",
-      "sourceSha256": "e3236da0838c4ecc913f12965d541befd2e7be6e02cffc923547eb0fd01d0d74"
+      "sourceSha256": "9c567efeed1ae490e45b2c79ad72a78c05ad886878192caf561251acf617b649"
     },
     "inventory.skills": {
       "value": 6,
       "source": "governance/project-state.generated.json#/inventory/skills",
-      "sourceSha256": "e3236da0838c4ecc913f12965d541befd2e7be6e02cffc923547eb0fd01d0d74"
+      "sourceSha256": "9c567efeed1ae490e45b2c79ad72a78c05ad886878192caf561251acf617b649"
     },
     "runtime.node": {
       "value": ">=22",
       "source": "governance/project-state.generated.json#/runtime/node",
-      "sourceSha256": "e3236da0838c4ecc913f12965d541befd2e7be6e02cffc923547eb0fd01d0d74"
+      "sourceSha256": "9c567efeed1ae490e45b2c79ad72a78c05ad886878192caf561251acf617b649"
     },
     "runtime.bash": {
       "value": "3.2+",
       "source": "governance/project-state.generated.json#/runtime/distributedBash",
-      "sourceSha256": "e3236da0838c4ecc913f12965d541befd2e7be6e02cffc923547eb0fd01d0d74"
+      "sourceSha256": "9c567efeed1ae490e45b2c79ad72a78c05ad886878192caf561251acf617b649"
     }
   }
 }
