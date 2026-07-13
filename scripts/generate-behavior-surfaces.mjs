@@ -5,7 +5,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { repoRoot } from './lib/repo-root.mjs';
-import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
+import { loadNovaWorkflowModelV6 } from './lib/workflow-model.mjs';
 
 const root = repoRoot(import.meta.url);
 const start = '<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->';
@@ -21,7 +21,7 @@ function renderBehavior(behavior) {
   const routes = [...new Set(behavior.decisionTable.map((entry) => entry.route).filter(Boolean))];
   const lines = [
     start,
-    '> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.',
+    '> Generated from `workflow-specs/behaviors.v2.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.',
     '',
     '### Generated Behavior Index',
     '',
@@ -38,7 +38,7 @@ function renderBehavior(behavior) {
 }
 
 export function generatedBehaviorSurfaces() {
-  const { spec, behaviorSpec } = loadNovaWorkflowModel(root);
+  const { spec, behaviorSpec } = loadNovaWorkflowModelV6(root);
   const behaviors = new Map(behaviorSpec.behaviors.map((behavior) => [behavior.id, behavior]));
   return spec.workflows.filter((workflow) => !workflow.compatibilityAlias).map((workflow) => {
     const path = resolve(root, 'nova-plugin', workflow.contractPath);

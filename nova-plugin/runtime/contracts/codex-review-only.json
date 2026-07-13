@@ -1,10 +1,12 @@
 {
-  "schemaVersion": 3,
-  "sourceSchemaVersion": 5,
+  "schemaVersion": 4,
+  "sourceSchemaVersion": 6,
   "contractVersions": {
-    "workflow": "5.0.0",
-    "runtime": "3.0.0",
-    "adapter": "2.0.0"
+    "framework": "5.0.0",
+    "workflow": "6.0.0",
+    "runtime": "4.0.0",
+    "adapter": "3.0.0",
+    "compatibilityProjection": "5.0.0"
   },
   "id": "codex-review-only",
   "canonicalSurfaceId": "review",
@@ -19,6 +21,46 @@
   "recommendedPacks": [],
   "requiredInputs": [
     "REVIEW_SCOPE"
+  ],
+  "inputs": [
+    {
+      "name": "REVIEW_SCOPE",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "BASE",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "REVIEW_MODE",
+      "type": "enum",
+      "required": false,
+      "values": [
+        "branch",
+        "staged",
+        "full"
+      ]
+    }
+  ],
+  "effects": [
+    "credentials",
+    "network",
+    "shell",
+    "workspace-read"
+  ],
+  "authorizationProfile": "external-review-read-only",
+  "enforcementRequirements": [
+    "enforce:credentials",
+    "enforce:network",
+    "enforce:shell",
+    "enforce:workspace-read"
+  ],
+  "evidenceRequirements": [
+    "authorization-decision",
+    "effects-observed",
+    "validation-result"
   ],
   "outputContract": "codex-review-only-v2",
   "risk": "low",
@@ -72,8 +114,8 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "schemaVersion": 1,
-    "source": "workflow-specs/behaviors.json",
+    "schemaVersion": 2,
+    "source": "workflow-specs/behaviors.v2.json",
     "guidanceReference": "../../skills/nova-review/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Produce an external Codex review artifact without modifying project code.",
@@ -112,15 +154,39 @@
     ],
     "decisionTable": [
       {
-        "when": "REVIEW_MODE is staged.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "REVIEW_SCOPE"
+            }
+          ]
+        },
         "action": "Review staged changes only."
       },
       {
-        "when": "REVIEW_MODE is full.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "REVIEW_SCOPE"
+            }
+          ]
+        },
         "action": "Review the explicitly permitted full working-tree scope."
       },
       {
-        "when": "Otherwise.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "REVIEW_SCOPE"
+            }
+          ]
+        },
         "action": "Review the branch diff against BASE or the detected default base."
       }
     ],
@@ -204,7 +270,8 @@
         "review scope",
         "safe next action"
       ]
-    }
+    },
+    "effects": []
   },
   "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

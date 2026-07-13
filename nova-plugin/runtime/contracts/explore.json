@@ -1,10 +1,12 @@
 {
-  "schemaVersion": 3,
-  "sourceSchemaVersion": 5,
+  "schemaVersion": 4,
+  "sourceSchemaVersion": 6,
   "contractVersions": {
-    "workflow": "5.0.0",
-    "runtime": "3.0.0",
-    "adapter": "2.0.0"
+    "framework": "5.0.0",
+    "workflow": "6.0.0",
+    "runtime": "4.0.0",
+    "adapter": "3.0.0",
+    "compatibilityProjection": "5.0.0"
   },
   "id": "explore",
   "canonicalSurfaceId": "explore",
@@ -18,6 +20,34 @@
   "recommendedPacks": [],
   "requiredInputs": [
     "INPUT"
+  ],
+  "inputs": [
+    {
+      "name": "INPUT",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "PERSPECTIVE",
+      "type": "enum",
+      "required": false,
+      "values": [
+        "observer",
+        "reviewer"
+      ]
+    }
+  ],
+  "effects": [
+    "workspace-read"
+  ],
+  "authorizationProfile": "read-only",
+  "enforcementRequirements": [
+    "enforce:workspace-read"
+  ],
+  "evidenceRequirements": [
+    "authorization-decision",
+    "effects-observed",
+    "validation-result"
   ],
   "outputContract": "exploration-v2",
   "risk": "none",
@@ -55,8 +85,8 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "schemaVersion": 1,
-    "source": "workflow-specs/behaviors.json",
+    "schemaVersion": 2,
+    "source": "workflow-specs/behaviors.v2.json",
     "guidanceReference": "../../skills/nova-explore/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Align understanding and identify unknowns or risks without proposing solutions.",
@@ -86,12 +116,28 @@
     ],
     "decisionTable": [
       {
-        "when": "PERSPECTIVE equals observer.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "INPUT"
+            }
+          ]
+        },
         "action": "Use neutral fact-gathering behavior.",
         "route": "explore-lite"
       },
       {
-        "when": "PERSPECTIVE equals reviewer.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "INPUT"
+            }
+          ]
+        },
         "action": "Use review-question behavior.",
         "route": "explore-review"
       }
@@ -172,7 +218,8 @@
         "allowed values",
         "safe next action"
       ]
-    }
+    },
+    "effects": []
   },
   "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

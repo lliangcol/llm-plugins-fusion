@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "source": "workflow-specs/workflows.json",
+  "source": "workflow-specs/workflows.v6.json",
   "workflows": [
     {
       "id": "backend-plan",

@@ -3,6 +3,8 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
 import { migrateBehaviorSpec, migrateWorkflowSpec } from '../../scripts/migrate-v6-contracts.mjs';
+import { compileRuntimeContracts } from '../../framework/compiler/compile-runtime-contracts.mjs';
+import { projectV5Compatibility } from '../../framework/compiler/project-v5-compatibility.mjs';
 import { validateStandardSchema } from '../../scripts/lib/schema-engine.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
@@ -23,6 +25,19 @@ test('v5 to v6 migration is deterministic and separates requirements authorizati
   const migratedBehaviors = migrateBehaviorSpec(behaviors);
   assert.ok(migratedBehaviors.behaviors.every((behavior) => behavior.decisionTable.every((decision) => typeof decision.when === 'object')));
   assert.ok(migratedBehaviors.behaviors.every((behavior) => !Object.hasOwn(behavior.output, 'effects')));
+});
+
+test('all workflows compile from v6 and the compatibility projection exactly matches v5', () => {
+  const v5 = read('workflow-specs/workflows.json');
+  const v6 = read('workflow-specs/workflows.v6.json');
+  const behaviors = read('workflow-specs/behaviors.v2.json');
+  assert.deepEqual(projectV5Compatibility(v6), v5);
+  const first = compileRuntimeContracts(v6, behaviors);
+  const second = compileRuntimeContracts(v6, behaviors);
+  assert.equal(first.length, 21);
+  assert.equal(JSON.stringify(first), JSON.stringify(second));
+  assert.ok(first.every((contract) => contract.schemaVersion === 4 && contract.sourceSchemaVersion === 6));
+  assert.ok(first.every((contract) => contract.inputs && contract.effects && contract.authorizationProfile));
 });
 
 test('Contract v6 schemas reject inferred approval arbitrary predicates and output effects', () => {

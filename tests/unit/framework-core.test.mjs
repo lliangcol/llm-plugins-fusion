@@ -8,6 +8,8 @@ import { resolveBehaviorInputs, resolveRequiredInputs } from '../../framework/co
 import { validateOutputFields } from '../../framework/core/output-validation.mjs';
 import { compileRuntimeContract } from '../../framework/compiler/compile-runtime-contracts.mjs';
 import { compileRuntimeContracts } from '../../framework/compiler/compile-runtime-contracts.mjs';
+import { compileProductBundle } from '../../framework/compiler/compile-product-bundle.mjs';
+import { migrateBehaviorSpec, migrateWorkflowSpec } from '../../scripts/migrate-v6-contracts.mjs';
 import { loadWorkflowModel } from '../../scripts/lib/workflow-model.mjs';
 
 test('framework core separates inputs, capability availability, and approvals', () => {
@@ -37,6 +39,21 @@ test('runtime compiler supports a non-Nova, non-Claude three-workflow product fi
   assert.deepEqual(contracts.map((entry) => entry.behaviorContract.guidanceReference), ['../../contracts/triage.md', '../../contracts/design.md', '../../contracts/verify.md']);
   assert.deepEqual(contracts.map((entry) => entry.behaviorContract.output.order), [['next step'], ['design'], ['verified', 'skipped', 'residual risk']]);
   assert.doesNotMatch(JSON.stringify(contracts), /nova|claude|codex/iu);
+});
+
+test('Contract v6 compiler remains product-neutral for the three-workflow fixture', () => {
+  const root = resolveFromModule(import.meta.url, '../../fixtures/products/minimal-plugin');
+  const loaded = loadWorkflowModel({ root, frameworkPath: 'framework.json', productPath: 'product.json', workflowsPath: 'workflows.json', behaviorsPath: 'behaviors.json' });
+  const compiled = compileProductBundle({
+    framework: { ...loaded.framework, schemaVersion: 5, protocolVersions: { framework: '5.0.0', workflow: '6.0.0', runtime: '4.0.0', adapter: '3.0.0', compatibilityProjection: '5.0.0' } },
+    product: loaded.product,
+    workflows: migrateWorkflowSpec(loaded.workflows, loaded.behaviors),
+    behaviors: migrateBehaviorSpec(loaded.behaviors),
+    adapters: loaded.adapters,
+  });
+  assert.equal(compiled.runtimeContracts.length, 3);
+  assert.ok(compiled.runtimeContracts.every((contract) => contract.schemaVersion === 4));
+  assert.doesNotMatch(JSON.stringify(compiled.runtimeContracts), /nova|claude|codex/iu);
 });
 
 test('framework output and evidence helpers expose explicit failures', () => {
