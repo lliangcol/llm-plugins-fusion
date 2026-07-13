@@ -3,10 +3,25 @@ import { cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync }
 import { tmpdir } from 'node:os';
 import { basename, resolve } from 'node:path';
 import test from 'node:test';
+import * as compilerApi from '@llm-plugins-fusion/compiler';
+import * as specApi from '@llm-plugins-fusion/spec';
 import { SPEC_ERROR, SpecBundleError, readJson, validateAndLoadSpecBundle } from '@llm-plugins-fusion/spec';
 
 const fixture = resolve(import.meta.dirname, '../../fixtures/products/minimal-plugin');
 const accept = () => true;
+
+test('filesystem package APIs validate by default and expose unchecked boundaries explicitly', () => {
+  assert.equal(typeof specApi.loadSpecBundle, 'function');
+  assert.equal(typeof specApi.loadSpecBundleUnchecked, 'function');
+  assert.equal(typeof compilerApi.compileDirectory, 'function');
+  assert.equal(typeof compilerApi.compileDirectoryUnchecked, 'function');
+  assert.equal(compilerApi.compileValidatedDirectory, compilerApi.compileDirectory);
+  assert.throws(
+    () => compilerApi.compileDirectory(fixture),
+    (error) => error instanceof SpecBundleError && error.code === SPEC_ERROR.CONFIGURATION,
+  );
+  assert.equal(compilerApi.compileDirectory(fixture, { validateSchema: accept }).runtimeContracts.length, 3);
+});
 
 test('validated spec loading separates layout schema and invariant failures', () => {
   const bundle = validateAndLoadSpecBundle(fixture, { validateSchema: accept });

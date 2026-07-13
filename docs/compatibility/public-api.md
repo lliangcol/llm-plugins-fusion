@@ -86,6 +86,17 @@ node scripts/validate-plugin-install.mjs --accept-user-scope-mutation
 
 Run it only in CI or an isolated test-user environment.
 
+## Preview Filesystem API Safety
+
+`@llm-plugins-fusion/spec.loadSpecBundle()` and
+`@llm-plugins-fusion/compiler.compileDirectory()` validate schema and semantic
+invariants by default using a caller-injected schema engine. Unchecked loading
+is never neutrally named: use `loadSpecBundleUnchecked()` or
+`compileDirectoryUnchecked()` only after an equivalent validation boundary.
+The older `compileValidatedDirectory()` alias remains for 4.x compatibility,
+is deprecated, and will be removed in 5.0.0. Stable `SPEC_*` errors and `llmf`
+exit codes are unchanged.
+
 ## Generated File Contract
 
 Do not hand-edit generated marketplace outputs:
@@ -114,3 +125,4 @@ Treat these as SemVer-significant:
 - Making a previously read-only command write project files.
 - Changing validation CLI success or failure semantics in a way that breaks
   existing release workflows.
+- Reintroducing a neutrally named unchecked filesystem compiler or loader.

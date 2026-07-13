@@ -25,6 +25,8 @@ export function buildFactGraph() {
   const corrections = source('governance/release-corrections.json');
   const compatibility = source('governance/compatibility-evidence.generated.json');
   const project = source('governance/project-state.generated.json');
+  const adoption = source('governance/adoption-evidence.json');
+  const evidenceGovernance = source('governance/evidence-governance.json');
   const support = Object.fromEntries(compatibility.data.currentClaims.map((claim) => [claim.assistant, claim.effectiveLevel]));
   return {
     schemaVersion: 1,
@@ -35,8 +37,11 @@ export function buildFactGraph() {
       'release.stable.commit': fact(channels.data.stable.commit, 'governance/release-channels.json', '/stable/commit', channels.sha256),
       'release.stable.state': fact(channels.data.stable.state, 'governance/release-channels.json', '/stable/state', channels.sha256),
       'release.corrections.activeHolds': fact(corrections.data.corrections.filter((entry) => entry.status === 'active-release-hold').map((entry) => entry.id), 'governance/release-corrections.json', '/corrections', corrections.sha256),
+      'release.corrections.lifecycle': fact(Object.fromEntries(corrections.data.corrections.map((entry) => [entry.id, entry.status])), 'governance/release-corrections.json', '/corrections', corrections.sha256),
       'release.canary.ref': fact(channels.data.canary.ref, 'governance/release-channels.json', '/canary/ref', channels.sha256),
       'compatibility.effectiveLevels': fact(support, 'governance/compatibility-evidence.generated.json', '/currentClaims', compatibility.sha256),
+      'adoption.status': fact(adoption.data.status, 'governance/adoption-evidence.json', '/status', adoption.sha256),
+      'governance.evidence.statuses': fact(Object.fromEntries(evidenceGovernance.data.facts.map((entry) => [entry.id, entry.status])), 'governance/evidence-governance.json', '/facts', evidenceGovernance.sha256),
       'inventory.commands': fact(project.data.inventory.commands, 'governance/project-state.generated.json', '/inventory/commands', project.sha256),
       'inventory.skills': fact(project.data.inventory.skills, 'governance/project-state.generated.json', '/inventory/skills', project.sha256),
       'runtime.node': fact(project.data.runtime.node, 'governance/project-state.generated.json', '/runtime/node', project.sha256),

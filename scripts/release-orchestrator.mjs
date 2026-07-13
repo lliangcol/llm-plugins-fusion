@@ -1,20 +1,27 @@
 #!/usr/bin/env node
 /** One explicit-identity release state machine for promote, recover, and drill. */
 
+import { randomUUID } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { canonicalSha256 } from './lib/canonical-json.mjs';
-import { appendReleaseLedger, createReleaseLedger, planReleaseTransitions, verifyReleaseLedger } from './lib/release-state-machine.mjs';
+import { appendReleaseLedger, createReleaseLedger, planReleaseTransitions, releaseStates, verifyReleaseLedger } from './lib/release-state-machine.mjs';
 import { requireOptionValue } from './lib/cli-args.mjs';
+import { assertReleaseReady, evaluateReleaseCorrections, loadReleaseCorrections } from './lib/release-corrections.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
+function releaseEventPath(eventDir, sequence, transition) {
+  return resolve(eventDir, `${String(sequence).padStart(2, '0')}-${transition.replace('->', '-to-').toLowerCase()}.json`);
+}
+
 export function parseReleaseOrchestratorArgs(args) {
-  const options = { mode: null, state: null, targetState: null, stableTag: null, candidateTag: null, sourceCommit: null, promotionIntent: null, controlBundle: null, eventDir: null, runId: null, dryRun: false };
+  const options = { mode: null, state: null, targetState: null, stableTag: null, candidateTag: null, sourceCommit: null, promotionIntent: null, controlBundle: null, eventDir: null, runId: null, dryRun: false, protectedPublicationApproved: false };
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === '--dry-run') { options.dryRun = true; continue; }
+    if (arg === '--protected-publication-approved') { options.protectedPublicationApproved = true; continue; }
     const value = () => requireOptionValue(args, index, arg);
     if (arg === '--mode') options.mode = value();
     else if (arg === '--state') options.state = value();
@@ -37,7 +44,7 @@ export function parseReleaseOrchestratorArgs(args) {
   return options;
 }
 
-export function orchestrateRelease(options, now = () => new Date()) {
+export function orchestrateRelease(options, now = () => new Date(), correctionSource = loadReleaseCorrections(root)) {
   const intentText = readFileSync(options.promotionIntent, 'utf8');
   const intent = JSON.parse(intentText);
   const controlText = readFileSync(options.controlBundle, 'utf8');
@@ -46,7 +53,17 @@ export function orchestrateRelease(options, now = () => new Date()) {
     throw new Error('explicit release identity differs from promotion intent');
   }
   if (intent.controlBundleSha256 !== control.bundleSha256) throw new Error('promotion intent differs from the release control bundle');
+  if (intent.correctionsSha256 !== correctionSource.sha256) throw new Error('promotion intent contains stale release correction evidence');
+  const releasePolicy = evaluateReleaseCorrections({
+    mode: options.mode, stableTag: options.stableTag, candidateTag: options.candidateTag, sourceCommit: options.sourceCommit,
+    corrections: correctionSource.document.corrections, correctionsSha256: correctionSource.sha256,
+    independentReview: { passed: correctionSource.document.corrections.every((entry) => !['authorized-for-new-candidate'].includes(entry.status)) },
+    protectedPublication: { passed: options.protectedPublicationApproved },
+  });
+  if (releasePolicy.status === 'BLOCKED_POLICY') assertReleaseReady(releasePolicy);
   const transitions = planReleaseTransitions(options.state, options.targetState);
+  const maximumIndex = releaseStates.indexOf(releasePolicy.maximumPermittedState);
+  if (releaseStates.indexOf(options.targetState) > maximumIndex) throw new Error(`release policy limits orchestration to ${releasePolicy.maximumPermittedState}`);
   const identity = {
     stableTag: options.stableTag,
     candidateTag: options.candidateTag,
@@ -66,23 +83,48 @@ export function orchestrateRelease(options, now = () => new Date()) {
     if (verified.headState !== options.state) throw new Error('requested release state differs from prior release ledger head');
   }
   const existingEventCount = ledger.events.length;
-  transitions.forEach((transition) => {
-    ledger = appendReleaseLedger(ledger, {
+  for (const transition of transitions) {
+    const sequence = ledger.events.length + 1;
+    const path = releaseEventPath(options.eventDir, sequence, `${transition.from}->${transition.to}`);
+    let createdAt = now().toISOString();
+    let existingEvent = null;
+    if (!options.dryRun && existsSync(path)) {
+      existingEvent = JSON.parse(readFileSync(path, 'utf8'));
+      createdAt = existingEvent.createdAt;
+      if (existingEvent.mode !== options.mode) {
+        throw new Error(`existing release event mode conflicts with the requested orchestration: ${basename(path)}`);
+      }
+      if (!Number.isFinite(Date.parse(createdAt)) || new Date(createdAt).toISOString() !== createdAt) {
+        throw new Error(`existing release event has an invalid timestamp: ${basename(path)}`);
+      }
+    }
+    const next = appendReleaseLedger(ledger, {
       transition,
       identity,
       inputDigests: { promotionIntent: canonicalSha256(intent) },
       outputDigests: {},
-      runId: options.runId,
-      createdAt: now().toISOString(),
+      runId: existingEvent?.runId ?? options.runId,
+      createdAt,
     }, options.mode);
-  });
+    const appended = next.events.at(-1);
+    if (existingEvent && canonicalSha256(existingEvent) !== appended.sha256) {
+      throw new Error(`existing release event conflicts with the requested transition: ${basename(path)}`);
+    }
+    ledger = next;
+  }
   if (!options.dryRun) {
     mkdirSync(options.eventDir, { recursive: true });
     ledger.events.slice(existingEventCount).forEach(({ event }, index) => {
       const sequence = String(existingEventCount + index + 1).padStart(2, '0');
-      writeFileSync(resolve(options.eventDir, `${sequence}-${event.transition.replace('->', '-to-').toLowerCase()}.json`), `${JSON.stringify(event, null, 2)}\n`, { flag: 'wx' });
+      const path = releaseEventPath(options.eventDir, sequence, event.transition);
+      const content = `${JSON.stringify(event, null, 2)}\n`;
+      if (existsSync(path)) {
+        if (readFileSync(path, 'utf8') !== content) throw new Error(`existing release event bytes conflict: ${basename(path)}`);
+      } else {
+        writeFileSync(path, content, { flag: 'wx' });
+      }
     });
-    const temporaryLedger = `${ledgerPath}.tmp-${process.pid}`;
+    const temporaryLedger = `${ledgerPath}.tmp-${process.pid}-${randomUUID()}`;
     writeFileSync(temporaryLedger, `${JSON.stringify(ledger, null, 2)}\n`, { flag: 'wx' });
     renameSync(temporaryLedger, ledgerPath);
   }

@@ -36,6 +36,12 @@ jobs:
           git verify-tag "${CANDIDATE_TAG}"
           test "$(git rev-list -n 1 "${CANDIDATE_TAG}")" = "${SOURCE_COMMIT}"
           node scripts/verify-independent-release-review.mjs --out .metrics/candidate-preflight/independent-review.json
+          node scripts/validate-release-operational-readiness.mjs --mode candidate
+          stable_tag="${CANDIDATE_TAG%%-rc.*}"
+          node scripts/validate-release-readiness.mjs --require-ready --mode candidate \
+            --stable-tag "${stable_tag}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}" \
+            --independent-review-evidence .metrics/candidate-preflight/independent-review.json \
+            > .metrics/candidate-preflight/release-readiness.json
           git archive --format=tar.gz --output=.metrics/candidate-preflight/candidate-source.tar.gz "${SOURCE_COMMIT}"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:

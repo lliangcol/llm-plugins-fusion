@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 /** Safely extract an authenticated candidate or control bundle. */
 
-import { readFileSync } from 'node:fs';
+import { readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { extractSafeTarGz } from './lib/safe-tar.mjs';
+import { extractSafeTarGz, SAFE_TAR_LIMITS } from './lib/safe-tar.mjs';
 import { requireOptionValue } from './lib/cli-args.mjs';
 
 export function main(args = process.argv.slice(2)) {
@@ -20,6 +20,9 @@ export function main(args = process.argv.slice(2)) {
       index += 1;
     }
     if (!archive || !out) throw new Error('--archive and --out are required');
+    if (statSync(archive).size > SAFE_TAR_LIMITS.maxArchiveBytes) {
+      throw new Error(`archive compressed size exceeds ${SAFE_TAR_LIMITS.maxArchiveBytes} bytes`);
+    }
     const entries = extractSafeTarGz(readFileSync(archive), out);
     console.log(`Extracted ${entries.length} regular/directory entries`);
     return 0;

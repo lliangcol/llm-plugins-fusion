@@ -303,6 +303,16 @@ const targets = [
     label: 'governance/release-reviewers.json',
   },
   {
+    schema: loadJson('schemas/release-operations.schema.json'),
+    data: loadJson('governance/release-operations.json'),
+    label: 'governance/release-operations.json',
+  },
+  {
+    schema: loadJson('schemas/adoption-evidence.schema.json'),
+    data: loadJson('governance/adoption-evidence.json'),
+    label: 'governance/adoption-evidence.json',
+  },
+  {
     schema: loadJson('schemas/stable-install-proof.schema.json'),
     data: loadJson('governance/stable-install-proof.json'),
     label: 'governance/stable-install-proof.json',
@@ -381,6 +391,8 @@ const schemaPaths = [
   'schemas/release-ledger.schema.json',
   'schemas/release-reviewers.schema.json',
   'schemas/release-corrections.schema.json',
+  'schemas/release-operations.schema.json',
+  'schemas/adoption-evidence.schema.json',
   'schemas/control-bundle.schema.json',
   'schemas/stable-install-proof.schema.json',
   'schemas/dependency-policy.schema.json',

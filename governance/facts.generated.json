@@ -31,7 +31,14 @@
         "LPF-AUTO-2026-07-RC-001"
       ],
       "source": "governance/release-corrections.json#/corrections",
-      "sourceSha256": "49912f27e834b01a11534ad91779f39197b40f5ee40cf6341af3dc0d7d25da48"
+      "sourceSha256": "1d517dcdc566b26d806836eaf5ca736ca366a5df4ada0a27cc559eb892093a3b"
+    },
+    "release.corrections.lifecycle": {
+      "value": {
+        "LPF-AUTO-2026-07-RC-001": "active-release-hold"
+      },
+      "source": "governance/release-corrections.json#/corrections",
+      "sourceSha256": "1d517dcdc566b26d806836eaf5ca736ca366a5df4ada0a27cc559eb892093a3b"
     },
     "release.canary.ref": {
       "value": "main",
@@ -47,25 +54,45 @@
       "source": "governance/compatibility-evidence.generated.json#/currentClaims",
       "sourceSha256": "6ff7c4510470dab8f06ba219bcf743081d4292638698ef1394825355c9a0b8aa"
     },
+    "adoption.status": {
+      "value": "not-demonstrated",
+      "source": "governance/adoption-evidence.json#/status",
+      "sourceSha256": "7439bbae52926fee5ce78ab562ac16260db37de5875c3b5bbc2a375f88cbd776"
+    },
+    "governance.evidence.statuses": {
+      "value": {
+        "release-corrections": "current",
+        "independent-reviewers": "unavailable",
+        "signer-inventory": "current",
+        "signer-rotation": "unavailable",
+        "recovery-drill": "unavailable",
+        "dependency-security": "unavailable",
+        "assistant-compatibility": "declaration-only",
+        "real-task-performance": "unavailable",
+        "external-adoption": "not-demonstrated"
+      },
+      "source": "governance/evidence-governance.json#/facts",
+      "sourceSha256": "6599f260302b71c26e1afb49c2de0398da7ff42bced602b1df1669811de4c660"
+    },
     "inventory.commands": {
       "value": 21,
       "source": "governance/project-state.generated.json#/inventory/commands",
-      "sourceSha256": "fb9c9df0173efce032b59c25638623005cdf88e817cba09b2e61aa5d86cfb5ff"
+      "sourceSha256": "cc6050f1331a98470924d21f32f059aa7a36b73d360dc5b501a685fb03d49a4a"
     },
     "inventory.skills": {
       "value": 6,
       "source": "governance/project-state.generated.json#/inventory/skills",
-      "sourceSha256": "fb9c9df0173efce032b59c25638623005cdf88e817cba09b2e61aa5d86cfb5ff"
+      "sourceSha256": "cc6050f1331a98470924d21f32f059aa7a36b73d360dc5b501a685fb03d49a4a"
     },
     "runtime.node": {
       "value": ">=22",
       "source": "governance/project-state.generated.json#/runtime/node",
-      "sourceSha256": "fb9c9df0173efce032b59c25638623005cdf88e817cba09b2e61aa5d86cfb5ff"
+      "sourceSha256": "cc6050f1331a98470924d21f32f059aa7a36b73d360dc5b501a685fb03d49a4a"
     },
     "runtime.bash": {
       "value": "3.2+",
       "source": "governance/project-state.generated.json#/runtime/distributedBash",
-      "sourceSha256": "fb9c9df0173efce032b59c25638623005cdf88e817cba09b2e61aa5d86cfb5ff"
+      "sourceSha256": "cc6050f1331a98470924d21f32f059aa7a36b73d360dc5b501a685fb03d49a4a"
     }
   }
 }

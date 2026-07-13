@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["schemaVersion", "identity", "headState", "headSha256", "events"],
   "properties": {
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "identity": {
       "type": "object",
       "additionalProperties": false,
@@ -32,10 +32,11 @@
           "event": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["schemaVersion", "transition", "stableTag", "candidateTag", "sourceCommit", "candidateManifestSha256", "controlBundleSha256", "inputDigests", "outputDigests", "runId", "createdAt", "previousEventSha256"],
+            "required": ["schemaVersion", "transition", "mode", "stableTag", "candidateTag", "sourceCommit", "candidateManifestSha256", "controlBundleSha256", "inputDigests", "outputDigests", "runId", "createdAt", "previousEventSha256"],
             "properties": {
-              "schemaVersion": { "const": 1 },
+              "schemaVersion": { "const": 2 },
               "transition": { "type": "string", "pattern": "^[A-Z_]+->[A-Z_]+$" },
+              "mode": { "enum": ["promote", "recover", "drill"] },
               "stableTag": { "type": "string" },
               "candidateTag": { "type": "string" },
               "sourceCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },

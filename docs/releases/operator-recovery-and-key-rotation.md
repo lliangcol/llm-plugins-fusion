@@ -26,6 +26,13 @@ until another qualified reviewer participates.
 The active SSH public-key allowlist is `.github/release-signers`; operational
 metadata is `governance/release-operations.json`.
 
+Operational readiness is intentionally stricter than structural validation:
+it requires configured independent reviewers, two usable signers for release
+operations, current rotation evidence, a successful non-publishing recovery
+drill, and protected-environment evidence before stable promotion. Check it
+with `node scripts/validate-release-operational-readiness.mjs --mode promote`.
+Missing configuration is a blocker, never an implicit pass.
+
 1. Create a new signing key outside the repository and protect its private key.
 2. Add the new public key to `.github/release-signers` while retaining the old
    key for an overlap window.

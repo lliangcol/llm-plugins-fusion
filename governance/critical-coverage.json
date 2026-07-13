@@ -21,5 +21,9 @@
     "release-orchestrator.mjs": { "lines": 75, "branches": 60, "functions": 75 },
     "release-review.mjs": { "lines": 100, "branches": 90, "functions": 100 },
     "verify-independent-release-review.mjs": { "lines": 85, "branches": 65, "functions": 70 }
+    ,"verify-release-promotion.mjs": { "lines": 85, "branches": 80, "functions": 90 }
+    ,"verify-stable-install.mjs": { "lines": 90, "branches": 80, "functions": 90 }
+    ,"release-corrections.mjs": { "lines": 95, "branches": 90, "functions": 100 }
+    ,"validate-release-readiness.mjs": { "lines": 90, "branches": 85, "functions": 90 }
   }
 }

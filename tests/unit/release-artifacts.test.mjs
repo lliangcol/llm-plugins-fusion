@@ -7,6 +7,8 @@ import {
   buildReleaseArtifacts,
   deterministicTar,
   main,
+  npmPackageNameFromLockPath,
+  npmPackagePurl,
   tarPath,
 } from '../../scripts/build-release-artifacts.mjs';
 import { resolveFromModule } from '../../scripts/lib/repo-root.mjs';
@@ -25,6 +27,11 @@ test('release archive, manifest, build SBOM, runtime BOM, and build record are d
   assert.equal(sbom.bomFormat, 'CycloneDX');
   assert.equal(sbom.specVersion, '1.7');
   assert.ok(sbom.components.some((component) => component.name === 'ajv'));
+  const nodeTypes = sbom.components.find((component) => component.name === '@types/node');
+  assert.equal(nodeTypes.purl, `pkg:npm/%40types/node@${nodeTypes.version}`);
+  assert.equal(nodeTypes.scope, 'required');
+  assert.equal(sbom.components.find((component) => component.name === '@typescript/typescript-aix-ppc64').scope, 'optional');
+  assert.equal(sbom.components.find((component) => component.name === 'ajv').scope, 'required');
   const runtime = JSON.parse(await readFile(left.runtimeCapabilitiesPath, 'utf8'));
   assert.equal(runtime.metadata.component.hashes[0].content, left.archiveSha256);
   assert.equal(runtime.components.length, 4);
@@ -52,6 +59,12 @@ test('release archive, manifest, build SBOM, runtime BOM, and build record are d
 });
 
 test('release artifact helpers cover long archive paths and CLI outcomes', () => {
+  assert.equal(npmPackageNameFromLockPath('node_modules/ajv'), 'ajv');
+  assert.equal(npmPackageNameFromLockPath('node_modules/parent/node_modules/@scope/child'), '@scope/child');
+  assert.throws(() => npmPackageNameFromLockPath('packages/not-a-lock-entry'), /not under node_modules/u);
+  assert.equal(npmPackagePurl('ajv', '8.17.1'), 'pkg:npm/ajv@8.17.1');
+  assert.equal(npmPackagePurl('@types/node', '22.20.1'), 'pkg:npm/%40types/node@22.20.1');
+  assert.throws(() => npmPackagePurl('@invalid', '1.0.0'), /invalid scoped npm package/u);
   assert.deepEqual(tarPath('short/file.txt'), { name: 'short/file.txt', prefix: '' });
   const prefix = 'nested/'.repeat(15).slice(0, -1);
   const longPath = `${prefix}/file.txt`;

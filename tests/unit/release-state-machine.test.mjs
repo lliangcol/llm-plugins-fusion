@@ -13,10 +13,12 @@ test('release state machine covers every legal transition exactly once', () => {
 
 test('transition events form a deterministic digest chain', () => {
   const identity = { stableTag: 'v4.0.0', candidateTag: 'v4.0.0-rc.1', sourceCommit: 'a'.repeat(40), candidateManifestSha256: 'b'.repeat(64), controlBundleSha256: 'c'.repeat(64) };
-  const first = createTransitionEvent({ transition: { from: 'DRAFT', to: 'CANDIDATE_TAGGED' }, identity, runId: '1', createdAt: '2026-07-12T00:00:00Z' });
-  const second = createTransitionEvent({ transition: { from: 'CANDIDATE_TAGGED', to: 'CANDIDATE_VERIFIED' }, identity, runId: '1', createdAt: '2026-07-12T00:00:01Z', previousEventSha256: first.sha256 });
+  const first = createTransitionEvent({ transition: { from: 'DRAFT', to: 'CANDIDATE_TAGGED' }, identity, mode: 'promote', runId: '1', createdAt: '2026-07-12T00:00:00Z' });
+  const second = createTransitionEvent({ transition: { from: 'CANDIDATE_TAGGED', to: 'CANDIDATE_VERIFIED' }, identity, mode: 'promote', runId: '1', createdAt: '2026-07-12T00:00:01Z', previousEventSha256: first.sha256 });
   assert.match(first.sha256, /^[a-f0-9]{64}$/u);
+  assert.equal(first.event.mode, 'promote');
   assert.equal(second.event.previousEventSha256, first.sha256);
+  assert.throws(() => createTransitionEvent({ transition: { from: 'DRAFT', to: 'CANDIDATE_TAGGED' }, identity, runId: '1', createdAt: '2026-07-12T00:00:00Z' }), /unknown release mode/u);
 });
 
 test('asset reconciliation reuses identical bytes and quarantines conflicts', () => {

@@ -86,6 +86,26 @@ function gitValue(root, args) {
   return result.status === 0 ? result.stdout.trim() : 'unknown';
 }
 
+export function npmPackagePurl(name, version) {
+  if (name.startsWith('@')) {
+    const separator = name.indexOf('/');
+    if (separator <= 1 || separator === name.length - 1) throw new Error(`invalid scoped npm package name: ${name}`);
+    return `pkg:npm/${encodeURIComponent(name.slice(0, separator))}/${encodeURIComponent(name.slice(separator + 1))}@${encodeURIComponent(version)}`;
+  }
+  return `pkg:npm/${encodeURIComponent(name)}@${encodeURIComponent(version)}`;
+}
+
+export function npmPackageNameFromLockPath(path) {
+  const marker = 'node_modules/';
+  const index = path.lastIndexOf(marker);
+  if (index < 0) throw new Error(`npm lock package path is not under node_modules: ${path}`);
+  const name = path.slice(index + marker.length);
+  if (!name || (!name.startsWith('@') && name.includes('/')) || (name.startsWith('@') && name.split('/').length !== 2)) {
+    throw new Error(`npm lock package path has an invalid package name: ${path}`);
+  }
+  return name;
+}
+
 /** @param {{root?: string, outDir?: string, now?: () => Date, env?: NodeJS.ProcessEnv}} [options] */
 export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/release-artifacts', now, env = process.env } = {}) {
   const sourceEpoch = Number(env.SOURCE_DATE_EPOCH);
@@ -118,14 +138,15 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
   const buildComponents = Object.entries(packageLock.packages ?? {})
     .filter(([path, data]) => path.startsWith('node_modules/') && data.version)
     .map(([path, data]) => {
-      const name = path.slice('node_modules/'.length);
+      const name = npmPackageNameFromLockPath(path);
+      const purl = npmPackagePurl(name, data.version);
       return {
         type: 'library',
         name,
         version: data.version,
-        'bom-ref': `pkg:npm/${name}@${data.version}`,
-        purl: `pkg:npm/${name}@${data.version}`,
-        scope: 'required',
+        'bom-ref': purl,
+        purl,
+        scope: data.optional ? 'optional' : 'required',
         ...(data.license ? { licenses: [{ license: { id: data.license } }] } : {}),
       };
     });

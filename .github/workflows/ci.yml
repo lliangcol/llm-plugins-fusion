@@ -102,6 +102,8 @@ jobs:
       - run: npm test
       - run: npm run test:coverage:check
       - run: npm run test:mutation:critical
+      - name: Report release readiness without weakening ordinary PR integrity
+        run: npm run validate:release-readiness
       - name: Collect validation gate timings
         run: node scripts/validate-all.mjs --write-timings
       - run: node scripts/generate-validation-timing-trend.mjs --input .metrics/validation-timings.json --output .metrics/validation-timing-trend.json

@@ -19,13 +19,20 @@ framework surface does not imply a mature multi-plugin ecosystem or portal.
   `llmf` commands. Cross-package imports use their explicit
   `@llm-plugins-fusion/*` package contracts; the workspaces are not public npm
   packages and do not change the single-plugin release boundary.
-- `@llm-plugins-fusion/spec` exposes `validateAndLoadSpecBundle()` with stable
+- `@llm-plugins-fusion/spec` exposes `loadSpecBundle()` and the compatibility
+  alias `validateAndLoadSpecBundle()` as validated filesystem boundaries with stable
   layout, schema, and invariant error codes. Callers inject their schema
   validator, so the private package stays independent of a specific engine.
   All `llmf` commands that read a product bundle use this validated boundary;
   the CLI supplies the repository's standard Ajv validator. Bundle layout and
   adapter paths must be relative regular files contained below their declared
   roots, with symbolic-link traversal rejected.
+- `@llm-plugins-fusion/compiler` exposes `compileDirectory()` as the validated
+  default. The explicitly risky `loadSpecBundleUnchecked()` and
+  `compileDirectoryUnchecked()` names are reserved for callers that separately
+  prove prevalidation. `compileValidatedDirectory()` is deprecated in favor of
+  `compileDirectory()` and is scheduled for removal in 5.0.0. The pure
+  `compileProductBundle()` API remains filesystem-free.
 - Contract v6 migration is a pure framework API exported by
   `@llm-plugins-fusion/compiler`; the CLI and repository projection script use
   that package boundary instead of importing one another.

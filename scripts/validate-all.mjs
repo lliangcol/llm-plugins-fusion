@@ -320,6 +320,7 @@ async function main() {
     nodeTask('workflow.second-product', 'validate second-product full chain', 'scripts/validate-second-product-fixture.mjs'),
     nodeTask('schemas.differential', 'validate standard schema engine differential', 'scripts/validate-schema-engine-differential.mjs'),
     nodeTask('release.operations', 'validate release operations governance', 'scripts/validate-release-operations.mjs'),
+    nodeTask('governance.freshness', 'validate governed fact freshness', 'scripts/validate-governance-freshness.mjs'),
     nodeTask('release.channels', 'validate release-channel facts', 'scripts/validate-release-channel-facts.mjs'),
     nodeTask('control.complexity', 'validate control-plane complexity budget', 'scripts/validate-control-plane-complexity.mjs'),
     nodeTask('control.task.catalog', 'validate maintainer task catalog', 'scripts/generate-task-catalog.mjs'),

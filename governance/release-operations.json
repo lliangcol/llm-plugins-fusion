@@ -1,5 +1,6 @@
 {
-  "schemaVersion": 1,
+  "$schema": "../schemas/release-operations.schema.json",
+  "schemaVersion": 2,
   "independentReview": {
     "requiredForCandidate": true,
     "minimumApprovals": 1,
@@ -12,12 +13,19 @@
     "inventoryReviewedAt": "2026-07-12",
     "rotationReviewCadenceDays": 90,
     "overlapRequired": true,
-    "lastRotationEvidence": null
+    "lastRotationEvidence": null,
+    "revocationProcedure": "Remove the signer through reviewed governance, revoke repository access, rotate overlapping keys, and create an incident record.",
+    "lostKeyRecoveryProcedure": "Use a distinct authorized signer during the overlap window; if none remains, keep publication blocked pending owner restoration."
   },
   "recovery": {
     "workflow": ".github/workflows/release-recovery-drill.yml",
     "drillCadenceDays": 90,
     "lastSuccessfulDrill": null
+  },
+  "protectedPublication": {
+    "environment": "release",
+    "externalApprovalRequired": true,
+    "currentEvidence": null
   },
   "labels": {
     "source": ".github/labels.yml",

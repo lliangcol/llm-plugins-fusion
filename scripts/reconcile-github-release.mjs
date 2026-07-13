@@ -25,15 +25,31 @@ function assets(dir) {
   return files.map((path) => ({ name: basename(path), path, sha256: sha256File(path), bytes: statSync(path).size })).sort((a, b) => a.name.localeCompare(b.name));
 }
 
+function failureMessage(result, fallback) {
+  return result.stderr?.trim() || fallback;
+}
+
+function releaseIsMissing(result) {
+  return result.status !== 0 && (/^release not found$/iu.test(result.stderr?.trim() ?? '') || /\bHTTP 404\b/iu.test(result.stderr ?? ''));
+}
+
+function releaseHasNoAssets(result) {
+  return result.status !== 0 && /no assets found/iu.test(result.stderr ?? '');
+}
+
 export function reconcileGithubRelease({ tag, assetsDir, notes, prerelease = false }, { ghRun = gh } = {}) {
   const expected = assets(assetsDir);
   const existing = ghRun(['release', 'view', tag, '--json', 'isDraft'], { tolerate: true });
-  if (existing.status !== 0) ghRun(['release', 'create', tag, '--verify-tag', '--draft', `--prerelease=${prerelease}`, '--notes-file', notes, '--title', `nova-plugin ${tag}`]);
+  if (releaseIsMissing(existing)) ghRun(['release', 'create', tag, '--verify-tag', '--draft', `--prerelease=${prerelease}`, '--notes-file', notes, '--title', `nova-plugin ${tag}`]);
+  else if (existing.status !== 0) throw new Error(failureMessage(existing, `unable to inspect release ${tag}`));
   else if (JSON.parse(existing.stdout).isDraft !== true) throw new Error(`release ${tag} already exists and is not a draft`);
 
   const download = mkdtempSync(resolve(tmpdir(), 'nova-release-assets-'));
   try {
-    ghRun(['release', 'download', tag, '--dir', download], { tolerate: true });
+    const downloaded = ghRun(['release', 'download', tag, '--dir', download], { tolerate: true });
+    if (downloaded.status !== 0 && !releaseHasNoAssets(downloaded)) {
+      throw new Error(failureMessage(downloaded, `unable to inspect release assets for ${tag}`));
+    }
     const actual = assets(download);
     const plan = reconcileReleaseAssets(expected, actual);
     if (!plan.publishable) throw new Error(`release asset conflict requires quarantine: ${plan.quarantine.map((entry) => entry.actual?.name).join(', ')}`);

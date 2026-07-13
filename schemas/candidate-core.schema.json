@@ -3,7 +3,7 @@
   "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/candidate-core.schema.json",
   "title": "Release Candidate Core",
   "type": "object",
-  "required": ["schemaVersion", "candidate", "sourceDigests", "controlBundle", "artifacts", "evidence"],
+  "required": ["schemaVersion", "candidate", "sourceDigests", "controlBundle", "releasePolicy", "artifacts", "evidence"],
   "additionalProperties": false,
   "properties": {
     "schemaVersion": { "const": 2 },
@@ -17,6 +17,18 @@
         "path": { "type": "string" },
         "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
         "bytes": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "releasePolicy": {
+      "type": "object",
+      "required": ["status", "reasonCode", "correctionIds", "correctionsSha256", "maximumPermittedState"],
+      "additionalProperties": false,
+      "properties": {
+        "status": { "const": "READY" },
+        "reasonCode": { "const": "RELEASE_POLICY_READY" },
+        "correctionIds": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Z0-9-]+$" } },
+        "correctionsSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "maximumPermittedState": { "enum": ["CANDIDATE_TAGGED", "PROMOTION_READY", "INSTALL_PROVEN"] }
       }
     },
     "artifacts": { "type": "array", "minItems": 3 },

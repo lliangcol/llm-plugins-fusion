@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Added
+- Added digest-bound release correction enforcement across candidate,
+  promotion, orchestration, recovery, and readiness workflows.
+- Added privacy-preserving adoption and release-operations governance schemas.
 - Added private npm workspace boundaries for the CLI, compiler, conformance, and spec packages; cross-package imports now use explicit package contracts.
 - Added a package-level validated spec loader with stable layout/schema/invariant error categories, pure compiler-owned Contract v6 migration exports, composable truth/runtime/compatibility/docs/security check groups, and consistent MIT SPDX metadata across private workspaces.
 - Connected every bundle-reading `llmf` command to the validated loader, added fail-closed lexical/absolute/symbolic-link containment for layouts and adapters, and made security-sensitive migration input metadata explicit instead of name-inferred.
@@ -21,8 +24,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - Removed duplicate full-suite execution from `npm run check` by reusing the coverage-owned test inventory before maintainer working-tree evidence checks.
 
 ### Fixed
+- Made preview filesystem loading and compilation validate by default; retained
+  explicit `Unchecked` APIs and a deprecated 4.x validated compatibility alias.
 - Reconciled the `4.0.0` changelog narrative with the published `v4.0.0` stable release and added a dedicated release-channel drift check.
 - Made Windows validation select Git Bash and the native npm shim deterministically, and isolated runtime version probes from hook payload stdin.
+- Made empty audit compaction succeed, preflight all `llmf init` targets, reject linked adapter directories before writing, and recover an interrupted release ledger from exact pre-existing transition events.
+- Made GitHub Release reconciliation distinguish an absent release or empty asset set from authentication, network, and other CLI failures.
+- Encoded scoped and nested npm package identities correctly in CycloneDX Package URLs and preserved optional lockfile component scope in build SBOMs.
+
+### Security
+- Bounded compressed size, expanded size, entry size, and entry count before release or control-bundle extraction.
+- Bound orchestration mode into hashed release events so ledger recovery cannot relabel drill evidence as promotion evidence.
+- Rejected linked audit parent components, directories, logs, lock owners, and spool records before audit writes, compaction, or record deletion.
 
 ## [4.0.0] - 2026-07-12
 

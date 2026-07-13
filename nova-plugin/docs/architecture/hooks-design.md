@@ -177,7 +177,8 @@ high-severity 信息停止后续 workflow。PostToolUse 发生在实际操作之
 事件只原子写入 `${CLAUDE_PLUGIN_DATA}/audit-spool/`；达到 50 条或 1 MiB 时
 异步触发独立 compactor，并在 `SessionEnd` 做最终 compact。compactor 在跨进程
 目录锁下汇总到 `audit.log`（本地，不提交 git）。目录使用 `0700`，health、lock、
-spool 和 log 文件使用 `0600`。日志位置、权限、轮转、
+spool 和 log 文件使用 `0600`。审计目录已有的父路径组件与最终目录必须是真实目录；
+log、lock owner 与 spool 记录必须是单硬链接普通文件，否则在追加、汇总或删除前失败关闭。日志位置、权限、轮转、
 health 事件、路径哈希与 best-effort redaction 边界见
 [`docs/privacy/data-handling.md`](../../../docs/privacy/data-handling.md)。
 

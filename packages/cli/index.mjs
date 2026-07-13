@@ -1,6 +1,6 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { lstatSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { compileValidatedDirectory, buildArtifact, migrateBehaviorSpec, migrateWorkflowSpec } from '@llm-plugins-fusion/compiler';
+import { compileDirectory, buildArtifact, migrateBehaviorSpec, migrateWorkflowSpec } from '@llm-plugins-fusion/compiler';
 import { evaluateBundle, testConformance } from '@llm-plugins-fusion/conformance';
 import { inspectSpecBundle, SPEC_ERROR, SpecBundleError, validateAndLoadSpecBundle } from '@llm-plugins-fusion/spec';
 import { createSpecSchemaValidator } from './schema-validator.mjs';
@@ -23,7 +23,15 @@ function option(args, name, fallback = null) {
 }
 
 function init(root) {
-  mkdirSync(resolve(root, 'adapters'), { recursive: true });
+  const adaptersRoot = resolve(root, 'adapters');
+  try {
+    const adapters = lstatSync(adaptersRoot);
+    if (adapters.isSymbolicLink() || !adapters.isDirectory()) {
+      throw new Error('initialization adapters target must be a real directory');
+    }
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
   const files = {
     'framework.json': { schemaVersion: 4, permissionStates: ['denied', 'prompt', 'preapproved', 'unsupported', 'explicit'], permissionPolicyKeys: ['workspaceRead', 'workspaceWrite', 'shell', 'network', 'credentials', 'userScopeMutation', 'externalPublish', 'gitHistoryMutation'], riskLevels: ['none', 'low', 'medium', 'high'], runtimeNeedLevels: ['none', 'optional', 'required'], credentialSources: ['none', 'assistant-owned-authentication', 'consumer-owned-authentication'], enforcementLevels: ['native-and-hook', 'adapter', 'advisory', 'unsupported'] },
     'product.json': { schemaVersion: 2, pluginNamespace: 'example-flow', expectedWorkflowCount: 1, stages: ['intake'], primaryEntrypoints: ['triage'], runtimeCompatibility: { 'example-host': '1.0.0' }, adapterDefinitions: ['adapters/example.json'], agents: ['coordinator'], packs: [], tools: ['Inspect'] },
@@ -31,7 +39,24 @@ function init(root) {
     'behaviors.json': { schemaVersion: 1, behaviors: [{ id: 'triage', purpose: 'Triage a request.', inputs: [{ name: 'REQUEST', required: true, aliases: [], description: 'Request.' }], decisionTable: [{ when: 'REQUEST exists.', action: 'Triage it.' }], invariants: ['No writes.'], stopConditions: ['REQUEST missing.'], workflowSteps: [{ id: 'triage', action: 'Triage.' }], deviationPolicy: { mode: 'forbid', instructions: 'No deviation.' }, output: { mode: 'chat', fields: [{ name: 'next step', required: true, description: 'Next step.' }], order: ['next step'], severityLevels: [] }, validation: ['One next step.'], failureOutput: { fields: ['status'], order: ['status'] } }] },
     'adapters/example.json': { schemaVersion: 1, id: 'example', enforcement: 'advisory', declaredLevel: 'L1', maximumSupportedLevel: 'L2', invocation: { kind: 'contract-manifest', prefix: 'example:' }, evidenceRequiredFor: ['L2'] },
   };
-  for (const [path, value] of Object.entries(files)) writeFileSync(resolve(root, path), `${JSON.stringify(value, null, 2)}\n`, { encoding: 'utf8', flag: 'wx' });
+  const existing = Object.keys(files).filter((path) => {
+    try { lstatSync(resolve(root, path)); return true; }
+    catch (error) { if (error.code === 'ENOENT') return false; throw error; }
+  });
+  if (existing.length) throw new Error(`initialization target already exists: ${existing.sort().join(', ')}`);
+  mkdirSync(adaptersRoot, { recursive: true });
+  const created = [];
+  try {
+    for (const [path, value] of Object.entries(files)) {
+      writeFileSync(resolve(root, path), `${JSON.stringify(value, null, 2)}\n`, { encoding: 'utf8', flag: 'wx' });
+      created.push(path);
+    }
+  } catch (error) {
+    for (const path of created.reverse()) {
+      try { rmSync(resolve(root, path), { force: true }); } catch { /* preserve the original initialization failure */ }
+    }
+    throw error;
+  }
   return { files: Object.keys(files).sort() };
 }
 
@@ -57,11 +82,11 @@ export async function runCli(args, io = process) {
     };
     else if (command === 'init') result = init(root);
     else if (command === 'doctor') result = { node: process.versions.node, platform: process.platform, architecture: process.arch, supported: Number(process.versions.node.split('.')[0]) >= 22 };
-    else if (command === 'validate') { const compiled = compileValidatedDirectory(root, { validateSchema }); const conformance = testConformance(compiled); if (!conformance.passed) return { exitCode: EXIT.VALIDATION, output: { ok: false, command, result: conformance } }; result = { valid: true, ...inspectSpecBundle(compiled) }; }
+    else if (command === 'validate') { const compiled = compileDirectory(root, { validateSchema }); const conformance = testConformance(compiled); if (!conformance.passed) return { exitCode: EXIT.VALIDATION, output: { ok: false, command, result: conformance } }; result = { valid: true, ...inspectSpecBundle(compiled) }; }
     else if (command === 'inspect') result = inspectSpecBundle(validateAndLoadSpecBundle(root, { validateSchema }));
-    else if (command === 'test') { result = testConformance(compileValidatedDirectory(root, { validateSchema })); if (!result.passed) return { exitCode: EXIT.CONFORMANCE, output: { ok: false, command, result } }; }
-    else if (command === 'eval') result = evaluateBundle(compileValidatedDirectory(root, { validateSchema }));
-    else if (command === 'build') { const out = option(args, '--out'); if (!out) throw Object.assign(new Error('--out is required'), { exitCode: EXIT.USAGE }); const artifact = buildArtifact(compileValidatedDirectory(root, { validateSchema })); mkdirSync(resolve(root, out, '..'), { recursive: true }); writeFileSync(resolve(root, out), `${JSON.stringify(artifact, null, 2)}\n`, 'utf8'); result = { output: resolve(root, out), workflowCount: artifact.workflows.length }; }
+    else if (command === 'test') { result = testConformance(compileDirectory(root, { validateSchema })); if (!result.passed) return { exitCode: EXIT.CONFORMANCE, output: { ok: false, command, result } }; }
+    else if (command === 'eval') result = evaluateBundle(compileDirectory(root, { validateSchema }));
+    else if (command === 'build') { const out = option(args, '--out'); if (!out) throw Object.assign(new Error('--out is required'), { exitCode: EXIT.USAGE }); const artifact = buildArtifact(compileDirectory(root, { validateSchema })); mkdirSync(resolve(root, out, '..'), { recursive: true }); writeFileSync(resolve(root, out), `${JSON.stringify(artifact, null, 2)}\n`, 'utf8'); result = { output: resolve(root, out), workflowCount: artifact.workflows.length }; }
     else if (command === 'migrate') { const bundle = validateAndLoadSpecBundle(root, { validateSchema }); const workflows = migrateWorkflowSpec(bundle.workflows, bundle.behaviors); const behaviors = migrateBehaviorSpec(bundle.behaviors); if (args.includes('--write')) { writeFileSync(resolve(root, 'workflows.v6.json'), `${JSON.stringify(workflows, null, 2)}\n`); writeFileSync(resolve(root, 'behaviors.v2.json'), `${JSON.stringify(behaviors, null, 2)}\n`); } result = { write: args.includes('--write'), workflowCount: workflows.workflows.length, workflowSchemaVersion: 6, behaviorSchemaVersion: 2 }; }
     return { exitCode: EXIT.OK, output: { ok: true, command, result } };
   } catch (error) {

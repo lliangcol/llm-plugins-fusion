@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/release-operations.schema.json",
+  "title": "Release Operations Governance",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schemaVersion", "independentReview", "signing", "recovery", "protectedPublication", "labels"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 2 },
+    "independentReview": { "type": "object" },
+    "signing": { "type": "object" },
+    "recovery": { "type": "object" },
+    "protectedPublication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["environment", "externalApprovalRequired", "currentEvidence"],
+      "properties": {
+        "environment": { "const": "release" },
+        "externalApprovalRequired": { "const": true },
+        "currentEvidence": { "type": ["object", "null"] }
+      }
+    },
+    "labels": { "type": "object" }
+  }
+}

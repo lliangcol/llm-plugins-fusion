@@ -8,6 +8,7 @@ import { requireOptionValue } from './lib/cli-args.mjs';
 import { buildReleaseCandidate } from './lib/release-candidate.mjs';
 import { canonicalSha256 } from './lib/canonical-json.mjs';
 import { verifyControlBundle } from './build-release-control-bundle.mjs';
+import { assertReleaseReady, evaluateReleaseCorrections, loadReleaseCorrections } from './lib/release-corrections.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -42,9 +43,27 @@ export function parseCandidateArgs(args, env = process.env) {
   return options;
 }
 
-/** @param {{args?: string[], env?: NodeJS.ProcessEnv, now?: () => Date}} [options] */
-export function generateReleaseCandidate({ args = process.argv.slice(2), env = process.env, now } = {}) {
+/** @param {{args?: string[], env?: NodeJS.ProcessEnv, now?: () => Date, correctionSource?: {document: {corrections: object[]}, sha256: string}}} [options] */
+export function generateReleaseCandidate({ args = process.argv.slice(2), env = process.env, now, correctionSource = loadReleaseCorrections(root) } = {}) {
   const options = parseCandidateArgs(args, env);
+  const reviewPath = options.evidencePaths.find((path) => path.endsWith('/independent-review.json') || path.endsWith('\\independent-review.json'));
+  const review = reviewPath ? JSON.parse(readFileSync(reviewPath, 'utf8')) : null;
+  const independentReview = {
+    passed: review?.passed === true
+      && review.commit === options.commit
+      && review.pullRequestHead === options.commit
+      && review.expectedReviewCommit === options.commit
+      && Number.isInteger(review.minimumApprovals)
+      && review.minimumApprovals >= 1
+      && Array.isArray(review.approvalReviewers)
+      && review.approvalReviewers.length >= review.minimumApprovals
+      && new Set(review.approvalReviewers).size === review.approvalReviewers.length
+      && review.approvalReviewers.every((reviewer) => !review.excludedReviewers?.includes(reviewer)),
+  };
+  const releasePolicy = assertReleaseReady(evaluateReleaseCorrections({
+    mode: 'candidate', stableTag: options.stableTag, candidateTag: options.tag, sourceCommit: options.commit,
+    corrections: correctionSource.document.corrections, correctionsSha256: correctionSource.sha256, independentReview,
+  }));
   const controlManifest = JSON.parse(readFileSync(options.controlBundleManifest, 'utf8'));
   const controlBundlePath = resolve(dirname(options.controlBundleManifest), 'release-control-bundle.tar.gz');
   verifyControlBundle({ bundlePath: controlBundlePath, manifest: controlManifest });
@@ -56,6 +75,7 @@ export function generateReleaseCandidate({ args = process.argv.slice(2), env = p
       sha256: controlManifest.bundleSha256,
       bytes: statSync(controlBundlePath).size,
     },
+    releasePolicy,
     now,
   });
   const candidateCoreSha256 = canonicalSha256(core);
@@ -66,6 +86,8 @@ export function generateReleaseCandidate({ args = process.argv.slice(2), env = p
     sourceCommit: options.commit,
     candidateCoreSha256,
     controlBundleSha256: controlManifest.bundleSha256,
+    correctionsSha256: releasePolicy.correctionsSha256,
+    correctionIds: releasePolicy.correctionIds,
   };
   const envelope = {
     schemaVersion: 3,

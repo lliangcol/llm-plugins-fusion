@@ -39,6 +39,7 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
+      - run: node scripts/validate-release-operational-readiness.mjs --mode drill
       - name: Authenticate, safely extract, and replay bound control
         env:
           GH_TOKEN: ${{ github.token }}
@@ -52,6 +53,8 @@ jobs:
           test "$(git cat-file -t "refs/tags/${CANDIDATE_TAG}")" = tag
           git verify-tag "${CANDIDATE_TAG}"
           test "${SOURCE_COMMIT}" = "$(git rev-list -n 1 "${CANDIDATE_TAG}")"
+          node scripts/validate-release-readiness.mjs --require-ready --mode drill \
+            --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}"
           mkdir -p .metrics/recovery/download .metrics/recovery/bundle
           gh release download "${CANDIDATE_TAG}" --dir .metrics/recovery/download --pattern 'nova-plugin-*-candidate-bundle.tar.gz'
           shopt -s nullglob

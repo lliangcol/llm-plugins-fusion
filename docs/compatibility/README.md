@@ -26,6 +26,10 @@ declares Claude Code and Codex at L2 and generic assistants at L1. Older live
 records remain historical when their source digests, exact-tag identity, or
 adapter-load evidence no longer matches the current tree.
 
+When credentials, budget, or a qualifying exact-tag run is absent, the status
+is `declaration-only` or unavailable. A zero-sample report never upgrades a
+compatibility or performance claim.
+
 ## Evidence Layers
 
 | Layer | What it proves | What it does not prove |

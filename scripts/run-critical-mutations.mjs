@@ -12,6 +12,28 @@ const target = 'evals/baselines/critical-mutation.json';
 
 const mutants = [
   {
+    id: 'active-release-hold-ignored',
+    source: 'scripts/lib/release-corrections.mjs',
+    dependencies: ['scripts/lib/canonical-json.mjs'],
+    from: "  if (correction.status === 'active-release-hold') return true;",
+    to: "  if (correction.status === 'active-release-hold') return false;",
+    async test(module) {
+      const result = module.evaluateReleaseCorrections({ mode: 'candidate', stableTag: 'v9.0.0', candidateTag: 'v9.0.0-rc.1', sourceCommit: 'a'.repeat(40), correctionsSha256: 'b'.repeat(64), corrections: [{ id: 'REL-001', status: 'active-release-hold', affectedCommits: ['c'.repeat(40)], stableRelease: { tag: 'v4.0.0' } }] });
+      if (result.status !== 'BLOCKED_POLICY') throw new Error('active release hold ignored');
+    },
+  },
+  {
+    id: 'correction-identity-binding-disabled',
+    source: 'scripts/lib/release-corrections.mjs',
+    dependencies: ['scripts/lib/canonical-json.mjs'],
+    from: "    if (identityMismatch) {",
+    to: "    if (false) {",
+    async test(module) {
+      const result = module.evaluateReleaseCorrections({ mode: 'candidate', stableTag: 'v4.1.0', candidateTag: 'v4.1.0-rc.2', sourceCommit: 'a'.repeat(40), correctionsSha256: 'b'.repeat(64), independentReview: { passed: true }, corrections: [{ id: 'REL-001', status: 'authorized-for-new-candidate', affectedCommits: ['a'.repeat(40)], stableRelease: { tag: 'v4.0.0' }, targetRelease: { stableTag: 'v4.1.0', candidateTag: 'v4.1.0-rc.1', sourceCommit: 'a'.repeat(40) } }] });
+      if (result.reasonCode !== 'CORRECTION_IDENTITY_MISMATCH') throw new Error('correction identity mismatch accepted');
+    },
+  },
+  {
     id: 'path-containment-always-allow',
     source: 'nova-plugin/runtime/safe-workspace-path.mjs',
     from: "  return rel === '' || (rel !== '..' && !rel.startsWith(`..${pathApi.sep}`) && !pathApi.isAbsolute(rel));",

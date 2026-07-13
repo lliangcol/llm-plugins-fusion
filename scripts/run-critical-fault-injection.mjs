@@ -18,6 +18,9 @@ const files = [
   'tests/integration/independent-release-review.test.mjs',
   'tests/integration/live-eval-proof.test.mjs',
   'tests/unit/bash-command-policy.test.mjs',
+  'tests/unit/release-corrections.test.mjs',
+  'tests/unit/release-readiness.test.mjs',
+  'tests/unit/verify-stable-install.test.mjs',
 ];
 export function main(args = process.argv.slice(2), runner = spawnSync) {
   if (args.includes('--help') || args.includes('-h')) {
