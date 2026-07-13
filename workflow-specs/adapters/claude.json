@@ -1,10 +1,12 @@
 {
   "$schema": "../../schemas/workflow-adapter.schema.json",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "claude",
   "enforcement": "native-and-hook",
   "declaredLevel": "L2",
   "maximumSupportedLevel": "L4",
   "invocation": { "kind": "namespaced-command", "prefix": "/nova-plugin:" },
-  "evidenceRequiredFor": ["L3", "L4"]
+  "evidenceRequiredFor": ["L3", "L4"],
+  "protocolVersions": { "workflow": "6.0.0", "runtime": "4.0.0", "adapter": "3.0.0" },
+  "contractEnforcement": { "inputs": "adapter", "approval": "hook", "output": "adapter", "effects": "native-and-hook", "fallback": "fail-closed" }
 }

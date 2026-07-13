@@ -7,6 +7,18 @@
     "L3",
     "L4"
   ],
+  "protocolVersions": {
+    "workflow": "6.0.0",
+    "runtime": "4.0.0",
+    "adapter": "3.0.0"
+  },
+  "contractEnforcement": {
+    "inputs": "adapter",
+    "approval": "hook",
+    "output": "adapter",
+    "effects": "native-and-hook",
+    "fallback": "fail-closed"
+  },
   "verificationEntrypoints": [
     "../../scripts/validate-plugin-install.mjs",
     "../../scripts/validate-plugin-route-live.mjs",

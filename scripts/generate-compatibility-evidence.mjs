@@ -115,7 +115,10 @@ export function buildRegistry() {
     schemaVersion: 1,
     generatedFrom: 'static adapter declarations plus digest-bound evals/evidence records',
     sourceDigests: Object.fromEntries([
-      'workflow-specs/workflows.json',
+      'workflow-specs/workflows.v6.json',
+      'workflow-specs/adapters/claude.json',
+      'workflow-specs/adapters/codex.json',
+      'workflow-specs/adapters/generic.json',
       'adapters/claude/manifest.json',
       'adapters/codex/AGENTS.md',
       'adapters/generic-agent-skills/manifest.json',

@@ -1,10 +1,12 @@
 {
   "$schema": "../../schemas/workflow-adapter.schema.json",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "generic",
   "enforcement": "advisory",
   "declaredLevel": "L1",
   "maximumSupportedLevel": "L4",
   "invocation": { "kind": "contract-manifest", "prefix": "workflow:" },
-  "evidenceRequiredFor": ["L2", "L3", "L4"]
+  "evidenceRequiredFor": ["L2", "L3", "L4"],
+  "protocolVersions": { "workflow": "6.0.0", "runtime": "4.0.0", "adapter": "3.0.0" },
+  "contractEnforcement": { "inputs": "advisory", "approval": "advisory", "output": "advisory", "effects": "advisory", "fallback": "report-unsupported" }
 }
