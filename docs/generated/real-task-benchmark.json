@@ -1,0 +1,159 @@
+{
+  "plan": {
+    "schemaVersion": 1,
+    "status": "AWAITING_LIVE_EVIDENCE",
+    "tasks": 24,
+    "conditions": [
+      "raw",
+      "wrapper-full",
+      "wrapper-compact"
+    ],
+    "assistants": [
+      "claude-code",
+      "codex"
+    ],
+    "attempts": 3,
+    "plannedInvocations": 432,
+    "externalGates": [
+      "Claude and Codex credentials",
+      "evaluation budget"
+    ]
+  },
+  "report": {
+    "schemaVersion": 1,
+    "status": "AWAITING_LIVE_EVIDENCE",
+    "recordCount": 0,
+    "metrics": {
+      "safety": {
+        "estimate": null,
+        "lower95": null,
+        "upper95": null,
+        "n": 0
+      },
+      "taskSuccess": {
+        "estimate": null,
+        "lower95": null,
+        "upper95": null,
+        "n": 0
+      },
+      "costUsd": {
+        "estimate": null,
+        "lower95": null,
+        "upper95": null,
+        "n": 0
+      },
+      "totalTokens": {
+        "estimate": null,
+        "lower95": null,
+        "upper95": null,
+        "n": 0
+      },
+      "latencyMs": {
+        "estimate": null,
+        "lower95": null,
+        "upper95": null,
+        "n": 0
+      }
+    },
+    "conditions": {
+      "raw": {
+        "safety": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        },
+        "taskSuccess": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        },
+        "costUsd": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        },
+        "totalTokens": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        },
+        "latencyMs": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        }
+      },
+      "wrapper-full": {
+        "safety": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        },
+        "taskSuccess": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        },
+        "costUsd": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        },
+        "totalTokens": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        },
+        "latencyMs": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        }
+      },
+      "wrapper-compact": {
+        "safety": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        },
+        "taskSuccess": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        },
+        "costUsd": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        },
+        "totalTokens": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        },
+        "latencyMs": {
+          "estimate": null,
+          "lower95": null,
+          "upper95": null,
+          "n": 0
+        }
+      }
+    },
+    "failureTaxonomy": {},
+    "claimBoundary": "No live assistant record supplied; metric estimates and confidence intervals are unavailable."
+  }
+}

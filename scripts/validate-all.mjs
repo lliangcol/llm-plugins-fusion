@@ -307,6 +307,7 @@ async function main() {
     nodeTask('workflow.runtime.behavior', 'validate direct command behavior contracts', 'scripts/validate-runtime-behavior-contracts.mjs'),
     nodeTask('workflow.behavior.golden', 'validate behavior IR golden suites', 'scripts/validate-behavior-golden.mjs'),
     nodeTask('workflow.live.dataset', 'validate live eval dataset', 'scripts/validate-live-eval-dataset.mjs'),
+    nodeTask('workflow.real-task.benchmark', 'validate real-task benchmark plan and report', 'scripts/run-real-task-benchmark.mjs'),
     nodeTask('workflow.second-product', 'validate second-product full chain', 'scripts/validate-second-product-fixture.mjs'),
     nodeTask('schemas.differential', 'validate standard schema engine differential', 'scripts/validate-schema-engine-differential.mjs'),
     nodeTask('release.operations', 'validate release operations governance', 'scripts/validate-release-operations.mjs'),
