@@ -8,6 +8,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "llmf": "node packages/cli/bin/llmf.mjs",
     "doctor": "node scripts/doctor.mjs",
     "demo:route": "node scripts/demo-route.mjs",
     "demo:review": "node scripts/demo-review.mjs",

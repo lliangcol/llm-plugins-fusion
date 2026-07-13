@@ -54,6 +54,7 @@
       "generate:quality-report",
       "generate:runtime-contracts",
       "lint",
+      "llmf",
       "normalize:surfaces",
       "release:artifacts",
       "release:candidate",
@@ -211,7 +212,7 @@
     "exactTagInstallGate": true
   },
   "sourceDigests": {
-    "package.json": "d1713b7750dd1bdadff0d021bc5393bb29c8a2b59f6a37d17569f0fae65d01f6",
+    "package.json": "254fa4d4030c0629b43d4a50a0aec4934aa115821f2d50808887df992edf5e9c",
     "nova-plugin/.claude-plugin/plugin.json": "54f3b9616d6acbb466a8774eeaccdf80c689adab6f7af2570dcd340446ac28f1",
     "workflow-specs/workflows.json": "c6dfaf7c60184db60c55e7e45ddce08d0c1d9beb29ea72232baac4f4695ebb9e",
     "workflow-specs/nova.product.json": "250595cc5bdd366682fcc53c20b0c037d068bad2461749fb7410e8c74f32d9bd",
