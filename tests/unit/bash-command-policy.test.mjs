@@ -69,6 +69,31 @@ test('Bash policy rejects workspace PATH shadowing', (t) => {
   assert.match(decision.reasons.join(' '), /inside the workspace/u);
 });
 
+test('Bash policy evaluates read-only rules without depending on runner tools', (t) => {
+  const workspace = mkdtempSync(resolve(tmpdir(), 'nova-shell-read-only-workspace-'));
+  const externalBin = mkdtempSync(resolve(tmpdir(), 'nova-shell-read-only-bin-'));
+  t.after(() => {
+    rmSync(workspace, { recursive: true, force: true });
+    rmSync(externalBin, { recursive: true, force: true });
+  });
+  const executable = resolve(externalBin, 'inspect');
+  writeFileSync(executable, '#!/bin/sh\nexit 0\n');
+  chmodSync(executable, 0o755);
+  const basePolicy = {
+    maxCommandBytes: 1000,
+    projectPolicyPath: '.nova/missing.json',
+    rules: [{ id: 'inspect-read-only', type: 'read-only-executable', executables: ['inspect'], forbiddenArguments: ['--write'] }],
+  };
+  const options = { workspaceRoot: workspace, basePolicy, env: { ...process.env, PATH: externalBin } };
+  assert.deepEqual(authorizeBashCommand('inspect target', options), {
+    allowed: true,
+    source: 'distributed-policy',
+    ruleId: 'inspect-read-only',
+    reasons: [],
+  });
+  assert.equal(authorizeBashCommand('inspect --write=target', options).allowed, false);
+});
+
 test('Bash policy fails closed for missing executables and unknown rule types', (t) => {
   const workspace = mkdtempSync(resolve(tmpdir(), 'nova-shell-missing-'));
   const emptyPath = resolve(workspace, 'empty-bin');
