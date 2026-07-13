@@ -362,6 +362,7 @@ const schemaPaths = [
   'schemas/candidate-core.schema.json',
   'schemas/promotion-intent.schema.json',
   'schemas/release-event.schema.json',
+  'schemas/release-reviewers.schema.json',
   'schemas/release-ledger.schema.json',
   'schemas/release-reviewers.schema.json',
   'schemas/control-bundle.schema.json',
