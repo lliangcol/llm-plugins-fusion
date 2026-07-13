@@ -1,8 +1,10 @@
 #!/usr/bin/env node
 /** Default-deny validation command broker for Bash PreToolUse events. */
 
-import { lstatSync, readFileSync, realpathSync } from 'node:fs';
-import { dirname, isAbsolute, posix, relative, resolve, win32 } from 'node:path';
+import { createHash } from 'node:crypto';
+import { lstatSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { delimiter, dirname, isAbsolute, join, posix, relative, resolve, win32 } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const moduleDir = dirname(fileURLToPath(import.meta.url));
@@ -92,7 +94,8 @@ export function loadProjectPolicy(workspaceRoot, relativePath) {
   const real = realpathSync(path);
   if (!pathInside(root, real)) return { policy: null, errors: ['project shell policy resolves outside the workspace'] };
   let policy;
-  try { policy = JSON.parse(readFileSync(real, 'utf8')); } catch (error) { return { policy: null, errors: [`project shell policy is invalid JSON: ${error.message}`] }; }
+  let raw;
+  try { raw = readFileSync(real, 'utf8'); policy = JSON.parse(raw); } catch (error) { return { policy: null, errors: [`project shell policy is invalid JSON: ${error.message}`] }; }
   const errors = [];
   if (policy.schemaVersion !== 1) errors.push('project shell policy schemaVersion must be 1');
   if (!Array.isArray(policy.allowCommands)) errors.push('project shell policy allowCommands must be an array');
@@ -105,7 +108,41 @@ export function loadProjectPolicy(workspaceRoot, relativePath) {
     if (typeof entry.purpose !== 'string' || entry.purpose.length === 0) errors.push(`allowCommands[${index}].purpose is required`);
     for (const key of Object.keys(entry)) if (!['id', 'argv', 'purpose'].includes(key)) errors.push(`allowCommands[${index}] contains unsupported key ${key}`);
   }
-  return { policy: errors.length ? null : policy, errors };
+  return { policy: errors.length ? null : policy, errors, digest: createHash('sha256').update(raw).digest('hex') };
+}
+
+function executableIdentity(token, { workspaceRoot, env = process.env } = {}) {
+  const pathEntries = String(env.PATH ?? '').split(delimiter).filter(Boolean);
+  const names = process.platform === 'win32'
+    ? String(env.PATHEXT ?? '.EXE;.CMD;.BAT;.COM').split(';').filter(Boolean).map((extension) => token.toLowerCase().endsWith(extension.toLowerCase()) ? token : `${token}${extension.toLowerCase()}`)
+    : [token];
+  for (const entry of pathEntries) {
+    for (const name of names) {
+      const candidate = resolve(entry, name);
+      const stats = statSync(candidate, { throwIfNoEntry: false });
+      if (!stats?.isFile()) continue;
+      const real = realpathSync.native(candidate);
+      if (pathInside(realpathSync(workspaceRoot), real)) throw new Error(`executable resolves inside the workspace: ${token}`);
+      return { real, dev: stats.dev, ino: stats.ino };
+    }
+  }
+  throw new Error(`executable was not found on PATH: ${token}`);
+}
+
+function pinSessionPolicy({ sessionId, workspaceRoot, basePolicy, projectDigest = 'absent', stateRoot = join(tmpdir(), 'nova-shell-policy-sessions') }) {
+  if (typeof sessionId !== 'string' || !/^[A-Za-z0-9._:-]{1,128}$/u.test(sessionId)) throw new Error('session_id is required for shell policy pinning');
+  const root = realpathSync(workspaceRoot);
+  const key = createHash('sha256').update(`${root}\0${sessionId}`).digest('hex');
+  const policyDigest = createHash('sha256').update(JSON.stringify(basePolicy)).update('\0').update(projectDigest).digest('hex');
+  mkdirSync(stateRoot, { recursive: true, mode: 0o700 });
+  const statePath = join(stateRoot, `${key}.json`);
+  const expected = `${JSON.stringify({ schemaVersion: 1, policyDigest })}\n`;
+  try {
+    writeFileSync(statePath, expected, { encoding: 'utf8', flag: 'wx', mode: 0o600 });
+  } catch (error) {
+    if (error.code !== 'EEXIST') throw error;
+    if (readFileSync(statePath, 'utf8') !== expected) throw new Error('shell policy changed after the session policy was pinned');
+  }
 }
 
 function matchesRule(tokens, rule) {
@@ -131,7 +168,7 @@ function matchesRule(tokens, rule) {
   return false;
 }
 
-export function authorizeBashCommand(command, { workspaceRoot = process.cwd(), basePolicy = readBasePolicy() } = {}) {
+export function authorizeBashCommand(command, { workspaceRoot = process.cwd(), basePolicy = readBasePolicy(), sessionId = null, stateRoot, env = process.env } = {}) {
   const reasons = [];
   if (typeof command !== 'string' || command.trim() === '') return { allowed: false, source: null, ruleId: null, reasons: ['Bash command must be a non-empty string'] };
   if (Buffer.byteLength(command, 'utf8') > basePolicy.maxCommandBytes) reasons.push('command exceeds the guarded size limit');
@@ -150,12 +187,19 @@ export function authorizeBashCommand(command, { workspaceRoot = process.cwd(), b
   if (tokens.slice(1).some((token) => isAbsolute(token) || posix.isAbsolute(token) || win32.isAbsolute(token) || token.split(/[\\/]/u).includes('..'))) reasons.push('absolute or parent-traversal arguments are not allowed');
   if (reasons.length) return { allowed: false, source: null, ruleId: null, reasons: [...new Set(reasons)] };
 
+  try { executableIdentity(tokens[0], { workspaceRoot, env }); } catch (error) { reasons.push(error.message); }
+
+  const project = loadProjectPolicy(workspaceRoot, basePolicy.projectPolicyPath);
+  if (project.errors.length) reasons.push(...project.errors);
+  if (sessionId) {
+    try { pinSessionPolicy({ sessionId, workspaceRoot, basePolicy, projectDigest: project.digest, stateRoot }); } catch (error) { reasons.push(error.message); }
+  }
+  if (reasons.length) return { allowed: false, source: null, ruleId: null, reasons: [...new Set(reasons)] };
+
   for (const rule of basePolicy.rules) {
     if (matchesRule(tokens, rule)) return { allowed: true, source: 'distributed-policy', ruleId: rule.id, reasons: [] };
   }
 
-  const project = loadProjectPolicy(workspaceRoot, basePolicy.projectPolicyPath);
-  if (project.errors.length) return { allowed: false, source: null, ruleId: null, reasons: project.errors };
   for (const entry of project.policy?.allowCommands ?? []) {
     if (JSON.stringify(tokens) === JSON.stringify(entry.argv)) return { allowed: true, source: 'project-exact-policy', ruleId: entry.id, reasons: [] };
   }
@@ -177,7 +221,7 @@ function main() {
   let payload;
   try { payload = JSON.parse(readFileSync(0, 'utf8')); } catch { block(['hook payload is not valid JSON']); }
   if (payload?.tool_name !== 'Bash') block([`unexpected tool ${JSON.stringify(payload?.tool_name)}`]);
-  const decision = authorizeBashCommand(payload?.tool_input?.command, { workspaceRoot: payload?.cwd ?? process.cwd() });
+  const decision = authorizeBashCommand(payload?.tool_input?.command, { workspaceRoot: payload?.cwd ?? process.cwd(), sessionId: payload?.session_id });
   if (!decision.allowed) block(decision.reasons);
 }
 

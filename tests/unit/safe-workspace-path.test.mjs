@@ -7,6 +7,7 @@ import {
   configuredArtifactRoots,
   isPathInside,
   isProtectedHooksPath,
+  isProtectedShellControlPath,
   resolveWorkspaceTarget,
 } from '../../nova-plugin/runtime/safe-workspace-path.mjs';
 
@@ -70,4 +71,6 @@ test('protected hook paths are exact rather than basename-wide', async (t) => {
   const pluginRoot = join(workspace, 'nova-plugin');
   assert.equal(isProtectedHooksPath(join(workspace, '.claude/hooks.json'), { projectRoot: workspace, pluginRoot }), true);
   assert.equal(isProtectedHooksPath(join(workspace, 'config/hooks.json'), { projectRoot: workspace, pluginRoot }), false);
+  assert.equal(isProtectedShellControlPath(join(workspace, '.nova/shell-policy.json'), { projectRoot: workspace, pluginRoot }), true);
+  assert.equal(isProtectedShellControlPath(join(pluginRoot, 'hooks/scripts/pre-bash-check.mjs'), { projectRoot: workspace, pluginRoot }), true);
 });
