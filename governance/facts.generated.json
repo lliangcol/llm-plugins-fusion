@@ -26,6 +26,13 @@
       "source": "governance/release-channels.json#/stable/state",
       "sourceSha256": "b2d679a70585deb955aa507bda4678774aaa45cfc99b18afe22306b4a23fe082"
     },
+    "release.corrections.activeHolds": {
+      "value": [
+        "LPF-AUTO-2026-07-RC-001"
+      ],
+      "source": "governance/release-corrections.json#/corrections",
+      "sourceSha256": "49912f27e834b01a11534ad91779f39197b40f5ee40cf6341af3dc0d7d25da48"
+    },
     "release.canary.ref": {
       "value": "main",
       "source": "governance/release-channels.json#/canary/ref",

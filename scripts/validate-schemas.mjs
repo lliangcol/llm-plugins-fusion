@@ -288,6 +288,11 @@ const targets = [
     label: 'governance/release-channels.json',
   },
   {
+    schema: loadJson('schemas/release-corrections.schema.json'),
+    data: loadJson('governance/release-corrections.json'),
+    label: 'governance/release-corrections.json',
+  },
+  {
     schema: loadJson('schemas/release-reviewers.schema.json'),
     data: loadJson('governance/release-reviewers.json'),
     label: 'governance/release-reviewers.json',
@@ -365,6 +370,7 @@ const schemaPaths = [
   'schemas/release-reviewers.schema.json',
   'schemas/release-ledger.schema.json',
   'schemas/release-reviewers.schema.json',
+  'schemas/release-corrections.schema.json',
   'schemas/control-bundle.schema.json',
   'schemas/stable-install-proof.schema.json',
   'schemas/release-channels.schema.json',
@@ -437,6 +443,7 @@ const registrySource = loadJson('.claude-plugin/registry.source.json');
 const marketplace = loadJson('.claude-plugin/marketplace.json');
 const metadata = loadJson('.claude-plugin/marketplace.metadata.json');
 const releaseChannels = loadJson('governance/release-channels.json');
+const releaseCorrections = loadJson('governance/release-corrections.json');
 const stableInstallProof = loadJson('governance/stable-install-proof.json');
 validateUniqueValues(registrySource.plugins ?? [], '.claude-plugin/registry.source.json', 'plugin source', (entry) => entry?.localSource);
 validateUniqueValues(marketplace.plugins ?? [], '.claude-plugin/marketplace.json', 'plugin name', (entry) => entry?.name);
@@ -484,6 +491,22 @@ if (releaseChannels.stable.state === 'INSTALL_PROVEN') {
     console.error('  - INSTALL_PROVEN requires the canonical proof path, matching stable identity, and matching plugin tree digests');
   } else {
     console.log('✓ stable install proof alignment');
+  }
+}
+
+for (const correction of releaseCorrections.corrections ?? []) {
+  const stableMatches = correction.stableRelease?.tag === releaseChannels.stable.tag
+    && correction.stableRelease?.commit === releaseChannels.stable.commit
+    && correction.stableRelease?.state === releaseChannels.stable.state;
+  if (!stableMatches) {
+    allPassed = false;
+    console.error(`✗ release correction ${correction.id}`);
+    console.error('  - correction stableRelease must match governance/release-channels.json stable identity');
+  }
+  if (correction.status === 'active-release-hold' && correction.releaseBoundary?.mayPublishStable !== false) {
+    allPassed = false;
+    console.error(`✗ release correction ${correction.id}`);
+    console.error('  - active release holds must not allow stable publication');
   }
 }
 
