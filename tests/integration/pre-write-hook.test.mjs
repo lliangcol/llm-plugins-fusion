@@ -76,6 +76,17 @@ test('write guard reconstructs Edit content before validating hooks.json', async
   assert.match(invalid.stderr, /hooks\.json 结构无效/);
 });
 
+test('write guard rejects shell control-path mutation', async (t) => {
+  const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-shell-control-'));
+  t.after(() => rm(temp, { recursive: true, force: true }));
+  await mkdir(join(temp, '.nova'));
+  const policy = join(temp, '.nova/shell-policy.json');
+  await writeFile(policy, '{"schemaVersion":1,"allowCommands":[]}\n');
+  const result = await runGuard(writePayload(policy, '{"schemaVersion":1,"allowCommands":[]}\n'), { projectRoot: temp });
+  assert.equal(result.code, 2);
+  assert.match(result.stderr, /control path cannot be modified/u);
+});
+
 test('write guard enforces Edit matching and replace_all semantics', async (t) => {
   const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-match-'));
   t.after(() => rm(temp, { recursive: true, force: true }));

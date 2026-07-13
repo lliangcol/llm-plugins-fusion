@@ -142,6 +142,21 @@ export function protectedHooksPaths({ projectRoot, pluginRoot }) {
   ].map((entry) => comparable(entry));
 }
 
+export function protectedShellControlPaths({ projectRoot, pluginRoot }) {
+  return [
+    resolve(projectRoot, '.nova/shell-policy.json'),
+    resolve(pluginRoot, 'runtime/shell-command-policy.json'),
+    resolve(pluginRoot, 'runtime/safe-workspace-path.mjs'),
+    resolve(pluginRoot, 'hooks/scripts/pre-bash-check.mjs'),
+    resolve(pluginRoot, 'hooks/scripts/pre-write-check.mjs'),
+  ].map((entry) => comparable(entry));
+}
+
 export function isProtectedHooksPath(target, options) {
   return protectedHooksPaths(options).includes(comparable(target));
+}
+
+
+export function isProtectedShellControlPath(target, options) {
+  return protectedShellControlPaths(options).includes(comparable(target));
 }

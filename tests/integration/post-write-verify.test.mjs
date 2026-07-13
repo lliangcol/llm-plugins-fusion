@@ -87,3 +87,13 @@ test('post-write verifier revalidates only exact protected hooks configuration',
   const allowed = await runVerifier(workspace, unrelatedPath);
   assert.equal(allowed.ok, true, allowed.stderr);
 });
+
+test('post-write verifier reports shell control-path mutation', async (t) => {
+  const { workspace } = await fixture(t);
+  await mkdir(join(workspace, '.nova'));
+  const policy = join(workspace, '.nova/shell-policy.json');
+  await writeFile(policy, '{"schemaVersion":1,"allowCommands":[]}\n');
+  const blocked = await runVerifier(workspace, policy);
+  assert.equal(blocked.code, 2);
+  assert.match(blocked.stderr, /Shell policy control path was modified/u);
+});
