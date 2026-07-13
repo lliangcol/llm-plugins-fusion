@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { lstatSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { compileDirectory, buildArtifact, migrateBehaviorSpec, migrateWorkflowSpec } from '@llm-plugins-fusion/compiler';
 import { evaluateBundle, testConformance } from '@llm-plugins-fusion/conformance';
@@ -23,7 +23,15 @@ function option(args, name, fallback = null) {
 }
 
 function init(root) {
-  mkdirSync(resolve(root, 'adapters'), { recursive: true });
+  const adaptersRoot = resolve(root, 'adapters');
+  try {
+    const adapters = lstatSync(adaptersRoot);
+    if (adapters.isSymbolicLink() || !adapters.isDirectory()) {
+      throw new Error('initialization adapters target must be a real directory');
+    }
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+  }
   const files = {
     'framework.json': { schemaVersion: 4, permissionStates: ['denied', 'prompt', 'preapproved', 'unsupported', 'explicit'], permissionPolicyKeys: ['workspaceRead', 'workspaceWrite', 'shell', 'network', 'credentials', 'userScopeMutation', 'externalPublish', 'gitHistoryMutation'], riskLevels: ['none', 'low', 'medium', 'high'], runtimeNeedLevels: ['none', 'optional', 'required'], credentialSources: ['none', 'assistant-owned-authentication', 'consumer-owned-authentication'], enforcementLevels: ['native-and-hook', 'adapter', 'advisory', 'unsupported'] },
     'product.json': { schemaVersion: 2, pluginNamespace: 'example-flow', expectedWorkflowCount: 1, stages: ['intake'], primaryEntrypoints: ['triage'], runtimeCompatibility: { 'example-host': '1.0.0' }, adapterDefinitions: ['adapters/example.json'], agents: ['coordinator'], packs: [], tools: ['Inspect'] },
@@ -31,7 +39,24 @@ function init(root) {
     'behaviors.json': { schemaVersion: 1, behaviors: [{ id: 'triage', purpose: 'Triage a request.', inputs: [{ name: 'REQUEST', required: true, aliases: [], description: 'Request.' }], decisionTable: [{ when: 'REQUEST exists.', action: 'Triage it.' }], invariants: ['No writes.'], stopConditions: ['REQUEST missing.'], workflowSteps: [{ id: 'triage', action: 'Triage.' }], deviationPolicy: { mode: 'forbid', instructions: 'No deviation.' }, output: { mode: 'chat', fields: [{ name: 'next step', required: true, description: 'Next step.' }], order: ['next step'], severityLevels: [] }, validation: ['One next step.'], failureOutput: { fields: ['status'], order: ['status'] } }] },
     'adapters/example.json': { schemaVersion: 1, id: 'example', enforcement: 'advisory', declaredLevel: 'L1', maximumSupportedLevel: 'L2', invocation: { kind: 'contract-manifest', prefix: 'example:' }, evidenceRequiredFor: ['L2'] },
   };
-  for (const [path, value] of Object.entries(files)) writeFileSync(resolve(root, path), `${JSON.stringify(value, null, 2)}\n`, { encoding: 'utf8', flag: 'wx' });
+  const existing = Object.keys(files).filter((path) => {
+    try { lstatSync(resolve(root, path)); return true; }
+    catch (error) { if (error.code === 'ENOENT') return false; throw error; }
+  });
+  if (existing.length) throw new Error(`initialization target already exists: ${existing.sort().join(', ')}`);
+  mkdirSync(adaptersRoot, { recursive: true });
+  const created = [];
+  try {
+    for (const [path, value] of Object.entries(files)) {
+      writeFileSync(resolve(root, path), `${JSON.stringify(value, null, 2)}\n`, { encoding: 'utf8', flag: 'wx' });
+      created.push(path);
+    }
+  } catch (error) {
+    for (const path of created.reverse()) {
+      try { rmSync(resolve(root, path), { force: true }); } catch { /* preserve the original initialization failure */ }
+    }
+    throw error;
+  }
   return { files: Object.keys(files).sort() };
 }
 

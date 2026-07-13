@@ -28,6 +28,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   explicit `Unchecked` APIs and a deprecated 4.x validated compatibility alias.
 - Reconciled the `4.0.0` changelog narrative with the published `v4.0.0` stable release and added a dedicated release-channel drift check.
 - Made Windows validation select Git Bash and the native npm shim deterministically, and isolated runtime version probes from hook payload stdin.
+- Made empty audit compaction succeed, preflight all `llmf init` targets, reject linked adapter directories before writing, and recover an interrupted release ledger from exact pre-existing transition events.
+- Made GitHub Release reconciliation distinguish an absent release or empty asset set from authentication, network, and other CLI failures.
+- Encoded scoped and nested npm package identities correctly in CycloneDX Package URLs and preserved optional lockfile component scope in build SBOMs.
+
+### Security
+- Bounded compressed size, expanded size, entry size, and entry count before release or control-bundle extraction.
+- Bound orchestration mode into hashed release events so ledger recovery cannot relabel drill evidence as promotion evidence.
+- Rejected linked audit parent components, directories, logs, lock owners, and spool records before audit writes, compaction, or record deletion.
 
 ## [4.0.0] - 2026-07-12
 

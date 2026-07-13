@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { basename, resolve } from 'node:path';
 import { test } from 'node:test';
@@ -32,8 +32,9 @@ test('llmf preview exposes stable JSON commands and builds the second product wi
   assert.equal(migrate.json.result.workflowSchemaVersion, 6);
 });
 
-test('llmf init is portable and usage failures have stable exit code 2', async () => {
+test('llmf init is portable and usage failures have stable exit code 2', async (t) => {
   const root = await mkdtemp(resolve(tmpdir(), 'llmf-init-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
   const initialized = await invoke(['init', '--root', root]);
   assert.equal(initialized.exitCode, 0);
   assert.equal((await invoke(['validate', '--root', root])).exitCode, 0);
@@ -44,6 +45,17 @@ test('llmf init is portable and usage failures have stable exit code 2', async (
   assert.equal(help.exitCode, 0);
   assert.equal(help.json.command, 'help');
   assert.equal(help.json.result.commands.migrate, 'preview or write Contract v6/v2 projections');
+
+  const conflictRoot = await mkdtemp(resolve(tmpdir(), 'llmf-init-conflict-'));
+  t.after(() => rm(conflictRoot, { recursive: true, force: true }));
+  await mkdir(resolve(conflictRoot, 'adapters'));
+  await writeFile(resolve(conflictRoot, 'adapters/example.json'), '{"owned":true}\n');
+  const conflict = await invoke(['init', '--root', conflictRoot]);
+  assert.equal(conflict.exitCode, 4);
+  assert.match(conflict.json.error, /initialization target already exists/u);
+  for (const name of ['framework.json', 'product.json', 'workflows.json', 'behaviors.json']) {
+    await assert.rejects(() => readFile(resolve(conflictRoot, name)), { code: 'ENOENT' });
+  }
 });
 
 test('llmf validates schemas and contains adapter paths before compilation', async () => {
@@ -70,4 +82,16 @@ test('llmf validates schemas and contains adapter paths before compilation', asy
   await rm(outsidePath, { force: true });
   assert.equal(escaped.exitCode, 4);
   assert.match(escaped.json.error, /adapter layout could not be loaded/u);
+});
+
+test('llmf init refuses an adapter-directory symlink without writing outside the root', { skip: process.platform === 'win32' }, async (t) => {
+  const root = await mkdtemp(resolve(tmpdir(), 'llmf-init-link-root-'));
+  const outside = await mkdtemp(resolve(tmpdir(), 'llmf-init-link-outside-'));
+  t.after(() => Promise.all([rm(root, { recursive: true, force: true }), rm(outside, { recursive: true, force: true })]));
+  await symlink(outside, resolve(root, 'adapters'));
+  const result = await invoke(['init', '--root', root]);
+  assert.equal(result.exitCode, 4);
+  assert.match(result.json.error, /adapters target must be a real directory/u);
+  await assert.rejects(() => readFile(resolve(outside, 'example.json')), { code: 'ENOENT' });
+  await assert.rejects(() => readFile(resolve(root, 'framework.json')), { code: 'ENOENT' });
 });

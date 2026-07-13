@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { EventEmitter } from 'node:events';
-import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import test from 'node:test';
@@ -56,4 +56,32 @@ test('audit threshold launches detached compaction and records spawn degradation
   assert.equal(unrefCalled, true);
   child.emit('error', new Error('spawn failed'));
   assert.match(readFileSync(resolve(root, 'audit-health.log'), 'utf8'), /spawn failed/u);
+});
+
+test('audit writer rejects a linked spool without writing through it', { skip: process.platform === 'win32' }, (t) => {
+  const root = mkdtempSync(resolve(tmpdir(), 'nova-audit-writer-link-'));
+  const outside = mkdtempSync(resolve(tmpdir(), 'nova-audit-writer-outside-'));
+  t.after(() => {
+    rmSync(root, { recursive: true, force: true });
+    rmSync(outside, { recursive: true, force: true });
+  });
+  symlinkSync(outside, resolve(root, 'audit-spool'));
+  assert.throws(() => writeAuditRecord({ tool_name: 'Read', tool_input: { file_path: 'safe.txt' } }, {
+    env: { CLAUDE_PLUGIN_DATA: root },
+  }), /path component is a symlink/u);
+  assert.deepEqual(readdirSync(outside), []);
+});
+
+test('audit writer rejects a linked parent component before creating its data directories', { skip: process.platform === 'win32' }, (t) => {
+  const root = mkdtempSync(resolve(tmpdir(), 'nova-audit-writer-parent-link-'));
+  const outside = mkdtempSync(resolve(tmpdir(), 'nova-audit-writer-parent-outside-'));
+  t.after(() => {
+    rmSync(root, { recursive: true, force: true });
+    rmSync(outside, { recursive: true, force: true });
+  });
+  symlinkSync(outside, resolve(root, 'linked-parent'));
+  assert.throws(() => writeAuditRecord({ tool_name: 'Read', tool_input: { file_path: 'safe.txt' } }, {
+    env: { CLAUDE_PLUGIN_DATA: resolve(root, 'linked-parent/plugin-data') },
+  }), /path component is a symlink/u);
+  assert.deepEqual(readdirSync(outside), []);
 });

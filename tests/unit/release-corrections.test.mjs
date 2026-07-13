@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import test from 'node:test';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -44,6 +45,10 @@ test('promotion fails closed for unverified candidate or missing operational evi
     mode: 'promote', independentReview: { passed: true }, protectedPublication: { passed: true }, installProof: { passed: true },
   });
   assert.equal(ready.status, 'READY');
+  const candidateMissingReview = evaluate([verified], { mode: 'candidate' });
+  assert.equal(candidateMissingReview.maximumPermittedState, 'CANDIDATE_TAGGED');
+  const promotionMissingReview = evaluate([verified], { mode: 'promote', protectedPublication: { passed: true } });
+  assert.equal(promotionMissingReview.maximumPermittedState, 'CANDIDATE_VERIFIED');
 });
 
 test('drill mode can never advance beyond PROMOTION_READY', () => {
@@ -74,6 +79,12 @@ test('correction loading verifies evidence digests and rejects self-reference', 
     document.corrections[0].auditTrail[0].evidence.path = 'evidence.txt';
     writeFileSync(path, JSON.stringify(document));
     assert.throws(() => loadReleaseCorrections(directory, 'corrections.json'), /digest differs/u);
+    const evidence = 'verified evidence';
+    const sha256 = createHash('sha256').update(evidence).digest('hex');
+    writeFileSync(resolve(directory, 'evidence.txt'), evidence);
+    document.corrections[0] = { id: 'X', authorizationEvidence: { path: 'evidence.txt', sha256 } };
+    writeFileSync(path, JSON.stringify(document));
+    assert.equal(loadReleaseCorrections(directory, 'corrections.json').document.corrections[0].id, 'X');
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
@@ -82,6 +93,8 @@ test('resolved and unrelated corrections do not block while recovery requires pr
   assert.equal(evaluate([resolved], { independentReview: { passed: true } }).status, 'READY');
   const unrelated = { ...base, status: 'authorized-for-new-candidate', affectedCommits: ['f'.repeat(40)], stableRelease: { tag: 'v3.0.0' }, targetRelease: { stableTag: 'v3.1.0', candidateTag: 'v3.1.0-rc.1', sourceCommit: 'f'.repeat(40) } };
   assert.equal(evaluate([unrelated], { independentReview: { passed: true } }).status, 'READY');
+  const affectedButResolved = { id: 'REL-AFFECTED', status: 'resolved-by-governed-release', affectedCommits: [identity.sourceCommit] };
+  assert.deepEqual(evaluate([affectedButResolved], { independentReview: { passed: true } }).correctionIds, ['REL-AFFECTED']);
   const verified = { ...base, status: 'candidate-verified', targetRelease: identity };
   const recovery = evaluate([verified], { mode: 'recover', independentReview: { passed: true } });
   assert.equal(recovery.reasonCode, 'PROTECTED_PUBLICATION_REQUIRED');

@@ -32,11 +32,13 @@ export function planReleaseTransitions(from, to) {
   }));
 }
 
-export function createTransitionEvent({ transition, identity, inputDigests = {}, outputDigests = {}, runId, createdAt, previousEventSha256 = null }) {
+export function createTransitionEvent({ transition, identity, inputDigests = {}, outputDigests = {}, mode, runId, createdAt, previousEventSha256 = null }) {
   assertReleaseTransition(transition.from, transition.to);
+  assertModeTransition(mode, transition);
   const event = {
-    schemaVersion: 1,
+    schemaVersion: 2,
     transition: `${transition.from}->${transition.to}`,
+    mode,
     stableTag: identity.stableTag,
     candidateTag: identity.candidateTag,
     sourceCommit: identity.sourceCommit,
@@ -52,7 +54,7 @@ export function createTransitionEvent({ transition, identity, inputDigests = {},
 }
 
 export function createReleaseLedger(identity) {
-  return { schemaVersion: 1, identity: { ...identity }, headState: 'DRAFT', headSha256: null, events: [] };
+  return { schemaVersion: 2, identity: { ...identity }, headState: 'DRAFT', headSha256: null, events: [] };
 }
 
 function assertModeTransition(mode, transition) {
@@ -62,7 +64,7 @@ function assertModeTransition(mode, transition) {
 }
 
 export function verifyReleaseLedger(ledger) {
-  if (!ledger || ledger.schemaVersion !== 1 || !ledger.identity || !Array.isArray(ledger.events)) throw new Error('invalid release ledger structure');
+  if (!ledger || ledger.schemaVersion !== 2 || !ledger.identity || !Array.isArray(ledger.events)) throw new Error('invalid release ledger structure');
   let state = 'DRAFT';
   let previous = null;
   const seenDigests = new Set();
@@ -74,6 +76,7 @@ export function verifyReleaseLedger(ledger) {
     if (seenDigests.has(digest) || seenTransitions.has(record.event.transition)) throw new Error('duplicate release ledger transition');
     const [from, to] = record.event.transition.split('->');
     assertReleaseTransition(from, to);
+    if (record.event.mode !== record.mode) throw new Error('release ledger event mode mismatch');
     assertModeTransition(record.mode, { from, to });
     if (from !== state || record.event.previousEventSha256 !== previous) throw new Error('release ledger chain is reordered or disconnected');
     for (const key of ['stableTag', 'candidateTag', 'sourceCommit', 'candidateManifestSha256', 'controlBundleSha256']) {
@@ -89,7 +92,7 @@ export function appendReleaseLedger(ledger, eventOptions, mode) {
   const verified = verifyReleaseLedger(ledger);
   assertModeTransition(mode, eventOptions.transition);
   if (eventOptions.transition.from !== verified.headState) throw new Error('release transition does not continue the ledger head');
-  const created = createTransitionEvent({ ...eventOptions, previousEventSha256: verified.headSha256 });
+  const created = createTransitionEvent({ ...eventOptions, mode, previousEventSha256: verified.headSha256 });
   const next = structuredClone(ledger);
   next.events.push({ mode, event: created.event, sha256: created.sha256 });
   next.headState = eventOptions.transition.to;

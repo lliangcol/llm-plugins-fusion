@@ -89,10 +89,11 @@ test('GitHub draft reconciliation uploads, verifies, and publishes exact bytes t
     const result = reconcileGithubRelease({ tag: 'v4.0.0', assetsDir: assets, notes }, {
       ghRun(args) {
         calls.push(args);
-        if (args[1] === 'view') return { status: 1, stdout: '', stderr: 'missing' };
+        if (args[1] === 'view') return { status: 1, stdout: '', stderr: 'release not found' };
         if (args[1] === 'download') {
           downloads += 1;
           if (downloads === 2) copyFileSync(resolve(assets, 'asset.txt'), resolve(args[args.indexOf('--dir') + 1], 'asset.txt'));
+          if (downloads === 1) return { status: 1, stdout: '', stderr: 'no assets found' };
         }
         return { status: 0, stdout: '{}', stderr: '' };
       },
@@ -116,7 +117,7 @@ test('candidate reconciliation preserves prerelease state and refuses a publishe
     reconcileGithubRelease({ tag: 'v4.0.0-rc.1', assetsDir: assets, notes, prerelease: true }, {
       ghRun(args) {
         calls.push(args);
-        if (args[1] === 'view') return { status: 1, stdout: '', stderr: 'missing' };
+        if (args[1] === 'view') return { status: 1, stdout: '', stderr: 'release not found' };
         if (args[1] === 'download') copyFileSync(resolve(assets, 'asset.txt'), resolve(args[args.indexOf('--dir') + 1], 'asset.txt'));
         return { status: 0, stdout: '{}', stderr: '' };
       },
@@ -130,6 +131,33 @@ test('candidate reconciliation preserves prerelease state and refuses a publishe
         return { status: 0, stdout: '{}', stderr: '' };
       },
     }), /not a draft/u);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test('GitHub draft reconciliation fails closed on lookup and asset-download errors', () => {
+  const directory = mkdtempSync(resolve(tmpdir(), 'nova-reconcile-errors-'));
+  try {
+    const assets = resolve(directory, 'assets');
+    const notes = resolve(directory, 'notes.md');
+    mkdirSync(assets);
+    writeFileSync(resolve(assets, 'asset.txt'), 'exact\n');
+    writeFileSync(notes, 'notes\n');
+    let createAttempted = false;
+    assert.throws(() => reconcileGithubRelease({ tag: 'v4.0.0', assetsDir: assets, notes }, {
+      ghRun(args) {
+        if (args[1] === 'view') return { status: 1, stdout: '', stderr: 'authentication failed: network unavailable' };
+        if (args[1] === 'create') createAttempted = true;
+        return { status: 0, stdout: '{}', stderr: '' };
+      },
+    }), /authentication failed/u);
+    assert.equal(createAttempted, false);
+    assert.throws(() => reconcileGithubRelease({ tag: 'v4.0.0', assetsDir: assets, notes }, {
+      ghRun(args) {
+        if (args[1] === 'view') return { status: 0, stdout: '{"isDraft":true}', stderr: '' };
+        if (args[1] === 'download') return { status: 1, stdout: '', stderr: 'network unavailable' };
+        return { status: 0, stdout: '{}', stderr: '' };
+      },
+    }), /network unavailable/u);
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 

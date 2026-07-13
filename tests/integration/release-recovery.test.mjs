@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, unlinkSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import test from 'node:test';
@@ -17,7 +17,17 @@ test('release continuation requires and extends the prior verified ledger', () =
     writeFileSync(intent, `${JSON.stringify({ stableTag: 'v4.1.0', candidateTag: 'v4.1.0-rc.1', sourceCommit, candidateCoreSha256: 'c'.repeat(64), controlBundleSha256: bundleSha256, correctionsSha256: correctionSource.sha256 })}\n`);
     const base = { stableTag: 'v4.1.0', candidateTag: 'v4.1.0-rc.1', sourceCommit, promotionIntent: intent, controlBundle: control, eventDir };
     assert.throws(() => orchestrateRelease({ ...base, mode: 'recover', state: 'CANDIDATE_TAGGED', targetState: 'CANDIDATE_VERIFIED', runId: 'missing', dryRun: false }, undefined, correctionSource), /prior release ledger/u);
-    orchestrateRelease({ ...base, mode: 'promote', state: 'DRAFT', targetState: 'CANDIDATE_TAGGED', runId: 'first', dryRun: false }, () => new Date('2026-07-13T00:00:00Z'), correctionSource);
+    const initial = { ...base, mode: 'promote', state: 'DRAFT', targetState: 'CANDIDATE_TAGGED', runId: 'first', dryRun: false };
+    orchestrateRelease(initial, () => new Date('2026-07-13T00:00:00Z'), correctionSource);
+    const eventPath = resolve(eventDir, '01-draft-to-candidate_tagged.json');
+    const originalEvent = readFileSync(eventPath, 'utf8');
+    unlinkSync(resolve(eventDir, 'release-ledger.json'));
+    const recoveredInitial = orchestrateRelease({ ...initial, runId: 'retry' }, () => new Date('2026-07-13T00:00:30Z'), correctionSource);
+    assert.equal(recoveredInitial.ledgerHeadState, 'CANDIDATE_TAGGED');
+    assert.equal(readFileSync(eventPath, 'utf8'), originalEvent);
+    unlinkSync(resolve(eventDir, 'release-ledger.json'));
+    assert.throws(() => orchestrateRelease({ ...initial, mode: 'drill', runId: 'retry' }, () => new Date('2026-07-13T00:00:30Z'), correctionSource), /event mode conflicts/u);
+    orchestrateRelease({ ...initial, runId: 'retry' }, () => new Date('2026-07-13T00:00:30Z'), correctionSource);
     const result = orchestrateRelease({ ...base, mode: 'recover', state: 'CANDIDATE_TAGGED', targetState: 'CANDIDATE_VERIFIED', runId: 'second', dryRun: false }, () => new Date('2026-07-13T00:00:01Z'), correctionSource);
     assert.equal(result.ledgerHeadState, 'CANDIDATE_VERIFIED');
     assert.equal(JSON.parse(readFileSync(resolve(eventDir, 'release-ledger.json'))).events.length, 2);

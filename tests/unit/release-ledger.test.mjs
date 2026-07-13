@@ -10,6 +10,8 @@ test('release ledger rejects tamper replay reorder and duplicate transitions', (
   assert.equal(verifyReleaseLedger(ledger).headState, 'CANDIDATE_TAGGED');
   const tampered = structuredClone(ledger); tampered.events[0].event.runId = 'changed';
   assert.throws(() => verifyReleaseLedger(tampered), /digest/u);
+  const relabeled = structuredClone(ledger); relabeled.events[0].mode = 'drill';
+  assert.throws(() => verifyReleaseLedger(relabeled), /mode mismatch/u);
   const replayed = structuredClone(ledger); replayed.events.push(structuredClone(replayed.events[0])); replayed.headSha256 = replayed.events[1].sha256;
   assert.throws(() => verifyReleaseLedger(replayed), /duplicate|chain|transition/u);
   const reordered = structuredClone(ledger); reordered.events.unshift(structuredClone(reordered.events[0]));

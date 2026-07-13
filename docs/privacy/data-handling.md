@@ -33,6 +33,10 @@ to a different process; recovery also emits a degraded health event.
 The hook creates the state directory with `700` permissions and the log file with
 `600` permissions when the platform supports POSIX modes; the log
 rotates to `audit.log.1` after 5 MB.
+Existing audit-directory path components and final audit directories must be
+real directories rather than caller-owned links. Audit logs, lock-owner files,
+and spool records must be regular files with exactly one hard link; linked or
+replaced paths fail closed before append, compaction, or record deletion.
 
 Set this environment variable to disable local audit logging in an environment:
 

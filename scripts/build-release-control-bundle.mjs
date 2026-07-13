@@ -2,13 +2,13 @@
 /** Build a content-addressed release control bundle and complete source manifest. */
 
 import { createHash } from 'node:crypto';
-import { gunzipSync, gzipSync } from 'node:zlib';
+import { gzipSync } from 'node:zlib';
 import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, extname, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { deterministicTar } from './build-release-artifacts.mjs';
-import { parseTarEntries } from './lib/safe-tar.mjs';
+import { parseTarGzEntries, SAFE_TAR_LIMITS } from './lib/safe-tar.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const deterministicGzipOptions = /** @type {import('node:zlib').ZlibOptions} */ ({ level: 9, mtime: 0 });
@@ -42,10 +42,13 @@ const explicit = [
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 
 export function verifyControlBundle({ bundlePath, manifest }) {
+  if (statSync(bundlePath).size > SAFE_TAR_LIMITS.maxArchiveBytes) {
+    throw new Error(`release control bundle exceeds ${SAFE_TAR_LIMITS.maxArchiveBytes} bytes`);
+  }
   const archive = readFileSync(bundlePath);
   if (manifest?.schemaVersion !== 1 || !Array.isArray(manifest.files)) throw new Error('release control bundle manifest is invalid');
   if (sha256(archive) !== manifest.bundleSha256) throw new Error('release control bundle digest differs from its manifest');
-  const actualFiles = parseTarEntries(gunzipSync(archive))
+  const actualFiles = parseTarGzEntries(archive)
     .filter((entry) => entry.type === 'file')
     .map((entry) => ({ path: entry.path, sha256: sha256(entry.content), bytes: entry.content.length }))
     .sort((left, right) => left.path.localeCompare(right.path));
