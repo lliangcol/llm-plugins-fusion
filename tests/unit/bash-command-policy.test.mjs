@@ -61,7 +61,7 @@ test('Bash policy rejects workspace PATH shadowing', (t) => {
   t.after(() => rmSync(workspace, { recursive: true, force: true }));
   const bin = resolve(workspace, 'bin');
   mkdirSync(bin);
-  const shadow = resolve(bin, 'git');
+  const shadow = resolve(bin, process.platform === 'win32' ? 'git.cmd' : 'git');
   writeFileSync(shadow, '#!/bin/sh\nexit 0\n');
   chmodSync(shadow, 0o755);
   const decision = authorizeBashCommand('git status', { workspaceRoot: workspace, env: { ...process.env, PATH: `${bin}` } });
@@ -76,7 +76,7 @@ test('Bash policy evaluates read-only rules without depending on runner tools', 
     rmSync(workspace, { recursive: true, force: true });
     rmSync(externalBin, { recursive: true, force: true });
   });
-  const executable = resolve(externalBin, 'inspect');
+  const executable = resolve(externalBin, process.platform === 'win32' ? 'inspect.cmd' : 'inspect');
   writeFileSync(executable, '#!/bin/sh\nexit 0\n');
   chmodSync(executable, 0o755);
   const basePolicy = {

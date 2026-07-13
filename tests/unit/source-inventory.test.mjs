@@ -39,7 +39,7 @@ test('source inventory excludes tracked paths deleted from the live worktree', (
       status: 0,
       stdout: Buffer.from('scripts/present.mjs\0scripts/deleted.mjs\0'),
     }),
-    (path) => path.endsWith('/scripts/present.mjs'),
+    (path) => path.replaceAll('\\', '/').endsWith('/scripts/present.mjs'),
   );
   assert.deepEqual(sources, ['scripts/present.mjs']);
 });

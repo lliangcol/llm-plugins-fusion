@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
 import { chmod, mkdir, mkdtemp, readFile, rm, stat, utimes, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -168,6 +169,11 @@ test('audit compactor recovers an expired lock owned by a dead process', async (
 });
 
 test('audit compactor recovers an expired lock after PID reuse identity mismatch', async (t) => {
+  const identity = spawnSync('ps', ['-o', 'lstart=', '-p', String(process.pid)], { encoding: 'utf8', shell: false });
+  if (identity.status !== 0 || !identity.stdout.trim()) {
+    t.skip('current platform cannot observe process start identity with ps');
+    return;
+  }
   const root = await mkdtemp(join(tmpdir(), 'nova-audit-reused-pid-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   const lock = join(root, '.audit-compact.lock');

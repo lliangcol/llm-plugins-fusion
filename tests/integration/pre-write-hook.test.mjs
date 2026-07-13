@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { existsSync } from 'node:fs';
 import { link, mkdir, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
@@ -8,6 +9,16 @@ import { runProcess } from '../../scripts/lib/process-runner.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const guard = 'nova-plugin/hooks/scripts/pre-write-check.mjs';
+
+function bashCommand() {
+  if (process.platform !== 'win32') return '/bin/bash';
+  const candidates = [
+    process.env.BASH,
+    'C:\\Program Files\\Git\\bin\\bash.exe',
+    'C:\\Program Files\\Git\\usr\\bin\\bash.exe',
+  ].filter(Boolean);
+  return candidates.find((candidate) => existsSync(candidate)) ?? 'bash';
+}
 
 async function runGuard(payload, options = {}) {
   const payloadPath = typeof payload === 'object'
@@ -273,15 +284,16 @@ test('write guard rejects oversized Write payloads', async (t) => {
 
 test('Bash launcher fails closed without Node and honors explicit opt-out', async () => {
   const script = resolve(root, 'nova-plugin/hooks/scripts/pre-write-check.sh');
+  const bash = bashCommand();
   const env = { PATH: '/usr/bin:/bin', CLAUDE_PLUGIN_ROOT: resolve(root, 'nova-plugin') };
-  const noNode = await runGuard(undefined, { command: '/bin/bash', args: [script], env });
+  const noNode = await runGuard(undefined, { command: bash, args: [script], env });
   if (!noNode.ok) {
     assert.equal(noNode.code, 2);
     assert.match(noNode.stderr, /Node\.js 22\+/);
   }
 
   const disabled = await runGuard(undefined, {
-    command: '/bin/bash',
+    command: bash,
     args: [script],
     env: { ...env, NOVA_WRITE_GUARD_DISABLED: '1' },
   });
