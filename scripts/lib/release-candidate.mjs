@@ -15,11 +15,14 @@ export const candidateSourcePaths = Object.freeze([
   'workflow-specs/adapters/codex.json',
   'workflow-specs/adapters/generic.json',
   'governance/release-operations.json',
+  'governance/release-corrections.json',
+  'schemas/release-corrections.schema.json',
   'scripts/verify-independent-release-review.mjs',
   'scripts/lib/release-review.mjs',
   'scripts/build-release-control-bundle.mjs',
   'scripts/release-orchestrator.mjs',
   'scripts/lib/release-state-machine.mjs',
+  'scripts/lib/release-corrections.mjs',
   'governance/release-channels.json',
   '.github/workflows/release-candidate.yml',
   '.github/workflows/promote-release.yml',
@@ -194,12 +197,16 @@ export function buildReleaseCandidate({
   bundleRoot = artifactDir,
   evidencePaths = [],
   controlBundle,
+  releasePolicy,
   now = () => new Date(),
 }) {
   const candidate = parseCandidateTag(tag);
   if (!/^[a-f0-9]{40}$/.test(commit ?? '')) throw new Error('candidate commit must be a full Git SHA');
   if (!controlBundle || !/^[a-f0-9]{64}$/u.test(controlBundle.sha256 ?? '') || !Number.isInteger(controlBundle.bytes)) {
     throw new Error('candidate requires a content-addressed release control bundle');
+  }
+  if (releasePolicy?.status !== 'READY' || !/^[a-f0-9]{64}$/u.test(releasePolicy.correctionsSha256 ?? '')) {
+    throw new Error('candidate requires a READY digest-bound release correction evaluation');
   }
   const plugin = JSON.parse(readFileSync(resolve(root, 'nova-plugin/.claude-plugin/plugin.json'), 'utf8'));
   if (plugin.version !== candidate.stableVersion) {
@@ -217,6 +224,13 @@ export function buildReleaseCandidate({
     },
     sourceDigests,
     controlBundle,
+    releasePolicy: {
+      status: releasePolicy.status,
+      reasonCode: releasePolicy.reasonCode,
+      correctionIds: releasePolicy.correctionIds,
+      correctionsSha256: releasePolicy.correctionsSha256,
+      maximumPermittedState: releasePolicy.maximumPermittedState,
+    },
     artifacts: resolveCandidateArtifacts(artifactDir, candidate.stableVersion, bundleRoot),
     evidence: evidenceRecords(evidencePaths, bundleRoot),
   };

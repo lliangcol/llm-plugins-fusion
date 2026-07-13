@@ -8,6 +8,7 @@ import { requireOptionValue } from './lib/cli-args.mjs';
 import { verifyReleasePromotion } from './lib/release-candidate.mjs';
 import { canonicalSha256 } from './lib/canonical-json.mjs';
 import { verifyControlBundle } from './build-release-control-bundle.mjs';
+import { assertReleaseReady, evaluateReleaseCorrections, loadReleaseCorrections } from './lib/release-corrections.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
@@ -46,7 +47,7 @@ export function parsePromotionArgs(args, env = process.env) {
   return options;
 }
 
-export function verifyPromotion({ args = process.argv.slice(2), env = process.env } = {}) {
+export function verifyPromotion({ args = process.argv.slice(2), env = process.env, correctionSource = loadReleaseCorrections(root) } = {}) {
   const options = parsePromotionArgs(args, env);
   const envelope = JSON.parse(readFileSync(options.manifestPath, 'utf8'));
   const manifest = JSON.parse(readFileSync(options.corePath, 'utf8'));
@@ -59,6 +60,11 @@ export function verifyPromotion({ args = process.argv.slice(2), env = process.en
   if (intent.candidateCoreSha256 !== envelope.candidateCore.sha256 || intent.controlBundleSha256 !== control.bundleSha256 || manifest.controlBundle.sha256 !== control.bundleSha256) {
     throw new Error('promotion intent or candidate core control binding differs');
   }
+  if (intent.correctionsSha256 !== manifest.releasePolicy?.correctionsSha256
+    || intent.correctionsSha256 !== correctionSource.sha256
+    || JSON.stringify(intent.correctionIds ?? []) !== JSON.stringify(manifest.releasePolicy?.correctionIds ?? [])) {
+    throw new Error('release correction evidence differs or is stale');
+  }
   if (manifest.controlBundle.path !== 'release-control-bundle.tar.gz') throw new Error('candidate core control bundle path is invalid');
   const controlBundlePath = resolve(options.bundleRoot, manifest.controlBundle.path);
   verifyControlBundle({ bundlePath: controlBundlePath, manifest: control });
@@ -67,6 +73,12 @@ export function verifyPromotion({ args = process.argv.slice(2), env = process.en
     throw new Error('explicit promotion identity differs from promotion intent');
   }
   const result = verifyReleasePromotion({ root, manifest, ...options });
+  const releasePolicy = evaluateReleaseCorrections({
+    mode: 'promote', stableTag: options.stableTag, candidateTag: options.expectedCandidateTag, sourceCommit: options.commit,
+    corrections: correctionSource.document.corrections, correctionsSha256: correctionSource.sha256,
+    independentReview: { passed: true }, protectedPublication: { passed: false },
+  });
+  if (releasePolicy.status === 'BLOCKED_POLICY') assertReleaseReady(releasePolicy);
   if (options.githubOutput) {
     appendFileSync(options.githubOutput, `candidate_tag=${result.candidateTag}\nartifact_digest=${result.artifactDigest}\n`, 'utf8');
   }

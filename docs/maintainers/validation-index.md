@@ -67,6 +67,7 @@ gate is added, renamed, removed, or moved.
 | --- | --- | --- |
 | Required / Contracts | `.github/workflows/ci.yml` | Schemas, generated drift, docs/frontmatter, adapters, workflow contracts, inventory, agents, and workflow trust checks in one checkout. |
 | Required / Tests | `npm test`, coverage, targeted critical mutation | Unit/integration/e2e, global and critical coverage, and three manually selected high-risk mutants; uploads `.metrics/coverage/`. |
+| Release readiness | `npm run validate:release-readiness`, `node scripts/validate-release-operational-readiness.mjs --mode <mode>` | Reports policy and external operational blockers separately from ordinary PR integrity; release workflows require ready state before side effects. |
 | Required / Security | hooks, ShellCheck, fault injection, secret/distribution scans | Security guardrails and SARIF evidence in one scoped-permission job. |
 | Required / Platform | Linux Node 22/24, Windows Node 22, macOS Node 22 matrix | Cross-platform contracts, Windows PowerShell/Bash, and macOS system Bash. |
 | Required / Package | install dry-run and deterministic artifact tests | Package inventory, deterministic archive, build/runtime BOMs, build record, and reproducibility. |

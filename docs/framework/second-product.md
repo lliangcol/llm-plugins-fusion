@@ -21,3 +21,8 @@ Adapters must declare unique IDs, enforcement, invocation, supported evidence
 levels, the workflow/runtime/adapter protocol versions, and how they enforce
 inputs, approvals, outputs, effects, and fallback. Assistant compatibility
 levels remain derived from digest-bound evidence, not from the declaration.
+
+Programmatic integrations should call `compileDirectory(root, {
+validateSchema })`; it is the validated default. Pure, already validated
+objects may use `compileProductBundle()`. The explicit
+`compileDirectoryUnchecked()` escape hatch is not a normal integration path.

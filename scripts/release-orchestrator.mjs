@@ -5,16 +5,18 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from '
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { canonicalSha256 } from './lib/canonical-json.mjs';
-import { appendReleaseLedger, createReleaseLedger, planReleaseTransitions, verifyReleaseLedger } from './lib/release-state-machine.mjs';
+import { appendReleaseLedger, createReleaseLedger, planReleaseTransitions, releaseStates, verifyReleaseLedger } from './lib/release-state-machine.mjs';
 import { requireOptionValue } from './lib/cli-args.mjs';
+import { assertReleaseReady, evaluateReleaseCorrections, loadReleaseCorrections } from './lib/release-corrections.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 export function parseReleaseOrchestratorArgs(args) {
-  const options = { mode: null, state: null, targetState: null, stableTag: null, candidateTag: null, sourceCommit: null, promotionIntent: null, controlBundle: null, eventDir: null, runId: null, dryRun: false };
+  const options = { mode: null, state: null, targetState: null, stableTag: null, candidateTag: null, sourceCommit: null, promotionIntent: null, controlBundle: null, eventDir: null, runId: null, dryRun: false, protectedPublicationApproved: false };
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === '--dry-run') { options.dryRun = true; continue; }
+    if (arg === '--protected-publication-approved') { options.protectedPublicationApproved = true; continue; }
     const value = () => requireOptionValue(args, index, arg);
     if (arg === '--mode') options.mode = value();
     else if (arg === '--state') options.state = value();
@@ -37,7 +39,7 @@ export function parseReleaseOrchestratorArgs(args) {
   return options;
 }
 
-export function orchestrateRelease(options, now = () => new Date()) {
+export function orchestrateRelease(options, now = () => new Date(), correctionSource = loadReleaseCorrections(root)) {
   const intentText = readFileSync(options.promotionIntent, 'utf8');
   const intent = JSON.parse(intentText);
   const controlText = readFileSync(options.controlBundle, 'utf8');
@@ -46,7 +48,17 @@ export function orchestrateRelease(options, now = () => new Date()) {
     throw new Error('explicit release identity differs from promotion intent');
   }
   if (intent.controlBundleSha256 !== control.bundleSha256) throw new Error('promotion intent differs from the release control bundle');
+  if (intent.correctionsSha256 !== correctionSource.sha256) throw new Error('promotion intent contains stale release correction evidence');
+  const releasePolicy = evaluateReleaseCorrections({
+    mode: options.mode, stableTag: options.stableTag, candidateTag: options.candidateTag, sourceCommit: options.sourceCommit,
+    corrections: correctionSource.document.corrections, correctionsSha256: correctionSource.sha256,
+    independentReview: { passed: correctionSource.document.corrections.every((entry) => !['authorized-for-new-candidate'].includes(entry.status)) },
+    protectedPublication: { passed: options.protectedPublicationApproved },
+  });
+  if (releasePolicy.status === 'BLOCKED_POLICY') assertReleaseReady(releasePolicy);
   const transitions = planReleaseTransitions(options.state, options.targetState);
+  const maximumIndex = releaseStates.indexOf(releasePolicy.maximumPermittedState);
+  if (releaseStates.indexOf(options.targetState) > maximumIndex) throw new Error(`release policy limits orchestration to ${releasePolicy.maximumPermittedState}`);
   const identity = {
     stableTag: options.stableTag,
     candidateTag: options.candidateTag,

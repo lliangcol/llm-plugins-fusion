@@ -16,7 +16,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `benchmark` | Tests, coverage, simulations, demos, mutations, and live evaluation. |
 | `maintenance` | Diagnostics, repository administration, and reusable script libraries. |
 
-## Script Inventory (112)
+## Script Inventory (116)
 
 | Category | Script |
 | --- | --- |
@@ -60,6 +60,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `maintenance` | `scripts/lib/node-version.mjs` |
 | `maintenance` | `scripts/lib/process-runner.mjs` |
 | `maintenance` | `scripts/lib/release-candidate.mjs` |
+| `maintenance` | `scripts/lib/release-corrections.mjs` |
 | `maintenance` | `scripts/lib/release-review.mjs` |
 | `maintenance` | `scripts/lib/release-state-machine.mjs` |
 | `maintenance` | `scripts/lib/repo-root.mjs` |
@@ -104,6 +105,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `scripts/validate-docs/rules/links-and-command-docs.mjs` |
 | `validate` | `scripts/validate-docs/runner.mjs` |
 | `validate` | `scripts/validate-github-workflows.mjs` |
+| `validate` | `scripts/validate-governance-freshness.mjs` |
 | `validate` | `scripts/validate-hooks.mjs` |
 | `validate` | `scripts/validate-live-eval-dataset.mjs` |
 | `validate` | `scripts/validate-maintainer.mjs` |
@@ -115,7 +117,9 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `scripts/validate-registry-fixtures.mjs` |
 | `validate` | `scripts/validate-regression.mjs` |
 | `validate` | `scripts/validate-release-channel-facts.mjs` |
+| `validate` | `scripts/validate-release-operational-readiness.mjs` |
 | `validate` | `scripts/validate-release-operations.mjs` |
+| `validate` | `scripts/validate-release-readiness.mjs` |
 | `validate` | `scripts/validate-route-conformance.mjs` |
 | `validate` | `scripts/validate-runtime-behavior-contracts.mjs` |
 | `validate` | `scripts/validate-runtime-smoke.mjs` |
@@ -133,7 +137,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `release` | `scripts/verify-release-promotion.mjs` |
 | `release` | `scripts/verify-stable-install.mjs` |
 
-## npm Shortcuts (86)
+## npm Shortcuts (90)
 
 | Category | Shortcut | Command |
 | --- | --- | --- |
@@ -143,6 +147,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `npm run check:coverage` | `npm run test:coverage:check` |
 | `validate` | `npm run check:docs` | `npm run validate:docs && npm run validate:community` |
 | `validate` | `npm run check:release` | `npm run test:coverage:check && npm run validate:maintainer:evidence && node scripts/validate-plugin-install.mjs --dry-run` |
+| `validate` | `npm run check:release-readiness` | `npm run validate:release-readiness -- --require-ready` |
 | `validate` | `npm run check:runtime` | `npm run validate:runtime && npm run validate:hook-truth` |
 | `validate` | `npm run check:security` | `npm run typecheck && npm run lint:shell && npm run lint:actions && npm run validate:github-workflows && npm run scan:secrets` |
 | `validate` | `npm run check:tests` | `npm test` |
@@ -204,6 +209,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `npm run validate:drift` | `node scripts/generate-registry.mjs` |
 | `validate` | `npm run validate:facts` | `node scripts/generate-fact-graph.mjs` |
 | `validate` | `npm run validate:github-workflows` | `node scripts/validate-github-workflows.mjs` |
+| `validate` | `npm run validate:governance-freshness` | `node scripts/validate-governance-freshness.mjs` |
 | `validate` | `npm run validate:hook-truth` | `node scripts/validate-hooks.mjs` |
 | `validate` | `npm run validate:maintainer` | `node scripts/validate-maintainer.mjs` |
 | `validate` | `npm run validate:maintainer:evidence` | `node scripts/validate-maintainer.mjs --evidence-only` |
@@ -212,7 +218,9 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `npm run validate:project-state` | `node scripts/validate-project-state.mjs` |
 | `validate` | `npm run validate:regression` | `node scripts/validate-regression.mjs` |
 | `validate` | `npm run validate:release-channels` | `node scripts/validate-release-channel-facts.mjs` |
+| `validate` | `npm run validate:release-operational-readiness` | `node scripts/validate-release-operational-readiness.mjs --mode candidate` |
 | `validate` | `npm run validate:release-operations` | `node scripts/validate-release-operations.mjs` |
+| `validate` | `npm run validate:release-readiness` | `node scripts/validate-release-readiness.mjs` |
 | `validate` | `npm run validate:release-truth` | `node scripts/validate-release-channel-facts.mjs` |
 | `validate` | `npm run validate:runtime` | `node scripts/validate-runtime-smoke.mjs` |
 | `validate` | `npm run validate:schemas` | `node scripts/validate-schemas.mjs` |

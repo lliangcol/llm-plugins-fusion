@@ -3,7 +3,7 @@
   "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/promotion-intent.schema.json",
   "title": "Promotion Intent",
   "type": "object",
-  "required": ["schemaVersion", "stableTag", "candidateTag", "sourceCommit", "candidateCoreSha256", "controlBundleSha256"],
+  "required": ["schemaVersion", "stableTag", "candidateTag", "sourceCommit", "candidateCoreSha256", "controlBundleSha256", "correctionsSha256", "correctionIds"],
   "additionalProperties": false,
   "properties": {
     "schemaVersion": { "const": 1 },
@@ -11,6 +11,8 @@
     "candidateTag": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+-rc\\.[0-9]+$" },
     "sourceCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
     "candidateCoreSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-    "controlBundleSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+    "controlBundleSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "correctionsSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "correctionIds": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Z0-9-]+$" } }
   }
 }

@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/release-corrections.schema.json",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "corrections": [
     {
       "id": "LPF-AUTO-2026-07-RC-001",
@@ -26,7 +26,19 @@
         "requiresCurrentIndependentReview": true,
         "requiresProtectedPublicationEvidence": true,
         "requiresInstallProof": true
-      }
+      },
+      "auditTrail": [
+        {
+          "action": "created",
+          "actorRole": "maintainer",
+          "recordedAt": "2026-07-13T00:00:00Z",
+          "evidence": {
+            "path": "docs/maintainers/post-remediation-audit.md",
+            "sha256": "528e0456f1750f45dd020c3637036e1e5b923876d6abce328bada990841bba5c",
+            "recordedAt": "2026-07-13T00:00:00Z"
+          }
+        }
+      ]
     }
   ]
 }

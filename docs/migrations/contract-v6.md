@@ -39,6 +39,13 @@ Programmatic callers should import `migrateWorkflowSpec` and
 and projection script are adapters over that pure package API; callers should
 not import `scripts/migrate-v6-contracts.mjs` as a library.
 
+For filesystem compilation, migrate from `compileValidatedDirectory()` to
+`compileDirectory()`. They are equivalent in 4.x; the former is deprecated and
+will be removed in 5.0.0. Any former use of the unsafe 4.0
+`compileDirectory(root)` behavior must either inject `validateSchema` or adopt
+the explicit `compileDirectoryUnchecked()` name after a separate validation
+review.
+
 The 15 compatibility aliases remain retained. Removal requires real benchmark
 evidence, a plugin-major migration, release notes, and a governed release
 decision; the current benchmark is waiting for external credentials and budget.

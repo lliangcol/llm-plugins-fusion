@@ -18,12 +18,27 @@ import {
   parseCandidateArgs,
 } from '../../scripts/generate-release-candidate.mjs';
 import {
+  main as promotionMain,
   parsePromotionArgs,
+  verifyPromotion,
 } from '../../scripts/verify-release-promotion.mjs';
 import { resolveFromModule } from '../../scripts/lib/repo-root.mjs';
+import { canonicalSha256 } from '../../scripts/lib/canonical-json.mjs';
 
 const root = resolveFromModule(import.meta.url, '../..');
 const commit = 'a'.repeat(40);
+const correctionSourceFor = (candidateTag) => {
+  const document = { schemaVersion: 2, corrections: [{
+    id: 'REL-TEST', status: 'candidate-verified', affectedCommits: [commit],
+    stableRelease: { tag: 'v4.0.0', commit: 'b'.repeat(40), state: 'INSTALL_PROVEN' },
+    targetRelease: { stableTag: 'v4.0.0', candidateTag, sourceCommit: commit },
+  }] };
+  return { document, sha256: canonicalSha256(document) };
+};
+const correctionSource = correctionSourceFor('v4.0.0-rc.1');
+const releasePolicy = {
+  status: 'READY', reasonCode: 'RELEASE_POLICY_READY', correctionIds: ['REL-TEST'], correctionsSha256: correctionSource.sha256, maximumPermittedState: 'INSTALL_PROVEN',
+};
 
 async function candidateFixture(t) {
   const temp = await mkdtemp(join(tmpdir(), 'nova-candidate-'));
@@ -59,6 +74,7 @@ async function candidateFixture(t) {
     bundleRoot: temp,
     evidencePaths: evidence,
     controlBundle: { path: 'release-control-bundle.tar.gz', sha256: sha256File(controlBundle), bytes: (await readFile(controlBundle)).length },
+    releasePolicy,
     now: () => new Date('2026-07-12T01:00:00Z'),
   });
   return { temp, artifactDir, evidence, manifest, controlBundle, controlManifest };
@@ -197,6 +213,10 @@ test('promotion accepts only the bounded Claude compatibility skip with exact-ta
 test('candidate and promotion CLI parsers require explicit digest-bound identity', async (t) => {
   const fixture = await candidateFixture(t);
   const outDir = join(fixture.temp, 'candidate-output');
+  const inventoryPath = fixture.evidence.find((path) => path.endsWith('inventory.json'));
+  const inventory = JSON.parse(await readFile(inventoryPath, 'utf8'));
+  inventory.marketplace.ref = 'v4.0.0-rc.3';
+  await writeFile(inventoryPath, `${JSON.stringify(inventory)}\n`);
   const result = generateReleaseCandidate({
     args: [
       '--tag', 'v4.0.0-rc.3',
@@ -210,11 +230,50 @@ test('candidate and promotion CLI parsers require explicit digest-bound identity
     ],
     env: {},
     now: () => new Date('2026-07-12T02:00:00Z'),
+    correctionSource: correctionSourceFor('v4.0.0-rc.3'),
   });
   assert.equal(result.core.candidate.number, 3);
   assert.equal(JSON.parse(await readFile(result.paths.intent, 'utf8')).candidateTag, 'v4.0.0-rc.3');
+  const githubOutput = join(fixture.temp, 'github-output.txt');
+  const verified = verifyPromotion({
+    args: [
+      '--stable-tag', 'v4.0.0', '--candidate-tag', 'v4.0.0-rc.3', '--commit', commit,
+      '--manifest', result.paths.envelope, '--candidate-core', result.paths.core,
+      '--promotion-intent', result.paths.intent, '--control-bundle-manifest', fixture.controlManifest,
+      '--artifact-dir', fixture.artifactDir, '--bundle-root', fixture.temp, '--github-output', githubOutput,
+    ],
+    env: {}, correctionSource: correctionSourceFor('v4.0.0-rc.3'),
+  });
+  assert.equal(verified.candidateTag, 'v4.0.0-rc.3');
+  assert.match(await readFile(githubOutput, 'utf8'), /candidate_tag=v4\.0\.0-rc\.3/u);
+  assert.equal(promotionMain(), 1);
+
+  const envelope = JSON.parse(await readFile(result.paths.envelope, 'utf8'));
+  const intent = JSON.parse(await readFile(result.paths.intent, 'utf8'));
+  const core = JSON.parse(await readFile(result.paths.core, 'utf8'));
+  const common = [
+    '--stable-tag', 'v4.0.0', '--candidate-tag', 'v4.0.0-rc.3', '--commit', commit,
+    '--manifest', result.paths.envelope, '--candidate-core', result.paths.core,
+    '--promotion-intent', result.paths.intent, '--control-bundle-manifest', fixture.controlManifest,
+    '--artifact-dir', fixture.artifactDir, '--bundle-root', fixture.temp,
+  ];
+  envelope.schemaVersion = 2;
+  await writeFile(result.paths.envelope, `${JSON.stringify(envelope)}\n`);
+  assert.throws(() => verifyPromotion({ args: common, env: {}, correctionSource: correctionSourceFor('v4.0.0-rc.3') }), /schema must be 3/u);
+  envelope.schemaVersion = 3;
+  envelope.candidateCore.sha256 = '0'.repeat(64);
+  await writeFile(result.paths.envelope, `${JSON.stringify(envelope)}\n`);
+  assert.throws(() => verifyPromotion({ args: common, env: {}, correctionSource: correctionSourceFor('v4.0.0-rc.3') }), /envelope binding/u);
+  envelope.candidateCore.sha256 = canonicalSha256(core);
+  await writeFile(result.paths.envelope, `${JSON.stringify(envelope)}\n`);
+  intent.correctionsSha256 = '0'.repeat(64);
+  await writeFile(result.paths.intent, `${JSON.stringify(intent)}\n`);
+  envelope.promotionIntent.sha256 = canonicalSha256(intent);
+  await writeFile(result.paths.envelope, `${JSON.stringify(envelope)}\n`);
+  assert.throws(() => verifyPromotion({ args: common, env: {}, correctionSource: correctionSourceFor('v4.0.0-rc.3') }), /correction evidence differs/u);
   assert.throws(() => parseCandidateArgs(['--tag', 'v4.0.0-rc.4', '--commit', commit], {}), /missing required/);
   assert.throws(() => parsePromotionArgs(['--stable-tag', 'v4.0.0', '--commit', commit], {}), /missing required/);
+  assert.throws(() => parsePromotionArgs(['--unknown', 'x'], {}), /unknown argument/u);
 });
 
 test('candidate generation rejects a control manifest that does not match the archive bytes', async (t) => {
@@ -231,5 +290,6 @@ test('candidate generation rejects a control manifest that does not match the ar
       '--out-dir', join(fixture.temp, 'rejected-output'),
     ],
     env: {},
+    correctionSource: correctionSourceFor('v4.0.0-rc.5'),
   }), /digest differs/u);
 });

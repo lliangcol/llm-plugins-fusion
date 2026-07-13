@@ -7,58 +7,108 @@
   "additionalProperties": false,
   "properties": {
     "$schema": { "type": "string" },
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "corrections": {
       "type": "array",
-      "uniqueItems": true,
-      "items": {
-        "type": "object",
-        "required": ["id", "issue", "status", "affectedCommits", "stableRelease", "decision", "releaseBoundary"],
-        "additionalProperties": false,
-        "properties": {
-          "id": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
-          "issue": { "type": "integer", "minimum": 1 },
-          "status": { "enum": ["active-release-hold", "resolved-by-governed-release"] },
-          "affectedCommits": {
-            "type": "array",
-            "minItems": 1,
-            "uniqueItems": true,
-            "items": { "type": "string", "pattern": "^[a-f0-9]{40}$" }
-          },
-          "stableRelease": {
+      "items": { "$ref": "#/$defs/correction" }
+    }
+  },
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "tag": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$" },
+    "candidateTag": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+-rc\\.[0-9]+$" },
+    "evidenceRef": {
+      "type": "object",
+      "required": ["path", "sha256", "recordedAt"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[^\\u0000]+$" },
+        "sha256": { "$ref": "#/$defs/digest" },
+        "recordedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "targetRelease": {
+      "type": "object",
+      "required": ["stableTag", "candidateTag", "sourceCommit"],
+      "additionalProperties": false,
+      "properties": {
+        "stableTag": { "$ref": "#/$defs/tag" },
+        "candidateTag": { "$ref": "#/$defs/candidateTag" },
+        "sourceCommit": { "$ref": "#/$defs/sha" }
+      }
+    },
+    "correction": {
+      "type": "object",
+      "required": ["id", "issue", "status", "affectedCommits", "stableRelease", "decision", "releaseBoundary", "auditTrail"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
+        "issue": { "type": "integer", "minimum": 1 },
+        "status": { "enum": ["active-release-hold", "authorized-for-new-candidate", "candidate-verified", "resolved-by-governed-release"] },
+        "affectedCommits": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/sha" } },
+        "stableRelease": {
+          "type": "object",
+          "required": ["tag", "commit", "state"],
+          "additionalProperties": false,
+          "properties": { "tag": { "$ref": "#/$defs/tag" }, "commit": { "$ref": "#/$defs/sha" }, "state": { "const": "INSTALL_PROVEN" } }
+        },
+        "decision": {
+          "type": "object",
+          "required": ["authorizedByIssue", "nonRetroactive", "summary"],
+          "additionalProperties": false,
+          "properties": { "authorizedByIssue": { "type": "integer", "minimum": 1 }, "nonRetroactive": { "const": true }, "summary": { "type": "string", "minLength": 1 } }
+        },
+        "releaseBoundary": {
+          "type": "object",
+          "required": ["mayPublishStable", "requiresNewCandidate", "requiresCurrentIndependentReview", "requiresProtectedPublicationEvidence", "requiresInstallProof"],
+          "additionalProperties": false,
+          "properties": {
+            "mayPublishStable": { "type": "boolean" },
+            "requiresNewCandidate": { "const": true },
+            "requiresCurrentIndependentReview": { "const": true },
+            "requiresProtectedPublicationEvidence": { "const": true },
+            "requiresInstallProof": { "const": true }
+          }
+        },
+        "targetRelease": { "$ref": "#/$defs/targetRelease" },
+        "authorizationEvidence": { "$ref": "#/$defs/evidenceRef" },
+        "candidateEvidence": { "$ref": "#/$defs/evidenceRef" },
+        "resolutionEvidence": { "$ref": "#/$defs/evidenceRef" },
+        "auditTrail": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
             "type": "object",
-            "required": ["tag", "commit", "state"],
+            "required": ["action", "actorRole", "recordedAt", "evidence"],
             "additionalProperties": false,
             "properties": {
-              "tag": { "type": "string", "pattern": "^v[0-9]+\\.[0-9]+\\.[0-9]+$" },
-              "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
-              "state": { "const": "INSTALL_PROVEN" }
-            }
-          },
-          "decision": {
-            "type": "object",
-            "required": ["authorizedByIssue", "nonRetroactive", "summary"],
-            "additionalProperties": false,
-            "properties": {
-              "authorizedByIssue": { "type": "integer", "minimum": 1 },
-              "nonRetroactive": { "const": true },
-              "summary": { "type": "string", "minLength": 1 }
-            }
-          },
-          "releaseBoundary": {
-            "type": "object",
-            "required": ["mayPublishStable", "requiresNewCandidate", "requiresCurrentIndependentReview", "requiresProtectedPublicationEvidence", "requiresInstallProof"],
-            "additionalProperties": false,
-            "properties": {
-              "mayPublishStable": { "const": false },
-              "requiresNewCandidate": { "const": true },
-              "requiresCurrentIndependentReview": { "const": true },
-              "requiresProtectedPublicationEvidence": { "const": true },
-              "requiresInstallProof": { "const": true }
+              "action": { "enum": ["created", "authorized", "candidate-verified", "closed", "reopened"] },
+              "actorRole": { "enum": ["maintainer", "owner", "independent-reviewer", "release-operator"] },
+              "recordedAt": { "type": "string", "format": "date-time" },
+              "evidence": { "$ref": "#/$defs/evidenceRef" }
             }
           }
         }
-      }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "active-release-hold" } }, "required": ["status"] },
+          "then": { "properties": { "releaseBoundary": { "type": "object", "properties": { "mayPublishStable": { "const": false } } } } }
+        },
+        {
+          "if": { "properties": { "status": { "enum": ["authorized-for-new-candidate", "candidate-verified", "resolved-by-governed-release"] } }, "required": ["status"] },
+          "then": { "required": ["targetRelease", "authorizationEvidence"], "properties": { "targetRelease": {}, "authorizationEvidence": {} } }
+        },
+        {
+          "if": { "properties": { "status": { "enum": ["candidate-verified", "resolved-by-governed-release"] } }, "required": ["status"] },
+          "then": { "required": ["candidateEvidence"], "properties": { "candidateEvidence": {} } }
+        },
+        {
+          "if": { "properties": { "status": { "const": "resolved-by-governed-release" } }, "required": ["status"] },
+          "then": { "required": ["resolutionEvidence"], "properties": { "resolutionEvidence": {}, "releaseBoundary": { "type": "object", "properties": { "mayPublishStable": { "const": true } } } } }
+        }
+      ]
     }
   }
 }

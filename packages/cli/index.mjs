@@ -1,6 +1,6 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { compileValidatedDirectory, buildArtifact, migrateBehaviorSpec, migrateWorkflowSpec } from '@llm-plugins-fusion/compiler';
+import { compileDirectory, buildArtifact, migrateBehaviorSpec, migrateWorkflowSpec } from '@llm-plugins-fusion/compiler';
 import { evaluateBundle, testConformance } from '@llm-plugins-fusion/conformance';
 import { inspectSpecBundle, SPEC_ERROR, SpecBundleError, validateAndLoadSpecBundle } from '@llm-plugins-fusion/spec';
 import { createSpecSchemaValidator } from './schema-validator.mjs';
@@ -57,11 +57,11 @@ export async function runCli(args, io = process) {
     };
     else if (command === 'init') result = init(root);
     else if (command === 'doctor') result = { node: process.versions.node, platform: process.platform, architecture: process.arch, supported: Number(process.versions.node.split('.')[0]) >= 22 };
-    else if (command === 'validate') { const compiled = compileValidatedDirectory(root, { validateSchema }); const conformance = testConformance(compiled); if (!conformance.passed) return { exitCode: EXIT.VALIDATION, output: { ok: false, command, result: conformance } }; result = { valid: true, ...inspectSpecBundle(compiled) }; }
+    else if (command === 'validate') { const compiled = compileDirectory(root, { validateSchema }); const conformance = testConformance(compiled); if (!conformance.passed) return { exitCode: EXIT.VALIDATION, output: { ok: false, command, result: conformance } }; result = { valid: true, ...inspectSpecBundle(compiled) }; }
     else if (command === 'inspect') result = inspectSpecBundle(validateAndLoadSpecBundle(root, { validateSchema }));
-    else if (command === 'test') { result = testConformance(compileValidatedDirectory(root, { validateSchema })); if (!result.passed) return { exitCode: EXIT.CONFORMANCE, output: { ok: false, command, result } }; }
-    else if (command === 'eval') result = evaluateBundle(compileValidatedDirectory(root, { validateSchema }));
-    else if (command === 'build') { const out = option(args, '--out'); if (!out) throw Object.assign(new Error('--out is required'), { exitCode: EXIT.USAGE }); const artifact = buildArtifact(compileValidatedDirectory(root, { validateSchema })); mkdirSync(resolve(root, out, '..'), { recursive: true }); writeFileSync(resolve(root, out), `${JSON.stringify(artifact, null, 2)}\n`, 'utf8'); result = { output: resolve(root, out), workflowCount: artifact.workflows.length }; }
+    else if (command === 'test') { result = testConformance(compileDirectory(root, { validateSchema })); if (!result.passed) return { exitCode: EXIT.CONFORMANCE, output: { ok: false, command, result } }; }
+    else if (command === 'eval') result = evaluateBundle(compileDirectory(root, { validateSchema }));
+    else if (command === 'build') { const out = option(args, '--out'); if (!out) throw Object.assign(new Error('--out is required'), { exitCode: EXIT.USAGE }); const artifact = buildArtifact(compileDirectory(root, { validateSchema })); mkdirSync(resolve(root, out, '..'), { recursive: true }); writeFileSync(resolve(root, out), `${JSON.stringify(artifact, null, 2)}\n`, 'utf8'); result = { output: resolve(root, out), workflowCount: artifact.workflows.length }; }
     else if (command === 'migrate') { const bundle = validateAndLoadSpecBundle(root, { validateSchema }); const workflows = migrateWorkflowSpec(bundle.workflows, bundle.behaviors); const behaviors = migrateBehaviorSpec(bundle.behaviors); if (args.includes('--write')) { writeFileSync(resolve(root, 'workflows.v6.json'), `${JSON.stringify(workflows, null, 2)}\n`); writeFileSync(resolve(root, 'behaviors.v2.json'), `${JSON.stringify(behaviors, null, 2)}\n`); } result = { write: args.includes('--write'), workflowCount: workflows.workflows.length, workflowSchemaVersion: 6, behaviorSchemaVersion: 2 }; }
     return { exitCode: EXIT.OK, output: { ok: true, command, result } };
   } catch (error) {

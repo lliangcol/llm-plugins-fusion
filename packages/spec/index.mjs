@@ -1,8 +1,10 @@
-import { loadProductBundle } from '../../framework/io/load-product-bundle.mjs';
 import { defaultLayout, readJson, resolveContainedFile } from './internal.mjs';
+import { validateAndLoadSpecBundle } from './validated.mjs';
+import { loadProductBundle } from '../../framework/io/load-product-bundle.mjs';
 
 export { defaultLayout, readJson, resolveContainedFile };
-export const loadSpecBundle = (root, layout = defaultLayout) => loadProductBundle({ root, ...layout });
+export const loadSpecBundleUnchecked = (root, layout = defaultLayout) => loadProductBundle({ root, ...layout });
+export const loadSpecBundle = (root, options) => validateAndLoadSpecBundle(root, options);
 export { SPEC_ERROR, SpecBundleError, validateAndLoadSpecBundle } from './validated.mjs';
 
 export function inspectSpecBundle(bundle) {

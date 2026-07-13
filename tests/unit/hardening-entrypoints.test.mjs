@@ -7,7 +7,7 @@ import { main as buildCandidateMain } from '../../scripts/build-candidate-bundle
 import { main as extractBundleMain } from '../../scripts/extract-release-bundle.mjs';
 import { migrate, migrateBehaviors } from '../../scripts/migrate-v5-surfaces.mjs';
 import { main as reconcileMain, reconcileGithubRelease } from '../../scripts/reconcile-github-release.mjs';
-import { main as orchestratorMain, orchestrateRelease } from '../../scripts/release-orchestrator.mjs';
+import { main as orchestratorMain, orchestrateRelease, parseReleaseOrchestratorArgs } from '../../scripts/release-orchestrator.mjs';
 import { buildStableInstallProof, main as stableInstallMain } from '../../scripts/verify-stable-install.mjs';
 import { treeDigest } from '../../scripts/validate-plugin-install.mjs';
 import { distributionRiskSarif } from '../../scripts/scan-distribution-risk.mjs';
@@ -58,11 +58,22 @@ test('release orchestrator consumes exact local intent and control identities in
     const intent = resolve(directory, 'intent.json');
     const sourceCommit = 'a'.repeat(40);
     const bundleSha256 = 'b'.repeat(64);
+    const correctionSource = { document: { schemaVersion: 2, corrections: [] }, sha256: 'd'.repeat(64) };
     writeFileSync(control, `${JSON.stringify({ bundleSha256 })}\n`);
-    writeFileSync(intent, `${JSON.stringify({ stableTag: 'v4.0.0', candidateTag: 'v4.0.0-rc.1', sourceCommit, candidateCoreSha256: 'c'.repeat(64), controlBundleSha256: bundleSha256 })}\n`);
-    const result = orchestrateRelease({ mode: 'drill', state: 'DRAFT', targetState: 'CANDIDATE_VERIFIED', stableTag: 'v4.0.0', candidateTag: 'v4.0.0-rc.1', sourceCommit, promotionIntent: intent, controlBundle: control, eventDir: resolve(directory, 'events'), runId: 'unit', dryRun: true }, () => new Date(0));
+    writeFileSync(intent, `${JSON.stringify({ stableTag: 'v4.0.0', candidateTag: 'v4.0.0-rc.1', sourceCommit, candidateCoreSha256: 'c'.repeat(64), controlBundleSha256: bundleSha256, correctionsSha256: correctionSource.sha256 })}\n`);
+    const result = orchestrateRelease({ mode: 'drill', state: 'DRAFT', targetState: 'CANDIDATE_VERIFIED', stableTag: 'v4.0.0', candidateTag: 'v4.0.0-rc.1', sourceCommit, promotionIntent: intent, controlBundle: control, eventDir: resolve(directory, 'events'), runId: 'unit', dryRun: true }, () => new Date(0), correctionSource);
     assert.deepEqual(result.transitions.map((entry) => entry.transition), ['DRAFT->CANDIDATE_TAGGED', 'CANDIDATE_TAGGED->CANDIDATE_VERIFIED']);
   } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test('release orchestrator parser covers explicit flags and rejects invalid identities', () => {
+  const base = ['--mode', 'drill', '--state', 'DRAFT', '--target-state', 'PROMOTION_READY', '--stable-tag', 'v4.1.0', '--candidate-tag', 'v4.1.0-rc.1', '--source-commit', 'a'.repeat(40), '--promotion-intent', 'intent.json', '--control-bundle', 'control.json', '--event-dir', 'events', '--run-id', '1'];
+  const parsed = parseReleaseOrchestratorArgs([...base, '--dry-run', '--protected-publication-approved']);
+  assert.equal(parsed.dryRun, true);
+  assert.equal(parsed.protectedPublicationApproved, true);
+  assert.throws(() => parseReleaseOrchestratorArgs(base.with(1, 'candidate')), /mode must/u);
+  assert.throws(() => parseReleaseOrchestratorArgs(base.with(11, 'short')), /full Git SHA/u);
+  assert.throws(() => parseReleaseOrchestratorArgs(['--unknown', 'x']), /unknown argument/u);
 });
 
 test('GitHub draft reconciliation uploads, verifies, and publishes exact bytes through an injected boundary', () => {

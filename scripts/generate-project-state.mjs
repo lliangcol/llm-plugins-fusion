@@ -26,6 +26,7 @@ const sourcePaths = [
   'governance/product-lanes.json',
   'governance/release-operations.json',
   'governance/adoption-evidence.json',
+  'governance/evidence-governance.json',
   'nova-plugin/hooks/hooks.json',
   'nova-plugin/runtime/shell-command-policy.json',
   '.nova/shell-policy.json',

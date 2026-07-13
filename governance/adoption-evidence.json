@@ -1,8 +1,15 @@
 {
-  "schemaVersion": 1,
+  "$schema": "../schemas/adoption-evidence.schema.json",
+  "schemaVersion": 2,
   "status": "not-demonstrated",
   "records": [],
   "minimumForDemonstrated": 2,
-  "requiredRecordFields": ["consumerClass", "assistant", "workflow", "sourceDigest", "validationEvidence", "observedAt"],
+  "collectionPolicy": {
+    "consentRequired": true,
+    "rawPrivateDataAllowed": false,
+    "retentionDays": 365,
+    "withdrawalMechanism": "Open a private maintainer request referencing only the public-safe record ID.",
+    "allowedSignals": ["installation", "activation", "successful-workflow", "maintenance-commitment"]
+  },
   "claimBoundary": "The public fixtures and second-product compiler proof are internal conformance evidence, not external consumer adoption. Adoption remains not demonstrated until redacted, consented, digest-bound records exist."
 }
