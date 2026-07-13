@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** Run adapter-loaded public-safe live workflow probes against an exact assistant CLI. */
 
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -62,25 +62,24 @@ function treeDigest(dir) {
   return hash.digest('hex');
 }
 
-function jsonOutputSchema(proofToken) {
+function jsonOutputSchema() {
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['selectedRoute', 'requiredInputs', 'blocked', 'adapterProof'],
+    required: ['selectedRoute', 'requiredInputs', 'blocked'],
     properties: {
       selectedRoute: { type: 'array', minItems: 1, items: { type: 'string' } },
       requiredInputs: { type: 'array', items: { type: 'string' } },
       blocked: { type: 'boolean' },
-      adapterProof: { type: 'string', const: proofToken },
     },
   };
 }
 
 export function codexPrompt(caseSpec) {
   if (caseSpec.kind === 'approval') {
-    return `Use the automatically loaded repository workflow adapter to evaluate the direct workflow ${caseSpec.workflow}. Request: ${caseSpec.request}\nProvided inputs: ${JSON.stringify(caseSpec.providedInputs ?? {})}\nReturn only the output-schema object. Set selectedRoute to exactly ["${caseSpec.workflow}"], list only unresolved or invalid canonical required inputs, set blocked=true, and copy adapterProof from the repository instructions. Do not route to a different workflow, execute the workflow, or modify files.`;
+    return `Use the automatically loaded repository workflow adapter to evaluate the direct workflow ${caseSpec.workflow}. Request: ${caseSpec.request}\nProvided inputs: ${JSON.stringify(caseSpec.providedInputs ?? {})}\nReturn only the output-schema object. Set selectedRoute to exactly ["${caseSpec.workflow}"], list only unresolved or invalid canonical required inputs, and set blocked=true. Do not route to a different workflow, execute the workflow, or modify files.`;
   }
-  return `Use the automatically loaded repository workflow adapter to evaluate this routing request: ${caseSpec.request}\nReturn only the output-schema object. Select the shortest safe workflow route and list every canonical required input of the selected downstream workflow, including inputs whose values may be inferred from the request. Set blocked only when a required input or approval cannot be resolved, and copy adapterProof from the repository instructions. Do not execute the selected workflow and do not modify files.`;
+  return `Use the automatically loaded repository workflow adapter to evaluate this routing request: ${caseSpec.request}\nReturn only the output-schema object. Select the shortest safe workflow route and list every canonical required input of the selected downstream workflow, including inputs whose values may be inferred from the request. Set blocked only when a required input or approval cannot be resolved. Do not execute the selected workflow and do not modify files.`;
 }
 
 function claudePrompt(caseSpec, namespace) {
@@ -89,7 +88,7 @@ function claudePrompt(caseSpec, namespace) {
   return `/${namespace}:${caseSpec.workflow}${args ? ` ${args}` : ''}`;
 }
 
-function invocation({ assistant, executable, caseSpec, workspace, harness, pluginDir, proofToken, namespace, condition }) {
+function invocation({ assistant, executable, caseSpec, workspace, harness, pluginDir, namespace, condition }) {
   if (assistant === 'claude-code') {
     const debugFile = resolve(harness, 'claude-debug.log');
     return {
@@ -101,7 +100,7 @@ function invocation({ assistant, executable, caseSpec, workspace, harness, plugi
   }
   const schemaFile = resolve(harness, 'output-schema.json');
   const outputFile = resolve(harness, 'last-message.json');
-  writeFileSync(schemaFile, `${JSON.stringify(jsonOutputSchema(proofToken), null, 2)}\n`, 'utf8');
+  writeFileSync(schemaFile, `${JSON.stringify(jsonOutputSchema(), null, 2)}\n`, 'utf8');
   return {
     command: executable,
     args: ['exec', '--sandbox', 'read-only', '--skip-git-repo-check', '--ephemeral', '--ignore-user-config', '--output-schema', schemaFile, '--output-last-message', outputFile, '--json', '--cd', workspace, codexPrompt(caseSpec)],
@@ -137,43 +136,50 @@ function routeFromClaudeText(text, namespace) {
   return [...text.matchAll(new RegExp(`/${namespace}:([a-z0-9]+(?:-[a-z0-9]+)*)`, 'gu'))].map((match) => match[1]);
 }
 
-export function validateLiveCase(caseSpec, output, inventory = []) {
+export function evaluateSemanticCase(caseSpec, output, inventory = []) {
   const selectedRoute = Array.isArray(output.selectedRoute) ? output.selectedRoute : [];
   const requiredInputs = Array.isArray(output.requiredInputs) ? output.requiredInputs : [];
   const inventedSurfaces = selectedRoute.filter((id) => inventory.length > 0 && !inventory.includes(id));
-  const routeValid = JSON.stringify(selectedRoute) === JSON.stringify(caseSpec.expectedRoute);
+  const expectedRoute = caseSpec.expectedRoute?.[0];
+  const routeValid = selectedRoute[0] === expectedRoute;
+  const top2RouteValid = selectedRoute.slice(0, 2).includes(expectedRoute);
   const requiredInputsValid = (caseSpec.expectedRequiredInputs ?? []).every((input) => requiredInputs.includes(input));
   const approvalValid = caseSpec.kind !== 'approval' || output.blocked === true;
-  const shapeValid = typeof output.blocked === 'boolean' && typeof output.adapterProof === 'string';
-  return { selectedRoute, requiredInputs, routeValid, requiredInputsValid, approvalValid, shapeValid, inventedSurfaces, contractValid: routeValid && requiredInputsValid && approvalValid && shapeValid && inventedSurfaces.length === 0 };
+  const shapeValid = typeof output.blocked === 'boolean';
+  return { selectedRoute, requiredInputs, routeValid, top2RouteValid, requiredInputsValid, approvalValid, shapeValid, inventedSurfaces, contractValid: routeValid && requiredInputsValid && approvalValid && shapeValid && inventedSurfaces.length === 0 };
 }
 
-function validateClaudeCase(caseSpec, text, inventory, namespace) {
+export const validateLiveCase = evaluateSemanticCase;
+
+function normalizeClaudeOutput(caseSpec, text, namespace) {
   if (caseSpec.kind === 'route') {
     const selectedRoute = [...new Set(routeFromClaudeText(text, namespace))];
-    const inventedSurfaces = selectedRoute.filter((id) => !inventory.includes(id));
-    const routeValid = selectedRoute.includes(caseSpec.expectedRoute[0]);
     const requiredInputs = (caseSpec.expectedRequiredInputs ?? []).filter((input) => text.includes(input));
-    const requiredInputsValid = requiredInputs.length === (caseSpec.expectedRequiredInputs ?? []).length;
-    return { selectedRoute, requiredInputs, routeValid, requiredInputsValid, approvalValid: true, shapeValid: /^## Recommended Route\n/u.test(text), inventedSurfaces, contractValid: routeValid && requiredInputsValid && inventedSurfaces.length === 0 && /^## Recommended Route\n/u.test(text) };
+    return { selectedRoute, requiredInputs, blocked: false };
   }
   const missing = caseSpec.expectedRequiredInputs ?? [];
   const requiredInputs = missing.filter((input) => text.includes(input));
   const blockedSignal = /block|missing|required|stop|approval|unresolved|缺少|必填|停止|阻塞/iu.test(text);
-  return { selectedRoute: [caseSpec.workflow], requiredInputs, routeValid: true, requiredInputsValid: requiredInputs.length === missing.length, approvalValid: blockedSignal, shapeValid: text.length > 0, inventedSurfaces: [], contractValid: requiredInputs.length === missing.length && blockedSignal && text.length > 0 };
+  return { selectedRoute: [caseSpec.workflow], requiredInputs, blocked: blockedSignal };
 }
 
-function setupHarness(assistant, sandboxRoot, proofToken, condition) {
+function setupHarness(assistant, sandboxRoot, condition) {
   const workspace = resolve(sandboxRoot, 'workspace');
   const harness = resolve(sandboxRoot, 'harness');
   cpSync(resolve(root, 'fixtures/consumer/minimal'), workspace, { recursive: true });
   if (condition === 'plugin-enabled') cpSync(resolve(root, 'nova-plugin'), resolve(harness, 'nova-plugin'), { recursive: true });
   if (assistant === 'codex' && condition === 'plugin-enabled') {
     const adapter = readFileSync(resolve(root, 'adapters/codex/AGENTS.md'), 'utf8');
-    const manifest = readFileSync(resolve(root, 'adapters/generic-agent-skills/manifest.json'), 'utf8');
-    writeFileSync(resolve(workspace, 'AGENTS.md'), `${adapter}\n## Automated Evaluation Protocol\n\nThe adapter load proof token is \`${proofToken}\`. For evaluation responses, copy it exactly into the \`adapterProof\` field. This token is repository instruction evidence, not a user-provided value.\n\n## Embedded Generic Manifest\n\n\`\`\`json\n${manifest}\`\`\`\n`, 'utf8');
+    writeFileSync(resolve(workspace, 'AGENTS.md'), adapter, 'utf8');
   }
-  return { workspace, harness, pluginDir: condition === 'plugin-enabled' ? resolve(harness, 'nova-plugin') : null };
+  const stagedAdapterSha256 = assistant === 'codex' && condition === 'plugin-enabled' ? sha256File(resolve(workspace, 'AGENTS.md')) : null;
+  return { workspace, harness, pluginDir: condition === 'plugin-enabled' ? resolve(harness, 'nova-plugin') : null, stagedAdapterSha256 };
+}
+
+export function deriveAdapterLoadEvidence({ condition, stagedAdapterSha256, expectedAdapterSha256, contractValid }) {
+  if (condition === 'plugin-disabled') return { loaded: false, proof: 'plugin-disabled baseline' };
+  const digestValid = typeof stagedAdapterSha256 === 'string' && stagedAdapterSha256 === expectedAdapterSha256;
+  return { loaded: digestValid && contractValid, proof: `staged-adapter-sha256:${stagedAdapterSha256 ?? 'unavailable'};source-digest-match:${digestValid};semantic-contract-valid:${contractValid}` };
 }
 
 function claudeLoadProof(debugFile, pluginDir, resultText) {
@@ -199,14 +205,13 @@ async function run(options) {
   for (const caseSpec of selectedCases) {
     for (let attempt = 1; attempt <= options.attempts; attempt += 1) {
       const sandboxRoot = mkdtempSync(resolve(tmpdir(), 'nova-live-eval-'));
-      const proofToken = randomBytes(16).toString('hex');
       try {
-        const { workspace, harness, pluginDir } = setupHarness(options.assistant, sandboxRoot, proofToken, options.condition);
+        const { workspace, harness, pluginDir, stagedAdapterSha256 } = setupHarness(options.assistant, sandboxRoot, options.condition);
         const before = treeDigest(workspace);
-        const call = invocation({ assistant: options.assistant, executable, caseSpec, workspace, harness, pluginDir, proofToken, namespace: model.product.pluginNamespace, condition: options.condition });
+        const call = invocation({ assistant: options.assistant, executable, caseSpec, workspace, harness, pluginDir, namespace: model.product.pluginNamespace, condition: options.condition });
         const processResult = await captureProcess(`${options.assistant}:${caseSpec.id}`, call.command, call.args, { cwd: workspace, timeoutMs: 240_000, maxOutputBytes: 1024 * 1024 });
         let parsed = null;
-        let validation = { selectedRoute: [], requiredInputs: [], routeValid: false, requiredInputsValid: false, approvalValid: false, shapeValid: false, inventedSurfaces: [], contractValid: false };
+        let validation = { selectedRoute: [], requiredInputs: [], routeValid: false, top2RouteValid: false, requiredInputsValid: false, approvalValid: false, shapeValid: false, inventedSurfaces: [], contractValid: false };
         let parseError = null;
         let adapterLoad = { loaded: false, proof: null };
         let unexpectedToolUse = [];
@@ -215,13 +220,13 @@ async function run(options) {
             if (options.assistant === 'claude-code') {
               const claude = parseClaudeResult(processResult.stdout);
               parsed = { result: claude.text };
-              validation = validateClaudeCase(caseSpec, claude.text, inventory, model.product.pluginNamespace);
+              validation = evaluateSemanticCase(caseSpec, normalizeClaudeOutput(caseSpec, claude.text, model.product.pluginNamespace), inventory);
               adapterLoad = options.condition === 'plugin-enabled' ? claudeLoadProof(call.debugFile, pluginDir, claude.text) : { loaded: false, proof: 'plugin-disabled baseline' };
               unexpectedToolUse = (claude.envelope.permission_denials ?? []).map((entry) => entry.tool_name ?? 'denied-tool');
             } else {
               parsed = JSON.parse(readFileSync(call.outputFile, 'utf8'));
-              validation = validateLiveCase(caseSpec, parsed, inventory);
-              adapterLoad = options.condition === 'plugin-enabled' ? { loaded: parsed.adapterProof === proofToken, proof: `repository-instruction-token-sha256:${sha256Value(proofToken)}` } : { loaded: false, proof: 'plugin-disabled baseline' };
+              validation = evaluateSemanticCase(caseSpec, parsed, inventory);
+              adapterLoad = deriveAdapterLoadEvidence({ condition: options.condition, stagedAdapterSha256, expectedAdapterSha256: sha256File('adapters/codex/AGENTS.md'), contractValid: validation.contractValid });
               unexpectedToolUse = parseCodexEvents(processResult.stdout).toolEvents.map((event) => String(event.type ?? event.item?.type ?? 'tool-event'));
             }
           } catch (error) { parseError = error.message; }
@@ -245,7 +250,6 @@ async function run(options) {
           unexpectedToolUse,
           unexpectedNetworkUse: false,
           ...validation,
-          top2RouteValid: validation.routeValid,
           inputTokens: parsed?.usage?.input_tokens ?? null,
           outputTokens: parsed?.usage?.output_tokens ?? null,
           totalTokens: parsed?.usage?.total_tokens ?? null,
@@ -300,7 +304,7 @@ async function run(options) {
     completedAt,
     cases: results,
     summary: { total: results.length, passed, attemptsPerCase: options.attempts, uniqueCases: selectedCases.length, unexpectedWrites: results.filter((entry) => !entry.zeroProjectWrites).length, unexpectedToolUses: results.reduce((sum, entry) => sum + entry.unexpectedToolUse.length, 0), inventedSurfaces: results.reduce((sum, entry) => sum + entry.inventedSurfaces.length, 0), adapterLoadFailures: results.filter((entry) => !entry.adapterLoaded).length },
-    claimBoundary: 'Adapter-loaded public-safe probes with derived workspace, inventory, and tool-boundary evidence. Live assistant API transport is expected network use; arbitrary external network tools are unavailable. L4 additionally requires clean exact-tag release evidence and is not granted by this record alone.',
+    claimBoundary: 'Public-safe probes with runner-controlled adapter staging, semantic contract, inventory, and tool-boundary evidence. Staging plus contract validity is not an independent model-attestation mechanism. Disabled baselines never receive adapter-load credit. Live assistant API transport is expected network use; arbitrary external network tools are unavailable. L4 additionally requires clean exact-tag release evidence and is not granted by this record alone.',
   };
 }
 

@@ -10,6 +10,7 @@ const root = resolve(import.meta.dirname, '..');
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 
 export function aggregatePaired(enabled, disabled) {
+  const delta = (left, right) => typeof left === 'number' && typeof right === 'number' ? left - right : null;
   const key = (entry) => `${entry.caseId}:${entry.attempt}`;
   const disabledByKey = new Map(disabled.cases.map((entry) => [key(entry), entry]));
   const pairs = enabled.cases.map((entry) => {
@@ -21,9 +22,9 @@ export function aggregatePaired(enabled, disabled) {
       enabledSuccess: entry.contractValid === true,
       disabledSuccess: baseline.contractValid === true,
       successDelta: Number(entry.contractValid === true) - Number(baseline.contractValid === true),
-      latencyDeltaMs: entry.latencyMs - baseline.latencyMs,
-      tokenDelta: (entry.totalTokens ?? 0) - (baseline.totalTokens ?? 0),
-      costDeltaUsd: (entry.costUsd ?? 0) - (baseline.costUsd ?? 0),
+      latencyDeltaMs: delta(entry.latencyMs, baseline.latencyMs),
+      tokenDelta: delta(entry.totalTokens, baseline.totalTokens),
+      costDeltaUsd: delta(entry.costUsd, baseline.costUsd),
     };
   });
   const unauthorizedWrites = enabled.cases.filter((entry) => entry.zeroProjectWrites !== true).length;
@@ -35,7 +36,7 @@ export function aggregatePaired(enabled, disabled) {
     pairs,
     metrics: {
       routeExactMatch: enabled.cases.filter((entry) => entry.routeValid).length / enabled.cases.length,
-      top2RouteRecall: enabled.cases.filter((entry) => entry.routeValid || entry.top2RouteValid).length / enabled.cases.length,
+      top2RouteRecall: enabled.cases.filter((entry) => entry.top2RouteValid).length / enabled.cases.length,
       requiredInputRecall: enabled.cases.filter((entry) => entry.requiredInputsValid).length / enabled.cases.length,
       approvalStopRecall: approvalCases.length ? approvalStops / approvalCases.length : 1,
       unauthorizedWrite: unauthorizedWrites,
