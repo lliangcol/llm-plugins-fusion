@@ -268,6 +268,11 @@ const targets = [
     label: 'governance/release-channels.json',
   },
   {
+    schema: loadJson('schemas/release-reviewers.schema.json'),
+    data: loadJson('governance/release-reviewers.json'),
+    label: 'governance/release-reviewers.json',
+  },
+  {
     schema: loadJson('schemas/stable-install-proof.schema.json'),
     data: loadJson('governance/stable-install-proof.json'),
     label: 'governance/stable-install-proof.json',
@@ -337,6 +342,7 @@ const schemaPaths = [
   'schemas/candidate-core.schema.json',
   'schemas/promotion-intent.schema.json',
   'schemas/release-event.schema.json',
+  'schemas/release-reviewers.schema.json',
   'schemas/control-bundle.schema.json',
   'schemas/stable-install-proof.schema.json',
   'schemas/release-channels.schema.json',
