@@ -100,7 +100,7 @@ jobs:
       - run: npm run test:coverage:check
       - run: npm run test:mutation:critical
       - name: Collect validation gate timings
-        run: npm run ci:full
+        run: node scripts/validate-all.mjs --write-timings
       - run: node scripts/generate-validation-timing-trend.mjs --input .metrics/validation-timings.json --output .metrics/validation-timing-trend.json
       - name: Upload coverage evidence
         if: always()
