@@ -15,6 +15,7 @@ assertNodeVersion({ label: 'release artifact build' });
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
+const deterministicGzipOptions = /** @type {import('node:zlib').ZlibOptions} */ ({ level: 9, mtime: 0 });
 
 function sha256(value) {
   return createHash('sha256').update(value).digest('hex');
@@ -85,6 +86,7 @@ function gitValue(root, args) {
   return result.status === 0 ? result.stdout.trim() : 'unknown';
 }
 
+/** @param {{root?: string, outDir?: string, now?: () => Date, env?: NodeJS.ProcessEnv}} [options] */
 export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/release-artifacts', now, env = process.env } = {}) {
   const sourceEpoch = Number(env.SOURCE_DATE_EPOCH);
   const commitTimestamp = gitValue(root, ['show', '-s', '--format=%cI', 'HEAD']);
@@ -99,7 +101,7 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
   const outputRoot = resolve(root, outDir);
   mkdirSync(outputRoot, { recursive: true });
   const archiveName = `nova-plugin-${plugin.version}.tar.gz`;
-  const archive = gzipSync(deterministicTar(pluginRoot), { level: 9, mtime: 0 });
+  const archive = gzipSync(deterministicTar(pluginRoot), deterministicGzipOptions);
   const archivePath = resolve(outputRoot, archiveName);
   writeFileSync(archivePath, archive);
   const manifest = treeManifest(pluginRoot);

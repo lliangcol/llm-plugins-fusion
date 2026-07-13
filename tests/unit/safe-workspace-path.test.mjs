@@ -61,6 +61,36 @@ test('explicit artifact roots are opt-in and parsed without broadening project s
   assert.deepEqual(configuredArtifactRoots({ NOVA_EXPLICIT_ARTIFACT_ROOTS: JSON.stringify([artifacts]) }), [artifacts]);
 });
 
+test('artifact-root parsing and required targets fail closed on malformed input', async (t) => {
+  const { workspace, outside } = await workspaceFixture(t);
+  const missing = join(workspace, 'missing.txt');
+  const regularFileRoot = join(outside, 'not-a-directory.txt');
+  await writeFile(regularFileRoot, 'ordinary file');
+
+  assert.deepEqual(configuredArtifactRoots({}), []);
+  assert.deepEqual(configuredArtifactRoots({ NOVA_EXPLICIT_ARTIFACT_ROOT: workspace }), [workspace]);
+  assert.throws(
+    () => configuredArtifactRoots({ NOVA_EXPLICIT_ARTIFACT_ROOTS: '[invalid' }),
+    /must be a JSON array or path-delimited list/,
+  );
+  assert.throws(
+    () => configuredArtifactRoots({ NOVA_EXPLICIT_ARTIFACT_ROOTS: '[""]' }),
+    /must contain non-empty path strings/,
+  );
+  assert.throws(
+    () => resolveWorkspaceTarget({ filePath: missing, projectRoot: workspace, mustExist: true }),
+    /target does not exist/,
+  );
+  assert.throws(
+    () => resolveWorkspaceTarget({ filePath: 'file.txt', projectRoot: join(outside, 'absent') }),
+    /project root does not exist/,
+  );
+  assert.throws(
+    () => resolveWorkspaceTarget({ filePath: 'file.txt', projectRoot: regularFileRoot }),
+    /must be a real directory/,
+  );
+});
+
 test('path comparisons handle Windows drive case and sibling prefixes', () => {
   assert.equal(isPathInside('C:\\Work', 'c:\\work\\src\\file.ts', { platform: 'win32', pathApi: win32 }), true);
   assert.equal(isPathInside('C:\\Work', 'C:\\Work-other\\file.ts', { platform: 'win32', pathApi: win32 }), false);

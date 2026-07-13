@@ -9,6 +9,10 @@ import { diffLabels, parseLabelCatalog } from './lib/label-catalog.mjs';
 
 const root = repoRoot(import.meta.url);
 
+/**
+ * @param {string} path
+ * @param {{method?: string, body?: unknown, token: string, fetchImpl: typeof fetch}} options
+ */
 async function request(path, { method = 'GET', body, token, fetchImpl }) {
   const response = await fetchImpl(`https://api.github.com${path}`, { method, headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token}`, 'Content-Type': 'application/json', 'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'llm-plugins-fusion-label-sync' }, ...(body ? { body: JSON.stringify(body) } : {}) });
   if (!response.ok) throw new Error(`GitHub API ${method} ${path} failed with ${response.status}`);
@@ -25,6 +29,9 @@ async function listLabels(repository, token, fetchImpl) {
   throw new Error('GitHub label inventory exceeded the 2000-label safety limit');
 }
 
+/**
+ * @param {{args?: string[], env?: NodeJS.ProcessEnv, fetchImpl?: typeof fetch, sourceRoot?: string}} options
+ */
 export async function syncLabels({ args = process.argv.slice(2), env = process.env, fetchImpl = fetch, sourceRoot = root } = {}) {
   const apply = args.includes('--apply');
   if (args.some((arg) => arg !== '--apply')) throw new Error('Usage: node scripts/sync-github-labels.mjs [--apply]');

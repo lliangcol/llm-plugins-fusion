@@ -11,6 +11,7 @@ import { deterministicTar } from './build-release-artifacts.mjs';
 import { parseTarEntries } from './lib/safe-tar.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
+const deterministicGzipOptions = /** @type {import('node:zlib').ZlibOptions} */ ({ level: 9, mtime: 0 });
 const roots = [
   'scripts/build-candidate-bundle.mjs',
   'scripts/build-release-artifacts.mjs',
@@ -85,7 +86,7 @@ export function buildReleaseControlBundle({ outDir = resolve(root, '.metrics/rel
       const content = readFileSync(source);
       return { path, sha256: sha256(content), bytes: content.length };
     });
-    const archive = gzipSync(deterministicTar(staging), { level: 9, mtime: 0 });
+    const archive = gzipSync(deterministicTar(staging), deterministicGzipOptions);
     mkdirSync(outDir, { recursive: true });
     const bundlePath = resolve(outDir, 'release-control-bundle.tar.gz');
     writeFileSync(bundlePath, archive);

@@ -55,6 +55,17 @@ committed.
 `package.json` `engines.node` as the canonical support contract when the two
 ever need reconciliation.
 
+`package.json` also pins the expected npm baseline through `packageManager`.
+Use Corepack or an equivalent local toolchain manager when the active npm
+version differs; CI continues to use `npm ci --ignore-scripts` against the
+locked dependency graph.
+
+`npm run typecheck` uses the locked TypeScript and Node declarations to check
+the JavaScript adapters, framework modules, distributed plugin runtime,
+workspace packages, and maintenance scripts without emitting files. The
+workspace validator owns this scope so it cannot silently narrow to one
+package family.
+
 After `npm ci --ignore-scripts`, collect test coverage evidence with Node's
 built-in coverage runtime:
 

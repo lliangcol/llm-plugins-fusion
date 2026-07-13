@@ -149,6 +149,42 @@ export function treeDigest(rootDir, options = {}) {
   return createHash('sha256').update(JSON.stringify(treeManifest(rootDir, options))).digest('hex');
 }
 
+/**
+ * Resolve the tree identity that a local marketplace manifest actually
+ * installs. Stable marketplace manifests intentionally pin an older exact
+ * tag, so their installed bytes must be compared with the governed stable
+ * tree digest instead of the moving checkout.
+ *
+ * @param {{marketplace: any, releaseChannels: any, checkoutDigest: string, localMarketplaceSource: boolean, expectedRef?: string | null, expectedCommit?: string | null}} options
+ */
+export function resolveSourceTreeIdentity({
+  marketplace,
+  releaseChannels,
+  checkoutDigest,
+  localMarketplaceSource,
+  expectedRef = null,
+  expectedCommit = null,
+}) {
+  const source = marketplace.plugins?.find((entry) => entry.name === 'nova-plugin')?.source ?? {};
+  const ref = expectedRef ?? source.ref ?? null;
+  const commit = expectedCommit ?? source.sha ?? null;
+  const stable = releaseChannels?.stable;
+  if (
+    localMarketplaceSource
+    && ref === stable?.tag
+    && commit === stable?.commit
+    && /^[a-f0-9]{64}$/u.test(stable?.pluginTreeSha256 ?? '')
+  ) {
+    return {
+      digest: stable.pluginTreeSha256,
+      label: `governed stable source ${stable.tag}@${stable.commit}`,
+      ref,
+      commit,
+    };
+  }
+  return { digest: checkoutDigest, label: 'checkout', ref, commit };
+}
+
 function readJson(relPath) {
   return JSON.parse(readFileSync(resolve(root, relPath), 'utf8'));
 }
@@ -293,6 +329,7 @@ export async function main(args = process.argv.slice(2)) {
   const plugin = readJson('nova-plugin/.claude-plugin/plugin.json');
   const permissionSpec = readJson('nova-plugin/runtime/workflow-permissions.json');
   const knownGoodSnapshot = readJson('fixtures/runtime/claude-2.1.205-inventory.json');
+  const releaseChannels = readJson('governance/release-channels.json');
   const marketplaceName = marketplace.name;
   const pluginId = `${plugin.name}@${marketplaceName}`;
   const expectedSkills = normalizeExpectedInventory(permissionSpec);
@@ -407,12 +444,20 @@ export async function main(args = process.argv.slice(2)) {
       validationErrors.push('only route may be the primary entrypoint; nova-route is compatibility-only');
     }
 
-    const sourceTreeDigest = treeDigest(resolve(root, 'nova-plugin'));
+    const sourceTreeIdentity = resolveSourceTreeIdentity({
+      marketplace,
+      releaseChannels,
+      checkoutDigest: treeDigest(resolve(root, 'nova-plugin')),
+      localMarketplaceSource,
+      expectedRef: options.expectedRef,
+      expectedCommit: options.expectedCommit,
+    });
+    const sourceTreeDigest = sourceTreeIdentity.digest;
     const installedTreeDigest = treeDigest(installed.installPath, {
       ignoreClaudeRuntimeMarkers: true,
     });
     if (sourceTreeDigest !== installedTreeDigest) {
-      validationErrors.push(`installed tree digest ${installedTreeDigest} differs from checkout ${sourceTreeDigest}`);
+      validationErrors.push(`installed tree digest ${installedTreeDigest} differs from ${sourceTreeIdentity.label} ${sourceTreeDigest}`);
     }
 
     const routeSmoke = options.routeSmokeOut && validationErrors.length === 0
@@ -426,7 +471,7 @@ export async function main(args = process.argv.slice(2)) {
       marketplace: {
         name: marketplaceName,
         source: evidenceSource,
-        ref: options.expectedRef === 'local' ? null : (options.expectedRef ?? addedMarketplace.ref ?? null),
+        ref: options.expectedRef === 'local' ? null : (sourceTreeIdentity.ref ?? addedMarketplace.ref ?? null),
         installSourceType: localMarketplaceSource ? 'local-exact-tag-archive' : 'remote-ref',
       },
       plugin: { id: pluginId, version: installed.version, installPath: installed.installPath },

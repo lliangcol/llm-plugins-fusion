@@ -32,6 +32,18 @@ async function runVerifier(workspace, filePath, options = {}) {
   });
 }
 
+async function runRawVerifier(workspace, input) {
+  return runProcess('post-write verifier raw payload test', process.execPath, [verifier], {
+    cwd: workspace,
+    env: {
+      ...process.env,
+      CLAUDE_PROJECT_DIR: workspace,
+      CLAUDE_PLUGIN_ROOT: resolve(root, 'nova-plugin'),
+    },
+    input,
+  });
+}
+
 async function fixture(t) {
   const temp = await mkdtemp(join(tmpdir(), 'nova-post-write-'));
   t.after(() => rm(temp, { recursive: true, force: true }));
@@ -96,4 +108,18 @@ test('post-write verifier reports shell control-path mutation', async (t) => {
   const blocked = await runVerifier(workspace, policy);
   assert.equal(blocked.code, 2);
   assert.match(blocked.stderr, /Shell policy control path was modified/u);
+});
+
+test('post-write verifier rejects malformed payloads and missing actual targets', async (t) => {
+  const { workspace } = await fixture(t);
+  const malformed = await runRawVerifier(workspace, '{not-json');
+  assert.equal(malformed.code, 2);
+  assert.match(malformed.stderr, /payload is not valid JSON/u);
+
+  const ignored = await runVerifier(workspace, 'missing.txt', { toolName: 'Read' });
+  assert.equal(ignored.ok, true, ignored.stderr);
+
+  const missing = await runVerifier(workspace, 'missing.txt');
+  assert.equal(missing.code, 2);
+  assert.match(missing.stderr, /target does not exist/u);
 });

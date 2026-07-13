@@ -4,7 +4,7 @@ import addFormats from 'ajv-formats';
 
 function createAjv(Version) {
   const ajv = new Version({ allErrors: true, strict: true, allowUnionTypes: true, validateFormats: true });
-  addFormats(ajv);
+  /** @type {(instance: any) => any} */ (/** @type {unknown} */ (addFormats))(ajv);
   return ajv;
 }
 

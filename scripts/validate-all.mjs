@@ -11,6 +11,7 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
+import { resolveBashCommand } from './lib/bash-command.mjs';
 import {
   captureProcess,
   commandDetails,
@@ -23,6 +24,7 @@ const root = resolve(__dir, '..');
 const maxConcurrency = Number.parseInt(process.env.NOVA_VALIDATE_CONCURRENCY ?? '3', 10);
 const writeTimings = process.argv.includes('--write-timings') || process.env.NOVA_VALIDATE_WRITE_TIMINGS === '1';
 const runId = process.env.GITHUB_RUN_ID ?? `local-${process.pid}-${Date.now()}`;
+const bashCommand = resolveBashCommand();
 
 assertNodeVersion({ label: 'repository validation' });
 
@@ -44,15 +46,20 @@ async function gitValue(args) {
 }
 
 async function environmentSummary() {
-  const tools = await Promise.all([
+  /** @type {Array<[string, string]>} */
+  const commands = [
     ['Git', 'git'],
     ['Claude CLI', 'claude'],
     ['Codex CLI', 'codex'],
-    ['Bash', 'bash'],
-  ].map(async ([label, command]) => [label, await commandDetails(command, ['--version'], {
-    cwd: root,
-    timeoutMs: 10_000,
-  })]));
+    ['Bash', bashCommand],
+  ];
+  const tools = await Promise.all(commands.map(async ([label, command]) => /** @type {const} */ ([
+    label,
+    await commandDetails(command, ['--version'], {
+      cwd: root,
+      timeoutMs: 10_000,
+    }),
+  ])));
 
   console.log('\n== environment summary ==');
   console.log(`Node.js: ${process.version}`);
@@ -131,7 +138,7 @@ function failedTask(id, label, message) {
 
 async function buildAgentVerificationTask() {
   if (process.platform !== 'win32') {
-    return commandTask('agents.verify', 'verify agents', 'bash', ['scripts/verify-agents.sh']);
+    return commandTask('agents.verify', 'verify agents', bashCommand, ['scripts/verify-agents.sh']);
   }
 
   const powershellAvailable = await commandExists('powershell', [
@@ -172,15 +179,15 @@ function buildHookSyntaxTasks(hasBash) {
   }
 
   return [
-    commandTask('hooks.syntax.prewrite', 'hook shell syntax nova-plugin/hooks/scripts/pre-write-check.sh', 'bash', [
+    commandTask('hooks.syntax.prewrite', 'hook shell syntax nova-plugin/hooks/scripts/pre-write-check.sh', bashCommand, [
       '-n',
       'nova-plugin/hooks/scripts/pre-write-check.sh',
     ], 30_000),
-    commandTask('hooks.syntax.prebash', 'hook shell syntax nova-plugin/hooks/scripts/pre-bash-check.sh', 'bash', [
+    commandTask('hooks.syntax.prebash', 'hook shell syntax nova-plugin/hooks/scripts/pre-bash-check.sh', bashCommand, [
       '-n',
       'nova-plugin/hooks/scripts/pre-bash-check.sh',
     ], 30_000),
-    commandTask('hooks.syntax.audit', 'hook shell syntax nova-plugin/hooks/scripts/post-audit-log.sh', 'bash', [
+    commandTask('hooks.syntax.audit', 'hook shell syntax nova-plugin/hooks/scripts/post-audit-log.sh', bashCommand, [
       '-n',
       'nova-plugin/hooks/scripts/post-audit-log.sh',
     ], 30_000),
@@ -287,6 +294,8 @@ async function main() {
   const runtimeSmokeTask = buildRuntimeSmokeTask(hasBash);
 
   await runTaskGroup([
+    commandTask('js.typecheck', 'typecheck JavaScript package boundaries', process.execPath, ['node_modules/typescript/bin/tsc', '-p', 'tsconfig.checkjs.json']),
+    nodeTask('packages.workspaces', 'validate private workspace boundaries', 'scripts/validate-workspaces.mjs'),
     nodeTask('schema.validate', 'validate schemas', 'scripts/validate-schemas.mjs'),
     nodeTask('project.state', 'validate project state', 'scripts/validate-project-state.mjs'),
     nodeTask('registry.fixtures', 'validate registry fixtures', 'scripts/validate-registry-fixtures.mjs'),
@@ -311,7 +320,9 @@ async function main() {
     nodeTask('workflow.second-product', 'validate second-product full chain', 'scripts/validate-second-product-fixture.mjs'),
     nodeTask('schemas.differential', 'validate standard schema engine differential', 'scripts/validate-schema-engine-differential.mjs'),
     nodeTask('release.operations', 'validate release operations governance', 'scripts/validate-release-operations.mjs'),
+    nodeTask('release.channels', 'validate release-channel facts', 'scripts/validate-release-channel-facts.mjs'),
     nodeTask('control.complexity', 'validate control-plane complexity budget', 'scripts/validate-control-plane-complexity.mjs'),
+    nodeTask('control.task.catalog', 'validate maintainer task catalog', 'scripts/generate-task-catalog.mjs'),
     nodeTask('facts.graph', 'validate generated fact graph', 'scripts/generate-fact-graph.mjs'),
     nodeTask('platform.file.urls', 'validate portable file URL handling', 'scripts/validate-portable-paths.mjs'),
     nodeTask('workflow.surface.normalization', 'validate normalized workflow surfaces', 'scripts/normalize-workflow-surfaces.mjs'),

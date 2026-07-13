@@ -10,6 +10,7 @@ import {
   diffInventory,
   parseArgs,
   parsePluginDetails,
+  resolveSourceTreeIdentity,
   normalizeMarketplaceSource,
   treeDigest,
   treeManifest,
@@ -88,6 +89,34 @@ test('candidate marketplace assertions bind plugin source to the exact tag and c
   assert.doesNotThrow(() => assertCandidateMarketplaceSource(marketplace, 'v4.0.0-rc.4', 'a'.repeat(40)));
   assert.throws(() => assertCandidateMarketplaceSource(marketplace, 'v4.0.0-rc.5', 'a'.repeat(40)), /plugin ref/u);
   assert.throws(() => assertCandidateMarketplaceSource(marketplace, 'v4.0.0-rc.4', 'b'.repeat(40)), /plugin commit/u);
+});
+
+test('stable local marketplace installs use the governed exact-tag tree digest', () => {
+  const stableDigest = 'b'.repeat(64);
+  const stableCommit = 'a'.repeat(40);
+  const marketplace = {
+    plugins: [{ name: 'nova-plugin', source: { ref: 'v4.0.0', sha: stableCommit } }],
+  };
+  const releaseChannels = {
+    stable: { tag: 'v4.0.0', commit: stableCommit, pluginTreeSha256: stableDigest },
+  };
+  assert.deepEqual(resolveSourceTreeIdentity({
+    marketplace,
+    releaseChannels,
+    checkoutDigest: 'c'.repeat(64),
+    localMarketplaceSource: true,
+  }), {
+    digest: stableDigest,
+    label: `governed stable source v4.0.0@${stableCommit}`,
+    ref: 'v4.0.0',
+    commit: stableCommit,
+  });
+  assert.equal(resolveSourceTreeIdentity({
+    marketplace,
+    releaseChannels,
+    checkoutDigest: 'c'.repeat(64),
+    localMarketplaceSource: false,
+  }).digest, 'c'.repeat(64));
 });
 
 test('local marketplace sources are normalized for the Claude CLI', () => {

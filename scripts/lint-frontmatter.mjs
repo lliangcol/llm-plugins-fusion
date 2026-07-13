@@ -279,10 +279,10 @@ function lintSkills() {
     try { if (!statSync(skillMd).isFile()) continue; } catch { continue; }
     const rel = `skills/${entry}/SKILL.md`;
     const src = readFileSync(skillMd, 'utf8').replace(/\r\n/g, '\n');
-    for (const [pattern, message] of [
+    for (const [pattern, message] of /** @type {Array<[RegExp, string]>} */ ([
       [/Read\/Glob\/Grep\/Glob/, 'duplicate Glob in prose tool vocabulary'],
       [/`Write`, `Edit`, `Edit`/, 'duplicate Edit in prose tool vocabulary'],
-    ]) {
+    ])) {
       if (pattern.test(src)) recordError(rel, message);
     }
     const fm = splitFrontmatter(src);

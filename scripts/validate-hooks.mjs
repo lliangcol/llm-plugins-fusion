@@ -35,13 +35,13 @@ try {
   errors.push(`  - hooks.json is not valid JSON: ${error.message}`);
 }
 
-for (const [event, expectedMatchers] of [
+for (const [event, expectedMatchers] of /** @type {Array<[string, string[]]>} */ ([
   ['PreToolUse', ['Write|Edit|NotebookEdit', 'Bash']],
   ['PostToolUse', ['Write|Edit', 'Write|Edit|NotebookEdit|Bash']],
   ['PostToolUseFailure', ['Write|Edit|NotebookEdit|Bash']],
   ['PermissionDenied', ['Write|Edit|NotebookEdit|Bash']],
   ['SessionEnd', ['*']],
-]) {
+])) {
   const entries = config?.hooks?.[event];
   if (!Array.isArray(entries) || JSON.stringify(entries.map((entry) => entry.matcher)) !== JSON.stringify(expectedMatchers)) {
     errors.push(`  - ${event} matcher sequence must be ${expectedMatchers.join(' then ')}`);

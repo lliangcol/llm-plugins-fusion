@@ -5,9 +5,11 @@ import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { resolveBashCommand } from '../../scripts/lib/bash-command.mjs';
 import { runProcess } from '../../scripts/lib/process-runner.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const bashCommand = resolveBashCommand();
 const payload = JSON.stringify({
   hook_event_name: 'PostToolUse',
   session_id: 'session-1',
@@ -50,7 +52,7 @@ async function normalRotationRoot(t) {
 }
 
 for (const [label, command, args] of [
-  ['Bash', 'bash', ['nova-plugin/hooks/scripts/post-audit-log.sh']],
+  ['Bash', bashCommand, ['nova-plugin/hooks/scripts/post-audit-log.sh']],
   ['Node', process.execPath, ['nova-plugin/hooks/scripts/post-audit-log.mjs']],
 ]) {
   test(`${label} audit rotation creates a fresh log only after a successful rename`, async (t) => {

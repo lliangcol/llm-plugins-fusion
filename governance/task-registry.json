@@ -1,0 +1,34 @@
+{
+  "$schema": "../schemas/task-registry.schema.json",
+  "schemaVersion": 1,
+  "categories": {
+    "validate": "Deterministic validation, lint, policy, and security gates.",
+    "release": "Candidate build, promotion, reconciliation, and release proof operations.",
+    "evidence": "Generated facts, compatibility records, inventories, and quality evidence.",
+    "docs": "Documentation synchronization and documentation-specific generation.",
+    "migration": "Scaffolding, normalization, and versioned contract migrations.",
+    "benchmark": "Tests, coverage, simulations, demos, mutations, and live evaluation.",
+    "maintenance": "Diagnostics, repository administration, and reusable script libraries."
+  },
+  "scriptRules": [
+    { "pattern": "^scripts/lib/", "category": "maintenance" },
+    { "pattern": "^scripts/(?:validate-|lint-|scan-|verify-agents\\.)", "category": "validate" },
+    { "pattern": "^scripts/(?:build-(?:candidate|release)|extract-release|generate-release|prepare-release|reconcile-github-release|release-orchestrator|verify-(?:independent-release|release-promotion|stable-install))", "category": "release" },
+    { "pattern": "^scripts/(?:sync-doc-facts|generate-prompt-surface-report)", "category": "docs" },
+    { "pattern": "^scripts/(?:migrate-|normalize-|scaffold)", "category": "migration" },
+    { "pattern": "^scripts/(?:evaluate-|run-(?:critical|live|node-tests|real-task|test-coverage)|demo-)", "category": "benchmark" },
+    { "pattern": "^scripts/(?:collect-github-metrics|generate-)", "category": "evidence" },
+    { "pattern": "^scripts/(?:doctor|print-github-security-settings|profile-validation|sync-github-labels)", "category": "maintenance" }
+  ],
+  "npmScriptRules": [
+    { "pattern": "^(?:validate|lint|scan|ci:|check|typecheck$)", "category": "validate" },
+    { "pattern": "^release:", "category": "release" },
+    { "pattern": "^generate:", "category": "evidence" },
+    { "pattern": "^(?:test|eval:|demo:)", "category": "benchmark" },
+    { "pattern": "^(?:scaffold:|normalize:)", "category": "migration" },
+    { "pattern": "^(?:doctor$|llmf$|sync:)", "category": "maintenance" }
+  ],
+  "generatedOutputs": [
+    "docs/maintainers/task-catalog.md"
+  ]
+}

@@ -25,6 +25,7 @@ knowledge-base content in the consumer-owned workspace.
 
 | Need | Entry |
 | --- | --- |
+| Choose the shortest path by persona or task | [start-here.md](start-here.md) |
 | Get started quickly with `nova-plugin` | [getting-started.md](getting-started.md) |
 | See scenario-based workflow examples | [showcase/README.md](showcase/README.md) |
 | Prepare social preview and demo capture assets | [assets/README.md](assets/README.md) |
@@ -33,7 +34,8 @@ knowledge-base content in the consumer-owned workspace.
 | Inspect generated public surface inventory | [generated/surface-inventory.md](generated/surface-inventory.md) |
 | Adopt `nova-plugin` in a private project | [consumers/README.md](consumers/README.md) |
 | Maintain repository checks and release gates | [maintainers/quickstart.md](maintainers/quickstart.md) |
-| Understand public compatibility boundaries | [compatibility/public-api.md](compatibility/public-api.md) |
+| Find the script, npm shortcut, or CI job for a maintenance task | [maintainers/task-catalog.md](maintainers/task-catalog.md) |
+| Understand current compatibility evidence and boundaries | [compatibility/README.md](compatibility/README.md) |
 | Use the framework/compiler and llmf preview | [framework/README.md](framework/README.md) |
 | Understand assistant L1-L4 evidence claims | [compatibility/assistant-levels.md](compatibility/assistant-levels.md) |
 | Inspect reproducible workflow quality evidence | [quality/benchmark.md](quality/benchmark.md) |
@@ -48,6 +50,7 @@ knowledge-base content in the consumer-owned workspace.
 | Maintain marketplace registry metadata | [marketplace/registry-author-workflow.md](marketplace/registry-author-workflow.md) |
 | Prepare release or promotion evidence | [releases/release-evidence-template.md](releases/release-evidence-template.md) |
 | Run release validation manually | [releases/release-validation-runbook.md](releases/release-validation-runbook.md) |
+| Operate candidate-to-stable promotion from one checklist | [maintainers/release-runbook.md](maintainers/release-runbook.md) |
 | Review current project optimization work | [project-optimization-plan.md](project-optimization-plan.md) |
 | Resume small-step maintenance rounds | [llm-plugins-fusion-maintenance-status.md](llm-plugins-fusion-maintenance-status.md) |
 
@@ -56,6 +59,7 @@ knowledge-base content in the consumer-owned workspace.
 ```text
 docs/
 |-- README.md
+|-- start-here.md                  # persona and task-oriented entry point
 |-- getting-started.md              # shortest install and workflow entry
 |-- assets/                       # social preview and demo capture guidance
 |-- agents/                       # core agent routing and pack routing

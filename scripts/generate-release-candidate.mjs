@@ -42,6 +42,7 @@ export function parseCandidateArgs(args, env = process.env) {
   return options;
 }
 
+/** @param {{args?: string[], env?: NodeJS.ProcessEnv, now?: () => Date}} [options] */
 export function generateReleaseCandidate({ args = process.argv.slice(2), env = process.env, now } = {}) {
   const options = parseCandidateArgs(args, env);
   const controlManifest = JSON.parse(readFileSync(options.controlBundleManifest, 'utf8'));

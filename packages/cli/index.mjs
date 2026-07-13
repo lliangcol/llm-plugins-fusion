@@ -1,12 +1,18 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { compileDirectory, buildArtifact } from '../compiler/index.mjs';
-import { evaluateBundle, testConformance } from '../conformance/index.mjs';
-import { inspectSpecBundle, loadSpecBundle } from '../spec/index.mjs';
+import { compileDirectory, buildArtifact } from '@llm-plugins-fusion/compiler';
+import { evaluateBundle, testConformance } from '@llm-plugins-fusion/conformance';
+import { inspectSpecBundle, loadSpecBundle } from '@llm-plugins-fusion/spec';
 
 export const EXIT = Object.freeze({ OK: 0, USAGE: 2, VALIDATION: 3, IO: 4, CONFORMANCE: 5 });
 const json = (value) => `${JSON.stringify(value)}\n`;
 
+/**
+ * @param {string[]} args
+ * @param {string} name
+ * @param {string | null} [fallback]
+ * @returns {string | null}
+ */
 function option(args, name, fallback = null) {
   const index = args.indexOf(name);
   if (index === -1) return fallback;
@@ -31,7 +37,7 @@ export async function runCli(args, io = process) {
   const command = args[0];
   if (!['init', 'validate', 'build', 'test', 'eval', 'doctor', 'inspect', 'migrate'].includes(command)) return { exitCode: EXIT.USAGE, output: { ok: false, command: command ?? null, error: 'unknown-command' } };
   try {
-    const root = resolve(option(args, '--root', '.'));
+    const root = resolve(option(args, '--root', '.') ?? '.');
     let result;
     if (command === 'init') result = init(root);
     else if (command === 'doctor') result = { node: process.versions.node, platform: process.platform, architecture: process.arch, supported: Number(process.versions.node.split('.')[0]) >= 22 };
@@ -42,7 +48,10 @@ export async function runCli(args, io = process) {
     else if (command === 'build') { const out = option(args, '--out'); if (!out) throw Object.assign(new Error('--out is required'), { exitCode: EXIT.USAGE }); const artifact = buildArtifact(compileDirectory(root)); mkdirSync(resolve(root, out, '..'), { recursive: true }); writeFileSync(resolve(root, out), `${JSON.stringify(artifact, null, 2)}\n`, 'utf8'); result = { output: resolve(root, out), workflowCount: artifact.workflows.length }; }
     else if (command === 'migrate') { const { migrateWorkflowSpec, migrateBehaviorSpec } = await import('../../scripts/migrate-v6-contracts.mjs'); const bundle = loadSpecBundle(root); const workflows = migrateWorkflowSpec(bundle.workflows, bundle.behaviors); const behaviors = migrateBehaviorSpec(bundle.behaviors); if (args.includes('--write')) { writeFileSync(resolve(root, 'workflows.v6.json'), `${JSON.stringify(workflows, null, 2)}\n`); writeFileSync(resolve(root, 'behaviors.v2.json'), `${JSON.stringify(behaviors, null, 2)}\n`); } result = { write: args.includes('--write'), workflowCount: workflows.workflows.length, workflowSchemaVersion: 6, behaviorSchemaVersion: 2 }; }
     return { exitCode: EXIT.OK, output: { ok: true, command, result } };
-  } catch (error) { return { exitCode: error.exitCode ?? (error instanceof SyntaxError ? EXIT.VALIDATION : EXIT.IO), output: { ok: false, command, error: error.message } }; }
+  } catch (error) {
+    const failure = /** @type {Error & { exitCode?: number }} */ (error);
+    return { exitCode: failure.exitCode ?? (failure instanceof SyntaxError ? EXIT.VALIDATION : EXIT.IO), output: { ok: false, command, error: failure.message } };
+  }
 }
 
 export async function main(args = process.argv.slice(2), io = process) {

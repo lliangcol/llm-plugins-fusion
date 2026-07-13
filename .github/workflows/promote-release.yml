@@ -34,6 +34,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+          cache: npm
       - run: npm ci --ignore-scripts
       - name: Verify explicit signed tag identity
         id: identity
@@ -90,6 +91,9 @@ jobs:
       - name: Prepare immutable publication handoff
         env:
           RELEASE_TAG: ${{ inputs.release-tag }}
+          RELEASE_PROMOTION: '1'
+          CANDIDATE_TAG: ${{ inputs.candidate-tag }}
+          SOURCE_COMMIT: ${{ steps.identity.outputs.commit }}
         run: |
           set -euo pipefail
           node scripts/prepare-release.mjs
