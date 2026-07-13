@@ -203,6 +203,11 @@ const targets = [
     label: 'workflow-specs/workflows.json',
   },
   {
+    schema: loadJson('schemas/workflow-spec.schema.json'),
+    data: loadJson('workflow-specs/workflows.v6.json'),
+    label: 'workflow-specs/workflows.v6.json',
+  },
+  {
     schema: loadJson('schemas/workflow-framework.schema.json'),
     data: loadJson('workflow-specs/framework.json'),
     label: 'workflow-specs/framework.json',
@@ -211,6 +216,11 @@ const targets = [
     schema: loadJson('schemas/workflow-behaviors.schema.json'),
     data: loadJson('workflow-specs/behaviors.json'),
     label: 'workflow-specs/behaviors.json',
+  },
+  {
+    schema: loadJson('schemas/workflow-behaviors.schema.json'),
+    data: loadJson('workflow-specs/behaviors.v2.json'),
+    label: 'workflow-specs/behaviors.v2.json',
   },
   {
     schema: loadJson('schemas/workflow-product.schema.json'),
