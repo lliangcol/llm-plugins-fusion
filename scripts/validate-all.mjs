@@ -301,6 +301,7 @@ async function main() {
     nodeTask('workflow.permissions', 'validate workflow permissions', 'scripts/generate-workflow-permissions.mjs'),
     nodeTask('workflow.contract.v5', 'validate workflow capability contract v5', 'scripts/validate-workflow-contract-v5.mjs'),
     nodeTask('workflow.contract.v6.projection', 'validate deterministic Contract v6 projection', 'scripts/migrate-v6-contracts.mjs'),
+    nodeTask('workflow.eval.corpus.projection', 'validate deterministic bilingual eval corpus', 'scripts/generate-eval-corpus.mjs'),
     nodeTask('workflow.behavior.surfaces', 'validate generated behavior surfaces', 'scripts/generate-behavior-surfaces.mjs'),
     nodeTask('workflow.runtime.contracts', 'validate behavior-complete runtime contracts', 'scripts/generate-runtime-contracts.mjs'),
     nodeTask('workflow.runtime.behavior', 'validate direct command behavior contracts', 'scripts/validate-runtime-behavior-contracts.mjs'),
