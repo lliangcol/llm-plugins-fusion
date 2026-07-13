@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { access, mkdtemp, rm } from 'node:fs/promises';
+import { access, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -94,9 +94,25 @@ test('runProcess timeout terminates spawned descendants', { skip: process.platfo
   const root = await mkdtemp(join(tmpdir(), 'nova-process-tree-'));
   t.after(() => rm(root, { recursive: true, force: true }));
   const marker = join(root, 'orphan.txt');
-  const grandchild = `setTimeout(() => require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'orphan'), 600); setInterval(() => {}, 1000);`;
-  const parent = `require('node:child_process').spawn(process.execPath, ['-e', ${JSON.stringify(grandchild)}], { stdio: 'ignore' }); setInterval(() => {}, 1000);`;
-  const result = await runProcess('process tree timeout', process.execPath, ['-e', parent], { timeoutMs: 100 });
+  const grandchildScript = join(root, 'grandchild.mjs');
+  const parentScript = join(root, 'parent.mjs');
+
+  await writeFile(grandchildScript, [
+    'import { writeFileSync } from "node:fs";',
+    'const markerPath = process.argv[2];',
+    'setTimeout(() => writeFileSync(markerPath, "orphan"), 600);',
+    'setInterval(() => {}, 1000);',
+    '',
+  ].join('\n'), 'utf8');
+  await writeFile(parentScript, [
+    'import { spawn } from "node:child_process";',
+    'const [grandchildScript, markerPath] = process.argv.slice(2);',
+    'spawn(process.execPath, [grandchildScript, markerPath], { stdio: "ignore" });',
+    'setInterval(() => {}, 1000);',
+    '',
+  ].join('\n'), 'utf8');
+
+  const result = await runProcess('process tree timeout', process.execPath, [parentScript, grandchildScript, marker], { timeoutMs: 100 });
   assert.equal(result.timedOut, true);
   await new Promise((resolvePromise) => setTimeout(resolvePromise, 900));
   await assert.rejects(access(marker));
