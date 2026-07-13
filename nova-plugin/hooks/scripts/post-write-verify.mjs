@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 import {
   configuredArtifactRoots,
   isProtectedHooksPath,
+  isProtectedShellControlPath,
   resolveWorkspaceTarget,
 } from '../../runtime/safe-workspace-path.mjs';
 import { validateHooksJsonText } from './hooks-schema.mjs';
@@ -33,6 +34,9 @@ const projectRoot = resolve(process.env.CLAUDE_PROJECT_DIR || payload.cwd || pro
 const effectiveCwd = resolve(payload.cwd || projectRoot);
 const lexicalTarget = resolve(effectiveCwd, input.file_path ?? '');
 const protectedTarget = isProtectedHooksPath(lexicalTarget, { projectRoot, pluginRoot });
+if (isProtectedShellControlPath(lexicalTarget, { projectRoot, pluginRoot })) {
+  fail('Shell policy control path was modified during an agent session.', [`Target: ${input.file_path ?? '<missing>'}`]);
+}
 let policy;
 try {
   policy = resolveWorkspaceTarget({

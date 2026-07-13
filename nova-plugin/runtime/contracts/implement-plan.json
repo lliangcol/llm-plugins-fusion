@@ -36,8 +36,8 @@
     "workspaceRead": "preapproved",
     "workspaceWrite": "preapproved",
     "shell": "prompt",
-    "network": "prompt",
-    "credentials": "explicit",
+    "network": "denied",
+    "credentials": "denied",
     "userScopeMutation": "denied",
     "externalPublish": "denied",
     "gitHistoryMutation": "denied"

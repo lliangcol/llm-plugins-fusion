@@ -49,8 +49,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7623,
-        "estimatedTokens": 1901,
+        "bytes": 7628,
+        "estimatedTokens": 1902,
         "id": "review"
       }
     },
@@ -66,8 +66,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7623,
-        "estimatedTokens": 1901,
+        "bytes": 7628,
+        "estimatedTokens": 1902,
         "id": "review"
       }
     },
@@ -231,8 +231,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7623,
-        "estimatedTokens": 1901,
+        "bytes": 7628,
+        "estimatedTokens": 1902,
         "id": "review"
       }
     },
@@ -254,15 +254,15 @@
     {
       "id": "review",
       "commandWrapper": {
-        "bytes": 1027,
-        "estimatedTokens": 257,
+        "bytes": 1032,
+        "estimatedTokens": 258,
         "canonicalSurfaceId": "review",
         "variantPreset": {},
         "deprecated": false
       },
       "canonicalSkill": {
-        "bytes": 7623,
-        "estimatedTokens": 1901,
+        "bytes": 7628,
+        "estimatedTokens": 1902,
         "id": "review"
       }
     },
@@ -278,8 +278,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7623,
-        "estimatedTokens": 1901,
+        "bytes": 7628,
+        "estimatedTokens": 1902,
         "id": "review"
       }
     },
@@ -295,8 +295,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7623,
-        "estimatedTokens": 1901,
+        "bytes": 7628,
+        "estimatedTokens": 1902,
         "id": "review"
       }
     },
@@ -312,8 +312,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7623,
-        "estimatedTokens": 1901,
+        "bytes": 7628,
+        "estimatedTokens": 1902,
         "id": "review"
       }
     },

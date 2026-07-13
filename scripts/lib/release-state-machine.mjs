@@ -51,6 +51,53 @@ export function createTransitionEvent({ transition, identity, inputDigests = {},
   return { event, sha256: canonicalSha256(event) };
 }
 
+export function createReleaseLedger(identity) {
+  return { schemaVersion: 1, identity: { ...identity }, headState: 'DRAFT', headSha256: null, events: [] };
+}
+
+function assertModeTransition(mode, transition) {
+  if (!['promote', 'recover', 'drill'].includes(mode)) throw new Error(`unknown release mode ${mode}`);
+  if (mode === 'recover' && transition.from === 'DRAFT') throw new Error('recover mode requires a prior release transition');
+  if (mode === 'drill' && releaseStates.indexOf(transition.to) > releaseStates.indexOf('PROMOTION_READY')) throw new Error('drill mode cannot cross the promotion-ready boundary');
+}
+
+export function verifyReleaseLedger(ledger) {
+  if (!ledger || ledger.schemaVersion !== 1 || !ledger.identity || !Array.isArray(ledger.events)) throw new Error('invalid release ledger structure');
+  let state = 'DRAFT';
+  let previous = null;
+  const seenDigests = new Set();
+  const seenTransitions = new Set();
+  for (const record of ledger.events) {
+    if (!record?.event || typeof record.sha256 !== 'string') throw new Error('invalid release ledger record');
+    const digest = canonicalSha256(record.event);
+    if (digest !== record.sha256) throw new Error('release ledger event digest mismatch');
+    if (seenDigests.has(digest) || seenTransitions.has(record.event.transition)) throw new Error('duplicate release ledger transition');
+    const [from, to] = record.event.transition.split('->');
+    assertReleaseTransition(from, to);
+    assertModeTransition(record.mode, { from, to });
+    if (from !== state || record.event.previousEventSha256 !== previous) throw new Error('release ledger chain is reordered or disconnected');
+    for (const key of ['stableTag', 'candidateTag', 'sourceCommit', 'candidateManifestSha256', 'controlBundleSha256']) {
+      if (record.event[key] !== ledger.identity[key]) throw new Error(`release ledger identity mismatch for ${key}`);
+    }
+    seenDigests.add(digest); seenTransitions.add(record.event.transition); state = to; previous = digest;
+  }
+  if (ledger.headState !== state || ledger.headSha256 !== previous) throw new Error('release ledger head mismatch');
+  return { headState: state, headSha256: previous, events: ledger.events.length };
+}
+
+export function appendReleaseLedger(ledger, eventOptions, mode) {
+  const verified = verifyReleaseLedger(ledger);
+  assertModeTransition(mode, eventOptions.transition);
+  if (eventOptions.transition.from !== verified.headState) throw new Error('release transition does not continue the ledger head');
+  const created = createTransitionEvent({ ...eventOptions, previousEventSha256: verified.headSha256 });
+  const next = structuredClone(ledger);
+  next.events.push({ mode, event: created.event, sha256: created.sha256 });
+  next.headState = eventOptions.transition.to;
+  next.headSha256 = created.sha256;
+  verifyReleaseLedger(next);
+  return next;
+}
+
 export function reconcileReleaseAssets(expected, actual) {
   const actualByName = new Map(actual.map((asset) => [asset.name, asset]));
   const upload = [];

@@ -3,7 +3,7 @@ name: nova-review
 description: Unified review Hub Skill. Route by LEVEL to lite, standard, or strict review outputs; no code modification.
 license: MIT
 allowed-tools: Read Glob Grep
-disallowed-tools: Write Edit NotebookEdit
+disallowed-tools: Write Edit NotebookEdit Bash
 user-invocable: true
 disable-model-invocation: false
 metadata:

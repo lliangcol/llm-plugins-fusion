@@ -63,7 +63,7 @@ jobs:
             --manifest .metrics/recovery/bundle/release-candidate.json --candidate-core .metrics/recovery/bundle/candidate-core.json \
             --promotion-intent .metrics/recovery/bundle/promotion-intent.json --control-bundle-manifest .metrics/recovery/bundle/release-control-bundle.manifest.json \
             --bundle-root .metrics/recovery/bundle --artifact-dir .metrics/recovery/bundle/artifacts
-          node scripts/release-orchestrator.mjs --mode drill --state CANDIDATE_VERIFIED --target-state PROMOTION_READY \
+          node scripts/release-orchestrator.mjs --mode drill --state DRAFT --target-state PROMOTION_READY \
             --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}" \
             --promotion-intent .metrics/recovery/bundle/promotion-intent.json --control-bundle .metrics/recovery/bundle/release-control-bundle.manifest.json \
             --event-dir .metrics/recovery/events --run-id "${GITHUB_RUN_ID}"

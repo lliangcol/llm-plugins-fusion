@@ -343,6 +343,7 @@ const schemaPaths = [
   'schemas/promotion-intent.schema.json',
   'schemas/release-event.schema.json',
   'schemas/release-reviewers.schema.json',
+  'schemas/release-ledger.schema.json',
   'schemas/control-bundle.schema.json',
   'schemas/stable-install-proof.schema.json',
   'schemas/release-channels.schema.json',

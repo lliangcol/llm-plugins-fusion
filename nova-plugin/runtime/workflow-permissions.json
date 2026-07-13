@@ -713,8 +713,8 @@
         "workspaceRead": "preapproved",
         "workspaceWrite": "preapproved",
         "shell": "prompt",
-        "network": "prompt",
-        "credentials": "explicit",
+        "network": "denied",
+        "credentials": "denied",
         "userScopeMutation": "denied",
         "externalPublish": "denied",
         "gitHistoryMutation": "denied"
@@ -982,7 +982,8 @@
       "disallowedTools": [
         "Write",
         "Edit",
-        "NotebookEdit"
+        "NotebookEdit",
+        "Bash"
       ],
       "runtimeRequirements": {
         "executables": [],
@@ -998,9 +999,9 @@
       "permissionPolicy": {
         "workspaceRead": "preapproved",
         "workspaceWrite": "denied",
-        "shell": "prompt",
-        "network": "prompt",
-        "credentials": "explicit",
+        "shell": "denied",
+        "network": "denied",
+        "credentials": "denied",
         "userScopeMutation": "denied",
         "externalPublish": "denied",
         "gitHistoryMutation": "denied"
@@ -1013,7 +1014,7 @@
       "legacyCapabilities": {
         "workspaceRead": true,
         "workspaceWrite": false,
-        "shell": "prompt",
+        "shell": "denied",
         "network": false,
         "credentials": false,
         "userScopeMutation": false,

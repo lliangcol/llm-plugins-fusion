@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import test from 'node:test';
@@ -12,7 +12,7 @@ test('Bash policy allows bounded validation and read-only inspection commands', 
 });
 
 test('Bash policy blocks common write-bypass and composition forms', () => {
-  for (const command of ['cat secret > file', 'sed -i s/a/b/ file', 'python3 -c "open(\'x\',\'w\')"', 'git reset --hard', 'npm exec tool', 'node -e "writeFileSync(\'x\')"', 'npm test && rm -rf .', 'npm run not-reviewed', 'rg --pre helper pattern .', 'git diff --output=patch.txt', 'rg secret /etc', 'bash -n ../outside.sh', 'git --git-dir=/tmp/repo status', '/tmp/git status', './git status', 'foo/../git status', 'C:\\temp\\git.exe status', '/usr/bin/node --version', 'git status *', 'rg pattern {a,b}', 'rg pattern ~', 'rg pattern ?.js', 'rg pattern [ab].js']) {
+  for (const command of ['cat secret > file', 'sed -i s/a/b/ file', 'python3 -c "open(\'x\',\'w\')"', 'git reset --hard', 'git -c alias.status=!id status', 'git --config-env=core.fsmonitor=ENV status', 'npm exec tool', 'node -e "writeFileSync(\'x\')"', 'npm test && rm -rf .', 'npm run not-reviewed', 'rg --pre helper pattern .', 'git diff --output=patch.txt', 'rg secret /etc', 'bash -n ../outside.sh', 'git --git-dir=/tmp/repo status', '/tmp/git status', './git status', 'foo/../git status', 'C:\\temp\\git.exe status', '/usr/bin/node --version', 'git status *', 'rg pattern {a,b}', 'rg pattern ~', 'rg pattern ?.js', 'rg pattern [ab].js']) {
     assert.notDeepEqual(validateBashCommand(command), [], command);
   }
 });
@@ -42,4 +42,29 @@ test('Bash policy accepts only exact reviewed project argv entries', (t) => {
   writeFileSync(resolve(workspace, '.nova/shell-policy.json'), JSON.stringify({ schemaVersion: 1, allowCommands: [{ id: 'project-check', argv: ['npm', 'run', 'check'], purpose: 'Validated project check.' }] }));
   assert.deepEqual(authorizeBashCommand('npm run check', { workspaceRoot: workspace }), { allowed: true, source: 'project-exact-policy', ruleId: 'project-check', reasons: [] });
   assert.equal(authorizeBashCommand('npm run check -- --write', { workspaceRoot: workspace }).allowed, false);
+});
+
+test('Bash policy pins project policy bytes for the session', (t) => {
+  const workspace = mkdtempSync(resolve(tmpdir(), 'nova-shell-session-'));
+  const stateRoot = resolve(workspace, 'session-state');
+  t.after(() => rmSync(workspace, { recursive: true, force: true }));
+  mkdirSync(resolve(workspace, '.nova'));
+  const policyPath = resolve(workspace, '.nova/shell-policy.json');
+  writeFileSync(policyPath, JSON.stringify({ schemaVersion: 1, allowCommands: [{ id: 'project-check', argv: ['npm', 'run', 'check'], purpose: 'Validated project check.' }] }));
+  assert.equal(authorizeBashCommand('npm run check', { workspaceRoot: workspace, sessionId: 'session-1', stateRoot }).allowed, true);
+  writeFileSync(policyPath, JSON.stringify({ schemaVersion: 1, allowCommands: [{ id: 'project-test', argv: ['npm', 'test'], purpose: 'Changed during session.' }] }));
+  assert.match(authorizeBashCommand('npm test', { workspaceRoot: workspace, sessionId: 'session-1', stateRoot }).reasons.join(' '), /policy changed/u);
+});
+
+test('Bash policy rejects workspace PATH shadowing', (t) => {
+  const workspace = mkdtempSync(resolve(tmpdir(), 'nova-shell-shadow-'));
+  t.after(() => rmSync(workspace, { recursive: true, force: true }));
+  const bin = resolve(workspace, 'bin');
+  mkdirSync(bin);
+  const shadow = resolve(bin, 'git');
+  writeFileSync(shadow, '#!/bin/sh\nexit 0\n');
+  chmodSync(shadow, 0o755);
+  const decision = authorizeBashCommand('git status', { workspaceRoot: workspace, env: { ...process.env, PATH: `${bin}` } });
+  assert.equal(decision.allowed, false);
+  assert.match(decision.reasons.join(' '), /inside the workspace/u);
 });

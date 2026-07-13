@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /** One explicit-identity release state machine for promote, recover, and drill. */
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { canonicalSha256 } from './lib/canonical-json.mjs';
-import { createTransitionEvent, planReleaseTransitions } from './lib/release-state-machine.mjs';
+import { appendReleaseLedger, createReleaseLedger, planReleaseTransitions, verifyReleaseLedger } from './lib/release-state-machine.mjs';
 import { requireOptionValue } from './lib/cli-args.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
@@ -54,28 +54,40 @@ export function orchestrateRelease(options, now = () => new Date()) {
     candidateManifestSha256: intent.candidateCoreSha256,
     controlBundleSha256: intent.controlBundleSha256,
   };
-  let previousEventSha256 = null;
-  const events = transitions.map((transition) => {
-    const created = createTransitionEvent({
+  const ledgerPath = resolve(options.eventDir, 'release-ledger.json');
+  let ledger;
+  if (options.state === 'DRAFT') {
+    if (existsSync(ledgerPath)) throw new Error('release ledger already exists; refusing duplicate initial transition');
+    ledger = createReleaseLedger(identity);
+  } else {
+    if (!existsSync(ledgerPath)) throw new Error('prior release ledger is required for continuation');
+    ledger = JSON.parse(readFileSync(ledgerPath, 'utf8'));
+    const verified = verifyReleaseLedger(ledger);
+    if (verified.headState !== options.state) throw new Error('requested release state differs from prior release ledger head');
+  }
+  const existingEventCount = ledger.events.length;
+  transitions.forEach((transition) => {
+    ledger = appendReleaseLedger(ledger, {
       transition,
       identity,
       inputDigests: { promotionIntent: canonicalSha256(intent) },
       outputDigests: {},
       runId: options.runId,
       createdAt: now().toISOString(),
-      previousEventSha256,
-    });
-    previousEventSha256 = created.sha256;
-    return created;
+    }, options.mode);
   });
   if (!options.dryRun) {
     mkdirSync(options.eventDir, { recursive: true });
-    events.forEach(({ event }, index) => {
-      const sequence = String(index + 1).padStart(2, '0');
+    ledger.events.slice(existingEventCount).forEach(({ event }, index) => {
+      const sequence = String(existingEventCount + index + 1).padStart(2, '0');
       writeFileSync(resolve(options.eventDir, `${sequence}-${event.transition.replace('->', '-to-').toLowerCase()}.json`), `${JSON.stringify(event, null, 2)}\n`, { flag: 'wx' });
     });
+    const temporaryLedger = `${ledgerPath}.tmp-${process.pid}`;
+    writeFileSync(temporaryLedger, `${JSON.stringify(ledger, null, 2)}\n`, { flag: 'wx' });
+    renameSync(temporaryLedger, ledgerPath);
   }
-  return { mode: options.mode, transitions: events.map(({ event, sha256 }) => ({ transition: event.transition, sha256 })), controlBundle: basename(options.controlBundle) };
+  const appended = ledger.events.slice(existingEventCount);
+  return { mode: options.mode, transitions: appended.map(({ event, sha256 }) => ({ transition: event.transition, sha256 })), ledgerHeadState: ledger.headState, ledgerHeadSha256: ledger.headSha256, controlBundle: basename(options.controlBundle) };
 }
 
 export function main(args = process.argv.slice(2)) {
