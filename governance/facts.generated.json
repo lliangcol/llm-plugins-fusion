@@ -43,22 +43,22 @@
     "inventory.commands": {
       "value": 21,
       "source": "governance/project-state.generated.json#/inventory/commands",
-      "sourceSha256": "0a59e298dd49fbfa49d4b521d45add9ec51ac50ae943f4fa5035508f2effdd4a"
+      "sourceSha256": "810e304550a587fa6b4c20bb9dc7a709bc36641c84f932a61d10345f2eeca385"
     },
     "inventory.skills": {
       "value": 6,
       "source": "governance/project-state.generated.json#/inventory/skills",
-      "sourceSha256": "0a59e298dd49fbfa49d4b521d45add9ec51ac50ae943f4fa5035508f2effdd4a"
+      "sourceSha256": "810e304550a587fa6b4c20bb9dc7a709bc36641c84f932a61d10345f2eeca385"
     },
     "runtime.node": {
       "value": ">=22",
       "source": "governance/project-state.generated.json#/runtime/node",
-      "sourceSha256": "0a59e298dd49fbfa49d4b521d45add9ec51ac50ae943f4fa5035508f2effdd4a"
+      "sourceSha256": "810e304550a587fa6b4c20bb9dc7a709bc36641c84f932a61d10345f2eeca385"
     },
     "runtime.bash": {
       "value": "3.2+",
       "source": "governance/project-state.generated.json#/runtime/distributedBash",
-      "sourceSha256": "0a59e298dd49fbfa49d4b521d45add9ec51ac50ae943f4fa5035508f2effdd4a"
+      "sourceSha256": "810e304550a587fa6b4c20bb9dc7a709bc36641c84f932a61d10345f2eeca385"
     }
   }
 }

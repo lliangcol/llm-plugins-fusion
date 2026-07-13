@@ -8,6 +8,7 @@ import { findSensitiveText, newSensitiveFindings } from '../../runtime/secret-ru
 import {
   configuredArtifactRoots,
   isProtectedHooksPath,
+  isProtectedShellControlPath,
   resolveWorkspaceTarget,
 } from '../../runtime/safe-workspace-path.mjs';
 import { validateHooksJsonText } from './hooks-schema.mjs';
@@ -118,6 +119,10 @@ const projectRoot = resolve(process.env.CLAUDE_PROJECT_DIR || payload.cwd || pro
 const effectiveCwd = resolve(payload.cwd || projectRoot);
 const lexicalTarget = resolve(effectiveCwd, input.file_path);
 const protectedTarget = isProtectedHooksPath(lexicalTarget, { projectRoot, pluginRoot });
+const protectedShellControl = isProtectedShellControlPath(lexicalTarget, { projectRoot, pluginRoot });
+if (protectedShellControl) {
+  block('shell policy control path cannot be modified during an agent session.', [`目标: ${input.file_path}`]);
+}
 let pathPolicy;
 try {
   pathPolicy = resolveWorkspaceTarget({
