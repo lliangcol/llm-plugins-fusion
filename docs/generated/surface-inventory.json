@@ -370,7 +370,8 @@
       "disallowedTools": [
         "Write",
         "Edit",
-        "NotebookEdit"
+        "NotebookEdit",
+        "Bash"
       ],
       "subagentSafe": true,
       "destructiveActions": "none",
