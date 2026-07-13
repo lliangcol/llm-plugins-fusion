@@ -65,6 +65,11 @@ const WORKFLOW_CONTRACTS = [
     label: 'CI workflow top-level permissions',
   },
   {
+    file: '.github/workflows/nightly.yml',
+    permissions: [['contents', 'read']],
+    label: 'nightly workflow top-level permissions',
+  },
+  {
     file: '.github/workflows/plugin-install-smoke.yml',
     permissions: [['contents', 'read']],
     label: 'plugin install smoke workflow top-level permissions',
@@ -716,9 +721,14 @@ function validateCiRuntimeEvidenceContracts() {
     }
   }
   const aggregateLines = extractCiJobLines('aggregate');
-  if (aggregateLines && !/needs:\s*\[contracts, tests, security, platform, package, live-evidence\]/.test(aggregateLines.join('\n'))) {
+  if (aggregateLines && !/needs:\s*\[classify, fast, contracts, tests, security, platform, package, live-evidence\]/.test(aggregateLines.join('\n'))) {
     recordError(file, 'Required / Aggregate must depend on every consolidated CI lane');
   }
+  if (!/name:\s*Required \/ PR Fast/.test(src) || !/name:\s*Classify sensitive paths/.test(src)) recordError(file, 'CI must expose PR fast and sensitive-path classification lanes');
+  for (const path of ['.github/', '.claude-plugin/', 'nova-plugin/', 'workflow-specs/', 'adapters/', 'schemas/', 'governance/', 'framework/', 'packages/', 'scripts/', 'tests/']) {
+    if (!src.includes(path.replace('.', '\\.'))) recordError(file, `sensitive path classifier is missing ${path}`);
+  }
+  if (!/generate-validation-timing-trend\.mjs/.test(src)) recordError(file, 'full CI must produce validation timing trend evidence');
 }
 
 validateWorkflowInventory();
