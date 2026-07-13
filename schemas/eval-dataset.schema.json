@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/eval-dataset.schema.json",
+  "title": "Public-safe evaluation prompts or locked labels",
+  "oneOf": [
+    {
+      "type": "object", "additionalProperties": false,
+      "required": ["$schema", "schemaVersion", "executionMode", "claimBoundary", "cases"],
+      "properties": {
+        "$schema": { "type": "string" }, "schemaVersion": { "const": 3 },
+        "executionMode": { "const": "adapter-loaded-public-safe-live-assistant" }, "claimBoundary": { "type": "string", "minLength": 20 },
+        "cases": { "type": "array", "minItems": 150, "maxItems": 300, "items": { "$ref": "#/$defs/prompt" } }
+      }
+    },
+    {
+      "type": "object", "additionalProperties": false,
+      "required": ["$schema", "schemaVersion", "locked", "promptCorpusSha256", "labels"],
+      "properties": {
+        "$schema": { "type": "string" }, "schemaVersion": { "const": 3 }, "locked": { "const": true },
+        "promptCorpusSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "labels": { "type": "array", "minItems": 150, "maxItems": 300, "items": { "$ref": "#/$defs/label" } }
+      }
+    }
+  ],
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+    "routes": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+    "prompt": {
+      "type": "object", "additionalProperties": false, "required": ["id", "kind", "language", "category", "request"],
+      "properties": { "id": { "$ref": "#/$defs/id" }, "kind": { "enum": ["route", "approval", "adversarial"] }, "language": { "enum": ["en", "zh"] }, "category": { "$ref": "#/$defs/id" }, "request": { "type": "string", "minLength": 24 }, "workflow": { "$ref": "#/$defs/id" }, "providedInputs": { "type": "object" } }
+    },
+    "label": {
+      "type": "object", "additionalProperties": false, "required": ["id", "preferredRoutes", "acceptableRoutes", "forbiddenRoutes", "expectedRequiredInputs"],
+      "properties": { "id": { "$ref": "#/$defs/id" }, "preferredRoutes": { "$ref": "#/$defs/routes" }, "acceptableRoutes": { "$ref": "#/$defs/routes" }, "forbiddenRoutes": { "$ref": "#/$defs/routes" }, "expectedRequiredInputs": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" } } }
+    }
+  }
+}

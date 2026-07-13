@@ -227,6 +227,16 @@ const targets = [
     data: loadJson('workflow-specs/nova.product.json'),
     label: 'workflow-specs/nova.product.json',
   },
+  {
+    schema: loadJson('schemas/eval-dataset.schema.json'),
+    data: loadJson('evals/live/cases.json'),
+    label: 'evals/live/cases.json',
+  },
+  {
+    schema: loadJson('schemas/eval-dataset.schema.json'),
+    data: loadJson('evals/live/labels.locked.json'),
+    label: 'evals/live/labels.locked.json',
+  },
   ...['claude', 'codex', 'generic'].map((id) => ({
     schema: loadJson('schemas/workflow-adapter.schema.json'),
     data: loadJson(`workflow-specs/adapters/${id}.json`),

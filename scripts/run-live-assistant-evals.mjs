@@ -10,6 +10,7 @@ import { pathToFileURL } from 'node:url';
 import { captureProcess, commandDetails } from './lib/process-runner.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
+import { joinLockedLabels } from './lib/eval-dataset.mjs';
 
 const root = repoRoot(import.meta.url);
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
@@ -196,6 +197,7 @@ async function run(options) {
   if (!details.available) throw new Error(`${executable} is unavailable`);
   const datasetPath = options.profile === 'critical' ? 'evals/critical-live/cases.json' : 'evals/live/cases.json';
   const dataset = readJson(datasetPath);
+  if (options.profile === 'full') dataset.cases = joinLockedLabels(dataset, readJson('evals/live/labels.locked.json'));
   const model = loadNovaWorkflowModel(root);
   const inventory = model.spec.workflows.map((entry) => entry.id);
   const selectedCases = options.case ? dataset.cases.filter((entry) => entry.id === options.case) : dataset.cases;
@@ -276,15 +278,16 @@ async function run(options) {
     schemaVersion: 1,
     layer: 'live-assistant',
     executionMode: dataset.executionMode,
-    workflowSpecSha256: sha256File('workflow-specs/workflows.json'),
+    workflowSpecSha256: sha256File('workflow-specs/workflows.v6.json'),
     sourceDigests: {
       'workflow-specs/framework.json': sha256File('workflow-specs/framework.json'),
       'workflow-specs/nova.product.json': sha256File('workflow-specs/nova.product.json'),
-      'workflow-specs/workflows.json': sha256File('workflow-specs/workflows.json'),
-      'workflow-specs/behaviors.json': sha256File('workflow-specs/behaviors.json'),
+      'workflow-specs/workflows.v6.json': sha256File('workflow-specs/workflows.v6.json'),
+      'workflow-specs/behaviors.v2.json': sha256File('workflow-specs/behaviors.v2.json'),
       [adapterPath]: sha256File(adapterPath),
       'scripts/run-live-assistant-evals.mjs': sha256File('scripts/run-live-assistant-evals.mjs'),
       [datasetPath]: sha256File(datasetPath),
+      ...(options.profile === 'full' ? { 'evals/live/labels.locked.json': sha256File('evals/live/labels.locked.json') } : {}),
     },
     baseCommit: commitResult.status === 0 ? commitResult.stdout.trim() : 'unavailable',
     releaseTag: tagResult.status === 0 ? tagResult.stdout.trim() : null,
