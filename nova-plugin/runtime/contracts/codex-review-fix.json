@@ -47,12 +47,8 @@
     },
     {
       "name": "INCLUDE_UNTRACKED_CONTENT",
-      "type": "enum",
-      "required": false,
-      "values": [
-        true,
-        false
-      ]
+      "type": "boolean",
+      "required": false
     }
   ],
   "effects": [
@@ -166,6 +162,7 @@
       },
       {
         "name": "INCLUDE_UNTRACKED_CONTENT",
+        "type": "boolean",
         "required": false,
         "aliases": [],
         "description": "Explicit opt-in for untracked file content in full mode.",
@@ -182,8 +179,14 @@
           "op": "all",
           "args": [
             {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
+              "op": "input-equals",
+              "input": "REVIEW_MODE",
+              "value": "full"
+            },
+            {
+              "op": "input-equals",
+              "input": "INCLUDE_UNTRACKED_CONTENT",
+              "value": true
             }
           ]
         },
@@ -191,25 +194,16 @@
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "input-equals",
+          "input": "REVIEW_MODE",
+          "value": "staged"
         },
         "action": "Review only staged changes."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "Otherwise."
         },
         "action": "Review the current branch against BASE or the detected default base."
       }

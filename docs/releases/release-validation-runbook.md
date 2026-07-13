@@ -19,7 +19,7 @@ A snapshot is promotable only when all required evidence exists.
 | Gate | Automated or manual | Required evidence |
 | --- | --- | --- |
 | Repository structure and docs | Automated | `node scripts/validate-all.mjs` passes with skipped checks explained. |
-| Test coverage evidence | Automated / CI | `npm run test:coverage:check` requires the complete Git-tracked non-test maintenance `.mjs` inventory, enforces lines 85%, branches 60%, functions 90%, and uploads `.metrics/coverage/`. |
+| Test coverage evidence | Automated / CI | `npm run test:coverage:check` requires the complete Git-tracked non-test maintenance `.mjs` inventory, enforces lines 85%, branches 70%, functions 90%, and uploads `.metrics/coverage/`. |
 | Generated marketplace outputs | Automated | `node scripts/generate-registry.mjs` reports no drift, or `--write` was run before validation. |
 | Generated surface inventory | Automated | `node scripts/generate-surface-inventory.mjs` reports no drift, or `--write` was run before validation. |
 | Release checksums | Automated / CI | `node scripts/generate-release-checksums.mjs` writes SHA-256 checksums for selected source-controlled release artifacts and uploads them with release evidence. |
@@ -112,7 +112,7 @@ Expected conditions:
   `node scripts/generate-registry.mjs --write` regenerated the derived outputs.
 - `npm run test:coverage:check` reports pass and leaves coverage evidence under
   ignored `.metrics/coverage/`; complete maintenance-source loading and the
-  lines 85%, branches 60%, functions 90% baselines are release blockers.
+  lines 85%, branches 70%, functions 90% baselines are release blockers.
   Diagnostic threshold overrides are not acceptable promotion evidence.
 - `node scripts/generate-release-checksums.mjs` writes
   `.metrics/release-checksums/SHA256SUMS.txt` for the selected release

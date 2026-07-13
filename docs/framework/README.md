@@ -19,6 +19,16 @@ framework surface does not imply a mature multi-plugin ecosystem or portal.
   `llmf` commands. Cross-package imports use their explicit
   `@llm-plugins-fusion/*` package contracts; the workspaces are not public npm
   packages and do not change the single-plugin release boundary.
+- `@llm-plugins-fusion/spec` exposes `validateAndLoadSpecBundle()` with stable
+  layout, schema, and invariant error codes. Callers inject their schema
+  validator, so the private package stays independent of a specific engine.
+  All `llmf` commands that read a product bundle use this validated boundary;
+  the CLI supplies the repository's standard Ajv validator. Bundle layout and
+  adapter paths must be relative regular files contained below their declared
+  roots, with symbolic-link traversal rejected.
+- Contract v6 migration is a pure framework API exported by
+  `@llm-plugins-fusion/compiler`; the CLI and repository projection script use
+  that package boundary instead of importing one another.
 - [prompt-surface-report.md](../generated/prompt-surface-report.md) reports
   aggregate load graphs and blocking budgets.
 - [real-task-benchmark.md](../generated/real-task-benchmark.md) records the
@@ -26,7 +36,8 @@ framework surface does not imply a mature multi-plugin ecosystem or portal.
 
 ## Preview CLI
 
-Run `npm run llmf -- <command>`. Commands are `init`, `validate`, `build`,
+Run `npm run llmf -- <command>`. Use `npm run llmf -- --help` for the
+machine-readable command summary. Commands are `init`, `validate`, `build`,
 `test`, `eval`, `doctor`, `inspect`, and `migrate`. Output is one JSON object;
 exit codes are stable: 0 success, 2 usage, 3 validation, 4 I/O, and 5
 conformance. `init`, `build`, and `migrate --write` are the only commands that

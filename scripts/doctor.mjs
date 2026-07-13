@@ -75,11 +75,13 @@ for (const [label, command] of [
   ['Git', 'git'],
   ['Claude CLI', 'claude'],
   ['Codex CLI', 'codex'],
+  ['ShellCheck', 'shellcheck'],
+  ['actionlint', 'actionlint'],
 ]) {
   await runCheck(label, async () => {
     const result = await commandResult(command);
     availability.set(label, result.ok);
-    const optional = label === 'Claude CLI' || label === 'Codex CLI' || label === 'Bash';
+    const optional = ['Claude CLI', 'Codex CLI', 'Bash', 'ShellCheck', 'actionlint'].includes(label);
     return {
       status: result.ok ? 'OK' : (optional ? 'WARN' : 'ERROR'),
       detail: result.ok ? result.detail : 'not available',

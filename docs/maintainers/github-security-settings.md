@@ -59,6 +59,11 @@ fallback reports `not_applicable` only when no dependency-bearing surface
 changed; otherwise the check is blocked and requires maintainer security
 approval. An unavailable control is never reported as passed.
 
+The review action blocks high and critical vulnerabilities and denies the
+legacy, `-only`, and `-or-later` SPDX identifiers for GPL-2.0, GPL-3.0, and
+AGPL-3.0 additions. It does not post PR comments, so the workflow retains
+read-only pull-request permissions.
+
 ## Maintainer Audit
 
 Before a release:

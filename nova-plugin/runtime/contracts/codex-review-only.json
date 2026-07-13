@@ -155,37 +155,24 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "input-equals",
+          "input": "REVIEW_MODE",
+          "value": "staged"
         },
         "action": "Review staged changes only."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "input-equals",
+          "input": "REVIEW_MODE",
+          "value": "full"
         },
         "action": "Review the explicitly permitted full working-tree scope."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "Otherwise."
         },
         "action": "Review the branch diff against BASE or the detected default base."
       }

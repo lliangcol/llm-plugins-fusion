@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
-import { cp, mkdtemp, readFile } from 'node:fs/promises';
+import { cp, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 import { test } from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { runProcess } from '../../scripts/lib/process-runner.mjs';
@@ -40,4 +40,34 @@ test('llmf init is portable and usage failures have stable exit code 2', async (
   const unknown = await invoke(['unknown']);
   assert.equal(unknown.exitCode, 2);
   assert.deepEqual(unknown.json, { ok: false, command: 'unknown', error: 'unknown-command' });
+  const help = await invoke(['--help']);
+  assert.equal(help.exitCode, 0);
+  assert.equal(help.json.command, 'help');
+  assert.equal(help.json.result.commands.migrate, 'preview or write Contract v6/v2 projections');
+});
+
+test('llmf validates schemas and contains adapter paths before compilation', async () => {
+  const invalidRoot = await mkdtemp(resolve(tmpdir(), 'llmf-invalid-schema-'));
+  await cp(resolve(repo, 'fixtures/products/minimal-plugin'), invalidRoot, { recursive: true });
+  const invalidProductPath = resolve(invalidRoot, 'product.json');
+  const invalidProduct = JSON.parse(await readFile(invalidProductPath, 'utf8'));
+  invalidProduct.expectedWorkflowCount = 'three';
+  await writeFile(invalidProductPath, `${JSON.stringify(invalidProduct, null, 2)}\n`);
+  const invalid = await invoke(['validate', '--root', invalidRoot]);
+  assert.equal(invalid.exitCode, 3);
+  assert.match(invalid.json.error, /schema validation failed for product/u);
+
+  const escapedRoot = await mkdtemp(resolve(tmpdir(), 'llmf-escaped-adapter-'));
+  await cp(resolve(repo, 'fixtures/products/minimal-plugin'), escapedRoot, { recursive: true });
+  const escapedProductPath = resolve(escapedRoot, 'product.json');
+  const outsideName = `${basename(escapedRoot)}-outside.json`;
+  const escapedProduct = JSON.parse(await readFile(escapedProductPath, 'utf8'));
+  escapedProduct.adapterDefinitions = [`../${outsideName}`];
+  await writeFile(escapedProductPath, `${JSON.stringify(escapedProduct, null, 2)}\n`);
+  const outsidePath = resolve(escapedRoot, '..', outsideName);
+  await writeFile(outsidePath, '{}\n');
+  const escaped = await invoke(['validate', '--root', escapedRoot]);
+  await rm(outsidePath, { force: true });
+  assert.equal(escaped.exitCode, 4);
+  assert.match(escaped.json.error, /adapter layout could not be loaded/u);
 });

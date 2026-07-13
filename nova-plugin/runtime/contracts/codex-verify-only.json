@@ -26,12 +26,28 @@
     {
       "name": "REVIEW_FILE",
       "type": "review-reference",
-      "required": true
+      "required": true,
+      "pathPolicy": {
+        "root": "workspace",
+        "mustExist": true,
+        "kind": "file",
+        "readable": true,
+        "writable": false,
+        "outsideRoot": "deny"
+      }
     },
     {
       "name": "CHECKS_FILE",
       "type": "artifact-reference",
-      "required": false
+      "required": false,
+      "pathPolicy": {
+        "root": "workspace",
+        "mustExist": true,
+        "kind": "file",
+        "readable": true,
+        "writable": false,
+        "outsideRoot": "deny"
+      }
     },
     {
       "name": "BASE",
@@ -117,6 +133,15 @@
     "inputs": [
       {
         "name": "REVIEW_FILE",
+        "type": "review-reference",
+        "pathPolicy": {
+          "root": "workspace",
+          "mustExist": true,
+          "kind": "file",
+          "readable": true,
+          "writable": false,
+          "outsideRoot": "deny"
+        },
         "required": true,
         "aliases": [
           "REVIEW_PATH"
@@ -125,6 +150,15 @@
       },
       {
         "name": "CHECKS_FILE",
+        "type": "artifact-reference",
+        "pathPolicy": {
+          "root": "workspace",
+          "mustExist": true,
+          "kind": "file",
+          "readable": true,
+          "writable": false,
+          "outsideRoot": "deny"
+        },
         "required": false,
         "aliases": [
           "CHECKS_PATH"
@@ -143,25 +177,18 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_FILE"
-            }
-          ]
+          "op": "input-present",
+          "input": "CHECKS_FILE"
         },
         "action": "Use it as supporting evidence while independently verifying review items."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_FILE"
-            }
-          ]
+          "op": "not",
+          "arg": {
+            "op": "input-present",
+            "input": "CHECKS_FILE"
+          }
         },
         "action": "Mark local-check conclusions unavailable instead of inferring them."
       }

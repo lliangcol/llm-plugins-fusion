@@ -97,13 +97,8 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "INPUT"
-            }
-          ]
+          "op": "input-present",
+          "input": "INPUT"
         },
         "action": "Analyze it with the observer perspective."
       }

@@ -115,25 +115,15 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REQUEST"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "REQUEST contains confirmed executable steps and acceptance criteria."
         },
         "action": "Implement the steps in order."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REQUEST"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "Execution basis is ambiguous or material redesign is required."
         },
         "action": "Stop and request clarification or a plan."
       }

@@ -50,7 +50,7 @@
           "pathPolicy": {
             "root": "artifact-root",
             "mustExist": false,
-            "kind": "either",
+            "kind": "file",
             "readable": true,
             "writable": true,
             "outsideRoot": "deny"
@@ -138,12 +138,8 @@
         },
         {
           "name": "INCLUDE_UNTRACKED_CONTENT",
-          "type": "enum",
-          "required": false,
-          "values": [
-            true,
-            false
-          ]
+          "type": "boolean",
+          "required": false
         }
       ],
       "effects": [
@@ -326,12 +322,28 @@
         {
           "name": "REVIEW_FILE",
           "type": "review-reference",
-          "required": true
+          "required": true,
+          "pathPolicy": {
+            "root": "workspace",
+            "mustExist": true,
+            "kind": "file",
+            "readable": true,
+            "writable": false,
+            "outsideRoot": "deny"
+          }
         },
         {
           "name": "CHECKS_FILE",
           "type": "artifact-reference",
-          "required": false
+          "required": false,
+          "pathPolicy": {
+            "root": "workspace",
+            "mustExist": true,
+            "kind": "file",
+            "readable": true,
+            "writable": false,
+            "outsideRoot": "deny"
+          }
         },
         {
           "name": "BASE",
@@ -805,7 +817,7 @@
           "pathPolicy": {
             "root": "workspace",
             "mustExist": true,
-            "kind": "either",
+            "kind": "file",
             "readable": true,
             "writable": false,
             "outsideRoot": "deny"
@@ -1026,7 +1038,7 @@
           "pathPolicy": {
             "root": "workspace",
             "mustExist": true,
-            "kind": "either",
+            "kind": "file",
             "readable": true,
             "writable": false,
             "outsideRoot": "deny"
@@ -1099,7 +1111,7 @@
           "pathPolicy": {
             "root": "artifact-root",
             "mustExist": false,
-            "kind": "either",
+            "kind": "file",
             "readable": true,
             "writable": true,
             "outsideRoot": "deny"
@@ -1533,7 +1545,15 @@
         {
           "name": "EXPORT_PATH",
           "type": "artifact-reference",
-          "required": false
+          "required": false,
+          "pathPolicy": {
+            "root": "artifact-root",
+            "mustExist": false,
+            "kind": "file",
+            "readable": true,
+            "writable": true,
+            "outsideRoot": "deny"
+          }
         }
       ],
       "effects": [

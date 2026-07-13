@@ -14,8 +14,67 @@
       "items": { "$ref": "#/$defs/behavior" }
     }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "schemaVersion": { "const": 1 } }, "required": ["schemaVersion"] },
+      "then": {
+        "properties": {
+          "behaviors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "decisionTable": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": { "when": { "$ref": "#/$defs/nonEmptyString" } }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "schemaVersion": { "const": 2 } }, "required": ["schemaVersion"] },
+      "then": {
+        "properties": {
+          "behaviors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "decisionTable": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "when": { "$ref": "#/$defs/predicate" },
+                      "predicate": false
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
   "$defs": {
     "nonEmptyString": { "type": "string", "minLength": 1 },
+    "semanticConditionText": { "type": "string", "minLength": 1, "maxLength": 2000, "pattern": "^[^\\u0000-\\u0008\\u000B\\u000C\\u000E-\\u001F\\u007F]*$" },
+    "pathPolicy": {
+      "type": "object", "additionalProperties": false,
+      "required": ["root", "mustExist", "kind", "readable", "writable", "outsideRoot"],
+      "properties": {
+        "root": { "enum": ["workspace", "artifact-root"] }, "mustExist": { "type": "boolean" },
+        "kind": { "enum": ["file", "directory", "either"] }, "readable": { "type": "boolean" },
+        "writable": { "type": "boolean" }, "outsideRoot": { "enum": ["deny", "explicit-authorization"] }
+      }
+    },
     "input": {
       "type": "object",
       "additionalProperties": false,
@@ -26,7 +85,9 @@
         "aliases": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/nonEmptyString" } },
         "description": { "$ref": "#/$defs/nonEmptyString" },
         "default": {},
-        "exactValues": { "type": "array", "minItems": 1, "uniqueItems": true }
+        "exactValues": { "type": "array", "minItems": 1, "uniqueItems": true },
+        "type": { "enum": ["string", "enum", "boolean", "path", "artifact-reference", "review-reference", "approval"] },
+        "pathPolicy": { "$ref": "#/$defs/pathPolicy" }
       }
     },
     "decision": {
@@ -35,17 +96,19 @@
       "required": ["when", "action"],
       "properties": {
         "when": { "oneOf": [{ "$ref": "#/$defs/nonEmptyString" }, { "$ref": "#/$defs/predicate" }] },
+        "predicate": { "$ref": "#/$defs/predicate" },
         "action": { "$ref": "#/$defs/nonEmptyString" },
         "route": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
       }
     },
     "predicate": {
       "oneOf": [
+        { "type": "object", "additionalProperties": false, "required": ["op", "condition"], "properties": { "op": { "const": "semantic-condition" }, "condition": { "$ref": "#/$defs/semanticConditionText" } } },
         { "type": "object", "additionalProperties": false, "required": ["op", "args"], "properties": { "op": { "enum": ["all", "any"] }, "args": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/predicate" } } } },
         { "type": "object", "additionalProperties": false, "required": ["op", "arg"], "properties": { "op": { "const": "not" }, "arg": { "$ref": "#/$defs/predicate" } } },
         { "type": "object", "additionalProperties": false, "required": ["op", "input"], "properties": { "op": { "enum": ["input-present", "path-readable", "path-writable"] }, "input": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" } } },
-        { "type": "object", "additionalProperties": false, "required": ["op", "input", "value"], "properties": { "op": { "const": "input-equals" }, "input": { "type": "string" }, "value": {} } },
-        { "type": "object", "additionalProperties": false, "required": ["op", "input", "values"], "properties": { "op": { "const": "input-in" }, "input": { "type": "string" }, "values": { "type": "array", "minItems": 1 } } },
+        { "type": "object", "additionalProperties": false, "required": ["op", "input", "value"], "properties": { "op": { "const": "input-equals" }, "input": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" }, "value": {} } },
+        { "type": "object", "additionalProperties": false, "required": ["op", "input", "values"], "properties": { "op": { "const": "input-in" }, "input": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" }, "values": { "type": "array", "minItems": 1 } } },
         { "type": "object", "additionalProperties": false, "required": ["op", "capability", "state"], "properties": { "op": { "const": "capability-state" }, "capability": { "type": "string" }, "state": { "type": "string" } } }
       ]
     },

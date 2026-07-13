@@ -34,7 +34,7 @@ test('coverage summary parsing supports Node test report prefixes', () => {
 test('coverage thresholds use defaults and accept explicit overrides', () => {
   assert.deepEqual(resolveCoverageThresholds({}), {
     lines: 85,
-    branches: 60,
+    branches: 70,
     functions: 90,
   });
   assert.deepEqual(resolveCoverageThresholds({
@@ -54,8 +54,8 @@ test('coverage thresholds use defaults and accept explicit overrides', () => {
 
 test('coverage threshold failures identify only metrics below baseline', () => {
   assert.deepEqual(coverageThresholdFailures(
-    { lines: 84.9, branches: 60, functions: 89 },
-    { lines: 85, branches: 60, functions: 90 },
+    { lines: 84.9, branches: 70, functions: 89 },
+    { lines: 85, branches: 70, functions: 90 },
   ), [
     'lines coverage 84.9% is below required 85%',
     'functions coverage 89% is below required 90%',

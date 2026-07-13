@@ -655,6 +655,22 @@ function validateWorkflowContracts() {
   const dependencyReviewFile = '.github/workflows/dependency-review.yml';
   const dependencyReviewSrc = readWorkflow(dependencyReviewFile);
   if (!dependencyReviewSrc) return;
+  const dependencyPolicyFile = 'governance/dependency-policy.json';
+  const dependencyPolicySrc = readRequiredFile(dependencyPolicyFile);
+  if (!dependencyPolicySrc) return;
+  let dependencyPolicy;
+  try {
+    dependencyPolicy = JSON.parse(dependencyPolicySrc);
+  } catch (error) {
+    recordError(dependencyPolicyFile, `invalid dependency policy JSON: ${error.message}`);
+    return;
+  }
+  if (typeof dependencyPolicy.failOnSeverity !== 'string'
+    || !Array.isArray(dependencyPolicy.deniedLicenses)
+    || typeof dependencyPolicy.commentSummaryInPr !== 'string') {
+    recordError(dependencyPolicyFile, 'dependency policy is missing required review fields');
+    return;
+  }
   if (!/BASE_REPOSITORY:\s*\$\{\{\s*github\.event\.pull_request\.base\.repo\.full_name\s*\}\}/.test(dependencyReviewSrc)) {
     recordError(dependencyReviewFile, 'dependency review fail-closed contract requires base repository identity');
   }
@@ -669,6 +685,20 @@ function validateWorkflowContracts() {
   }
   if (!/Dependency review is blocked for this fork PR[\s\S]*maintainer security approval is required/.test(dependencyReviewSrc)) {
     recordError(dependencyReviewFile, 'dependency review fail-closed contract requires fork blocked maintainer approval text');
+  }
+  const configuredSeverity = dependencyReviewSrc.match(/^\s*fail-on-severity:\s*(\S+)\s*$/mu)?.[1];
+  if (configuredSeverity !== dependencyPolicy.failOnSeverity) {
+    recordError(dependencyReviewFile, `dependency review severity must match ${dependencyPolicyFile}`);
+  }
+  const deniedLicenses = dependencyReviewSrc.match(/^\s*deny-licenses:\s*(.+)$/mu)?.[1]
+    ?.split(',')
+    .map((license) => license.trim());
+  if (!deniedLicenses || JSON.stringify([...deniedLicenses].sort()) !== JSON.stringify([...dependencyPolicy.deniedLicenses].sort())) {
+    recordError(dependencyReviewFile, `dependency review denied licenses must match ${dependencyPolicyFile}`);
+  }
+  const configuredSummary = dependencyReviewSrc.match(/^\s*comment-summary-in-pr:\s*(\S+)\s*$/mu)?.[1];
+  if (configuredSummary !== dependencyPolicy.commentSummaryInPr) {
+    recordError(dependencyReviewFile, `dependency review summary mode must match ${dependencyPolicyFile}`);
   }
 }
 

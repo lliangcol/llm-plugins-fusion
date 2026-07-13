@@ -27,3 +27,20 @@ test('maintainer validation selects npm without a shell on every platform', asyn
   ]);
   assert.ok(calls.every(({ options }) => !Object.hasOwn(options, 'shell')));
 });
+
+test('maintainer evidence-only mode reuses prior test evidence without rerunning suites', async () => {
+  const calls = [];
+  const status = await main({
+    runTestGates: false,
+    runner: async (label, command, args, options) => {
+      calls.push({ label, command, args, options });
+      return { ok: true, code: 0 };
+    },
+  });
+  assert.equal(status, 0);
+  assert.deepEqual(calls.map(({ label }) => label), [
+    'generated registry drift check',
+    'git diff --check',
+    'git diff --cached --check',
+  ]);
+});

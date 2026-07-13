@@ -113,25 +113,15 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REQUEST"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "The request is small, bounded, and has a safe execution basis."
         },
         "action": "Implement the minimum necessary change."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REQUEST"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "The request expands into material design work."
         },
         "action": "Stop and request a plan or explicit direction."
       }

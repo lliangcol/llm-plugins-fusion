@@ -17,6 +17,8 @@
         },
         {
           "name": "PLAN_OUTPUT_PATH",
+          "type": "path",
+          "pathPolicy": { "root": "artifact-root", "mustExist": false, "kind": "file", "readable": true, "writable": true, "outsideRoot": "deny" },
           "required": true,
           "aliases": [
             "OUTPUT_PATH"
@@ -27,6 +29,7 @@
       "decisionTable": [
         {
           "when": "All required inputs are resolved and the destination is within the approved artifact root.",
+          "predicate": { "op": "all", "args": [{ "op": "input-present", "input": "REQUEST" }, { "op": "path-writable", "input": "PLAN_OUTPUT_PATH" }] },
           "action": "Create the backend design plan."
         }
       ],
@@ -144,6 +147,7 @@
         },
         {
           "name": "INCLUDE_UNTRACKED_CONTENT",
+          "type": "boolean",
           "required": false,
           "aliases": [],
           "description": "Explicit opt-in for untracked file content in full mode.",
@@ -157,10 +161,12 @@
       "decisionTable": [
         {
           "when": "REVIEW_MODE is full and INCLUDE_UNTRACKED_CONTENT is true.",
+          "predicate": { "op": "all", "args": [{ "op": "input-equals", "input": "REVIEW_MODE", "value": "full" }, { "op": "input-equals", "input": "INCLUDE_UNTRACKED_CONTENT", "value": true }] },
           "action": "Include untracked content in review and verification."
         },
         {
           "when": "REVIEW_MODE is staged.",
+          "predicate": { "op": "input-equals", "input": "REVIEW_MODE", "value": "staged" },
           "action": "Review only staged changes."
         },
         {
@@ -318,10 +324,12 @@
       "decisionTable": [
         {
           "when": "REVIEW_MODE is staged.",
+          "predicate": { "op": "input-equals", "input": "REVIEW_MODE", "value": "staged" },
           "action": "Review staged changes only."
         },
         {
           "when": "REVIEW_MODE is full.",
+          "predicate": { "op": "input-equals", "input": "REVIEW_MODE", "value": "full" },
           "action": "Review the explicitly permitted full working-tree scope."
         },
         {
@@ -417,6 +425,8 @@
       "inputs": [
         {
           "name": "REVIEW_FILE",
+          "type": "review-reference",
+          "pathPolicy": { "root": "workspace", "mustExist": true, "kind": "file", "readable": true, "writable": false, "outsideRoot": "deny" },
           "required": true,
           "aliases": [
             "REVIEW_PATH"
@@ -425,6 +435,8 @@
         },
         {
           "name": "CHECKS_FILE",
+          "type": "artifact-reference",
+          "pathPolicy": { "root": "workspace", "mustExist": true, "kind": "file", "readable": true, "writable": false, "outsideRoot": "deny" },
           "required": false,
           "aliases": [
             "CHECKS_PATH"
@@ -443,10 +455,12 @@
       "decisionTable": [
         {
           "when": "CHECKS_FILE is supplied.",
+          "predicate": { "op": "input-present", "input": "CHECKS_FILE" },
           "action": "Use it as supporting evidence while independently verifying review items."
         },
         {
           "when": "CHECKS_FILE is absent.",
+          "predicate": { "op": "not", "arg": { "op": "input-present", "input": "CHECKS_FILE" } },
           "action": "Mark local-check conclusions unavailable instead of inferring them."
         }
       ],
@@ -563,11 +577,13 @@
       "decisionTable": [
         {
           "when": "PERSPECTIVE equals observer.",
+          "predicate": { "op": "input-equals", "input": "PERSPECTIVE", "value": "observer" },
           "action": "Use neutral fact-gathering behavior.",
           "route": "explore-lite"
         },
         {
           "when": "PERSPECTIVE equals reviewer.",
+          "predicate": { "op": "input-equals", "input": "PERSPECTIVE", "value": "reviewer" },
           "action": "Use review-question behavior.",
           "route": "explore-review"
         }
@@ -667,6 +683,7 @@
       "decisionTable": [
         {
           "when": "INPUT is resolved.",
+          "predicate": { "op": "input-present", "input": "INPUT" },
           "action": "Analyze it with the observer perspective."
         }
       ],
@@ -756,6 +773,7 @@
       "decisionTable": [
         {
           "when": "INPUT is resolved.",
+          "predicate": { "op": "input-present", "input": "INPUT" },
           "action": "Analyze it with the reviewer perspective."
         }
       ],
@@ -1163,6 +1181,8 @@
       "inputs": [
         {
           "name": "PLAN_INPUT_PATH",
+          "type": "path",
+          "pathPolicy": { "root": "workspace", "mustExist": true, "kind": "file", "readable": true, "writable": false, "outsideRoot": "deny" },
           "required": true,
           "aliases": [
             "PLAN_PATH"
@@ -1171,6 +1191,7 @@
         },
         {
           "name": "PLAN_APPROVED",
+          "type": "approval",
           "required": true,
           "aliases": [
             "APPROVED"
@@ -1185,10 +1206,12 @@
       "decisionTable": [
         {
           "when": "PLAN_APPROVED is exactly true and the plan is readable.",
+          "predicate": { "op": "all", "args": [{ "op": "input-equals", "input": "PLAN_APPROVED", "value": true }, { "op": "path-readable", "input": "PLAN_INPUT_PATH" }] },
           "action": "Execute the approved plan in order."
         },
         {
           "when": "PLAN_APPROVED is missing or not exactly true.",
+          "predicate": { "op": "not", "arg": { "op": "input-equals", "input": "PLAN_APPROVED", "value": true } },
           "action": "Stop before modifying files."
         }
       ],
@@ -1540,6 +1563,8 @@
       "inputs": [
         {
           "name": "PLAN_INPUT_PATH",
+          "type": "path",
+          "pathPolicy": { "root": "workspace", "mustExist": true, "kind": "file", "readable": true, "writable": false, "outsideRoot": "deny" },
           "required": true,
           "aliases": [
             "INPUT",
@@ -1551,10 +1576,12 @@
       "decisionTable": [
         {
           "when": "PLAN_INPUT_PATH resolves to readable plan evidence.",
+          "predicate": { "op": "path-readable", "input": "PLAN_INPUT_PATH" },
           "action": "Review plan readiness."
         },
         {
           "when": "The plan is missing or unreadable.",
+          "predicate": { "op": "not", "arg": { "op": "path-readable", "input": "PLAN_INPUT_PATH" } },
           "action": "Report the missing evidence and stop."
         }
       ],
@@ -1653,6 +1680,8 @@
         },
         {
           "name": "PLAN_OUTPUT_PATH",
+          "type": "path",
+          "pathPolicy": { "root": "artifact-root", "mustExist": false, "kind": "file", "readable": true, "writable": true, "outsideRoot": "deny" },
           "required": true,
           "aliases": [
             "OUTPUT_PATH"
@@ -1692,10 +1721,12 @@
       "decisionTable": [
         {
           "when": "PLAN_PROFILE equals general.",
+          "predicate": { "op": "input-equals", "input": "PLAN_PROFILE", "value": "general" },
           "action": "Use the general plan structure."
         },
         {
           "when": "PLAN_PROFILE equals java-backend.",
+          "predicate": { "op": "input-equals", "input": "PLAN_PROFILE", "value": "java-backend" },
           "action": "Use the Java backend design profile.",
           "route": "backend-plan"
         }
@@ -1813,16 +1844,19 @@
       "decisionTable": [
         {
           "when": "LEVEL equals lite.",
+          "predicate": { "op": "input-equals", "input": "LEVEL", "value": "lite" },
           "action": "Use concise high-signal review.",
           "route": "review-lite"
         },
         {
           "when": "LEVEL equals standard.",
+          "predicate": { "op": "input-equals", "input": "LEVEL", "value": "standard" },
           "action": "Use normal severity-grouped review.",
           "route": "review-only"
         },
         {
           "when": "LEVEL equals strict.",
+          "predicate": { "op": "input-equals", "input": "LEVEL", "value": "strict" },
           "action": "Use exhaustive failure-cost-aware review.",
           "route": "review-strict"
         }
@@ -2506,6 +2540,8 @@
         },
         {
           "name": "EXPORT_PATH",
+          "type": "artifact-reference",
+          "pathPolicy": { "root": "artifact-root", "mustExist": false, "kind": "file", "readable": true, "writable": true, "outsideRoot": "deny" },
           "required": false,
           "aliases": [
             "OUTPUT_PATH"
@@ -2516,14 +2552,17 @@
       "decisionTable": [
         {
           "when": "DEPTH equals quick.",
+          "predicate": { "op": "input-equals", "input": "DEPTH", "value": "quick" },
           "action": "Perform surface-level analysis of obvious gaps."
         },
         {
           "when": "DEPTH equals normal.",
+          "predicate": { "op": "input-equals", "input": "DEPTH", "value": "normal" },
           "action": "Perform standard senior-level analysis."
         },
         {
           "when": "DEPTH equals deep.",
+          "predicate": { "op": "input-equals", "input": "DEPTH", "value": "deep" },
           "action": "Perform systematic analysis of edges, assumptions, and unknowns."
         }
       ],

@@ -110,6 +110,7 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 | Project optimization record | `docs/project-optimization-plan.md` |
 | Release evidence and hygiene | `docs/releases/` |
 | Product-lane decisions | `governance/product-lanes.json` |
+| Dependency review policy | `governance/dependency-policy.json` |
 | Generated project truth | `governance/project-state.generated.json` |
 
 Generated marketplace files must be updated from their sources with:

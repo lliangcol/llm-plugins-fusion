@@ -1,6 +1,6 @@
 export const DEFAULT_COVERAGE_THRESHOLDS = Object.freeze({
   lines: 85,
-  branches: 60,
+  branches: 70,
   functions: 90,
 });
 

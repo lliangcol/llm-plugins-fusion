@@ -20,7 +20,7 @@ gate is added, renamed, removed, or moved.
 - `scripts/validate-maintainer.mjs` adds release-maintainer checks such as
   `npm test`, generated registry drift, and `git diff --check`.
 - `scripts/run-test-coverage.mjs` collects dependency-free Node test coverage
-  evidence under `.metrics/coverage/`; `--check` enforces the 85% lines, 60%
+  evidence under `.metrics/coverage/`; `--check` enforces the 85% lines, 70%
   branches, and 90% functions baseline and fails unless every Git-tracked,
   non-test maintenance `.mjs` is present in the V8 loaded-source evidence.
 - `.github/workflows/ci.yml` owns merge-required check names.
@@ -45,7 +45,7 @@ gate is added, renamed, removed, or moved.
 | `npm run demo:review` | Headless review and verification demo fixture. | Deterministic public-safe output; does not execute an LLM review or mutate repository state. |
 | `npm run test` | Node test suite. | Runs unit, integration, and e2e suites sequentially for clearer CI logs. |
 | `npm run test:coverage` | Node built-in coverage collection. | Writes raw V8 coverage and a text summary under `.metrics/coverage/`; no thresholds by default. |
-| `npm run test:coverage:check` | Full maintenance coverage and baseline gate. | Fails on test failures, missing coverage output, any unloaded Git-tracked non-test `.mjs`, or coverage below lines 85%, branches 60%, functions 90%; `NOVA_COVERAGE_*` overrides are diagnostic only and do not replace the release baseline. |
+| `npm run test:coverage:check` | Full maintenance coverage and baseline gate. | Fails on test failures, missing coverage output, any unloaded Git-tracked non-test `.mjs`, or coverage below lines 85%, branches 70%, functions 90%; `NOVA_COVERAGE_*` overrides are diagnostic only and do not replace the release baseline. |
 | `npm run test:unit` | Unit test suite. | Runs `tests/unit/**/*.test.mjs`. |
 | `npm run test:integration` | Integration test suite. | Runs `tests/integration/**/*.test.mjs`. |
 | `npm run test:e2e` | E2E smoke suite. | Runs `tests/e2e/**/*.test.mjs`, including the aggregate validation smoke. |

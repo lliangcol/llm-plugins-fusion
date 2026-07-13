@@ -2,6 +2,7 @@
   "name": "@llm-plugins-fusion/spec",
   "version": "4.0.0",
   "private": true,
+  "license": "MIT",
   "type": "module",
   "exports": {
     ".": "./index.mjs"

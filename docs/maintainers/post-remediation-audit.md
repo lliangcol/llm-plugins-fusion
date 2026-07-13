@@ -148,9 +148,9 @@ adoption or production outcome improvement.
 Risk after remediation: **Low locally**; **Medium until the branch CI run is
 observed**.
 
-- The full Node test suite contains 178 tests across unit, integration, and E2E
-  layers.
-- Coverage gates require at least 85% lines, 60% branches, and 90% functions,
+- The full Node test suite covers unit, integration, and E2E layers; current
+  run totals belong in observed validation output rather than this durable audit.
+- Coverage gates require at least 85% lines, 70% branches, and 90% functions,
   plus critical-module floors and complete maintenance-module loading.
 - The targeted mutation gate remains accurately scoped to three selected
   high-risk operators; it is not described as repository-wide mutation testing.

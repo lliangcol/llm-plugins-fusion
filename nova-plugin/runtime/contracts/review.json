@@ -121,39 +121,27 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "input-equals",
+          "input": "LEVEL",
+          "value": "lite"
         },
         "action": "Use concise high-signal review.",
         "route": "review-lite"
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "input-equals",
+          "input": "LEVEL",
+          "value": "standard"
         },
         "action": "Use normal severity-grouped review.",
         "route": "review-only"
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "input-equals",
+          "input": "LEVEL",
+          "value": "strict"
         },
         "action": "Use exhaustive failure-cost-aware review.",
         "route": "review-strict"
