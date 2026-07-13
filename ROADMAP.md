@@ -34,12 +34,12 @@ on `nova-plugin`:
 Explore -> Plan -> Review -> Implement -> Finalize
 ```
 
-The next stable release is a governance and proof release, not a workflow
-surface expansion. Commands, skills, agents, and capability packs remain
-frozen until project truth, rehearsed release promotion, workspace-safe hooks,
-and evidence-derived compatibility are complete.
+The current stable release is `v4.0.0`. The next release train prioritizes
+governance and proof hardening without expanding the public command, skill,
+agent, or capability-pack surface. Current work strengthens release truth,
+least-privilege enforcement, live evaluation, and continuous release evidence.
 
-## Phase A: Restore Truth And Rehearse Releases
+## Phase A: Harden Release Truth And Trust Controls
 
 Status: active.
 
@@ -47,27 +47,28 @@ Status: active.
 | --- | --- |
 | Machine-derived project truth | Version, runtime, inventory, scripts, hook launchers, release model, and product lanes are generated from domain sources. |
 | Documentation facts | Active documentation consumes generated fact blocks and validators reject stale semantics rather than requiring exact prose. |
-| Candidate release | Candidate artifacts are built and bound to a signed manifest before an immutable RC tag is verified. |
-| Stable promotion | Stable publication verifies signed RC identity, original attestations, required evidence, and deterministic rebuild equality, then publishes only the exact RC bytes. |
+| Candidate release | Candidate artifacts remain bound to a signed manifest before an immutable RC tag is verified. |
+| Stable promotion | Stable publication continues to verify signed RC identity, original attestations, required evidence, and deterministic rebuild equality, then publishes only the exact RC bytes. |
 | Workspace-safe hooks | Write/Edit targets are lexically and physically contained in explicit allowed roots. |
 
-Phase A exits only after normal, missing/multiple artifact, and digest/tag
-mismatch release rehearsals pass on disposable prerelease tags.
+Phase A exits only after release-truth, permission, shell-policy, evaluation,
+continuous-ledger, split-publish, independent-review, mutation, and fault gates
+all pass on the same release train.
 
 ## Phase B: Correct Capability And Compatibility Semantics
 
-Status: planned.
+Status: active.
 
 | Work package | Required outcome |
 | --- | --- |
-| Capability contract v3 | Runtime requirements, permission policy, and enforcement evidence are independently represented. |
+| Capability contract | Runtime requirements, permission policy, and enforcement evidence are independently represented and ready for the next protocol migration. |
 | Instance contract | Nova inventory counts and namespace move out of the generic workflow schema. |
 | Evidence registry | Compatibility levels are derived from exact assistant versions, tags, commits, scopes, and source digests. |
 | Canary policy | A pinned blocking lane and latest non-blocking lane detect assistant drift without overstating support. |
 
 ## Phase C: Demonstrate Workflow Effectiveness
 
-Status: planned.
+Status: active.
 
 Evaluation is separated into static contracts, adapter simulation, and live
 assistant execution. Initial blocking metrics are intentionally safety-focused:
@@ -82,11 +83,11 @@ baseline exists.
 
 ## Phase D: Extract The Generic Kernel
 
-Status: planned.
+Status: active.
 
 Generic schemas, compiler functions, capability evaluation, evidence handling,
 and test fixtures may move under `framework/`. The `nova-plugin/` public path
-does not move during the 3.x line. Command surfaces load compiled minimal
+remains stable during the current 4.x line. Command surfaces load compiled minimal
 runtime contracts only after live evaluation proves no quality or safety
 regression.
 
