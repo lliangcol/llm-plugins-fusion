@@ -8,6 +8,18 @@
     "L3",
     "L4"
   ],
+  "protocolVersions": {
+    "workflow": "6.0.0",
+    "runtime": "4.0.0",
+    "adapter": "3.0.0"
+  },
+  "contractEnforcement": {
+    "inputs": "advisory",
+    "approval": "advisory",
+    "output": "advisory",
+    "effects": "advisory",
+    "fallback": "report-unsupported"
+  },
   "claimBoundary": "Invocation and enforcement require an assistant-specific adapter and conformance evidence.",
   "workflows": [
     {
@@ -24,6 +36,42 @@
       "requiredInputs": [
         "REQUEST",
         "PLAN_OUTPUT_PATH"
+      ],
+      "inputs": [
+        {
+          "name": "REQUEST",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "PLAN_OUTPUT_PATH",
+          "type": "path",
+          "required": true,
+          "pathPolicy": {
+            "root": "artifact-root",
+            "mustExist": false,
+            "kind": "either",
+            "readable": true,
+            "writable": true,
+            "outsideRoot": "deny"
+          }
+        }
+      ],
+      "effects": [
+        "artifact-write",
+        "workspace-read",
+        "workspace-write"
+      ],
+      "authorizationProfile": "artifact-write",
+      "enforcementRequirements": [
+        "enforce:artifact-write",
+        "enforce:workspace-read",
+        "enforce:workspace-write"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
       ],
       "outputContract": "backend-plan-v2",
       "runtimeRequirements": {
@@ -66,6 +114,57 @@
       "risk": "medium",
       "requiredInputs": [
         "REVIEW_SCOPE"
+      ],
+      "inputs": [
+        {
+          "name": "REVIEW_SCOPE",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "BASE",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "REVIEW_MODE",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "branch",
+            "staged",
+            "full"
+          ]
+        },
+        {
+          "name": "INCLUDE_UNTRACKED_CONTENT",
+          "type": "enum",
+          "required": false,
+          "values": [
+            true,
+            false
+          ]
+        }
+      ],
+      "effects": [
+        "credentials",
+        "network",
+        "shell",
+        "workspace-read",
+        "workspace-write"
+      ],
+      "authorizationProfile": "external-review-implementation",
+      "enforcementRequirements": [
+        "enforce:credentials",
+        "enforce:network",
+        "enforce:shell",
+        "enforce:workspace-read",
+        "enforce:workspace-write"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
       ],
       "outputContract": "codex-review-fix-v2",
       "runtimeRequirements": {
@@ -125,6 +224,46 @@
       "requiredInputs": [
         "REVIEW_SCOPE"
       ],
+      "inputs": [
+        {
+          "name": "REVIEW_SCOPE",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "BASE",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "REVIEW_MODE",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "branch",
+            "staged",
+            "full"
+          ]
+        }
+      ],
+      "effects": [
+        "credentials",
+        "network",
+        "shell",
+        "workspace-read"
+      ],
+      "authorizationProfile": "external-review-read-only",
+      "enforcementRequirements": [
+        "enforce:credentials",
+        "enforce:network",
+        "enforce:shell",
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
       "outputContract": "codex-review-only-v2",
       "runtimeRequirements": {
         "executables": [
@@ -183,6 +322,41 @@
       "requiredInputs": [
         "REVIEW_FILE"
       ],
+      "inputs": [
+        {
+          "name": "REVIEW_FILE",
+          "type": "review-reference",
+          "required": true
+        },
+        {
+          "name": "CHECKS_FILE",
+          "type": "artifact-reference",
+          "required": false
+        },
+        {
+          "name": "BASE",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "effects": [
+        "credentials",
+        "network",
+        "shell",
+        "workspace-read"
+      ],
+      "authorizationProfile": "external-review-read-only",
+      "enforcementRequirements": [
+        "enforce:credentials",
+        "enforce:network",
+        "enforce:shell",
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
       "outputContract": "codex-verify-only-v2",
       "runtimeRequirements": {
         "executables": [
@@ -239,6 +413,34 @@
       "requiredInputs": [
         "INPUT"
       ],
+      "inputs": [
+        {
+          "name": "INPUT",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "PERSPECTIVE",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "observer",
+            "reviewer"
+          ]
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
       "outputContract": "exploration-v2",
       "runtimeRequirements": {
         "executables": [],
@@ -282,6 +484,25 @@
       "requiredInputs": [
         "INPUT"
       ],
+      "inputs": [
+        {
+          "name": "INPUT",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
       "outputContract": "exploration-lite-v2",
       "runtimeRequirements": {
         "executables": [],
@@ -323,6 +544,25 @@
       "risk": "none",
       "requiredInputs": [
         "INPUT"
+      ],
+      "inputs": [
+        {
+          "name": "INPUT",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
       ],
       "outputContract": "exploration-review-v2",
       "runtimeRequirements": {
@@ -366,6 +606,25 @@
       "requiredInputs": [
         "WORK_SUMMARY"
       ],
+      "inputs": [
+        {
+          "name": "WORK_SUMMARY",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
       "outputContract": "finalize-lite-v2",
       "runtimeRequirements": {
         "executables": [],
@@ -405,6 +664,27 @@
       "risk": "none",
       "requiredInputs": [
         "WORK_SUMMARY"
+      ],
+      "inputs": [
+        {
+          "name": "WORK_SUMMARY",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "effects": [
+        "shell",
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only-shell-prompt",
+      "enforcementRequirements": [
+        "enforce:shell",
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
       ],
       "outputContract": "finalize-work-v2",
       "runtimeRequirements": {
@@ -448,6 +728,34 @@
       "requiredInputs": [
         "REQUEST"
       ],
+      "inputs": [
+        {
+          "name": "REQUEST",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "CONSTRAINTS",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "effects": [
+        "shell",
+        "workspace-read",
+        "workspace-write"
+      ],
+      "authorizationProfile": "implementation",
+      "enforcementRequirements": [
+        "enforce:shell",
+        "enforce:workspace-read",
+        "enforce:workspace-write"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
       "outputContract": "implementation-lite-v2",
       "runtimeRequirements": {
         "executables": [],
@@ -488,6 +796,53 @@
       "requiredInputs": [
         "PLAN_INPUT_PATH",
         "PLAN_APPROVED"
+      ],
+      "inputs": [
+        {
+          "name": "PLAN_INPUT_PATH",
+          "type": "path",
+          "required": true,
+          "pathPolicy": {
+            "root": "workspace",
+            "mustExist": true,
+            "kind": "either",
+            "readable": true,
+            "writable": false,
+            "outsideRoot": "deny"
+          }
+        },
+        {
+          "name": "PLAN_APPROVED",
+          "type": "approval",
+          "required": true,
+          "approvalPolicy": {
+            "mustBeExplicit": true,
+            "mayInfer": false,
+            "scope": "PLAN_APPROVED",
+            "oneShot": true,
+            "expires": null
+          }
+        }
+      ],
+      "effects": [
+        "credentials",
+        "network",
+        "shell",
+        "workspace-read",
+        "workspace-write"
+      ],
+      "authorizationProfile": "external-review-implementation",
+      "enforcementRequirements": [
+        "enforce:credentials",
+        "enforce:network",
+        "enforce:shell",
+        "enforce:workspace-read",
+        "enforce:workspace-write"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
       ],
       "outputContract": "implementation-plan-v2",
       "runtimeRequirements": {
@@ -531,6 +886,34 @@
       "requiredInputs": [
         "REQUEST"
       ],
+      "inputs": [
+        {
+          "name": "REQUEST",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "CONSTRAINTS",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "effects": [
+        "shell",
+        "workspace-read",
+        "workspace-write"
+      ],
+      "authorizationProfile": "implementation",
+      "enforcementRequirements": [
+        "enforce:shell",
+        "enforce:workspace-read",
+        "enforce:workspace-write"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
       "outputContract": "implementation-standard-v2",
       "runtimeRequirements": {
         "executables": [],
@@ -572,6 +955,30 @@
       "risk": "none",
       "requiredInputs": [
         "REQUEST"
+      ],
+      "inputs": [
+        {
+          "name": "REQUEST",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "CONSTRAINTS",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
       ],
       "outputContract": "plan-lite-v2",
       "runtimeRequirements": {
@@ -615,6 +1022,33 @@
       "requiredInputs": [
         "PLAN_INPUT_PATH"
       ],
+      "inputs": [
+        {
+          "name": "PLAN_INPUT_PATH",
+          "type": "path",
+          "required": true,
+          "pathPolicy": {
+            "root": "workspace",
+            "mustExist": true,
+            "kind": "either",
+            "readable": true,
+            "writable": false,
+            "outsideRoot": "deny"
+          }
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
       "outputContract": "plan-review-v2",
       "runtimeRequirements": {
         "executables": [],
@@ -656,6 +1090,61 @@
         "REQUEST",
         "PLAN_OUTPUT_PATH"
       ],
+      "inputs": [
+        {
+          "name": "REQUEST",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "PLAN_OUTPUT_PATH",
+          "type": "path",
+          "required": true,
+          "pathPolicy": {
+            "root": "artifact-root",
+            "mustExist": false,
+            "kind": "either",
+            "readable": true,
+            "writable": true,
+            "outsideRoot": "deny"
+          }
+        },
+        {
+          "name": "PLAN_PROFILE",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "general",
+            "java-backend"
+          ]
+        },
+        {
+          "name": "ANALYSIS_INPUTS",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "CONSTRAINTS",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "effects": [
+        "artifact-write",
+        "workspace-read",
+        "workspace-write"
+      ],
+      "authorizationProfile": "artifact-write",
+      "enforcementRequirements": [
+        "enforce:artifact-write",
+        "enforce:workspace-read",
+        "enforce:workspace-write"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
       "outputContract": "produce-plan-v2",
       "runtimeRequirements": {
         "executables": [],
@@ -695,6 +1184,41 @@
       "risk": "none",
       "requiredInputs": [
         "REVIEW_SCOPE"
+      ],
+      "inputs": [
+        {
+          "name": "REVIEW_SCOPE",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "LEVEL",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "lite",
+            "standard",
+            "strict"
+          ]
+        }
+      ],
+      "effects": [
+        "credentials",
+        "network",
+        "shell",
+        "workspace-read"
+      ],
+      "authorizationProfile": "external-review-read-only",
+      "enforcementRequirements": [
+        "enforce:credentials",
+        "enforce:network",
+        "enforce:shell",
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
       ],
       "outputContract": "review-v2",
       "runtimeRequirements": {
@@ -738,6 +1262,25 @@
       "requiredInputs": [
         "REVIEW_SCOPE"
       ],
+      "inputs": [
+        {
+          "name": "REVIEW_SCOPE",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
       "outputContract": "review-lite-v2",
       "runtimeRequirements": {
         "executables": [],
@@ -779,6 +1322,25 @@
       "risk": "none",
       "requiredInputs": [
         "REVIEW_SCOPE"
+      ],
+      "inputs": [
+        {
+          "name": "REVIEW_SCOPE",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
       ],
       "outputContract": "review-only-v2",
       "runtimeRequirements": {
@@ -822,6 +1384,25 @@
       "requiredInputs": [
         "REVIEW_SCOPE"
       ],
+      "inputs": [
+        {
+          "name": "REVIEW_SCOPE",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
       "outputContract": "review-strict-v2",
       "runtimeRequirements": {
         "executables": [],
@@ -861,6 +1442,34 @@
       "risk": "none",
       "requiredInputs": [
         "REQUEST"
+      ],
+      "inputs": [
+        {
+          "name": "REQUEST",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "DEPTH",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "brief",
+            "normal"
+          ]
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
       ],
       "outputContract": "recommended-route-v2",
       "runtimeRequirements": {
@@ -904,6 +1513,54 @@
       "requiredInputs": [
         "INTENT",
         "CONTEXT"
+      ],
+      "inputs": [
+        {
+          "name": "INTENT",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "CONTEXT",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "CONSTRAINTS",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "DEPTH",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "quick",
+            "normal",
+            "deep"
+          ]
+        },
+        {
+          "name": "EXPORT_PATH",
+          "type": "artifact-reference",
+          "required": false
+        }
+      ],
+      "effects": [
+        "artifact-write",
+        "workspace-read",
+        "workspace-write"
+      ],
+      "authorizationProfile": "artifact-write",
+      "enforcementRequirements": [
+        "enforce:artifact-write",
+        "enforce:workspace-read",
+        "enforce:workspace-write"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
       ],
       "outputContract": "senior-exploration-v2",
       "runtimeRequirements": {
