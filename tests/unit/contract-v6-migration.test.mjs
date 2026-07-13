@@ -6,6 +6,7 @@ import { migrateBehaviorSpec, migrateWorkflowSpec } from '../../scripts/migrate-
 import { compileRuntimeContracts } from '../../framework/compiler/compile-runtime-contracts.mjs';
 import { projectV5Compatibility } from '../../framework/compiler/project-v5-compatibility.mjs';
 import { validateStandardSchema } from '../../scripts/lib/schema-engine.mjs';
+import { buildPromptSurfaceReport, validatePromptSurfaceBudgets } from '../../scripts/generate-prompt-surface-report.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const read = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
@@ -55,4 +56,15 @@ test('Contract v6 schemas reject inferred approval arbitrary predicates and outp
   const outputEffects = migrateBehaviorSpec(read('workflow-specs/behaviors.json'));
   outputEffects.behaviors[0].output.effects = ['workspace-write'];
   assert.notDeepEqual(validateStandardSchema(behaviorSchema, outputEffects), []);
+});
+
+test('aggregate prompt load graph covers every workflow and budget regressions fail closed', () => {
+  const report = buildPromptSurfaceReport();
+  assert.equal(report.workflowCount, 21);
+  assert.ok(report.workflows.every((workflow) => workflow.graph.nodes.length === workflow.aggregate.files));
+  assert.ok(report.workflows.every((workflow) => Number.isFinite(workflow.aggregate.duplicateRatio)));
+  assert.deepEqual(validatePromptSurfaceBudgets(report), []);
+  const oversized = structuredClone(report);
+  oversized.workflows[0].aggregate.tokens = oversized.budgets.maximumAggregateTokens + 1;
+  assert.match(validatePromptSurfaceBudgets(oversized)[0], /aggregate tokens/u);
 });
