@@ -6,7 +6,8 @@ export function validateCompiledWorkflowModel({ spec, product, framework, adapte
   const policyKeys = framework.permissionPolicyKeys;
   assert.equal(spec.schemaVersion, 5);
   assert.deepEqual(spec.contractVersions, { workflow: '5.0.0', runtime: '3.0.0', adapter: '2.0.0' });
-  assert.equal(framework.schemaVersion, 4);
+  assert.equal(framework.schemaVersion, 5);
+  assert.deepEqual(framework.protocolVersions, { framework: '5.0.0', workflow: '6.0.0', runtime: '4.0.0', adapter: '3.0.0', compatibilityProjection: '5.0.0' });
   assert.equal(product.schemaVersion, 2);
   assert.equal(spec.pluginNamespace, product.pluginNamespace);
   assert.equal(spec.workflows.length, product.expectedWorkflowCount);

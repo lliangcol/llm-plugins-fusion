@@ -7,15 +7,17 @@
   "required": ["schemaVersion", "contractVersions", "permissionProfiles", "workflows"],
   "properties": {
     "$schema": { "type": "string" },
-    "schemaVersion": { "const": 5 },
+    "schemaVersion": { "enum": [5, 6] },
     "contractVersions": {
       "type": "object",
       "required": ["workflow", "runtime", "adapter"],
       "additionalProperties": false,
       "properties": {
-        "workflow": { "type": "string", "pattern": "^5\\." },
-        "runtime": { "type": "string", "pattern": "^3\\." },
-        "adapter": { "type": "string", "pattern": "^2\\." }
+        "workflow": { "type": "string", "pattern": "^[56]\\." },
+        "runtime": { "type": "string", "pattern": "^[34]\\." },
+        "adapter": { "type": "string", "pattern": "^[23]\\." },
+        "framework": { "type": "string", "pattern": "^5\\." },
+        "compatibilityProjection": { "type": "string", "pattern": "^5\\." }
       }
     },
     "permissionProfiles": {
@@ -45,6 +47,42 @@
           "variantPreset": { "type": "object" },
           "compatibilityAlias": { "type": "boolean" },
           "compatibility": { "type": "string" },
+          "inputs": {
+            "type": "array", "minItems": 1, "uniqueItems": true,
+            "items": {
+              "type": "object", "additionalProperties": false,
+              "required": ["name", "type", "required"],
+              "properties": {
+                "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" },
+                "type": { "enum": ["string", "enum", "boolean", "path", "artifact-reference", "review-reference", "approval"] },
+                "required": { "type": "boolean" },
+                "values": { "type": "array", "minItems": 1, "uniqueItems": true },
+                "pathPolicy": {
+                  "type": "object", "additionalProperties": false,
+                  "required": ["root", "mustExist", "kind", "readable", "writable", "outsideRoot"],
+                  "properties": {
+                    "root": { "enum": ["workspace", "artifact-root"] }, "mustExist": { "type": "boolean" },
+                    "kind": { "enum": ["file", "directory", "either"] }, "readable": { "type": "boolean" },
+                    "writable": { "type": "boolean" }, "outsideRoot": { "enum": ["deny", "explicit-authorization"] }
+                  }
+                },
+                "approvalPolicy": {
+                  "type": "object", "additionalProperties": false,
+                  "required": ["mustBeExplicit", "mayInfer", "scope"],
+                  "properties": { "mustBeExplicit": { "const": true }, "mayInfer": { "const": false }, "scope": { "type": "string", "minLength": 1 }, "oneShot": { "type": "boolean" }, "expires": { "type": ["string", "null"] } }
+                }
+              }
+            }
+          },
+          "effects": { "type": "array", "uniqueItems": true, "items": { "enum": ["workspace-read", "workspace-write", "artifact-write", "shell", "network", "credentials", "user-scope-mutation", "external-publish", "git-history-mutation"] } },
+          "authorizationProfile": { "type": "string", "minLength": 1 },
+          "enforcementRequirements": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+          "evidenceRequirements": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+          "compatibilityProjection": {
+            "type": "object", "additionalProperties": false,
+            "required": ["sourceVersion", "permissionProfile", "requiredInputs"],
+            "properties": { "sourceVersion": { "const": 5 }, "permissionProfile": { "type": "string" }, "requiredInputs": { "type": "array", "uniqueItems": true, "items": { "type": "string" } } }
+          },
           "runtimeRequirements": {
             "type": "object",
             "additionalProperties": false,
@@ -87,5 +125,6 @@
         }
       }
     }
-  }
+  },
+  "allOf": [{ "if": { "properties": { "schemaVersion": { "const": 6 } } }, "then": { "properties": { "contractVersions": { "type": "object", "required": ["workflow", "runtime", "adapter", "framework", "compatibilityProjection"], "properties": { "workflow": {}, "runtime": {}, "adapter": {}, "framework": {}, "compatibilityProjection": {} } }, "workflows": { "type": "array", "items": { "type": "object", "required": ["inputs", "effects", "authorizationProfile", "enforcementRequirements", "evidenceRequirements", "compatibilityProjection"], "properties": { "inputs": {}, "effects": {}, "authorizationProfile": {}, "enforcementRequirements": {}, "evidenceRequirements": {}, "compatibilityProjection": {} } } } } } }]
 }

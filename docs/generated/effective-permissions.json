@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "source": "workflow-specs/workflows.json",
+  "source": "workflow-specs/workflows.v6.json",
   "pluginNamespace": "nova-plugin",
   "knownGoodClaudeCli": "2.1.205",
   "expectedCombinedSkillCount": 27,

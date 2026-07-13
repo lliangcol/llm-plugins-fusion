@@ -7,12 +7,18 @@
   "required": ["schemaVersion", "permissionStates", "permissionPolicyKeys", "riskLevels", "runtimeNeedLevels", "credentialSources", "enforcementLevels"],
   "properties": {
     "$schema": { "type": "string" },
-    "schemaVersion": { "const": 4 },
+    "schemaVersion": { "enum": [4, 5] },
+    "protocolVersions": {
+      "type": "object", "additionalProperties": false,
+      "required": ["framework", "workflow", "runtime", "adapter", "compatibilityProjection"],
+      "properties": { "framework": { "const": "5.0.0" }, "workflow": { "const": "6.0.0" }, "runtime": { "const": "4.0.0" }, "adapter": { "const": "3.0.0" }, "compatibilityProjection": { "const": "5.0.0" } }
+    },
     "permissionStates": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
     "permissionPolicyKeys": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
     "riskLevels": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
     "runtimeNeedLevels": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
     "credentialSources": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
     "enforcementLevels": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } }
-  }
+  },
+  "allOf": [{ "if": { "properties": { "schemaVersion": { "const": 5 } } }, "then": { "required": ["protocolVersions"], "properties": { "protocolVersions": {} } } }]
 }

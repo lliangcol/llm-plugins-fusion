@@ -14,8 +14,52 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  classify:
+    name: CI / Classify
+    runs-on: ubuntu-24.04
+    outputs:
+      full: ${{ steps.scope.outputs.full }}
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
+      - id: scope
+        name: Classify sensitive paths
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "$EVENT_NAME" = "push" ]; then
+            echo "full=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git diff --name-only "$BASE_SHA" HEAD > "$RUNNER_TEMP/changed-paths.txt"
+          if grep -Eq '^(\.github/|\.claude-plugin/|nova-plugin/|workflow-specs/|adapters/|schemas/|governance/|framework/|packages/|scripts/|tests/|package\.json$|package-lock\.json$)' "$RUNNER_TEMP/changed-paths.txt"; then
+            echo "full=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "full=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  fast:
+    name: Required / PR Fast
+    needs: classify
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+      - run: npm ci --ignore-scripts
+      - run: npm run ci:quick
+      - run: npm run test:unit
+
   contracts:
     name: Required / Contracts
+    needs: classify
+    if: needs.classify.outputs.full == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -40,6 +84,8 @@ jobs:
 
   tests:
     name: Required / Tests
+    needs: classify
+    if: needs.classify.outputs.full == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -53,6 +99,9 @@ jobs:
       - run: npm test
       - run: npm run test:coverage:check
       - run: npm run test:mutation:critical
+      - name: Collect validation gate timings
+        run: node scripts/validate-all.mjs --write-timings
+      - run: node scripts/generate-validation-timing-trend.mjs --input .metrics/validation-timings.json --output .metrics/validation-timing-trend.json
       - name: Upload coverage evidence
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -60,9 +109,18 @@ jobs:
           name: test-coverage-evidence
           path: .metrics/coverage/
           include-hidden-files: true
+      - name: Upload validation timing trend
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: validation-timing-trend
+          path: .metrics/validation-timing-trend.json
+          if-no-files-found: warn
 
   security:
     name: Required / Security
+    needs: classify
+    if: needs.classify.outputs.full == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -99,6 +157,8 @@ jobs:
 
   platform:
     name: Required / Platform (${{ matrix.label }})
+    needs: classify
+    if: needs.classify.outputs.full == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -134,6 +194,8 @@ jobs:
 
   package:
     name: Required / Package
+    needs: classify
+    if: needs.classify.outputs.full == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
@@ -153,6 +215,7 @@ jobs:
 
   live-evidence:
     name: Conditional / Evidence Registry Integrity
+    needs: classify
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
@@ -167,11 +230,11 @@ jobs:
   aggregate:
     name: Required / Aggregate
     if: always()
-    needs: [contracts, tests, security, platform, package, live-evidence]
+    needs: [classify, fast, contracts, tests, security, platform, package, live-evidence]
     runs-on: ubuntu-24.04
     steps:
       - name: Verify required results
         env:
           REQUIRED_RESULTS: ${{ toJson(needs) }}
         run: |
-          node -e 'const needs=JSON.parse(process.env.REQUIRED_RESULTS); const bad=Object.entries(needs).filter(([id,v])=>id!=="live-evidence"&&v.result!=="success"); if(bad.length){console.error(bad);process.exit(1)} const live=needs["live-evidence"]?.result; if(!["success","skipped"].includes(live)){process.exit(1)}'
+          node -e 'const needs=JSON.parse(process.env.REQUIRED_RESULTS); const full=needs.classify?.outputs?.full==="true"; const always=["classify","fast"]; const gated=["contracts","tests","security","platform","package"]; const bad=[...always.filter(id=>needs[id]?.result!=="success"),...gated.filter(id=>full?needs[id]?.result!=="success":! ["success","skipped"].includes(needs[id]?.result))]; const live=needs["live-evidence"]?.result; if(bad.length||!["success","skipped"].includes(live)){console.error({bad,live,full});process.exit(1)}'

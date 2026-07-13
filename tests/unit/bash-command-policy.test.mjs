@@ -61,10 +61,48 @@ test('Bash policy rejects workspace PATH shadowing', (t) => {
   t.after(() => rmSync(workspace, { recursive: true, force: true }));
   const bin = resolve(workspace, 'bin');
   mkdirSync(bin);
-  const shadow = resolve(bin, 'git');
+  const shadow = resolve(bin, process.platform === 'win32' ? 'git.cmd' : 'git');
   writeFileSync(shadow, '#!/bin/sh\nexit 0\n');
   chmodSync(shadow, 0o755);
   const decision = authorizeBashCommand('git status', { workspaceRoot: workspace, env: { ...process.env, PATH: `${bin}` } });
   assert.equal(decision.allowed, false);
   assert.match(decision.reasons.join(' '), /inside the workspace/u);
+});
+
+test('Bash policy evaluates read-only rules without depending on runner tools', (t) => {
+  const workspace = mkdtempSync(resolve(tmpdir(), 'nova-shell-read-only-workspace-'));
+  const externalBin = mkdtempSync(resolve(tmpdir(), 'nova-shell-read-only-bin-'));
+  t.after(() => {
+    rmSync(workspace, { recursive: true, force: true });
+    rmSync(externalBin, { recursive: true, force: true });
+  });
+  const executable = resolve(externalBin, process.platform === 'win32' ? 'inspect.cmd' : 'inspect');
+  writeFileSync(executable, '#!/bin/sh\nexit 0\n');
+  chmodSync(executable, 0o755);
+  const basePolicy = {
+    maxCommandBytes: 1000,
+    projectPolicyPath: '.nova/missing.json',
+    rules: [{ id: 'inspect-read-only', type: 'read-only-executable', executables: ['inspect'], forbiddenArguments: ['--write'] }],
+  };
+  const options = { workspaceRoot: workspace, basePolicy, env: { ...process.env, PATH: externalBin } };
+  assert.deepEqual(authorizeBashCommand('inspect target', options), {
+    allowed: true,
+    source: 'distributed-policy',
+    ruleId: 'inspect-read-only',
+    reasons: [],
+  });
+  assert.equal(authorizeBashCommand('inspect --write=target', options).allowed, false);
+});
+
+test('Bash policy fails closed for missing executables and unknown rule types', (t) => {
+  const workspace = mkdtempSync(resolve(tmpdir(), 'nova-shell-missing-'));
+  const emptyPath = resolve(workspace, 'empty-bin');
+  t.after(() => rmSync(workspace, { recursive: true, force: true }));
+  mkdirSync(emptyPath);
+  const missing = authorizeBashCommand('git status', { workspaceRoot: workspace, env: { ...process.env, PATH: emptyPath } });
+  assert.equal(missing.allowed, false);
+  assert.match(missing.reasons.join(' '), /not found on PATH/u);
+  const unknownPolicy = { maxCommandBytes: 1000, projectPolicyPath: '.nova/missing.json', rules: [{ id: 'future', type: 'future-rule' }] };
+  const unknown = authorizeBashCommand('git status', { workspaceRoot: workspace, basePolicy: unknownPolicy });
+  assert.equal(unknown.allowed, false);
 });

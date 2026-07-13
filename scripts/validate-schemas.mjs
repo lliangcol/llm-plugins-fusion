@@ -203,6 +203,11 @@ const targets = [
     label: 'workflow-specs/workflows.json',
   },
   {
+    schema: loadJson('schemas/workflow-spec.schema.json'),
+    data: loadJson('workflow-specs/workflows.v6.json'),
+    label: 'workflow-specs/workflows.v6.json',
+  },
+  {
     schema: loadJson('schemas/workflow-framework.schema.json'),
     data: loadJson('workflow-specs/framework.json'),
     label: 'workflow-specs/framework.json',
@@ -213,9 +218,24 @@ const targets = [
     label: 'workflow-specs/behaviors.json',
   },
   {
+    schema: loadJson('schemas/workflow-behaviors.schema.json'),
+    data: loadJson('workflow-specs/behaviors.v2.json'),
+    label: 'workflow-specs/behaviors.v2.json',
+  },
+  {
     schema: loadJson('schemas/workflow-product.schema.json'),
     data: loadJson('workflow-specs/nova.product.json'),
     label: 'workflow-specs/nova.product.json',
+  },
+  {
+    schema: loadJson('schemas/eval-dataset.schema.json'),
+    data: loadJson('evals/live/cases.json'),
+    label: 'evals/live/cases.json',
+  },
+  {
+    schema: loadJson('schemas/eval-dataset.schema.json'),
+    data: loadJson('evals/live/labels.locked.json'),
+    label: 'evals/live/labels.locked.json',
   },
   ...['claude', 'codex', 'generic'].map((id) => ({
     schema: loadJson('schemas/workflow-adapter.schema.json'),
@@ -344,6 +364,7 @@ const schemaPaths = [
   'schemas/release-event.schema.json',
   'schemas/release-reviewers.schema.json',
   'schemas/release-ledger.schema.json',
+  'schemas/release-reviewers.schema.json',
   'schemas/control-bundle.schema.json',
   'schemas/stable-install-proof.schema.json',
   'schemas/release-channels.schema.json',

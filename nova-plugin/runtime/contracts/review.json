@@ -1,10 +1,12 @@
 {
-  "schemaVersion": 3,
-  "sourceSchemaVersion": 5,
+  "schemaVersion": 4,
+  "sourceSchemaVersion": 6,
   "contractVersions": {
-    "workflow": "5.0.0",
-    "runtime": "3.0.0",
-    "adapter": "2.0.0"
+    "framework": "5.0.0",
+    "workflow": "6.0.0",
+    "runtime": "4.0.0",
+    "adapter": "3.0.0",
+    "compatibilityProjection": "5.0.0"
   },
   "id": "review",
   "canonicalSurfaceId": "review",
@@ -20,6 +22,35 @@
   ],
   "requiredInputs": [
     "REVIEW_SCOPE"
+  ],
+  "inputs": [
+    {
+      "name": "REVIEW_SCOPE",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "LEVEL",
+      "type": "enum",
+      "required": false,
+      "values": [
+        "lite",
+        "standard",
+        "strict"
+      ]
+    }
+  ],
+  "effects": [
+    "workspace-read"
+  ],
+  "authorizationProfile": "read-only",
+  "enforcementRequirements": [
+    "enforce:workspace-read"
+  ],
+  "evidenceRequirements": [
+    "authorization-decision",
+    "effects-observed",
+    "validation-result"
   ],
   "outputContract": "review-v2",
   "risk": "none",
@@ -57,8 +88,8 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "schemaVersion": 1,
-    "source": "workflow-specs/behaviors.json",
+    "schemaVersion": 2,
+    "source": "workflow-specs/behaviors.v2.json",
     "guidanceReference": "../../skills/nova-review/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Route code or design review to the requested depth and emit evidence-grounded findings without implementation.",
@@ -89,17 +120,41 @@
     ],
     "decisionTable": [
       {
-        "when": "LEVEL equals lite.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "REVIEW_SCOPE"
+            }
+          ]
+        },
         "action": "Use concise high-signal review.",
         "route": "review-lite"
       },
       {
-        "when": "LEVEL equals standard.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "REVIEW_SCOPE"
+            }
+          ]
+        },
         "action": "Use normal severity-grouped review.",
         "route": "review-only"
       },
       {
-        "when": "LEVEL equals strict.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "REVIEW_SCOPE"
+            }
+          ]
+        },
         "action": "Use exhaustive failure-cost-aware review.",
         "route": "review-strict"
       }
@@ -184,7 +239,8 @@
         "allowed values",
         "safe next action"
       ]
-    }
+    },
+    "effects": []
   },
   "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

@@ -13,6 +13,13 @@
     "prepare-release.mjs": { "lines": 80, "branches": 80, "functions": 80 },
     "build-release-artifacts.mjs": { "lines": 85, "branches": 75, "functions": 80 },
     "generate-release-evidence.mjs": { "lines": 85, "branches": 75, "functions": 75 },
-    "scan-distribution-risk.mjs": { "lines": 85, "branches": 80, "functions": 95 }
+    "scan-distribution-risk.mjs": { "lines": 85, "branches": 80, "functions": 95 },
+    "pre-bash-check.mjs": { "lines": 95, "branches": 70, "functions": 100 },
+    "evaluate-paired-live.mjs": { "lines": 75, "branches": 70, "functions": 90 },
+    "run-live-assistant-evals.mjs": { "lines": 20, "branches": 70, "functions": 25 },
+    "release-state-machine.mjs": { "lines": 95, "branches": 80, "functions": 100 },
+    "release-orchestrator.mjs": { "lines": 75, "branches": 60, "functions": 75 },
+    "release-review.mjs": { "lines": 100, "branches": 90, "functions": 100 },
+    "verify-independent-release-review.mjs": { "lines": 85, "branches": 65, "functions": 70 }
   }
 }

@@ -41,6 +41,53 @@ const mutants = [
     to: '  return false;',
     async test(module) { if (!module.hasSensitiveText(`sk-proj-${'a'.repeat(24)}`)) throw new Error('secret not detected'); },
   },
+  {
+    id: 'trusted-review-allowlist-disabled',
+    source: 'scripts/lib/release-review.mjs',
+    from: '    && trusted.has(review.reviewer)\n',
+    to: '',
+    async test(module) {
+      const result = module.evaluateIndependentReview({ pullRequestAuthor: 'author', candidateActor: 'actor', trustedReviewers: [], reviews: [{ reviewer: 'stranger', state: 'APPROVED', submittedAt: '2026-01-01T00:00:00Z' }] });
+      if (result.passed) throw new Error('untrusted reviewer accepted');
+    },
+  },
+  {
+    id: 'release-ledger-digest-check-disabled',
+    source: 'scripts/lib/release-state-machine.mjs',
+    dependencies: ['scripts/lib/canonical-json.mjs'],
+    from: '    const digest = canonicalSha256(record.event);',
+    to: '    const digest = record.sha256;',
+    async test(module) {
+      const identity = { stableTag: 'v1.0.0', candidateTag: 'v1.0.0-rc.1', sourceCommit: 'a'.repeat(40), candidateManifestSha256: 'b'.repeat(64), controlBundleSha256: 'c'.repeat(64) };
+      const ledger = module.appendReleaseLedger(module.createReleaseLedger(identity), { transition: { from: 'DRAFT', to: 'CANDIDATE_TAGGED' }, identity, runId: '1', createdAt: '2026-01-01T00:00:00Z' }, 'promote');
+      ledger.events[0].event.runId = 'tampered';
+      let rejected = false; try { module.verifyReleaseLedger(ledger); } catch { rejected = true; }
+      if (!rejected) throw new Error('tampered ledger accepted');
+    },
+  },
+  {
+    id: 'unavailable-eval-metric-coerced-to-zero',
+    source: 'scripts/evaluate-paired-live.mjs',
+    dependencies: ['scripts/lib/cli-args.mjs'],
+    from: "  const delta = (left, right) => typeof left === 'number' && typeof right === 'number' ? left - right : null;",
+    to: '  const delta = (left, right) => (left ?? 0) - (right ?? 0);',
+    async test(module) {
+      const entry = { caseId: 'x', attempt: 1, contractValid: true, routeValid: true, top2RouteValid: true, requiredInputsValid: true, approvalValid: true, zeroProjectWrites: true, inventedSurfaces: [], latencyMs: 1, totalTokens: null, costUsd: null };
+      const report = module.aggregatePaired({ cases: [entry] }, { cases: [{ ...entry, totalTokens: 2, costUsd: 1 }] });
+      if (report.pairs[0].tokenDelta !== null || report.pairs[0].costDeltaUsd !== null) throw new Error('unavailable metric coerced to zero');
+    },
+  },
+  {
+    id: 'git-injection-argument-check-disabled',
+    source: 'nova-plugin/hooks/scripts/pre-bash-check.mjs',
+    from: "    return !tokens.slice(2).some((arg) => rule.forbiddenArguments.some((forbidden) => arg === forbidden || arg.startsWith(`${forbidden}=`)));",
+    to: '    return true;',
+    async test(module, temp) {
+      const policy = { maxCommandBytes: 1000, projectPolicyPath: '.nova/missing.json', rules: [{ id: 'git-read', type: 'git-subcommand', subcommands: ['status'], forbiddenArguments: ['--config-env'] }] };
+      const result = module.authorizeBashCommand('git status --config-env=credential.helper=x', { workspaceRoot: temp, basePolicy: policy, env: process.env });
+      if (result.allowed) throw new Error('git config injection accepted');
+    },
+  },
 ];
 
 export async function runMutations() {
@@ -51,8 +98,14 @@ export async function runMutations() {
       const source = readFileSync(resolve(root, mutant.source), 'utf8');
       if (!source.includes(mutant.from)) throw new Error(`${mutant.id}: mutation anchor drifted`);
       const mutated = source.replace(mutant.from, mutant.to);
-      const file = resolve(temp, `${mutant.id}.mjs`);
+      const file = resolve(temp, mutant.source);
+      mkdirSync(resolve(file, '..'), { recursive: true });
       writeFileSync(file, mutated, 'utf8');
+      for (const dependency of mutant.dependencies ?? []) {
+        const targetDependency = resolve(temp, dependency);
+        mkdirSync(resolve(targetDependency, '..'), { recursive: true });
+        writeFileSync(targetDependency, readFileSync(resolve(root, dependency)));
+      }
       let killed = false;
       let reason = null;
       try {

@@ -33,7 +33,7 @@ This file is the supporting behavioral contract for `/nova-plugin:produce-plan` 
 ## Workflow Contract
 
 <!-- BEGIN GENERATED BEHAVIOR CONTRACT -->
-> Generated from `workflow-specs/behaviors.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
+> Generated from `workflow-specs/behaviors.v2.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.
 
 ### Generated Behavior Index
 

@@ -4,11 +4,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
+import { loadNovaWorkflowModelV6 } from './lib/workflow-model.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
-const sourcePath = 'workflow-specs/workflows.json';
+const sourcePath = 'workflow-specs/workflows.v6.json';
 const productPath = 'workflow-specs/nova.product.json';
 const runtimePath = 'nova-plugin/runtime/workflow-permissions.json';
 const routeContractPath = 'nova-plugin/runtime/route-output-contract.json';
@@ -32,11 +32,11 @@ function usage() {
 }
 
 function loadSpec(root) {
-  return loadNovaWorkflowModel(root).spec;
+  return loadNovaWorkflowModelV6(root).spec;
 }
 
 function loadProduct(root) {
-  return loadNovaWorkflowModel(root).product;
+  return loadNovaWorkflowModelV6(root).product;
 }
 
 function emptyRequirements() {
@@ -70,8 +70,9 @@ export function buildRuntimePermissionSpec(spec) {
       skillNames: canonicalSkillIds.map((id) => `nova-${id}`),
     },
     workflows: spec.workflows.map((workflow) => {
-      const profile = spec.permissionProfiles[workflow.permissionProfile];
-      if (!profile) throw new Error(`unknown permission profile ${workflow.permissionProfile} for ${workflow.id}`);
+      const authorizationProfile = workflow.authorizationProfile ?? workflow.permissionProfile;
+      const profile = spec.permissionProfiles[authorizationProfile];
+      if (!profile) throw new Error(`unknown permission profile ${authorizationProfile} for ${workflow.id}`);
       return {
         id: workflow.id,
         canonicalSurfaceId: workflow.canonicalSurfaceId,

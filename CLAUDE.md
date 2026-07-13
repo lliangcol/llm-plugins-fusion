@@ -140,6 +140,7 @@ llm-plugins-fusion/
 |   |-- dependency-review.yml
 |   |-- label-sync.yml
 |   |-- plugin-install-smoke.yml
+|   |-- nightly.yml
 |   |-- promote-release.yml
 |   |-- release-candidate.yml
 |   |-- release-recovery-drill.yml

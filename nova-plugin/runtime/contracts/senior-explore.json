@@ -1,10 +1,12 @@
 {
-  "schemaVersion": 3,
-  "sourceSchemaVersion": 5,
+  "schemaVersion": 4,
+  "sourceSchemaVersion": 6,
   "contractVersions": {
-    "workflow": "5.0.0",
-    "runtime": "3.0.0",
-    "adapter": "2.0.0"
+    "framework": "5.0.0",
+    "workflow": "6.0.0",
+    "runtime": "4.0.0",
+    "adapter": "3.0.0",
+    "compatibilityProjection": "5.0.0"
   },
   "id": "senior-explore",
   "canonicalSurfaceId": "explore",
@@ -21,6 +23,54 @@
   "requiredInputs": [
     "INTENT",
     "CONTEXT"
+  ],
+  "inputs": [
+    {
+      "name": "INTENT",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "CONTEXT",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "CONSTRAINTS",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "DEPTH",
+      "type": "enum",
+      "required": false,
+      "values": [
+        "quick",
+        "normal",
+        "deep"
+      ]
+    },
+    {
+      "name": "EXPORT_PATH",
+      "type": "artifact-reference",
+      "required": false
+    }
+  ],
+  "effects": [
+    "artifact-write",
+    "workspace-read",
+    "workspace-write"
+  ],
+  "authorizationProfile": "artifact-write",
+  "enforcementRequirements": [
+    "enforce:artifact-write",
+    "enforce:workspace-read",
+    "enforce:workspace-write"
+  ],
+  "evidenceRequirements": [
+    "authorization-decision",
+    "effects-observed",
+    "validation-result"
   ],
   "outputContract": "senior-exploration-v2",
   "risk": "low",
@@ -58,8 +108,8 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "schemaVersion": 1,
-    "source": "workflow-specs/behaviors.json",
+    "schemaVersion": 2,
+    "source": "workflow-specs/behaviors.v2.json",
     "guidanceReference": "../../skills/nova-explore/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Conduct systematic analysis and optionally export an identical evidence-grounded analysis artifact.",
@@ -114,15 +164,51 @@
     ],
     "decisionTable": [
       {
-        "when": "DEPTH equals quick.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "INTENT"
+            },
+            {
+              "op": "input-present",
+              "input": "CONTEXT"
+            }
+          ]
+        },
         "action": "Perform surface-level analysis of obvious gaps."
       },
       {
-        "when": "DEPTH equals normal.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "INTENT"
+            },
+            {
+              "op": "input-present",
+              "input": "CONTEXT"
+            }
+          ]
+        },
         "action": "Perform standard senior-level analysis."
       },
       {
-        "when": "DEPTH equals deep.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "INTENT"
+            },
+            {
+              "op": "input-present",
+              "input": "CONTEXT"
+            }
+          ]
+        },
         "action": "Perform systematic analysis of edges, assumptions, and unknowns."
       }
     ],
@@ -212,7 +298,8 @@
         "allowed values",
         "safe next action"
       ]
-    }
+    },
+    "effects": []
   },
   "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

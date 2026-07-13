@@ -1,10 +1,12 @@
 {
-  "schemaVersion": 3,
-  "sourceSchemaVersion": 5,
+  "schemaVersion": 4,
+  "sourceSchemaVersion": 6,
   "contractVersions": {
-    "workflow": "5.0.0",
-    "runtime": "3.0.0",
-    "adapter": "2.0.0"
+    "framework": "5.0.0",
+    "workflow": "6.0.0",
+    "runtime": "4.0.0",
+    "adapter": "3.0.0",
+    "compatibilityProjection": "5.0.0"
   },
   "id": "produce-plan",
   "canonicalSurfaceId": "produce-plan",
@@ -20,6 +22,61 @@
   "requiredInputs": [
     "REQUEST",
     "PLAN_OUTPUT_PATH"
+  ],
+  "inputs": [
+    {
+      "name": "REQUEST",
+      "type": "string",
+      "required": true
+    },
+    {
+      "name": "PLAN_OUTPUT_PATH",
+      "type": "path",
+      "required": true,
+      "pathPolicy": {
+        "root": "artifact-root",
+        "mustExist": false,
+        "kind": "either",
+        "readable": true,
+        "writable": true,
+        "outsideRoot": "deny"
+      }
+    },
+    {
+      "name": "PLAN_PROFILE",
+      "type": "enum",
+      "required": false,
+      "values": [
+        "general",
+        "java-backend"
+      ]
+    },
+    {
+      "name": "ANALYSIS_INPUTS",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "CONSTRAINTS",
+      "type": "string",
+      "required": false
+    }
+  ],
+  "effects": [
+    "artifact-write",
+    "workspace-read",
+    "workspace-write"
+  ],
+  "authorizationProfile": "artifact-write",
+  "enforcementRequirements": [
+    "enforce:artifact-write",
+    "enforce:workspace-read",
+    "enforce:workspace-write"
+  ],
+  "evidenceRequirements": [
+    "authorization-decision",
+    "effects-observed",
+    "validation-result"
   ],
   "outputContract": "produce-plan-v2",
   "risk": "low",
@@ -57,8 +114,8 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "schemaVersion": 1,
-    "source": "workflow-specs/behaviors.json",
+    "schemaVersion": 2,
+    "source": "workflow-specs/behaviors.v2.json",
     "guidanceReference": "../../skills/nova-produce-plan/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Write a review-ready plan artifact from explicit intent and constraints without implementing code.",
@@ -112,11 +169,35 @@
     ],
     "decisionTable": [
       {
-        "when": "PLAN_PROFILE equals general.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "REQUEST"
+            },
+            {
+              "op": "input-present",
+              "input": "PLAN_OUTPUT_PATH"
+            }
+          ]
+        },
         "action": "Use the general plan structure."
       },
       {
-        "when": "PLAN_PROFILE equals java-backend.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "REQUEST"
+            },
+            {
+              "op": "input-present",
+              "input": "PLAN_OUTPUT_PATH"
+            }
+          ]
+        },
         "action": "Use the Java backend design profile.",
         "route": "backend-plan"
       }
@@ -201,7 +282,8 @@
         "required input",
         "safe next action"
       ]
-    }
+    },
+    "effects": []
   },
   "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

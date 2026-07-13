@@ -7,7 +7,7 @@
   "required": ["schemaVersion", "id", "enforcement", "declaredLevel", "maximumSupportedLevel", "invocation", "evidenceRequiredFor"],
   "properties": {
     "$schema": { "type": "string" },
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "enum": [1, 2] },
     "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
     "enforcement": { "enum": ["native-and-hook", "adapter", "advisory", "unsupported"] },
     "declaredLevel": { "enum": ["L1", "L2", "L3", "L4"] },
@@ -21,6 +21,23 @@
         "prefix": { "type": "string" }
       }
     },
-    "evidenceRequiredFor": { "type": "array", "uniqueItems": true, "items": { "enum": ["L2", "L3", "L4"] } }
-  }
+    "evidenceRequiredFor": { "type": "array", "uniqueItems": true, "items": { "enum": ["L2", "L3", "L4"] } },
+    "protocolVersions": {
+      "type": "object", "additionalProperties": false,
+      "required": ["workflow", "runtime", "adapter"],
+      "properties": { "workflow": { "type": "string", "pattern": "^6\\." }, "runtime": { "type": "string", "pattern": "^4\\." }, "adapter": { "type": "string", "pattern": "^3\\." } }
+    },
+    "contractEnforcement": {
+      "type": "object", "additionalProperties": false,
+      "required": ["inputs", "approval", "output", "effects", "fallback"],
+      "properties": {
+        "inputs": { "enum": ["native", "adapter", "advisory", "unsupported"] },
+        "approval": { "enum": ["native", "hook", "adapter", "advisory", "unsupported"] },
+        "output": { "enum": ["native", "adapter", "advisory", "unsupported"] },
+        "effects": { "enum": ["native-and-hook", "adapter", "advisory", "unsupported"] },
+        "fallback": { "enum": ["fail-closed", "report-unsupported"] }
+      }
+    }
+  },
+  "allOf": [{ "if": { "properties": { "schemaVersion": { "const": 2 } } }, "then": { "required": ["protocolVersions", "contractEnforcement"], "properties": { "protocolVersions": {}, "contractEnforcement": {} } } }]
 }

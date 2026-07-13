@@ -6,14 +6,14 @@ import { existsSync, readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkOrWrite } from './generate-adapters.mjs';
-import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
+import { loadNovaWorkflowModelV6 } from './lib/workflow-model.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const read = (path) => readFileSync(resolve(root, path), 'utf8');
 const readJson = (path) => JSON.parse(read(path));
 
 checkOrWrite();
-const { spec, adapterById } = loadNovaWorkflowModel(root);
+const { spec, adapterById } = loadNovaWorkflowModelV6(root);
 const generic = readJson('adapters/generic-agent-skills/manifest.json');
 const claude = readJson('adapters/claude/manifest.json');
 const codex = read('adapters/codex/AGENTS.md');
@@ -26,6 +26,10 @@ assert.deepEqual(generic.workflows.map((entry) => entry.id), spec.workflows.map(
 assert.equal(claude.commands.length, 21);
 assert.equal(claude.canonicalSkills.length, 6);
 assert.equal(claude.compatibilityCommandAliases.length, 15);
+assert.deepEqual(generic.protocolVersions, { workflow: '6.0.0', runtime: '4.0.0', adapter: '3.0.0' });
+assert.equal(claude.contractEnforcement.effects, 'native-and-hook');
+assert.equal(adapterById.codex.contractEnforcement.approval, 'adapter');
+assert.equal(adapterById.generic.contractEnforcement.fallback, 'report-unsupported');
 assert.match(codex, /Never claim Claude hooks or permissions are active in Codex/);
 
 for (const workflow of generic.workflows) {
@@ -34,6 +38,9 @@ for (const workflow of generic.workflows) {
   assert.notEqual(workflow.permissionPolicy.credentials, 'preapproved', `${workflow.id}: credentials must not be implicit`);
   assert.equal(workflow.permissionPolicy.externalPublish, 'denied', `${workflow.id}: publish must not be implicit`);
   assert.equal(workflow.permissionPolicy.gitHistoryMutation, 'denied', `${workflow.id}: history mutation must not be implicit`);
+  assert.ok(Array.isArray(workflow.inputs), `${workflow.id}: typed inputs missing`);
+  assert.ok(Array.isArray(workflow.effects), `${workflow.id}: effects missing`);
+  assert.equal(workflow.authorizationProfile.length > 0, true, `${workflow.id}: authorization profile missing`);
 }
 
 const fixture = readJson('fixtures/consumer/minimal/expected.json');

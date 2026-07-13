@@ -2,7 +2,7 @@
 
 Status: generated
 
-Generated from `workflow-specs/workflows.json` by `node scripts/generate-workflow-permissions.mjs --write`. `allowed-tools` are pre-approvals, not a complete whitelist.
+Generated from `workflow-specs/workflows.v6.json` by `node scripts/generate-workflow-permissions.mjs --write`. `allowed-tools` are pre-approvals, not a complete whitelist.
 
 - Known-good Claude CLI: `2.1.205`
 - Expected installed Skills: 27

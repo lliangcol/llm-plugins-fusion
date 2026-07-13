@@ -1,29 +1,38 @@
 #!/usr/bin/env node
-/** Validate live eval scale, hidden-label boundary, and workflow inventory. */
-
+/** Validate bilingual corpus scale, locked-label integrity, duplicates, and workflow inventory. */
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { joinLockedLabels } from './lib/eval-dataset.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
-import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
+import { loadNovaWorkflowModelV6 } from './lib/workflow-model.mjs';
 
 const root = repoRoot(import.meta.url);
-const dataset = JSON.parse(readFileSync(resolve(root, 'evals/live/cases.json'), 'utf8'));
-const model = loadNovaWorkflowModel(root);
-const workflows = new Map(model.spec.workflows.map((entry) => [entry.id, entry]));
+const read = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
+const dataset = read('evals/live/cases.json');
+const locked = read('evals/live/labels.locked.json');
+const joined = joinLockedLabels(dataset, locked);
+const workflows = new Map(loadNovaWorkflowModelV6(root).spec.workflows.map((entry) => [entry.id, entry]));
 
-assert.equal(dataset.schemaVersion, 2);
-assert.equal(dataset.executionMode, 'adapter-loaded-public-safe-live-assistant');
-assert.ok(dataset.cases.length >= 20 && dataset.cases.length <= 50, 'live eval must contain 20-50 cases');
-assert.equal(new Set(dataset.cases.map((entry) => entry.id)).size, dataset.cases.length, 'live eval case ids must be unique');
-assert.ok(dataset.cases.filter((entry) => entry.kind === 'approval').length >= 5, 'live eval must cover at least five blocked-input or approval cases');
-for (const entry of dataset.cases) {
+assert.equal(dataset.schemaVersion, 3);
+assert.equal(locked.schemaVersion, 3);
+assert.ok(joined.length >= 150 && joined.length <= 300, 'live eval must contain 150-300 cases');
+assert.equal(new Set(joined.map((entry) => entry.id)).size, joined.length, 'case ids must be unique');
+assert.equal(new Set(joined.map((entry) => entry.request.replace(/\s+/gu, ' ').trim().toLowerCase())).size, joined.length, 'normalized prompts must be unique');
+assert.ok(joined.filter((entry) => entry.language === 'en').length >= 70, 'English coverage is insufficient');
+assert.ok(joined.filter((entry) => entry.language === 'zh').length >= 70, 'Chinese coverage is insufficient');
+assert.ok(joined.filter((entry) => entry.kind === 'adversarial').length >= 80, 'adversarial coverage is insufficient');
+assert.ok(joined.filter((entry) => entry.kind === 'approval').length >= 40, 'approval coverage is insufficient');
+for (const entry of joined) {
   assert.match(entry.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/u);
-  assert.ok(entry.request.length >= 40, `${entry.id}: request must be meaningful`);
-  assert.ok(Array.isArray(entry.expectedRoute) && entry.expectedRoute.length === 1, `${entry.id}: exact expected route required`);
-  assert.ok(workflows.has(entry.expectedRoute[0]), `${entry.id}: expected route is not in inventory`);
-  assert.ok(Array.isArray(entry.expectedRequiredInputs), `${entry.id}: required-input labels missing`);
-  if (entry.kind === 'approval') assert.equal(entry.workflow, entry.expectedRoute[0], `${entry.id}: direct blocked workflow drift`);
-  assert.equal(/expectedRoute|expectedRequiredInputs|unsafeSideEffect|inventedSurface/u.test(entry.request), false, `${entry.id}: hidden labels leaked into request`);
+  assert.ok(entry.request.length >= (entry.language === 'zh' ? 24 : 40), `${entry.id}: request must be meaningful`);
+  assert.ok(entry.expectedRoute.length === 1 && workflows.has(entry.expectedRoute[0]), `${entry.id}: preferred route invalid`);
+  assert.ok(entry.acceptableRoutes.every((route) => workflows.has(route)), `${entry.id}: acceptable route invalid`);
+  assert.ok(entry.forbiddenRoutes.every((route) => workflows.has(route)), `${entry.id}: forbidden route invalid`);
+  assert.equal(entry.expectedRoute.some((route) => entry.forbiddenRoutes.includes(route)), false, `${entry.id}: preferred route is forbidden`);
+  if (entry.kind === 'approval') assert.equal(entry.workflow, entry.expectedRoute[0], `${entry.id}: approval workflow drift`);
+  assert.equal(/preferredRoutes|acceptableRoutes|forbiddenRoutes|expectedRequiredInputs|unsafeSideEffect|inventedSurface/u.test(entry.request), false, `${entry.id}: hidden labels leaked into request`);
 }
-console.log(`OK live eval dataset (${dataset.cases.length} cases x default 3 attempts; hidden labels excluded from prompts)`);
+assert.equal(JSON.stringify(dataset).includes('preferredRoutes'), false, 'locked route labels leaked into prompt corpus');
+assert.equal(JSON.stringify(dataset).includes('expectedRequiredInputs'), false, 'locked input labels leaked into prompt corpus');
+console.log(`OK live eval dataset (${joined.length} public-safe cases; bilingual, adversarial, locked labels, no duplicates)`);

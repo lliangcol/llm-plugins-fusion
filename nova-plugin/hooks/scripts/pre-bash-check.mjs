@@ -113,9 +113,13 @@ export function loadProjectPolicy(workspaceRoot, relativePath) {
 
 function executableIdentity(token, { workspaceRoot, env = process.env } = {}) {
   const pathEntries = String(env.PATH ?? '').split(delimiter).filter(Boolean);
-  const names = process.platform === 'win32'
-    ? String(env.PATHEXT ?? '.EXE;.CMD;.BAT;.COM').split(';').filter(Boolean).map((extension) => token.toLowerCase().endsWith(extension.toLowerCase()) ? token : `${token}${extension.toLowerCase()}`)
-    : [token];
+  const names = [token];
+  if (process.platform === 'win32') {
+    names.length = 0;
+    for (const extension of String(env.PATHEXT ?? '.EXE;.CMD;.BAT;.COM').split(';').filter(Boolean)) {
+      names.push(token.toLowerCase().endsWith(extension.toLowerCase()) ? token : `${token}${extension.toLowerCase()}`);
+    }
+  }
   for (const entry of pathEntries) {
     for (const name of names) {
       const candidate = resolve(entry, name);

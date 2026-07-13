@@ -1,10 +1,12 @@
 {
-  "schemaVersion": 3,
-  "sourceSchemaVersion": 5,
+  "schemaVersion": 4,
+  "sourceSchemaVersion": 6,
   "contractVersions": {
-    "workflow": "5.0.0",
-    "runtime": "3.0.0",
-    "adapter": "2.0.0"
+    "framework": "5.0.0",
+    "workflow": "6.0.0",
+    "runtime": "4.0.0",
+    "adapter": "3.0.0",
+    "compatibilityProjection": "5.0.0"
   },
   "id": "review-strict",
   "canonicalSurfaceId": "review",
@@ -22,6 +24,25 @@
   ],
   "requiredInputs": [
     "REVIEW_SCOPE"
+  ],
+  "inputs": [
+    {
+      "name": "REVIEW_SCOPE",
+      "type": "string",
+      "required": true
+    }
+  ],
+  "effects": [
+    "workspace-read"
+  ],
+  "authorizationProfile": "read-only",
+  "enforcementRequirements": [
+    "enforce:workspace-read"
+  ],
+  "evidenceRequirements": [
+    "authorization-decision",
+    "effects-observed",
+    "validation-result"
   ],
   "outputContract": "review-strict-v2",
   "risk": "none",
@@ -59,8 +80,8 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "schemaVersion": 1,
-    "source": "workflow-specs/behaviors.json",
+    "schemaVersion": 2,
+    "source": "workflow-specs/behaviors.v2.json",
     "guidanceReference": "../../skills/nova-review/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Perform exhaustive production-critical review with explicit failure-cost reasoning and no implementation.",
@@ -77,15 +98,39 @@
     ],
     "decisionTable": [
       {
-        "when": "A finding risks corruption, financial or security harm, production incidents, or incorrect core behavior.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "REVIEW_SCOPE"
+            }
+          ]
+        },
         "action": "Classify it Critical."
       },
       {
-        "when": "A finding significantly raises maintenance cost or realistic bug, scalability, or testability risk.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "REVIEW_SCOPE"
+            }
+          ]
+        },
         "action": "Classify it Major."
       },
       {
-        "when": "A finding affects clarity, consistency, or low-risk best practice.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "REVIEW_SCOPE"
+            }
+          ]
+        },
         "action": "Classify it Minor."
       }
     ],
@@ -170,7 +215,8 @@
         "reviewed scope",
         "safe next action"
       ]
-    }
+    },
+    "effects": []
   },
   "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

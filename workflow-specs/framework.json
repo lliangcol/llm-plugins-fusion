@@ -1,6 +1,7 @@
 {
   "$schema": "../schemas/workflow-framework.schema.json",
-  "schemaVersion": 4,
+  "schemaVersion": 5,
+  "protocolVersions": { "framework": "5.0.0", "workflow": "6.0.0", "runtime": "4.0.0", "adapter": "3.0.0", "compatibilityProjection": "5.0.0" },
   "permissionStates": ["denied", "prompt", "preapproved", "unsupported", "explicit"],
   "permissionPolicyKeys": ["workspaceRead", "workspaceWrite", "shell", "network", "credentials", "userScopeMutation", "externalPublish", "gitHistoryMutation"],
   "riskLevels": ["none", "low", "medium", "high"],

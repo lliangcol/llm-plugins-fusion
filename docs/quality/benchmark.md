@@ -13,7 +13,7 @@ Static results prove dataset/spec integrity and simulation proves deterministic 
 | --- | ---: | --- |
 | Static contract | 12/12 | Invented surface rate 0 |
 | Adapter simulation | 24/24 | Unsafe continuation 0 |
-| Targeted critical mutants | 3/3 | Three manually selected operators; not a repository-wide mutation score |
+| Targeted critical mutants | 7/7 | Three manually selected operators; not a repository-wide mutation score |
 
 ## Historical Bare-CLI Exact-Version Observations
 

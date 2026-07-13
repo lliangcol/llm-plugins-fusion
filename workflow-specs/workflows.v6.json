@@ -1,0 +1,1529 @@
+{
+  "$schema": "../schemas/workflow-spec.schema.json",
+  "schemaVersion": 6,
+  "permissionProfiles": {
+    "read-only": {
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
+        "shell": "denied",
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      }
+    },
+    "read-only-shell-prompt": {
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit"
+      ],
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
+        "shell": "prompt",
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      }
+    },
+    "artifact-write": {
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit"
+      ],
+      "disallowedTools": [
+        "NotebookEdit",
+        "Bash"
+      ],
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "preapproved",
+        "shell": "denied",
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      }
+    },
+    "implementation": {
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit"
+      ],
+      "disallowedTools": [
+        "NotebookEdit"
+      ],
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "preapproved",
+        "shell": "prompt",
+        "network": "denied",
+        "credentials": "denied",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      }
+    },
+    "external-review-read-only": {
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit"
+      ],
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "denied",
+        "shell": "prompt",
+        "network": "prompt",
+        "credentials": "explicit",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      }
+    },
+    "external-review-implementation": {
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit"
+      ],
+      "disallowedTools": [
+        "NotebookEdit"
+      ],
+      "permissionPolicy": {
+        "workspaceRead": "preapproved",
+        "workspaceWrite": "preapproved",
+        "shell": "prompt",
+        "network": "prompt",
+        "credentials": "explicit",
+        "userScopeMutation": "denied",
+        "externalPublish": "denied",
+        "gitHistoryMutation": "denied"
+      }
+    }
+  },
+  "workflows": [
+    {
+      "id": "backend-plan",
+      "stage": "plan",
+      "ownerAgents": [
+        "architect"
+      ],
+      "recommendedPacks": [
+        "java",
+        "security",
+        "dependency"
+      ],
+      "requiredInputs": [
+        "REQUEST",
+        "PLAN_OUTPUT_PATH"
+      ],
+      "outputContract": "backend-plan-v2",
+      "risk": "low",
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "permissionProfile": "artifact-write",
+      "legacyAlias": "nova-backend-plan",
+      "contractPath": "skills/nova-produce-plan/SKILL.md",
+      "canonicalSurfaceId": "produce-plan",
+      "variantPreset": {
+        "PLAN_PROFILE": "java-backend"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "REQUEST",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "PLAN_OUTPUT_PATH",
+          "type": "path",
+          "required": true,
+          "pathPolicy": {
+            "root": "artifact-root",
+            "mustExist": false,
+            "kind": "either",
+            "readable": true,
+            "writable": true,
+            "outsideRoot": "deny"
+          }
+        }
+      ],
+      "effects": [
+        "artifact-write",
+        "workspace-read",
+        "workspace-write"
+      ],
+      "authorizationProfile": "artifact-write",
+      "enforcementRequirements": [
+        "enforce:artifact-write",
+        "enforce:workspace-read",
+        "enforce:workspace-write"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "artifact-write",
+        "requiredInputs": [
+          "REQUEST",
+          "PLAN_OUTPUT_PATH"
+        ]
+      }
+    },
+    {
+      "id": "codex-review-fix",
+      "stage": "implement",
+      "ownerAgents": [
+        "reviewer",
+        "builder",
+        "verifier"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "codex-review-fix-v2",
+      "risk": "medium",
+      "modelInvocable": false,
+      "subagentSafe": false,
+      "permissionProfile": "external-review-implementation",
+      "legacyAlias": "nova-codex-review-fix",
+      "contractPath": "skills/nova-implement-plan/SKILL.md",
+      "runtimeRequirements": {
+        "executables": [
+          {
+            "name": "node",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          },
+          {
+            "name": "bash",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          },
+          {
+            "name": "codex",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          }
+        ],
+        "network": {
+          "need": "required",
+          "purpose": "external review, fix, and verification"
+        },
+        "credentials": {
+          "need": "required",
+          "source": "assistant-owned-authentication"
+        }
+      },
+      "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access for the external review/fix/verify loop.",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {
+        "EXECUTION_PROFILE": "codex-review-fix"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "REVIEW_SCOPE",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "BASE",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "REVIEW_MODE",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "branch",
+            "staged",
+            "full"
+          ]
+        },
+        {
+          "name": "INCLUDE_UNTRACKED_CONTENT",
+          "type": "enum",
+          "required": false,
+          "values": [
+            true,
+            false
+          ]
+        }
+      ],
+      "effects": [
+        "credentials",
+        "network",
+        "shell",
+        "workspace-read",
+        "workspace-write"
+      ],
+      "authorizationProfile": "external-review-implementation",
+      "enforcementRequirements": [
+        "enforce:credentials",
+        "enforce:network",
+        "enforce:shell",
+        "enforce:workspace-read",
+        "enforce:workspace-write"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "external-review-implementation",
+        "requiredInputs": [
+          "REVIEW_SCOPE"
+        ]
+      }
+    },
+    {
+      "id": "codex-review-only",
+      "stage": "review",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "codex-review-only-v2",
+      "risk": "low",
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "permissionProfile": "external-review-read-only",
+      "legacyAlias": "nova-codex-review-only",
+      "contractPath": "skills/nova-review/SKILL.md",
+      "runtimeRequirements": {
+        "executables": [
+          {
+            "name": "node",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          },
+          {
+            "name": "bash",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          },
+          {
+            "name": "codex",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          }
+        ],
+        "network": {
+          "need": "required",
+          "purpose": "external review"
+        },
+        "credentials": {
+          "need": "required",
+          "source": "assistant-owned-authentication"
+        }
+      },
+      "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved.",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "REVIEW_PROFILE": "codex-review-only"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "REVIEW_SCOPE",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "BASE",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "REVIEW_MODE",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "branch",
+            "staged",
+            "full"
+          ]
+        }
+      ],
+      "effects": [
+        "credentials",
+        "network",
+        "shell",
+        "workspace-read"
+      ],
+      "authorizationProfile": "external-review-read-only",
+      "enforcementRequirements": [
+        "enforce:credentials",
+        "enforce:network",
+        "enforce:shell",
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "external-review-read-only",
+        "requiredInputs": [
+          "REVIEW_SCOPE"
+        ]
+      }
+    },
+    {
+      "id": "codex-verify-only",
+      "stage": "review",
+      "ownerAgents": [
+        "verifier"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REVIEW_FILE"
+      ],
+      "outputContract": "codex-verify-only-v2",
+      "risk": "low",
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "permissionProfile": "external-review-read-only",
+      "legacyAlias": "nova-codex-verify-only",
+      "contractPath": "skills/nova-review/SKILL.md",
+      "runtimeRequirements": {
+        "executables": [
+          {
+            "name": "node",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          },
+          {
+            "name": "bash",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          },
+          {
+            "name": "codex",
+            "required": true,
+            "versionEvidence": "versioned-evidence"
+          }
+        ],
+        "network": {
+          "need": "required",
+          "purpose": "external verification"
+        },
+        "credentials": {
+          "need": "required",
+          "source": "assistant-owned-authentication"
+        }
+      },
+      "compatibility": "Requires Node.js 22+, Bash 3.2+, an authenticated Codex CLI, and network access; Bash is not pre-approved.",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "REVIEW_PROFILE": "codex-verify-only"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "REVIEW_FILE",
+          "type": "review-reference",
+          "required": true
+        },
+        {
+          "name": "CHECKS_FILE",
+          "type": "artifact-reference",
+          "required": false
+        },
+        {
+          "name": "BASE",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "effects": [
+        "credentials",
+        "network",
+        "shell",
+        "workspace-read"
+      ],
+      "authorizationProfile": "external-review-read-only",
+      "enforcementRequirements": [
+        "enforce:credentials",
+        "enforce:network",
+        "enforce:shell",
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "external-review-read-only",
+        "requiredInputs": [
+          "REVIEW_FILE"
+        ]
+      }
+    },
+    {
+      "id": "explore",
+      "stage": "explore",
+      "ownerAgents": [
+        "orchestrator",
+        "reviewer"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "INPUT"
+      ],
+      "outputContract": "exploration-v2",
+      "risk": "none",
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "permissionProfile": "read-only",
+      "legacyAlias": "nova-explore",
+      "contractPath": "skills/nova-explore/SKILL.md",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {},
+      "compatibilityAlias": false,
+      "inputs": [
+        {
+          "name": "INPUT",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "PERSPECTIVE",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "observer",
+            "reviewer"
+          ]
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "read-only",
+        "requiredInputs": [
+          "INPUT"
+        ]
+      }
+    },
+    {
+      "id": "explore-lite",
+      "stage": "explore",
+      "ownerAgents": [
+        "orchestrator"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "INPUT"
+      ],
+      "outputContract": "exploration-lite-v2",
+      "risk": "none",
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "permissionProfile": "read-only",
+      "legacyAlias": "nova-explore-lite",
+      "contractPath": "skills/nova-explore/SKILL.md",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {
+        "PERSPECTIVE": "observer",
+        "DEPTH": "lite"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "INPUT",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "read-only",
+        "requiredInputs": [
+          "INPUT"
+        ]
+      }
+    },
+    {
+      "id": "explore-review",
+      "stage": "explore",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "security",
+        "dependency"
+      ],
+      "requiredInputs": [
+        "INPUT"
+      ],
+      "outputContract": "exploration-review-v2",
+      "risk": "none",
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "permissionProfile": "read-only",
+      "legacyAlias": "nova-explore-review",
+      "contractPath": "skills/nova-explore/SKILL.md",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {
+        "PERSPECTIVE": "reviewer"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "INPUT",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "read-only",
+        "requiredInputs": [
+          "INPUT"
+        ]
+      }
+    },
+    {
+      "id": "finalize-lite",
+      "stage": "finalize",
+      "ownerAgents": [
+        "publisher"
+      ],
+      "recommendedPacks": [
+        "docs"
+      ],
+      "requiredInputs": [
+        "WORK_SUMMARY"
+      ],
+      "outputContract": "finalize-lite-v2",
+      "risk": "none",
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "permissionProfile": "read-only",
+      "legacyAlias": "nova-finalize-lite",
+      "contractPath": "skills/nova-finalize-work/SKILL.md",
+      "canonicalSurfaceId": "finalize-work",
+      "variantPreset": {
+        "DEPTH": "lite"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "WORK_SUMMARY",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "read-only",
+        "requiredInputs": [
+          "WORK_SUMMARY"
+        ]
+      }
+    },
+    {
+      "id": "finalize-work",
+      "stage": "finalize",
+      "ownerAgents": [
+        "publisher"
+      ],
+      "recommendedPacks": [
+        "release",
+        "docs"
+      ],
+      "requiredInputs": [
+        "WORK_SUMMARY"
+      ],
+      "outputContract": "finalize-work-v2",
+      "risk": "none",
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "permissionProfile": "read-only-shell-prompt",
+      "legacyAlias": "nova-finalize-work",
+      "contractPath": "skills/nova-finalize-work/SKILL.md",
+      "compatibility": "Designed for Claude Code; optional read-only Git inspection through Bash follows the normal permission flow.",
+      "canonicalSurfaceId": "finalize-work",
+      "variantPreset": {},
+      "compatibilityAlias": false,
+      "inputs": [
+        {
+          "name": "WORK_SUMMARY",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "effects": [
+        "shell",
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only-shell-prompt",
+      "enforcementRequirements": [
+        "enforce:shell",
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "read-only-shell-prompt",
+        "requiredInputs": [
+          "WORK_SUMMARY"
+        ]
+      }
+    },
+    {
+      "id": "implement-lite",
+      "stage": "implement",
+      "ownerAgents": [
+        "builder"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REQUEST"
+      ],
+      "outputContract": "implementation-lite-v2",
+      "risk": "medium",
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "permissionProfile": "implementation",
+      "legacyAlias": "nova-implement-lite",
+      "contractPath": "skills/nova-implement-plan/SKILL.md",
+      "compatibility": "Designed for Claude Code; project validation through Bash follows the normal permission flow.",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {
+        "EXECUTION_PROFILE": "lite"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "REQUEST",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "CONSTRAINTS",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "effects": [
+        "shell",
+        "workspace-read",
+        "workspace-write"
+      ],
+      "authorizationProfile": "implementation",
+      "enforcementRequirements": [
+        "enforce:shell",
+        "enforce:workspace-read",
+        "enforce:workspace-write"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "implementation",
+        "requiredInputs": [
+          "REQUEST"
+        ]
+      }
+    },
+    {
+      "id": "implement-plan",
+      "stage": "implement",
+      "ownerAgents": [
+        "builder"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "PLAN_INPUT_PATH",
+        "PLAN_APPROVED"
+      ],
+      "outputContract": "implementation-plan-v2",
+      "risk": "medium",
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "permissionProfile": "implementation",
+      "legacyAlias": "nova-implement-plan",
+      "contractPath": "skills/nova-implement-plan/SKILL.md",
+      "compatibility": "Designed for Claude Code; project validation through Bash follows the normal permission flow.",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {},
+      "compatibilityAlias": false,
+      "inputs": [
+        {
+          "name": "PLAN_INPUT_PATH",
+          "type": "path",
+          "required": true,
+          "pathPolicy": {
+            "root": "workspace",
+            "mustExist": true,
+            "kind": "either",
+            "readable": true,
+            "writable": false,
+            "outsideRoot": "deny"
+          }
+        },
+        {
+          "name": "PLAN_APPROVED",
+          "type": "approval",
+          "required": true,
+          "approvalPolicy": {
+            "mustBeExplicit": true,
+            "mayInfer": false,
+            "scope": "PLAN_APPROVED",
+            "oneShot": true,
+            "expires": null
+          }
+        }
+      ],
+      "effects": [
+        "shell",
+        "workspace-read",
+        "workspace-write"
+      ],
+      "authorizationProfile": "implementation",
+      "enforcementRequirements": [
+        "enforce:shell",
+        "enforce:workspace-read",
+        "enforce:workspace-write"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "implementation",
+        "requiredInputs": [
+          "PLAN_INPUT_PATH",
+          "PLAN_APPROVED"
+        ]
+      }
+    },
+    {
+      "id": "implement-standard",
+      "stage": "implement",
+      "ownerAgents": [
+        "builder"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REQUEST"
+      ],
+      "outputContract": "implementation-standard-v2",
+      "risk": "medium",
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "permissionProfile": "implementation",
+      "legacyAlias": "nova-implement-standard",
+      "contractPath": "skills/nova-implement-plan/SKILL.md",
+      "compatibility": "Designed for Claude Code; project validation through Bash follows the normal permission flow.",
+      "canonicalSurfaceId": "implement-plan",
+      "variantPreset": {
+        "EXECUTION_PROFILE": "standard"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "REQUEST",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "CONSTRAINTS",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "effects": [
+        "shell",
+        "workspace-read",
+        "workspace-write"
+      ],
+      "authorizationProfile": "implementation",
+      "enforcementRequirements": [
+        "enforce:shell",
+        "enforce:workspace-read",
+        "enforce:workspace-write"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "implementation",
+        "requiredInputs": [
+          "REQUEST"
+        ]
+      }
+    },
+    {
+      "id": "plan-lite",
+      "stage": "plan",
+      "ownerAgents": [
+        "architect"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REQUEST"
+      ],
+      "outputContract": "plan-lite-v2",
+      "risk": "none",
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "permissionProfile": "read-only",
+      "legacyAlias": "nova-plan-lite",
+      "contractPath": "skills/nova-produce-plan/SKILL.md",
+      "canonicalSurfaceId": "produce-plan",
+      "variantPreset": {
+        "PLAN_PROFILE": "lite"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "REQUEST",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "CONSTRAINTS",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "read-only",
+        "requiredInputs": [
+          "REQUEST"
+        ]
+      }
+    },
+    {
+      "id": "plan-review",
+      "stage": "review",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "docs",
+        "security"
+      ],
+      "requiredInputs": [
+        "PLAN_INPUT_PATH"
+      ],
+      "outputContract": "plan-review-v2",
+      "risk": "none",
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "permissionProfile": "read-only",
+      "legacyAlias": "nova-plan-review",
+      "contractPath": "skills/nova-review/SKILL.md",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "REVIEW_PROFILE": "plan"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "PLAN_INPUT_PATH",
+          "type": "path",
+          "required": true,
+          "pathPolicy": {
+            "root": "workspace",
+            "mustExist": true,
+            "kind": "either",
+            "readable": true,
+            "writable": false,
+            "outsideRoot": "deny"
+          }
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "read-only",
+        "requiredInputs": [
+          "PLAN_INPUT_PATH"
+        ]
+      }
+    },
+    {
+      "id": "produce-plan",
+      "stage": "plan",
+      "ownerAgents": [
+        "architect"
+      ],
+      "recommendedPacks": [
+        "docs"
+      ],
+      "requiredInputs": [
+        "REQUEST",
+        "PLAN_OUTPUT_PATH"
+      ],
+      "outputContract": "produce-plan-v2",
+      "risk": "low",
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "permissionProfile": "artifact-write",
+      "legacyAlias": "nova-produce-plan",
+      "contractPath": "skills/nova-produce-plan/SKILL.md",
+      "canonicalSurfaceId": "produce-plan",
+      "variantPreset": {},
+      "compatibilityAlias": false,
+      "inputs": [
+        {
+          "name": "REQUEST",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "PLAN_OUTPUT_PATH",
+          "type": "path",
+          "required": true,
+          "pathPolicy": {
+            "root": "artifact-root",
+            "mustExist": false,
+            "kind": "either",
+            "readable": true,
+            "writable": true,
+            "outsideRoot": "deny"
+          }
+        },
+        {
+          "name": "PLAN_PROFILE",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "general",
+            "java-backend"
+          ]
+        },
+        {
+          "name": "ANALYSIS_INPUTS",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "CONSTRAINTS",
+          "type": "string",
+          "required": false
+        }
+      ],
+      "effects": [
+        "artifact-write",
+        "workspace-read",
+        "workspace-write"
+      ],
+      "authorizationProfile": "artifact-write",
+      "enforcementRequirements": [
+        "enforce:artifact-write",
+        "enforce:workspace-read",
+        "enforce:workspace-write"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "artifact-write",
+        "requiredInputs": [
+          "REQUEST",
+          "PLAN_OUTPUT_PATH"
+        ]
+      }
+    },
+    {
+      "id": "review",
+      "stage": "review",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "security",
+        "dependency"
+      ],
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "review-v2",
+      "risk": "none",
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "permissionProfile": "read-only",
+      "legacyAlias": "nova-review",
+      "contractPath": "skills/nova-review/SKILL.md",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {},
+      "compatibilityAlias": false,
+      "inputs": [
+        {
+          "name": "REVIEW_SCOPE",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "LEVEL",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "lite",
+            "standard",
+            "strict"
+          ]
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "read-only",
+        "requiredInputs": [
+          "REVIEW_SCOPE"
+        ]
+      }
+    },
+    {
+      "id": "review-lite",
+      "stage": "review",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "review-lite-v2",
+      "risk": "none",
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "permissionProfile": "read-only",
+      "legacyAlias": "nova-review-lite",
+      "contractPath": "skills/nova-review/SKILL.md",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "LEVEL": "lite"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "REVIEW_SCOPE",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "read-only",
+        "requiredInputs": [
+          "REVIEW_SCOPE"
+        ]
+      }
+    },
+    {
+      "id": "review-only",
+      "stage": "review",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "security",
+        "dependency"
+      ],
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "review-only-v2",
+      "risk": "none",
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "permissionProfile": "read-only",
+      "legacyAlias": "nova-review-only",
+      "contractPath": "skills/nova-review/SKILL.md",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "LEVEL": "standard"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "REVIEW_SCOPE",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "read-only",
+        "requiredInputs": [
+          "REVIEW_SCOPE"
+        ]
+      }
+    },
+    {
+      "id": "review-strict",
+      "stage": "review",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "security",
+        "dependency"
+      ],
+      "requiredInputs": [
+        "REVIEW_SCOPE"
+      ],
+      "outputContract": "review-strict-v2",
+      "risk": "none",
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "permissionProfile": "read-only",
+      "legacyAlias": "nova-review-strict",
+      "contractPath": "skills/nova-review/SKILL.md",
+      "canonicalSurfaceId": "review",
+      "variantPreset": {
+        "LEVEL": "strict"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "REVIEW_SCOPE",
+          "type": "string",
+          "required": true
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "read-only",
+        "requiredInputs": [
+          "REVIEW_SCOPE"
+        ]
+      }
+    },
+    {
+      "id": "route",
+      "stage": "explore",
+      "ownerAgents": [
+        "orchestrator"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "REQUEST"
+      ],
+      "outputContract": "recommended-route-v2",
+      "risk": "none",
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "permissionProfile": "read-only",
+      "legacyAlias": "nova-route",
+      "contractPath": "skills/nova-route/SKILL.md",
+      "canonicalSurfaceId": "route",
+      "variantPreset": {},
+      "compatibilityAlias": false,
+      "inputs": [
+        {
+          "name": "REQUEST",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "DEPTH",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "brief",
+            "normal"
+          ]
+        }
+      ],
+      "effects": [
+        "workspace-read"
+      ],
+      "authorizationProfile": "read-only",
+      "enforcementRequirements": [
+        "enforce:workspace-read"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "read-only",
+        "requiredInputs": [
+          "REQUEST"
+        ]
+      }
+    },
+    {
+      "id": "senior-explore",
+      "stage": "explore",
+      "ownerAgents": [
+        "architect",
+        "reviewer"
+      ],
+      "recommendedPacks": [],
+      "requiredInputs": [
+        "INTENT",
+        "CONTEXT"
+      ],
+      "outputContract": "senior-exploration-v2",
+      "risk": "low",
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "permissionProfile": "artifact-write",
+      "legacyAlias": "nova-senior-explore",
+      "contractPath": "skills/nova-explore/SKILL.md",
+      "canonicalSurfaceId": "explore",
+      "variantPreset": {
+        "DEPTH": "deep"
+      },
+      "compatibilityAlias": true,
+      "inputs": [
+        {
+          "name": "INTENT",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "CONTEXT",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "CONSTRAINTS",
+          "type": "string",
+          "required": false
+        },
+        {
+          "name": "DEPTH",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "quick",
+            "normal",
+            "deep"
+          ]
+        },
+        {
+          "name": "EXPORT_PATH",
+          "type": "artifact-reference",
+          "required": false
+        }
+      ],
+      "effects": [
+        "artifact-write",
+        "workspace-read",
+        "workspace-write"
+      ],
+      "authorizationProfile": "artifact-write",
+      "enforcementRequirements": [
+        "enforce:artifact-write",
+        "enforce:workspace-read",
+        "enforce:workspace-write"
+      ],
+      "evidenceRequirements": [
+        "authorization-decision",
+        "effects-observed",
+        "validation-result"
+      ],
+      "compatibilityProjection": {
+        "sourceVersion": 5,
+        "permissionProfile": "artifact-write",
+        "requiredInputs": [
+          "INTENT",
+          "CONTEXT"
+        ]
+      }
+    }
+  ],
+  "contractVersions": {
+    "framework": "5.0.0",
+    "workflow": "6.0.0",
+    "runtime": "4.0.0",
+    "adapter": "3.0.0",
+    "compatibilityProjection": "5.0.0"
+  }
+}

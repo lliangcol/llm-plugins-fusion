@@ -35,3 +35,13 @@ export function loadNovaWorkflowModel(root) {
     behaviorsPath: 'workflow-specs/behaviors.json',
   });
 }
+
+export function loadNovaWorkflowModelV6(root) {
+  return loadWorkflowModel({
+    root,
+    frameworkPath: 'workflow-specs/framework.json',
+    productPath: 'workflow-specs/nova.product.json',
+    workflowsPath: 'workflow-specs/workflows.v6.json',
+    behaviorsPath: 'workflow-specs/behaviors.v2.json',
+  });
+}

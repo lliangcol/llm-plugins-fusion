@@ -1,10 +1,12 @@
 {
-  "schemaVersion": 3,
-  "sourceSchemaVersion": 5,
+  "schemaVersion": 4,
+  "sourceSchemaVersion": 6,
   "contractVersions": {
-    "workflow": "5.0.0",
-    "runtime": "3.0.0",
-    "adapter": "2.0.0"
+    "framework": "5.0.0",
+    "workflow": "6.0.0",
+    "runtime": "4.0.0",
+    "adapter": "3.0.0",
+    "compatibilityProjection": "5.0.0"
   },
   "id": "plan-review",
   "canonicalSurfaceId": "review",
@@ -22,6 +24,33 @@
   ],
   "requiredInputs": [
     "PLAN_INPUT_PATH"
+  ],
+  "inputs": [
+    {
+      "name": "PLAN_INPUT_PATH",
+      "type": "path",
+      "required": true,
+      "pathPolicy": {
+        "root": "workspace",
+        "mustExist": true,
+        "kind": "either",
+        "readable": true,
+        "writable": false,
+        "outsideRoot": "deny"
+      }
+    }
+  ],
+  "effects": [
+    "workspace-read"
+  ],
+  "authorizationProfile": "read-only",
+  "enforcementRequirements": [
+    "enforce:workspace-read"
+  ],
+  "evidenceRequirements": [
+    "authorization-decision",
+    "effects-observed",
+    "validation-result"
   ],
   "outputContract": "plan-review-v2",
   "risk": "none",
@@ -59,8 +88,8 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "schemaVersion": 1,
-    "source": "workflow-specs/behaviors.json",
+    "schemaVersion": 2,
+    "source": "workflow-specs/behaviors.v2.json",
     "guidanceReference": "../../skills/nova-review/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Assess plan decision clarity, assumptions, and execution risk without rewriting the plan.",
@@ -77,11 +106,27 @@
     ],
     "decisionTable": [
       {
-        "when": "PLAN_INPUT_PATH resolves to readable plan evidence.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "PLAN_INPUT_PATH"
+            }
+          ]
+        },
         "action": "Review plan readiness."
       },
       {
-        "when": "The plan is missing or unreadable.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "PLAN_INPUT_PATH"
+            }
+          ]
+        },
         "action": "Report the missing evidence and stop."
       }
     ],
@@ -163,7 +208,8 @@
         "missing plan evidence",
         "safe next action"
       ]
-    }
+    },
+    "effects": []
   },
   "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }

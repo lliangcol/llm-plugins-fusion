@@ -34,6 +34,7 @@ knowledge-base content in the consumer-owned workspace.
 | Adopt `nova-plugin` in a private project | [consumers/README.md](consumers/README.md) |
 | Maintain repository checks and release gates | [maintainers/quickstart.md](maintainers/quickstart.md) |
 | Understand public compatibility boundaries | [compatibility/public-api.md](compatibility/public-api.md) |
+| Use the framework/compiler and llmf preview | [framework/README.md](framework/README.md) |
 | Understand assistant L1-L4 evidence claims | [compatibility/assistant-levels.md](compatibility/assistant-levels.md) |
 | Inspect reproducible workflow quality evidence | [quality/benchmark.md](quality/benchmark.md) |
 | Choose a nova command or inspect plugin docs | [../nova-plugin/docs/README.md](../nova-plugin/docs/README.md) |
@@ -148,6 +149,8 @@ docs/
 | --- | --- |
 | [generated/surface-inventory.md](generated/surface-inventory.md) | Generated public surface inventory. |
 | [generated/surface-inventory.json](generated/surface-inventory.json) | Machine-readable generated public surface inventory. |
+| [generated/prompt-surface-report.md](generated/prompt-surface-report.md) | Aggregate workflow load graphs, duplication, and blocking prompt budgets. |
+| [generated/real-task-benchmark.md](generated/real-task-benchmark.md) | Fixed benchmark plan, evidence boundary, metrics, intervals, and external gates. |
 
 ### Compatibility
 
@@ -156,6 +159,9 @@ docs/
 | [compatibility/public-api.md](compatibility/public-api.md) | Stable commands, plugin identifiers, validation CLIs, generated file contracts, and breaking-change triggers. |
 | [compatibility/assistant-levels.md](compatibility/assistant-levels.md) | Evidence definitions for parseable, invocable, enforced, and verified assistant adapters. |
 | [compatibility/contract-semver.md](compatibility/contract-semver.md) | Independent Workflow IR, runtime contract, and adapter contract SemVer ranges and 4.x alias migration policy. |
+| [framework/README.md](framework/README.md) | Framework/compiler evidence, protocol sources, and llmf preview contract. |
+| [framework/second-product.md](framework/second-product.md) | Product-neutral specification, adapter, validation, build, and static eval guide. |
+| [migrations/contract-v6.md](migrations/contract-v6.md) | Deterministic v5 to v6 migration and retained-alias decision. |
 
 ### Maintainers
 

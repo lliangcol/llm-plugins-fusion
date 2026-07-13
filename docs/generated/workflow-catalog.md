@@ -2,7 +2,7 @@
 
 Status: generated
 
-Generated from `workflow-specs/workflows.json`. Runtime command adapters execute directly and do not delegate through the compatibility alias.
+Generated from `workflow-specs/workflows.v6.json`. Runtime command adapters execute directly and do not delegate through the compatibility alias.
 
 | Workflow | Stage | Owner agents | Risk | Primary | Output contract | Legacy alias |
 | --- | --- | --- | --- | --- | --- | --- |

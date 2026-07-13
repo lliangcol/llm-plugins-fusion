@@ -1,10 +1,12 @@
 {
-  "schemaVersion": 3,
-  "sourceSchemaVersion": 5,
+  "schemaVersion": 4,
+  "sourceSchemaVersion": 6,
   "contractVersions": {
-    "workflow": "5.0.0",
-    "runtime": "3.0.0",
-    "adapter": "2.0.0"
+    "framework": "5.0.0",
+    "workflow": "6.0.0",
+    "runtime": "4.0.0",
+    "adapter": "3.0.0",
+    "compatibilityProjection": "5.0.0"
   },
   "id": "codex-verify-only",
   "canonicalSurfaceId": "review",
@@ -19,6 +21,41 @@
   "recommendedPacks": [],
   "requiredInputs": [
     "REVIEW_FILE"
+  ],
+  "inputs": [
+    {
+      "name": "REVIEW_FILE",
+      "type": "review-reference",
+      "required": true
+    },
+    {
+      "name": "CHECKS_FILE",
+      "type": "artifact-reference",
+      "required": false
+    },
+    {
+      "name": "BASE",
+      "type": "string",
+      "required": false
+    }
+  ],
+  "effects": [
+    "credentials",
+    "network",
+    "shell",
+    "workspace-read"
+  ],
+  "authorizationProfile": "external-review-read-only",
+  "enforcementRequirements": [
+    "enforce:credentials",
+    "enforce:network",
+    "enforce:shell",
+    "enforce:workspace-read"
+  ],
+  "evidenceRequirements": [
+    "authorization-decision",
+    "effects-observed",
+    "validation-result"
   ],
   "outputContract": "codex-verify-only-v2",
   "risk": "low",
@@ -72,8 +109,8 @@
     "Do not publish externally, mutate user scope, or rewrite Git history."
   ],
   "behaviorContract": {
-    "schemaVersion": 1,
-    "source": "workflow-specs/behaviors.json",
+    "schemaVersion": 2,
+    "source": "workflow-specs/behaviors.v2.json",
     "guidanceReference": "../../skills/nova-review/SKILL.md",
     "conflictPolicy": "fail-closed",
     "purpose": "Verify known findings from an existing Codex review without doing new implementation.",
@@ -105,11 +142,27 @@
     ],
     "decisionTable": [
       {
-        "when": "CHECKS_FILE is supplied.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "REVIEW_FILE"
+            }
+          ]
+        },
         "action": "Use it as supporting evidence while independently verifying review items."
       },
       {
-        "when": "CHECKS_FILE is absent.",
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-present",
+              "input": "REVIEW_FILE"
+            }
+          ]
+        },
         "action": "Mark local-check conclusions unavailable instead of inferring them."
       }
     ],
@@ -194,7 +247,8 @@
         "review file",
         "safe next action"
       ]
-    }
+    },
+    "effects": []
   },
   "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
 }
