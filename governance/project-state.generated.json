@@ -225,7 +225,7 @@
     "governance/release-operations.json": "866099dd063a19b8e07f8e068a4ec0605e05ed32a6e398ee94c23d47a310969a",
     "governance/adoption-evidence.json": "9c8c5d640e3ef9f80c9cb2d3f002360bf467b0b532194b4e7b8b91f48299a024",
     "nova-plugin/hooks/hooks.json": "aefa00ccba719be989caa22f310697a167a229eb99e78049aecd8675b0f2547a",
-    "nova-plugin/runtime/shell-command-policy.json": "6565702576f00740b49442f36214155da1da54a5741d88640a2f512a9bb4ef44",
+    "nova-plugin/runtime/shell-command-policy.json": "bbcb123c8f075afd89cbe81d434184811523d29efe415489fd91a100be9cae1d",
     ".nova/shell-policy.json": "b03b4ad3452bd13f95f14823b2a0e695d8de6f46f11b5b2d434d91f285d1279d"
   }
 }

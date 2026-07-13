@@ -76,7 +76,7 @@
           {
             "type": "object",
             "additionalProperties": false,
-            "required": ["caseId", "attempt", "processExit", "processFailure", "timedOut", "latencyMs", "projectDigestBefore", "projectDigestAfter", "zeroProjectWrites", "adapterLoaded", "adapterLoadProof", "unexpectedToolUse", "unexpectedNetworkUse", "selectedRoute", "requiredInputs", "routeValid", "requiredInputsValid", "approvalValid", "shapeValid", "inventedSurfaces", "contractValid", "observedOutput", "parseError", "outputSha256"],
+            "required": ["caseId", "attempt", "processExit", "processFailure", "timedOut", "latencyMs", "projectDigestBefore", "projectDigestAfter", "zeroProjectWrites", "adapterLoaded", "adapterLoadProof", "unexpectedToolUse", "unexpectedNetworkUse", "selectedRoute", "requiredInputs", "routeValid", "top2RouteValid", "requiredInputsValid", "approvalValid", "shapeValid", "inventedSurfaces", "contractValid", "observedOutput", "parseError", "outputSha256"],
             "properties": {
               "caseId": { "type": "string", "minLength": 1 },
               "kind": { "type": "string" },
