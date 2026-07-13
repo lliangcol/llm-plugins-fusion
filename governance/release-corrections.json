@@ -1,0 +1,32 @@
+{
+  "$schema": "../schemas/release-corrections.schema.json",
+  "schemaVersion": 1,
+  "corrections": [
+    {
+      "id": "LPF-AUTO-2026-07-RC-001",
+      "issue": 73,
+      "status": "active-release-hold",
+      "affectedCommits": [
+        "1510209e1e9bc9fd9f9d3cedbbfde13f0f77b1b5",
+        "affd8fd5cee082fa7454fbe335edfe4c8c4be097"
+      ],
+      "stableRelease": {
+        "tag": "v4.0.0",
+        "commit": "367beb25666d6b15e5c3d9b85d0c6c22650c2669",
+        "state": "INSTALL_PROVEN"
+      },
+      "decision": {
+        "authorizedByIssue": 73,
+        "nonRetroactive": true,
+        "summary": "Merged LPF-AUTO-2026-07 trains are accepted as implementation history on main only. They do not retroactively satisfy RCA-before-RCB, squash-strategy, trusted-review, signing, protected-environment, stable-channel, install-proof, or continuous-ledger release evidence."
+      },
+      "releaseBoundary": {
+        "mayPublishStable": false,
+        "requiresNewCandidate": true,
+        "requiresCurrentIndependentReview": true,
+        "requiresProtectedPublicationEvidence": true,
+        "requiresInstallProof": true
+      }
+    }
+  ]
+}

@@ -22,6 +22,7 @@ function fact(value, path, pointer, digest) {
 export function buildFactGraph() {
   const plugin = source('nova-plugin/.claude-plugin/plugin.json');
   const channels = source('governance/release-channels.json');
+  const corrections = source('governance/release-corrections.json');
   const compatibility = source('governance/compatibility-evidence.generated.json');
   const project = source('governance/project-state.generated.json');
   const support = Object.fromEntries(compatibility.data.currentClaims.map((claim) => [claim.assistant, claim.effectiveLevel]));
@@ -33,6 +34,7 @@ export function buildFactGraph() {
       'release.stable.tag': fact(channels.data.stable.tag, 'governance/release-channels.json', '/stable/tag', channels.sha256),
       'release.stable.commit': fact(channels.data.stable.commit, 'governance/release-channels.json', '/stable/commit', channels.sha256),
       'release.stable.state': fact(channels.data.stable.state, 'governance/release-channels.json', '/stable/state', channels.sha256),
+      'release.corrections.activeHolds': fact(corrections.data.corrections.filter((entry) => entry.status === 'active-release-hold').map((entry) => entry.id), 'governance/release-corrections.json', '/corrections', corrections.sha256),
       'release.canary.ref': fact(channels.data.canary.ref, 'governance/release-channels.json', '/canary/ref', channels.sha256),
       'compatibility.effectiveLevels': fact(support, 'governance/compatibility-evidence.generated.json', '/currentClaims', compatibility.sha256),
       'inventory.commands': fact(project.data.inventory.commands, 'governance/project-state.generated.json', '/inventory/commands', project.sha256),
