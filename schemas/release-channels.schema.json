@@ -10,7 +10,7 @@
     "schemaVersion": { "const": 1 },
     "stable": {
       "type": "object",
-      "required": ["version", "tag", "commit", "candidateTag", "candidateManifestSha256", "pluginTreeSha256", "state", "publishedAt", "stableInstallProof"],
+      "required": ["version", "tag", "commit", "candidateTag", "candidateManifestSha256", "pluginTreeSha256", "state", "publishedAt", "stableInstallProof", "releaseLedger"],
       "additionalProperties": false,
       "properties": {
         "version": { "type": "string" },
@@ -26,6 +26,15 @@
             { "type": "null" },
             { "type": "string", "minLength": 1 }
           ]
+        },
+        "releaseLedger": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "headSha256"],
+          "properties": {
+            "status": { "enum": ["continuous", "legacy-release-without-continuous-ledger"] },
+            "headSha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" }
+          }
         }
       }
     },

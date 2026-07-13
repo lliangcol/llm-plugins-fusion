@@ -593,6 +593,18 @@ function validateWorkflowContracts() {
     for (const required of ['extract-release-bundle.mjs', 'verify-release-promotion.mjs', 'release-orchestrator.mjs', 'reconcile-github-release.mjs', '--candidate-core', '--promotion-intent', '--control-bundle-manifest']) {
       if (!promotionSrc.includes(required)) recordError(promotionFile, `promotion is missing state-machine control ${required}`);
     }
+    const verifyJob = model?.jobs?.verify;
+    const publishJob = model?.jobs?.publish;
+    if (!verifyJob || !publishJob || publishJob.needs !== 'verify') recordError(promotionFile, 'promotion must split verify and publish into ordered jobs');
+    for (const [jobId, job] of Object.entries(model?.jobs ?? {})) {
+      if (job?.permissions?.contents === 'write' && jobId !== 'publish') recordError(promotionFile, `only the publish job may receive contents write, found ${jobId}`);
+    }
+    if (verifyJob?.permissions?.contents !== 'read' || publishJob?.permissions?.contents !== 'write' || Object.keys(publishJob?.permissions ?? {}).length !== 1) recordError(promotionFile, 'verify must be read-only and publish must have only contents write');
+    const publishText = JSON.stringify(publishJob ?? {});
+    if (/npm (?:ci|install)|actions\/setup-node|actions\/checkout/u.test(publishText)) recordError(promotionFile, 'publish job must not checkout source or install npm dependencies');
+    for (const required of ['verified-promotion-handoff-', 'handoff.sha256', 'sha256sum -c', 'actions/upload-artifact@', 'actions/download-artifact@']) {
+      if (!promotionSrc.includes(required)) recordError(promotionFile, `promotion digest-bound handoff is missing ${required}`);
+    }
   }
 
   const routeSmokeFile = 'scripts/validate-plugin-route-live.mjs';

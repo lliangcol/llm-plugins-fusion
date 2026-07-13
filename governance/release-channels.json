@@ -10,7 +10,11 @@
     "pluginTreeSha256": "4d4df0f13c80424d324c475910b8a2e311f4c4da27a4ce5e29dd3c58cc8c99b8",
     "state": "INSTALL_PROVEN",
     "publishedAt": "2026-07-12T17:31:24Z",
-    "stableInstallProof": "governance/stable-install-proof.json"
+    "stableInstallProof": "governance/stable-install-proof.json",
+    "releaseLedger": {
+      "status": "legacy-release-without-continuous-ledger",
+      "headSha256": null
+    }
   },
   "canary": {
     "ref": "main"
