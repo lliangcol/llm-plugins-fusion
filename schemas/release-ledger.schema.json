@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/release-ledger.schema.json",
+  "title": "Continuous Release Ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "identity", "headState", "headSha256", "events"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["stableTag", "candidateTag", "sourceCommit", "candidateManifestSha256", "controlBundleSha256"],
+      "properties": {
+        "stableTag": { "type": "string" },
+        "candidateTag": { "type": "string" },
+        "sourceCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+        "candidateManifestSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "controlBundleSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+      }
+    },
+    "headState": { "enum": ["DRAFT", "CANDIDATE_TAGGED", "CANDIDATE_VERIFIED", "PROMOTION_READY", "STABLE_TAG_VERIFIED", "RELEASE_DRAFT_CREATED", "ASSETS_RECONCILED", "RELEASE_PUBLISHED", "STABLE_CHANNEL_PINNED", "INSTALL_PROVEN"] },
+    "headSha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["mode", "event", "sha256"],
+        "properties": {
+          "mode": { "enum": ["promote", "recover", "drill"] },
+          "event": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["schemaVersion", "transition", "stableTag", "candidateTag", "sourceCommit", "candidateManifestSha256", "controlBundleSha256", "inputDigests", "outputDigests", "runId", "createdAt", "previousEventSha256"],
+            "properties": {
+              "schemaVersion": { "const": 1 },
+              "transition": { "type": "string", "pattern": "^[A-Z_]+->[A-Z_]+$" },
+              "stableTag": { "type": "string" },
+              "candidateTag": { "type": "string" },
+              "sourceCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+              "candidateManifestSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "controlBundleSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "inputDigests": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" } },
+              "outputDigests": { "type": "object", "additionalProperties": { "type": "string", "pattern": "^[a-f0-9]{64}$" } },
+              "runId": { "type": "string", "minLength": 1 },
+              "createdAt": { "type": "string", "format": "date-time" },
+              "previousEventSha256": { "type": ["string", "null"], "pattern": "^[a-f0-9]{64}$" }
+            }
+          },
+          "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+        }
+      }
+    }
+  }
+}

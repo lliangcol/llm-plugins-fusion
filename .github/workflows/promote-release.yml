@@ -86,11 +86,11 @@ jobs:
             --control-bundle-manifest .metrics/promotion/bundle/release-control-bundle.manifest.json \
             --bundle-root .metrics/promotion/bundle \
             --artifact-dir .metrics/promotion/bundle/artifacts
-          node scripts/release-orchestrator.mjs --mode promote --state PROMOTION_READY --target-state ASSETS_RECONCILED \
+          node scripts/release-orchestrator.mjs --mode promote --state DRAFT --target-state ASSETS_RECONCILED \
             --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}" \
             --promotion-intent .metrics/promotion/bundle/promotion-intent.json \
             --control-bundle .metrics/promotion/bundle/release-control-bundle.manifest.json \
-            --event-dir .metrics/promotion/events/pre-publish --run-id "${GITHUB_RUN_ID}"
+            --event-dir .metrics/promotion/events --run-id "${GITHUB_RUN_ID}"
       - name: Prepare draft release asset inventory
         env:
           RELEASE_TAG: ${{ inputs.release-tag }}
@@ -136,7 +136,7 @@ jobs:
             --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}" \
             --promotion-intent .metrics/promotion/bundle/promotion-intent.json \
             --control-bundle .metrics/promotion/bundle/release-control-bundle.manifest.json \
-            --event-dir .metrics/promotion/events/published --run-id "${GITHUB_RUN_ID}"
+            --event-dir .metrics/promotion/events --run-id "${GITHUB_RUN_ID}"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
