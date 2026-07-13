@@ -1,10 +1,12 @@
 {
   "$schema": "../../schemas/workflow-adapter.schema.json",
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "codex",
   "enforcement": "adapter",
   "declaredLevel": "L2",
   "maximumSupportedLevel": "L4",
   "invocation": { "kind": "repository-adapter", "prefix": "AGENTS.md:" },
-  "evidenceRequiredFor": ["L3", "L4"]
+  "evidenceRequiredFor": ["L3", "L4"],
+  "protocolVersions": { "workflow": "6.0.0", "runtime": "4.0.0", "adapter": "3.0.0" },
+  "contractEnforcement": { "inputs": "adapter", "approval": "adapter", "output": "adapter", "effects": "adapter", "fallback": "fail-closed" }
 }
