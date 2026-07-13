@@ -11,7 +11,7 @@
     {
       "id": "single-plugin-delivery",
       "status": "active",
-      "summary": "nova-plugin remains the only production plugin and the stable public installation path for the 3.x line."
+      "summary": "nova-plugin remains the only production plugin and the stable public installation path for the current 4.x line."
     },
     {
       "id": "release-candidate-promotion",
