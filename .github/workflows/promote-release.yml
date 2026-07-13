@@ -108,7 +108,9 @@ jobs:
           cp .metrics/promotion/events/* "${handoff}/events/"
           cp scripts/reconcile-github-release.mjs scripts/release-orchestrator.mjs "${handoff}/scripts/"
           cp scripts/lib/canonical-json.mjs scripts/lib/cli-args.mjs scripts/lib/release-state-machine.mjs "${handoff}/scripts/lib/"
-          (cd "${handoff}" && find . -type f ! -name handoff.sha256 -print0 | sort -z | xargs -0 sha256sum > handoff.sha256)
+          checksum_file="${RUNNER_TEMP}/promotion-handoff.sha256"
+          (cd "${handoff}" && find . -type f ! -name handoff.sha256 -print0 | sort -z | xargs -0 sha256sum > "${checksum_file}")
+          mv "${checksum_file}" "${handoff}/handoff.sha256"
       - name: Resolve promoted archive and build SBOM
         id: release-files
         run: |

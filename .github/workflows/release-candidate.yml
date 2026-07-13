@@ -227,9 +227,11 @@ jobs:
           test "${#bundles[@]}" -eq 1
           archive="${archives[0]}"
           bundle="${bundles[0]}"
-          printf 'archive=%s\n' "${archive}" >> "${GITHUB_OUTPUT}"
-          printf 'sbom=%s\n' '.metrics/candidate-bundle/artifacts/build-sbom.cdx.json' >> "${GITHUB_OUTPUT}"
-          printf 'bundle=%s\n' "${bundle}" >> "${GITHUB_OUTPUT}"
+          {
+            printf 'archive=%s\n' "${archive}"
+            printf 'sbom=%s\n' '.metrics/candidate-bundle/artifacts/build-sbom.cdx.json'
+            printf 'bundle=%s\n' "${bundle}"
+          } >> "${GITHUB_OUTPUT}"
       - uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
         with:
           subject-path: ${{ steps.files.outputs.archive }}
