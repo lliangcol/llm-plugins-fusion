@@ -28,8 +28,8 @@ Generated from `workflow-specs/workflows.json` by `node scripts/generate-workflo
 | `/nova-plugin:plan-review` | deprecated-alias | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
 | `/nova-plugin:produce-plan` | primary | low | false | Read, Glob, Grep, Write, Edit | NotebookEdit, Bash | None |
 | `/nova-plugin:nova-produce-plan` | canonical | low | false | Read, Glob, Grep, Write, Edit | NotebookEdit, Bash | None |
-| `/nova-plugin:review` | primary | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit | Bash |
-| `/nova-plugin:nova-review` | canonical | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit | Bash |
+| `/nova-plugin:review` | primary | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
+| `/nova-plugin:nova-review` | canonical | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
 | `/nova-plugin:review-lite` | deprecated-alias | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
 | `/nova-plugin:review-only` | deprecated-alias | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
 | `/nova-plugin:review-strict` | deprecated-alias | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |

@@ -3,10 +3,10 @@
   "schemaVersion": 1,
   "generatedFrom": "static adapter declarations plus digest-bound evals/evidence records",
   "sourceDigests": {
-    "workflow-specs/workflows.json": "c6dfaf7c60184db60c55e7e45ddce08d0c1d9beb29ea72232baac4f4695ebb9e",
+    "workflow-specs/workflows.json": "b9efab557d4c65400ca3bc44b46206ded32baa5f83fb08c0d601b615c11b3640",
     "adapters/claude/manifest.json": "2ebd2f407913a4aa9381f9375cc7e4d5b0392fd644844de2cc901494284d7e34",
     "adapters/codex/AGENTS.md": "893f2149941d1fc01c0f31cd880ff255130f88a107a345d38d4153aa0f5a33a5",
-    "adapters/generic-agent-skills/manifest.json": "a5bf71951a9a639e04c7eb2061d8c688dd31af4f71531a835d9f4814aad8b8ba",
+    "adapters/generic-agent-skills/manifest.json": "048140b276e6d4633737e7ecc51ff712164f76e0174007dadc868b43d02cd9c6",
     "governance/assistant-support.json": "d24356d1e875f83d9dde9e24bf9442b5aec290da7232907468dfc6ef40b0881c"
   },
   "knownGoodLanes": [
