@@ -50,6 +50,9 @@ test('stale active narratives are rejected by semantic rule ids', () => {
     'invokes.skill is required',
     'metadata.novaPlugin is required',
     'v3.0.0 remains deferred',
+    'Main plugin version: `3.2.0`.',
+    'Prepared promotion baseline: exact release tag `v4.0.0`.',
+    'The public path does not move during the 3.x line.',
     'Node 20-compatible discovery is required',
     'Active launcher: `nova-plugin/hooks/scripts/post-audit-log.sh`',
   ]) assert.equal(staleNarrativeFindings(source).length, 1, source);

@@ -106,7 +106,7 @@
     },
     "single-plugin-delivery": {
       "status": "active",
-      "summary": "nova-plugin remains the only production plugin and the stable public installation path for the 3.x line."
+      "summary": "nova-plugin remains the only production plugin and the stable public installation path for the current 4.x line."
     },
     "release-candidate-promotion": {
       "status": "active",
@@ -221,7 +221,7 @@
     "workflow-specs/adapters/codex.json": "2c0d0497ab9c5a2bbf9a8539d4dc695976a7aa49333657a6e427bc2925806cf8",
     "workflow-specs/adapters/generic.json": "d243b936a99689f5dd495ff9bc4664f292a78ead46b145a638254f438417793f",
     "docs/generated/surface-inventory.json": "301a3c792530e19339464e75d183c0d2fe3836ed50ba92b1cd0a485251473efc",
-    "governance/product-lanes.json": "ada36f3719d3cd745ccef06c594226de26f01329414b0ed7e7d25a8110868c39",
+    "governance/product-lanes.json": "c888525caa05c1a9509996ddf9543ea84edec6379fc511a5584c86fbe910ce94",
     "governance/release-operations.json": "866099dd063a19b8e07f8e068a4ec0605e05ed32a6e398ee94c23d47a310969a",
     "governance/adoption-evidence.json": "9c8c5d640e3ef9f80c9cb2d3f002360bf467b0b532194b4e7b8b91f48299a024",
     "nova-plugin/hooks/hooks.json": "aefa00ccba719be989caa22f310697a167a229eb99e78049aecd8675b0f2547a",
