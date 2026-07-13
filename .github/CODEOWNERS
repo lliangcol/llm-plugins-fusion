@@ -11,3 +11,5 @@
 /nova-plugin/runtime/ @lliangcol
 /scripts/build-release-artifacts.mjs @lliangcol
 /scripts/generate-release-evidence.mjs @lliangcol
+/governance/release-reviewers.json @lliangcol
+/schemas/release-reviewers.schema.json @lliangcol

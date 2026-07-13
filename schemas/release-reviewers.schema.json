@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/release-reviewers.schema.json",
+  "title": "Trusted Release Reviewers",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "status", "trustedUsers", "trustedTeams", "botIdentities", "sensitivePaths", "standardMinimumApprovals", "sensitiveMinimumApprovals"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "status": { "enum": ["configured", "awaiting-owner-configuration"] },
+    "trustedUsers": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Za-z0-9-]+$" } },
+    "trustedTeams": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Za-z0-9-]+/[A-Za-z0-9_.-]+$" } },
+    "botIdentities": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "sensitivePaths": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "standardMinimumApprovals": { "type": "integer", "minimum": 1 },
+    "sensitiveMinimumApprovals": { "type": "integer", "minimum": 2 }
+  }
+}

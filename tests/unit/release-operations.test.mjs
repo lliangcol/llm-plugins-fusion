@@ -12,16 +12,18 @@ import { verifyIndependentReview } from '../../scripts/verify-independent-releas
 
 const root = fileURLToPath(new URL('../..', import.meta.url));
 
-test('independent release review excludes author, actor, and superseded approvals', () => {
-  const result = evaluateIndependentReview({ pullRequestAuthor: 'author', candidateActor: 'actor', expectedReviewCommit: 'head', reviews: [
+test('independent release review excludes untrusted, bot, author, actor, and superseded approvals', () => {
+  const result = evaluateIndependentReview({ pullRequestAuthor: 'author', candidateActor: 'actor', expectedReviewCommit: 'head', trustedReviewers: ['other'], reviews: [
     { reviewer: 'author', state: 'APPROVED', submittedAt: '2026-01-01T00:00:00Z', commit: 'head' },
     { reviewer: 'peer', state: 'APPROVED', submittedAt: '2026-01-01T00:00:01Z', commit: 'head' },
     { reviewer: 'peer', state: 'CHANGES_REQUESTED', submittedAt: '2026-01-01T00:00:02Z', commit: 'head' },
     { reviewer: 'stale', state: 'APPROVED', submittedAt: '2026-01-01T00:00:03Z', commit: 'old-head' },
     { reviewer: 'other', state: 'APPROVED', submittedAt: '2026-01-01T00:00:04Z', commit: 'head' },
+    { reviewer: 'automation[bot]', state: 'APPROVED', submittedAt: '2026-01-01T00:00:05Z', commit: 'head' },
   ] });
   assert.equal(result.passed, true);
   assert.deepEqual(result.approvalReviewers, ['other']);
+  assert.equal(evaluateIndependentReview({ pullRequestAuthor: 'author', candidateActor: 'actor', trustedReviewers: ['peer'], minimumApprovals: 2, reviews: [{ reviewer: 'peer', state: 'APPROVED', submittedAt: '2026-01-01T00:00:00Z' }] }).passed, false);
   assert.equal(evaluateIndependentReview({ pullRequestAuthor: 'author', candidateActor: 'actor', reviews: [] }).passed, false);
 });
 
@@ -56,15 +58,18 @@ test('label sync supports dry-run and create/update without deletion', async () 
 test('independent review verifier writes current merged-PR evidence', async () => {
   const directory = mkdtempSync(join(tmpdir(), 'nova-release-review-'));
   const output = join(directory, 'independent-review.json');
+  const reviewers = join(directory, 'reviewers.json');
+  await import('node:fs/promises').then(({ writeFile }) => writeFile(reviewers, `${JSON.stringify({ schemaVersion: 1, status: 'configured', trustedUsers: ['peer'], trustedTeams: [], botIdentities: [], sensitivePaths: ['schemas/'], standardMinimumApprovals: 1, sensitiveMinimumApprovals: 2 })}\n`));
   const fetchImpl = async (url) => {
     const records = url.includes('/reviews?')
       ? [{ user: { login: 'peer' }, state: 'APPROVED', submitted_at: '2026-07-12T00:01:00Z', commit_id: '1234567890123456789012345678901234567890' }]
-      : [{ number: 42, merged_at: '2026-07-12T00:00:00Z', merge_commit_sha: 'abc123', head: { sha: '1234567890123456789012345678901234567890' }, user: { login: 'author' } }];
+      : url.includes('/files?') ? [{ filename: 'README.md' }]
+        : [{ number: 42, merged_at: '2026-07-12T00:00:00Z', merge_commit_sha: 'abc123', head: { sha: '1234567890123456789012345678901234567890' }, user: { login: 'author' } }];
     return { ok: true, status: 200, json: async () => records };
   };
   try {
     const evidence = await verifyIndependentReview({
-      args: ['--repository', 'owner/repo', '--commit', 'abc123', '--candidate-actor', 'release-bot', '--out', output],
+      args: ['--repository', 'owner/repo', '--commit', 'abc123', '--candidate-actor', 'release-bot', '--reviewers', reviewers, '--out', output],
       env: { GH_TOKEN: 'token' },
       fetchImpl,
       now: () => new Date('2026-07-12T00:02:00Z'),
