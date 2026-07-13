@@ -98,25 +98,15 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "WORK_SUMMARY"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "The workspace is a Git repository."
         },
         "action": "Produce a conventional commit message and PR description."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "WORK_SUMMARY"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "The workspace is not a Git repository."
         },
         "action": "Produce a local change summary and manual handoff steps."
       }

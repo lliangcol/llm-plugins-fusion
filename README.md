@@ -89,7 +89,7 @@ Claude slash-command runtime 行为会在其它 coding assistant 中自动存在
 - 生成物漂移的聚焦检查是 `npm run validate:drift`，它确认 marketplace metadata 和 catalog 与 source-of-truth 一致。
 - Surface inventory 漂移检查是 `node scripts/generate-surface-inventory.mjs`，它确认 command、skill、agent、pack 和 generated marketplace output 的派生清单是最新的。
 - 维护者发布前检查使用 `npm run validate:maintainer`，它在默认质量门之外还运行 `npm test`，并检查 generated registry 漂移和 `git diff --check`。
-- 测试覆盖率证据使用 `npm run test:coverage:check`，它通过 Node 内置 coverage 写入 `.metrics/coverage/`，要求所有受 Git 跟踪、非 `tests/**` 的维护 `.mjs` 都进入覆盖率分母，并执行 lines 85%、branches 60%、functions 90% 的发布阻断门槛；`npm run test:coverage` 保持仅采集模式。
+- 测试覆盖率证据使用 `npm run test:coverage:check`，它通过 Node 内置 coverage 写入 `.metrics/coverage/`，要求所有受 Git 跟踪、非 `tests/**` 的维护 `.mjs` 都进入覆盖率分母，并执行 lines 85%、branches 70%、functions 90% 的发布阻断门槛；`npm run test:coverage` 保持仅采集模式。
 - Release checksum 证据使用 `node scripts/generate-release-checksums.mjs`，它通过 Node 内置 crypto 为选定 source-controlled release artifacts 生成 SHA-256 清单。
 - Claude 插件安装 smoke 的安全预览路径是 `node scripts/validate-plugin-install.mjs --dry-run`；真实 user-scope 安装/更新只应在隔离用户或 CI profile 中显式运行 `--accept-user-scope-mutation --isolated-home`。
 - 固定答案 route smoke 只证明 installation、invocation 与 safety contract；workflow 质量声明必须来自隐藏标签、paired baseline 的独立行为评估。

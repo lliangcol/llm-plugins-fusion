@@ -99,37 +99,22 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "A finding risks corruption, financial or security harm, production incidents, or incorrect core behavior."
         },
         "action": "Classify it Critical."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "A finding significantly raises maintenance cost or realistic bug, scalability, or testability risk."
         },
         "action": "Classify it Major."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "A finding affects clarity, consistency, or low-risk best practice."
         },
         "action": "Classify it Minor."
       }

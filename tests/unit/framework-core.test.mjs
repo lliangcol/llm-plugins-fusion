@@ -9,7 +9,7 @@ import { validateOutputFields } from '../../framework/core/output-validation.mjs
 import { compileRuntimeContract } from '../../framework/compiler/compile-runtime-contracts.mjs';
 import { compileRuntimeContracts } from '../../framework/compiler/compile-runtime-contracts.mjs';
 import { compileProductBundle } from '../../framework/compiler/compile-product-bundle.mjs';
-import { migrateBehaviorSpec, migrateWorkflowSpec } from '../../scripts/migrate-v6-contracts.mjs';
+import { migrateBehaviorSpec, migrateWorkflowSpec } from '@llm-plugins-fusion/compiler';
 import { loadWorkflowModel } from '../../scripts/lib/workflow-model.mjs';
 
 test('framework core separates inputs, capability availability, and approvals', () => {

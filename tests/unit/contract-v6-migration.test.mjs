@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
-import { migrateBehaviorSpec, migrateWorkflowSpec } from '../../scripts/migrate-v6-contracts.mjs';
+import { migrateBehaviorSpec, migrateWorkflowSpec } from '@llm-plugins-fusion/compiler';
 import { compileRuntimeContracts } from '../../framework/compiler/compile-runtime-contracts.mjs';
 import { projectV5Compatibility } from '../../framework/compiler/project-v5-compatibility.mjs';
 import { validateStandardSchema } from '../../scripts/lib/schema-engine.mjs';
@@ -23,9 +23,71 @@ test('v5 to v6 migration is deterministic and separates requirements authorizati
     assert.ok(workflow.enforcementRequirements.length > 0);
     assert.ok(workflow.evidenceRequirements.length > 0);
   }
+  const booleanInput = first.workflows
+    .flatMap((workflow) => workflow.inputs)
+    .find((input) => input.name === 'INCLUDE_UNTRACKED_CONTENT');
+  assert.equal(booleanInput?.type, 'boolean');
+  assert.equal(Object.hasOwn(booleanInput, 'values'), false);
+  assert.equal(first.workflows.flatMap((workflow) => workflow.inputs).find((input) => input.name === 'PLAN_APPROVED')?.type, 'approval');
+  const reviewFile = first.workflows.flatMap((workflow) => workflow.inputs).find((input) => input.name === 'REVIEW_FILE');
+  assert.deepEqual(reviewFile?.pathPolicy, {
+    root: 'workspace',
+    mustExist: true,
+    kind: 'file',
+    readable: true,
+    writable: false,
+    outsideRoot: 'deny',
+  });
+  const seniorExplore = first.workflows.find((workflow) => workflow.id === 'senior-explore');
+  assert.equal(seniorExplore?.inputs.find((input) => input.name === 'EXPORT_PATH')?.pathPolicy?.root, 'artifact-root');
+  assert.equal(seniorExplore?.effects.includes('artifact-write'), true);
   const migratedBehaviors = migrateBehaviorSpec(behaviors);
   assert.ok(migratedBehaviors.behaviors.every((behavior) => behavior.decisionTable.every((decision) => typeof decision.when === 'object')));
+  let explicitPredicates = 0;
+  for (const [behaviorIndex, behavior] of migratedBehaviors.behaviors.entries()) {
+    for (const [decisionIndex, decision] of behavior.decisionTable.entries()) {
+      const sourceDecision = behaviors.behaviors[behaviorIndex].decisionTable[decisionIndex];
+      if (sourceDecision.predicate) {
+        explicitPredicates += 1;
+        assert.deepEqual(decision.when, sourceDecision.predicate);
+        assert.equal(Object.hasOwn(decision, 'predicate'), false);
+      } else {
+        assert.deepEqual(decision.when, {
+          op: 'semantic-condition',
+          condition: sourceDecision.when,
+        });
+      }
+    }
+  }
+  assert.equal(explicitPredicates, 23);
   assert.ok(migratedBehaviors.behaviors.every((behavior) => !Object.hasOwn(behavior.output, 'effects')));
+});
+
+test('migration rejects incompatible or ambiguous source bundles', () => {
+  const workflows = read('workflow-specs/workflows.json');
+  const behaviors = read('workflow-specs/behaviors.json');
+  assert.throws(
+    () => migrateWorkflowSpec(workflows, { ...behaviors, schemaVersion: 2 }),
+    /v1 behavior source is required/u,
+  );
+  assert.throws(
+    () => migrateWorkflowSpec(workflows, { ...behaviors, behaviors: [...behaviors.behaviors, behaviors.behaviors[0]] }),
+    /behavior ids must be unique/u,
+  );
+  assert.throws(
+    () => migrateWorkflowSpec(workflows, { ...behaviors, behaviors: [...behaviors.behaviors, { ...behaviors.behaviors[0], id: 'orphan' }] }),
+    /behaviors without workflows: orphan/u,
+  );
+  assert.throws(
+    () => migrateBehaviorSpec({ ...behaviors, behaviors: [...behaviors.behaviors, behaviors.behaviors[0]] }),
+    /behavior ids must be unique/u,
+  );
+  const missingPathPolicy = structuredClone(behaviors);
+  delete missingPathPolicy.behaviors.find((behavior) => behavior.id === 'implement-plan').inputs[0].pathPolicy;
+  assert.throws(() => migrateWorkflowSpec(workflows, missingPathPolicy), /typed path input requires pathPolicy/u);
+  const unknownPredicateInput = structuredClone(behaviors);
+  unknownPredicateInput.behaviors[0].decisionTable[0].predicate.args[0].input = 'UNKNOWN_INPUT';
+  assert.throws(() => migrateBehaviorSpec(unknownPredicateInput), /predicate references unknown input UNKNOWN_INPUT/u);
 });
 
 test('all workflows compile from v6 and the compatibility projection exactly matches v5', () => {
@@ -51,6 +113,9 @@ test('Contract v6 schemas reject inferred approval arbitrary predicates and outp
 
   const behaviorV2 = migrateBehaviorSpec(read('workflow-specs/behaviors.json'));
   const behaviorSchema = read('schemas/workflow-behaviors.schema.json');
+  const proseCondition = migrateBehaviorSpec(read('workflow-specs/behaviors.json'));
+  proseCondition.behaviors[0].decisionTable[0].when = 'unstructured prose';
+  assert.notDeepEqual(validateStandardSchema(behaviorSchema, proseCondition), []);
   behaviorV2.behaviors[0].decisionTable[0].when = { op: 'execute-javascript', source: 'return true' };
   assert.notDeepEqual(validateStandardSchema(behaviorSchema, behaviorV2), []);
   const outputEffects = migrateBehaviorSpec(read('workflow-specs/behaviors.json'));

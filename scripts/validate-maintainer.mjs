@@ -30,7 +30,7 @@ export function npmInvocation({
   return { command: 'npm', argsPrefix: [] };
 }
 
-export async function main({ platform = process.platform, runner = runProcess } = {}) {
+export async function main({ platform = process.platform, runner = runProcess, runTestGates = true } = {}) {
   let failed = 0;
   async function run(label, command, args = []) {
     console.log(`\n== ${label} ==`);
@@ -50,10 +50,12 @@ export async function main({ platform = process.platform, runner = runProcess } 
   }
 
   const npm = npmInvocation({ platform });
-  await run('npm run test:unit', npm.command, [...npm.argsPrefix, 'run', 'test:unit']);
-  await run('npm run test:integration', npm.command, [...npm.argsPrefix, 'run', 'test:integration']);
-  await run('npm run test:e2e', npm.command, [...npm.argsPrefix, 'run', 'test:e2e']);
-  await run('validate all', process.execPath, ['scripts/validate-all.mjs']);
+  if (runTestGates) {
+    await run('npm run test:unit', npm.command, [...npm.argsPrefix, 'run', 'test:unit']);
+    await run('npm run test:integration', npm.command, [...npm.argsPrefix, 'run', 'test:integration']);
+    await run('npm run test:e2e', npm.command, [...npm.argsPrefix, 'run', 'test:e2e']);
+    await run('validate all', process.execPath, ['scripts/validate-all.mjs']);
+  }
   await run('generated registry drift check', process.execPath, ['scripts/generate-registry.mjs']);
   await run('git diff --check', 'git', ['diff', '--check']);
   await run('git diff --cached --check', 'git', ['diff', '--cached', '--check']);
@@ -63,5 +65,11 @@ export async function main({ platform = process.platform, runner = runProcess } 
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  process.exitCode = await main();
+  const args = process.argv.slice(2);
+  if (args.some((arg) => arg !== '--evidence-only')) {
+    console.error('Usage: node scripts/validate-maintainer.mjs [--evidence-only]');
+    process.exitCode = 1;
+  } else {
+    process.exitCode = await main({ runTestGates: !args.includes('--evidence-only') });
+  }
 }

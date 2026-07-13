@@ -33,7 +33,7 @@
       "pathPolicy": {
         "root": "workspace",
         "mustExist": true,
-        "kind": "either",
+        "kind": "file",
         "readable": true,
         "writable": false,
         "outsideRoot": "deny"
@@ -96,6 +96,15 @@
     "inputs": [
       {
         "name": "PLAN_INPUT_PATH",
+        "type": "path",
+        "pathPolicy": {
+          "root": "workspace",
+          "mustExist": true,
+          "kind": "file",
+          "readable": true,
+          "writable": false,
+          "outsideRoot": "deny"
+        },
         "required": true,
         "aliases": [
           "INPUT",
@@ -107,25 +116,18 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "PLAN_INPUT_PATH"
-            }
-          ]
+          "op": "path-readable",
+          "input": "PLAN_INPUT_PATH"
         },
         "action": "Review plan readiness."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "PLAN_INPUT_PATH"
-            }
-          ]
+          "op": "not",
+          "arg": {
+            "op": "path-readable",
+            "input": "PLAN_INPUT_PATH"
+          }
         },
         "action": "Report the missing evidence and stop."
       }

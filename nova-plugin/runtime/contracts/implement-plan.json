@@ -29,7 +29,7 @@
       "pathPolicy": {
         "root": "workspace",
         "mustExist": true,
-        "kind": "either",
+        "kind": "file",
         "readable": true,
         "writable": false,
         "outsideRoot": "deny"
@@ -108,6 +108,15 @@
     "inputs": [
       {
         "name": "PLAN_INPUT_PATH",
+        "type": "path",
+        "pathPolicy": {
+          "root": "workspace",
+          "mustExist": true,
+          "kind": "file",
+          "readable": true,
+          "writable": false,
+          "outsideRoot": "deny"
+        },
         "required": true,
         "aliases": [
           "PLAN_PATH"
@@ -116,6 +125,7 @@
       },
       {
         "name": "PLAN_APPROVED",
+        "type": "approval",
         "required": true,
         "aliases": [
           "APPROVED"
@@ -133,12 +143,13 @@
           "op": "all",
           "args": [
             {
-              "op": "input-present",
-              "input": "PLAN_INPUT_PATH"
+              "op": "input-equals",
+              "input": "PLAN_APPROVED",
+              "value": true
             },
             {
-              "op": "input-present",
-              "input": "PLAN_APPROVED"
+              "op": "path-readable",
+              "input": "PLAN_INPUT_PATH"
             }
           ]
         },
@@ -146,17 +157,12 @@
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "PLAN_INPUT_PATH"
-            },
-            {
-              "op": "input-present",
-              "input": "PLAN_APPROVED"
-            }
-          ]
+          "op": "not",
+          "arg": {
+            "op": "input-equals",
+            "input": "PLAN_APPROVED",
+            "value": true
+          }
         },
         "action": "Stop before modifying files."
       }

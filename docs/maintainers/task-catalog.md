@@ -133,15 +133,20 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `release` | `scripts/verify-release-promotion.mjs` |
 | `release` | `scripts/verify-stable-install.mjs` |
 
-## npm Shortcuts (78)
+## npm Shortcuts (86)
 
 | Category | Shortcut | Command |
 | --- | --- | --- |
-| `validate` | `npm run check` | `npm run validate:maintainer && npm run test:coverage:check` |
+| `validate` | `npm run check` | `npm run test:coverage:check && npm run validate:maintainer:evidence` |
+| `validate` | `npm run check:compatibility` | `npm run validate:compatibility-evidence && npm run validate:second-product && npm run validate:portable-paths` |
 | `validate` | `npm run check:contracts` | `node scripts/validate-all.mjs` |
 | `validate` | `npm run check:coverage` | `npm run test:coverage:check` |
-| `validate` | `npm run check:release` | `npm run validate:maintainer && npm run test:coverage:check && node scripts/validate-plugin-install.mjs --dry-run` |
+| `validate` | `npm run check:docs` | `npm run validate:docs && npm run validate:community` |
+| `validate` | `npm run check:release` | `npm run test:coverage:check && npm run validate:maintainer:evidence && node scripts/validate-plugin-install.mjs --dry-run` |
+| `validate` | `npm run check:runtime` | `npm run validate:runtime && npm run validate:hook-truth` |
+| `validate` | `npm run check:security` | `npm run typecheck && npm run lint:shell && npm run lint:actions && npm run validate:github-workflows && npm run scan:secrets` |
 | `validate` | `npm run check:tests` | `npm test` |
+| `validate` | `npm run check:truth` | `npm run validate:release-truth && npm run validate:hook-truth && npm run validate:project-state && npm run validate:facts && npm run validate:drift` |
 | `validate` | `npm run ci:full` | `node scripts/validate-all.mjs` |
 | `validate` | `npm run ci:quick` | `node scripts/validate-schemas.mjs && node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs && node scripts/validate-hooks.mjs` |
 | `benchmark` | `npm run demo:review` | `node scripts/demo-review.mjs` |
@@ -199,13 +204,16 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `npm run validate:drift` | `node scripts/generate-registry.mjs` |
 | `validate` | `npm run validate:facts` | `node scripts/generate-fact-graph.mjs` |
 | `validate` | `npm run validate:github-workflows` | `node scripts/validate-github-workflows.mjs` |
+| `validate` | `npm run validate:hook-truth` | `node scripts/validate-hooks.mjs` |
 | `validate` | `npm run validate:maintainer` | `node scripts/validate-maintainer.mjs` |
+| `validate` | `npm run validate:maintainer:evidence` | `node scripts/validate-maintainer.mjs --evidence-only` |
 | `validate` | `npm run validate:permissions` | `node scripts/generate-workflow-permissions.mjs` |
 | `validate` | `npm run validate:portable-paths` | `node scripts/validate-portable-paths.mjs` |
 | `validate` | `npm run validate:project-state` | `node scripts/validate-project-state.mjs` |
 | `validate` | `npm run validate:regression` | `node scripts/validate-regression.mjs` |
 | `validate` | `npm run validate:release-channels` | `node scripts/validate-release-channel-facts.mjs` |
 | `validate` | `npm run validate:release-operations` | `node scripts/validate-release-operations.mjs` |
+| `validate` | `npm run validate:release-truth` | `node scripts/validate-release-channel-facts.mjs` |
 | `validate` | `npm run validate:runtime` | `node scripts/validate-runtime-smoke.mjs` |
 | `validate` | `npm run validate:schemas` | `node scripts/validate-schemas.mjs` |
 | `validate` | `npm run validate:schemas:differential` | `node scripts/validate-schema-engine-differential.mjs` |

@@ -60,6 +60,13 @@ Use Corepack or an equivalent local toolchain manager when the active npm
 version differs; CI continues to use `npm ci --ignore-scripts` against the
 locked dependency graph.
 
+The complete local security group also requires ShellCheck and actionlint.
+`npm run doctor` reports both tools explicitly. On macOS with Homebrew, install
+them with `brew install shellcheck actionlint`; then run `npm run
+check:security`. CI downloads checksum-verified ShellCheck `0.11.0` and
+actionlint `1.7.12`, so release evidence should use those versions or the CI
+security lane when the local package manager provides a different build.
+
 `npm run typecheck` uses the locked TypeScript and Node declarations to check
 the JavaScript adapters, framework modules, distributed plugin runtime,
 workspace packages, and maintenance scripts without emitting files. The
@@ -75,7 +82,7 @@ npm run test:coverage:check
 
 This uses Node's built-in test coverage support and writes raw V8 coverage plus
 a text summary under `.metrics/coverage/`. The `--check` path enforces lines
-85%, branches 60%, and functions 90%. `NOVA_COVERAGE_LINES`,
+85%, branches 70%, and functions 90%. `NOVA_COVERAGE_LINES`,
 `NOVA_COVERAGE_BRANCHES`, and `NOVA_COVERAGE_FUNCTIONS` can override those
 values for an explicit maintainer experiment; `npm run test:coverage` remains
 collection-only.
@@ -108,6 +115,7 @@ failures:
 | `Claude CLI: WARN` | Default repository gates can still run, but live Claude plugin validation and user-scope install smoke are not proven locally. | Use `node scripts/validate-plugin-install.mjs --dry-run` for preview and collect mutation smoke evidence only in CI or an isolated test user. |
 | `Codex CLI: WARN` | Ordinary five-stage workflow checks can still run, but Codex loop commands are not locally executable. | Do not claim Codex review/fix/verify runtime behavior was proven. |
 | `Bash: WARN` or `skipped>0` | Windows local validation may skip Bash-dependent hook syntax or runtime smoke checks. | Record the skipped checks and rely on CI/Linux Bash evidence before promotion. |
+| `ShellCheck: WARN` or `actionlint: WARN` | The complete local security group cannot run. | Install the pinned-compatible tools or rely on the checksum-verified CI security lane before promotion. |
 | `Exact release tag: WARN` | The current checkout is a development snapshot, not release evidence. | Build and verify a signed `v<plugin-version>-rc.<number>` candidate before creating the stable tag at the same commit. |
 | `Git working tree: WARN` | Local edits are present. | Acceptable during development; release evidence must name the changed files or use a clean tagged checkout. |
 
@@ -115,6 +123,12 @@ failures:
 maintainer run can still print warnings such as missing optional CLIs, an
 allowlisted surface-budget warning, or non-release tag state; carry those
 warnings into the handoff instead of flattening them into "fully released".
+
+`npm run check` runs the coverage-owned complete test inventory first, then
+`validate:maintainer:evidence` rechecks generated registry drift and both Git
+diff whitespace boundaries without rerunning the same unit, integration, e2e,
+and `validate-all` commands. Use the full `validate:maintainer` command when no
+coverage run is available to reuse.
 
 ## Install Smoke Boundary
 

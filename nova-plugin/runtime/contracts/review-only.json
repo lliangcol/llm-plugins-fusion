@@ -99,37 +99,22 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "A finding can cause data loss, security or financial harm, production instability, or incorrect core behavior."
         },
         "action": "Classify it Critical."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "A finding materially affects correctness, maintainability, scalability, or realistic bug risk."
         },
         "action": "Classify it Major."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "A finding is low-risk but affects clarity, consistency, or best practice."
         },
         "action": "Classify it Minor."
       }

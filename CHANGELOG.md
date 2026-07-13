@@ -11,8 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ### Added
 - Added private npm workspace boundaries for the CLI, compiler, conformance, and spec packages; cross-package imports now use explicit package contracts.
+- Added a package-level validated spec loader with stable layout/schema/invariant error categories, pure compiler-owned Contract v6 migration exports, composable truth/runtime/compatibility/docs/security check groups, and consistent MIT SPDX metadata across private workspaces.
+- Connected every bundle-reading `llmf` command to the validated loader, added fail-closed lexical/absolute/symbolic-link containment for layouts and adapters, and made security-sensitive migration input metadata explicit instead of name-inferred.
+- Added typed source predicates for deterministically expressible Behavior v2 decisions and a governed dependency-review policy source.
+- Added machine-readable `llmf --help` output and fail-closed dependency review policy for high-severity vulnerabilities and governed strong-copyleft licenses.
 - Added locked repository-wide `checkJs` coverage for adapters, framework code, plugin runtime, packages, and maintenance scripts; added ShellCheck and checksum-verified actionlint gates, plus a generated maintainer task catalog and task-oriented onboarding, release, and compatibility entry points.
 - Added stable promotion summaries generated from exact release, candidate, runtime, and compatibility facts.
+- Raised the repository-wide branch coverage release floor from 60% to 70% while retaining stricter critical-module floors.
+- Removed duplicate full-suite execution from `npm run check` by reusing the coverage-owned test inventory before maintainer working-tree evidence checks.
 
 ### Fixed
 - Reconciled the `4.0.0` changelog narrative with the published `v4.0.0` stable release and added a dedicated release-channel drift check.

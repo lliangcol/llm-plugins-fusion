@@ -12,25 +12,25 @@ When routing, prefer the first exact specialized condition below over a broader 
 
 | Routing condition | Workflow | Action |
 | --- | --- | --- |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | codex-review-fix | Route to the complete external closure workflow. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | codex-review-only | Route to external review only. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | codex-verify-only | Route to external verification only. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | senior-explore | Route to senior exploration. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | explore-review | Route to reviewer exploration. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | explore | Route to the exploration hub. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | backend-plan | Route to the specialized backend plan. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | plan-review | Route to plan review. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | plan-lite | Route to lightweight planning. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | produce-plan | Route to plan production. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | review-strict | Route to strict review. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | review-lite | Route to lightweight review. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | review-only | Route to review only. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | review | Route to the review hub. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | implement-plan | Route to approved-plan implementation. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | implement-lite | Route to lightweight implementation. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | implement-standard | Route to standard implementation. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | finalize-lite | Route to lightweight finalization. |
-| `{"op":"all","args":[{"op":"input-present","input":"REQUEST"}]}` | finalize-work | Route to full finalization. |
+| `{"op":"semantic-condition","condition":"Intent explicitly requires the external Codex review, fix, and verify closure loop."}` | codex-review-fix | Route to the complete external closure workflow. |
+| `{"op":"semantic-condition","condition":"Intent explicitly requires external Codex review only with no fixes."}` | codex-review-only | Route to external review only. |
+| `{"op":"semantic-condition","condition":"Intent explicitly requires verification of an existing external review artifact."}` | codex-verify-only | Route to external verification only. |
+| `{"op":"semantic-condition","condition":"Intent requires a deep or systematic analysis artifact without solutioning."}` | senior-explore | Route to senior exploration. |
+| `{"op":"semantic-condition","condition":"Intent requires reviewer-perspective exploration questions without solutions."}` | explore-review | Route to reviewer exploration. |
+| `{"op":"semantic-condition","condition":"Intent requires factual understanding, unknowns, or risk without solutions."}` | explore | Route to the exploration hub. |
+| `{"op":"semantic-condition","condition":"Intent explicitly requires a Java or Spring twelve-section backend design."}` | backend-plan | Route to the specialized backend plan. |
+| `{"op":"semantic-condition","condition":"Intent requires review of an existing plan without rewriting it."}` | plan-review | Route to plan review. |
+| `{"op":"semantic-condition","condition":"Intent requires a lightweight plan with no artifact file."}` | plan-lite | Route to lightweight planning. |
+| `{"op":"semantic-condition","condition":"Intent requires a formal review-ready plan artifact at an explicit path."}` | produce-plan | Route to plan production. |
+| `{"op":"semantic-condition","condition":"Intent requires a strict production-critical or security audit."}` | review-strict | Route to strict review. |
+| `{"op":"semantic-condition","condition":"Intent requires a fast review of a small patch with only obvious findings."}` | review-lite | Route to lightweight review. |
+| `{"op":"semantic-condition","condition":"Intent requires standard severity-grouped read-only review with no implementation."}` | review-only | Route to review only. |
+| `{"op":"semantic-condition","condition":"Intent requires review but no narrower review contract is explicit."}` | review | Route to the review hub. |
+| `{"op":"semantic-condition","condition":"Intent requires execution of an explicitly approved plan file."}` | implement-plan | Route to approved-plan implementation. |
+| `{"op":"semantic-condition","condition":"Intent requires a small bounded fix with focused validation."}` | implement-lite | Route to lightweight implementation. |
+| `{"op":"semantic-condition","condition":"Intent requires execution of explicit confirmed steps."}` | implement-standard | Route to standard implementation. |
+| `{"op":"semantic-condition","condition":"Intent requires a short factual closure summary only."}` | finalize-lite | Route to lightweight finalization. |
+| `{"op":"semantic-condition","condition":"Intent requires a complete handoff or pull-request-ready closeout."}` | finalize-work | Route to full finalization. |
 
 | Workflow | Canonical skill | Stage | Owner agents | Recommended packs | Risk | Required inputs | Output contract |
 | --- | --- | --- | --- | --- | --- | --- | --- |

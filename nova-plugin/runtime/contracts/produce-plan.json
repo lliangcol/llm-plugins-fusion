@@ -36,7 +36,7 @@
       "pathPolicy": {
         "root": "artifact-root",
         "mustExist": false,
-        "kind": "either",
+        "kind": "file",
         "readable": true,
         "writable": true,
         "outsideRoot": "deny"
@@ -131,6 +131,15 @@
       },
       {
         "name": "PLAN_OUTPUT_PATH",
+        "type": "path",
+        "pathPolicy": {
+          "root": "artifact-root",
+          "mustExist": false,
+          "kind": "file",
+          "readable": true,
+          "writable": true,
+          "outsideRoot": "deny"
+        },
         "required": true,
         "aliases": [
           "OUTPUT_PATH"
@@ -170,33 +179,17 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REQUEST"
-            },
-            {
-              "op": "input-present",
-              "input": "PLAN_OUTPUT_PATH"
-            }
-          ]
+          "op": "input-equals",
+          "input": "PLAN_PROFILE",
+          "value": "general"
         },
         "action": "Use the general plan structure."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REQUEST"
-            },
-            {
-              "op": "input-present",
-              "input": "PLAN_OUTPUT_PATH"
-            }
-          ]
+          "op": "input-equals",
+          "input": "PLAN_PROFILE",
+          "value": "java-backend"
         },
         "action": "Use the Java backend design profile.",
         "route": "backend-plan"

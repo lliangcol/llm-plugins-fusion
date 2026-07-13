@@ -136,7 +136,7 @@ npm run test:coverage:check
 ```
 
 This gate requires every Git-tracked, non-`tests/**` maintenance `.mjs` to be
-loaded by V8 evidence and enforces lines 85%, branches 60%, functions 90%.
+loaded by V8 evidence and enforces lines 85%, branches 70%, functions 90%.
 
 Focused validation shortcuts currently declared in `package.json`:
 

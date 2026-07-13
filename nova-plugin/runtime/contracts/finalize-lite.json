@@ -97,25 +97,15 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "WORK_SUMMARY"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "Known limitations exist."
         },
         "action": "List them factually."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "WORK_SUMMARY"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "No limitations are known from evidence."
         },
         "action": "Use the exact statement No known limitations."
       }

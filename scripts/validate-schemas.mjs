@@ -308,6 +308,11 @@ const targets = [
     label: 'governance/stable-install-proof.json',
   },
   {
+    schema: loadJson('schemas/dependency-policy.schema.json'),
+    data: loadJson('governance/dependency-policy.json'),
+    label: 'governance/dependency-policy.json',
+  },
+  {
     schema: loadJson('schemas/complexity-budget.schema.json'),
     data: loadJson('governance/complexity-budget.json'),
     label: 'governance/complexity-budget.json',
@@ -378,6 +383,7 @@ const schemaPaths = [
   'schemas/release-corrections.schema.json',
   'schemas/control-bundle.schema.json',
   'schemas/stable-install-proof.schema.json',
+  'schemas/dependency-policy.schema.json',
   'schemas/release-channels.schema.json',
   'schemas/task-registry.schema.json',
   'schemas/complexity-budget.schema.json',

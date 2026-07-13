@@ -630,6 +630,17 @@ test('validate-github-workflows enforces least-privilege workflow contracts', ()
       'utf8',
     );
 
+    const dependencyReviewPath = resolve(fixtureRoot, '.github/workflows/dependency-review.yml');
+    const dependencyReview = readFileSync(dependencyReviewPath, 'utf8');
+    writeFileSync(
+      dependencyReviewPath,
+      dependencyReview
+        .replace('fail-on-severity: high', 'fail-on-severity: moderate')
+        .replace('GPL-2.0-or-later, ', '')
+        .replace('comment-summary-in-pr: never', 'comment-summary-in-pr: always'),
+      'utf8',
+    );
+
     const drifted = spawnSync(process.execPath, [
       'scripts/validate-github-workflows.mjs',
       '--root',
@@ -648,6 +659,9 @@ test('validate-github-workflows enforces least-privilege workflow contracts', ()
     assert.match(output, /plugin install smoke isolation contract/);
     assert.match(output, /explicitly upload hidden \.metrics\/coverage content/);
     assert.match(output, /platform matrix must exercise the normal project-check path/);
+    assert.match(output, /dependency review severity must match governance\/dependency-policy\.json/);
+    assert.match(output, /dependency review denied licenses must match governance\/dependency-policy\.json/);
+    assert.match(output, /dependency review summary mode must match governance\/dependency-policy\.json/);
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }

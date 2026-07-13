@@ -117,26 +117,18 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "INPUT"
-            }
-          ]
+          "op": "input-equals",
+          "input": "PERSPECTIVE",
+          "value": "observer"
         },
         "action": "Use neutral fact-gathering behavior.",
         "route": "explore-lite"
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "INPUT"
-            }
-          ]
+          "op": "input-equals",
+          "input": "PERSPECTIVE",
+          "value": "reviewer"
         },
         "action": "Use review-question behavior.",
         "route": "explore-review"

@@ -96,25 +96,15 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "At least one obvious issue exists."
         },
         "action": "Emit concise tagged findings."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REVIEW_SCOPE"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "No obvious issue exists in scope."
         },
         "action": "Emit the exact no-obvious-issues statement."
       }

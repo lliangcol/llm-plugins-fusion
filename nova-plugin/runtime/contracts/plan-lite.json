@@ -109,25 +109,15 @@
     "decisionTable": [
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REQUEST"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "REQUEST and success criteria are sufficiently clear."
         },
         "action": "Produce a lightweight plan."
       },
       {
         "when": {
-          "op": "all",
-          "args": [
-            {
-              "op": "input-present",
-              "input": "REQUEST"
-            }
-          ]
+          "op": "semantic-condition",
+          "condition": "Critical information is missing."
         },
         "action": "Mark assumptions and blocking questions instead of inventing detail."
       }

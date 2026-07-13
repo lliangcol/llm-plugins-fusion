@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/dependency-policy.schema.json",
+  "title": "Dependency review policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "failOnSeverity", "deniedLicenses", "commentSummaryInPr"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "failOnSeverity": { "enum": ["moderate", "high", "critical"] },
+    "deniedLicenses": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9.+-]*$" }
+    },
+    "commentSummaryInPr": { "enum": ["never", "always", "on-failure"] }
+  }
+}

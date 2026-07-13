@@ -40,7 +40,7 @@
       "pathPolicy": {
         "root": "artifact-root",
         "mustExist": false,
-        "kind": "either",
+        "kind": "file",
         "readable": true,
         "writable": true,
         "outsideRoot": "deny"
@@ -116,6 +116,15 @@
       },
       {
         "name": "PLAN_OUTPUT_PATH",
+        "type": "path",
+        "pathPolicy": {
+          "root": "artifact-root",
+          "mustExist": false,
+          "kind": "file",
+          "readable": true,
+          "writable": true,
+          "outsideRoot": "deny"
+        },
         "required": true,
         "aliases": [
           "OUTPUT_PATH"
@@ -133,7 +142,7 @@
               "input": "REQUEST"
             },
             {
-              "op": "input-present",
+              "op": "path-writable",
               "input": "PLAN_OUTPUT_PATH"
             }
           ]

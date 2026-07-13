@@ -22,7 +22,7 @@ export function usage() {
 Runs node --test --experimental-test-coverage for the repository test suite.
 Coverage output is local runtime evidence and is written under .metrics/ by
 default. --check verifies coverage collection and test success, requires every
-maintenance MJS source to load, and enforces lines 85%, branches 60%, and
+maintenance MJS source to load, and enforces lines 85%, branches 70%, and
 functions 90%.
 
 Optional --check threshold overrides:

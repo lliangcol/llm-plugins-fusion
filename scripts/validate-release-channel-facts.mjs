@@ -8,8 +8,11 @@ const readText = (path) => readFileSync(resolve(root, path), 'utf8');
 const readJson = (path) => JSON.parse(readText(path));
 
 const channels = readJson('governance/release-channels.json');
+const rootPackage = readJson('package.json');
 const plugin = readJson('nova-plugin/.claude-plugin/plugin.json');
 const registry = readJson('.claude-plugin/registry.source.json');
+const marketplace = readJson('.claude-plugin/marketplace.json');
+const marketplaceMetadata = readJson('.claude-plugin/marketplace.metadata.json');
 const facts = readJson('governance/facts.generated.json');
 const changelog = readText('CHANGELOG.md');
 const readme = readText('README.md');
@@ -19,15 +22,23 @@ const errors = [];
 
 const stable = channels.stable;
 const registryPlugin = registry.plugins.find((entry) => entry.localSource === './nova-plugin');
+const marketplacePlugin = marketplace.plugins.find((entry) => entry.name === plugin.name);
+const marketplaceMetadataPlugin = marketplaceMetadata.plugins.find((entry) => entry.name === plugin.name);
 const factValue = (id) => facts.facts?.[id]?.value;
 const expect = (condition, message) => {
   if (!condition) errors.push(message);
 };
 
 expect(stable.tag === `v${stable.version}`, 'stable tag must be v<stable.version>');
+expect(rootPackage.version === stable.version, 'root package version must match the stable release-channel version');
+expect(rootPackage.license === plugin.license, 'root package SPDX license must match the plugin license');
 expect(plugin.version === stable.version, 'plugin version must match the stable release-channel version');
 expect(registryPlugin?.distributionSource?.ref === stable.tag, 'registry stable distribution ref must match the stable tag');
 expect(registryPlugin?.distributionSource?.sha === stable.commit, 'registry stable distribution SHA must match the stable commit');
+expect(marketplacePlugin?.version === stable.version, 'generated marketplace version must match the stable release-channel version');
+expect(marketplacePlugin?.source?.ref === stable.tag, 'generated marketplace ref must match the stable tag');
+expect(marketplacePlugin?.source?.sha === stable.commit, 'generated marketplace SHA must match the stable commit');
+expect(marketplaceMetadataPlugin?.version === stable.version, 'generated marketplace metadata version must match the stable release-channel version');
 expect(factValue('release.stable.version') === stable.version, 'generated fact graph stable version is stale');
 expect(factValue('release.stable.tag') === stable.tag, 'generated fact graph stable tag is stale');
 expect(factValue('release.stable.commit') === stable.commit, 'generated fact graph stable commit is stale');
