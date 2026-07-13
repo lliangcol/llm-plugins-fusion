@@ -505,8 +505,8 @@
         "workspaceRead": "preapproved",
         "workspaceWrite": "preapproved",
         "shell": "prompt",
-        "network": "prompt",
-        "credentials": "explicit",
+        "network": "denied",
+        "credentials": "denied",
         "userScopeMutation": "denied",
         "externalPublish": "denied",
         "gitHistoryMutation": "denied"
@@ -711,9 +711,9 @@
       "permissionPolicy": {
         "workspaceRead": "preapproved",
         "workspaceWrite": "denied",
-        "shell": "prompt",
-        "network": "prompt",
-        "credentials": "explicit",
+        "shell": "denied",
+        "network": "denied",
+        "credentials": "denied",
         "userScopeMutation": "denied",
         "externalPublish": "denied",
         "gitHistoryMutation": "denied"
