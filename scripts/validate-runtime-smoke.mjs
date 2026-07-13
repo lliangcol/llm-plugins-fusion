@@ -13,15 +13,17 @@ import { dirname, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { commandExists, runProcess } from './lib/process-runner.mjs';
+import { resolveBashCommand } from './lib/bash-command.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
+const bashCommand = resolveBashCommand();
 
 let failed = 0;
 let skipped = 0;
 
 async function run(label, args, options = {}) {
-  const result = await runProcess(label, 'bash', args, {
+  const result = await runProcess(label, bashCommand, args, {
     cwd: root,
     input: options.input,
     timeoutMs: 60_000,
@@ -218,7 +220,7 @@ await runNode('node pre-bash hook allows a bounded validation command', [
 
 await runNodePostAuditSmoke();
 
-if (!(await commandExists('bash', ['--version'], { cwd: root }))) {
+if (!(await commandExists(bashCommand, ['--version'], { cwd: root }))) {
   if (process.platform === 'win32') {
     skipped += 1;
     console.warn('WARNING runtime smoke: bash not found; skipping local Bash runtime smoke checks');

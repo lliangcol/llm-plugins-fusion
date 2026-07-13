@@ -126,6 +126,7 @@ function markdownFiles(root, relDir) {
     .sort();
 }
 
+/** @param {string} root @param {string} relDir @param {(name: string) => boolean} [predicate] */
 function directories(root, relDir, predicate = () => true) {
   return readdirSync(resolve(root, relDir), { withFileTypes: true })
     .filter((entry) => entry.isDirectory() && predicate(entry.name))

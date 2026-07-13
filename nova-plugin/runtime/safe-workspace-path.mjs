@@ -6,6 +6,16 @@ import {
 } from 'node:fs';
 import path, { delimiter, dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 
+/**
+ * @typedef {object} WorkspaceTargetOptions
+ * @property {string} [filePath]
+ * @property {string} [projectRoot]
+ * @property {string} [cwd]
+ * @property {string[]} [artifactRoots]
+ * @property {boolean} [mustExist]
+ * @property {boolean} [protectedTarget]
+ */
+
 function comparable(value, platform = process.platform) {
   const normalized = resolve(value);
   return platform === 'win32' ? normalized.toLowerCase() : normalized;
@@ -74,6 +84,7 @@ function assertExistingComponentsAreReal(root, ancestor) {
   }
 }
 
+/** @param {WorkspaceTargetOptions} [options] */
 export function resolveWorkspaceTarget({
   filePath,
   projectRoot,
@@ -106,6 +117,7 @@ export function resolveWorkspaceTarget({
 
   const exists = existsSync(target);
   if (mustExist && !exists) throw new Error(`target does not exist: ${filePath}`);
+  /** @type {import('node:fs').Stats | null} */
   let targetStat = null;
   if (exists) {
     targetStat = lstatSync(target);

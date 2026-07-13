@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import process from 'node:process';
 import { requireOptionValue } from './lib/cli-args.mjs';
 
+/** @type {{owner: string, repo: string, out: string, starsBefore: number | null}} */
 const defaults = {
   owner: 'lliangcol',
   repo: 'llm-plugins-fusion',
@@ -77,6 +78,7 @@ export function parseLinkCount(linkHeader, fallbackCount) {
 }
 
 function makeHeaders(token) {
+  /** @type {Record<string, string>} */
   const headers = {
     Accept: 'application/vnd.github+json',
     'X-GitHub-Api-Version': '2022-11-28',
@@ -88,6 +90,16 @@ function makeHeaders(token) {
   return headers;
 }
 
+/**
+ * @typedef {{status: number, url: string, message: string}} GitHubRequestError
+ * @typedef {{ok: true, body: any, response: Response} | {ok: false, error: GitHubRequestError, body: any, response: Response}} GitHubRequestResult
+ */
+
+/**
+ * @param {string} url
+ * @param {{token?: string, tolerate?: boolean, fetchImpl?: typeof fetch}} [options]
+ * @returns {Promise<GitHubRequestResult>}
+ */
 export async function githubRequest(url, { token, tolerate = false, fetchImpl = fetch } = {}) {
   let response;
   try {
@@ -98,6 +110,7 @@ export async function githubRequest(url, { token, tolerate = false, fetchImpl = 
     );
   }
   const text = await response.text();
+  /** @type {any} */
   let body = null;
   if (text) {
     try {
@@ -163,17 +176,20 @@ async function collectTraffic(baseUrl, token, fetchImpl) {
     const result = await githubRequest(url, { token, tolerate: true, fetchImpl });
     if (result.ok) {
       traffic[name] = result.body;
-    } else if (result.error.status === 403 || result.error.status === 404) {
+      continue;
+    }
+    const { error } = /** @type {Extract<GitHubRequestResult, {ok: false}>} */ (result);
+    if (error.status === 403 || error.status === 404) {
       skipped.push({
         endpoint: name,
-        status: result.error.status,
-        reason: result.error.message,
+        status: error.status,
+        reason: error.message,
       });
     } else {
       errors.push({
         endpoint: name,
-        status: result.error.status,
-        reason: result.error.message,
+        status: error.status,
+        reason: error.message,
       });
     }
   }
@@ -181,6 +197,7 @@ async function collectTraffic(baseUrl, token, fetchImpl) {
   return { traffic, skipped, errors };
 }
 
+/** @param {{argv?: string[], env?: NodeJS.ProcessEnv, fetchImpl?: typeof fetch, now?: () => Date}} [options] */
 export async function collectMetrics({
   argv = process.argv.slice(2),
   env = process.env,

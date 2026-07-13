@@ -21,7 +21,7 @@ nova_command_usable_with_version() {
   command -v "$cmd" >/dev/null 2>&1 || return 1
 
   set +e
-  output="$("$cmd" "$@" 2>&1)"
+  output="$("$cmd" "$@" </dev/null 2>&1)"
   status=$?
   set -e
 
@@ -48,7 +48,7 @@ nova_node_command_is_windows() {
   local candidate="$1"
   local platform=""
 
-  platform="$("$candidate" -e 'process.stdout.write(process.platform)' 2>/dev/null || true)"
+  platform="$("$candidate" -e 'process.stdout.write(process.platform)' </dev/null 2>/dev/null || true)"
   [ "$platform" = "win32" ]
 }
 

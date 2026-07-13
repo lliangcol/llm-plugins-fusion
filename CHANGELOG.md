@@ -9,6 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Added
+- Added private npm workspace boundaries for the CLI, compiler, conformance, and spec packages; cross-package imports now use explicit package contracts.
+- Added locked repository-wide `checkJs` coverage for adapters, framework code, plugin runtime, packages, and maintenance scripts; added ShellCheck and checksum-verified actionlint gates, plus a generated maintainer task catalog and task-oriented onboarding, release, and compatibility entry points.
+- Added stable promotion summaries generated from exact release, candidate, runtime, and compatibility facts.
+
+### Fixed
+- Reconciled the `4.0.0` changelog narrative with the published `v4.0.0` stable release and added a dedicated release-channel drift check.
+- Made Windows validation select Git Bash and the native npm shim deterministically, and isolated runtime version probes from hook payload stdin.
+
 ## [4.0.0] - 2026-07-12
 
 ### Added
@@ -16,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - Added 24-case deterministic evaluation, eight critical-live fixtures, paired enabled/disabled aggregation, fact graph, control-plane complexity budget, capability-level doctor output, and independent Workflow IR/runtime/adapter SemVer contracts.
 
 ### Changed
-- Set the development version to `4.0.0` while keeping the published stable channel pinned to `v3.2.0`; no 4.0 release or compatibility upgrade is claimed.
+- Published `v4.0.0` as the stable channel and bound the public compatibility claim to its exact tag, commit, candidate evidence, and isolated install proof.
 - Made six skills the canonical runtime surface. All 21 command files are generated wrappers and 15 specialized entries are deprecated variant aliases for the 4.x migration window.
 - Kept PreToolUse on fail-closed Bash exec-form launchers while Node owns guard logic, reduced audit compaction frequency, split mutable external CLI execution from write tokens and secrets, and moved release identity semantics from YAML into the Node state machine.
 

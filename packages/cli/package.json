@@ -1,0 +1,20 @@
+{
+  "name": "@llm-plugins-fusion/cli",
+  "version": "4.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "llmf": "./bin/llmf.mjs"
+  },
+  "exports": {
+    ".": "./index.mjs"
+  },
+  "dependencies": {
+    "@llm-plugins-fusion/compiler": "4.0.0",
+    "@llm-plugins-fusion/conformance": "4.0.0",
+    "@llm-plugins-fusion/spec": "4.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

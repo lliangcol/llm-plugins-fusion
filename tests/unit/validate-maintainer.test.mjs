@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { main, npmExecutable } from '../../scripts/validate-maintainer.mjs';
+import { main, npmInvocation } from '../../scripts/validate-maintainer.mjs';
 
 test('maintainer validation selects npm without a shell on every platform', async () => {
-  assert.equal(npmExecutable('win32'), 'npm.cmd');
-  assert.equal(npmExecutable('linux'), 'npm');
+  assert.deepEqual(
+    npmInvocation({ platform: 'win32', env: { npm_execpath: 'C:\\npm-cli.js' }, nodeExecutable: 'C:\\node.exe' }),
+    { command: 'C:\\node.exe', argsPrefix: ['C:\\npm-cli.js'] },
+  );
+  assert.deepEqual(npmInvocation({ platform: 'linux', env: {} }), { command: 'npm', argsPrefix: [] });
   const calls = [];
   const status = await main({
     platform: 'win32',
@@ -14,10 +17,13 @@ test('maintainer validation selects npm without a shell on every platform', asyn
     },
   });
   assert.equal(status, 0);
+  const npmExecPath = process.env.npm_execpath;
+  const expectedCommand = npmExecPath ? process.execPath : 'npm';
+  const prefix = npmExecPath ? [npmExecPath] : [];
   assert.deepEqual(calls.slice(0, 3).map(({ command, args }) => [command, args]), [
-    ['npm.cmd', ['run', 'test:unit']],
-    ['npm.cmd', ['run', 'test:integration']],
-    ['npm.cmd', ['run', 'test:e2e']],
+    [expectedCommand, [...prefix, 'run', 'test:unit']],
+    [expectedCommand, [...prefix, 'run', 'test:integration']],
+    [expectedCommand, [...prefix, 'run', 'test:e2e']],
   ]);
   assert.ok(calls.every(({ options }) => !Object.hasOwn(options, 'shell')));
 });

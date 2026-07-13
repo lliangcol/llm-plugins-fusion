@@ -15,7 +15,10 @@ framework surface does not imply a mature multi-plugin ecosystem or portal.
 - `framework/compiler/` compiles both Nova and the differently named
   three-workflow fixture without product constants.
 - `packages/spec/`, `packages/compiler/`, `packages/conformance/`, and
-  `packages/cli/` provide the preview SDK and `llmf` commands.
+  `packages/cli/` are private npm workspaces that provide the preview SDK and
+  `llmf` commands. Cross-package imports use their explicit
+  `@llm-plugins-fusion/*` package contracts; the workspaces are not public npm
+  packages and do not change the single-plugin release boundary.
 - [prompt-surface-report.md](../generated/prompt-surface-report.md) reports
   aggregate load graphs and blocking budgets.
 - [real-task-benchmark.md](../generated/real-task-benchmark.md) records the

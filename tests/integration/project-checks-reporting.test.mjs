@@ -4,10 +4,12 @@ import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { pathForBash, resolveBashCommand } from '../../scripts/lib/bash-command.mjs';
 import { runProcess } from '../../scripts/lib/process-runner.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const checksScript = resolve(repoRoot, 'nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh');
+const bashCommand = resolveBashCommand();
 
 async function fixtureRepo(t, packages) {
   const root = await mkdtemp(join(tmpdir(), 'nova-project-checks-'));
@@ -30,7 +32,7 @@ async function fixtureRepo(t, packages) {
 
 test('project checks reports an executed all-failure task accurately', async (t) => {
   const root = await fixtureRepo(t, [['.', `${process.execPath} -e "process.exit(7)"`]]);
-  const result = await runProcess('all-failure checks', 'bash', [checksScript, '--test-only'], {
+  const result = await runProcess('all-failure checks', bashCommand, [pathForBash(checksScript, bashCommand), '--test-only'], {
     cwd: root,
     timeoutMs: 60_000,
   });
@@ -41,7 +43,7 @@ test('project checks reports an executed all-failure task accurately', async (t)
 
 test('project checks reports an all-success task accurately', async (t) => {
   const root = await fixtureRepo(t, [['.', `${process.execPath} -e "process.exit(0)"`]]);
-  const result = await runProcess('all-success checks', 'bash', [checksScript, '--test-only'], {
+  const result = await runProcess('all-success checks', bashCommand, [pathForBash(checksScript, bashCommand), '--test-only'], {
     cwd: root,
     timeoutMs: 60_000,
   });
@@ -54,7 +56,7 @@ test('project checks reports mixed success and failure counts', async (t) => {
     ['.', `${process.execPath} -e "process.exit(0)"`],
     ['packages/fail', `${process.execPath} -e "process.exit(9)"`],
   ]);
-  const result = await runProcess('mixed checks', 'bash', [checksScript, '--test-only'], {
+  const result = await runProcess('mixed checks', bashCommand, [pathForBash(checksScript, bashCommand), '--test-only'], {
     cwd: root,
     timeoutMs: 60_000,
   });
@@ -67,7 +69,7 @@ test('project checks uses no-task messaging only when the selected phase is empt
     '.',
     { lint: `${process.execPath} -e "process.exit(0)"` },
   ]]);
-  const result = await runProcess('empty checks', 'bash', [checksScript, '--test-only'], {
+  const result = await runProcess('empty checks', bashCommand, [pathForBash(checksScript, bashCommand), '--test-only'], {
     cwd: root,
     timeoutMs: 60_000,
   });

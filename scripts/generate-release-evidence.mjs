@@ -143,6 +143,9 @@ export function normalizeValidationTimings(timings, install = null, { requireLiv
       });
 }
 
+/**
+ * @param {{plugin: any, coverageSummary: string, coverageMetadata: any, timings: any, install?: any, route?: any, checksums: string, env?: NodeJS.ProcessEnv, now?: () => Date, artifacts?: Array<{path: string, sha256: string}>, requireLive?: boolean, expectedRouteInventory?: any, knownGoodClaudeCli: string}} options
+ */
 export function buildReleaseEvidence({
   plugin,
   coverageSummary,
@@ -157,7 +160,7 @@ export function buildReleaseEvidence({
   requireLive = false,
   expectedRouteInventory = null,
   knownGoodClaudeCli,
-} = {}) {
+}) {
   const coverage = parseCoverageSummary(coverageSummary);
   if (!coverage) throw new Error('coverage summary does not contain an all files row');
   const counts = testCounts(coverageSummary);
@@ -378,6 +381,7 @@ export function renderReleaseEvidenceMarkdown(evidence) {
   return `# Release Evidence\n\nStatus: generated\n\n- Tag: \`${evidence.release.tag}\`\n- Commit: \`${evidence.release.commit}\`\n- Plugin version: \`${evidence.release.pluginVersion}\`\n- Node: \`${evidence.runtime.node}\`\n- Claude CLI: \`${evidence.runtime.claude}\`\n- Tests: ${evidence.tests.passed ?? 'unknown'} passed, ${evidence.tests.failed ?? 'unknown'} failed\n- Coverage: lines ${evidence.tests.coverage.lines}%, branches ${evidence.tests.coverage.branches}%, functions ${evidence.tests.coverage.functions}%\n- Installed Skills: ${evidence.install?.skillsCount ?? 'not run'}\n- OAuth route: ${evidence.route ? 'passed with temporary-home isolation and zero project writes' : 'not run'}\n\n## Gates\n\n| Gate ID | Gate | Status | Duration ms | Replacement gate ID |\n| --- | --- | --- | --- | --- |\n${gates}\n`;
 }
 
+/** @param {{root?: string, args?: string[], env?: NodeJS.ProcessEnv, now?: () => Date}} [options] */
 export function generateReleaseEvidence({ root = defaultRoot, args = [], env = process.env, now } = {}) {
   const options = parseArgs(args, root);
   if (options.help) return { help: true };

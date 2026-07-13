@@ -4,9 +4,11 @@ import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { pathForBash, resolveBashCommand } from '../../scripts/lib/bash-command.mjs';
 import { commandExists, runProcess } from '../../scripts/lib/process-runner.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const bashCommand = resolveBashCommand();
 const agentNames = [
   'architect.md',
   'builder.md',
@@ -17,7 +19,7 @@ const agentNames = [
 ];
 
 test('verify-agents accepts CRLF frontmatter and body delimiters', async (t) => {
-  if (!(await commandExists('bash'))) {
+  if (!(await commandExists(bashCommand))) {
     t.skip('Bash is unavailable; CRLF agent verification requires Bash');
     return;
   }
@@ -41,8 +43,8 @@ test('verify-agents accepts CRLF frontmatter and body delimiters', async (t) => 
 
   const result = await runProcess(
     'verify agents CRLF fixture',
-    'bash',
-    [join(scriptDir, 'verify-agents.sh')],
+    bashCommand,
+    [pathForBash(join(scriptDir, 'verify-agents.sh'), bashCommand)],
     { cwd: fixtureRoot },
   );
 

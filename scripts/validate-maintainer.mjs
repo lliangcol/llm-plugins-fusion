@@ -16,8 +16,18 @@ assertNodeVersion({ label: 'maintainer validation' });
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
 
-export function npmExecutable(platform = process.platform) {
-  return platform === 'win32' ? 'npm.cmd' : 'npm';
+export function npmInvocation({
+  platform = process.platform,
+  env = process.env,
+  nodeExecutable = process.execPath,
+} = {}) {
+  // Node 24 rejects direct `.cmd` execution with `spawn EINVAL` on Windows.
+  // npm exposes its JavaScript entry point to child scripts, so execute that
+  // entry point with the current Node binary and keep shell execution disabled.
+  if (platform === 'win32' && env.npm_execpath) {
+    return { command: nodeExecutable, argsPrefix: [env.npm_execpath] };
+  }
+  return { command: 'npm', argsPrefix: [] };
 }
 
 export async function main({ platform = process.platform, runner = runProcess } = {}) {
@@ -39,10 +49,10 @@ export async function main({ platform = process.platform, runner = runProcess } 
     return true;
   }
 
-  const npm = npmExecutable(platform);
-  await run('npm run test:unit', npm, ['run', 'test:unit']);
-  await run('npm run test:integration', npm, ['run', 'test:integration']);
-  await run('npm run test:e2e', npm, ['run', 'test:e2e']);
+  const npm = npmInvocation({ platform });
+  await run('npm run test:unit', npm.command, [...npm.argsPrefix, 'run', 'test:unit']);
+  await run('npm run test:integration', npm.command, [...npm.argsPrefix, 'run', 'test:integration']);
+  await run('npm run test:e2e', npm.command, [...npm.argsPrefix, 'run', 'test:e2e']);
   await run('validate all', process.execPath, ['scripts/validate-all.mjs']);
   await run('generated registry drift check', process.execPath, ['scripts/generate-registry.mjs']);
   await run('git diff --check', 'git', ['diff', '--check']);

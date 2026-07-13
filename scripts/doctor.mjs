@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { REQUIRED_NODE_MAJOR, nodeMajorVersion } from './lib/node-version.mjs';
+import { resolveBashCommand } from './lib/bash-command.mjs';
 import { captureProcess } from './lib/process-runner.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -87,9 +88,10 @@ for (const [label, command] of [
 }
 
 await runCheck('Bash', async () => {
-  const version = await commandResult('bash');
+  const bash = resolveBashCommand();
+  const version = await commandResult(bash);
   if (!version.ok) return { status: 'WARN', detail: 'not available' };
-  const capability = await commandResult('bash', [
+  const capability = await commandResult(bash, [
     '-c',
     'set -euo pipefail; values=(); values+=(ok); [[ ${#values[@]} -eq 1 ]]; cat <(printf compatible)',
   ]);

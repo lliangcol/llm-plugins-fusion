@@ -8,6 +8,8 @@ import { pathToFileURL } from 'node:url';
 import { deterministicTar } from './build-release-artifacts.mjs';
 import { requireOptionValue } from './lib/cli-args.mjs';
 
+const deterministicGzipOptions = /** @type {import('node:zlib').ZlibOptions} */ ({ level: 9, mtime: 0 });
+
 export function main(args = process.argv.slice(2)) {
   try {
     let bundleRoot;
@@ -22,7 +24,7 @@ export function main(args = process.argv.slice(2)) {
     }
     if (!bundleRoot || !out) throw new Error('--bundle-root and --out are required');
     mkdirSync(dirname(out), { recursive: true });
-    writeFileSync(out, gzipSync(deterministicTar(bundleRoot), { level: 9, mtime: 0 }));
+    writeFileSync(out, gzipSync(deterministicTar(bundleRoot), deterministicGzipOptions));
     console.log(`Wrote ${out}`);
     return 0;
   } catch (error) {

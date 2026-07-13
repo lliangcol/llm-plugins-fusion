@@ -64,5 +64,11 @@ export function main(args = process.argv.slice(2)) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  try { main(); } catch (error) { console.error(`ERROR ${error.message}`); process.exitCode = 1; }
+  try {
+    main();
+  } catch (error) {
+    const failure = error instanceof Error ? error : new Error(String(error));
+    console.error(`ERROR ${failure.message}`);
+    process.exitCode = 1;
+  }
 }

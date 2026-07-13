@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "strict": false,
+    "target": "ES2023",
+    "types": ["node"],
+    "useUnknownInCatchVariables": false
+  },
+  "include": [
+    "adapters/**/*.mjs",
+    "framework/**/*.mjs",
+    "nova-plugin/hooks/scripts/**/*.mjs",
+    "nova-plugin/runtime/**/*.mjs",
+    "packages/**/*.mjs",
+    "scripts/**/*.mjs"
+  ]
+}

@@ -55,6 +55,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+          cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run validate:maintainer
         env:
@@ -88,6 +89,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+          cache: npm
       - name: Download and verify exact package integrity and inventory
         env:
           CLAUDE_VERSION: '2.1.205'
@@ -152,6 +154,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+          cache: npm
       - run: npm ci --ignore-scripts
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: candidate-validation, path: .metrics/aggregate/validation }
@@ -224,9 +227,11 @@ jobs:
           test "${#bundles[@]}" -eq 1
           archive="${archives[0]}"
           bundle="${bundles[0]}"
-          printf 'archive=%s\n' "${archive}" >> "${GITHUB_OUTPUT}"
-          printf 'sbom=%s\n' '.metrics/candidate-bundle/artifacts/build-sbom.cdx.json' >> "${GITHUB_OUTPUT}"
-          printf 'bundle=%s\n' "${bundle}" >> "${GITHUB_OUTPUT}"
+          {
+            printf 'archive=%s\n' "${archive}"
+            printf 'sbom=%s\n' '.metrics/candidate-bundle/artifacts/build-sbom.cdx.json'
+            printf 'bundle=%s\n' "${bundle}"
+          } >> "${GITHUB_OUTPUT}"
       - uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
         with:
           subject-path: ${{ steps.files.outputs.archive }}

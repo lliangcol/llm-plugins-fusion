@@ -610,6 +610,9 @@ function validateWorkflowContracts() {
     for (const required of ['verified-promotion-handoff-', 'handoff.sha256', 'sha256sum -c', 'actions/upload-artifact@', 'actions/download-artifact@']) {
       if (!promotionSrc.includes(required)) recordError(promotionFile, `promotion digest-bound handoff is missing ${required}`);
     }
+    for (const required of ["RELEASE_PROMOTION: '1'", 'CANDIDATE_TAG: ${{ inputs.candidate-tag }}', 'SOURCE_COMMIT: ${{ steps.identity.outputs.commit }}']) {
+      if (!promotionSrc.includes(required)) recordError(promotionFile, `promotion release notes are missing exact fact input ${required}`);
+    }
   }
 
   const routeSmokeFile = 'scripts/validate-plugin-route-live.mjs';
@@ -644,6 +647,9 @@ function validateWorkflowContracts() {
   }
   if (!/disposable runner/i.test(smokeSrc)) {
     recordError(smokeFile, 'plugin install smoke isolation contract requires disposable runner wording');
+  }
+  if (!/GH_REPO:\s*\$\{\{\s*github\.repository\s*\}\}/.test(smokeSrc)) {
+    recordError(smokeFile, 'plugin install smoke issue reporter must bind GH_REPO outside a Git checkout');
   }
 
   const dependencyReviewFile = '.github/workflows/dependency-review.yml';
@@ -709,6 +715,14 @@ function validateCiRuntimeEvidenceContracts() {
       recordError(file, 'Test Coverage artifact must explicitly upload hidden .metrics/coverage content');
     }
   }
+  const securityLines = extractCiJobLines('security');
+  if (securityLines) {
+    const security = securityLines.join('\n');
+    for (const required of ['ACTIONLINT_VERSION', 'ACTIONLINT_SHA256', 'npm run typecheck', 'npm run lint:shell', 'npm run lint:actions']) {
+      if (!security.includes(required)) recordError(file, `Required / Security is missing static quality control ${required}`);
+    }
+    if (!/sha256sum --check --strict/.test(security)) recordError(file, 'Required / Security must verify downloaded lint tool checksums');
+  }
 
   const platformLines = extractCiJobLines('platform');
   if (platformLines) {
@@ -731,10 +745,22 @@ function validateCiRuntimeEvidenceContracts() {
   if (!/generate-validation-timing-trend\.mjs/.test(src)) recordError(file, 'full CI must produce validation timing trend evidence');
 }
 
+function validateNpmCacheContracts() {
+  for (const file of EXPECTED_WORKFLOW_FILES) {
+    const src = readWorkflow(file);
+    if (!src) continue;
+    const uncachedInstall = /actions\/setup-node@[^\n]+\n\s+with:\n\s+node-version:[^\n]+\n\s+- run: npm ci --ignore-scripts/gu;
+    if (uncachedInstall.test(src)) {
+      recordError(file, 'setup-node steps immediately followed by npm ci must enable the npm cache');
+    }
+  }
+}
+
 validateWorkflowInventory();
 validateWorkflowContracts();
 validateRequiredCheckContracts();
 validateCiRuntimeEvidenceContracts();
+validateNpmCacheContracts();
 
 if (errors.length) {
   console.error(`GitHub workflow validation failed (${errors.length} error${errors.length === 1 ? '' : 's'}):`);

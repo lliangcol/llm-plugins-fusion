@@ -4,7 +4,7 @@ import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { extractReleaseNotes, prepareRelease } from '../../scripts/prepare-release.mjs';
+import { buildPromotionNotes, extractReleaseNotes, prepareRelease } from '../../scripts/prepare-release.mjs';
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -45,6 +45,48 @@ test('prepareRelease accepts an RC tag whose base equals the stable plugin versi
   assert.equal(result.version, '3.0.1');
   assert.equal(result.prerelease, true);
   assert.equal(await readFile(result.notesFile, 'utf8'), '- release notes\n');
+});
+
+test('stable promotion notes are generated from exact release and compatibility facts', async (t) => {
+  const oldNarrative = '- Set the development version to `4.0.0` while keeping the published stable channel pinned to `v3.2.0`; no 4.0 release or compatibility upgrade is claimed.';
+  const root = await releaseRoot(t, '4.0.0', `# Changelog\n\n## [4.0.0]\n\n### Changed\n${oldNarrative}\n`);
+  await mkdir(join(root, 'governance'), { recursive: true });
+  await writeFile(join(root, 'package.json'), JSON.stringify({ engines: { node: '>=22' } }), 'utf8');
+  await writeFile(join(root, 'governance/assistant-support.json'), JSON.stringify({ knownGood: [
+    { assistant: 'claude-code', version: '2.1.205' },
+    { assistant: 'codex', version: '0.144.0-alpha.4' },
+  ] }), 'utf8');
+  await writeFile(join(root, 'governance/compatibility-evidence.generated.json'), JSON.stringify({ currentClaims: [
+    { assistant: 'claude-code', effectiveLevel: 'L2' },
+    { assistant: 'codex', effectiveLevel: 'L2' },
+    { assistant: 'generic', effectiveLevel: 'L1' },
+  ] }), 'utf8');
+  await writeFile(join(root, 'governance/project-state.generated.json'), JSON.stringify({ runtime: { distributedBash: '3.2+' } }), 'utf8');
+
+  const sourceCommit = 'a'.repeat(40);
+  const result = prepareRelease({
+    root,
+    releaseTag: 'v4.0.0',
+    promotion: { candidateTag: 'v4.0.0-rc.8', sourceCommit },
+  });
+  const notes = await readFile(result.notesFile, 'utf8');
+  assert.match(notes, /^## Release Summary/mu);
+  assert.match(notes, /Stable: `v4\.0\.0` at `a{40}`/u);
+  assert.match(notes, /Candidate: `v4\.0\.0-rc\.8`/u);
+  assert.match(notes, /Claude Code L2, Codex L2, and generic assistants L1/u);
+  assert.match(notes, /Node\.js `>=22`; Bash `3\.2\+`/u);
+  assert.match(notes, /Known-good assistants: Claude Code `2\.1\.205`; Codex `0\.144\.0-alpha\.4`/u);
+  assert.doesNotMatch(notes, /stable channel pinned to `v3\.2\.0`/u);
+  assert.match(notes, /Published `v4\.0\.0` as the stable channel/u);
+
+  assert.throws(
+    () => buildPromotionNotes({ root, releaseTag: 'v4.0.0', candidateTag: 'v4.1.0-rc.1', sourceCommit, notes: 'x' }),
+    /does not target/u,
+  );
+  assert.throws(
+    () => buildPromotionNotes({ root, releaseTag: 'v4.0.0', candidateTag: 'v4.0.0-rc.8', sourceCommit: 'bad', notes: 'x' }),
+    /source commit/u,
+  );
 });
 
 test('2.4.1 release notes include every post-tag release blocker fix', async () => {

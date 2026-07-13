@@ -4,6 +4,10 @@
   "private": true,
   "description": "Maintainer shortcuts for validating the llm-plugins-fusion repository.",
   "type": "module",
+  "packageManager": "npm@11.13.0",
+  "workspaces": [
+    "packages/*"
+  ],
   "engines": {
     "node": ">=22"
   },
@@ -28,7 +32,9 @@
     "validate:workflow-contract": "node scripts/validate-workflow-contract-v5.mjs",
     "eval:paired:dry-run": "node scripts/evaluate-paired-live.mjs --dry-run",
     "validate:complexity": "node scripts/validate-control-plane-complexity.mjs",
+    "validate:tasks": "node scripts/generate-task-catalog.mjs",
     "generate:facts": "node scripts/generate-fact-graph.mjs --write",
+    "generate:task-catalog": "node scripts/generate-task-catalog.mjs --write",
     "validate:facts": "node scripts/generate-fact-graph.mjs",
     "validate:second-product": "node scripts/validate-second-product-fixture.mjs",
     "test:unit": "node scripts/run-node-tests.mjs --suite unit",
@@ -39,7 +45,10 @@
     "test:coverage:check": "node scripts/run-test-coverage.mjs --check",
     "test:mutation:critical": "node scripts/run-critical-mutations.mjs",
     "test:fault-injection": "node scripts/run-critical-fault-injection.mjs",
-    "lint": "node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs",
+    "lint": "node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs && npm run typecheck",
+    "typecheck": "tsc -p tsconfig.checkjs.json",
+    "lint:shell": "shellcheck -x -P nova-plugin/skills/nova-codex-review-fix/scripts scripts/verify-agents.sh nova-plugin/hooks/scripts/*.sh nova-plugin/skills/nova-codex-review-fix/scripts/*.sh",
+    "lint:actions": "actionlint",
     "ci:quick": "node scripts/validate-schemas.mjs && node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs && node scripts/validate-hooks.mjs",
     "ci:full": "node scripts/validate-all.mjs",
     "check:contracts": "node scripts/validate-all.mjs",
@@ -60,6 +69,7 @@
     "validate:regression": "node scripts/validate-regression.mjs",
     "validate:surface": "node scripts/validate-surface-budget.mjs",
     "validate:workflow": "node scripts/validate-workflow-fixtures.mjs",
+    "validate:workspaces": "node scripts/validate-workspaces.mjs",
     "validate:permissions": "node scripts/generate-workflow-permissions.mjs",
     "validate:behavior-contracts": "node scripts/validate-runtime-behavior-contracts.mjs",
     "validate:portable-paths": "node scripts/validate-portable-paths.mjs",
@@ -70,6 +80,7 @@
     "generate:quality-report": "node scripts/generate-quality-report.mjs --write",
     "validate:community": "node scripts/validate-community-governance.mjs && node scripts/generate-quality-report.mjs",
     "validate:release-operations": "node scripts/validate-release-operations.mjs",
+    "validate:release-channels": "node scripts/validate-release-channel-facts.mjs",
     "scan:secrets": "node scripts/scan-distribution-risk.mjs",
     "scan:distribution": "node scripts/scan-distribution-risk.mjs",
     "release:evidence": "node scripts/generate-release-evidence.mjs",
@@ -81,8 +92,10 @@
     "scaffold:consumer": "node scripts/scaffold-consumer-profile.mjs"
   },
   "devDependencies": {
+    "@types/node": "22.20.1",
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
+    "typescript": "7.0.2",
     "yaml": "2.9.0"
   }
 }

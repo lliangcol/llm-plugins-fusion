@@ -122,6 +122,15 @@ const runtimeSecretChecks = secretChecks
     pattern: new RegExp(check.pattern.source, check.pattern.flags),
   }));
 
+/**
+ * @typedef {object} DistributionCheck
+ * @property {string} label
+ * @property {RegExp} pattern
+ * @property {(relPath: string) => boolean} [fileFilter]
+ * @property {(context: {src: string, match: RegExpMatchArray, relPath: string}) => boolean} [matchFilter]
+ */
+
+/** @type {DistributionCheck[]} */
 export const checks = [
   {
     label: 'private key block',

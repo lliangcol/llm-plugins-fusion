@@ -111,7 +111,8 @@ export function loadProjectPolicy(workspaceRoot, relativePath) {
   return { policy: errors.length ? null : policy, errors, digest: createHash('sha256').update(raw).digest('hex') };
 }
 
-function executableIdentity(token, { workspaceRoot, env = process.env } = {}) {
+/** @param {string} token @param {{workspaceRoot?: string, env?: NodeJS.ProcessEnv}} [options] */
+function executableIdentity(token, { workspaceRoot = process.cwd(), env = process.env } = {}) {
   const pathEntries = String(env.PATH ?? '').split(delimiter).filter(Boolean);
   const names = [token];
   if (process.platform === 'win32') {
@@ -172,6 +173,10 @@ function matchesRule(tokens, rule) {
   return false;
 }
 
+/**
+ * @param {string} command
+ * @param {{workspaceRoot?: string, basePolicy?: any, sessionId?: string | null, stateRoot?: string, env?: NodeJS.ProcessEnv}} [options]
+ */
 export function authorizeBashCommand(command, { workspaceRoot = process.cwd(), basePolicy = readBasePolicy(), sessionId = null, stateRoot, env = process.env } = {}) {
   const reasons = [];
   if (typeof command !== 'string' || command.trim() === '') return { allowed: false, source: null, ruleId: null, reasons: ['Bash command must be a non-empty string'] };

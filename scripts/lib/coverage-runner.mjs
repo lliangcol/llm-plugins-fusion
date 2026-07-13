@@ -71,13 +71,14 @@ export function prepareCoverageDirectory(
   return v8Dir;
 }
 
+/** @param {{root: string, args?: string[], env?: NodeJS.ProcessEnv, runner?: typeof spawnSync, now?: () => Date}} options */
 export function runCoverage({
   root,
   args = [],
   env = process.env,
   runner = spawnSync,
   now = () => new Date(),
-} = {}) {
+}) {
   let options;
   try {
     options = parseCoverageArgs(args, root);

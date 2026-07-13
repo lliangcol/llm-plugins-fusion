@@ -308,6 +308,9 @@ async function gitStatus(cwd, env) {
   return result.stdout;
 }
 
+/**
+ * @param {{pluginDir?: string, outPath?: string | null, env?: NodeJS.ProcessEnv}} options
+ */
 export async function runRouteSmoke({ pluginDir, outPath = null, env = process.env } = {}) {
   const resolvedPluginDir = resolve(pluginDir ?? '');
   const permissionSpec = JSON.parse(readFileSync(

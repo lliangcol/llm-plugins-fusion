@@ -63,12 +63,13 @@ Claude slash-command runtime 行为会在其它 coding assistant 中自动存在
 
 | 你是 | 先读 | 目标 |
 | --- | --- | --- |
+| 第一次进入仓库 | [Start Here](./docs/start-here.md) | 按安装、无凭据演示、兼容性、贡献或维护目标选择最短路径。 |
 | Claude Code 用户 | [Getting Started](./docs/getting-started.md) | 5 分钟内安装 `nova-plugin`，并用 `/nova-plugin:route` 完成第一次路由。 |
 | 非 Claude 用户 | `npm run demo:route` / [Consumer setup](./docs/consumers/README.md) | 用 headless fixtures 和 Markdown contracts 理解 workflow，不假设 slash-command runtime。 |
 | Consumer 项目维护者 | [Consumer profiles](./docs/consumers/README.md) | 在私有项目维护 profile，把公开仓库只当作通用 workflow 和模板来源。 |
 | 插件作者 | [CONTRIBUTING.md](./CONTRIBUTING.md) | 修改 command / skill 前确认 [Skill-first 设计](./nova-plugin/docs/architecture/dual-track-design.md)。 |
 | 首次贡献者 | [第一次贡献路径](./CONTRIBUTING.md#第一次贡献路径) | 从 docs clarification、fixture update、validator message 或 public-safe example 开始。 |
-| 维护者 | [Quality Gates](#quality-gates) | 按变更范围运行校验，并用 [release evidence template](./docs/releases/release-evidence-template.md) 记录证据。 |
+| 维护者 | [Maintainer task catalog](./docs/maintainers/task-catalog.md) / [release runbook](./docs/maintainers/release-runbook.md) | 找到改动对应的检查，并按 candidate-to-stable 流程记录发布证据。 |
 
 ## Showcase
 

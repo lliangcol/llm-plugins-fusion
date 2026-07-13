@@ -288,6 +288,11 @@ const targets = [
     label: 'governance/release-channels.json',
   },
   {
+    schema: loadJson('schemas/task-registry.schema.json'),
+    data: loadJson('governance/task-registry.json'),
+    label: 'governance/task-registry.json',
+  },
+  {
     schema: loadJson('schemas/release-corrections.schema.json'),
     data: loadJson('governance/release-corrections.json'),
     label: 'governance/release-corrections.json',
@@ -374,6 +379,7 @@ const schemaPaths = [
   'schemas/control-bundle.schema.json',
   'schemas/stable-install-proof.schema.json',
   'schemas/release-channels.schema.json',
+  'schemas/task-registry.schema.json',
   'schemas/complexity-budget.schema.json',
   'schemas/fact-graph.schema.json',
   'schemas/adapter-evidence.schema.json',

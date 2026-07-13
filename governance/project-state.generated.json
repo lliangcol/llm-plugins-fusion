@@ -53,7 +53,10 @@
       "generate:facts",
       "generate:quality-report",
       "generate:runtime-contracts",
+      "generate:task-catalog",
       "lint",
+      "lint:actions",
+      "lint:shell",
       "llmf",
       "normalize:surfaces",
       "release:artifacts",
@@ -74,6 +77,7 @@
       "test:integration",
       "test:mutation:critical",
       "test:unit",
+      "typecheck",
       "validate",
       "validate:behavior-contracts",
       "validate:community",
@@ -88,14 +92,17 @@
       "validate:portable-paths",
       "validate:project-state",
       "validate:regression",
+      "validate:release-channels",
       "validate:release-operations",
       "validate:runtime",
       "validate:schemas",
       "validate:schemas:differential",
       "validate:second-product",
       "validate:surface",
+      "validate:tasks",
       "validate:workflow",
-      "validate:workflow-contract"
+      "validate:workflow-contract",
+      "validate:workspaces"
     ],
     "check": "npm run validate:maintainer && npm run test:coverage:check",
     "build": null
@@ -212,7 +219,7 @@
     "exactTagInstallGate": true
   },
   "sourceDigests": {
-    "package.json": "254fa4d4030c0629b43d4a50a0aec4934aa115821f2d50808887df992edf5e9c",
+    "package.json": "f40644c6d5d6dc91cfedb6c1f480629b55a3637bc9e2befe8ce5349885a7e9d6",
     "nova-plugin/.claude-plugin/plugin.json": "54f3b9616d6acbb466a8774eeaccdf80c689adab6f7af2570dcd340446ac28f1",
     "workflow-specs/workflows.json": "b9efab557d4c65400ca3bc44b46206ded32baa5f83fb08c0d601b615c11b3640",
     "workflow-specs/nova.product.json": "250595cc5bdd366682fcc53c20b0c037d068bad2461749fb7410e8c74f32d9bd",
