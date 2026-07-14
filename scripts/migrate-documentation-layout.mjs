@@ -2,7 +2,7 @@
 /** Apply and verify governed documentation moves while retaining public compatibility stubs. */
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import { dirname, relative, resolve, sep } from 'node:path';
+import { dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { repoRoot } from './lib/repo-root.mjs';
 
 const root = repoRoot(import.meta.url);
@@ -12,6 +12,36 @@ const rel = (from, to) => relative(dirname(resolve(root, from)), resolve(root, t
 const stub = (from, to) => `# Documentation moved\n\nThis public compatibility path is retained. The maintained document is [${to}](${rel(from, to)}).\n`;
 const movedMarker = (from) => `<!-- migrated-from: ${from} -->`;
 const mergedMarker = (from) => `<!-- merged-from: ${from} -->`;
+const isMarkdown = (path) => extname(path).toLowerCase() === '.md';
+
+function repositoryPath(path, label) {
+  const absolute = resolve(root, path);
+  const normalized = relative(root, absolute);
+  if (!normalized || normalized.startsWith(`..${sep}`) || normalized === '..' || isAbsolute(normalized)) {
+    throw new Error(`${label} must stay inside the repository: ${path}`);
+  }
+  const portable = normalized.split(sep).join('/');
+  if (portable !== path) throw new Error(`${label} must be a normalized repository-relative path: ${path}`);
+  return absolute;
+}
+
+function validateRegistry() {
+  const seen = new Set();
+  for (const entry of registry.mappings) {
+    repositoryPath(entry.from, 'migration source');
+    repositoryPath(entry.to, 'migration target');
+    if (seen.has(entry.from)) throw new Error(`duplicate migration source: ${entry.from}`);
+    seen.add(entry.from);
+    if (!isMarkdown(entry.from) && entry.disposition === 'merge-with-stub') {
+      throw new Error(`non-Markdown migration cannot use merge-with-stub: ${entry.from}`);
+    }
+    if (extname(entry.from).toLowerCase() !== extname(entry.to).toLowerCase()) {
+      throw new Error(`migration must preserve the file format: ${entry.from} -> ${entry.to}`);
+    }
+  }
+}
+
+validateRegistry();
 
 function rewriteLinks(content, from, to) {
   return content.replace(/(\]\()([^\s)]+)(\))/gu, (match, open, href, close) => {
@@ -40,18 +70,37 @@ function committedSource(path) {
 }
 
 function checkEntry(entry) {
-  const source = resolve(root, entry.from); const target = resolve(root, entry.to);
+  const source = repositoryPath(entry.from, 'migration source'); const target = repositoryPath(entry.to, 'migration target');
   if (!existsSync(source)) throw new Error(`missing compatibility path: ${entry.from}`);
   if (!existsSync(target)) throw new Error(`missing migration target: ${entry.to}`);
-  if (entry.from !== entry.to && readFileSync(source, 'utf8') !== stub(entry.from, entry.to)) throw new Error(`stale compatibility stub: ${entry.from}`);
+  if (entry.from === entry.to) return;
+  const targetContent = readFileSync(target, 'utf8');
+  if (isMarkdown(entry.from)) {
+    if (readFileSync(source, 'utf8') !== stub(entry.from, entry.to)) throw new Error(`stale compatibility stub: ${entry.from}`);
+    const marker = entry.disposition === 'merge-with-stub' ? mergedMarker(entry.from) : movedMarker(entry.from);
+    if (!targetContent.includes(marker)) throw new Error(`migration target lacks source marker: ${entry.to}`);
+    return;
+  }
+  if (extname(entry.from).toLowerCase() === '.json') JSON.parse(targetContent);
+  if (readFileSync(source, 'utf8') !== targetContent) throw new Error(`stale compatibility copy: ${entry.from}`);
 }
 
 function writeEntry(entry) {
-  const source = resolve(root, entry.from); const target = resolve(root, entry.to);
+  const source = repositoryPath(entry.from, 'migration source'); const target = repositoryPath(entry.to, 'migration target');
   if (entry.from === entry.to || entry.disposition === 'retain' || entry.disposition === 'generated') return;
   mkdirSync(dirname(target), { recursive: true });
   if (entry.disposition === 'move-with-stub' && !existsSync(target)) renameSync(source, target);
   if (!existsSync(target)) throw new Error(`merge target must exist before stubbing ${entry.from}: ${entry.to}`);
+  if (!isMarkdown(entry.from)) {
+    let content = readFileSync(target, 'utf8');
+    if (extname(entry.from).toLowerCase() === '.json') {
+      content = content.replace(/^<!-- migrated-from: [^\r\n]+ -->\r?\n/u, '');
+      JSON.parse(content);
+    }
+    writeFileSync(target, content, 'utf8');
+    if (!existsSync(source) || readFileSync(source, 'utf8') !== content) writeFileSync(source, content, 'utf8');
+    return;
+  }
   if (entry.disposition === 'move-with-stub') {
     const marker = movedMarker(entry.from); const content = readFileSync(target, 'utf8');
     if (!content.includes(marker)) writeFileSync(target, `${marker}\n${rewriteLinks(content, entry.from, entry.to)}`, 'utf8');

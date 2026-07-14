@@ -51,3 +51,12 @@ test('plugin install dry run exposes the shared JSON diagnostic contract', async
   assert.equal(report.status, 'passed');
   assert.equal(report.results[0].reasonCode, 'DRY_RUN_SAFE_PREVIEW');
 });
+
+test('plugin install diagnostic flags cannot silently no-op on the mutating path', async () => {
+  const result = await runProcess('plugin install unsupported mutating diagnostics', process.execPath, [
+    'scripts/validate-plugin-install.mjs',
+    '--json',
+  ], { cwd: repoRoot, timeoutMs: 30_000 });
+  assert.equal(result.ok, false);
+  assert.match(result.stderr, /supported only with --dry-run/u);
+});

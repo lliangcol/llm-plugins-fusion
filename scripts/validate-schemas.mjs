@@ -253,6 +253,16 @@ const targets = [
     label: '.nova/shell-policy.json',
   },
   {
+    schema: loadJson('schemas/shell-command-policy.schema.json'),
+    data: loadJson('docs/consumers/shell-policy-template.json'),
+    label: 'docs/consumers/shell-policy-template.json',
+  },
+  {
+    schema: loadJson('schemas/shell-command-policy.schema.json'),
+    data: loadJson('docs/templates/consumer-profiles/shell-policy.json'),
+    label: 'docs/templates/consumer-profiles/shell-policy.json',
+  },
+  {
     schema: loadJson('schemas/workflow-framework.schema.json'),
     data: loadJson('fixtures/products/minimal-plugin/framework.json'),
     label: 'fixtures/products/minimal-plugin/framework.json',

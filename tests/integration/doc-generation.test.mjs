@@ -23,3 +23,10 @@ test('document governance resolves metadata and a migration disposition for ever
   assert.ok(manifest.files.length > 90);
   assert.ok(manifest.files.every((entry) => entry.target && entry.disposition));
 });
+
+test('JSON compatibility paths remain valid machine-readable templates', () => {
+  const legacy = JSON.parse(readFileSync(resolve(root, 'docs/consumers/shell-policy-template.json'), 'utf8'));
+  const maintained = JSON.parse(readFileSync(resolve(root, 'docs/templates/consumer-profiles/shell-policy.json'), 'utf8'));
+  assert.deepEqual(legacy, maintained);
+  assert.deepEqual(maintained.allowCommands, []);
+});

@@ -53,7 +53,6 @@ Generated from `governance/doc-metadata.json` by `node scripts/generate-doc-gove
 - [docs/llm-plugins-fusion-maintenance-status.md](../../docs/llm-plugins-fusion-maintenance-status.md) — repository-users; reference
 - [docs/maintainers/comprehensive-audit-remediation-plan.md](../../docs/maintainers/comprehensive-audit-remediation-plan.md) — repository-users; reference
 - [docs/maintainers/deep-research-remediation-and-documentation-redesign-plan.md](../../docs/maintainers/deep-research-remediation-and-documentation-redesign-plan.md) — repository-users; reference
-- [docs/maintainers/diagnostics.md](../../docs/maintainers/diagnostics.md) — repository-users; reference
 - [docs/maintainers/github-security-settings.md](../../docs/maintainers/github-security-settings.md) — repository-users; reference
 - [docs/maintainers/post-remediation-audit.md](../../docs/maintainers/post-remediation-audit.md) — repository-users; reference
 - [docs/maintainers/quickstart.md](../../docs/maintainers/quickstart.md) — repository-users; reference
@@ -77,7 +76,6 @@ Generated from `governance/doc-metadata.json` by `node scripts/generate-doc-gove
 - [docs/operations/maintainers/README.md](../../docs/operations/maintainers/README.md) — repository-users; reference
 - [docs/operations/maintainers/github-security.md](../../docs/operations/maintainers/github-security.md) — repository-users; reference
 - [docs/operations/maintainers/status.md](../../docs/operations/maintainers/status.md) — repository-users; reference
-- [docs/operations/maintainers/task-catalog.generated.md](../../docs/operations/maintainers/task-catalog.generated.md) — repository-users; reference
 - [docs/operations/maintainers/troubleshooting.md](../../docs/operations/maintainers/troubleshooting.md) — repository-users; reference
 - [docs/operations/maintainers/validation.md](../../docs/operations/maintainers/validation.md) — repository-users; reference
 - [docs/operations/marketplace/registry-authoring.md](../../docs/operations/marketplace/registry-authoring.md) — repository-users; reference
@@ -116,7 +114,6 @@ Generated from `governance/doc-metadata.json` by `node scripts/generate-doc-gove
 - [docs/reference/compatibility/contract-semver.md](../../docs/reference/compatibility/contract-semver.md) — repository-users; reference
 - [docs/reference/compatibility/marketplace.md](../../docs/reference/compatibility/marketplace.md) — repository-users; reference
 - [docs/reference/compatibility/public-api.md](../../docs/reference/compatibility/public-api.md) — repository-users; reference
-- [docs/reference/evaluation/benchmark.md](../../docs/reference/evaluation/benchmark.md) — repository-users; reference
 - [docs/reference/security/data-handling.md](../../docs/reference/security/data-handling.md) — repository-users; reference
 - [docs/reference/security/marketplace-trust.md](../../docs/reference/security/marketplace-trust.md) — repository-users; reference
 - [docs/reference/security/security-review.md](../../docs/reference/security/security-review.md) — repository-users; reference

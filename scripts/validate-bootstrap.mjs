@@ -33,6 +33,8 @@ export async function buildBootstrapReport() {
     const result = await processCheck(tool);
     add({ check: `${tool}-cli`, status: result.ok ? 'passed' : 'skipped', reasonCode: result.ok ? 'CHECK_PASSED' : 'OPTIONAL_TOOL_UNAVAILABLE', actual: result.ok ? (result.stdout || result.stderr).split(/\r?\n/u)[0] : 'not available', skippedReason: result.ok ? undefined : `${tool} CLI is optional for local deterministic checks.` });
   }
+  const writeGuard = await processCheck(process.execPath, ['scripts/validate-hooks.mjs']);
+  add({ check: 'write-guard', status: writeGuard.ok ? 'passed' : 'failed', reasonCode: writeGuard.ok ? 'CHECK_PASSED' : 'WRITE_GUARD_INVALID', expected: 'governed hook launcher contract', actual: writeGuard.ok ? 'valid' : 'invalid' });
   for (const [check, script] of [['registry-drift', 'scripts/generate-registry.mjs'], ['project-state-drift', 'scripts/generate-project-state.mjs'], ['fact-graph-drift', 'scripts/generate-fact-graph.mjs']]) {
     const result = await processCheck(process.execPath, [script]);
     add({ check, status: result.ok ? 'passed' : 'failed', reasonCode: result.ok ? 'CHECK_PASSED' : 'GENERATED_DRIFT', actual: result.ok ? 'current' : 'stale' });
@@ -49,7 +51,7 @@ export async function main(args = process.argv.slice(2)) {
     const report = await buildBootstrapReport();
     if (output) writeDiagnosticReport(output, report);
     console.log(json ? JSON.stringify(report, null, 2) : renderDiagnosticReport(report));
-    return report.status === 'failed' ? 1 : 0;
+    return ['failed', 'blocked'].includes(report.status) ? 1 : 0;
   } catch (error) { console.error(`ERROR ${error.message}`); return 1; }
 }
 

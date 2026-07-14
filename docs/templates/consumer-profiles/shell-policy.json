@@ -1,4 +1,3 @@
-<!-- migrated-from: docs/consumers/shell-policy-template.json -->
 {
   "$schema": "path/to/llm-plugins-fusion/schemas/shell-command-policy.schema.json",
   "schemaVersion": 1,

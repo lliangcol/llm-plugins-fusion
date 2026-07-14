@@ -1,3 +1,4 @@
+<!-- migrated-from: docs/quality/benchmark.md -->
 # Public Workflow Quality Benchmark
 
 Status: generated

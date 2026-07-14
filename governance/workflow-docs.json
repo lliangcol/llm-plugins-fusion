@@ -2,7 +2,7 @@
   "$schema": "../schemas/workflow-docs.schema.json",
   "schemaVersion": 1,
   "workflows": [
-    { "id": "route", "audience": "all-users", "examples": ["fixtures/demo/route.json"], "relatedWorkflows": ["explore", "review"] },
+    { "id": "route", "audience": "all-users", "examples": ["fixtures/demo/route-basic.json"], "relatedWorkflows": ["explore", "review"] },
     { "id": "senior-explore", "audience": "advanced-users", "examples": [], "relatedWorkflows": ["explore", "produce-plan"] },
     { "id": "explore", "audience": "all-users", "examples": [], "relatedWorkflows": ["route", "produce-plan"] },
     { "id": "explore-lite", "audience": "all-users", "examples": [], "relatedWorkflows": ["explore"] },
@@ -11,7 +11,7 @@
     { "id": "plan-review", "audience": "reviewers", "examples": [], "relatedWorkflows": ["produce-plan", "review"] },
     { "id": "produce-plan", "audience": "all-users", "examples": [], "relatedWorkflows": ["plan-review", "implement-plan"] },
     { "id": "backend-plan", "audience": "backend-users", "examples": [], "relatedWorkflows": ["produce-plan", "implement-plan"] },
-    { "id": "review", "audience": "all-users", "examples": ["fixtures/demo/review.json"], "relatedWorkflows": ["review-lite", "review-strict"] },
+    { "id": "review", "audience": "all-users", "examples": ["fixtures/demo/review-signal.json"], "relatedWorkflows": ["review-lite", "review-strict"] },
     { "id": "review-lite", "audience": "all-users", "examples": [], "relatedWorkflows": ["review"] },
     { "id": "review-only", "audience": "reviewers", "examples": [], "relatedWorkflows": ["review", "codex-review-only"] },
     { "id": "review-strict", "audience": "reviewers", "examples": [], "relatedWorkflows": ["review"] },

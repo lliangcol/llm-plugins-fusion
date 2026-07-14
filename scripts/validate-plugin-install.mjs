@@ -29,7 +29,7 @@ const root = resolve(__dir, '..');
 assertNodeVersion({ label: 'plugin install smoke' });
 
 function usage() {
-  return 'Usage: node scripts/validate-plugin-install.mjs [--dry-run | --accept-user-scope-mutation] [--json] [--output-json <path>] --isolated-home [--marketplace-source <path|owner/repo@ref>] [--expected-ref <ref>] [--expected-commit <sha>] [--evidence-source <source>] [--inventory-out <path>] [--route-smoke-out <path>]';
+  return 'Usage: node scripts/validate-plugin-install.mjs [--dry-run [--isolated-home] [--json] [--output-json <path>] | --accept-user-scope-mutation --isolated-home] [--marketplace-source <path|owner/repo@ref>] [--expected-ref <ref>] [--expected-commit <sha>] [--evidence-source <source>] [--inventory-out <path>] [--route-smoke-out <path>]';
 }
 
 export function parseArgs(args) {
@@ -331,6 +331,14 @@ export async function main(args = process.argv.slice(2)) {
   if (options.help) {
     console.log(usage());
     return 0;
+  }
+  if (options.dryRun && options.acceptedUserScopeMutation) {
+    console.error('ERROR --dry-run and --accept-user-scope-mutation are mutually exclusive.');
+    return 1;
+  }
+  if (!options.dryRun && (options.json || options.outputJson)) {
+    console.error('ERROR --json and --output-json are supported only with --dry-run.');
+    return 1;
   }
 
   const marketplace = readJson('.claude-plugin/marketplace.json');

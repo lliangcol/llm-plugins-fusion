@@ -686,15 +686,6 @@
       "generated": false
     },
     {
-      "path": "docs/maintainers/diagnostics.md",
-      "audience": "repository-users",
-      "contentType": "reference",
-      "status": "current",
-      "ownerSource": "CLAUDE.md",
-      "sourceOfTruth": "self",
-      "generated": false
-    },
-    {
       "path": "docs/maintainers/github-security-settings.md",
       "audience": "repository-users",
       "contentType": "reference",
@@ -884,6 +875,15 @@
       "generated": false
     },
     {
+      "path": "docs/operations/maintainers/diagnostics.md",
+      "audience": "maintainers",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
       "path": "docs/operations/maintainers/github-security.md",
       "audience": "repository-users",
       "contentType": "reference",
@@ -903,12 +903,12 @@
     },
     {
       "path": "docs/operations/maintainers/task-catalog.generated.md",
-      "audience": "repository-users",
-      "contentType": "reference",
+      "audience": "maintainers",
+      "contentType": "generated-reference",
       "status": "current",
       "ownerSource": "CLAUDE.md",
-      "sourceOfTruth": "self",
-      "generated": false
+      "sourceOfTruth": "generator",
+      "generated": true
     },
     {
       "path": "docs/operations/maintainers/troubleshooting.md",
@@ -1255,11 +1255,11 @@
     {
       "path": "docs/reference/evaluation/benchmark.md",
       "audience": "repository-users",
-      "contentType": "reference",
+      "contentType": "generated-reference",
       "status": "current",
       "ownerSource": "CLAUDE.md",
-      "sourceOfTruth": "self",
-      "generated": false
+      "sourceOfTruth": "generator",
+      "generated": true
     },
     {
       "path": "docs/reference/security/data-handling.md",

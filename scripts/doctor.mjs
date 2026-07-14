@@ -24,6 +24,11 @@ async function gitValue(args) {
   return result.ok ? (result.stdout.trim() || null) : null;
 }
 
+export function capabilityLevel({ guardedAvailable, codexAvailable, codexAuthenticated }) {
+  if (guardedAvailable && codexAvailable && codexAuthenticated) return 'External';
+  return guardedAvailable ? 'Guarded' : 'Core';
+}
+
 export async function buildDoctorReport() {
   const command = 'doctor';
   const registry = loadReasonRegistry(root);
@@ -38,8 +43,10 @@ export async function buildDoctorReport() {
   add({ check: 'Node.js', status: major !== null && major >= REQUIRED_NODE_MAJOR ? 'passed' : 'failed', reasonCode: major !== null && major >= REQUIRED_NODE_MAJOR ? 'CHECK_PASSED' : 'NODE_VERSION_UNSUPPORTED', expected: `>=${REQUIRED_NODE_MAJOR}`, actual: process.version });
   const git = await commandResult('git');
   add({ check: 'Git', status: git.ok ? 'passed' : 'failed', reasonCode: git.ok ? 'CHECK_PASSED' : 'REQUIRED_TOOL_UNAVAILABLE', actual: git.detail });
+  let codexAvailable = false;
   for (const [label, tool] of [['Claude CLI', 'claude'], ['Codex CLI', 'codex'], ['ShellCheck', 'shellcheck'], ['actionlint', 'actionlint']]) {
     const result = await commandResult(tool);
+    if (tool === 'codex') codexAvailable = result.ok;
     add({ check: label, status: result.ok ? 'passed' : 'skipped', reasonCode: result.ok ? 'CHECK_PASSED' : 'OPTIONAL_TOOL_UNAVAILABLE', actual: result.detail, skippedReason: result.ok ? undefined : `${label} is optional for deterministic local checks.` });
   }
   const bashName = resolveBashCommand();
@@ -74,7 +81,7 @@ export async function buildDoctorReport() {
   add({ check: 'Exact release tag', status: tag ? 'passed' : 'warn', reasonCode: tag ? 'CHECK_PASSED' : 'DEVELOPMENT_SNAPSHOT', actual: tag ?? 'none' });
   const drift = await commandResult(process.execPath, ['scripts/generate-registry.mjs']);
   add({ check: 'Generated registry drift', status: drift.ok ? 'passed' : 'failed', reasonCode: drift.ok ? 'CHECK_PASSED' : 'GENERATED_DRIFT', actual: drift.ok ? 'current' : drift.detail });
-  return { report: diagnosticReport(command, results), capability: guardedAvailable ? 'Guarded' : 'Core' };
+  return { report: diagnosticReport(command, results), capability: capabilityLevel({ guardedAvailable, codexAvailable, codexAuthenticated: auth.ok }) };
 }
 
 export async function main(args = process.argv.slice(2)) {

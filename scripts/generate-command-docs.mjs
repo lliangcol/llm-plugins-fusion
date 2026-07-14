@@ -34,7 +34,13 @@ function navigation(workflows) {
 }
 export function checkOrWrite({ write = false } = {}) {
   const model = loadNovaWorkflowModelV6(root); const workflows = model.workflows.workflows; const behaviors = new Map(model.behaviors.behaviors.map((entry) => [entry.id, entry]));
+  if (metadataById.size !== metadata.workflows.length) throw new Error('workflow documentation metadata contains duplicate ids');
   if (metadataById.size !== workflows.length || workflows.some((entry) => !metadataById.has(entry.id))) throw new Error('workflow documentation metadata inventory differs from workflow v6');
+  const workflowIds = new Set(workflows.map((entry) => entry.id));
+  for (const entry of metadata.workflows) {
+    for (const related of entry.relatedWorkflows) if (!workflowIds.has(related)) throw new Error(`${entry.id} references unknown related workflow ${related}`);
+    for (const example of entry.examples) if (!existsSync(resolve(root, example))) throw new Error(`${entry.id} references missing example ${example}`);
+  }
   const stale = [];
   for (const workflow of workflows) {
     const behavior = behaviors.get(workflow.id); const meta = metadataById.get(workflow.id); const block = renderBlock(workflow, behavior, meta);

@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { repoRoot } from './lib/repo-root.mjs';
 
 const root = repoRoot(import.meta.url);
-const target = resolve(root, 'docs/maintainers/diagnostics.md');
+const target = resolve(root, 'docs/operations/maintainers/diagnostics.md');
 
 export function renderDiagnosticsDocs() {
   const registry = JSON.parse(readFileSync(resolve(root, 'governance/diagnostic-reasons.json'), 'utf8'));
@@ -16,7 +16,7 @@ export function renderDiagnosticsDocs() {
 export function checkOrWrite({ write = false } = {}) {
   const expected = renderDiagnosticsDocs();
   if (write) writeFileSync(target, expected, 'utf8');
-  else if (!existsSync(target) || readFileSync(target, 'utf8') !== expected) throw new Error('docs/maintainers/diagnostics.md is stale');
+  else if (!existsSync(target) || readFileSync(target, 'utf8') !== expected) throw new Error('docs/operations/maintainers/diagnostics.md is stale');
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
@@ -24,6 +24,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     const args = process.argv.slice(2);
     if (args.some((arg) => arg !== '--write')) throw new Error('Usage: node scripts/generate-diagnostics-docs.mjs [--write]');
     checkOrWrite({ write: args.includes('--write') });
-    console.log(args.includes('--write') ? 'Wrote docs/maintainers/diagnostics.md' : 'OK diagnostics docs');
+    console.log(args.includes('--write') ? 'Wrote docs/operations/maintainers/diagnostics.md' : 'OK diagnostics docs');
   } catch (error) { console.error(`ERROR ${error.message}`); process.exitCode = 1; }
 }

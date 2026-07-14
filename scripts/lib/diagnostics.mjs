@@ -4,9 +4,17 @@ import { dirname, resolve } from 'node:path';
 const defaultRoot = resolve(import.meta.dirname, '../..');
 const precedence = ['passed', 'skipped', 'warn', 'blocked', 'failed'];
 
+export function diagnosticPlatform({ platform = process.platform, arch = process.arch, nodeVersion = process.versions.node } = {}) {
+  const os = platform === 'win32' ? 'windows' : platform === 'darwin' ? 'macos' : platform;
+  const nodeMajor = String(nodeVersion).split('.')[0];
+  return `${os}-${arch}-node${nodeMajor}`;
+}
+
 export function loadReasonRegistry(repoRoot = defaultRoot) {
   const data = JSON.parse(readFileSync(resolve(repoRoot, 'governance/diagnostic-reasons.json'), 'utf8'));
-  return new Map(data.reasons.map((entry) => [entry.code, entry]));
+  const registry = new Map(data.reasons.map((entry) => [entry.code, entry]));
+  if (registry.size !== data.reasons.length) throw new Error('diagnostic reason registry contains duplicate codes');
+  return registry;
 }
 
 export function diagnosticResult(input, registry = loadReasonRegistry()) {
@@ -18,7 +26,7 @@ export function diagnosticResult(input, registry = loadReasonRegistry()) {
     status: input.status,
     reasonCode: input.reasonCode,
     severity: input.severity ?? reason.severity,
-    platform: input.platform ?? process.platform,
+    platform: input.platform ?? diagnosticPlatform(),
     check: input.check,
   };
   for (const key of ['expected', 'actual', 'evidencePath', 'skippedReason']) {
@@ -29,7 +37,9 @@ export function diagnosticResult(input, registry = loadReasonRegistry()) {
   return result;
 }
 
-export function diagnosticReport(command, results, platform = process.platform) {
+export function diagnosticReport(command, results, platform = diagnosticPlatform()) {
+  if (results.some((entry) => entry.command !== command)) throw new Error('diagnostic results must match the report command');
+  if (results.some((entry) => entry.platform !== platform)) throw new Error('diagnostic results must match the report platform');
   const status = results.reduce((current, entry) => (
     precedence.indexOf(entry.status) > precedence.indexOf(current) ? entry.status : current
   ), 'passed');

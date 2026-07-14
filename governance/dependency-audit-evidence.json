@@ -15,5 +15,8 @@
     "high": 0,
     "critical": 0,
     "total": 0
-  }
+  },
+  "findings": [],
+  "exceptionsApplied": [],
+  "policyViolations": []
 }

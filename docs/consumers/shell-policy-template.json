@@ -1,3 +1,5 @@
-# Documentation moved
-
-This public compatibility path is retained. The maintained document is [docs/templates/consumer-profiles/shell-policy.json](../templates/consumer-profiles/shell-policy.json).
+{
+  "$schema": "path/to/llm-plugins-fusion/schemas/shell-command-policy.schema.json",
+  "schemaVersion": 1,
+  "allowCommands": []
+}

@@ -372,11 +372,6 @@
       "disposition": "move-with-stub"
     },
     {
-      "path": "docs/maintainers/diagnostics.md",
-      "target": "docs/maintainers/diagnostics.md",
-      "disposition": "retain"
-    },
-    {
       "path": "docs/maintainers/github-security-settings.md",
       "target": "docs/operations/maintainers/github-security.md",
       "disposition": "move-with-stub"
@@ -479,6 +474,11 @@
     {
       "path": "docs/operations/maintainers/README.md",
       "target": "docs/operations/maintainers/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/operations/maintainers/diagnostics.md",
+      "target": "docs/operations/maintainers/diagnostics.md",
       "disposition": "retain"
     },
     {
