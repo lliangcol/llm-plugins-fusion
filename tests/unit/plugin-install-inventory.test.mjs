@@ -64,6 +64,8 @@ test('plugin install options accept exact source/ref and evidence output', () =>
     evidenceSource: null,
     inventoryOut: '.metrics/inventory.json',
     routeSmokeOut: null,
+    json: false,
+    outputJson: null,
     help: false,
   });
 });

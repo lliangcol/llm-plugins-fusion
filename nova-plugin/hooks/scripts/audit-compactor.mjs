@@ -81,7 +81,14 @@ function acquireLock() {
       mkdirSync(lockDir);
     } catch (error) {
       if (error.code !== 'EEXIST') throw error;
-      if (!recoverStaleLock()) return false;
+      let recovered;
+      try {
+        recovered = recoverStaleLock();
+      } catch (recoveryError) {
+        if (recoveryError.code === 'ENOENT') continue;
+        throw recoveryError;
+      }
+      if (!recovered) return false;
       continue;
     }
     try {

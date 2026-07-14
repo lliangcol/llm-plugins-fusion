@@ -238,7 +238,7 @@ test('audit compactor removes a newly created lock when owner creation fails', a
     "import fs from 'node:fs'",
     "import { syncBuiltinESMExports } from 'node:module'",
     'const originalOpenSync = fs.openSync',
-    "fs.openSync = (path, ...args) => String(path).endsWith('/owner.json') ? (() => { const error = new Error('injected owner failure'); error.code = 'EACCES'; throw error })() : originalOpenSync(path, ...args)",
+    "fs.openSync = (path, ...args) => String(path).replaceAll('\\\\', '/').endsWith('/owner.json') ? (() => { const error = new Error('injected owner failure'); error.code = 'EACCES'; throw error })() : originalOpenSync(path, ...args)",
     'syncBuiltinESMExports()',
   ].join(';');
   const result = await runProcess('audit owner creation failure', process.execPath, [
@@ -251,6 +251,22 @@ test('audit compactor removes a newly created lock when owner creation fails', a
   assert.equal(result.ok, false);
   await assert.rejects(() => stat(join(root, '.audit-compact.lock')), { code: 'ENOENT' });
   assert.match(await readFile(join(root, 'audit-health.log'), 'utf8'), /injected owner failure/u);
+});
+
+test('audit compactor retries when a competing lock disappears before inspection', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'nova-audit-lock-race-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  await mkdir(join(root, '.audit-compact.lock'));
+  const preload = [
+    "import fs from 'node:fs'",
+    "import { syncBuiltinESMExports } from 'node:module'",
+    'const originalLstatSync = fs.lstatSync',
+    'let injected = false',
+    "fs.lstatSync = (path, ...args) => !injected && String(path).replaceAll('\\\\', '/').endsWith('/.audit-compact.lock') ? (injected = true, (() => { const error = new Error('injected disappearing lock'); error.code = 'ENOENT'; throw error })()) : originalLstatSync(path, ...args)",
+    'syncBuiltinESMExports()',
+  ].join(';');
+  const result = await runProcess('audit disappearing lock race', process.execPath, ['--import', `data:text/javascript,${encodeURIComponent(preload)}`, 'nova-plugin/hooks/scripts/audit-compactor.mjs'], { cwd: repoRoot, env: { ...process.env, CLAUDE_PLUGIN_DATA: root } });
+  assert.equal(result.ok, true, result.stderr);
 });
 
 test('audit compactor recovers an expired lock owned by a dead process', async (t) => {

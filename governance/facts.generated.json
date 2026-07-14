@@ -31,14 +31,14 @@
         "LPF-AUTO-2026-07-RC-001"
       ],
       "source": "governance/release-corrections.json#/corrections",
-      "sourceSha256": "1d517dcdc566b26d806836eaf5ca736ca366a5df4ada0a27cc559eb892093a3b"
+      "sourceSha256": "5a443a1cfa38fb8b4e3e8c934765555c5fdc9b4f6c1dbcc75fb0e2b4451af449"
     },
     "release.corrections.lifecycle": {
       "value": {
         "LPF-AUTO-2026-07-RC-001": "active-release-hold"
       },
       "source": "governance/release-corrections.json#/corrections",
-      "sourceSha256": "1d517dcdc566b26d806836eaf5ca736ca366a5df4ada0a27cc559eb892093a3b"
+      "sourceSha256": "5a443a1cfa38fb8b4e3e8c934765555c5fdc9b4f6c1dbcc75fb0e2b4451af449"
     },
     "release.canary.ref": {
       "value": "main",

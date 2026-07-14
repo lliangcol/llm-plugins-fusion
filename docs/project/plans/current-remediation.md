@@ -95,12 +95,12 @@ Blocked、Not verified 和 External evidence。
 | WP2 | implemented | doctor、llmf doctor、bootstrap、validate-all 输出产物与 install dry-run 使用共享 diagnostics contract 和 reason registry | diagnostics schemas/registry、生成矩阵、`validate:bootstrap`、`demo:all`、JSON 输出；提交 `c037327` | schema 与 e2e 检查通过；子进程未识别的 Claude/Codex 为 Skipped 而非 Passed；回滚为还原本验收单元 |
 | WP3 | implemented | assistant manifest 与 v6/v2 生成链继续复用；sidecar metadata、workflow-id 文档 metadata、63 个命令文档生成块和导航已接入默认门 | doc/workflow metadata schemas、command-doc 与 doc-governance generators、generated navigation/manifest/redirect map；提交 `e63cce1` | 二次写入后 drift checks 及完整门通过；未改变六技能、21 命令或 runtime contract；回滚为还原本验收单元 |
 | WP4 | implemented | 实时树重新生成 migration manifest；84 个旧公共路径均保留可校验 stub；二进制与 generated 契约不移动 | `governance/docs-migrations.json`、迁移器、目标 IA、redirect map、导航、生成器与校验器路径对账 | 文档、schema、pack、workflow 与 regression targeted gates 通过；本轮禁止 stub 删除，回滚为还原本迁移单元 |
-| WP5 | implemented | 现有 Dependency Review 保持 PR 增量门；本地 `npm audit --json` 对当前 lockfile 返回 0 vulnerabilities | dependency audit schema/evidence/summary、例外基线、定期/手动 workflow、默认门 | 本地网络审计 Passed；workflow 仅静态验证且未触发，远端运行仍为 External evidence；分发插件无 Node runtime dependency |
-| WP6 | implemented | critical/PR/nightly/release/manual profiles 通过 dataset identity 与 category 查询复用 168-case/8-case 数据，不复制 case；24-task 仍推导 432 次 | evaluation profile schema/source 与 generated JSON/Markdown | 本地仅生成 plan/simulation 边界；executed/passed=0，外部 profile 全部标记 blocked/external-evidence；凭据型 live eval 未授权 |
-| WP7 | implemented | 复用 shell digest/session pinning、secret scanner、audit spool/lock 与 validate-all 并发；补半写恢复、陈旧锁和双进程 at-most-once 测试 | performance budget schema/source/validator、audit compactor tests | 同一 Windows/Node24 报告求和任务 wall time 28,941ms，预算 60,000ms；CPU time unavailable；平台 symlink skip 仍单独报告 |
-| WP8 | implemented | 四条现有教程迁入目标 IA，新增 minimal consumer 只读 walkthrough；不改受保护 fixture | tutorial smoke、good-first-task issue form、generated navigation | route/review/conformance 非凭据路径实际执行；未执行 slash-command 或用户范围安装 |
-| WP9 | implemented | stable channel、install proof、adoption ledger 和 digest 生成固定五分区发布摘要 | generated release summary JSON/Markdown | 当前 checkout exact tag、签名、用户范围安装、远端 CI、live eval 均明确 Not verified/Skipped/External evidence |
-| WP10 | partial | 迁移兼容层和 URL stub 已建立，最终 clean-checkout 尚待其余本地单元完成 | redirect map 与 84 个兼容 stub | 本轮禁止删除公共兼容 stub、改版本或发布渠道 |
+| WP5 | implemented | 现有 Dependency Review 保持 PR 增量门；本地 `npm audit --json` 对当前 lockfile 返回 0 vulnerabilities | dependency audit schema/evidence/summary、例外基线、定期/手动 workflow、默认门；提交 `cb14c24` | 本地网络审计 Passed；workflow 仅静态验证且未触发，远端运行仍为 External evidence；分发插件无 Node runtime dependency |
+| WP6 | implemented | critical/PR/nightly/release/manual profiles 通过 dataset identity 与 category 查询复用 168-case/8-case 数据，不复制 case；24-task 仍推导 432 次 | evaluation profile schema/source 与 generated JSON/Markdown；提交 `c6ab255` | 本地仅生成 plan/simulation 边界；executed/passed=0，外部 profile 全部标记 blocked/external-evidence；凭据型 live eval 未授权 |
+| WP7 | implemented | 复用 shell digest/session pinning、secret scanner、audit spool/lock 与 validate-all 并发；补半写恢复、陈旧锁和双进程 at-most-once 测试，并修复 lock 消失竞态 | performance budget schema/source/validator、audit compactor tests；提交 `c6ab255` 后由最终集成提交补齐回归 | 同一 Windows/Node24 报告求和任务 wall time 28,941ms，预算 60,000ms；CPU time unavailable；平台 symlink skip 仍单独报告 |
+| WP8 | implemented | 四条现有教程迁入目标 IA，新增 minimal consumer 只读 walkthrough；不改受保护 fixture | tutorial smoke、good-first-task issue form、generated navigation；提交 `c6ab255` | route/review/conformance 非凭据路径实际执行；未执行 slash-command 或用户范围安装 |
+| WP9 | implemented | stable channel、install proof、adoption ledger 和 digest 生成固定五分区发布摘要 | generated release summary JSON/Markdown；提交 `c6ab255` | 当前 checkout exact tag、签名、用户范围安装、远端 CI、live eval 均明确 Not verified/Skipped/External evidence |
+| WP10 | implemented | 本地迁移、兼容、生成与回归已收口；84 个公共 stub 全部保留 | redirect map、覆盖率回归和最终集成修复 | `npm run check` Passed；最终 HEAD 的 clean-checkout 门作为提交后证明记录于交付，不删除 stub、不改版本/渠道、不触发远端 |
 
 | 报告方向 | 状态 | 工作包与实时决策 |
 | --- | --- | --- |
@@ -129,7 +129,7 @@ Blocked、Not verified 和 External evidence。
 | C 教程、指南与模板 | implemented | 教程、assistant 指南、workflow 指南、consumer/evidence/prompt 模板迁入目标 IA；复用既有 fixtures |
 | D 参考、项目与发布 | implemented | architecture、compatibility、security、operations、project migrations/plans/release notes 已迁移；活动方案只有本文件 |
 | E 插件与就近文档 | implemented | 63 个命令文档已生成化，插件 README 接入索引；教程复用现有 plugin/fixture 本地文档，不复制架构或消费者事实 |
-| F 迁移收口 | partial | redirect map 和 84 个 stub 均可校验；按授权保留全部 stub，最终 clean-checkout 待 WP10 |
+| F 迁移收口 | implemented | redirect map 和 84 个 stub 均可校验；按授权保留全部 stub；URL 删除保持未授权 |
 
 ## 3. 范围与非目标
 

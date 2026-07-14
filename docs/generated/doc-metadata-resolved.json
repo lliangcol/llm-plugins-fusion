@@ -1802,6 +1802,15 @@
       "generated": false
     },
     {
+      "path": "governance/evidence/post-remediation-audit-2026-07-13.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
       "path": "nova-plugin/agents/architect.md",
       "audience": "repository-users",
       "contentType": "reference",
