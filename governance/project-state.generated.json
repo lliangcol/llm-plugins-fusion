@@ -234,7 +234,7 @@
     "package.json": "356ac67b714da421bffe0281f9181a470017a8cd54ce213a579bfcaaf87669b8",
     "nova-plugin/.claude-plugin/plugin.json": "54f3b9616d6acbb466a8774eeaccdf80c689adab6f7af2570dcd340446ac28f1",
     "workflow-specs/workflows.json": "b9efab557d4c65400ca3bc44b46206ded32baa5f83fb08c0d601b615c11b3640",
-    "workflow-specs/nova.product.json": "250595cc5bdd366682fcc53c20b0c037d068bad2461749fb7410e8c74f32d9bd",
+    "workflow-specs/nova.product.json": "e58bee4f38037157277c4c6e418a76dc7fd7895b9f3373d72dc841bcffaaf324",
     "workflow-specs/framework.json": "e691a6496a158e120712f601a04e6cb971e639e740af5c26030f2903d14b2d5b",
     "workflow-specs/behaviors.json": "e70c5076fe88c8d4f4c85029527b8d3dad395308b1410f3689ab03e7aae1c7fc",
     "workflow-specs/adapters/claude.json": "8adf0089a12a10b672c8ac960df24536650aef03542399815725d2018e867065",

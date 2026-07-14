@@ -243,6 +243,11 @@ const targets = [
     label: `workflow-specs/adapters/${id}.json`,
   })),
   {
+    schema: loadJson('schemas/assistant-manifest.schema.json'),
+    data: loadJson('adapters/generic-agent-skills/manifest.json'),
+    label: 'adapters/generic-agent-skills/manifest.json',
+  },
+  {
     schema: loadJson('schemas/shell-command-policy.schema.json'),
     data: loadJson('.nova/shell-policy.json'),
     label: '.nova/shell-policy.json',
@@ -378,6 +383,7 @@ const schemaPaths = [
   'schemas/workflow-behaviors.schema.json',
   'schemas/workflow-adapter.schema.json',
   'schemas/workflow-product.schema.json',
+  'schemas/assistant-manifest.schema.json',
   'schemas/shell-command-policy.schema.json',
   'schemas/validation-report.schema.json',
   'schemas/release-evidence.schema.json',

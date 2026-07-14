@@ -14,6 +14,10 @@ framework surface does not imply a mature multi-plugin ecosystem or portal.
   and restricted decision contracts.
 - `framework/compiler/` compiles both Nova and the differently named
   three-workflow fixture without product constants.
+- Generic product compilation retains the product-owned
+  `runtimeCompatibility` object rather than projecting a Nova- or
+  assistant-specific version field. The non-Nova fixture validates the whole
+  compiled bundle for product-name and assistant-name leakage.
 - `packages/spec/`, `packages/compiler/`, `packages/conformance/`, and
   `packages/cli/` are private npm workspaces that provide the preview SDK and
   `llmf` commands. Cross-package imports use their explicit
@@ -36,6 +40,9 @@ framework surface does not imply a mature multi-plugin ecosystem or portal.
 - Contract v6 migration is a pure framework API exported by
   `@llm-plugins-fusion/compiler`; the CLI and repository projection script use
   that package boundary instead of importing one another.
+- `@llm-plugins-fusion/conformance` exposes static workflow capability
+  negotiation. It combines adapter enforcement, host capabilities, and
+  explicit approvals without upgrading the adapter's evidence level.
 - [prompt-surface-report.md](../generated/prompt-surface-report.md) reports
   aggregate load graphs and blocking budgets.
 - [real-task-benchmark.md](../generated/real-task-benchmark.md) records the

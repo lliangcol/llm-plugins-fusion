@@ -10,14 +10,26 @@ import { compileRuntimeContract } from '../../framework/compiler/compile-runtime
 import { compileRuntimeContracts } from '../../framework/compiler/compile-runtime-contracts.mjs';
 import { compileProductBundle } from '../../framework/compiler/compile-product-bundle.mjs';
 import { migrateBehaviorSpec, migrateWorkflowSpec } from '@llm-plugins-fusion/compiler';
+import { negotiateWorkflowSupport } from '@llm-plugins-fusion/conformance';
 import { loadWorkflowModel } from '../../scripts/lib/workflow-model.mjs';
 
 test('framework core separates inputs, capability availability, and approvals', () => {
   assert.deepEqual(resolveRequiredInputs(['A', 'B'], ['A']), { complete: false, missing: ['B'] });
-  const workflow = { runtimeRequirements: { executables: [{ required: true }], network: { need: 'required' }, credentials: { need: 'none' } } };
-  const policy = { workspaceWrite: 'denied' };
+  const workflow = { runtimeRequirements: { executables: [{ name: 'tool', required: true, versionEvidence: 'versioned-evidence' }], network: { need: 'required', purpose: 'test' }, credentials: { need: 'none', source: 'none' } } };
+  const policy = { shell: 'prompt', network: 'prompt', workspaceWrite: 'denied' };
   assert.equal(evaluateCapabilityPolicy({ workflow, permissionPolicy: policy, available: { shell: 'prompt', network: 'unsupported' }, approved: ['shell'] }).decision, 'fallback-unsupported-capability');
   assert.equal(evaluateCapabilityPolicy({ workflow, permissionPolicy: policy, available: { shell: 'prompt', network: 'prompt' }, approved: ['shell'] }).decision, 'blocked-approval');
+  assert.equal(evaluateCapabilityPolicy({ workflow: { effects: ['shell'] }, permissionPolicy: { shell: 'denied' }, available: { shell: 'preapproved' } }).decision, 'fallback-unsupported-capability');
+  assert.equal(evaluateCapabilityPolicy({ workflow: { effects: ['workspace-read'] }, permissionPolicy: { workspaceRead: 'explicit' }, available: { workspaceRead: 'preapproved' } }).decision, 'blocked-approval');
+  assert.equal(evaluateCapabilityPolicy({ workflow: { effects: ['network'] }, permissionPolicy: { network: 'preapproved' }, available: { network: 'invalid' } }).decision, 'fallback-unsupported-capability');
+  assert.equal(evaluateCapabilityPolicy({ workflow: { effects: [] }, permissionPolicy: { workspaceWrite: 'preapproved' }, available: {} }).decision, 'ready');
+  assert.equal(evaluateCapabilityPolicy({ workflow: {}, permissionPolicy: { workspaceWrite: 'prompt' }, available: { workspaceWrite: 'prompt' } }).decision, 'blocked-approval');
+  assert.deepEqual(evaluateCapabilityPolicy(null).reasons, ['invalid-capability-policy-input']);
+  assert.deepEqual(evaluateCapabilityPolicy({ workflow: { effects: ['invented'] }, permissionPolicy: {}, available: {} }).reasons, ['invalid-workflow-capability-contract']);
+  assert.deepEqual(evaluateCapabilityPolicy({ workflow: { effects: [undefined] }, permissionPolicy: {}, available: {} }).reasons, ['invalid-workflow-capability-contract']);
+  assert.deepEqual(evaluateCapabilityPolicy({ workflow: { effects: [], runtimeRequirements: { executables: [null] } }, permissionPolicy: {}, available: {} }).reasons, ['invalid-workflow-capability-contract']);
+  assert.deepEqual(evaluateCapabilityPolicy({ workflow: { effects: [], runtimeRequirements: {} }, permissionPolicy: {}, available: {} }).reasons, ['invalid-workflow-capability-contract']);
+  assert.equal(evaluateCapabilityPolicy({ workflow: { effects: ['workspace-read'] }, permissionPolicy: { workspaceRead: 'preapproved' }, available: Object.create({ workspaceRead: 'preapproved' }) }).decision, 'fallback-unsupported-capability');
 });
 
 test('behavior input resolution handles aliases, defaults, exact values, and conflicts', () => {
@@ -53,12 +65,43 @@ test('Contract v6 compiler remains product-neutral for the three-workflow fixtur
   });
   assert.equal(compiled.runtimeContracts.length, 3);
   assert.ok(compiled.runtimeContracts.every((contract) => contract.schemaVersion === 4));
-  assert.doesNotMatch(JSON.stringify(compiled.runtimeContracts), /nova|claude|codex/iu);
+  assert.doesNotMatch(JSON.stringify(compiled), /nova|claude|codex/iu);
 });
 
 test('framework output and evidence helpers expose explicit failures', () => {
   assert.deepEqual(validateOutputFields({ route: [] }, ['route', 'fallback']), { valid: false, missing: ['fallback'] });
   assert.deepEqual(evidenceFreshness({ a: 'one', b: 'two' }, (path) => ({ a: 'one', b: 'changed' })[path] ?? null), { current: false, staleReasons: ['b:digest-changed'] });
+});
+
+test('static host negotiation combines adapter enforcement, capabilities, and approvals', () => {
+  const compiled = {
+    adapters: [{
+      id: 'host',
+      enforcement: 'adapter',
+      contractEnforcement: { inputs: 'adapter', approval: 'adapter', output: 'adapter', effects: 'adapter', fallback: 'fail-closed' },
+    }],
+    runtimeContracts: [{
+      id: 'change',
+      effects: ['workspace-read', 'workspace-write'],
+      permissionPolicy: { workspaceRead: 'preapproved', workspaceWrite: 'prompt' },
+      runtimeRequirements: { executables: [], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' } },
+    }],
+  };
+  assert.equal(negotiateWorkflowSupport(compiled, { workflowId: 'missing', adapterId: 'host' }).status, 'unsupported');
+  assert.equal(negotiateWorkflowSupport(compiled, { workflowId: 'change', adapterId: 'missing' }).status, 'unsupported');
+  const readable = { workspaceRead: 'preapproved' };
+  assert.equal(negotiateWorkflowSupport(compiled, { workflowId: 'change', adapterId: 'host', available: { ...readable, workspaceWrite: 'unsupported' } }).status, 'unsupported');
+  assert.equal(negotiateWorkflowSupport(compiled, { workflowId: 'change', adapterId: 'host', available: { ...readable, workspaceWrite: 'prompt' } }).status, 'approval-required');
+  assert.equal(negotiateWorkflowSupport(compiled, { workflowId: 'change', adapterId: 'host', available: { ...readable, workspaceWrite: 'prompt' }, approved: ['workspaceWrite'] }).status, 'supported');
+  assert.equal(negotiateWorkflowSupport({ ...compiled, adapters: [{ id: 'generic', enforcement: 'advisory' }] }, { workflowId: 'change', adapterId: 'generic', available: { ...readable, workspaceWrite: 'preapproved' } }).status, 'unsupported');
+  assert.deepEqual(negotiateWorkflowSupport(null, { workflowId: 'change', adapterId: 'host' }).reasons, ['invalid-compiled-bundle']);
+  assert.deepEqual(negotiateWorkflowSupport(compiled, null).reasons, ['invalid-negotiation-options']);
+  assert.deepEqual(negotiateWorkflowSupport(compiled, { workflowId: 'change', adapterId: 'host', available: [], approved: [] }).reasons, ['invalid-negotiation-options']);
+  assert.deepEqual(negotiateWorkflowSupport(compiled, { workflowId: 'change', adapterId: 'host', available: { ...readable, workspaceWrite: 'preapproved' }, hostEnforcement: { invented: 'adapter' } }).reasons, ['invalid-host-enforcement:invented']);
+  assert.deepEqual(negotiateWorkflowSupport(compiled, { workflowId: 'change', adapterId: 'host', available: { ...readable, workspaceWrite: 'preapproved' }, hostEnforcement: { effects: 'native' } }).reasons, ['invalid-enforcement:effects']);
+  assert.deepEqual(negotiateWorkflowSupport({ ...compiled, runtimeContracts: [{ ...compiled.runtimeContracts[0], effects: ['invented'] }] }, { workflowId: 'change', adapterId: 'host', available: { ...readable, workspaceWrite: 'preapproved' } }).reasons, ['invalid-workflow-capability-contract']);
+  assert.deepEqual(negotiateWorkflowSupport({ ...compiled, adapters: [{ id: 'host', enforcement: 'unsupported' }] }, { workflowId: 'change', adapterId: 'host', available: { ...readable, workspaceWrite: 'preapproved' }, hostEnforcement: { inputs: 'adapter', approval: 'adapter', output: 'adapter', effects: 'adapter' } }).reasons, ['adapter-unsupported']);
+  assert.deepEqual(negotiateWorkflowSupport({ ...compiled, adapters: [{ id: 'host', schemaVersion: 2, enforcement: 'adapter' }] }, { workflowId: 'change', adapterId: 'host', available: { ...readable, workspaceWrite: 'preapproved' } }).reasons, ['invalid-adapter-contract-enforcement']);
 });
 
 test('runtime compiler emits policy plus a required product-defined behavior reference', () => {

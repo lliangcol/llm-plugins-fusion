@@ -6,7 +6,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { compileRuntimeContracts } from '../framework/compiler/compile-runtime-contracts.mjs';
+import { compileProductBundle } from '../framework/compiler/compile-product-bundle.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 import { loadWorkflowModel } from './lib/workflow-model.mjs';
 
@@ -32,12 +32,22 @@ export function buildSecondProductEvidence() {
   assert.equal(loaded.product.expectedWorkflowCount, loaded.spec.workflows.length);
   assert.deepEqual([...new Set(loaded.spec.workflows.map((entry) => entry.stage))], loaded.product.stages);
   assert.deepEqual(loaded.adapters.map((entry) => entry.id), ['mock']);
-  const contracts = compileRuntimeContracts(loaded.spec, loaded.behaviorSpec);
-  const contractsAgain = compileRuntimeContracts(loaded.spec, loaded.behaviorSpec);
-  assert.deepEqual(contractsAgain, contracts, 'compiler output must be deterministic');
-  const compiledText = JSON.stringify(contracts);
+  const bundle = {
+    framework: loaded.framework,
+    product: loaded.product,
+    workflows: loaded.workflows,
+    behaviors: loaded.behaviors,
+    adapters: loaded.adapters,
+  };
+  const compiled = compileProductBundle(bundle);
+  const compiledAgain = compileProductBundle(bundle);
+  assert.deepEqual(compiledAgain, compiled, 'compiler output must be deterministic');
+  const contracts = compiled.runtimeContracts;
+  const compiledText = JSON.stringify(compiled);
   assert.doesNotMatch(compiledText, /nova|claude|codex/iu);
-  assert.doesNotMatch(readFileSync(resolve(root, 'framework/compiler/compile-runtime-contracts.mjs'), 'utf8'), /nova|claude|codex|\b21\b/iu);
+  for (const path of ['framework/compiler/compile-product-bundle.mjs', 'framework/compiler/compile-runtime-contracts.mjs']) {
+    assert.doesNotMatch(readFileSync(resolve(root, path), 'utf8'), /nova|claude|codex|\b21\b/iu);
+  }
   const adapterManifest = {
     schemaVersion: 1,
     namespace: loaded.product.pluginNamespace,
@@ -45,7 +55,7 @@ export function buildSecondProductEvidence() {
     declaredLevel: loaded.adapters[0].declaredLevel,
     workflows: contracts.map((contract) => ({ id: contract.id, stage: contract.stage, requiredInputs: contract.requiredInputs, output: contract.behaviorContract.output })),
   };
-  const artifact = `${JSON.stringify({ contracts, adapterManifest }, null, 2)}\n`;
+  const artifact = `${JSON.stringify({ compiled, adapterManifest }, null, 2)}\n`;
   return {
     schemaVersion: 1,
     executionMode: 'deterministic-second-product-full-chain',
