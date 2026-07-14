@@ -172,6 +172,11 @@
       "disposition": "generated"
     },
     {
+      "path": "docs/generated/dependency-audit.md",
+      "target": "docs/generated/dependency-audit.md",
+      "disposition": "generated"
+    },
+    {
       "path": "docs/generated/doc-metadata-resolved.json",
       "target": "docs/generated/doc-metadata-resolved.json",
       "disposition": "generated"

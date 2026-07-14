@@ -378,6 +378,7 @@ async function main() {
     nodeTask('docs.command.generated', 'validate generated command docs', 'scripts/generate-command-docs.mjs'),
     nodeTask('docs.governance.generated', 'validate document governance outputs', 'scripts/generate-doc-governance.mjs'),
     nodeTask('docs.migrations', 'validate documentation compatibility migrations', 'scripts/migrate-documentation-layout.mjs'),
+    nodeTask('security.dependency-audit', 'validate dependency audit evidence', 'scripts/audit-dependencies.mjs'),
   ]);
 
   printTimingSummary();

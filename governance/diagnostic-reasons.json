@@ -21,6 +21,7 @@
     { "code": "TOOLCHAIN_NOT_INSTALLED", "severity": "warning", "summary": "The locked maintainer toolchain is not installed.", "remediation": "Run npm ci --ignore-scripts in an isolated or clean worktree, then rerun bootstrap validation.", "docsUrl": "docs/maintainers/diagnostics.md#reason-toolchain-not-installed" },
     { "code": "DRY_RUN_SAFE_PREVIEW", "severity": "info", "summary": "The command completed a non-mutating preview.", "remediation": "Use the preview as local planning evidence only; it is not real installation evidence.", "docsUrl": "docs/maintainers/diagnostics.md#reason-dry-run-safe-preview" },
     { "code": "EXTERNAL_SERVICE_UNAVAILABLE", "severity": "warning", "summary": "An external service or credentialed evidence lane is unavailable.", "remediation": "Record the result as Blocked or External evidence and rerun only with explicit authorization.", "docsUrl": "docs/maintainers/diagnostics.md#reason-external-service-unavailable" },
+    { "code": "DEPENDENCY_POLICY_VIOLATION", "severity": "error", "summary": "Dependency audit evidence exceeds the governed risk threshold.", "remediation": "Remediate the dependency or add a scoped, owned, unexpired exception.", "docsUrl": "docs/generated/dependency-audit.md" },
     { "code": "VALIDATION_FAILED", "severity": "error", "summary": "A validation command failed.", "remediation": "Inspect the bounded diagnostic output, fix the authoritative source, and rerun the affected gate.", "docsUrl": "docs/maintainers/diagnostics.md#reason-validation-failed" }
   ]
 }

@@ -16,10 +16,11 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `benchmark` | Tests, coverage, simulations, demos, mutations, and live evaluation. |
 | `maintenance` | Diagnostics, repository administration, and reusable script libraries. |
 
-## Script Inventory (124)
+## Script Inventory (125)
 
 | Category | Script |
 | --- | --- |
+| `evidence` | `scripts/audit-dependencies.mjs` |
 | `release` | `scripts/build-candidate-bundle.mjs` |
 | `release` | `scripts/build-release-artifacts.mjs` |
 | `release` | `scripts/build-release-control-bundle.mjs` |
@@ -145,10 +146,11 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `release` | `scripts/verify-release-promotion.mjs` |
 | `release` | `scripts/verify-stable-install.mjs` |
 
-## npm Shortcuts (99)
+## npm Shortcuts (101)
 
 | Category | Shortcut | Command |
 | --- | --- | --- |
+| `evidence` | `npm run audit:dependencies` | `node scripts/audit-dependencies.mjs --write` |
 | `validate` | `npm run check` | `npm run test:coverage:check && npm run validate:maintainer:evidence` |
 | `validate` | `npm run check:compatibility` | `npm run validate:compatibility-evidence && npm run validate:second-product && npm run validate:portable-paths` |
 | `validate` | `npm run check:contracts` | `node scripts/validate-all.mjs` |
@@ -220,6 +222,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `npm run validate:community` | `node scripts/validate-community-governance.mjs && node scripts/generate-quality-report.mjs` |
 | `validate` | `npm run validate:compatibility-evidence` | `node scripts/generate-compatibility-evidence.mjs` |
 | `validate` | `npm run validate:complexity` | `node scripts/validate-control-plane-complexity.mjs` |
+| `validate` | `npm run validate:dependency-audit` | `node scripts/audit-dependencies.mjs` |
 | `validate` | `npm run validate:doc-governance` | `node scripts/generate-doc-governance.mjs` |
 | `validate` | `npm run validate:doc-migrations` | `node scripts/migrate-documentation-layout.mjs` |
 | `validate` | `npm run validate:docs` | `node scripts/validate-docs.mjs` |
@@ -249,7 +252,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `npm run validate:workflow-contract` | `node scripts/validate-workflow-contract-v5.mjs` |
 | `validate` | `npm run validate:workspaces` | `node scripts/validate-workspaces.mjs` |
 
-## CI Job Map (26)
+## CI Job Map (27)
 
 | Workflow | Job |
 | --- | --- |
@@ -263,6 +266,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `.github/workflows/ci.yml` | `security` |
 | `.github/workflows/ci.yml` | `tests` |
 | `.github/workflows/codeql.yml` | `analyze` |
+| `.github/workflows/dependency-audit.yml` | `audit` |
 | `.github/workflows/dependency-review.yml` | `dependency-review` |
 | `.github/workflows/label-sync.yml` | `sync` |
 | `.github/workflows/nightly.yml` | `full` |

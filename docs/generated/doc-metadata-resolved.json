@@ -416,6 +416,15 @@
       "generated": true
     },
     {
+      "path": "docs/generated/dependency-audit.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
       "path": "docs/generated/documentation-navigation.md",
       "audience": "repository-users",
       "contentType": "generated-reference",

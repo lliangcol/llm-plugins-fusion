@@ -139,6 +139,7 @@ llm-plugins-fusion/
 |-- .github/workflows/
 |   |-- ci.yml
 |   |-- codeql.yml
+|   |-- dependency-audit.yml
 |   |-- dependency-review.yml
 |   |-- label-sync.yml
 |   |-- plugin-install-smoke.yml

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/dependency-audit-evidence.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["schemaVersion", "status", "reasonCode", "source", "lockDigest", "scope", "vulnerabilities"],
+  "properties": {
+    "schemaVersion": { "const": 1 }, "status": { "enum": ["passed", "failed", "blocked"] },
+    "reasonCode": { "type": ["string", "null"] }, "source": { "const": "npm-audit" },
+    "lockDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "scope": { "type": "object", "additionalProperties": false, "required": ["maintenanceDevOnly", "runtimeDistributed"], "properties": { "maintenanceDevOnly": { "const": true }, "runtimeDistributed": { "const": false } } },
+    "vulnerabilities": { "type": "object", "additionalProperties": false, "required": ["info", "low", "moderate", "high", "critical", "total"], "properties": { "info": { "type": "integer", "minimum": 0 }, "low": { "type": "integer", "minimum": 0 }, "moderate": { "type": "integer", "minimum": 0 }, "high": { "type": "integer", "minimum": 0 }, "critical": { "type": "integer", "minimum": 0 }, "total": { "type": "integer", "minimum": 0 } } }
+  }
+}

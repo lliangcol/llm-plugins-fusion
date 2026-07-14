@@ -13,5 +13,7 @@
     "GPL-3.0-only",
     "GPL-3.0-or-later"
   ],
-  "commentSummaryInPr": "never"
+  "commentSummaryInPr": "never",
+  "auditExceptions": [],
+  "distributedNodeRuntimeDependencies": false
 }

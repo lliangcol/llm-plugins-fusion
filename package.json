@@ -16,6 +16,8 @@
     "llmf": "node packages/cli/bin/llmf.mjs",
     "doctor": "node scripts/doctor.mjs",
     "validate:bootstrap": "node scripts/validate-bootstrap.mjs",
+    "audit:dependencies": "node scripts/audit-dependencies.mjs --write",
+    "validate:dependency-audit": "node scripts/audit-dependencies.mjs",
     "demo:all": "node scripts/demo-all.mjs",
     "demo:route": "node scripts/demo-route.mjs",
     "demo:review": "node scripts/demo-review.mjs",

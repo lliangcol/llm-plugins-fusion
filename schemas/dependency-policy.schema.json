@@ -4,7 +4,7 @@
   "title": "Dependency review policy",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "failOnSeverity", "deniedLicenses", "commentSummaryInPr"],
+  "required": ["schemaVersion", "failOnSeverity", "deniedLicenses", "commentSummaryInPr", "auditExceptions", "distributedNodeRuntimeDependencies"],
   "properties": {
     "$schema": { "type": "string" },
     "schemaVersion": { "const": 1 },
@@ -15,6 +15,11 @@
       "uniqueItems": true,
       "items": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9.+-]*$" }
     },
-    "commentSummaryInPr": { "enum": ["never", "always", "on-failure"] }
+    "commentSummaryInPr": { "enum": ["never", "always", "on-failure"] },
+    "distributedNodeRuntimeDependencies": { "const": false },
+    "auditExceptions": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["advisory", "scope", "reason", "owner", "expires"], "properties": {
+      "advisory": { "type": "string", "minLength": 1 }, "scope": { "enum": ["direct", "transitive", "dev-only", "runtime-distributed", "archive-excluded"] },
+      "reason": { "type": "string", "minLength": 1 }, "owner": { "type": "string", "minLength": 1 }, "expires": { "type": "string", "format": "date" }
+    } } }
   }
 }

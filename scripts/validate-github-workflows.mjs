@@ -80,6 +80,11 @@ const WORKFLOW_CONTRACTS = [
     label: 'dependency review workflow top-level permissions',
   },
   {
+    file: '.github/workflows/dependency-audit.yml',
+    permissions: [['contents', 'read']],
+    label: 'dependency audit workflow top-level permissions',
+  },
+  {
     file: '.github/workflows/codeql.yml',
     permissions: [['contents', 'read'], ['security-events', 'write']],
     label: 'CodeQL workflow top-level permissions',

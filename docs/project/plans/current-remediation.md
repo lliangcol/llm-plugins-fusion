@@ -95,7 +95,7 @@ Blocked、Not verified 和 External evidence。
 | WP2 | implemented | doctor、llmf doctor、bootstrap、validate-all 输出产物与 install dry-run 使用共享 diagnostics contract 和 reason registry | diagnostics schemas/registry、生成矩阵、`validate:bootstrap`、`demo:all`、JSON 输出；提交 `c037327` | schema 与 e2e 检查通过；子进程未识别的 Claude/Codex 为 Skipped 而非 Passed；回滚为还原本验收单元 |
 | WP3 | implemented | assistant manifest 与 v6/v2 生成链继续复用；sidecar metadata、workflow-id 文档 metadata、63 个命令文档生成块和导航已接入默认门 | doc/workflow metadata schemas、command-doc 与 doc-governance generators、generated navigation/manifest/redirect map；提交 `e63cce1` | 二次写入后 drift checks 及完整门通过；未改变六技能、21 命令或 runtime contract；回滚为还原本验收单元 |
 | WP4 | implemented | 实时树重新生成 migration manifest；84 个旧公共路径均保留可校验 stub；二进制与 generated 契约不移动 | `governance/docs-migrations.json`、迁移器、目标 IA、redirect map、导航、生成器与校验器路径对账 | 文档、schema、pack、workflow 与 regression targeted gates 通过；本轮禁止 stub 删除，回滚为还原本迁移单元 |
-| WP5 | open | Dependency Review 和 dependency policy 已存在；定期机器可读审计证据尚缺 | 待实施 | 网络证据不可用时必须为 Blocked/External evidence |
+| WP5 | implemented | 现有 Dependency Review 保持 PR 增量门；本地 `npm audit --json` 对当前 lockfile 返回 0 vulnerabilities | dependency audit schema/evidence/summary、例外基线、定期/手动 workflow、默认门 | 本地网络审计 Passed；workflow 仅静态验证且未触发，远端运行仍为 External evidence；分发插件无 Node runtime dependency |
 | WP6 | partial | 168-case 数据集、8-case critical profile、runner 与 24-task benchmark 已存在；分层 profile/evidence manifest 尚不完整 | 待实施 | 凭据型 live eval 未授权，保持 External evidence |
 | WP7 | partial | shell digest/session pinning、audit spool/lock、validate-all 并发已存在 | 待补竞态、恢复与性能预算证据 | 平台 skip 不能替代持续门 |
 | WP8 | partial | deterministic demo fixtures 与 minimal consumer fixture 已存在 | 待建立单一教程路径和 smoke | 不新增第二份 consumer fixture |

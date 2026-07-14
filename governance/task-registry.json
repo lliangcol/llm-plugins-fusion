@@ -17,14 +17,14 @@
     { "pattern": "^scripts/(?:sync-doc-facts|generate-(?:prompt-surface-report|diagnostics-docs|command-docs|doc-governance))", "category": "docs" },
     { "pattern": "^scripts/(?:migrate-|normalize-|scaffold)", "category": "migration" },
     { "pattern": "^scripts/(?:evaluate-|run-(?:critical|live|node-tests|real-task|test-coverage)|demo-)", "category": "benchmark" },
-    { "pattern": "^scripts/(?:collect-github-metrics|generate-)", "category": "evidence" },
+    { "pattern": "^scripts/(?:audit-dependencies|collect-github-metrics|generate-)", "category": "evidence" },
     { "pattern": "^scripts/(?:doctor|print-github-security-settings|profile-validation|sync-github-labels)", "category": "maintenance" }
   ],
   "npmScriptRules": [
     { "pattern": "^(?:validate|lint|scan|ci:|check|typecheck$)", "category": "validate" },
     { "pattern": "^release:", "category": "release" },
     { "pattern": "^generate:(?:command-docs|doc-governance|diagnostics-docs)", "category": "docs" },
-    { "pattern": "^generate:", "category": "evidence" },
+    { "pattern": "^(?:audit:|generate:)", "category": "evidence" },
     { "pattern": "^(?:test|eval:|demo:)", "category": "benchmark" },
     { "pattern": "^(?:scaffold:|normalize:|migrate:)", "category": "migration" },
     { "pattern": "^(?:doctor$|llmf$|sync:)", "category": "maintenance" }
