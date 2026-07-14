@@ -19,6 +19,8 @@ test('pure product bundle compiler emits canonical skills and generated aliases 
   const compiled = compileProductBundle(bundle);
   assert.deepEqual(compiled.canonicalSkills, ['route']);
   assert.deepEqual(compiled.commandWrappers[1], { id: 'legacy', canonicalSurfaceId: 'route', variantPreset: { DEPTH: 'deep' }, deprecated: true });
+  assert.deepEqual(compiled.spec.runtimeCompatibility, { 'claude-code': '1' });
+  assert.equal('knownGoodClaudeCli' in compiled.spec, false);
   assert.equal(compiled.runtimeContracts.length, 2);
 });
 

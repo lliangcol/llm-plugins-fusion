@@ -22,6 +22,10 @@ export function validateCompiledWorkflowModel({ spec, product, framework, adapte
   }
   const ids = new Set();
   const canonicalSurfaces = new Set();
+  const compatibilityAliases = spec.workflows.filter((workflow) => workflow.compatibilityAlias);
+  if (compatibilityAliases.length > 0) {
+    assert.ok(product.compatibilityAliasPolicy, 'products with compatibility aliases must declare compatibilityAliasPolicy');
+  }
   for (const workflow of spec.workflows) {
     assert.equal(ids.has(workflow.id), false, `duplicate workflow ${workflow.id}`);
     ids.add(workflow.id);

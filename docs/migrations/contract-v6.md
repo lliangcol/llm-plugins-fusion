@@ -46,6 +46,8 @@ will be removed in 5.0.0. Any former use of the unsafe 4.0
 the explicit `compileDirectoryUnchecked()` name after a separate validation
 review.
 
-The 15 compatibility aliases remain retained. Removal requires real benchmark
-evidence, a plugin-major migration, release notes, and a governed release
-decision; the current benchmark is waiting for external credentials and budget.
+The 15 compatibility aliases remain retained under the machine-readable policy
+in `workflow-specs/nova.product.json`. Removal requires real benchmark
+evidence, a plugin-major release, a governed release decision, and migration
+documentation; the current benchmark is waiting for external credentials and
+budget.

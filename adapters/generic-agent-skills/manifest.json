@@ -1,6 +1,46 @@
 {
-  "schemaVersion": 2,
+  "$schema": "../../schemas/assistant-manifest.schema.json",
+  "schemaVersion": 3,
   "source": "workflow-specs/adapters/generic.json",
+  "product": {
+    "namespace": "nova-plugin",
+    "expectedWorkflowCount": 21,
+    "canonicalEntrypoints": [
+      "route",
+      "explore",
+      "produce-plan",
+      "review",
+      "implement-plan",
+      "finalize-work"
+    ],
+    "agents": [
+      "architect",
+      "builder",
+      "orchestrator",
+      "publisher",
+      "reviewer",
+      "verifier"
+    ],
+    "packs": [
+      "dependency",
+      "docs",
+      "frontend",
+      "java",
+      "marketplace",
+      "mcp",
+      "release",
+      "security"
+    ]
+  },
+  "aliasPolicy": {
+    "status": "evidence-gated",
+    "removalRequires": [
+      "real-benchmark-evidence",
+      "plugin-major-release",
+      "governed-release-decision",
+      "migration-documentation"
+    ]
+  },
   "maximumSupportedLevel": "L4",
   "declaredLevel": "L1",
   "evidenceRequiredFor": [
@@ -25,14 +65,24 @@
     {
       "id": "backend-plan",
       "canonicalSurfaceId": "produce-plan",
+      "canonicalSkill": "nova-produce-plan",
       "variantPreset": {
         "PLAN_PROFILE": "java-backend"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-produce-plan",
       "contract": "../../nova-plugin/skills/nova-produce-plan/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/backend-plan.json",
       "stage": "plan",
       "risk": "low",
+      "ownerAgents": [
+        "architect"
+      ],
+      "recommendedPacks": [
+        "java",
+        "security",
+        "dependency"
+      ],
       "requiredInputs": [
         "REQUEST",
         "PLAN_OUTPUT_PATH"
@@ -104,14 +154,22 @@
     {
       "id": "codex-review-fix",
       "canonicalSurfaceId": "implement-plan",
+      "canonicalSkill": "nova-implement-plan",
       "variantPreset": {
         "EXECUTION_PROFILE": "codex-review-fix"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-implement-plan",
       "contract": "../../nova-plugin/skills/nova-implement-plan/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/codex-review-fix.json",
       "stage": "implement",
       "risk": "medium",
+      "ownerAgents": [
+        "reviewer",
+        "builder",
+        "verifier"
+      ],
+      "recommendedPacks": [],
       "requiredInputs": [
         "REVIEW_SCOPE"
       ],
@@ -209,14 +267,20 @@
     {
       "id": "codex-review-only",
       "canonicalSurfaceId": "review",
+      "canonicalSkill": "nova-review",
       "variantPreset": {
         "REVIEW_PROFILE": "codex-review-only"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-review",
       "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/codex-review-only.json",
       "stage": "review",
       "risk": "low",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [],
       "requiredInputs": [
         "REVIEW_SCOPE"
       ],
@@ -307,14 +371,20 @@
     {
       "id": "codex-verify-only",
       "canonicalSurfaceId": "review",
+      "canonicalSkill": "nova-review",
       "variantPreset": {
         "REVIEW_PROFILE": "codex-verify-only"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-review",
       "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/codex-verify-only.json",
       "stage": "review",
       "risk": "low",
+      "ownerAgents": [
+        "verifier"
+      ],
+      "recommendedPacks": [],
       "requiredInputs": [
         "REVIEW_FILE"
       ],
@@ -416,12 +486,19 @@
     {
       "id": "explore",
       "canonicalSurfaceId": "explore",
+      "canonicalSkill": "nova-explore",
       "variantPreset": {},
       "compatibilityAlias": false,
+      "replacement": null,
       "contract": "../../nova-plugin/skills/nova-explore/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/explore.json",
       "stage": "explore",
       "risk": "none",
+      "ownerAgents": [
+        "orchestrator",
+        "reviewer"
+      ],
+      "recommendedPacks": [],
       "requiredInputs": [
         "INPUT"
       ],
@@ -484,15 +561,21 @@
     {
       "id": "explore-lite",
       "canonicalSurfaceId": "explore",
+      "canonicalSkill": "nova-explore",
       "variantPreset": {
         "PERSPECTIVE": "observer",
         "DEPTH": "lite"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-explore",
       "contract": "../../nova-plugin/skills/nova-explore/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/explore-lite.json",
       "stage": "explore",
       "risk": "none",
+      "ownerAgents": [
+        "orchestrator"
+      ],
+      "recommendedPacks": [],
       "requiredInputs": [
         "INPUT"
       ],
@@ -546,14 +629,23 @@
     {
       "id": "explore-review",
       "canonicalSurfaceId": "explore",
+      "canonicalSkill": "nova-explore",
       "variantPreset": {
         "PERSPECTIVE": "reviewer"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-explore",
       "contract": "../../nova-plugin/skills/nova-explore/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/explore-review.json",
       "stage": "explore",
       "risk": "none",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "security",
+        "dependency"
+      ],
       "requiredInputs": [
         "INPUT"
       ],
@@ -607,14 +699,22 @@
     {
       "id": "finalize-lite",
       "canonicalSurfaceId": "finalize-work",
+      "canonicalSkill": "nova-finalize-work",
       "variantPreset": {
         "DEPTH": "lite"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-finalize-work",
       "contract": "../../nova-plugin/skills/nova-finalize-work/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/finalize-lite.json",
       "stage": "finalize",
       "risk": "none",
+      "ownerAgents": [
+        "publisher"
+      ],
+      "recommendedPacks": [
+        "docs"
+      ],
       "requiredInputs": [
         "WORK_SUMMARY"
       ],
@@ -668,12 +768,21 @@
     {
       "id": "finalize-work",
       "canonicalSurfaceId": "finalize-work",
+      "canonicalSkill": "nova-finalize-work",
       "variantPreset": {},
       "compatibilityAlias": false,
+      "replacement": null,
       "contract": "../../nova-plugin/skills/nova-finalize-work/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/finalize-work.json",
       "stage": "finalize",
       "risk": "none",
+      "ownerAgents": [
+        "publisher"
+      ],
+      "recommendedPacks": [
+        "release",
+        "docs"
+      ],
       "requiredInputs": [
         "WORK_SUMMARY"
       ],
@@ -729,14 +838,20 @@
     {
       "id": "implement-lite",
       "canonicalSurfaceId": "implement-plan",
+      "canonicalSkill": "nova-implement-plan",
       "variantPreset": {
         "EXECUTION_PROFILE": "lite"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-implement-plan",
       "contract": "../../nova-plugin/skills/nova-implement-plan/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/implement-lite.json",
       "stage": "implement",
       "risk": "medium",
+      "ownerAgents": [
+        "builder"
+      ],
+      "recommendedPacks": [],
       "requiredInputs": [
         "REQUEST"
       ],
@@ -799,12 +914,18 @@
     {
       "id": "implement-plan",
       "canonicalSurfaceId": "implement-plan",
+      "canonicalSkill": "nova-implement-plan",
       "variantPreset": {},
       "compatibilityAlias": false,
+      "replacement": null,
       "contract": "../../nova-plugin/skills/nova-implement-plan/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/implement-plan.json",
       "stage": "implement",
       "risk": "medium",
+      "ownerAgents": [
+        "builder"
+      ],
+      "recommendedPacks": [],
       "requiredInputs": [
         "PLAN_INPUT_PATH",
         "PLAN_APPROVED"
@@ -883,14 +1004,20 @@
     {
       "id": "implement-standard",
       "canonicalSurfaceId": "implement-plan",
+      "canonicalSkill": "nova-implement-plan",
       "variantPreset": {
         "EXECUTION_PROFILE": "standard"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-implement-plan",
       "contract": "../../nova-plugin/skills/nova-implement-plan/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/implement-standard.json",
       "stage": "implement",
       "risk": "medium",
+      "ownerAgents": [
+        "builder"
+      ],
+      "recommendedPacks": [],
       "requiredInputs": [
         "REQUEST"
       ],
@@ -953,14 +1080,20 @@
     {
       "id": "plan-lite",
       "canonicalSurfaceId": "produce-plan",
+      "canonicalSkill": "nova-produce-plan",
       "variantPreset": {
         "PLAN_PROFILE": "lite"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-produce-plan",
       "contract": "../../nova-plugin/skills/nova-produce-plan/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/plan-lite.json",
       "stage": "plan",
       "risk": "none",
+      "ownerAgents": [
+        "architect"
+      ],
+      "recommendedPacks": [],
       "requiredInputs": [
         "REQUEST"
       ],
@@ -1019,14 +1152,23 @@
     {
       "id": "plan-review",
       "canonicalSurfaceId": "review",
+      "canonicalSkill": "nova-review",
       "variantPreset": {
         "REVIEW_PROFILE": "plan"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-review",
       "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/plan-review.json",
       "stage": "review",
       "risk": "none",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "docs",
+        "security"
+      ],
       "requiredInputs": [
         "PLAN_INPUT_PATH"
       ],
@@ -1088,12 +1230,20 @@
     {
       "id": "produce-plan",
       "canonicalSurfaceId": "produce-plan",
+      "canonicalSkill": "nova-produce-plan",
       "variantPreset": {},
       "compatibilityAlias": false,
+      "replacement": null,
       "contract": "../../nova-plugin/skills/nova-produce-plan/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/produce-plan.json",
       "stage": "plan",
       "risk": "low",
+      "ownerAgents": [
+        "architect"
+      ],
+      "recommendedPacks": [
+        "docs"
+      ],
       "requiredInputs": [
         "REQUEST",
         "PLAN_OUTPUT_PATH"
@@ -1184,12 +1334,21 @@
     {
       "id": "review",
       "canonicalSurfaceId": "review",
+      "canonicalSkill": "nova-review",
       "variantPreset": {},
       "compatibilityAlias": false,
+      "replacement": null,
       "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/review.json",
       "stage": "review",
       "risk": "none",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "security",
+        "dependency"
+      ],
       "requiredInputs": [
         "REVIEW_SCOPE"
       ],
@@ -1253,14 +1412,20 @@
     {
       "id": "review-lite",
       "canonicalSurfaceId": "review",
+      "canonicalSkill": "nova-review",
       "variantPreset": {
         "LEVEL": "lite"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-review",
       "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/review-lite.json",
       "stage": "review",
       "risk": "none",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [],
       "requiredInputs": [
         "REVIEW_SCOPE"
       ],
@@ -1314,14 +1479,23 @@
     {
       "id": "review-only",
       "canonicalSurfaceId": "review",
+      "canonicalSkill": "nova-review",
       "variantPreset": {
         "LEVEL": "standard"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-review",
       "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/review-only.json",
       "stage": "review",
       "risk": "none",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "security",
+        "dependency"
+      ],
       "requiredInputs": [
         "REVIEW_SCOPE"
       ],
@@ -1375,14 +1549,23 @@
     {
       "id": "review-strict",
       "canonicalSurfaceId": "review",
+      "canonicalSkill": "nova-review",
       "variantPreset": {
         "LEVEL": "strict"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-review",
       "contract": "../../nova-plugin/skills/nova-review/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/review-strict.json",
       "stage": "review",
       "risk": "none",
+      "ownerAgents": [
+        "reviewer"
+      ],
+      "recommendedPacks": [
+        "security",
+        "dependency"
+      ],
       "requiredInputs": [
         "REVIEW_SCOPE"
       ],
@@ -1436,12 +1619,18 @@
     {
       "id": "route",
       "canonicalSurfaceId": "route",
+      "canonicalSkill": "nova-route",
       "variantPreset": {},
       "compatibilityAlias": false,
+      "replacement": null,
       "contract": "../../nova-plugin/skills/nova-route/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/route.json",
       "stage": "explore",
       "risk": "none",
+      "ownerAgents": [
+        "orchestrator"
+      ],
+      "recommendedPacks": [],
       "requiredInputs": [
         "REQUEST"
       ],
@@ -1504,14 +1693,21 @@
     {
       "id": "senior-explore",
       "canonicalSurfaceId": "explore",
+      "canonicalSkill": "nova-explore",
       "variantPreset": {
         "DEPTH": "deep"
       },
       "compatibilityAlias": true,
+      "replacement": "nova-explore",
       "contract": "../../nova-plugin/skills/nova-explore/SKILL.md",
       "runtimeContract": "../../nova-plugin/runtime/contracts/senior-explore.json",
       "stage": "explore",
       "risk": "low",
+      "ownerAgents": [
+        "architect",
+        "reviewer"
+      ],
+      "recommendedPacks": [],
       "requiredInputs": [
         "INTENT",
         "CONTEXT"

@@ -54,14 +54,18 @@ export function legacyCapabilities(permissionPolicy) {
   }));
 }
 
-export function buildRuntimePermissionSpec(spec) {
+export function buildRuntimePermissionSpec(spec, product) {
+  const knownGoodClaudeCli = product?.runtimeCompatibility?.['claude-code'];
+  if (typeof knownGoodClaudeCli !== 'string' || !knownGoodClaudeCli) {
+    throw new Error('Nova product runtimeCompatibility must declare claude-code');
+  }
   const commandIds = spec.workflows.map((workflow) => workflow.id).sort();
   const canonicalSkillIds = spec.workflows.filter((workflow) => !workflow.compatibilityAlias).map((workflow) => workflow.canonicalSurfaceId).sort();
   return {
     $schema: '../../schemas/workflow-permissions.schema.json',
     schemaVersion: 2,
     pluginNamespace: spec.pluginNamespace,
-    knownGoodClaudeCli: spec.knownGoodClaudeCli,
+    knownGoodClaudeCli,
     primaryEntrypoints: spec.primaryEntrypoints,
     toolVocabulary: spec.toolVocabulary,
     expectedInventory: {
@@ -251,7 +255,7 @@ function renderWorkflowCatalog(report) {
 export function generateWorkflowPermissionFiles(root = defaultRoot) {
   const canonicalSpec = loadSpec(root);
   const product = loadProduct(root);
-  const spec = buildRuntimePermissionSpec(canonicalSpec);
+  const spec = buildRuntimePermissionSpec(canonicalSpec, product);
   const workflowIds = spec.workflows.map((workflow) => workflow.id).sort();
   const commandIds = [...spec.expectedInventory.commandIds].sort();
   const skillNames = [...spec.expectedInventory.skillNames].sort();

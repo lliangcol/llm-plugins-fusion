@@ -1,3 +1,107 @@
+import { evaluateCapabilityPolicy, requiredCapabilities } from '../../framework/core/capability-policy.mjs';
+
+const enforcementDimensions = Object.freeze({
+  inputs: new Set(['native', 'adapter', 'advisory', 'unsupported']),
+  approval: new Set(['native', 'hook', 'adapter', 'advisory', 'unsupported']),
+  output: new Set(['native', 'adapter', 'advisory', 'unsupported']),
+  effects: new Set(['native-and-hook', 'adapter', 'advisory', 'unsupported']),
+});
+const executableEnforcement = new Set(['native', 'native-and-hook', 'hook', 'adapter']);
+const adapterEnforcementLevels = new Set(['native-and-hook', 'adapter', 'advisory', 'unsupported']);
+const fallbackLevels = new Set(['fail-closed', 'report-unsupported']);
+
+function defaultContractEnforcement(adapter) {
+  const level = adapter?.enforcement ?? 'unsupported';
+  if (level === 'native-and-hook') return { inputs: 'adapter', approval: 'hook', output: 'adapter', effects: 'native-and-hook' };
+  if (level === 'adapter') return { inputs: 'adapter', approval: 'adapter', output: 'adapter', effects: 'adapter' };
+  return { inputs: 'advisory', approval: 'advisory', output: 'advisory', effects: 'advisory' };
+}
+
+function requiredEnforcementDimensions(contract, available) {
+  const required = new Set(['inputs', 'output']);
+  const capabilities = requiredCapabilities(contract, contract.permissionPolicy);
+  if ((contract.effects ?? []).length > 0 || capabilities.length > 0) required.add('effects');
+  if (capabilities.some((capability) => {
+    const authorization = contract.permissionPolicy?.[capability];
+    const availability = available[capability];
+    return authorization === 'prompt' || authorization === 'explicit' || availability === 'prompt' || availability === 'explicit';
+  })) required.add('approval');
+  return [...required];
+}
+
+function invalidEnforcementReason(enforcement, prefix) {
+  for (const [dimension, allowed] of Object.entries(enforcementDimensions)) {
+    if (!allowed.has(enforcement[dimension])) return `${prefix}:${dimension}`;
+  }
+  return null;
+}
+
+export function negotiateWorkflowSupport(compiled, options = {}) {
+  if (!options || typeof options !== 'object' || Array.isArray(options)) {
+    return { status: 'unsupported', workflowId: undefined, adapterId: undefined, reasons: ['invalid-negotiation-options'] };
+  }
+  const { workflowId, adapterId, available = {}, approved = [], hostEnforcement = {} } = /** @type {any} */ (options);
+  if (!Array.isArray(compiled?.runtimeContracts) || !Array.isArray(compiled?.adapters)) {
+    return { status: 'unsupported', workflowId, adapterId, reasons: ['invalid-compiled-bundle'] };
+  }
+  if (!available || typeof available !== 'object' || Array.isArray(available) || !Array.isArray(approved) || !hostEnforcement || typeof hostEnforcement !== 'object' || Array.isArray(hostEnforcement)) {
+    return { status: 'unsupported', workflowId, adapterId, reasons: ['invalid-negotiation-options'] };
+  }
+  const workflow = compiled.runtimeContracts.find((entry) => entry?.id === workflowId);
+  if (!workflow) return { status: 'unsupported', workflowId, adapterId, reasons: ['unknown-workflow'] };
+  const adapter = compiled.adapters.find((entry) => entry?.id === adapterId);
+  if (!adapter) return { status: 'unsupported', workflowId, adapterId, reasons: ['unknown-adapter'] };
+
+  if (!adapterEnforcementLevels.has(adapter.enforcement)) {
+    return { status: 'unsupported', workflowId, adapterId, reasons: ['invalid-adapter-enforcement'] };
+  }
+  if (adapter.enforcement === 'unsupported') {
+    return { status: 'unsupported', workflowId, adapterId, reasons: ['adapter-unsupported'] };
+  }
+  if (adapter.schemaVersion === 2 && adapter.contractEnforcement === undefined) {
+    return { status: 'unsupported', workflowId, adapterId, reasons: ['invalid-adapter-contract-enforcement'] };
+  }
+  if (adapter.contractEnforcement !== undefined) {
+    if (!adapter.contractEnforcement || typeof adapter.contractEnforcement !== 'object' || Array.isArray(adapter.contractEnforcement)) {
+      return { status: 'unsupported', workflowId, adapterId, reasons: ['invalid-adapter-contract-enforcement'] };
+    }
+    const invalidAdapterKey = Object.keys(adapter.contractEnforcement)
+      .find((key) => key !== 'fallback' && !Object.hasOwn(enforcementDimensions, key));
+    if (invalidAdapterKey || (adapter.contractEnforcement.fallback !== undefined && !fallbackLevels.has(adapter.contractEnforcement.fallback))) {
+      return { status: 'unsupported', workflowId, adapterId, reasons: ['invalid-adapter-contract-enforcement'] };
+    }
+    if (adapter.schemaVersion === 2 && [...Object.keys(enforcementDimensions), 'fallback'].some((key) => !Object.hasOwn(adapter.contractEnforcement, key))) {
+      return { status: 'unsupported', workflowId, adapterId, reasons: ['invalid-adapter-contract-enforcement'] };
+    }
+  }
+
+  const invalidHostKey = Object.keys(hostEnforcement).find((key) => !Object.hasOwn(enforcementDimensions, key));
+  if (invalidHostKey) return { status: 'unsupported', workflowId, adapterId, reasons: [`invalid-host-enforcement:${invalidHostKey}`] };
+  const enforcement = { ...defaultContractEnforcement(adapter), ...(adapter.contractEnforcement ?? {}), ...hostEnforcement };
+  const invalidEnforcement = invalidEnforcementReason(enforcement, 'invalid-enforcement');
+  if (invalidEnforcement) return { status: 'unsupported', workflowId, adapterId, reasons: [invalidEnforcement], enforcement };
+  let unenforced;
+  try {
+    unenforced = requiredEnforcementDimensions(workflow, available)
+      .filter((dimension) => !executableEnforcement.has(enforcement[dimension]))
+      .map((dimension) => `unenforced:${dimension}`);
+  } catch {
+    return { status: 'unsupported', workflowId, adapterId, reasons: ['invalid-workflow-capability-contract'], enforcement };
+  }
+  if (unenforced.length > 0) {
+    return { status: 'unsupported', workflowId, adapterId, reasons: unenforced, enforcement };
+  }
+
+  const capability = evaluateCapabilityPolicy({ workflow, permissionPolicy: workflow.permissionPolicy, available, approved });
+  if (capability.decision === 'fallback-unsupported-capability') {
+    return { status: 'unsupported', workflowId, adapterId, reasons: capability.reasons, enforcement };
+  }
+  if (capability.decision === 'blocked-approval') {
+    return { status: 'approval-required', workflowId, adapterId, reasons: capability.reasons, enforcement };
+  }
+  return { status: 'supported', workflowId, adapterId, reasons: [], enforcement };
+}
+
 export function testConformance(compiled) {
   const failures = [];
   if (compiled.runtimeContracts.length !== compiled.product.expectedWorkflowCount) failures.push('workflow-count-mismatch');
