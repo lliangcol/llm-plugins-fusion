@@ -6,6 +6,15 @@
   "stages": ["explore", "plan", "review", "implement", "finalize"],
   "primaryEntrypoints": ["route", "explore", "produce-plan", "review", "implement-plan", "finalize-work"],
   "runtimeCompatibility": { "claude-code": "2.1.205" },
+  "compatibilityAliasPolicy": {
+    "status": "evidence-gated",
+    "removalRequires": [
+      "real-benchmark-evidence",
+      "plugin-major-release",
+      "governed-release-decision",
+      "migration-documentation"
+    ]
+  },
   "adapterDefinitions": ["adapters/claude.json", "adapters/codex.json", "adapters/generic.json"],
   "agents": ["architect", "builder", "orchestrator", "publisher", "reviewer", "verifier"],
   "packs": ["dependency", "docs", "frontend", "java", "marketplace", "mcp", "release", "security"],

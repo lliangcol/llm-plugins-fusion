@@ -123,6 +123,28 @@ test('Contract v6 schemas reject inferred approval arbitrary predicates and outp
   assert.notDeepEqual(validateStandardSchema(behaviorSchema, outputEffects), []);
 });
 
+test('assistant manifest schema rejects incomplete alias gates and loose nested contracts', () => {
+  const productSchema = read('schemas/workflow-product.schema.json');
+  const product = read('workflow-specs/nova.product.json');
+  const incompleteProductPolicy = structuredClone(product);
+  incompleteProductPolicy.compatibilityAliasPolicy.removalRequires.pop();
+  assert.notDeepEqual(validateStandardSchema(productSchema, incompleteProductPolicy), []);
+
+  const manifestSchema = read('schemas/assistant-manifest.schema.json');
+  const manifest = read('adapters/generic-agent-skills/manifest.json');
+  const incompleteManifestPolicy = structuredClone(manifest);
+  incompleteManifestPolicy.aliasPolicy.removalRequires.pop();
+  assert.notDeepEqual(validateStandardSchema(manifestSchema, incompleteManifestPolicy), []);
+
+  const looseInput = structuredClone(manifest);
+  looseInput.workflows[0].inputs[0].invented = true;
+  assert.notDeepEqual(validateStandardSchema(manifestSchema, looseInput), []);
+
+  const looseRuntime = structuredClone(manifest);
+  looseRuntime.workflows[0].runtimeRequirements.network.invented = true;
+  assert.notDeepEqual(validateStandardSchema(manifestSchema, looseRuntime), []);
+});
+
 test('aggregate prompt load graph covers every workflow and budget regressions fail closed', () => {
   const report = buildPromptSurfaceReport();
   assert.equal(report.workflowCount, 21);
