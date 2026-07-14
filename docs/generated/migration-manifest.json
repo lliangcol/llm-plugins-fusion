@@ -1,0 +1,525 @@
+{
+  "schemaVersion": 1,
+  "files": [
+    {
+      "path": "docs/README.md",
+      "target": "docs/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/adr/0001-truth-release-capability-evidence.md",
+      "target": "docs/adr/0001-truth-release-capability-evidence.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/agents/PLUGIN_AWARE_ROUTING.md",
+      "target": "docs/agents/PLUGIN_AWARE_ROUTING.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/agents/ROUTING.md",
+      "target": "docs/agents/ROUTING.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/assets/README.md",
+      "target": "docs/assets/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/assets/social-preview-1280x640.png",
+      "target": "docs/assets/social-preview-1280x640.png",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/compatibility/README.md",
+      "target": "docs/compatibility/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/compatibility/assistant-levels.md",
+      "target": "docs/compatibility/assistant-levels.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/compatibility/contract-semver.md",
+      "target": "docs/compatibility/contract-semver.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/compatibility/public-api.md",
+      "target": "docs/compatibility/public-api.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/consumers/README.md",
+      "target": "docs/consumers/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/consumers/aider-setup.md",
+      "target": "docs/consumers/aider-setup.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/consumers/cline-setup.md",
+      "target": "docs/consumers/cline-setup.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/consumers/codex-setup.md",
+      "target": "docs/consumers/codex-setup.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/consumers/copilot-setup.md",
+      "target": "docs/consumers/copilot-setup.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/consumers/cursor-setup.md",
+      "target": "docs/consumers/cursor-setup.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/consumers/frontend-project-template.md",
+      "target": "docs/consumers/frontend-project-template.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/consumers/gemini-cli-setup.md",
+      "target": "docs/consumers/gemini-cli-setup.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/consumers/opencode-setup.md",
+      "target": "docs/consumers/opencode-setup.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/consumers/openhands-setup.md",
+      "target": "docs/consumers/openhands-setup.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/consumers/private-java-backend-template.md",
+      "target": "docs/consumers/private-java-backend-template.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/consumers/profile-contract.md",
+      "target": "docs/consumers/profile-contract.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/consumers/shell-policy-template.json",
+      "target": "docs/consumers/shell-policy-template.json",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/consumers/workbench-template.md",
+      "target": "docs/consumers/workbench-template.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/examples/README.md",
+      "target": "docs/examples/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/examples/frontend/basic-feature.md",
+      "target": "docs/examples/frontend/basic-feature.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/examples/java-backend/redacted-feature.md",
+      "target": "docs/examples/java-backend/redacted-feature.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/examples/primary-workflow-transcript.md",
+      "target": "docs/examples/primary-workflow-transcript.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/examples/workflow-evaluation-record-template.md",
+      "target": "docs/examples/workflow-evaluation-record-template.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/examples/workflow-evaluation.md",
+      "target": "docs/examples/workflow-evaluation.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/framework/README.md",
+      "target": "docs/framework/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/framework/second-product.md",
+      "target": "docs/framework/second-product.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/generated/assistant-compatibility.md",
+      "target": "docs/generated/assistant-compatibility.md",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/command-matrix.md",
+      "target": "docs/generated/command-matrix.md",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/doc-metadata-resolved.json",
+      "target": "docs/generated/doc-metadata-resolved.json",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/documentation-navigation.md",
+      "target": "docs/generated/documentation-navigation.md",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/effective-permissions.json",
+      "target": "docs/generated/effective-permissions.json",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/effective-permissions.md",
+      "target": "docs/generated/effective-permissions.md",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/migration-manifest.json",
+      "target": "docs/generated/migration-manifest.json",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/prompt-surface-report.json",
+      "target": "docs/generated/prompt-surface-report.json",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/prompt-surface-report.md",
+      "target": "docs/generated/prompt-surface-report.md",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/real-task-benchmark.json",
+      "target": "docs/generated/real-task-benchmark.json",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/real-task-benchmark.md",
+      "target": "docs/generated/real-task-benchmark.md",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/redirect-map.json",
+      "target": "docs/generated/redirect-map.json",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/surface-inventory.json",
+      "target": "docs/generated/surface-inventory.json",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/surface-inventory.md",
+      "target": "docs/generated/surface-inventory.md",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/workflow-catalog.json",
+      "target": "docs/generated/workflow-catalog.json",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/workflow-catalog.md",
+      "target": "docs/generated/workflow-catalog.md",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/getting-started.md",
+      "target": "docs/getting-started.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/growth/README.md",
+      "target": "docs/growth/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/llm-plugins-fusion-maintenance-status.md",
+      "target": "docs/llm-plugins-fusion-maintenance-status.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/maintainers/comprehensive-audit-remediation-plan.md",
+      "target": "docs/maintainers/comprehensive-audit-remediation-plan.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/maintainers/deep-research-remediation-and-documentation-redesign-plan.md",
+      "target": "docs/maintainers/deep-research-remediation-and-documentation-redesign-plan.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/maintainers/diagnostics.md",
+      "target": "docs/maintainers/diagnostics.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/maintainers/github-security-settings.md",
+      "target": "docs/maintainers/github-security-settings.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/maintainers/post-remediation-audit.md",
+      "target": "docs/maintainers/post-remediation-audit.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/maintainers/quickstart.md",
+      "target": "docs/maintainers/quickstart.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/maintainers/release-runbook.md",
+      "target": "docs/maintainers/release-runbook.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/maintainers/task-catalog.md",
+      "target": "docs/maintainers/task-catalog.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/maintainers/troubleshooting.md",
+      "target": "docs/maintainers/troubleshooting.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/maintainers/validation-index.md",
+      "target": "docs/maintainers/validation-index.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/marketplace/catalog.md",
+      "target": "docs/marketplace/catalog.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/marketplace/compatibility-matrix.md",
+      "target": "docs/marketplace/compatibility-matrix.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/marketplace/multi-plugin-readiness.md",
+      "target": "docs/marketplace/multi-plugin-readiness.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/marketplace/portal-information-architecture.md",
+      "target": "docs/marketplace/portal-information-architecture.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/marketplace/registry-author-workflow.md",
+      "target": "docs/marketplace/registry-author-workflow.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/marketplace/security-review-route.md",
+      "target": "docs/marketplace/security-review-route.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/marketplace/trust-policy.md",
+      "target": "docs/marketplace/trust-policy.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/marketplace/v3-readiness-evidence.md",
+      "target": "docs/marketplace/v3-readiness-evidence.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/migrations/2.4.1-command-namespace.md",
+      "target": "docs/migrations/2.4.1-command-namespace.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/migrations/3.0.0-adapters-and-direct-commands.md",
+      "target": "docs/migrations/3.0.0-adapters-and-direct-commands.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/migrations/contract-v6.md",
+      "target": "docs/migrations/contract-v6.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/privacy/data-handling.md",
+      "target": "docs/privacy/data-handling.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/project-optimization-plan.md",
+      "target": "docs/project-optimization-plan.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/prompts/README.md",
+      "target": "docs/prompts/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/prompts/claude-code/fix-from-review.md",
+      "target": "docs/prompts/claude-code/fix-from-review.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/prompts/claude-code/serial-checkpoint.md",
+      "target": "docs/prompts/claude-code/serial-checkpoint.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/prompts/claude-code/subagent-execution.md",
+      "target": "docs/prompts/claude-code/subagent-execution.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/prompts/codex/context-safe-review.md",
+      "target": "docs/prompts/codex/context-safe-review.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/prompts/codex/final-verification.md",
+      "target": "docs/prompts/codex/final-verification.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/prompts/common/checkpoint-artifact.md",
+      "target": "docs/prompts/common/checkpoint-artifact.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/prompts/common/delivery-docs.md",
+      "target": "docs/prompts/common/delivery-docs.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/prompts/common/html-artifact.md",
+      "target": "docs/prompts/common/html-artifact.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/prompts/common/skill-harness-audit.md",
+      "target": "docs/prompts/common/skill-harness-audit.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/prompts/common/workbench-tidy.md",
+      "target": "docs/prompts/common/workbench-tidy.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/quality/benchmark.md",
+      "target": "docs/quality/benchmark.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/releases/3.0.0-audit-closure.md",
+      "target": "docs/releases/3.0.0-audit-closure.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/releases/3.0.0-notes.md",
+      "target": "docs/releases/3.0.0-notes.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/releases/3.0.1-notes.md",
+      "target": "docs/releases/3.0.1-notes.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/releases/operator-recovery-and-key-rotation.md",
+      "target": "docs/releases/operator-recovery-and-key-rotation.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/releases/release-evidence-template.md",
+      "target": "docs/releases/release-evidence-template.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/releases/release-hygiene.md",
+      "target": "docs/releases/release-hygiene.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/releases/release-validation-runbook.md",
+      "target": "docs/releases/release-validation-runbook.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/showcase/README.md",
+      "target": "docs/showcase/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/showcase/frontend.md",
+      "target": "docs/showcase/frontend.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/showcase/java-backend.md",
+      "target": "docs/showcase/java-backend.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/showcase/release-and-docs.md",
+      "target": "docs/showcase/release-and-docs.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/start-here.md",
+      "target": "docs/start-here.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/workflows/context-safe-agent-workflows.md",
+      "target": "docs/workflows/context-safe-agent-workflows.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/workflows/gsd-informed-hardening.md",
+      "target": "docs/workflows/gsd-informed-hardening.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/workflows/routing-validation-guardrails.md",
+      "target": "docs/workflows/routing-validation-guardrails.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/workflows/source-controlled-checks.md",
+      "target": "docs/workflows/source-controlled-checks.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/workflows/thin-harness-fat-skills.md",
+      "target": "docs/workflows/thin-harness-fat-skills.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/workflows/verification-evidence-contract.md",
+      "target": "docs/workflows/verification-evidence-contract.md",
+      "disposition": "retain"
+    }
+  ]
+}

@@ -303,6 +303,21 @@ const targets = [
     label: 'governance/diagnostic-reasons.json',
   },
   {
+    schema: loadJson('schemas/workflow-docs.schema.json'),
+    data: loadJson('governance/workflow-docs.json'),
+    label: 'governance/workflow-docs.json',
+  },
+  {
+    schema: loadJson('schemas/doc-metadata.schema.json'),
+    data: loadJson('governance/doc-metadata.json'),
+    label: 'governance/doc-metadata.json',
+  },
+  {
+    schema: loadJson('schemas/docs-migrations.schema.json'),
+    data: loadJson('governance/docs-migrations.json'),
+    label: 'governance/docs-migrations.json',
+  },
+  {
     schema: loadJson('schemas/release-corrections.schema.json'),
     data: loadJson('governance/release-corrections.json'),
     label: 'governance/release-corrections.json',
@@ -393,6 +408,9 @@ const schemaPaths = [
   'schemas/validation-report.schema.json',
   'schemas/diagnostics-report.schema.json',
   'schemas/diagnostic-reasons.schema.json',
+  'schemas/workflow-docs.schema.json',
+  'schemas/doc-metadata.schema.json',
+  'schemas/docs-migrations.schema.json',
   'schemas/release-evidence.schema.json',
   'schemas/product-lanes.schema.json',
   'schemas/project-state.schema.json',

@@ -1,5 +1,17 @@
 ﻿# Skill: /nova-plugin:implement-standard
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `implement-standard`; stage: `implement`; canonical skill: `nova-implement-plan`
+- Purpose: Execute confirmed implementation steps reliably with controlled scope and validation.
+- Audience: `all-users`; support risk: `medium`
+- Inputs: `REQUEST` (required), `CONSTRAINTS`
+- Output contract: `implementation-standard-v2`; authorization: `implementation`
+- Effects: `shell`, `workspace-read`, `workspace-write`
+- Related workflows: `implement-plan`
+<!-- generated:command-contract:end -->
+
 - 来源：`nova-plugin/commands/implement-standard.md`
 
 ## 适用场景

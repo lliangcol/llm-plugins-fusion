@@ -91,8 +91,8 @@ Blocked、Not verified 和 External evidence。
 | --- | --- | --- | --- | --- |
 | WP0 | implemented | fetch 成功；基于最新 `origin/main` 建立隔离分支；原工作树无既有脏改动 | 本台账 | 修改前 `validate-all` failed=0、skipped=1；回滚为删除任务分支/worktree，不触碰原工作树 |
 | WP1 | implemented | `live-paired` 从 168 cases 推导 1,008 次；`real-task-benchmark` 从 24 tasks 推导 432 次；历史 24-case 快照保留日期和证据语义 | evaluation facts、project-state、fact graph、质量报告及同步块；提交 `d57a7d6` | targeted tests、schema、docs、生成器二次写入与 drift check 通过；真实助手结果仍属外部门 |
-| WP2 | implemented | doctor、llmf doctor、bootstrap、validate-all 输出产物与 install dry-run 使用共享 diagnostics contract 和 reason registry | diagnostics schemas/registry、生成矩阵、`validate:bootstrap`、`demo:all`、JSON 输出 | schema 与 e2e 检查通过；子进程未识别的 Claude/Codex 为 Skipped 而非 Passed；回滚为还原本验收单元 |
-| WP3 | open | assistant manifest 与 v6/v2 生成链已存在；文档 metadata、命令文档和导航生成链尚缺 | 待实施 | 保持六技能/21 命令行为不变 |
+| WP2 | implemented | doctor、llmf doctor、bootstrap、validate-all 输出产物与 install dry-run 使用共享 diagnostics contract 和 reason registry | diagnostics schemas/registry、生成矩阵、`validate:bootstrap`、`demo:all`、JSON 输出；提交 `c037327` | schema 与 e2e 检查通过；子进程未识别的 Claude/Codex 为 Skipped 而非 Passed；回滚为还原本验收单元 |
+| WP3 | implemented | assistant manifest 与 v6/v2 生成链继续复用；sidecar metadata、workflow-id 文档 metadata、63 个命令文档生成块和导航已接入默认门 | doc/workflow metadata schemas、command-doc 与 doc-governance generators、generated navigation/manifest/redirect map | 二次写入后 drift checks 通过；未改变六技能、21 命令或 runtime contract；回滚为还原本验收单元 |
 | WP4 | open | 实时文档迁移 manifest 尚未生成 | 待实施 | 所有旧公共路径默认保留 stub |
 | WP5 | open | Dependency Review 和 dependency policy 已存在；定期机器可读审计证据尚缺 | 待实施 | 网络证据不可用时必须为 Blocked/External evidence |
 | WP6 | partial | 168-case 数据集、8-case critical profile、runner 与 24-task benchmark 已存在；分层 profile/evidence manifest 尚不完整 | 待实施 | 凭据型 live eval 未授权，保持 External evidence |
@@ -123,7 +123,7 @@ Blocked、Not verified 和 External evidence。
 
 | 文档批次 | 状态 | 当前边界 |
 | --- | --- | --- |
-| A 治理基础 | open | metadata、source registry、redirect map、manifest 与导航待实现 |
+| A 治理基础 | implemented | sidecar metadata 同时解析 owner/source-of-truth，migration manifest、redirect map、导航和默认门已实现 |
 | B 入口与事实 | open | 等待 WP3 和批次 A |
 | C 教程、指南与模板 | open | 等待批次 A/B |
 | D 参考、项目与发布 | open | 等待批次 A |

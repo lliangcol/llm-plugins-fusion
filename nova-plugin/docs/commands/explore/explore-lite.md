@@ -1,5 +1,17 @@
 ﻿# Skill: /nova-plugin:explore-lite
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `explore-lite`; stage: `explore`; canonical skill: `nova-explore`
+- Purpose: Produce concise factual observations, uncertainties, and risks from knowledge gaps.
+- Audience: `all-users`; support risk: `none`
+- Inputs: `INPUT` (required)
+- Output contract: `exploration-lite-v2`; authorization: `read-only`
+- Effects: `workspace-read`
+- Related workflows: `explore`
+<!-- generated:command-contract:end -->
+
 - 来源：`nova-plugin/commands/explore-lite.md`
 
 ## 适用场景

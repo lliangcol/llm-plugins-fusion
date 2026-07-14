@@ -32,6 +32,8 @@ knowledge-base content in the consumer-owned workspace.
 | Track growth metrics and manual promotion channels | [growth/README.md](growth/README.md) |
 | Understand local audit logs and data handling | [privacy/data-handling.md](privacy/data-handling.md) |
 | Inspect generated public surface inventory | [generated/surface-inventory.md](generated/surface-inventory.md) |
+| Browse generated task-oriented documentation navigation | [generated/documentation-navigation.md](generated/documentation-navigation.md) |
+| Compare generated workflow command contracts | [generated/command-matrix.md](generated/command-matrix.md) |
 | Adopt `nova-plugin` in a private project | [consumers/README.md](consumers/README.md) |
 | Maintain repository checks and release gates | [maintainers/quickstart.md](maintainers/quickstart.md) |
 | Find the script, npm shortcut, or CI job for a maintenance task | [maintainers/task-catalog.md](maintainers/task-catalog.md) |

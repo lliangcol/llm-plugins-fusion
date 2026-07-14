@@ -1,5 +1,17 @@
 # Skill: /nova-plugin:route
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `route`; stage: `explore`; canonical skill: `nova-route`
+- Purpose: Choose the shortest safe next workflow route before execution starts.
+- Audience: `all-users`; support risk: `none`
+- Inputs: `REQUEST` (required), `DEPTH`
+- Output contract: `recommended-route-v2`; authorization: `read-only`
+- Effects: `workspace-read`
+- Related workflows: `explore`, `review`
+<!-- generated:command-contract:end -->
+
 - 来源：`nova-plugin/commands/route.md`
 
 ## 用途

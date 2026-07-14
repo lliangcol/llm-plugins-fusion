@@ -1,0 +1,27 @@
+{
+  "$schema": "../schemas/workflow-docs.schema.json",
+  "schemaVersion": 1,
+  "workflows": [
+    { "id": "route", "audience": "all-users", "examples": ["fixtures/demo/route.json"], "relatedWorkflows": ["explore", "review"] },
+    { "id": "senior-explore", "audience": "advanced-users", "examples": [], "relatedWorkflows": ["explore", "produce-plan"] },
+    { "id": "explore", "audience": "all-users", "examples": [], "relatedWorkflows": ["route", "produce-plan"] },
+    { "id": "explore-lite", "audience": "all-users", "examples": [], "relatedWorkflows": ["explore"] },
+    { "id": "explore-review", "audience": "reviewers", "examples": [], "relatedWorkflows": ["explore", "review"] },
+    { "id": "plan-lite", "audience": "all-users", "examples": [], "relatedWorkflows": ["produce-plan"] },
+    { "id": "plan-review", "audience": "reviewers", "examples": [], "relatedWorkflows": ["produce-plan", "review"] },
+    { "id": "produce-plan", "audience": "all-users", "examples": [], "relatedWorkflows": ["plan-review", "implement-plan"] },
+    { "id": "backend-plan", "audience": "backend-users", "examples": [], "relatedWorkflows": ["produce-plan", "implement-plan"] },
+    { "id": "review", "audience": "all-users", "examples": ["fixtures/demo/review.json"], "relatedWorkflows": ["review-lite", "review-strict"] },
+    { "id": "review-lite", "audience": "all-users", "examples": [], "relatedWorkflows": ["review"] },
+    { "id": "review-only", "audience": "reviewers", "examples": [], "relatedWorkflows": ["review", "codex-review-only"] },
+    { "id": "review-strict", "audience": "reviewers", "examples": [], "relatedWorkflows": ["review"] },
+    { "id": "codex-review-only", "audience": "codex-users", "examples": [], "relatedWorkflows": ["codex-review-fix", "codex-verify-only"] },
+    { "id": "codex-verify-only", "audience": "codex-users", "examples": [], "relatedWorkflows": ["codex-review-only"] },
+    { "id": "implement-plan", "audience": "all-users", "examples": [], "relatedWorkflows": ["produce-plan", "finalize-work"] },
+    { "id": "implement-standard", "audience": "all-users", "examples": [], "relatedWorkflows": ["implement-plan"] },
+    { "id": "implement-lite", "audience": "all-users", "examples": [], "relatedWorkflows": ["implement-plan"] },
+    { "id": "codex-review-fix", "audience": "codex-users", "examples": [], "relatedWorkflows": ["codex-review-only", "codex-verify-only"] },
+    { "id": "finalize-work", "audience": "all-users", "examples": [], "relatedWorkflows": ["finalize-lite"] },
+    { "id": "finalize-lite", "audience": "all-users", "examples": [], "relatedWorkflows": ["finalize-work"] }
+  ]
+}

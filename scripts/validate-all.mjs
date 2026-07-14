@@ -375,6 +375,8 @@ async function main() {
     nodeTask('community.governance', 'validate community governance', 'scripts/validate-community-governance.mjs'),
     nodeTask('critical.mutation', 'validate critical mutation score', 'scripts/run-critical-mutations.mjs'),
     nodeTask('docs.validate', 'validate docs', 'scripts/validate-docs.mjs'),
+    nodeTask('docs.command.generated', 'validate generated command docs', 'scripts/generate-command-docs.mjs'),
+    nodeTask('docs.governance.generated', 'validate document governance outputs', 'scripts/generate-doc-governance.mjs'),
   ]);
 
   printTimingSummary();
