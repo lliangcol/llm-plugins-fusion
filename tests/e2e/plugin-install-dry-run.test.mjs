@@ -38,3 +38,16 @@ test('plugin install dry run can preview isolated home mode without mutation', a
   assert.match(result.stdout, /No Claude CLI commands were run/);
   assert.doesNotMatch(result.stdout, /^== claude/m);
 });
+
+test('plugin install dry run exposes the shared JSON diagnostic contract', async () => {
+  const result = await runProcess('plugin install diagnostic dry run', process.execPath, [
+    'scripts/validate-plugin-install.mjs',
+    '--dry-run',
+    '--json',
+  ], { cwd: repoRoot, timeoutMs: 30_000 });
+  assert.equal(result.ok, true, result.stderr || result.stdout);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.command, 'validate-plugin-install --dry-run');
+  assert.equal(report.status, 'passed');
+  assert.equal(report.results[0].reasonCode, 'DRY_RUN_SAFE_PREVIEW');
+});

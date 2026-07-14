@@ -18,11 +18,15 @@ import {
   commandExists,
   runProcess,
 } from './lib/process-runner.mjs';
+import { diagnosticReport, diagnosticResult, loadReasonRegistry, writeDiagnosticReport } from './lib/diagnostics.mjs';
+import { requireOptionValue } from './lib/cli-args.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
 const maxConcurrency = Number.parseInt(process.env.NOVA_VALIDATE_CONCURRENCY ?? '3', 10);
 const writeTimings = process.argv.includes('--write-timings') || process.env.NOVA_VALIDATE_WRITE_TIMINGS === '1';
+const outputJsonAt = process.argv.indexOf('--output-json');
+const outputJson = outputJsonAt === -1 ? null : requireOptionValue(process.argv, outputJsonAt, '--output-json');
 const runId = process.env.GITHUB_RUN_ID ?? `local-${process.pid}-${Date.now()}`;
 const bashCommand = resolveBashCommand();
 
@@ -285,6 +289,20 @@ async function maybeWriteTimings() {
   );
 }
 
+function writeDiagnosticsSummary() {
+  if (!outputJson) return;
+  const registry = loadReasonRegistry(root);
+  const results = timings.map((timing) => diagnosticResult({
+    command: 'validate-all',
+    check: timing.id,
+    status: timing.status,
+    reasonCode: timing.reasonCode ?? (timing.status === 'passed' ? 'CHECK_PASSED' : 'VALIDATION_FAILED'),
+    actual: { label: timing.label, durationMs: timing.durationMs },
+    skippedReason: timing.status === 'skipped' ? 'The required local runtime was unavailable.' : undefined,
+  }, registry));
+  writeDiagnosticReport(resolve(root, outputJson), diagnosticReport('validate-all', results));
+}
+
 async function main() {
   const environment = await environmentSummary();
   const hasBash = environment.Bash;
@@ -361,6 +379,7 @@ async function main() {
 
   printTimingSummary();
   await maybeWriteTimings();
+  writeDiagnosticsSummary();
 
   console.log(`\nSummary: failed=${failed} skipped=${skipped}`);
   if (failed > 0) process.exit(1);

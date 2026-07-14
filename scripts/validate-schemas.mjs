@@ -298,6 +298,11 @@ const targets = [
     label: 'governance/task-registry.json',
   },
   {
+    schema: loadJson('schemas/diagnostic-reasons.schema.json'),
+    data: loadJson('governance/diagnostic-reasons.json'),
+    label: 'governance/diagnostic-reasons.json',
+  },
+  {
     schema: loadJson('schemas/release-corrections.schema.json'),
     data: loadJson('governance/release-corrections.json'),
     label: 'governance/release-corrections.json',
@@ -386,6 +391,8 @@ const schemaPaths = [
   'schemas/assistant-manifest.schema.json',
   'schemas/shell-command-policy.schema.json',
   'schemas/validation-report.schema.json',
+  'schemas/diagnostics-report.schema.json',
+  'schemas/diagnostic-reasons.schema.json',
   'schemas/release-evidence.schema.json',
   'schemas/product-lanes.schema.json',
   'schemas/project-state.schema.json',

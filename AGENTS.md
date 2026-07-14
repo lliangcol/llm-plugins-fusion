@@ -115,6 +115,8 @@ package runtime dependencies. Shortcuts in `package.json` include:
 
 ```bash
 npm run doctor
+npm run validate:bootstrap
+npm run demo:all
 npm run demo:route
 npm run demo:review
 npm run test

@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/diagnostics-report.schema.json",
+  "title": "Repository diagnostics report",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "command", "status", "platform", "results"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "command": { "type": "string", "minLength": 1 },
+    "status": { "enum": ["passed", "warn", "skipped", "blocked", "failed"] },
+    "platform": { "type": "string", "minLength": 1 },
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["schemaVersion", "command", "status", "reasonCode", "severity", "platform", "check"],
+        "properties": {
+          "schemaVersion": { "const": 1 },
+          "command": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["passed", "warn", "skipped", "blocked", "failed"] },
+          "reasonCode": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" },
+          "severity": { "enum": ["info", "warning", "error"] },
+          "platform": { "type": "string", "minLength": 1 },
+          "check": { "type": "string", "minLength": 1 },
+          "expected": {},
+          "actual": {},
+          "remediation": { "type": "string", "minLength": 1 },
+          "docsUrl": { "type": "string", "minLength": 1 },
+          "evidencePath": { "type": "string", "minLength": 1 },
+          "skippedReason": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

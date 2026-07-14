@@ -80,6 +80,7 @@
       "check:truth",
       "ci:full",
       "ci:quick",
+      "demo:all",
       "demo:review",
       "demo:route",
       "doctor",
@@ -98,6 +99,7 @@
       "generate:adapters",
       "generate:behavior-surfaces",
       "generate:compatibility-evidence",
+      "generate:diagnostics-docs",
       "generate:facts",
       "generate:quality-report",
       "generate:runtime-contracts",
@@ -128,6 +130,7 @@
       "typecheck",
       "validate",
       "validate:behavior-contracts",
+      "validate:bootstrap",
       "validate:community",
       "validate:compatibility-evidence",
       "validate:complexity",
@@ -273,7 +276,7 @@
     "exactTagInstallGate": true
   },
   "sourceDigests": {
-    "package.json": "356ac67b714da421bffe0281f9181a470017a8cd54ce213a579bfcaaf87669b8",
+    "package.json": "d641e96af68eeb2f2bb6e2bc659e69fd0400a2853fa4be2a31ace582e71c41c7",
     "nova-plugin/.claude-plugin/plugin.json": "54f3b9616d6acbb466a8774eeaccdf80c689adab6f7af2570dcd340446ac28f1",
     "workflow-specs/workflows.json": "b9efab557d4c65400ca3bc44b46206ded32baa5f83fb08c0d601b615c11b3640",
     "workflow-specs/nova.product.json": "e58bee4f38037157277c4c6e418a76dc7fd7895b9f3373d72dc841bcffaaf324",

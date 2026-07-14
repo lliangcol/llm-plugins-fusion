@@ -16,7 +16,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `benchmark` | Tests, coverage, simulations, demos, mutations, and live evaluation. |
 | `maintenance` | Diagnostics, repository administration, and reusable script libraries. |
 
-## Script Inventory (117)
+## Script Inventory (121)
 
 | Category | Script |
 | --- | --- |
@@ -24,6 +24,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `release` | `scripts/build-release-artifacts.mjs` |
 | `release` | `scripts/build-release-control-bundle.mjs` |
 | `evidence` | `scripts/collect-github-metrics.mjs` |
+| `benchmark` | `scripts/demo-all.mjs` |
 | `benchmark` | `scripts/demo-review.mjs` |
 | `benchmark` | `scripts/demo-route.mjs` |
 | `maintenance` | `scripts/doctor.mjs` |
@@ -35,6 +36,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `evidence` | `scripts/generate-adapters.mjs` |
 | `evidence` | `scripts/generate-behavior-surfaces.mjs` |
 | `evidence` | `scripts/generate-compatibility-evidence.mjs` |
+| `docs` | `scripts/generate-diagnostics-docs.mjs` |
 | `evidence` | `scripts/generate-eval-corpus.mjs` |
 | `evidence` | `scripts/generate-fact-graph.mjs` |
 | `evidence` | `scripts/generate-project-state.mjs` |
@@ -54,6 +56,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `maintenance` | `scripts/lib/cli-args.mjs` |
 | `maintenance` | `scripts/lib/coverage-runner.mjs` |
 | `maintenance` | `scripts/lib/coverage-thresholds.mjs` |
+| `maintenance` | `scripts/lib/diagnostics.mjs` |
 | `maintenance` | `scripts/lib/eval-dataset.mjs` |
 | `maintenance` | `scripts/lib/evaluation-facts.mjs` |
 | `maintenance` | `scripts/lib/label-catalog.mjs` |
@@ -98,6 +101,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `scripts/validate-all.mjs` |
 | `validate` | `scripts/validate-assistant-evidence.mjs` |
 | `validate` | `scripts/validate-behavior-golden.mjs` |
+| `validate` | `scripts/validate-bootstrap.mjs` |
 | `validate` | `scripts/validate-claude-compat.mjs` |
 | `validate` | `scripts/validate-community-governance.mjs` |
 | `validate` | `scripts/validate-control-plane-complexity.mjs` |
@@ -138,7 +142,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `release` | `scripts/verify-release-promotion.mjs` |
 | `release` | `scripts/verify-stable-install.mjs` |
 
-## npm Shortcuts (90)
+## npm Shortcuts (93)
 
 | Category | Shortcut | Command |
 | --- | --- | --- |
@@ -155,6 +159,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `npm run check:truth` | `npm run validate:release-truth && npm run validate:hook-truth && npm run validate:project-state && npm run validate:facts && npm run validate:drift` |
 | `validate` | `npm run ci:full` | `node scripts/validate-all.mjs` |
 | `validate` | `npm run ci:quick` | `node scripts/validate-schemas.mjs && node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs && node scripts/validate-hooks.mjs` |
+| `benchmark` | `npm run demo:all` | `node scripts/demo-all.mjs` |
 | `benchmark` | `npm run demo:review` | `node scripts/demo-review.mjs` |
 | `benchmark` | `npm run demo:route` | `node scripts/demo-route.mjs` |
 | `maintenance` | `npm run doctor` | `node scripts/doctor.mjs` |
@@ -173,6 +178,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `evidence` | `npm run generate:adapters` | `node scripts/generate-adapters.mjs --write` |
 | `evidence` | `npm run generate:behavior-surfaces` | `node scripts/generate-behavior-surfaces.mjs --write` |
 | `evidence` | `npm run generate:compatibility-evidence` | `node scripts/generate-compatibility-evidence.mjs --write` |
+| `evidence` | `npm run generate:diagnostics-docs` | `node scripts/generate-diagnostics-docs.mjs --write` |
 | `evidence` | `npm run generate:facts` | `node scripts/generate-fact-graph.mjs --write` |
 | `evidence` | `npm run generate:quality-report` | `node scripts/generate-quality-report.mjs --write` |
 | `evidence` | `npm run generate:runtime-contracts` | `node scripts/generate-runtime-contracts.mjs --write` |
@@ -203,6 +209,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `npm run typecheck` | `tsc -p tsconfig.checkjs.json` |
 | `validate` | `npm run validate` | `node scripts/validate-all.mjs` |
 | `validate` | `npm run validate:behavior-contracts` | `node scripts/validate-runtime-behavior-contracts.mjs` |
+| `validate` | `npm run validate:bootstrap` | `node scripts/validate-bootstrap.mjs` |
 | `validate` | `npm run validate:community` | `node scripts/validate-community-governance.mjs && node scripts/generate-quality-report.mjs` |
 | `validate` | `npm run validate:compatibility-evidence` | `node scripts/generate-compatibility-evidence.mjs` |
 | `validate` | `npm run validate:complexity` | `node scripts/validate-control-plane-complexity.mjs` |

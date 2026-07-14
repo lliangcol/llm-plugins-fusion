@@ -15,6 +15,8 @@
   "scripts": {
     "llmf": "node packages/cli/bin/llmf.mjs",
     "doctor": "node scripts/doctor.mjs",
+    "validate:bootstrap": "node scripts/validate-bootstrap.mjs",
+    "demo:all": "node scripts/demo-all.mjs",
     "demo:route": "node scripts/demo-route.mjs",
     "demo:review": "node scripts/demo-review.mjs",
     "eval:contracts": "node scripts/evaluate-static-contracts.mjs",
@@ -85,6 +87,7 @@
     "generate:runtime-contracts": "node scripts/generate-runtime-contracts.mjs --write",
     "generate:behavior-surfaces": "node scripts/generate-behavior-surfaces.mjs --write",
     "generate:quality-report": "node scripts/generate-quality-report.mjs --write",
+    "generate:diagnostics-docs": "node scripts/generate-diagnostics-docs.mjs --write",
     "validate:community": "node scripts/validate-community-governance.mjs && node scripts/generate-quality-report.mjs",
     "validate:release-operations": "node scripts/validate-release-operations.mjs",
     "validate:governance-freshness": "node scripts/validate-governance-freshness.mjs",

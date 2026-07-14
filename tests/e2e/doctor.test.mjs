@@ -17,20 +17,28 @@ test('doctor reports stable maintainer diagnostics without hard-requiring option
   });
 
   assert.equal(result.ok, true, result.stderr || result.stdout);
-  assert.match(result.stdout, /== llm-plugins-fusion doctor ==/);
-  assert.match(result.stdout, /^OK Node\.js: /m);
-  assert.match(result.stdout, /^OK Git: /m);
-  assert.match(result.stdout, /^(OK|WARN) Bash: /m);
-  assert.match(result.stdout, /^(OK|WARN) Write guard: /m);
-  assert.match(result.stdout, /^(OK|WARN) Claude CLI: /m);
-  assert.match(result.stdout, /^(OK|WARN) Codex CLI: /m);
-  const versionLine = result.stdout.match(/^OK Package\/plugin version: package=([^;]+); plugin=(\S+)$/m);
+  assert.match(result.stdout, /== doctor diagnostics ==/);
+  assert.match(result.stdout, /^PASSED Node\.js \[CHECK_PASSED\]: /m);
+  assert.match(result.stdout, /^PASSED Git \[CHECK_PASSED\]: /m);
+  assert.match(result.stdout, /^(PASSED|SKIPPED) Bash \[/m);
+  assert.match(result.stdout, /^(PASSED|WARN) Write guard \[/m);
+  assert.match(result.stdout, /^(PASSED|SKIPPED) Claude CLI \[/m);
+  assert.match(result.stdout, /^(PASSED|SKIPPED) Codex CLI \[/m);
+  const versionLine = result.stdout.match(/^PASSED Package\/plugin version \[CHECK_PASSED\]: (\S+)$/m);
   assert.ok(versionLine, 'doctor must report package and plugin versions');
   assert.ok(parseSemVer(versionLine[1]), `invalid package SemVer: ${versionLine[1]}`);
-  assert.equal(versionLine[2], versionLine[1]);
-  assert.match(result.stdout, /^(OK|WARN) Git working tree: /m);
-  assert.match(result.stdout, /^(OK|WARN) Exact release tag: /m);
-  assert.match(result.stdout, /^OK Generated registry drift: generated outputs are current$/m);
-  assert.match(result.stdout, /^Summary: errors=0 warnings=\d+$/m);
-  assert.doesNotMatch(result.stdout, /^ERROR /m);
+  assert.match(result.stdout, /^(PASSED|WARN) Git working tree \[/m);
+  assert.match(result.stdout, /^(PASSED|WARN) Exact release tag \[/m);
+  assert.match(result.stdout, /^PASSED Generated registry drift \[CHECK_PASSED\]: current$/m);
+  assert.doesNotMatch(result.stdout, /^FAILED /m);
+});
+
+test('doctor JSON uses the shared diagnostic contract and registered reason codes', async () => {
+  const result = await runProcess('doctor json', process.execPath, ['scripts/doctor.mjs', '--json'], { cwd: repoRoot, timeoutMs: 60_000 });
+  assert.equal(result.ok, true, result.stderr || result.stdout);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.schemaVersion, 1);
+  assert.equal(report.command, 'doctor');
+  assert.ok(report.results.every((entry) => entry.reasonCode && entry.docsUrl && entry.remediation));
+  assert.equal(report.results.find((entry) => entry.check === 'Claude CLI').status === 'failed', false);
 });

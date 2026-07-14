@@ -106,6 +106,12 @@ ignored locally and uploaded by the release workflow.
 
 ## Diagnostic Result Semantics
 
+Run `npm run validate:bootstrap` for a read-only machine-readable bootstrap
+check. Use `npm run doctor -- --json` or `--output-json <path>` when a support
+artifact is required. All reason codes and remediation anchors are generated in
+[diagnostics.md](diagnostics.md); a skipped, blocked, warning, or failed result
+must not be reported as passed.
+
 `npm run doctor` is read-only and may return warnings for optional or
 state-dependent checks. Treat them as evidence to record, not as automatic
 failures:

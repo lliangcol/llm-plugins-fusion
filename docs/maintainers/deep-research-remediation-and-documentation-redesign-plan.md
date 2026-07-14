@@ -90,8 +90,8 @@ Blocked、Not verified 和 External evidence。
 | 工作包 | 状态 | 当前事实、证据与边界 | 变更/生成输出 | 验证、残余风险与回滚 |
 | --- | --- | --- | --- | --- |
 | WP0 | implemented | fetch 成功；基于最新 `origin/main` 建立隔离分支；原工作树无既有脏改动 | 本台账 | 修改前 `validate-all` failed=0、skipped=1；回滚为删除任务分支/worktree，不触碰原工作树 |
-| WP1 | implemented | `live-paired` 从 168 cases 推导 1,008 次；`real-task-benchmark` 从 24 tasks 推导 432 次；历史 24-case 快照保留日期和证据语义 | evaluation facts、project-state、fact graph、质量报告及同步块 | targeted tests、schema、docs、生成器二次写入与 drift check 通过；真实助手结果仍属外部门 |
-| WP2 | open | doctor、llmf、validate-all 与 install dry-run 尚未共享统一 diagnostics schema/registry | 待实施 | 不得把 CLI 缺失写成 Passed |
+| WP1 | implemented | `live-paired` 从 168 cases 推导 1,008 次；`real-task-benchmark` 从 24 tasks 推导 432 次；历史 24-case 快照保留日期和证据语义 | evaluation facts、project-state、fact graph、质量报告及同步块；提交 `d57a7d6` | targeted tests、schema、docs、生成器二次写入与 drift check 通过；真实助手结果仍属外部门 |
+| WP2 | implemented | doctor、llmf doctor、bootstrap、validate-all 输出产物与 install dry-run 使用共享 diagnostics contract 和 reason registry | diagnostics schemas/registry、生成矩阵、`validate:bootstrap`、`demo:all`、JSON 输出 | schema 与 e2e 检查通过；子进程未识别的 Claude/Codex 为 Skipped 而非 Passed；回滚为还原本验收单元 |
 | WP3 | open | assistant manifest 与 v6/v2 生成链已存在；文档 metadata、命令文档和导航生成链尚缺 | 待实施 | 保持六技能/21 命令行为不变 |
 | WP4 | open | 实时文档迁移 manifest 尚未生成 | 待实施 | 所有旧公共路径默认保留 stub |
 | WP5 | open | Dependency Review 和 dependency policy 已存在；定期机器可读审计证据尚缺 | 待实施 | 网络证据不可用时必须为 Blocked/External evidence |
@@ -103,16 +103,16 @@ Blocked、Not verified 和 External evidence。
 
 | 报告方向 | 状态 | 工作包与实时决策 |
 | --- | --- | --- |
-| 统一新手入口与一键演示 | partial | WP2/WP8；现有两个 demo，待增加安全的聚合入口和教程 |
+| 统一新手入口与一键演示 | partial | WP2/WP8；安全的 `demo:all` 已实现，教程导航待 WP8 |
 | 贡献者检查聚合 | implemented | WP2；保留现有唯一 `npm run check`，仅核对覆盖面 |
-| bootstrap 校验 | open | WP2；新增只读入口并复用 reason registry |
-| 机器可读诊断 | open | WP2；统一 schema、状态与 reason code |
+| bootstrap 校验 | implemented | WP2；只读入口复用 reason registry，未执行 `npm ci` |
+| 机器可读诊断 | implemented | WP2；统一 schema、状态、reason code、文本与 JSON 输出 |
 | Commands、Skills、Docs、Runtime 生成 | partial | WP3；运行时链已实现，命令文档和导航待接入 |
 | 紧凑执行清单 | implemented | WP3；复用现有 assistant manifest，拒绝第二套清单 |
 | 依赖与供应链自动证据 | partial | WP5；PR 门已存在，定期审计摘要待实现 |
 | 扩大 live eval | partial | WP1/WP6；数据集已扩大且事实漂移已修，真实运行仍为外部门 |
-| Windows/Bash 诊断 | partial | WP2；doctor 有平台检查，统一 JSON/remediation 待实现 |
-| 中文失败矩阵 | open | WP2；必须从 reason registry 生成 |
+| Windows/Bash 诊断 | implemented | WP2；平台结果、skip 原因、JSON 与 remediation 已统一 |
+| 中文失败矩阵 | implemented | WP2；故障矩阵从 reason registry 生成，不手工维护第二份 |
 | 教程与 showcase | partial | WP8；fixtures 已存在，教程与 CI smoke 待整合 |
 | 发布摘要模板 | partial | WP9；现有证据模板待生成式整合 |
 | shell policy 锁定 | partial | WP7；现有摘要和会话固定，竞态回归待补 |

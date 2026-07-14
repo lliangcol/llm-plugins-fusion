@@ -4,6 +4,7 @@ import { compileDirectory, buildArtifact, migrateBehaviorSpec, migrateWorkflowSp
 import { evaluateBundle, testConformance } from '@llm-plugins-fusion/conformance';
 import { inspectSpecBundle, SPEC_ERROR, SpecBundleError, validateAndLoadSpecBundle } from '@llm-plugins-fusion/spec';
 import { createSpecSchemaValidator } from './schema-validator.mjs';
+import { diagnosticReport, diagnosticResult, loadReasonRegistry } from '../../scripts/lib/diagnostics.mjs';
 
 export const EXIT = Object.freeze({ OK: 0, USAGE: 2, VALIDATION: 3, IO: 4, CONFORMANCE: 5 });
 const json = (value) => `${JSON.stringify(value)}\n`;
@@ -81,7 +82,11 @@ export async function runCli(args, io = process) {
       exitCodes: EXIT,
     };
     else if (command === 'init') result = init(root);
-    else if (command === 'doctor') result = { node: process.versions.node, platform: process.platform, architecture: process.arch, supported: Number(process.versions.node.split('.')[0]) >= 22 };
+    else if (command === 'doctor') {
+      const supported = Number(process.versions.node.split('.')[0]) >= 22;
+      const registry = loadReasonRegistry();
+      result = diagnosticReport('llmf doctor', [diagnosticResult({ command: 'llmf doctor', check: 'node-version', status: supported ? 'passed' : 'failed', reasonCode: supported ? 'CHECK_PASSED' : 'NODE_VERSION_UNSUPPORTED', expected: '>=22', actual: process.versions.node }, registry)]);
+    }
     else if (command === 'validate') { const compiled = compileDirectory(root, { validateSchema }); const conformance = testConformance(compiled); if (!conformance.passed) return { exitCode: EXIT.VALIDATION, output: { ok: false, command, result: conformance } }; result = { valid: true, ...inspectSpecBundle(compiled) }; }
     else if (command === 'inspect') result = inspectSpecBundle(validateAndLoadSpecBundle(root, { validateSchema }));
     else if (command === 'test') { result = testConformance(compileDirectory(root, { validateSchema })); if (!result.passed) return { exitCode: EXIT.CONFORMANCE, output: { ok: false, command, result } }; }
