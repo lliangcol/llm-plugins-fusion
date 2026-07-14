@@ -479,7 +479,151 @@
       "generated": false
     },
     {
+      "path": "docs/getting-started/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/getting-started/first-workflow.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/getting-started/install-claude-code.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
       "path": "docs/growth/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/aider.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/cline.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/codex.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/copilot.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/cursor.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/gemini-cli.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/opencode.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/openhands.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/framework/second-product.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/workflows/context-safe.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/workflows/hardening.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/workflows/source-controlled-checks.md",
       "audience": "repository-users",
       "contentType": "reference",
       "status": "current",
@@ -686,6 +830,123 @@
       "generated": false
     },
     {
+      "path": "docs/operations/community/assets.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/community/metrics.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/maintainers/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/maintainers/github-security.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/maintainers/status.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/maintainers/task-catalog.generated.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/maintainers/troubleshooting.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/maintainers/validation.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/marketplace/registry-authoring.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/releases/hygiene.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/releases/recovery-and-key-rotation.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/releases/runbook.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/releases/validation.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
       "path": "docs/privacy/data-handling.md",
       "audience": "repository-users",
       "contentType": "reference",
@@ -696,6 +957,87 @@
     },
     {
       "path": "docs/project-optimization-plan.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/decisions/0001-truth-release-capability-evidence.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/migrations/2.4.1-command-namespace.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/migrations/3.0.0-adapters-and-direct-commands.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/migrations/contract-v6.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/plans/current-remediation.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/plans/multi-plugin-readiness.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/plans/portal-information-architecture.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/release-notes/3.0.0.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/release-notes/3.0.1.md",
       "audience": "repository-users",
       "contentType": "reference",
       "status": "current",
@@ -812,6 +1154,132 @@
       "generated": false
     },
     {
+      "path": "docs/reference/architecture/agent-routing.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/architecture/framework.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/architecture/skill-first-projection.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/compatibility/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/compatibility/assistant-levels.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/compatibility/contract-semver.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/compatibility/marketplace.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/compatibility/public-api.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/evaluation/benchmark.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/security/data-handling.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/security/marketplace-trust.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/security/security-review.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/workflows/routing-guardrails.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/workflows/verification-evidence.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
       "path": "docs/releases/3.0.0-audit-closure.md",
       "audience": "repository-users",
       "contentType": "reference",
@@ -912,6 +1380,222 @@
     },
     {
       "path": "docs/start-here.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/consumer-profiles/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/consumer-profiles/contract.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/consumer-profiles/frontend.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/consumer-profiles/java-backend.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/consumer-profiles/workbench.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/evidence/release.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/evidence/workflow-evaluation.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/claude-code/fix-from-review.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/claude-code/serial-checkpoint.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/claude-code/subagent-execution.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/codex/context-safe-review.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/codex/final-verification.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/common/checkpoint-artifact.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/common/delivery-docs.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/common/html-artifact.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/common/skill-harness-audit.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/common/workbench-tidy.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/tutorials/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/tutorials/first-workflow-transcript.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/tutorials/frontend.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/tutorials/java-backend.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/tutorials/release-and-docs.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/tutorials/workflow-evaluation.md",
       "audience": "repository-users",
       "contentType": "reference",
       "status": "current",

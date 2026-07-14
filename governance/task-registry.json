@@ -26,10 +26,10 @@
     { "pattern": "^generate:(?:command-docs|doc-governance|diagnostics-docs)", "category": "docs" },
     { "pattern": "^generate:", "category": "evidence" },
     { "pattern": "^(?:test|eval:|demo:)", "category": "benchmark" },
-    { "pattern": "^(?:scaffold:|normalize:)", "category": "migration" },
+    { "pattern": "^(?:scaffold:|normalize:|migrate:)", "category": "migration" },
     { "pattern": "^(?:doctor$|llmf$|sync:)", "category": "maintenance" }
   ],
   "generatedOutputs": [
-    "docs/maintainers/task-catalog.md"
+    "docs/operations/maintainers/task-catalog.generated.md"
   ]
 }

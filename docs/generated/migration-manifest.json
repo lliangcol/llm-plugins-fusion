@@ -8,23 +8,23 @@
     },
     {
       "path": "docs/adr/0001-truth-release-capability-evidence.md",
-      "target": "docs/adr/0001-truth-release-capability-evidence.md",
-      "disposition": "retain"
+      "target": "docs/project/decisions/0001-truth-release-capability-evidence.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/agents/PLUGIN_AWARE_ROUTING.md",
-      "target": "docs/agents/PLUGIN_AWARE_ROUTING.md",
-      "disposition": "retain"
+      "target": "docs/reference/architecture/agent-routing.md",
+      "disposition": "merge-with-stub"
     },
     {
       "path": "docs/agents/ROUTING.md",
-      "target": "docs/agents/ROUTING.md",
-      "disposition": "retain"
+      "target": "docs/reference/architecture/agent-routing.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/assets/README.md",
-      "target": "docs/assets/README.md",
-      "disposition": "retain"
+      "target": "docs/operations/community/assets.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/assets/social-preview-1280x640.png",
@@ -33,133 +33,133 @@
     },
     {
       "path": "docs/compatibility/README.md",
-      "target": "docs/compatibility/README.md",
-      "disposition": "retain"
+      "target": "docs/reference/compatibility/README.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/compatibility/assistant-levels.md",
-      "target": "docs/compatibility/assistant-levels.md",
-      "disposition": "retain"
+      "target": "docs/reference/compatibility/assistant-levels.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/compatibility/contract-semver.md",
-      "target": "docs/compatibility/contract-semver.md",
-      "disposition": "retain"
+      "target": "docs/reference/compatibility/contract-semver.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/compatibility/public-api.md",
-      "target": "docs/compatibility/public-api.md",
-      "disposition": "retain"
+      "target": "docs/reference/compatibility/public-api.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/consumers/README.md",
-      "target": "docs/consumers/README.md",
-      "disposition": "retain"
+      "target": "docs/guides/assistants/README.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/consumers/aider-setup.md",
-      "target": "docs/consumers/aider-setup.md",
-      "disposition": "retain"
+      "target": "docs/guides/assistants/aider.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/consumers/cline-setup.md",
-      "target": "docs/consumers/cline-setup.md",
-      "disposition": "retain"
+      "target": "docs/guides/assistants/cline.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/consumers/codex-setup.md",
-      "target": "docs/consumers/codex-setup.md",
-      "disposition": "retain"
+      "target": "docs/guides/assistants/codex.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/consumers/copilot-setup.md",
-      "target": "docs/consumers/copilot-setup.md",
-      "disposition": "retain"
+      "target": "docs/guides/assistants/copilot.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/consumers/cursor-setup.md",
-      "target": "docs/consumers/cursor-setup.md",
-      "disposition": "retain"
+      "target": "docs/guides/assistants/cursor.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/consumers/frontend-project-template.md",
-      "target": "docs/consumers/frontend-project-template.md",
-      "disposition": "retain"
+      "target": "docs/templates/consumer-profiles/frontend.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/consumers/gemini-cli-setup.md",
-      "target": "docs/consumers/gemini-cli-setup.md",
-      "disposition": "retain"
+      "target": "docs/guides/assistants/gemini-cli.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/consumers/opencode-setup.md",
-      "target": "docs/consumers/opencode-setup.md",
-      "disposition": "retain"
+      "target": "docs/guides/assistants/opencode.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/consumers/openhands-setup.md",
-      "target": "docs/consumers/openhands-setup.md",
-      "disposition": "retain"
+      "target": "docs/guides/assistants/openhands.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/consumers/private-java-backend-template.md",
-      "target": "docs/consumers/private-java-backend-template.md",
-      "disposition": "retain"
+      "target": "docs/templates/consumer-profiles/java-backend.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/consumers/profile-contract.md",
-      "target": "docs/consumers/profile-contract.md",
-      "disposition": "retain"
+      "target": "docs/templates/consumer-profiles/contract.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/consumers/shell-policy-template.json",
-      "target": "docs/consumers/shell-policy-template.json",
-      "disposition": "retain"
+      "target": "docs/templates/consumer-profiles/shell-policy.json",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/consumers/workbench-template.md",
-      "target": "docs/consumers/workbench-template.md",
-      "disposition": "retain"
+      "target": "docs/templates/consumer-profiles/workbench.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/examples/README.md",
-      "target": "docs/examples/README.md",
-      "disposition": "retain"
+      "target": "docs/tutorials/README.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/examples/frontend/basic-feature.md",
-      "target": "docs/examples/frontend/basic-feature.md",
-      "disposition": "retain"
+      "target": "docs/tutorials/frontend.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/examples/java-backend/redacted-feature.md",
-      "target": "docs/examples/java-backend/redacted-feature.md",
-      "disposition": "retain"
+      "target": "docs/tutorials/java-backend.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/examples/primary-workflow-transcript.md",
-      "target": "docs/examples/primary-workflow-transcript.md",
-      "disposition": "retain"
+      "target": "docs/tutorials/first-workflow-transcript.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/examples/workflow-evaluation-record-template.md",
-      "target": "docs/examples/workflow-evaluation-record-template.md",
-      "disposition": "retain"
+      "target": "docs/templates/evidence/workflow-evaluation.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/examples/workflow-evaluation.md",
-      "target": "docs/examples/workflow-evaluation.md",
-      "disposition": "retain"
+      "target": "docs/tutorials/workflow-evaluation.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/framework/README.md",
-      "target": "docs/framework/README.md",
-      "disposition": "retain"
+      "target": "docs/reference/architecture/framework.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/framework/second-product.md",
-      "target": "docs/framework/second-product.md",
-      "disposition": "retain"
+      "target": "docs/guides/framework/second-product.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/generated/assistant-compatibility.md",
@@ -243,28 +243,108 @@
     },
     {
       "path": "docs/getting-started.md",
-      "target": "docs/getting-started.md",
+      "target": "docs/getting-started/first-workflow.md",
+      "disposition": "move-with-stub"
+    },
+    {
+      "path": "docs/getting-started/README.md",
+      "target": "docs/getting-started/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/getting-started/first-workflow.md",
+      "target": "docs/getting-started/first-workflow.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/getting-started/install-claude-code.md",
+      "target": "docs/getting-started/install-claude-code.md",
       "disposition": "retain"
     },
     {
       "path": "docs/growth/README.md",
-      "target": "docs/growth/README.md",
+      "target": "docs/operations/community/metrics.md",
+      "disposition": "move-with-stub"
+    },
+    {
+      "path": "docs/guides/assistants/README.md",
+      "target": "docs/guides/assistants/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/guides/assistants/aider.md",
+      "target": "docs/guides/assistants/aider.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/guides/assistants/cline.md",
+      "target": "docs/guides/assistants/cline.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/guides/assistants/codex.md",
+      "target": "docs/guides/assistants/codex.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/guides/assistants/copilot.md",
+      "target": "docs/guides/assistants/copilot.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/guides/assistants/cursor.md",
+      "target": "docs/guides/assistants/cursor.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/guides/assistants/gemini-cli.md",
+      "target": "docs/guides/assistants/gemini-cli.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/guides/assistants/opencode.md",
+      "target": "docs/guides/assistants/opencode.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/guides/assistants/openhands.md",
+      "target": "docs/guides/assistants/openhands.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/guides/framework/second-product.md",
+      "target": "docs/guides/framework/second-product.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/guides/workflows/context-safe.md",
+      "target": "docs/guides/workflows/context-safe.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/guides/workflows/hardening.md",
+      "target": "docs/guides/workflows/hardening.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/guides/workflows/source-controlled-checks.md",
+      "target": "docs/guides/workflows/source-controlled-checks.md",
       "disposition": "retain"
     },
     {
       "path": "docs/llm-plugins-fusion-maintenance-status.md",
-      "target": "docs/llm-plugins-fusion-maintenance-status.md",
-      "disposition": "retain"
+      "target": "docs/operations/maintainers/status.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/maintainers/comprehensive-audit-remediation-plan.md",
-      "target": "docs/maintainers/comprehensive-audit-remediation-plan.md",
-      "disposition": "retain"
+      "target": "docs/project/plans/current-remediation.md",
+      "disposition": "merge-with-stub"
     },
     {
       "path": "docs/maintainers/deep-research-remediation-and-documentation-redesign-plan.md",
-      "target": "docs/maintainers/deep-research-remediation-and-documentation-redesign-plan.md",
-      "disposition": "retain"
+      "target": "docs/project/plans/current-remediation.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/maintainers/diagnostics.md",
@@ -273,38 +353,38 @@
     },
     {
       "path": "docs/maintainers/github-security-settings.md",
-      "target": "docs/maintainers/github-security-settings.md",
-      "disposition": "retain"
+      "target": "docs/operations/maintainers/github-security.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/maintainers/post-remediation-audit.md",
-      "target": "docs/maintainers/post-remediation-audit.md",
-      "disposition": "retain"
+      "target": "docs/project/plans/current-remediation.md",
+      "disposition": "merge-with-stub"
     },
     {
       "path": "docs/maintainers/quickstart.md",
-      "target": "docs/maintainers/quickstart.md",
-      "disposition": "retain"
+      "target": "docs/operations/maintainers/README.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/maintainers/release-runbook.md",
-      "target": "docs/maintainers/release-runbook.md",
-      "disposition": "retain"
+      "target": "docs/operations/releases/runbook.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/maintainers/task-catalog.md",
-      "target": "docs/maintainers/task-catalog.md",
-      "disposition": "retain"
+      "target": "docs/operations/maintainers/validation.md",
+      "disposition": "merge-with-stub"
     },
     {
       "path": "docs/maintainers/troubleshooting.md",
-      "target": "docs/maintainers/troubleshooting.md",
-      "disposition": "retain"
+      "target": "docs/operations/maintainers/troubleshooting.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/maintainers/validation-index.md",
-      "target": "docs/maintainers/validation-index.md",
-      "disposition": "retain"
+      "target": "docs/operations/maintainers/validation.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/marketplace/catalog.md",
@@ -313,213 +393,518 @@
     },
     {
       "path": "docs/marketplace/compatibility-matrix.md",
-      "target": "docs/marketplace/compatibility-matrix.md",
-      "disposition": "retain"
+      "target": "docs/reference/compatibility/marketplace.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/marketplace/multi-plugin-readiness.md",
-      "target": "docs/marketplace/multi-plugin-readiness.md",
-      "disposition": "retain"
+      "target": "docs/project/plans/multi-plugin-readiness.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/marketplace/portal-information-architecture.md",
-      "target": "docs/marketplace/portal-information-architecture.md",
-      "disposition": "retain"
+      "target": "docs/project/plans/portal-information-architecture.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/marketplace/registry-author-workflow.md",
-      "target": "docs/marketplace/registry-author-workflow.md",
-      "disposition": "retain"
+      "target": "docs/operations/marketplace/registry-authoring.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/marketplace/security-review-route.md",
-      "target": "docs/marketplace/security-review-route.md",
-      "disposition": "retain"
+      "target": "docs/reference/security/security-review.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/marketplace/trust-policy.md",
-      "target": "docs/marketplace/trust-policy.md",
-      "disposition": "retain"
+      "target": "docs/reference/security/marketplace-trust.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/marketplace/v3-readiness-evidence.md",
-      "target": "docs/marketplace/v3-readiness-evidence.md",
-      "disposition": "retain"
+      "target": "docs/project/plans/current-remediation.md",
+      "disposition": "merge-with-stub"
     },
     {
       "path": "docs/migrations/2.4.1-command-namespace.md",
-      "target": "docs/migrations/2.4.1-command-namespace.md",
-      "disposition": "retain"
+      "target": "docs/project/migrations/2.4.1-command-namespace.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/migrations/3.0.0-adapters-and-direct-commands.md",
-      "target": "docs/migrations/3.0.0-adapters-and-direct-commands.md",
-      "disposition": "retain"
+      "target": "docs/project/migrations/3.0.0-adapters-and-direct-commands.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/migrations/contract-v6.md",
-      "target": "docs/migrations/contract-v6.md",
+      "target": "docs/project/migrations/contract-v6.md",
+      "disposition": "move-with-stub"
+    },
+    {
+      "path": "docs/operations/community/assets.md",
+      "target": "docs/operations/community/assets.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/operations/community/metrics.md",
+      "target": "docs/operations/community/metrics.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/operations/maintainers/README.md",
+      "target": "docs/operations/maintainers/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/operations/maintainers/github-security.md",
+      "target": "docs/operations/maintainers/github-security.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/operations/maintainers/status.md",
+      "target": "docs/operations/maintainers/status.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/operations/maintainers/task-catalog.generated.md",
+      "target": "docs/operations/maintainers/task-catalog.generated.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/operations/maintainers/troubleshooting.md",
+      "target": "docs/operations/maintainers/troubleshooting.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/operations/maintainers/validation.md",
+      "target": "docs/operations/maintainers/validation.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/operations/marketplace/registry-authoring.md",
+      "target": "docs/operations/marketplace/registry-authoring.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/operations/releases/hygiene.md",
+      "target": "docs/operations/releases/hygiene.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/operations/releases/recovery-and-key-rotation.md",
+      "target": "docs/operations/releases/recovery-and-key-rotation.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/operations/releases/runbook.md",
+      "target": "docs/operations/releases/runbook.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/operations/releases/validation.md",
+      "target": "docs/operations/releases/validation.md",
       "disposition": "retain"
     },
     {
       "path": "docs/privacy/data-handling.md",
-      "target": "docs/privacy/data-handling.md",
-      "disposition": "retain"
+      "target": "docs/reference/security/data-handling.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/project-optimization-plan.md",
-      "target": "docs/project-optimization-plan.md",
+      "target": "docs/project/plans/current-remediation.md",
+      "disposition": "merge-with-stub"
+    },
+    {
+      "path": "docs/project/decisions/0001-truth-release-capability-evidence.md",
+      "target": "docs/project/decisions/0001-truth-release-capability-evidence.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/project/migrations/2.4.1-command-namespace.md",
+      "target": "docs/project/migrations/2.4.1-command-namespace.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/project/migrations/3.0.0-adapters-and-direct-commands.md",
+      "target": "docs/project/migrations/3.0.0-adapters-and-direct-commands.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/project/migrations/contract-v6.md",
+      "target": "docs/project/migrations/contract-v6.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/project/plans/current-remediation.md",
+      "target": "docs/project/plans/current-remediation.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/project/plans/multi-plugin-readiness.md",
+      "target": "docs/project/plans/multi-plugin-readiness.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/project/plans/portal-information-architecture.md",
+      "target": "docs/project/plans/portal-information-architecture.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/project/release-notes/3.0.0.md",
+      "target": "docs/project/release-notes/3.0.0.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/project/release-notes/3.0.1.md",
+      "target": "docs/project/release-notes/3.0.1.md",
       "disposition": "retain"
     },
     {
       "path": "docs/prompts/README.md",
-      "target": "docs/prompts/README.md",
-      "disposition": "retain"
+      "target": "docs/templates/prompts/README.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/prompts/claude-code/fix-from-review.md",
-      "target": "docs/prompts/claude-code/fix-from-review.md",
-      "disposition": "retain"
+      "target": "docs/templates/prompts/claude-code/fix-from-review.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/prompts/claude-code/serial-checkpoint.md",
-      "target": "docs/prompts/claude-code/serial-checkpoint.md",
-      "disposition": "retain"
+      "target": "docs/templates/prompts/claude-code/serial-checkpoint.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/prompts/claude-code/subagent-execution.md",
-      "target": "docs/prompts/claude-code/subagent-execution.md",
-      "disposition": "retain"
+      "target": "docs/templates/prompts/claude-code/subagent-execution.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/prompts/codex/context-safe-review.md",
-      "target": "docs/prompts/codex/context-safe-review.md",
-      "disposition": "retain"
+      "target": "docs/templates/prompts/codex/context-safe-review.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/prompts/codex/final-verification.md",
-      "target": "docs/prompts/codex/final-verification.md",
-      "disposition": "retain"
+      "target": "docs/templates/prompts/codex/final-verification.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/prompts/common/checkpoint-artifact.md",
-      "target": "docs/prompts/common/checkpoint-artifact.md",
-      "disposition": "retain"
+      "target": "docs/templates/prompts/common/checkpoint-artifact.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/prompts/common/delivery-docs.md",
-      "target": "docs/prompts/common/delivery-docs.md",
-      "disposition": "retain"
+      "target": "docs/templates/prompts/common/delivery-docs.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/prompts/common/html-artifact.md",
-      "target": "docs/prompts/common/html-artifact.md",
-      "disposition": "retain"
+      "target": "docs/templates/prompts/common/html-artifact.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/prompts/common/skill-harness-audit.md",
-      "target": "docs/prompts/common/skill-harness-audit.md",
-      "disposition": "retain"
+      "target": "docs/templates/prompts/common/skill-harness-audit.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/prompts/common/workbench-tidy.md",
-      "target": "docs/prompts/common/workbench-tidy.md",
-      "disposition": "retain"
+      "target": "docs/templates/prompts/common/workbench-tidy.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/quality/benchmark.md",
-      "target": "docs/quality/benchmark.md",
+      "target": "docs/reference/evaluation/benchmark.md",
+      "disposition": "move-with-stub"
+    },
+    {
+      "path": "docs/reference/architecture/agent-routing.md",
+      "target": "docs/reference/architecture/agent-routing.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/reference/architecture/framework.md",
+      "target": "docs/reference/architecture/framework.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/reference/architecture/skill-first-projection.md",
+      "target": "docs/reference/architecture/skill-first-projection.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/reference/compatibility/README.md",
+      "target": "docs/reference/compatibility/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/reference/compatibility/assistant-levels.md",
+      "target": "docs/reference/compatibility/assistant-levels.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/reference/compatibility/contract-semver.md",
+      "target": "docs/reference/compatibility/contract-semver.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/reference/compatibility/marketplace.md",
+      "target": "docs/reference/compatibility/marketplace.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/reference/compatibility/public-api.md",
+      "target": "docs/reference/compatibility/public-api.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/reference/evaluation/benchmark.md",
+      "target": "docs/reference/evaluation/benchmark.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/reference/security/data-handling.md",
+      "target": "docs/reference/security/data-handling.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/reference/security/marketplace-trust.md",
+      "target": "docs/reference/security/marketplace-trust.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/reference/security/security-review.md",
+      "target": "docs/reference/security/security-review.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/reference/workflows/routing-guardrails.md",
+      "target": "docs/reference/workflows/routing-guardrails.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/reference/workflows/verification-evidence.md",
+      "target": "docs/reference/workflows/verification-evidence.md",
       "disposition": "retain"
     },
     {
       "path": "docs/releases/3.0.0-audit-closure.md",
-      "target": "docs/releases/3.0.0-audit-closure.md",
-      "disposition": "retain"
+      "target": "docs/project/release-notes/3.0.0.md",
+      "disposition": "merge-with-stub"
     },
     {
       "path": "docs/releases/3.0.0-notes.md",
-      "target": "docs/releases/3.0.0-notes.md",
-      "disposition": "retain"
+      "target": "docs/project/release-notes/3.0.0.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/releases/3.0.1-notes.md",
-      "target": "docs/releases/3.0.1-notes.md",
-      "disposition": "retain"
+      "target": "docs/project/release-notes/3.0.1.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/releases/operator-recovery-and-key-rotation.md",
-      "target": "docs/releases/operator-recovery-and-key-rotation.md",
-      "disposition": "retain"
+      "target": "docs/operations/releases/recovery-and-key-rotation.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/releases/release-evidence-template.md",
-      "target": "docs/releases/release-evidence-template.md",
-      "disposition": "retain"
+      "target": "docs/templates/evidence/release.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/releases/release-hygiene.md",
-      "target": "docs/releases/release-hygiene.md",
-      "disposition": "retain"
+      "target": "docs/operations/releases/hygiene.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/releases/release-validation-runbook.md",
-      "target": "docs/releases/release-validation-runbook.md",
-      "disposition": "retain"
+      "target": "docs/operations/releases/validation.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/showcase/README.md",
-      "target": "docs/showcase/README.md",
-      "disposition": "retain"
+      "target": "docs/tutorials/README.md",
+      "disposition": "merge-with-stub"
     },
     {
       "path": "docs/showcase/frontend.md",
-      "target": "docs/showcase/frontend.md",
-      "disposition": "retain"
+      "target": "docs/tutorials/frontend.md",
+      "disposition": "merge-with-stub"
     },
     {
       "path": "docs/showcase/java-backend.md",
-      "target": "docs/showcase/java-backend.md",
-      "disposition": "retain"
+      "target": "docs/tutorials/java-backend.md",
+      "disposition": "merge-with-stub"
     },
     {
       "path": "docs/showcase/release-and-docs.md",
-      "target": "docs/showcase/release-and-docs.md",
-      "disposition": "retain"
+      "target": "docs/tutorials/release-and-docs.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/start-here.md",
-      "target": "docs/start-here.md",
+      "target": "docs/getting-started/README.md",
+      "disposition": "move-with-stub"
+    },
+    {
+      "path": "docs/templates/consumer-profiles/README.md",
+      "target": "docs/templates/consumer-profiles/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/consumer-profiles/contract.md",
+      "target": "docs/templates/consumer-profiles/contract.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/consumer-profiles/frontend.md",
+      "target": "docs/templates/consumer-profiles/frontend.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/consumer-profiles/java-backend.md",
+      "target": "docs/templates/consumer-profiles/java-backend.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/consumer-profiles/shell-policy.json",
+      "target": "docs/templates/consumer-profiles/shell-policy.json",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/consumer-profiles/workbench.md",
+      "target": "docs/templates/consumer-profiles/workbench.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/evidence/release.md",
+      "target": "docs/templates/evidence/release.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/evidence/workflow-evaluation.md",
+      "target": "docs/templates/evidence/workflow-evaluation.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/prompts/README.md",
+      "target": "docs/templates/prompts/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/prompts/claude-code/fix-from-review.md",
+      "target": "docs/templates/prompts/claude-code/fix-from-review.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/prompts/claude-code/serial-checkpoint.md",
+      "target": "docs/templates/prompts/claude-code/serial-checkpoint.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/prompts/claude-code/subagent-execution.md",
+      "target": "docs/templates/prompts/claude-code/subagent-execution.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/prompts/codex/context-safe-review.md",
+      "target": "docs/templates/prompts/codex/context-safe-review.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/prompts/codex/final-verification.md",
+      "target": "docs/templates/prompts/codex/final-verification.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/prompts/common/checkpoint-artifact.md",
+      "target": "docs/templates/prompts/common/checkpoint-artifact.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/prompts/common/delivery-docs.md",
+      "target": "docs/templates/prompts/common/delivery-docs.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/prompts/common/html-artifact.md",
+      "target": "docs/templates/prompts/common/html-artifact.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/prompts/common/skill-harness-audit.md",
+      "target": "docs/templates/prompts/common/skill-harness-audit.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/prompts/common/workbench-tidy.md",
+      "target": "docs/templates/prompts/common/workbench-tidy.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/tutorials/README.md",
+      "target": "docs/tutorials/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/tutorials/first-workflow-transcript.md",
+      "target": "docs/tutorials/first-workflow-transcript.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/tutorials/frontend.md",
+      "target": "docs/tutorials/frontend.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/tutorials/java-backend.md",
+      "target": "docs/tutorials/java-backend.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/tutorials/release-and-docs.md",
+      "target": "docs/tutorials/release-and-docs.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/tutorials/workflow-evaluation.md",
+      "target": "docs/tutorials/workflow-evaluation.md",
       "disposition": "retain"
     },
     {
       "path": "docs/workflows/context-safe-agent-workflows.md",
-      "target": "docs/workflows/context-safe-agent-workflows.md",
-      "disposition": "retain"
+      "target": "docs/guides/workflows/context-safe.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/workflows/gsd-informed-hardening.md",
-      "target": "docs/workflows/gsd-informed-hardening.md",
-      "disposition": "retain"
+      "target": "docs/guides/workflows/hardening.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/workflows/routing-validation-guardrails.md",
-      "target": "docs/workflows/routing-validation-guardrails.md",
-      "disposition": "retain"
+      "target": "docs/reference/workflows/routing-guardrails.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/workflows/source-controlled-checks.md",
-      "target": "docs/workflows/source-controlled-checks.md",
-      "disposition": "retain"
+      "target": "docs/guides/workflows/source-controlled-checks.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/workflows/thin-harness-fat-skills.md",
-      "target": "docs/workflows/thin-harness-fat-skills.md",
-      "disposition": "retain"
+      "target": "docs/reference/architecture/skill-first-projection.md",
+      "disposition": "move-with-stub"
     },
     {
       "path": "docs/workflows/verification-evidence-contract.md",
-      "target": "docs/workflows/verification-evidence-contract.md",
-      "disposition": "retain"
+      "target": "docs/reference/workflows/verification-evidence.md",
+      "disposition": "move-with-stub"
     }
   ]
 }

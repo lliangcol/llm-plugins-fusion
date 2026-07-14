@@ -417,7 +417,7 @@ function validateNpmTestGate() {
 }
 
 function parseSuggestedRequiredChecks() {
-  const file = 'docs/maintainers/github-security-settings.md';
+  const file = 'docs/operations/maintainers/github-security.md';
   const src = readRequiredFile(file);
   if (!src) return null;
 
@@ -714,7 +714,7 @@ function validateRequiredCheckContracts() {
   ];
 
   expectRequiredCheckList(
-    'docs/maintainers/github-security-settings.md',
+    'docs/operations/maintainers/github-security.md',
     parseSuggestedRequiredChecks(),
     expectedRequiredChecks,
     'GitHub security settings required checks',

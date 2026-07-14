@@ -7,7 +7,7 @@ import { repoRoot } from './lib/repo-root.mjs';
 import { deriveEvaluationFacts } from './lib/evaluation-facts.mjs';
 
 const root = repoRoot(import.meta.url);
-const target = 'docs/quality/benchmark.md';
+const target = 'docs/reference/evaluation/benchmark.md';
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 
 export function report() {

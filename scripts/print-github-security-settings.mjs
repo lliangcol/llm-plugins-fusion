@@ -31,4 +31,4 @@ for (const check of requiredChecks) {
   console.log(`  - ${check}`);
 }
 console.log('');
-console.log('Reference: docs/maintainers/github-security-settings.md');
+console.log('Reference: docs/operations/maintainers/github-security.md');

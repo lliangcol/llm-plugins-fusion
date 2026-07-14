@@ -15,8 +15,8 @@ export const projectFactDocuments = Object.freeze([
   'CONTRIBUTING.md',
   'ROADMAP.md',
   'SECURITY.md',
-  'docs/project-optimization-plan.md',
-  'docs/llm-plugins-fusion-maintenance-status.md',
+  'docs/project/plans/current-remediation.md',
+  'docs/operations/maintainers/status.md',
   'nova-plugin/docs/architecture/hooks-design.md',
   'evals/README.md',
 ]);

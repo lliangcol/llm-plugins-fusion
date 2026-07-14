@@ -110,6 +110,7 @@
       "lint:actions",
       "lint:shell",
       "llmf",
+      "migrate:docs",
       "normalize:surfaces",
       "release:artifacts",
       "release:candidate",
@@ -138,6 +139,7 @@
       "validate:compatibility-evidence",
       "validate:complexity",
       "validate:doc-governance",
+      "validate:doc-migrations",
       "validate:docs",
       "validate:drift",
       "validate:facts",
@@ -280,7 +282,7 @@
     "exactTagInstallGate": true
   },
   "sourceDigests": {
-    "package.json": "1c4f829d4792bb93e49fa099ffcfde35e790e0751f6935313abde1e36e9a4e30",
+    "package.json": "016f42ed0707d3b8f7c2e42eec42b6e4876e1b92b59869d66aab8dc3b9d4405c",
     "nova-plugin/.claude-plugin/plugin.json": "54f3b9616d6acbb466a8774eeaccdf80c689adab6f7af2570dcd340446ac28f1",
     "workflow-specs/workflows.json": "b9efab557d4c65400ca3bc44b46206ded32baa5f83fb08c0d601b615c11b3640",
     "workflow-specs/nova.product.json": "e58bee4f38037157277c4c6e418a76dc7fd7895b9f3373d72dc841bcffaaf324",
