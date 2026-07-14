@@ -177,6 +177,7 @@ docs/
 | [maintainers/github-security-settings.md](maintainers/github-security-settings.md) | Branch protection, ruleset, CodeQL, secret scanning, Dependabot, and required-check guidance. |
 | [maintainers/post-remediation-audit.md](maintainers/post-remediation-audit.md) | Current execution plan, post-remediation audit, evidence boundaries, residual risks, and phased ROI roadmap. |
 | [maintainers/comprehensive-audit-remediation-plan.md](maintainers/comprehensive-audit-remediation-plan.md) | Complete remediation plan for the current 13-dimension audit, release hold enforcement, external evidence gates, API hardening, and final acceptance. |
+| [maintainers/deep-research-remediation-and-documentation-redesign-plan.md](maintainers/deep-research-remediation-and-documentation-redesign-plan.md) | Proposed report-wide remediation plan and separate full documentation information-architecture redesign. |
 
 ### Marketplace
 
