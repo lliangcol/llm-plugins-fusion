@@ -1,0 +1,5 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/validation-performance.schema.json",
+  "type": "object", "additionalProperties": false, "required": ["$schema", "schemaVersion", "platform", "budgets"],
+  "properties": { "$schema": { "type": "string", "minLength": 1 }, "schemaVersion": { "const": 1 }, "platform": { "type": "string", "pattern": "^(?:windows|linux|macos)-(?:x64|arm64)-node[0-9]+$" }, "budgets": { "type": "object", "additionalProperties": false, "required": ["validateAllWallMs", "runtimeSmokeWallMs"], "properties": { "validateAllWallMs": { "type": "integer", "minimum": 1000 }, "runtimeSmokeWallMs": { "type": "integer", "minimum": 1000 } } } }
+}

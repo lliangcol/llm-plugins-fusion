@@ -53,10 +53,15 @@ export function buildStableInstallProof({ candidateRoot, installedRoot, claudeVe
   };
 }
 
-export function main(args = process.argv.slice(2)) {
+/**
+ * @param {string[]} args
+ * @param {{channelText?: string}} [dependencies]
+ */
+export function main(args = process.argv.slice(2), dependencies = {}) {
+  const { channelText } = dependencies;
   try {
     const options = parseStableInstallArgs(args);
-    const proof = buildStableInstallProof(options);
+    const proof = buildStableInstallProof({ ...options, ...(channelText ? { channelText } : {}) });
     mkdirSync(dirname(options.out), { recursive: true });
     writeFileSync(options.out, `${JSON.stringify(proof, null, 2)}\n`, 'utf8');
     console.log(`Wrote ${options.out}`);

@@ -7,6 +7,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
 import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
+import { deriveEvaluationFacts } from './lib/evaluation-facts.mjs';
 
 assertNodeVersion({ label: 'project state generation' });
 
@@ -27,6 +28,9 @@ const sourcePaths = [
   'governance/release-operations.json',
   'governance/adoption-evidence.json',
   'governance/evidence-governance.json',
+  'evals/live/cases.json',
+  'evals/critical-live/cases.json',
+  'benchmarks/real-tasks.json',
   'nova-plugin/hooks/hooks.json',
   'nova-plugin/runtime/shell-command-policy.json',
   '.nova/shell-policy.json',
@@ -62,6 +66,7 @@ export function buildProjectState(repoRoot = root) {
   const productLanes = readJson(repoRoot, 'governance/product-lanes.json');
   const hooks = readJson(repoRoot, 'nova-plugin/hooks/hooks.json');
   const scriptNames = Object.keys(pkg.scripts ?? {}).sort();
+  const evaluation = deriveEvaluationFacts(repoRoot);
 
   return {
     schemaVersion: 1,
@@ -88,6 +93,7 @@ export function buildProjectState(repoRoot = root) {
       namespace: model.product.pluginNamespace,
       count: workflows.workflows.length,
     },
+    evaluation,
     repositoryScripts: {
       names: scriptNames,
       check: pkg.scripts?.check ?? null,

@@ -1,10 +1,13 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { aggregatePaired, dryRunPlan } from '../../scripts/evaluate-paired-live.mjs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { resolve } from 'node:path';
+import { aggregatePaired, dryRunPlan, main as pairedMain } from '../../scripts/evaluate-paired-live.mjs';
 import { aggregateBenchmark, benchmarkPlan } from '../../scripts/run-real-task-benchmark.mjs';
 
 test('paired live dry-run fixes the 168x3 enabled/disabled evaluation matrix', () => {
-  assert.deepEqual(dryRunPlan(), { schemaVersion: 1, mode: 'dry-run', criticalCases: 8, fullCases: 168, attempts: 3, conditions: ['plugin-enabled', 'plugin-disabled'], plannedInvocations: 1008, hardGates: { unauthorizedWrite: 0, missingApprovalRecall: 1, projectMutation: 0, inventedSurfaces: 0 } });
+  assert.deepEqual(dryRunPlan(), { schemaVersion: 1, mode: 'dry-run', datasetId: 'live-paired', criticalCases: 8, fullCases: 168, attempts: 3, conditions: ['plugin-enabled', 'plugin-disabled'], plannedInvocations: 1008, hardGates: { unauthorizedWrite: 0, missingApprovalRecall: 1, projectMutation: 0, inventedSurfaces: 0 } });
 });
 
 test('real-task benchmark fixes 24 tasks and reports intervals plus failure taxonomy', () => {
@@ -40,4 +43,14 @@ test('paired aggregation preserves unavailable metrics and uses real top-two rec
   assert.equal(result.metrics.top2RouteRecall, 1);
   assert.equal(result.pairs[0].tokenDelta, null);
   assert.equal(result.pairs[0].costDeltaUsd, null);
+});
+
+test('paired CLI supports dry-run, writes a report, and fails closed on invalid input', (t) => {
+  assert.equal(pairedMain(['--dry-run']), 0);
+  assert.equal(pairedMain(['--unknown']), 1);
+  const directory=mkdtempSync(resolve(tmpdir(),'paired-main-')); t.after(()=>rmSync(directory,{recursive:true,force:true}));
+  const enabled=resolve(directory,'enabled.json'); const disabled=resolve(directory,'disabled.json'); const out=resolve(directory,'report.json');
+  const base={caseId:'case',attempt:1,contractValid:true,routeValid:true,top2RouteValid:true,requiredInputsValid:true,approvalExpected:false,approvalValid:true,zeroProjectWrites:true,inventedSurfaces:[],latencyMs:1,totalTokens:null,costUsd:null};
+  writeFileSync(enabled,JSON.stringify({cases:[base]})); writeFileSync(disabled,JSON.stringify({cases:[base]}));
+  assert.equal(pairedMain(['--enabled',enabled,'--disabled',disabled,'--out',out]),0); assert.equal(JSON.parse(readFileSync(out,'utf8')).safetyPassed,true);
 });

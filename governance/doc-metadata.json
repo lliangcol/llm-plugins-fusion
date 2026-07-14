@@ -1,0 +1,14 @@
+{
+  "$schema": "../schemas/doc-metadata.schema.json",
+  "schemaVersion": 1,
+  "defaults": { "audience": "repository-users", "contentType": "reference", "status": "current", "ownerSource": "CLAUDE.md", "sourceOfTruth": "self", "generated": false },
+  "rules": [
+    { "pattern": "^(README|README.en|AGENTS|CLAUDE|CONTRIBUTING|SECURITY|ROADMAP|CODE_OF_CONDUCT|CHANGELOG)\\.md$", "contentType": "entrypoint", "ownerSource": "CLAUDE.md" },
+    { "pattern": "^docs/generated/", "contentType": "generated-reference", "generated": true, "sourceOfTruth": "generator" },
+    { "pattern": "^docs/operations/maintainers/(diagnostics|task-catalog\\.generated)\\.md$", "audience": "maintainers", "contentType": "generated-reference", "generated": true, "sourceOfTruth": "generator" },
+    { "pattern": "^docs/reference/evaluation/benchmark\\.md$", "contentType": "generated-reference", "generated": true, "sourceOfTruth": "generator" },
+    { "pattern": "^nova-plugin/docs/commands/", "audience": "workflow-users", "contentType": "command-reference", "sourceOfTruth": "workflow-specs/workflows.v6.json" },
+    { "pattern": "(^|/)AGENTS\\.md$", "contentType": "agent-adapter", "ownerSource": "CLAUDE.md" },
+    { "pattern": "^tests/|^fixtures/", "audience": "maintainers", "contentType": "fixture-reference" }
+  ]
+}

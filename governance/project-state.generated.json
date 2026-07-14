@@ -23,8 +23,51 @@
     "namespace": "nova-plugin",
     "count": 21
   },
+  "evaluation": {
+    "livePaired": {
+      "datasetId": "live-paired",
+      "sourcePath": "evals/live/cases.json",
+      "caseCount": 168,
+      "languageCounts": {
+        "en": 84,
+        "zh": 84
+      },
+      "kindCounts": {
+        "adversarial": 84,
+        "approval": 42,
+        "route": 42
+      },
+      "profileCaseCounts": {
+        "critical": 8,
+        "full": 168
+      },
+      "conditions": [
+        "plugin-enabled",
+        "plugin-disabled"
+      ],
+      "attempts": 3,
+      "plannedInvocations": 1008
+    },
+    "realTask": {
+      "datasetId": "real-task-benchmark",
+      "sourcePath": "benchmarks/real-tasks.json",
+      "taskCount": 24,
+      "assistants": [
+        "claude-code",
+        "codex"
+      ],
+      "conditions": [
+        "raw",
+        "wrapper-full",
+        "wrapper-compact"
+      ],
+      "attempts": 3,
+      "plannedInvocations": 432
+    }
+  },
   "repositoryScripts": {
     "names": [
+      "audit:dependencies",
       "check",
       "check:compatibility",
       "check:contracts",
@@ -38,6 +81,7 @@
       "check:truth",
       "ci:full",
       "ci:quick",
+      "demo:all",
       "demo:review",
       "demo:route",
       "doctor",
@@ -55,15 +99,21 @@
       "eval:surfaces",
       "generate:adapters",
       "generate:behavior-surfaces",
+      "generate:command-docs",
       "generate:compatibility-evidence",
+      "generate:diagnostics-docs",
+      "generate:doc-governance",
+      "generate:evaluation-profiles",
       "generate:facts",
       "generate:quality-report",
+      "generate:release-summary",
       "generate:runtime-contracts",
       "generate:task-catalog",
       "lint",
       "lint:actions",
       "lint:shell",
       "llmf",
+      "migrate:docs",
       "normalize:surfaces",
       "release:artifacts",
       "release:candidate",
@@ -86,17 +136,24 @@
       "typecheck",
       "validate",
       "validate:behavior-contracts",
+      "validate:bootstrap",
+      "validate:command-docs",
       "validate:community",
       "validate:compatibility-evidence",
       "validate:complexity",
+      "validate:dependency-audit",
+      "validate:doc-governance",
+      "validate:doc-migrations",
       "validate:docs",
       "validate:drift",
+      "validate:evaluation-profiles",
       "validate:facts",
       "validate:github-workflows",
       "validate:governance-freshness",
       "validate:hook-truth",
       "validate:maintainer",
       "validate:maintainer:evidence",
+      "validate:performance",
       "validate:permissions",
       "validate:portable-paths",
       "validate:project-state",
@@ -105,6 +162,7 @@
       "validate:release-operational-readiness",
       "validate:release-operations",
       "validate:release-readiness",
+      "validate:release-summary",
       "validate:release-truth",
       "validate:runtime",
       "validate:schemas",
@@ -112,6 +170,7 @@
       "validate:second-product",
       "validate:surface",
       "validate:tasks",
+      "validate:tutorials",
       "validate:workflow",
       "validate:workflow-contract",
       "validate:workspaces"
@@ -231,7 +290,7 @@
     "exactTagInstallGate": true
   },
   "sourceDigests": {
-    "package.json": "356ac67b714da421bffe0281f9181a470017a8cd54ce213a579bfcaaf87669b8",
+    "package.json": "0144e1fcde6551f68f43bfd2a456085d150e3c46019ff1678eb3c9ccf189e8c5",
     "nova-plugin/.claude-plugin/plugin.json": "54f3b9616d6acbb466a8774eeaccdf80c689adab6f7af2570dcd340446ac28f1",
     "workflow-specs/workflows.json": "b9efab557d4c65400ca3bc44b46206ded32baa5f83fb08c0d601b615c11b3640",
     "workflow-specs/nova.product.json": "e58bee4f38037157277c4c6e418a76dc7fd7895b9f3373d72dc841bcffaaf324",
@@ -245,6 +304,9 @@
     "governance/release-operations.json": "0848ee6adf667a31f9ba5fedd4a22a4da1c249b06f32b49c3633ea29539e10ce",
     "governance/adoption-evidence.json": "7439bbae52926fee5ce78ab562ac16260db37de5875c3b5bbc2a375f88cbd776",
     "governance/evidence-governance.json": "6599f260302b71c26e1afb49c2de0398da7ff42bced602b1df1669811de4c660",
+    "evals/live/cases.json": "50dcfcc856523e39c2e122b5984d39ec4b4e11215548ce398726f87e69211e88",
+    "evals/critical-live/cases.json": "ba35f4546f2fb145a93de523e274b29041bc37ec8d6d7581e1dba2d394eb9893",
+    "benchmarks/real-tasks.json": "4898ff8433c3ab39a45d8ce016cf954f53147b858798fcef5cb5bf85b65bcfe5",
     "nova-plugin/hooks/hooks.json": "aefa00ccba719be989caa22f310697a167a229eb99e78049aecd8675b0f2547a",
     "nova-plugin/runtime/shell-command-policy.json": "bbcb123c8f075afd89cbe81d434184811523d29efe415489fd91a100be9cae1d",
     ".nova/shell-policy.json": "b03b4ad3452bd13f95f14823b2a0e695d8de6f46f11b5b2d434d91f285d1279d"

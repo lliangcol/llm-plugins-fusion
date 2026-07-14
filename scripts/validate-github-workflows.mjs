@@ -80,6 +80,11 @@ const WORKFLOW_CONTRACTS = [
     label: 'dependency review workflow top-level permissions',
   },
   {
+    file: '.github/workflows/dependency-audit.yml',
+    permissions: [['contents', 'read']],
+    label: 'dependency audit workflow top-level permissions',
+  },
+  {
     file: '.github/workflows/codeql.yml',
     permissions: [['contents', 'read'], ['security-events', 'write']],
     label: 'CodeQL workflow top-level permissions',
@@ -417,7 +422,7 @@ function validateNpmTestGate() {
 }
 
 function parseSuggestedRequiredChecks() {
-  const file = 'docs/maintainers/github-security-settings.md';
+  const file = 'docs/operations/maintainers/github-security.md';
   const src = readRequiredFile(file);
   if (!src) return null;
 
@@ -652,6 +657,31 @@ function validateWorkflowContracts() {
     recordError(smokeFile, 'plugin install smoke issue reporter must bind GH_REPO outside a Git checkout');
   }
 
+  const dependencyAuditFile = '.github/workflows/dependency-audit.yml';
+  const dependencyAuditSrc = readWorkflow(dependencyAuditFile);
+  if (!dependencyAuditSrc) return;
+  const dependencyAuditOnBlock = extractYamlBlock(dependencyAuditFile, dependencyAuditSrc, 'on', 0, 'dependency audit trigger block');
+  if (dependencyAuditOnBlock) {
+    const triggerText = dependencyAuditOnBlock.lines.join('\n');
+    if (!/^\s+workflow_dispatch\s*:/m.test(triggerText) || !/^\s+schedule\s*:/m.test(triggerText)) {
+      recordError(dependencyAuditFile, 'dependency audit requires manual and scheduled triggers');
+    }
+    if (/^\s+(?:pull_request|push)\s*:/m.test(triggerText)) {
+      recordError(dependencyAuditFile, 'dependency audit must not duplicate pull-request or push dependency review');
+    }
+  }
+  for (const required of [
+    'timeout-minutes: 15',
+    'node-version: 24',
+    'npm ci --ignore-scripts',
+    'node scripts/audit-dependencies.mjs --write',
+    'if: always()',
+    'governance/dependency-audit-evidence.json',
+    'docs/generated/dependency-audit.md',
+  ]) {
+    if (!dependencyAuditSrc.includes(required)) recordError(dependencyAuditFile, `dependency audit evidence contract requires ${required}`);
+  }
+
   const dependencyReviewFile = '.github/workflows/dependency-review.yml';
   const dependencyReviewSrc = readWorkflow(dependencyReviewFile);
   if (!dependencyReviewSrc) return;
@@ -714,7 +744,7 @@ function validateRequiredCheckContracts() {
   ];
 
   expectRequiredCheckList(
-    'docs/maintainers/github-security-settings.md',
+    'docs/operations/maintainers/github-security.md',
     parseSuggestedRequiredChecks(),
     expectedRequiredChecks,
     'GitHub security settings required checks',

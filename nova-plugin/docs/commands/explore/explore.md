@@ -1,5 +1,17 @@
 # Skill: /nova-plugin:explore
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `explore`; stage: `explore`; canonical skill: `nova-explore`
+- Purpose: Align understanding and identify unknowns or risks without proposing solutions.
+- Audience: `all-users`; support risk: `none`
+- Inputs: `INPUT` (required), `PERSPECTIVE`
+- Output contract: `exploration-v2`; authorization: `read-only`
+- Effects: `workspace-read`
+- Related workflows: `route`, `produce-plan`
+<!-- generated:command-contract:end -->
+
 - 来源：`nova-plugin/commands/explore.md`
 
 ## 用途

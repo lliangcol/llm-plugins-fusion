@@ -11,7 +11,7 @@ import { repoRoot } from './lib/repo-root.mjs';
 const root = repoRoot(import.meta.url);
 const registryPath = 'governance/compatibility-evidence.generated.json';
 const summaryPath = 'docs/generated/assistant-compatibility.md';
-const matrixPath = 'docs/marketplace/compatibility-matrix.md';
+const matrixPath = 'docs/reference/compatibility/marketplace.md';
 const matrixStart = '<!-- generated:assistant-compatibility:start -->';
 const matrixEnd = '<!-- generated:assistant-compatibility:end -->';
 

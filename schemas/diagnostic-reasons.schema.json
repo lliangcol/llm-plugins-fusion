@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/diagnostic-reasons.schema.json",
+  "title": "Diagnostic reason registry",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "reasons"],
+  "properties": {
+    "$schema": { "type": "string", "minLength": 1 },
+    "schemaVersion": { "const": 1 },
+    "reasons": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["code", "severity", "summary", "remediation", "docsUrl"],
+        "properties": {
+          "code": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" },
+          "severity": { "enum": ["info", "warning", "error"] },
+          "summary": { "type": "string", "minLength": 1 },
+          "remediation": { "type": "string", "minLength": 1 },
+          "docsUrl": { "type": "string", "minLength": 1 }
+        }
+      }
+    }
+  }
+}

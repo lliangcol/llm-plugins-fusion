@@ -1,5 +1,17 @@
 ﻿# /nova-plugin:finalize-work
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `finalize-work`; stage: `finalize`; canonical skill: `nova-finalize-work`
+- Purpose: Package completed work into review-ready handoff text without changing the completed state.
+- Audience: `all-users`; support risk: `none`
+- Inputs: `WORK_SUMMARY` (required)
+- Output contract: `finalize-work-v2`; authorization: `read-only-shell-prompt`
+- Effects: `shell`, `workspace-read`
+- Related workflows: `finalize-lite`
+<!-- generated:command-contract:end -->
+
 - Source: `nova-plugin/commands/finalize-work.md`
 
 ## Command Positioning

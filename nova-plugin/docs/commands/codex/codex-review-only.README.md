@@ -1,5 +1,17 @@
 # /nova-plugin:codex-review-only
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `codex-review-only`; stage: `review`; canonical skill: `nova-review`
+- Purpose: Produce an external Codex review artifact without modifying project code.
+- Audience: `codex-users`; support risk: `low`
+- Inputs: `REVIEW_SCOPE` (required), `BASE`, `REVIEW_MODE`
+- Output contract: `codex-review-only-v2`; authorization: `external-review-read-only`
+- Effects: `credentials`, `network`, `shell`, `workspace-read`
+- Related workflows: `codex-review-fix`, `codex-verify-only`
+<!-- generated:command-contract:end -->
+
 - 来源：`nova-plugin/commands/codex-review-only.md`
 
 ## 命令定位

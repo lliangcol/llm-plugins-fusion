@@ -1,5 +1,17 @@
 # /nova-plugin:review
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `review`; stage: `review`; canonical skill: `nova-review`
+- Purpose: Route code or design review to the requested depth and emit evidence-grounded findings without implementation.
+- Audience: `all-users`; support risk: `none`
+- Inputs: `REVIEW_SCOPE` (required), `LEVEL`
+- Output contract: `review-v2`; authorization: `read-only`
+- Effects: `workspace-read`
+- Related workflows: `review-lite`, `review-strict`
+<!-- generated:command-contract:end -->
+
 - Source: `nova-plugin/commands/review.md`
 
 ## Command Positioning

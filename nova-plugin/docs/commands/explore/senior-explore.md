@@ -1,5 +1,17 @@
 ﻿# Skill: /nova-plugin:senior-explore
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `senior-explore`; stage: `explore`; canonical skill: `nova-explore`
+- Purpose: Conduct systematic analysis and optionally export an identical evidence-grounded analysis artifact.
+- Audience: `advanced-users`; support risk: `low`
+- Inputs: `INTENT` (required), `CONTEXT` (required), `CONSTRAINTS`, `DEPTH`, `EXPORT_PATH`
+- Output contract: `senior-exploration-v2`; authorization: `artifact-write`
+- Effects: `artifact-write`, `workspace-read`, `workspace-write`
+- Related workflows: `explore`, `produce-plan`
+<!-- generated:command-contract:end -->
+
 - 来源：`nova-plugin/commands/senior-explore.md`
 
 ## 适用场景

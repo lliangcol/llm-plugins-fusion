@@ -1,5 +1,17 @@
 ﻿# Skill: /nova-plugin:implement-lite
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `implement-lite`; stage: `implement`; canonical skill: `nova-implement-plan`
+- Purpose: Deliver a small bounded implementation with focused validation and no unrelated refactoring.
+- Audience: `all-users`; support risk: `medium`
+- Inputs: `REQUEST` (required), `CONSTRAINTS`
+- Output contract: `implementation-lite-v2`; authorization: `implementation`
+- Effects: `shell`, `workspace-read`, `workspace-write`
+- Related workflows: `implement-plan`
+<!-- generated:command-contract:end -->
+
 - 来源：`nova-plugin/commands/implement-lite.md`
 
 ## 适用场景

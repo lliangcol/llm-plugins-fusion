@@ -31,6 +31,7 @@ import { requireOptionValue } from '../lib/cli-args.mjs';
 import { parseSemVer } from '../lib/semver.mjs';
 import { validateActivePlanningAndReports } from './rules/active-planning-and-reports.mjs';
 import { validateLinksAndCommandDocs } from './rules/links-and-command-docs.mjs';
+import { deriveEvaluationFacts } from '../lib/evaluation-facts.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..', '..');
@@ -256,7 +257,7 @@ function validateVersionReferences() {
     'command reference version',
   );
   expectContentRegex(
-    'docs/marketplace/portal-information-architecture.md',
+    'docs/project/plans/portal-information-architecture.md',
     new RegExp(`remains the current \`v${versionPattern}\` marketplace state`),
     'current portal boundary version',
   );
@@ -478,7 +479,7 @@ function validateInventoryFacts() {
       label: 'ROADMAP generated command/skill count',
     },
     {
-      file: 'docs/marketplace/compatibility-matrix.md',
+      file: 'docs/reference/compatibility/marketplace.md',
       pattern: /\| Nova commands and skills \| (\d+) generated commands and (\d+) canonical `nova-\*` skills \|/,
       values: [commandCount, skillCount],
       label: 'compatibility matrix command/skill count',
@@ -490,25 +491,25 @@ function validateInventoryFacts() {
       label: 'dual-track skill count',
     },
     {
-      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      file: 'docs/operations/maintainers/status.md',
       pattern: /- Commands: (\d+) files under `nova-plugin\/commands\/\*\.md`/,
       values: [commandCount],
       label: 'maintenance status command count',
     },
     {
-      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      file: 'docs/operations/maintainers/status.md',
       pattern: /- Skills: (\d+) files under `nova-plugin\/skills\/nova-\*\/SKILL\.md`/,
       values: [skillCount],
       label: 'maintenance status skill count',
     },
     {
-      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      file: 'docs/operations/maintainers/status.md',
       pattern: /- Active agents: (\d+) core files under `nova-plugin\/agents\/\*\.md`/,
       values: [activeAgentCount],
       label: 'maintenance status active agent count',
     },
     {
-      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      file: 'docs/operations/maintainers/status.md',
       pattern: /- Capability packs: (\d+) documentation packs under `nova-plugin\/packs\/\*\/README\.md`/,
       values: [packCount],
       label: 'maintenance status pack count',
@@ -563,12 +564,12 @@ function validateProjectPositioningContracts() {
       label: 'ROADMAP deferred product-lane boundary',
     },
     {
-      file: 'docs/project-optimization-plan.md',
+      file: 'docs/project/plans/current-remediation.md',
       pattern: /`nova-plugin` is the only production plugin/,
       label: 'optimization plan one production plugin boundary',
     },
     {
-      file: 'docs/project-optimization-plan.md',
+      file: 'docs/project/plans/current-remediation.md',
       pattern: /Public portal work and production multi-plugin directory migration remain\s+deferred[\s\S]*independently\s+named product lanes[\s\S]*not coupled to an already released version number/,
       label: 'optimization plan deferred portal and multi-plugin boundary',
     },
@@ -578,22 +579,22 @@ function validateProjectPositioningContracts() {
       label: 'English overview mature ecosystem and public portal boundary',
     },
     {
-      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      file: 'docs/operations/maintainers/status.md',
       pattern: /public AI engineering workflow framework centered on\s+`nova-plugin`/,
       label: 'maintenance status nova-plugin centered boundary',
     },
     {
-      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      file: 'docs/operations/maintainers/status.md',
       pattern: /Explore -> Plan -> Review -> Implement -> Finalize/,
       label: 'maintenance status five-stage workflow boundary',
     },
     {
-      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      file: 'docs/operations/maintainers/status.md',
       pattern: /`nova-plugin` is the only production plugin/,
       label: 'maintenance status one production plugin boundary',
     },
     {
-      file: 'docs/llm-plugins-fusion-maintenance-status.md',
+      file: 'docs/operations/maintainers/status.md',
       pattern: /must not be\s+described as a mature multi-plugin ecosystem, public portal, paid marketplace,\s+runtime dynamic plugin platform, or enterprise private knowledge base/,
       label: 'maintenance status deferred scope boundary',
     },
@@ -635,7 +636,7 @@ function validateReleasePromotionContracts() {
       label: 'ROADMAP rehearsed stable promotion boundary',
     },
     {
-      file: 'docs/project-optimization-plan.md',
+      file: 'docs/project/plans/current-remediation.md',
       pattern: new RegExp('Exact `'
         + tagPattern
         + '` is the current stable promotion baseline[\\s\\S]*Moving `main` may\\s+contain later unreleased maintenance work and must not be promoted as stable\\s+release content'),
@@ -649,89 +650,89 @@ function validateReleasePromotionContracts() {
       label: 'English overview exact release tag promotion boundary',
     },
     {
-      file: 'docs/releases/release-hygiene.md',
+      file: 'docs/operations/releases/hygiene.md',
       pattern: /Stable promotion targets must be exact release tags[\s\S]*moving `main` branch[\s\S]*development snapshot rather than stable release material/,
       label: 'release hygiene exact release tag promotion boundary',
     },
     {
-      file: 'docs/releases/release-evidence-template.md',
+      file: 'docs/templates/evidence/release.md',
       pattern: new RegExp('Promote exact release tags such as `'
         + tagPattern
         + '`; do not promote moving `main` as stable'),
       label: 'release evidence exact release tag promotion boundary',
     },
     {
-      file: 'docs/releases/release-evidence-template.md',
+      file: 'docs/templates/evidence/release.md',
       pattern: /If local validation reports skipped checks,[\s\S]*name each skipped check and the replacement CI\/Linux evidence/,
       label: 'release evidence skipped checks replacement boundary',
     },
     {
-      file: 'docs/releases/release-evidence-template.md',
+      file: 'docs/templates/evidence/release.md',
       pattern: /Treat `node scripts\/validate-plugin-install\.mjs` as a separate CI or isolated\s+test-user check because it may install or update user-scope Claude plugin\s+state/,
       label: 'release evidence plugin install isolation boundary',
     },
     {
-      file: 'docs/releases/release-evidence-template.md',
+      file: 'docs/templates/evidence/release.md',
       pattern: /node scripts\/validate-all\.mjs:[\s\S]*node scripts\/validate-github-workflows\.mjs:[\s\S]*node scripts\/validate-runtime-smoke\.mjs:/,
       label: 'release evidence GitHub workflow validation result slot',
     },
     {
-      file: 'docs/releases/release-validation-runbook.md',
+      file: 'docs/operations/releases/validation.md',
       pattern: /If the target has no exact tag[\s\S]*do not promote[\s\S]*unreleased development snapshot/,
       label: 'release runbook missing exact tag decision boundary',
     },
     {
-      file: 'docs/releases/release-validation-runbook.md',
+      file: 'docs/operations/releases/validation.md',
       pattern: /Stable\s+publication is then started manually[\s\S]*signed stable tag[\s\S]*exact candidate tag[\s\S]*pushing a stable tag alone does not publish a release/,
       label: 'release runbook explicit stable and candidate dispatch boundary',
     },
     {
-      file: 'docs/releases/release-validation-runbook.md',
+      file: 'docs/operations/releases/validation.md',
       pattern: /GitHub workflow contracts \| Automated \| `node scripts\/validate-github-workflows\.mjs` passes; this proves workflow permissions,[\s\S]*workflow inventory,[\s\S]*required-check list synchronization/,
       label: 'release runbook GitHub workflow contract gate',
     },
     {
-      file: 'docs/releases/release-validation-runbook.md',
+      file: 'docs/operations/releases/validation.md',
       pattern: /If any required manual gate is missing,[\s\S]*describe the target as an unreleased\s+development snapshot,[\s\S]*not a stable release/,
       label: 'release runbook missing manual gate snapshot boundary',
     },
     {
-      file: 'docs/releases/release-validation-runbook.md',
+      file: 'docs/operations/releases/validation.md',
       pattern: /scripts\/validate-runtime-smoke\.mjs[\s\S]*scripts\/validate-github-workflows\.mjs[\s\S]*scripts\/validate-surface-budget\.mjs/,
       label: 'release runbook focused GitHub workflow validation command',
     },
     {
-      file: 'docs/releases/release-validation-runbook.md',
+      file: 'docs/operations/releases/validation.md',
       pattern: /`node scripts\/validate-workflow-fixtures\.mjs` passes; this proves fixture integrity,[\s\S]*not slash-command output quality/,
       label: 'release runbook fixture quality boundary',
     },
     {
-      file: 'docs/releases/release-validation-runbook.md',
+      file: 'docs/operations/releases/validation.md',
       pattern: /`node scripts\/validate-plugin-install\.mjs --accept-user-scope-mutation` mutates\s+Claude Code user-scope plugin state[\s\S]*Run it only in CI or in an isolated\s+test-user environment/,
       label: 'release runbook plugin install mutation boundary',
     },
     {
-      file: 'docs/releases/release-validation-runbook.md',
+      file: 'docs/operations/releases/validation.md',
       pattern: /Plugin install smoke is missing \| Do not promote; record pending isolated\/CI evidence[\s\S]*Manual workflow evidence is missing[\s\S]*Do not promote until recorded/,
       label: 'release runbook promotion missing evidence boundary',
     },
     {
-      file: 'docs/releases/release-validation-runbook.md',
+      file: 'docs/operations/releases/validation.md',
       pattern: /Never fill missing evidence with assumptions[\s\S]*Record `not run`, `skipped`, or\s+`pending` with a concrete reason/,
       label: 'release runbook no assumed evidence boundary',
     },
     {
-      file: 'docs/releases/release-hygiene.md',
+      file: 'docs/operations/releases/hygiene.md',
       pattern: /Run `node scripts\/validate-plugin-install\.mjs` only in CI or an isolated\s+test-user environment[\s\S]*unattended local release evidence should record it as pending/,
       label: 'release hygiene unattended install smoke pending boundary',
     },
     {
-      file: 'docs/releases/release-hygiene.md',
+      file: 'docs/operations/releases/hygiene.md',
       pattern: /content-addressed\s+control bundle[\s\S]*actual control-bundle archive and\s+file inventory[\s\S]*publishing those exact candidate bytes/,
       label: 'release hygiene verified immutable candidate asset boundary',
     },
     {
-      file: 'docs/releases/release-hygiene.md',
+      file: 'docs/operations/releases/hygiene.md',
       pattern: /node scripts\/validate-all\.mjs[\s\S]*node scripts\/validate-github-workflows\.mjs[\s\S]*node scripts\/validate-runtime-smoke\.mjs/,
       label: 'release hygiene GitHub workflow validation command',
     },
@@ -745,127 +746,127 @@ function validateReleasePromotionContracts() {
 function validateMaintainerDiagnosticContracts() {
   const checks = [
     {
-      file: 'docs/maintainers/quickstart.md',
+      file: 'docs/operations/maintainers/README.md',
       pattern: /## Diagnostic Result Semantics[\s\S]*`npm run doctor` is read-only[\s\S]*Treat them as evidence to record, not as automatic\s+failures/,
       label: 'maintainer quickstart diagnostic semantics introduction',
     },
     {
-      file: 'docs/maintainers/quickstart.md',
+      file: 'docs/operations/maintainers/README.md',
       pattern: /`Claude CLI: WARN`[\s\S]*live Claude plugin validation and user-scope install smoke are not proven locally[\s\S]*`node scripts\/validate-plugin-install\.mjs --dry-run`[\s\S]*isolated test user/,
       label: 'maintainer quickstart Claude CLI warning boundary',
     },
     {
-      file: 'docs/maintainers/quickstart.md',
+      file: 'docs/operations/maintainers/README.md',
       pattern: /`Codex CLI: WARN`[\s\S]*Do not claim Codex review\/fix\/verify runtime behavior was proven/,
       label: 'maintainer quickstart Codex CLI warning boundary',
     },
     {
-      file: 'docs/maintainers/quickstart.md',
+      file: 'docs/operations/maintainers/README.md',
       pattern: /`Bash: WARN` or `skipped>0`[\s\S]*Record the skipped checks[\s\S]*CI\/Linux Bash evidence/,
       label: 'maintainer quickstart Bash skipped-check boundary',
     },
     {
-      file: 'docs/maintainers/quickstart.md',
+      file: 'docs/operations/maintainers/README.md',
       pattern: /`Exact release tag: WARN`[\s\S]*development snapshot[\s\S]*signed `v<plugin-version>-rc\.<number>` candidate[\s\S]*stable tag at the same commit/,
       label: 'maintainer quickstart exact-tag warning boundary',
     },
     {
-      file: 'docs/maintainers/quickstart.md',
+      file: 'docs/operations/maintainers/README.md',
       pattern: /`npm run validate:maintainer` fails only on hard gate failures[\s\S]*carry those\s+warnings into the handoff/,
       label: 'maintainer quickstart passing gate warning handoff boundary',
     },
     {
-      file: 'docs/maintainers/quickstart.md',
+      file: 'docs/operations/maintainers/README.md',
       pattern: /CI or release workflow[\s\S]*`npm run validate:github-workflows`[\s\S]*review changed workflow trigger, permissions, workflow inventory, and required-check list/,
       label: 'maintainer quickstart GitHub workflow shortcut',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /## Boundary Rules[\s\S]*Do not loosen global permissions,[\s\S]*agent sandbox settings,[\s\S]*workflow token\s+scope to hide a missing local tool or unavailable platform check/,
       label: 'maintainer troubleshooting no permission bypass boundary',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /Do not paste private machine paths,[\s\S]*repository addresses,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*tokens,[\s\S]*consumer names,[\s\S]*business rules,[\s\S]*private alert details\s+into public troubleshooting notes/,
       label: 'maintainer troubleshooting private details boundary',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /Record unavailable checks as `skipped`, `not run`, or `pending`[\s\S]*replacement CI\/Linux or owner-verified evidence/,
       label: 'maintainer troubleshooting unavailable checks boundary',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /## Fast Failure Map[\s\S]*Use the smallest focused check that matches the failure before running the full\s+maintainer gate again/,
       label: 'maintainer troubleshooting fast failure map purpose',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /\| Markdown link, anchor, inventory, positioning, or release wording failure \| `npm run validate:docs` \| Fix active public docs only; do not patch generated marketplace outputs by hand\. \|/,
       label: 'maintainer troubleshooting docs failure shortcut',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /\| Command or skill frontmatter failure \| `node scripts\/lint-frontmatter\.mjs` \| Preserve canonical skill ownership, generated alias mapping, and existing tool permission intent\. \|/,
       label: 'maintainer troubleshooting frontmatter failure shortcut',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /\| GitHub workflow permission, inventory, or required-check drift \| `npm run validate:github-workflows` \| Do not broaden default token scope or move mutating plugin install smoke into default PR\/push checks\. \|/,
       label: 'maintainer troubleshooting GitHub workflow failure shortcut',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /\| `generated registry drift check` or generated marketplace drift \| `node scripts\/generate-registry\.mjs --write` \| Edit registry or plugin metadata sources first, then regenerate outputs\. \|/,
       label: 'maintainer troubleshooting generated registry failure shortcut',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /\| Distribution risk scan secret, private path, or `\.codex\/` artifact finding \| `npm run scan:distribution` \| Remove or redact the active public content; use allowlists only for intentional historical warnings\. \|/,
       label: 'maintainer troubleshooting distribution risk failure shortcut',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /\| Capability pack documentation-only, enhanced, or fallback boundary failure \| `node scripts\/validate-packs\.mjs` \| Keep packs as documentation guidance; do not introduce runtime dynamic loading as a fix\. \|/,
       label: 'maintainer troubleshooting pack boundary shortcut',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /\| `validate surface budget` warning or failure \| `npm run validate:surface` \| Split bloated shipped surfaces or update the allowlist only with a rationale and split plan\. \|/,
       label: 'maintainer troubleshooting surface budget shortcut',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /\| Bash hook syntax failure \| `bash -n nova-plugin\/hooks\/scripts\/pre-write-check\.sh` and `bash -n nova-plugin\/hooks\/scripts\/post-audit-log\.sh` \| Run only where Bash is available; treat Windows no-Bash skips as skipped, not passed\. \|/,
       label: 'maintainer troubleshooting hook syntax failure shortcut',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /\| Codex runtime helper smoke failure \| `node scripts\/validate-runtime-smoke\.mjs` \| Use CI\/Linux for replacement evidence when local Bash is unavailable\. \|/,
       label: 'maintainer troubleshooting runtime smoke failure shortcut',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /## GitHub Workflow Permissions[\s\S]*npm run validate:github-workflows[\s\S]*read-only default token scope,[\s\S]*forbids `pull_request_target`[\s\S]*release write permission scoped to the release job,[\s\S]*workflow\s+file inventory synchronized with `CLAUDE\.md`[\s\S]*required-check docs and the\s+read-only print script synchronized with CI labels[\s\S]*Do not broaden workflow token\s+scope/,
       label: 'maintainer troubleshooting GitHub workflow validator',
     },
     {
-      file: 'docs/maintainers/github-security-settings.md',
+      file: 'docs/operations/maintainers/github-security.md',
       pattern: /owner-verified checklist,[\s\S]*not a public portal,[\s\S]*automated\s+settings auditor,[\s\S]*substitute for GitHub UI evidence/,
       label: 'GitHub security settings manual evidence boundary',
     },
     {
-      file: 'docs/maintainers/github-security-settings.md',
+      file: 'docs/operations/maintainers/github-security.md',
       pattern: /Keep raw CodeQL alerts,[\s\S]*secret scanning hits,[\s\S]*dependency advisory details,[\s\S]*repository rule screenshots,[\s\S]*tokens,[\s\S]*owner-only security settings out of\s+public docs and issue threads/,
       label: 'GitHub security settings private alert boundary',
     },
     {
-      file: 'docs/maintainers/github-security-settings.md',
+      file: 'docs/operations/maintainers/github-security.md',
       pattern: /Do not raise default Actions token permissions[\s\S]*make mutating install smoke\s+a default required check[\s\S]*least-privilege\s+workflow permissions and isolated release evidence/,
       label: 'GitHub security settings least privilege boundary',
     },
     {
-      file: 'docs/maintainers/github-security-settings.md',
+      file: 'docs/operations/maintainers/github-security.md',
       pattern: /## Suggested Required Checks[\s\S]*Required \/ Aggregate[\s\S]*Dependency Review[\s\S]*CodeQL \/ Analyze JavaScript[\s\S]*Contracts,[\s\S]*Tests,[\s\S]*Security,[\s\S]*platform matrix,[\s\S]*Package/,
       label: 'GitHub security settings required workflow checks',
     },
@@ -879,32 +880,32 @@ function validateMaintainerDiagnosticContracts() {
 function validatePublicApiCompatibilityContracts() {
   const checks = [
     {
-      file: 'docs/compatibility/public-api.md',
+      file: 'docs/reference/compatibility/public-api.md',
       pattern: /`nova-plugin` is the only production plugin[\s\S]*registry fixtures and generated\s+multi-entry examples are not stable production plugin directories/,
       label: 'public API single production plugin boundary',
     },
     {
-      file: 'docs/compatibility/public-api.md',
+      file: 'docs/reference/compatibility/public-api.md',
       pattern: /Marketplace metadata and the generated catalog are install and distribution\s+artifacts,[\s\S]*not a hosted public portal,[\s\S]*paid marketplace,[\s\S]*frontend\s+application/,
       label: 'public API no portal marketplace app boundary',
     },
     {
-      file: 'docs/compatibility/public-api.md',
+      file: 'docs/reference/compatibility/public-api.md',
       pattern: /Capability packs are documentation contracts;[\s\S]*do not create runtime\s+dynamic pack or plugin loading/,
       label: 'public API no runtime dynamic loading boundary',
     },
     {
-      file: 'docs/compatibility/public-api.md',
+      file: 'docs/reference/compatibility/public-api.md',
       pattern: /Consumer-specific profile content,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*repository\s+addresses,[\s\S]*local paths,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private\s+knowledge-base content are not part of the public API/,
       label: 'public API private consumer boundary',
     },
     {
-      file: 'docs/compatibility/public-api.md',
+      file: 'docs/reference/compatibility/public-api.md',
       pattern: /The mutation install smoke path is intentionally not a default local API[\s\S]*Run it only in CI or an isolated test-user environment/,
       label: 'public API install smoke mutation boundary',
     },
     {
-      file: 'docs/compatibility/public-api.md',
+      file: 'docs/reference/compatibility/public-api.md',
       pattern: /Do not hand-edit generated marketplace outputs[\s\S]*Update `\.claude-plugin\/registry\.source\.json` or\s+`nova-plugin\/\.claude-plugin\/plugin\.json`, then run:[\s\S]*node scripts\/generate-registry\.mjs --write/,
       label: 'public API generated output source boundary',
     },
@@ -918,87 +919,87 @@ function validatePublicApiCompatibilityContracts() {
 function validateMarketplaceContracts() {
   const checks = [
     {
-      file: 'docs/marketplace/trust-policy.md',
+      file: 'docs/reference/security/marketplace-trust.md',
       pattern: /repository-local marketplace metadata for the current\s+`nova-plugin` entry[\s\S]*not a hosted public portal,[\s\S]*paid marketplace,[\s\S]*production multi-plugin directory,[\s\S]*external trust registry[\s\S]*must not be copied into the\s+Claude-compatible `\.claude-plugin\/marketplace\.json`/,
       label: 'marketplace trust repo-local metadata boundary',
     },
     {
-      file: 'docs/marketplace/trust-policy.md',
+      file: 'docs/reference/security/marketplace-trust.md',
       pattern: /does not rely on blanket high-permission execution as a public\s+recommendation[\s\S]*without recommending global permission bypasses/,
       label: 'marketplace trust permission posture boundary',
     },
     {
-      file: 'docs/marketplace/trust-policy.md',
+      file: 'docs/reference/security/marketplace-trust.md',
       pattern: /Release workflow or `\.github\/workflows\/\*\*` changes should run\s+`node scripts\/validate-github-workflows\.mjs`[\s\S]*least-privilege\s+workflow token scope,[\s\S]*workflow file inventory,[\s\S]*required-check docs and\s+read-only print output synchronization,[\s\S]*isolated mutating install smoke\s+boundaries[\s\S]*Do not broaden workflow token\s+scope/,
       label: 'marketplace trust GitHub workflow contract boundary',
     },
     {
-      file: 'docs/marketplace/trust-policy.md',
+      file: 'docs/reference/security/marketplace-trust.md',
       pattern: /Reviewers must verify that Claude-incompatible fields remain only in\s+repository-local metadata[\s\S]*Public docs and prompts must keep high-risk permission guidance scoped,[\s\S]*contextual,[\s\S]*preferably negative/,
       label: 'marketplace trust incompatible fields boundary',
     },
     {
-      file: 'docs/marketplace/security-review-route.md',
+      file: 'docs/reference/security/security-review.md',
       pattern: /## Public Review Boundary[\s\S]*do not paste private vulnerability\s+reports,[\s\S]*exploit details,[\s\S]*credentials,[\s\S]*tokens,[\s\S]*private endpoints,[\s\S]*repository\s+addresses,[\s\S]*local paths,[\s\S]*customer data,[\s\S]*private knowledge-base content/,
       label: 'security review public-safe disclosure boundary',
     },
     {
-      file: 'docs/marketplace/security-review-route.md',
-      pattern: /Use \[SECURITY\.md\]\(\.\.\/\.\.\/SECURITY\.md\) for private vulnerability reports[\s\S]*sanitized risk category,[\s\S]*affected surface,[\s\S]*validation,[\s\S]*skipped checks,[\s\S]*residual risk/,
+      file: 'docs/reference/security/security-review.md',
+      pattern: /Use \[SECURITY\.md\]\(\.\.\/\.\.\/\.\.\/SECURITY\.md\) for private vulnerability reports[\s\S]*sanitized risk category,[\s\S]*affected surface,[\s\S]*validation,[\s\S]*skipped checks,[\s\S]*residual risk/,
       label: 'security review private report route boundary',
     },
     {
-      file: 'docs/marketplace/security-review-route.md',
+      file: 'docs/reference/security/security-review.md',
       pattern: /Broad permission-bypass guidance must remain scoped,[\s\S]*negative,[\s\S]*maintainer-approved[\s\S]*not turn it into a default operating mode/,
       label: 'security review permission bypass boundary',
     },
     {
-      file: 'docs/marketplace/security-review-route.md',
-      pattern: /Escalate private vulnerability reports through \[SECURITY\.md\]\(\.\.\/\.\.\/SECURITY\.md\)[\s\S]*instead of a public issue or PR comment/,
+      file: 'docs/reference/security/security-review.md',
+      pattern: /Escalate private vulnerability reports through \[SECURITY\.md\]\(\.\.\/\.\.\/\.\.\/SECURITY\.md\)[\s\S]*instead of a public issue or PR comment/,
       label: 'security review disclosure escalation boundary',
     },
     {
-      file: 'docs/marketplace/security-review-route.md',
+      file: 'docs/reference/security/security-review.md',
       pattern: /Distribution risk scan result for active private paths,[\s\S]*credentials,[\s\S]*private\s+network addresses,[\s\S]*internal endpoints,[\s\S]*high-risk blanket permission advice,[\s\S]*tracked `\.codex\/` runtime artifacts/,
       label: 'security review distribution risk output boundary',
     },
     {
-      file: 'docs/marketplace/security-review-route.md',
+      file: 'docs/reference/security/security-review.md',
       pattern: /Broad workflow changes \| `node scripts\/validate-github-workflows\.mjs`[\s\S]*Changes under `\.github\/workflows\/\*\*` must include\s+`node scripts\/validate-github-workflows\.mjs`;[\s\S]*least-privilege token scope,[\s\S]*workflow file inventory,[\s\S]*required-check\s+docs\/read-only print output synchronization,[\s\S]*isolated mutating install\s+smoke boundaries/,
       label: 'security review GitHub workflow validation route',
     },
     {
-      file: 'docs/marketplace/registry-author-workflow.md',
+      file: 'docs/operations/marketplace/registry-authoring.md',
       pattern: /## Current Scope Boundary[\s\S]*current `nova-plugin` entry[\s\S]*not a public portal,[\s\S]*paid marketplace,[\s\S]*production multi-plugin directory,[\s\S]*reason to move `nova-plugin\/`[\s\S]*Multi-entry fixtures prove generator behavior only[\s\S]*roadmap evidence,[\s\S]*release evidence,[\s\S]*maintainer approval/,
       label: 'registry author workflow current scope boundary',
     },
     {
-      file: 'docs/marketplace/registry-author-workflow.md',
+      file: 'docs/operations/marketplace/registry-authoring.md',
       pattern: /Public registry metadata and review notes must stay generic and redacted[\s\S]*Do\s+not include private consumer names,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*repository\s+addresses,[\s\S]*local paths,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private\s+knowledge-base content/,
       label: 'registry author workflow public-safe metadata boundary',
     },
     {
-      file: 'docs/marketplace/registry-author-workflow.md',
+      file: 'docs/operations/marketplace/registry-authoring.md',
       pattern: /Marketplace PRs that change CI\/release workflows or required-check guidance\s+must also run `node scripts\/validate-github-workflows\.mjs`[\s\S]*workflow token scope,[\s\S]*workflow file inventory,[\s\S]*required-check docs\/read-only\s+print output synchronization,[\s\S]*isolated mutating install smoke boundaries[\s\S]*Do not loosen workflow token\s+scope/,
       label: 'registry author workflow GitHub workflow validation route',
     },
     {
-      file: 'docs/marketplace/compatibility-matrix.md',
+      file: 'docs/reference/compatibility/marketplace.md',
       pattern: /## Evidence Scope Boundary[\s\S]*current `nova-plugin` entry[\s\S]*registry fixture behavior[\s\S]*not a hosted public portal,[\s\S]*paid\s+marketplace,[\s\S]*runtime dynamic loading contract,[\s\S]*production\s+multi-plugin migration is active/,
       label: 'compatibility matrix evidence scope boundary',
     },
     {
-      file: 'docs/marketplace/compatibility-matrix.md',
+      file: 'docs/reference/compatibility/marketplace.md',
       pattern: /Optional enhanced tools remain optional[\s\S]*record the\s+check as unavailable,[\s\S]*skipped,[\s\S]*pending with replacement evidence[\s\S]*instead of\s+broadening permissions[\s\S]*missing tool as passed/,
       label: 'compatibility matrix optional tools boundary',
     },
     {
-      file: 'docs/marketplace/compatibility-matrix.md',
+      file: 'docs/reference/compatibility/marketplace.md',
       pattern: /GitHub workflow contracts \| Node\.js 22\+ \| `node scripts\/validate-github-workflows\.mjs`[\s\S]*least-privilege workflow token scope,[\s\S]*`\.github\/workflows\/` inventory,[\s\S]*required-check docs\/read-only print output synchronization,[\s\S]*isolated mutating install smoke boundaries[\s\S]*GitHub workflow evidence should include `node scripts\/validate-github-workflows\.mjs`[\s\S]*CI\/release workflows,[\s\S]*workflow inventory,[\s\S]*required-check guidance/,
       label: 'compatibility matrix GitHub workflow evidence boundary',
     },
     {
-      file: 'docs/marketplace/compatibility-matrix.md',
+      file: 'docs/reference/compatibility/marketplace.md',
       pattern: /Compatibility evidence must stay public-safe[\s\S]*not private consumer paths,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*repository\s+addresses,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*customer data,[\s\S]*private\s+knowledge-base content/,
       label: 'compatibility matrix private evidence boundary',
     },
@@ -1174,37 +1175,37 @@ function validateDocsIndexContracts() {
 function validateDataHandlingContracts() {
   const checks = [
     {
-      file: 'docs/privacy/data-handling.md',
+      file: 'docs/reference/security/data-handling.md',
       pattern: /must not contain real consumer profiles,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*private\s+repository addresses,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*customer data,[\s\S]*local\s+machine paths,[\s\S]*private knowledge-base content/,
       label: 'data handling public repository boundary',
     },
     {
-      file: 'docs/privacy/data-handling.md',
+      file: 'docs/reference/security/data-handling.md',
       pattern: /\$\{CLAUDE_PLUGIN_DATA:-\$\{XDG_STATE_HOME:-\$HOME\/\.local\/state\}\/nova-plugin\}\/audit\.log/,
       label: 'data handling default audit log path',
     },
     {
-      file: 'docs/privacy/data-handling.md',
+      file: 'docs/reference/security/data-handling.md',
       pattern: /directory with `700`[\s\S]*log file with\s+`600`[\s\S]*rotates to\s+`audit\.log\.1` after 5 MB/,
       label: 'data handling permissions and rotation',
     },
     {
-      file: 'docs/privacy/data-handling.md',
+      file: 'docs/reference/security/data-handling.md',
       pattern: /NOVA_AUDIT_DISABLED=1/,
       label: 'data handling audit disable switch',
     },
     {
-      file: 'docs/privacy/data-handling.md',
+      file: 'docs/reference/security/data-handling.md',
       pattern: /best-effort redaction[\s\S]*Redaction is a guardrail, not a guarantee/,
       label: 'data handling best-effort redaction boundary',
     },
     {
-      file: 'docs/privacy/data-handling.md',
+      file: 'docs/reference/security/data-handling.md',
       pattern: /If the redaction helper is unavailable,[\s\S]*records a placeholder\s+summary rather than echoing command text/,
       label: 'data handling unavailable redaction fallback',
     },
     {
-      file: 'docs/privacy/data-handling.md',
+      file: 'docs/reference/security/data-handling.md',
       pattern: /Public docs must not include:[\s\S]*Real consumer names[\s\S]*Local machine paths,[\s\S]*private repository URLs,[\s\S]*endpoints[\s\S]*Credentials,[\s\S]*tokens,[\s\S]*private keys,[\s\S]*raw authorization headers/,
       label: 'data handling public docs private-data boundary',
     },
@@ -1214,7 +1215,7 @@ function validateDataHandlingContracts() {
       label: 'security policy data handling route',
     },
     {
-      file: 'docs/maintainers/troubleshooting.md',
+      file: 'docs/operations/maintainers/troubleshooting.md',
       pattern: /## Audit Log Location[\s\S]*NOVA_AUDIT_DISABLED=1[\s\S]*\.\.\/privacy\/data-handling\.md[\s\S]*Do not commit local\s+audit logs or treat redaction as a guarantee/,
       label: 'maintainer troubleshooting data handling route',
     },
@@ -1248,17 +1249,17 @@ function validateValidatorCoverageNarrative() {
       label: 'README validate-all GitHub workflow coverage narrative',
     },
     {
-      file: 'docs/project-optimization-plan.md',
+      file: 'docs/project/plans/current-remediation.md',
       pattern: /`validate-docs` checks[\s\S]*project\s+positioning\s+contracts,[\s\S]*exact-tag\s+release\s+promotion\s+boundaries,[\s\S]*maintainer\s+diagnostic\s+and\s+security\s+setting\s+semantics,[\s\S]*public\s+API\s+compatibility\s+contracts,[\s\S]*marketplace\s+trust,[\s\S]*author\s+workflow,[\s\S]*compatibility,[\s\S]*security\s+review\s+contracts,[\s\S]*contribution\s+and\s+issue\s+intake\s+contracts,[\s\S]*docs\s+index\s+navigation\s+contracts,[\s\S]*consumer\s+profile\s+privacy\s+contracts,[\s\S]*prompt\s+template\s+privacy\s+contracts,[\s\S]*local\s+data\s+handling\s+privacy\s+contracts,[\s\S]*workflow\s+evidence\s+contracts,[\s\S]*showcase\s+public-safety\s+contracts,[\s\S]*growth\s+metrics\s+privacy\s+contracts,[\s\S]*assets\s+capture\s+privacy\s+contracts,[\s\S]*deferred\s+portal\s+IA\s+contracts,[\s\S]*multi-plugin\s+readiness\s+evidence\s+contracts/,
       label: 'optimization plan validate-docs coverage narrative',
     },
     {
-      file: 'docs/project-optimization-plan.md',
+      file: 'docs/project/plans/current-remediation.md',
       pattern: /Existing validation covers[\s\S]*GitHub workflow permission, inventory, and required-check\s+contracts/,
       label: 'optimization plan GitHub workflow coverage narrative',
     },
     {
-      file: 'docs/project-optimization-plan.md',
+      file: 'docs/project/plans/current-remediation.md',
       pattern: /`validate-github-workflows` checks GitHub workflow token scope, workflow file\s+inventory, required-check docs and print output/,
       label: 'optimization plan validate-github-workflows scope narrative',
     },
@@ -1272,142 +1273,142 @@ function validateValidatorCoverageNarrative() {
 function validateConsumerProfileContracts() {
   const checks = [
     {
-      file: 'docs/consumers/README.md',
+      file: 'docs/guides/assistants/README.md',
       pattern: /public, redacted contract[\s\S]*only generic workflow guidance,[\s\S]*consumer profile shapes,[\s\S]*sanitized examples/,
       label: 'consumer README public redacted contract',
     },
     {
-      file: 'docs/consumers/README.md',
+      file: 'docs/guides/assistants/README.md',
       pattern: /Real consumer profiles must live in the consumer project itself[\s\S]*Do not copy closed-source project names,[\s\S]*paths,[\s\S]*private\s+identifiers,[\s\S]*network\s+endpoints,[\s\S]*runtime\s+flags,[\s\S]*private\s+repository addresses,[\s\S]*private\s+knowledge base content/,
       label: 'consumer README private profile boundary',
     },
     {
-      file: 'docs/consumers/README.md',
+      file: 'docs/guides/assistants/README.md',
       pattern: /Add `--write` only when the output directory\s+is a consumer-owned workspace outside this public repository checkout[\s\S]*script refuses `--write` targets inside `llm-plugins-fusion`/,
       label: 'consumer README scaffold write boundary',
     },
     {
-      file: 'docs/consumers/profile-contract.md',
+      file: 'docs/templates/consumer-profiles/contract.md',
       pattern: /public repository defines the contract only; the real\s+profile belongs in the consumer's project-local `AGENTS\.md`, `CLAUDE\.md`,\s+`\.claude\/`, or private documentation/,
       label: 'consumer profile contract source boundary',
     },
     {
-      file: 'docs/consumers/profile-contract.md',
+      file: 'docs/templates/consumer-profiles/contract.md',
       pattern: /Do not expose private names,[\s\S]*paths,[\s\S]*identifiers,[\s\S]*repository addresses,[\s\S]*network endpoints,[\s\S]*runtime flags,[\s\S]*credentials,[\s\S]*configuration values[\s\S]*Do not write public repository docs from private consumer facts/,
       label: 'consumer profile contract private facts boundary',
     },
     {
-      file: 'docs/consumers/private-java-backend-template.md',
+      file: 'docs/templates/consumer-profiles/java-backend.md',
       pattern: /redacted template for a private Java\/Spring backend consumer[\s\S]*Copy the shape into the consumer's\s+private `AGENTS\.md`, `CLAUDE\.md`, `\.claude\/`, or private documentation[\s\S]*Do not replace placeholders with real private values in this public repository/,
       label: 'consumer Java template private profile boundary',
     },
     {
-      file: 'docs/consumers/private-java-backend-template.md',
+      file: 'docs/templates/consumer-profiles/java-backend.md',
       pattern: /Keep public examples at the family level[\s\S]*Do not publish private component\s+identifiers,[\s\S]*repository addresses,[\s\S]*environment names,[\s\S]*network endpoints,[\s\S]*runtime\s+flags,[\s\S]*credentials,[\s\S]*configuration values[\s\S]*Do not copy private component identifiers,[\s\S]*package names,[\s\S]*local paths,[\s\S]*private docs into public artifacts/,
       label: 'consumer Java template private facts boundary',
     },
     {
-      file: 'docs/consumers/private-java-backend-template.md',
+      file: 'docs/templates/consumer-profiles/java-backend.md',
       pattern: /Do not run destructive data,[\s\S]*migration,[\s\S]*deployment commands unless the\s+private project source of truth explicitly authorizes them[\s\S]*Do not change command or skill behavior from this template/,
       label: 'consumer Java template destructive boundary',
     },
     {
-      file: 'docs/consumers/frontend-project-template.md',
+      file: 'docs/templates/consumer-profiles/frontend.md',
       pattern: /redacted template for a private frontend application[\s\S]*Copy the shape\s+into the consumer's private `AGENTS\.md`, `CLAUDE\.md`, `\.claude\/`, or private\s+documentation[\s\S]*Do not replace placeholders with real private values in this public repository/,
       label: 'consumer frontend template private profile boundary',
     },
     {
-      file: 'docs/consumers/frontend-project-template.md',
+      file: 'docs/templates/consumer-profiles/frontend.md',
       pattern: /Keep public examples at the family level[\s\S]*Do not publish private route names,[\s\S]*feature names,[\s\S]*environment names,[\s\S]*network endpoints,[\s\S]*repository addresses,[\s\S]*credentials,[\s\S]*configuration values[\s\S]*Do not copy private route names,[\s\S]*feature names,[\s\S]*local paths,[\s\S]*private\s+design docs into public artifacts/,
       label: 'consumer frontend template private facts boundary',
     },
     {
-      file: 'docs/consumers/frontend-project-template.md',
+      file: 'docs/templates/consumer-profiles/frontend.md',
       pattern: /Do not introduce new frontend stacks,[\s\S]*dependencies,[\s\S]*public portal work\s+unless the private project source of truth explicitly asks for them[\s\S]*Do not change command or skill behavior from this template/,
       label: 'consumer frontend template public portal boundary',
     },
     {
-      file: 'docs/consumers/codex-setup.md',
+      file: 'docs/guides/assistants/codex.md',
       pattern: /keep `\.codex\/` runtime artifacts out of this public\s+repository[\s\S]*treat `\.codex\/` as disposable local evidence unless the project-local source\s+of truth defines a stricter artifact policy/,
       label: 'consumer Codex setup runtime artifact boundary',
     },
     {
-      file: 'docs/consumers/codex-setup.md',
+      file: 'docs/guides/assistants/codex.md',
       pattern: /If Codex CLI or Bash is unavailable,[\s\S]*do not\s+relax global permissions to hide the missing runtime/,
       label: 'consumer Codex setup no permission bypass boundary',
     },
     {
-      file: 'docs/consumers/cursor-setup.md',
+      file: 'docs/guides/assistants/cursor.md',
       pattern: /Keep Cursor rules and project-specific workflow details in the consumer\s+repository[\s\S]*Do not copy private paths,[\s\S]*repository addresses,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private knowledge\s+base content,[\s\S]*consumer-specific commands into public templates or examples/,
       label: 'consumer Cursor setup private config boundary',
     },
     {
-      file: 'docs/consumers/cursor-setup.md',
+      file: 'docs/guides/assistants/cursor.md',
       pattern: /If Cursor cannot run a selected validator,[\s\S]*do not loosen global permissions or agent sandbox settings\s+to bypass the missing tool/,
       label: 'consumer Cursor setup no permission bypass boundary',
     },
     {
-      file: 'docs/consumers/cline-setup.md',
+      file: 'docs/guides/assistants/cline.md',
       pattern: /Keep Cline rules in the consumer repository[\s\S]*Do not copy private paths,[\s\S]*repository addresses,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private knowledge base content,[\s\S]*consumer-specific commands into this public repository/,
       label: 'consumer Cline setup private config boundary',
     },
     {
-      file: 'docs/consumers/cline-setup.md',
+      file: 'docs/guides/assistants/cline.md',
       pattern: /If Cline cannot run a selected validator,[\s\S]*instead of broadening permissions or sandbox settings to hide the gap/,
       label: 'consumer Cline setup no permission bypass boundary',
     },
     {
-      file: 'docs/consumers/aider-setup.md',
+      file: 'docs/guides/assistants/aider.md',
       pattern: /Keep private repository names,[\s\S]*local paths,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*runtime\s+flags,[\s\S]*business rules,[\s\S]*private knowledge base content,[\s\S]*real project\s+prompts in the consumer workspace/,
       label: 'consumer Aider setup private config boundary',
     },
     {
-      file: 'docs/consumers/aider-setup.md',
+      file: 'docs/guides/assistants/aider.md',
       pattern: /If Aider cannot run a validator,[\s\S]*instead of\s+treating the check as passed/,
       label: 'consumer Aider setup no false pass boundary',
     },
     {
-      file: 'docs/consumers/openhands-setup.md',
+      file: 'docs/guides/assistants/openhands.md',
       pattern: /The consumer project should own any OpenHands workspace setup,[\s\S]*Keep consumer-specific repository addresses,[\s\S]*paths,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private knowledge base content,[\s\S]*local\s+OpenHands configuration in the consumer repository/,
       label: 'consumer OpenHands setup private config boundary',
     },
     {
-      file: 'docs/consumers/openhands-setup.md',
+      file: 'docs/guides/assistants/openhands.md',
       pattern: /Do not broaden sandbox or workflow permissions merely to convert a missing\s+tool into a passing check/,
       label: 'consumer OpenHands setup no permission bypass boundary',
     },
     {
-      file: 'docs/consumers/gemini-cli-setup.md',
+      file: 'docs/guides/assistants/gemini-cli.md',
       pattern: /Keep Gemini skill or context files that contain consumer facts in the\s+private consumer project[\s\S]*Do not copy private paths,[\s\S]*repository addresses,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private knowledge\s+base content,[\s\S]*consumer-specific commands into public templates or examples/,
       label: 'consumer Gemini setup private config boundary',
     },
     {
-      file: 'docs/consumers/gemini-cli-setup.md',
+      file: 'docs/guides/assistants/gemini-cli.md',
       pattern: /If Gemini CLI cannot run the selected validator,[\s\S]*do not broaden global tool permissions,[\s\S]*shell access,[\s\S]*sandbox settings to hide the missing runtime/,
       label: 'consumer Gemini setup no permission bypass boundary',
     },
     {
-      file: 'docs/consumers/opencode-setup.md',
+      file: 'docs/guides/assistants/opencode.md',
       pattern: /Store OpenCode-specific configuration in the consumer project[\s\S]*Keep consumer-specific rules,[\s\S]*private paths,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private knowledge\s+base content out of public templates and examples/,
       label: 'consumer OpenCode setup private config boundary',
     },
     {
-      file: 'docs/consumers/opencode-setup.md',
+      file: 'docs/guides/assistants/opencode.md',
       pattern: /If a selected safety check or validator is unavailable,[\s\S]*do not loosen global permissions to bypass the\s+missing tool/,
       label: 'consumer OpenCode setup no permission bypass boundary',
     },
     {
-      file: 'docs/consumers/copilot-setup.md',
+      file: 'docs/guides/assistants/copilot.md',
       pattern: /Keep `\.github\/copilot-instructions\.md` and persona mappings private unless\s+they are fully generic and redacted[\s\S]*Do not copy private paths,[\s\S]*repository addresses,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*runtime flags,[\s\S]*branch policies,[\s\S]*business rules,[\s\S]*private knowledge\s+base\s+content into public templates or examples/,
       label: 'consumer Copilot setup private config boundary',
     },
     {
-      file: 'docs/consumers/copilot-setup.md',
+      file: 'docs/guides/assistants/copilot.md',
       pattern: /If Copilot cannot run a check,[\s\S]*do not loosen repository or agent permissions to bypass the missing\s+tool/,
       label: 'consumer Copilot setup no permission bypass boundary',
     },
     {
-      file: 'docs/consumers/workbench-template.md',
+      file: 'docs/templates/consumer-profiles/workbench.md',
       pattern: /Do not copy private consumer names,[\s\S]*local absolute paths,[\s\S]*repository addresses,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private knowledge base content[\s\S]*Fill concrete values only inside the private consumer workspace/,
       label: 'consumer workbench private workspace boundary',
     },
@@ -1421,32 +1422,32 @@ function validateConsumerProfileContracts() {
 function validatePromptTemplateContracts() {
   const checks = [
     {
-      file: 'docs/prompts/README.md',
+      file: 'docs/templates/prompts/README.md',
       pattern: /public-safe prompt templates[\s\S]*They are templates, not consumer profiles[\s\S]*Replace\s+placeholders inside the private consumer project[\s\S]*keep private names,[\s\S]*local\s+paths,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*configuration values,[\s\S]*business-specific\s+rules out of this public repository/,
       label: 'prompt README public-safe private facts boundary',
     },
     {
-      file: 'docs/prompts/README.md',
+      file: 'docs/templates/prompts/README.md',
       pattern: /Do not paste full files,[\s\S]*full diffs,[\s\S]*long generated output into final\s+answers when an artifact path or summary is enough[\s\S]*Treat HTML outputs as derived reading artifacts[\s\S]*keep Markdown,[\s\S]*code,[\s\S]*review,[\s\S]*validation evidence as the source of truth/,
       label: 'prompt README evidence summary boundary',
     },
     {
-      file: 'docs/prompts/common/checkpoint-artifact.md',
+      file: 'docs/templates/prompts/common/checkpoint-artifact.md',
       pattern: /private consumer workbench[\s\S]*Keep private names,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*repository addresses,[\s\S]*local paths,[\s\S]*runtime flags,[\s\S]*business rules in the\s+consumer project only[\s\S]*Do not include private credentials,[\s\S]*endpoints,[\s\S]*local machine paths,[\s\S]*private knowledge-base content unless this artifact stays in the private\s+consumer workspace/,
       label: 'checkpoint prompt private workspace boundary',
     },
     {
-      file: 'docs/prompts/common/html-artifact.md',
+      file: 'docs/templates/prompts/common/html-artifact.md',
       pattern: /HTML artifacts are derived reading artifacts,[\s\S]*not the source of truth[\s\S]*事实源仍是 Markdown、代码、diff、review artifact、validation output[\s\S]*不包含私有 endpoint、凭据、真实用户数据、私有仓库地址或个人绝对路径/,
       label: 'HTML prompt source-of-truth privacy boundary',
     },
     {
-      file: 'docs/prompts/common/html-artifact.md',
+      file: 'docs/templates/prompts/common/html-artifact.md',
       pattern: /默认不使用外部 CDN、远程 JavaScript、远程字体或远程图片[\s\S]*默认不发起网络请求[\s\S]*不提交表单[\s\S]*不写 localStorage 或 sessionStorage[\s\S]*长期保留的 HTML 必须配套 Markdown 摘要或来源说明/,
       label: 'HTML prompt offline derived artifact boundary',
     },
     {
-      file: 'docs/prompts/common/workbench-tidy.md',
+      file: 'docs/templates/prompts/common/workbench-tidy.md',
       pattern: /private consumer workspace[\s\S]*不删除文件，除非用户明确要求[\s\S]*不移动源码仓库文件，除非它们确实是误放的过程文档[\s\S]*不把私有文档复制到公开仓库/,
       label: 'workbench tidy prompt private workspace boundary',
     },
@@ -1460,62 +1461,62 @@ function validatePromptTemplateContracts() {
 function validateWorkflowEvidenceContracts() {
   const checks = [
     {
-      file: 'docs/workflows/source-controlled-checks.md',
+      file: 'docs/guides/workflows/source-controlled-checks.md',
       pattern: /source-controlled AI\s+workflow checks without turning the public repository into a mature multi-plugin\s+platform or a custom CI product/,
       label: 'source-controlled checks no platform boundary',
     },
     {
-      file: 'docs/workflows/source-controlled-checks.md',
+      file: 'docs/guides/workflows/source-controlled-checks.md',
       pattern: /the useful part is not a new\s+runtime[\s\S]*making workflow expectations reviewable,[\s\S]*repeatable,[\s\S]*public-safe/,
       label: 'source-controlled checks no runtime positioning',
     },
     {
-      file: 'docs/workflows/source-controlled-checks.md',
+      file: 'docs/guides/workflows/source-controlled-checks.md',
       pattern: /A future `\.nova\/checks\/` or `nova-plugin\/checks\/` directory is appropriate only\s+after at least two checks repeat across releases or consumer projects/,
       label: 'source-controlled checks future checks threshold',
     },
     {
-      file: 'docs/workflows/source-controlled-checks.md',
+      file: 'docs/guides/workflows/source-controlled-checks.md',
       pattern: /Checks must not include private consumer names,[\s\S]*local paths,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*repository addresses,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private\s+knowledge-base content/,
       label: 'source-controlled checks private facts boundary',
     },
     {
-      file: 'docs/workflows/source-controlled-checks.md',
+      file: 'docs/guides/workflows/source-controlled-checks.md',
       pattern: /Do not add a new runtime or CI layer when a deterministic script plus rubric is\s+enough/,
       label: 'source-controlled checks no runtime CI layer',
     },
     {
-      file: 'docs/workflows/verification-evidence-contract.md',
+      file: 'docs/reference/workflows/verification-evidence.md',
       pattern: /It must not include private consumer names,[\s\S]*local\s+machine paths,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*repository addresses,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private knowledge-base content/,
       label: 'verification evidence private facts boundary',
     },
     {
-      file: 'docs/workflows/verification-evidence-contract.md',
+      file: 'docs/reference/workflows/verification-evidence.md',
       pattern: /Do not claim completion from tool success alone\. Map evidence back to the\s+behavior,[\s\S]*repository fact,[\s\S]*review finding,[\s\S]*change goal being verified/,
       label: 'verification evidence maps tool success to behavior',
     },
     {
-      file: 'docs/workflows/verification-evidence-contract.md',
+      file: 'docs/reference/workflows/verification-evidence.md',
       pattern: /Check skipped \| Environment or tool reason plus residual risk[\s\S]*Silent omission or reporting the check as passed/,
       label: 'verification evidence skipped-check honesty',
     },
     {
-      file: 'docs/workflows/verification-evidence-contract.md',
+      file: 'docs/reference/workflows/verification-evidence.md',
       pattern: /skipped or unavailable checks with reasons[\s\S]*known unverified behavior,[\s\S]*repository facts,[\s\S]*edge cases,[\s\S]*residual risk/,
       label: 'verification summary skipped residual risk',
     },
     {
-      file: 'docs/workflows/routing-validation-guardrails.md',
+      file: 'docs/reference/workflows/routing-guardrails.md',
       pattern: /The route output is a recommendation,[\s\S]*not evidence that validation has passed/,
       label: 'routing guardrail route output not evidence',
     },
     {
-      file: 'docs/workflows/routing-validation-guardrails.md',
+      file: 'docs/reference/workflows/routing-guardrails.md',
       pattern: /`Skipped or Unverified` records skipped checks,[\s\S]*unverified behavior or facts,[\s\S]*reasons,[\s\S]*residual risk/,
       label: 'routing guardrail skipped unverified boundary',
     },
     {
-      file: 'docs/workflows/routing-validation-guardrails.md',
+      file: 'docs/reference/workflows/routing-guardrails.md',
       pattern: /should not recommend blanket permission bypasses\s+as the default path[\s\S]*Affirmative guidance that recommends broad bypasses should trigger security\s+review and distribution-risk scanning/,
       label: 'routing guardrail no blanket bypass boundary',
     },
@@ -1529,32 +1530,32 @@ function validateWorkflowEvidenceContracts() {
 function validateShowcaseContracts() {
   const checks = [
     {
-      file: 'docs/showcase/README.md',
+      file: 'docs/tutorials/README.md',
       pattern: /public-safe\s+entry points[\s\S]*Keep examples generic and redacted/,
       label: 'showcase README public-safe positioning',
     },
     {
-      file: 'docs/showcase/README.md',
+      file: 'docs/tutorials/README.md',
       pattern: /Do not publish real consumer profiles,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*private\s+repository addresses,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private\s+knowledge-base content/,
       label: 'showcase README private consumer boundary',
     },
     {
-      file: 'docs/showcase/java-backend.md',
+      file: 'docs/tutorials/java-backend.md',
       pattern: /## Private context boundary[\s\S]*real service names,[\s\S]*endpoints,[\s\S]*schema names,[\s\S]*credentials,[\s\S]*private\s+repository addresses,[\s\S]*feature flags,[\s\S]*business logic/,
       label: 'Java backend showcase private context boundary',
     },
     {
-      file: 'docs/showcase/frontend.md',
+      file: 'docs/tutorials/frontend.md',
       pattern: /## Private context boundary[\s\S]*real product names,[\s\S]*routes,[\s\S]*API hosts,[\s\S]*customer data,[\s\S]*feature\s+flags,[\s\S]*analytics keys,[\s\S]*business rules,[\s\S]*screenshots/,
       label: 'frontend showcase private context boundary',
     },
     {
-      file: 'docs/showcase/release-and-docs.md',
+      file: 'docs/tutorials/release-and-docs.md',
       pattern: /## Private context boundary[\s\S]*private consumer names,[\s\S]*local\s+machine paths,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*repository addresses,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*private knowledge-base content,[\s\S]*non-public metrics/,
       label: 'release docs showcase private context boundary',
     },
     {
-      file: 'docs/showcase/release-and-docs.md',
+      file: 'docs/tutorials/release-and-docs.md',
       pattern: /If Windows cannot run Bash-dependent checks[\s\S]*report those\s+checks as skipped instead of passed/,
       label: 'release docs showcase skipped Bash boundary',
     },
@@ -1568,27 +1569,27 @@ function validateShowcaseContracts() {
 function validateGrowthMetricsContracts() {
   const checks = [
     {
-      file: 'docs/growth/README.md',
+      file: 'docs/operations/community/metrics.md',
       pattern: /local repository deliverable only[\s\S]*GitHub Topics,[\s\S]*Discussions,[\s\S]*social preview uploads,[\s\S]*real issue creation,[\s\S]*external posting[\s\S]*maintainer-owned manual actions[\s\S]*GitHub UI or\s+an authenticated workflow/,
       label: 'growth metrics manual action boundary',
     },
     {
-      file: 'docs/growth/README.md',
+      file: 'docs/operations/community/metrics.md',
       pattern: /not a public portal,[\s\S]*paid marketplace,[\s\S]*automated posting workflow,[\s\S]*owner-only analytics publication surface/,
       label: 'growth metrics no portal automation boundary',
     },
     {
-      file: 'docs/growth/README.md',
+      file: 'docs/operations/community/metrics.md',
       pattern: /Default output is `\.metrics\/latest\.json`, which is intentionally ignored by\s+Git[\s\S]*Use `--out <path>` only for private dashboards or temporary analysis/,
       label: 'growth metrics private output boundary',
     },
     {
-      file: 'docs/growth/README.md',
+      file: 'docs/operations/community/metrics.md',
       pattern: /## Privacy Boundary[\s\S]*Do not commit `\.metrics\/` output[\s\S]*Do not publish raw referrers,[\s\S]*private campaign URLs,[\s\S]*internal dashboards,[\s\S]*tokens,[\s\S]*owner-only traffic details[\s\S]*Do not infer personal user identity[\s\S]*aggregate metric definitions and collection cadence,[\s\S]*not private analytics records/,
       label: 'growth metrics privacy boundary',
     },
     {
-      file: 'docs/growth/README.md',
+      file: 'docs/operations/community/metrics.md',
       pattern: /If `npm run doctor` reports that HEAD is not an exact release tag,[\s\S]*development snapshot rather than a stable release/,
       label: 'growth metrics exact tag promotion boundary',
     },
@@ -1602,37 +1603,37 @@ function validateGrowthMetricsContracts() {
 function validateAssetsContracts() {
   const checks = [
     {
-      file: 'docs/assets/README.md',
+      file: 'docs/operations/community/assets.md',
       pattern: /public-safe visual assets and capture guidance[\s\S]*workflow quickly without exposing private consumer context/,
       label: 'assets public-safe positioning',
     },
     {
-      file: 'docs/assets/README.md',
+      file: 'docs/operations/community/assets.md',
       pattern: /Visual assets are not a public portal,[\s\S]*hosted demo site,[\s\S]*automated promotion\s+workflow,[\s\S]*substitute for release evidence/,
       label: 'assets no portal automation boundary',
     },
     {
-      file: 'docs/assets/README.md',
+      file: 'docs/operations/community/assets.md',
       pattern: /GitHub social preview upload,[\s\S]*external posting,[\s\S]*real demo publication[\s\S]*maintainer-owned manual\s+actions[\s\S]*GitHub UI or an authenticated workflow/,
       label: 'assets manual action boundary',
     },
     {
-      file: 'docs/assets/README.md',
+      file: 'docs/operations/community/assets.md',
       pattern: /No demo GIF is currently tracked[\s\S]*Do not link GIFs from README or release notes\s+until the actual files exist/,
       label: 'assets tracked media boundary',
     },
     {
-      file: 'docs/assets/README.md',
+      file: 'docs/operations/community/assets.md',
       pattern: /Before adding a demo GIF or short video[\s\S]*matching command evidence from `npm run doctor`, `npm run\s+validate:workflow`, or an equivalent release record[\s\S]*Do not present a mock\s+terminal session as product evidence/,
       label: 'assets demo evidence boundary',
     },
     {
-      file: 'docs/assets/README.md',
+      file: 'docs/operations/community/assets.md',
       pattern: /Use an exact release tag for installation demos,[\s\S]*label the capture as a\s+development snapshot[\s\S]*If Bash checks are skipped on Windows,[\s\S]*show the skipped status explicitly/,
       label: 'assets release and skipped-check boundary',
     },
     {
-      file: 'docs/assets/README.md',
+      file: 'docs/operations/community/assets.md',
       pattern: /## Privacy Boundary[\s\S]*Do not capture private consumer project names,[\s\S]*local paths,[\s\S]*endpoints,[\s\S]*credentials,[\s\S]*repository addresses,[\s\S]*runtime flags,[\s\S]*business rules,[\s\S]*customer data,[\s\S]*private screenshots,[\s\S]*private knowledge-base content[\s\S]*Use public fixtures,\s+redacted examples, or a clean demo repository/,
       label: 'assets privacy boundary',
     },
@@ -1649,29 +1650,29 @@ function validateDeferredPortalIaContracts() {
   );
   const checks = [
     {
-      file: 'docs/marketplace/portal-information-architecture.md',
+      file: 'docs/project/plans/portal-information-architecture.md',
       pattern: /documentation-only preparation:[\s\S]*does not move `nova-plugin\/`,[\s\S]*does not build a frontend site,[\s\S]*does not add release or deployment pipeline\s+dependencies/,
       label: 'portal IA documentation-only boundary',
     },
     {
-      file: 'docs/marketplace/portal-information-architecture.md',
+      file: 'docs/project/plans/portal-information-architecture.md',
       pattern: /not an implemented public portal,[\s\S]*hosted marketplace,[\s\S]*frontend app,[\s\S]*deployment plan,[\s\S]*evidence that a public portal is active/,
       label: 'portal IA no implemented portal boundary',
     },
     {
-      file: 'docs/marketplace/portal-information-architecture.md',
+      file: 'docs/project/plans/portal-information-architecture.md',
       pattern: /Portal implementation code must not become a new source of truth[\s\S]*consume\s+these repository sources rather than duplicate plugin metadata by hand/,
       label: 'portal IA source-of-truth boundary',
     },
     {
-      file: 'docs/marketplace/portal-information-architecture.md',
+      file: 'docs/project/plans/portal-information-architecture.md',
       pattern: new RegExp('single-plugin portal preparation boundary was introduced in `v2\\.2\\.0`[\\s\\S]*remains the current `v'
         + pluginVersionPattern
         + '` marketplace state[\\s\\S]*does not require\\s+a plugin path move or a public portal implementation[\\s\\S]*breaking multi-plugin\\s+repository layout remains a future major-version candidate'),
       label: 'portal IA historical and current single-plugin boundary',
     },
     {
-      file: 'docs/marketplace/portal-information-architecture.md',
+      file: 'docs/project/plans/portal-information-architecture.md',
       pattern: /## Explicit Non-Goals For This Preparation[\s\S]*Do not move, rename, or copy `nova-plugin\/`[\s\S]*Do not build a React, Vite, Next\.js, static-site, or other frontend portal[\s\S]*Do not add package dependencies, deployment jobs,[\s\S]*Do not change plugin versions or generated release metadata[\s\S]*Do not put repository-local fields[\s\S]*Claude-compatible marketplace manifest/,
       label: 'portal IA explicit non-goals',
     },
@@ -1685,22 +1686,22 @@ function validateDeferredPortalIaContracts() {
 function validateMultiPluginReadinessEvidenceContracts() {
   const checks = [
     {
-      file: 'docs/marketplace/multi-plugin-readiness.md',
+      file: 'docs/project/plans/multi-plugin-readiness.md',
       pattern: /product lane in\s+`governance\/product-lanes\.json`[\s\S]*independent of plugin version numbers/,
       label: 'multi-plugin readiness version-independent decision boundary',
     },
     {
-      file: 'docs/marketplace/multi-plugin-readiness.md',
+      file: 'docs/project/plans/multi-plugin-readiness.md',
       pattern: /Registry fixtures prove that generators can process\s+multiple entries[\s\S]*do not prove that production directories,[\s\S]*ownership,[\s\S]*release cadence,[\s\S]*installation paths should change/,
       label: 'multi-plugin readiness fixture-only evidence boundary',
     },
     {
-      file: 'docs/marketplace/multi-plugin-readiness.md',
+      file: 'docs/project/plans/multi-plugin-readiness.md',
       pattern: /production layout remains single-plugin[\s\S]*`nova-plugin\/` is the only public\s+production plugin path/,
       label: 'multi-plugin readiness one production plugin boundary',
     },
     {
-      file: 'docs/marketplace/multi-plugin-readiness.md',
+      file: 'docs/project/plans/multi-plugin-readiness.md',
       pattern: /## Not Allowed Without Activation[\s\S]*Moving, renaming, or copying the production `nova-plugin\/` path[\s\S]*Treating `plugins\/\*` as a production install location[\s\S]*Claiming fixture-only behavior as a mature multi-plugin ecosystem[\s\S]*Coupling this product decision to a future version number/,
       label: 'multi-plugin readiness activation non-goals',
     },
@@ -1755,7 +1756,7 @@ function validateReviewLevelLiteContract() {
 
 function validateNamespacedCommandInvocations() {
   const migrationExceptions = new Set([
-    'docs/migrations/2.4.1-command-namespace.md',
+    'docs/project/migrations/2.4.1-command-namespace.md',
   ]);
   const commandIds = readdirSync(resolve(root, 'nova-plugin/commands'))
     .filter((name) => name.endsWith('.md'))
@@ -1800,6 +1801,22 @@ function validateToolVocabularyProse() {
   }
 }
 
+function validateEvaluationFactContracts() {
+  const facts = deriveEvaluationFacts(root);
+  const qualityPath = 'docs/reference/evaluation/benchmark.md';
+  const quality = readFileSync(resolve(root, qualityPath), 'utf8');
+  const liveStatement = `current \`${facts.livePaired.datasetId}\` runner derives ${facts.livePaired.caseCount} cases and ${facts.livePaired.plannedInvocations} planned invocations`;
+  const realTaskStatement = `\`${facts.realTask.datasetId}\` derives ${facts.realTask.taskCount} tasks and ${facts.realTask.plannedInvocations} planned invocations`;
+  if (!quality.includes(liveStatement)) recordError(qualityPath, 'current live evaluation facts are not derived from the dataset identity');
+  if (!quality.includes(realTaskStatement)) recordError(qualityPath, 'real-task facts are not derived independently from the benchmark identity');
+
+  const evalReadmePath = 'evals/README.md';
+  const evalReadme = readFileSync(resolve(root, evalReadmePath), 'utf8');
+  if (/live\/cases\.json` contains 24 (?:hidden-label )?public-safe cases/iu.test(evalReadme)) {
+    recordError(evalReadmePath, 'current live dataset is described with the historical 24-case value');
+  }
+}
+
 validateLinksAndCommandDocs({
   root,
   CODEX_COMMAND_IDS,
@@ -1833,6 +1850,7 @@ validateMultiPluginReadinessEvidenceContracts();
 validateReviewLevelLiteContract();
 validateNamespacedCommandInvocations();
 validateToolVocabularyProse();
+validateEvaluationFactContracts();
 validateActivePlanningAndReports({
   root,
   HISTORY_SEGMENTS,

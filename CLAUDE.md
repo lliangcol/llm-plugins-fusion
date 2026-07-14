@@ -11,6 +11,7 @@ Do not edit this block by hand. It is synchronized by
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 6 skills, 6 active agents, 8 capability packs
 - Workflow contract: schema v5, namespace `nova-plugin`, 21 workflows
+- Evaluation datasets: `live-paired` has 168 cases and 1008 planned paired invocations; `real-task-benchmark` has 24 tasks and 432 planned invocations
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
@@ -67,7 +68,7 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 - Release evidence template: `docs/releases/release-evidence-template.md`
 - Product-lane decisions: `governance/product-lanes.json`
 - Generated project-state aggregate: `governance/project-state.generated.json`
-- Maintainer npm shortcuts: `package.json` (`doctor`, `demo:route`,
+- Maintainer npm shortcuts: `package.json` (`doctor`, `validate:bootstrap`, `demo:all`, `demo:route`,
   `demo:review`, `validate`,
   `test`, `test:coverage`, `test:coverage:check`, `test:unit`,
   `test:integration`, `test:e2e`, `lint`,
@@ -138,6 +139,7 @@ llm-plugins-fusion/
 |-- .github/workflows/
 |   |-- ci.yml
 |   |-- codeql.yml
+|   |-- dependency-audit.yml
 |   |-- dependency-review.yml
 |   |-- label-sync.yml
 |   |-- plugin-install-smoke.yml
@@ -222,6 +224,8 @@ Maintainer npm shortcuts:
 
 ```bash
 npm run doctor
+npm run validate:bootstrap
+npm run demo:all
 npm run demo:route
 npm run demo:review
 npm run test

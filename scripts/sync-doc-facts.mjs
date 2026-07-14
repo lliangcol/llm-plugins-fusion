@@ -15,9 +15,10 @@ export const projectFactDocuments = Object.freeze([
   'CONTRIBUTING.md',
   'ROADMAP.md',
   'SECURITY.md',
-  'docs/project-optimization-plan.md',
-  'docs/llm-plugins-fusion-maintenance-status.md',
+  'docs/project/plans/current-remediation.md',
+  'docs/operations/maintainers/status.md',
   'nova-plugin/docs/architecture/hooks-design.md',
+  'evals/README.md',
 ]);
 
 function laneIds(state, status) {
@@ -46,6 +47,7 @@ Do not edit this block by hand. It is synchronized by
 - Runtime: Node.js \`${state.runtime.node}\`; distributed Bash helpers: \`${state.runtime.distributedBash}\`
 - Inventory: ${state.inventory.commands} commands, ${state.inventory.skills} skills, ${state.inventory.activeAgents} active agents, ${state.inventory.capabilityPacks} capability packs
 - Workflow contract: schema v${state.workflow.schemaVersion}, namespace \`${state.workflow.namespace}\`, ${state.workflow.count} workflows
+- Evaluation datasets: \`${state.evaluation.livePaired.datasetId}\` has ${state.evaluation.livePaired.caseCount} cases and ${state.evaluation.livePaired.plannedInvocations} planned paired invocations; \`${state.evaluation.realTask.datasetId}\` has ${state.evaluation.realTask.taskCount} tasks and ${state.evaluation.realTask.plannedInvocations} planned invocations
 - Package scripts: \`check\` is present; \`build\` is ${state.repositoryScripts.build ? 'present' : 'absent'}
 - Active product lanes: ${laneIds(state, 'active')}
 - Planned product lanes: ${laneIds(state, 'planned')}

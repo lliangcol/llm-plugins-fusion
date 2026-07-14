@@ -1,5 +1,17 @@
 # Skill: /nova-plugin:codex-review-fix
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `codex-review-fix`; stage: `implement`; canonical skill: `nova-implement-plan`
+- Purpose: Run an external Codex review, fix high-confidence findings, run project checks, and verify closure.
+- Audience: `codex-users`; support risk: `medium`
+- Inputs: `REVIEW_SCOPE` (required), `BASE`, `REVIEW_MODE`, `INCLUDE_UNTRACKED_CONTENT`
+- Output contract: `codex-review-fix-v2`; authorization: `external-review-implementation`
+- Effects: `credentials`, `network`, `shell`, `workspace-read`, `workspace-write`
+- Related workflows: `codex-review-only`, `codex-verify-only`
+<!-- generated:command-contract:end -->
+
 - 来源：`nova-plugin/commands/codex-review-fix.md`
 
 ## 适用场景
