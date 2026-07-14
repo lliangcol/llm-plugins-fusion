@@ -309,9 +309,9 @@ async function gitStatus(cwd, env) {
 }
 
 /**
- * @param {{pluginDir?: string, outPath?: string | null, env?: NodeJS.ProcessEnv}} options
+ * @param {{pluginDir?: string, outPath?: string | null, env?: NodeJS.ProcessEnv, binding?: object | null}} options
  */
-export async function runRouteSmoke({ pluginDir, outPath = null, env = process.env } = {}) {
+export async function runRouteSmoke({ pluginDir, outPath = null, env = process.env, binding = null } = {}) {
   const resolvedPluginDir = resolve(pluginDir ?? '');
   const permissionSpec = JSON.parse(readFileSync(
     resolve(resolvedPluginDir, 'runtime/workflow-permissions.json'),
@@ -392,6 +392,7 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       projectFileInventory: beforeProject.files,
       gitStatus: afterStatus,
       resultSha256: sha256(response.result),
+      evidenceBinding: binding,
     };
     if (outPath) {
       const resolvedOut = resolve(root, outPath);

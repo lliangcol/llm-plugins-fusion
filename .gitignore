@@ -38,3 +38,6 @@ dist/
 
 # Local metrics snapshots
 .metrics/
+
+# Local validation cache
+.cache/nova-validate/

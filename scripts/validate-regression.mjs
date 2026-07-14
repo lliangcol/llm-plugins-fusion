@@ -1718,6 +1718,11 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
+    const coverageReadmePath = resolve(fixtureRoot, 'README.md');
+    const coverageReadme = readFileSync(coverageReadmePath, 'utf8');
+    assert.match(coverageReadme, /branches 70%/);
+    writeFileSync(coverageReadmePath, coverageReadme.replace('branches 70%', 'branches 60%'), 'utf8');
+
     const showcasePath = resolve(fixtureRoot, 'docs/tutorials/README.md');
     const showcase = readFileSync(showcasePath, 'utf8');
     assert.match(showcase, /real consumer profiles/);
@@ -1746,6 +1751,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     assert.match(output, /CLAUDE CI GitHub workflow coverage narrative/);
     assert.match(output, /README exact release tag promotion boundary/);
     assert.match(output, /README validate-all GitHub workflow coverage narrative/);
+    assert.match(output, /README coverage threshold source alignment/);
     assert.match(output, /release evidence skipped checks replacement boundary/);
     assert.match(output, /release evidence plugin install isolation boundary/);
     assert.match(output, /release evidence GitHub workflow validation result slot/);

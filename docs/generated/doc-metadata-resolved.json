@@ -416,7 +416,25 @@
       "generated": true
     },
     {
+      "path": "docs/generated/control-plane-inventory.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
       "path": "docs/generated/dependency-audit.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/generated/dependency-license-audit.md",
       "audience": "repository-users",
       "contentType": "generated-reference",
       "status": "current",
@@ -444,6 +462,24 @@
     },
     {
       "path": "docs/generated/evaluation-profiles.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/generated/evidence-levels.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/generated/platform-evidence.md",
       "audience": "repository-users",
       "contentType": "generated-reference",
       "status": "current",
@@ -1001,6 +1037,15 @@
       "generated": false
     },
     {
+      "path": "docs/project/decisions/0002-cli-and-extension-direction.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
       "path": "docs/project/migrations/2.4.1-command-namespace.md",
       "audience": "repository-users",
       "contentType": "reference",
@@ -1031,6 +1076,15 @@
       "path": "docs/project/plans/current-remediation.md",
       "audience": "repository-users",
       "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/plans/deep-research-engineering-risk-execution-plan.md",
+      "audience": "maintainers",
+      "contentType": "execution-plan",
       "status": "current",
       "ownerSource": "CLAUDE.md",
       "sourceOfTruth": "self",
@@ -1184,6 +1238,15 @@
       "path": "docs/reference/architecture/agent-routing.md",
       "audience": "repository-users",
       "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/architecture/control-plane.md",
+      "audience": "maintainers",
+      "contentType": "architecture-reference",
       "status": "current",
       "ownerSource": "CLAUDE.md",
       "sourceOfTruth": "self",

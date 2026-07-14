@@ -66,6 +66,7 @@ jobs:
       - run: npm run validate:maintainer
         env:
           NOVA_VALIDATE_WRITE_TIMINGS: '1'
+          NOVA_RUNNER_CLASS: github-hosted
       - run: npm run test:coverage:check
       - run: npm run release:artifacts
         env:

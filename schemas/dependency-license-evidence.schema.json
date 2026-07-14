@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/dependency-license-evidence.schema.json",
+  "title": "Dependency license audit evidence",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "status", "reasonCode", "lockDigest", "policyDigest", "scope", "packages", "summary", "reviewsApplied"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "const": 1 },
+    "status": { "enum": ["passed", "failed", "blocked"] },
+    "reasonCode": { "type": ["string", "null"] },
+    "lockDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "policyDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+    "scope": { "type": "object", "additionalProperties": false, "required": ["root", "workspaces", "direct", "transitive", "development", "runtimeDistributed"], "properties": {
+      "root": { "type": "boolean" }, "workspaces": { "type": "boolean" }, "direct": { "type": "boolean" }, "transitive": { "type": "boolean" }, "development": { "type": "boolean" }, "runtimeDistributed": { "const": false }
+    } },
+    "packages": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["path", "name", "version", "direct", "workspace", "development", "optional", "licenseExpression", "ast", "status", "reasonCode"], "properties": {
+      "path": { "type": "string" }, "name": { "type": "string", "minLength": 1 }, "version": { "type": "string", "minLength": 1 },
+      "direct": { "type": "boolean" }, "workspace": { "type": "boolean" }, "development": { "type": "boolean" }, "optional": { "type": "boolean" },
+      "licenseExpression": { "type": ["string", "null"] }, "ast": { "type": ["object", "null"] },
+      "status": { "enum": ["passed", "failed", "blocked"] }, "reasonCode": { "type": ["string", "null"] }
+    } } },
+    "summary": { "type": "object", "additionalProperties": false, "required": ["total", "passed", "failed", "blocked"], "properties": {
+      "total": { "type": "integer", "minimum": 0 }, "passed": { "type": "integer", "minimum": 0 }, "failed": { "type": "integer", "minimum": 0 }, "blocked": { "type": "integer", "minimum": 0 }
+    } },
+    "reviewsApplied": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["package", "version", "decision", "owner", "expires"], "properties": {
+      "package": { "type": "string" }, "version": { "type": "string" }, "decision": { "enum": ["allow", "deny", "select"] }, "owner": { "type": "string" }, "expires": { "type": "string", "format": "date" }
+    } } }
+  }
+}

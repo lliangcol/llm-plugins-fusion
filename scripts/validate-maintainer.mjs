@@ -54,7 +54,7 @@ export async function main({ platform = process.platform, runner = runProcess, r
     await run('npm run test:unit', npm.command, [...npm.argsPrefix, 'run', 'test:unit']);
     await run('npm run test:integration', npm.command, [...npm.argsPrefix, 'run', 'test:integration']);
     await run('npm run test:e2e', npm.command, [...npm.argsPrefix, 'run', 'test:e2e']);
-    await run('validate all', process.execPath, ['scripts/validate-all.mjs']);
+    await run('benchmark validate all', process.execPath, ['scripts/profile-validation.mjs', '--benchmark']);
   }
   await run('generated registry drift check', process.execPath, ['scripts/generate-registry.mjs']);
   await run('git diff --check', 'git', ['diff', '--check']);

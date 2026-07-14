@@ -1249,6 +1249,11 @@ function validateValidatorCoverageNarrative() {
       label: 'README validate-all GitHub workflow coverage narrative',
     },
     {
+      file: 'README.md',
+      pattern: /lines 85%、branches 70%、functions 90%/,
+      label: 'README coverage threshold source alignment',
+    },
+    {
       file: 'docs/project/plans/current-remediation.md',
       pattern: /`validate-docs` checks[\s\S]*project\s+positioning\s+contracts,[\s\S]*exact-tag\s+release\s+promotion\s+boundaries,[\s\S]*maintainer\s+diagnostic\s+and\s+security\s+setting\s+semantics,[\s\S]*public\s+API\s+compatibility\s+contracts,[\s\S]*marketplace\s+trust,[\s\S]*author\s+workflow,[\s\S]*compatibility,[\s\S]*security\s+review\s+contracts,[\s\S]*contribution\s+and\s+issue\s+intake\s+contracts,[\s\S]*docs\s+index\s+navigation\s+contracts,[\s\S]*consumer\s+profile\s+privacy\s+contracts,[\s\S]*prompt\s+template\s+privacy\s+contracts,[\s\S]*local\s+data\s+handling\s+privacy\s+contracts,[\s\S]*workflow\s+evidence\s+contracts,[\s\S]*showcase\s+public-safety\s+contracts,[\s\S]*growth\s+metrics\s+privacy\s+contracts,[\s\S]*assets\s+capture\s+privacy\s+contracts,[\s\S]*deferred\s+portal\s+IA\s+contracts,[\s\S]*multi-plugin\s+readiness\s+evidence\s+contracts/,
       label: 'optimization plan validate-docs coverage narrative',

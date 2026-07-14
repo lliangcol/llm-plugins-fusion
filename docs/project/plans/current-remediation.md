@@ -1250,6 +1250,62 @@ evaluation evidence, not authorization to tag or release.
 
 </details>
 
+## 2026-07-14 Deep-Research Engineering-Risk Execution Ledger
+
+The implementation plan in
+[`deep-research-engineering-risk-execution-plan.md`](deep-research-engineering-risk-execution-plan.md)
+has completed its source-controlled ER0-ER8 work. This section is the unique
+active ledger for remaining external evidence; the detailed plan remains
+`implementation-complete-external-evidence-pending` until these items close.
+
+### Finding Dispositions
+
+| Finding | Disposition | Current evidence |
+| --- | --- | --- |
+| License policy was declared but not executed | `confirmed`, now closed locally | Independent vulnerability and SPDX license evidence; 38 current lock entries Passed; denied, AND, mixed OR, missing, custom, deprecated, workspace, optional, dev, and transitive fixtures |
+| `validate-all` owned a hand-written control plane | `confirmed`, now closed locally | 63-task runnable registry owns runner metadata, inputs, dependencies, platform/network/mutation/cache policy, timeouts, and reason codes |
+| Concurrent task sum was mislabeled wall time | `confirmed`, now closed locally | Diagnostics schema v2 records observed `elapsedWallMs`, diagnostic-only `sumTaskMs`, runtime smoke, selected tasks, cache hits, mode, exact profile, and source digests |
+| Performance policy represented one local platform | `confirmed`, implementation closed; evidence pending | Profile-keyed schema rejects unknown/mismatched runner class; no synthetic CI budgets were added |
+| No-Bash Windows evidence was weak | `partial`, now closed locally | Native Node, PowerShell-equivalent, Bash-authoritative, and container-candidate matrix; Windows CI runs all hook syntax and runtime smoke |
+| Runtime/maintainer/generated/external boundaries were unclear | `partial`, now closed locally | Generated control-plane inventory plus one-page architecture map |
+| README branch threshold drifted to 60% | `already-closed`, regression added | `validate-docs` rejects anything other than the authoritative 70% branch narrative; mutation regression rewrites it to 60% and expects failure |
+| Fixture demos could be mistaken for behavior E2E | `partial`, now closed locally | E0-E5 taxonomy, stable summary capped at E3, E4 binding and read-only/no-write policy; fixture/dry-run text remains explicit |
+| Terminal, SDK, MCP, multi-agent, and extension proposals | `strategic-decision` | ADR 0002 uses current official sources and records each proposal as adopt, experiment, defer, or reject |
+| Existing fail-closed safety controls | `preserve` | Full/no-cache remains authoritative; no action pin, permission, isolation, secret scan, workspace, or release boundary was weakened |
+
+### Local Observed Evidence
+
+- Baseline before implementation: full validation `failed=0 skipped=1`; the
+  skip was Claude compatibility because the child-process environment could
+  not resolve the optional CLI. Bash syntax and runtime smoke ran locally.
+- Final registry-driven full/no-cache validation: `failed=0 skipped=1`, observed
+  elapsed 15,573 ms, summed task durations 32,844 ms, 65 expanded tasks, zero
+  cache hits. The optional Claude compatibility skip remains named.
+- README-only impact selection: 8 of 63 logical tasks, an 87% task-count
+  reduction. A no-cache sample observed 472 ms; after fixed warm-up, 20 warm
+  content-cache samples observed p50 260 ms, p95 275 ms, range 246-277 ms, and
+  8 cache hits, a 45% p50 reduction. These local samples prove selector/cache
+  benefit only; unknown runner class keeps them out of governed CI budgets.
+- SPDX license evidence: 38 current packages Passed; vulnerability evidence:
+  zero current npm vulnerabilities. The maintainer-only SPDX parser is exact
+  locked and does not enter the distributed plugin archive.
+- Focused new/affected tests: 38 Passed. Typecheck, schemas, docs, GitHub
+  workflow validation, regression, runtime smoke, distribution scan, and
+  generated drift checks Passed after review-fix.
+
+### Remaining External Evidence
+
+| Gate | Status | Closure condition |
+| --- | --- | --- |
+| PR required checks, CodeQL, Dependency Review, Linux/Windows/macOS matrix | External evidence | Run against the exact published head and retain green required-check evidence |
+| Performance profiles | External evidence | Collect 20 green, same-profile, same-scenario samples for each enforced CI/release profile before adding an owned elapsed budget; required profile mismatch remains Blocked |
+| Candidate isolated install and authenticated route | External evidence | Exact candidate E3/E4 jobs pass with bound tag/commit/tree/assistant/permissions and public-safe artifacts |
+| Live evaluation | External evidence | Explicitly authorized credentialed E5 run passes the versioned dataset and attempt policy |
+| Plan lifecycle | External evidence | Mark the detailed plan `completed`, merge still-valid evidence here, then archive it only after all required external gates close or an authorized owner rejects a gate with reason |
+
+No commit, push, tag, release, user-scope installation, or credentialed route
+run is authorized by this ledger.
+
 <!-- merged-from: docs/maintainers/comprehensive-audit-remediation-plan.md -->
 <details>
 <summary>Migrated source: docs/maintainers/comprehensive-audit-remediation-plan.md</summary>

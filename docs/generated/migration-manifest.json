@@ -172,8 +172,23 @@
       "disposition": "generated"
     },
     {
+      "path": "docs/generated/control-plane-inventory.json",
+      "target": "docs/generated/control-plane-inventory.json",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/control-plane-inventory.md",
+      "target": "docs/generated/control-plane-inventory.md",
+      "disposition": "generated"
+    },
+    {
       "path": "docs/generated/dependency-audit.md",
       "target": "docs/generated/dependency-audit.md",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/dependency-license-audit.md",
+      "target": "docs/generated/dependency-license-audit.md",
       "disposition": "generated"
     },
     {
@@ -207,8 +222,18 @@
       "disposition": "generated"
     },
     {
+      "path": "docs/generated/evidence-levels.md",
+      "target": "docs/generated/evidence-levels.md",
+      "disposition": "generated"
+    },
+    {
       "path": "docs/generated/migration-manifest.json",
       "target": "docs/generated/migration-manifest.json",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/platform-evidence.md",
+      "target": "docs/generated/platform-evidence.md",
       "disposition": "generated"
     },
     {
@@ -547,6 +572,11 @@
       "disposition": "retain"
     },
     {
+      "path": "docs/project/decisions/0002-cli-and-extension-direction.md",
+      "target": "docs/project/decisions/0002-cli-and-extension-direction.md",
+      "disposition": "retain"
+    },
+    {
       "path": "docs/project/migrations/2.4.1-command-namespace.md",
       "target": "docs/project/migrations/2.4.1-command-namespace.md",
       "disposition": "retain"
@@ -564,6 +594,11 @@
     {
       "path": "docs/project/plans/current-remediation.md",
       "target": "docs/project/plans/current-remediation.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/project/plans/deep-research-engineering-risk-execution-plan.md",
+      "target": "docs/project/plans/deep-research-engineering-risk-execution-plan.md",
       "disposition": "retain"
     },
     {
@@ -649,6 +684,11 @@
     {
       "path": "docs/reference/architecture/agent-routing.md",
       "target": "docs/reference/architecture/agent-routing.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/reference/architecture/control-plane.md",
+      "target": "docs/reference/architecture/control-plane.md",
       "disposition": "retain"
     },
     {

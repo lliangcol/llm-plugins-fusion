@@ -1,5 +1,23 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema", "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/validation-performance.schema.json",
-  "type": "object", "additionalProperties": false, "required": ["$schema", "schemaVersion", "platform", "budgets"],
-  "properties": { "$schema": { "type": "string", "minLength": 1 }, "schemaVersion": { "const": 1 }, "platform": { "type": "string", "pattern": "^(?:windows|linux|macos)-(?:x64|arm64)-node[0-9]+$" }, "budgets": { "type": "object", "additionalProperties": false, "required": ["validateAllWallMs", "runtimeSmokeWallMs"], "properties": { "validateAllWallMs": { "type": "integer", "minimum": 1000 }, "runtimeSmokeWallMs": { "type": "integer", "minimum": 1000 } } } }
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/validation-performance.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schemaVersion", "enforcement", "minimumStableSamples", "profiles", "legacyBudgets"],
+  "properties": {
+    "$schema": { "type": "string", "minLength": 1 },
+    "schemaVersion": { "const": 2 },
+    "enforcement": { "const": "profile-required" },
+    "minimumStableSamples": { "type": "integer", "minimum": 20 },
+    "profiles": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["id", "platform", "arch", "nodeMajor", "runnerClass", "concurrency", "scenario", "sampleCount", "budgets", "owner", "reason", "regressionRisk"], "properties": {
+      "id": { "type": "string", "minLength": 1 }, "platform": { "enum": ["windows", "linux", "macos"] }, "arch": { "enum": ["x64", "arm64"] },
+      "nodeMajor": { "type": "integer", "minimum": 22 }, "runnerClass": { "type": "string", "minLength": 1 }, "concurrency": { "type": "integer", "minimum": 1 },
+      "scenario": { "enum": ["fresh-process-full-uncached", "full-cache-warm", "incremental-cache-warm"] }, "sampleCount": { "type": "integer", "minimum": 1 },
+      "budgets": { "type": "object", "additionalProperties": false, "required": ["elapsedWallMs", "runtimeSmokeMs"], "properties": { "elapsedWallMs": { "type": "integer", "minimum": 1000 }, "runtimeSmokeMs": { "type": "integer", "minimum": 1000 } } },
+      "owner": { "type": "string", "minLength": 1 }, "reason": { "type": "string", "minLength": 1 }, "regressionRisk": { "type": "string", "minLength": 1 }
+    } } },
+    "legacyBudgets": { "type": "object", "additionalProperties": false, "required": ["deprecated", "validateAllWallMs", "runtimeSmokeWallMs", "note"], "properties": {
+      "deprecated": { "const": true }, "validateAllWallMs": { "type": "integer", "minimum": 1000 }, "runtimeSmokeWallMs": { "type": "integer", "minimum": 1000 }, "note": { "type": "string", "minLength": 1 }
+    } }
+  }
 }

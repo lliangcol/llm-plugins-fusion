@@ -61,6 +61,8 @@ node scripts/validate-surface-budget.mjs:
 node scripts/generate-surface-inventory.mjs:
 node scripts/scan-distribution-risk.mjs:
 node scripts/validate-regression.mjs:
+node scripts/audit-dependencies.mjs (vulnerability evidence):
+node scripts/audit-dependency-licenses.mjs (license evidence):
 node scripts/validate-plugin-install.mjs --dry-run:
 isolated install smoke artifact/run:
 git diff --check:

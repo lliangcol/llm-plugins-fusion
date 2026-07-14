@@ -25,6 +25,11 @@ export function buildReleaseSummary({ channels, proof, adoption }) {
       commit: stable.commit,
       pluginTreeSha256: stable.pluginTreeSha256,
     },
+    evidenceLevel: {
+      highestVerified: proofMatches ? 'E3' : 'E0',
+      label: proofMatches ? 'Isolated install' : 'Static',
+      limitation: proofMatches ? 'Does not prove assistant workflow adherence.' : 'Does not prove installation or assistant behavior.',
+    },
     sections: {
       verified: [
         `Stable channel source records ${stable.tag} at ${stable.commit}.`,
@@ -48,7 +53,7 @@ export function outputs() {
     adoption: read('governance/adoption-evidence.json'),
   });
   const json = `${JSON.stringify(data, null, 2)}\n`;
-  const md = `# Generated release summary\n\nVersion **${data.release.version}**; exact stable tag **${data.release.tag}**; plugin tree digest \`${data.release.pluginTreeSha256}\`.\n\n${Object.entries(data.sections).map(([name, items]) => `## ${name.replace(/([A-Z])/gu, ' $1').replace(/^./u, (character) => character.toUpperCase())}\n\n${items.map((item) => `- ${item}`).join('\n')}`).join('\n\n')}\n`;
+  const md = `# Generated release summary\n\nVersion **${data.release.version}**; exact stable tag **${data.release.tag}**; plugin tree digest \`${data.release.pluginTreeSha256}\`.\n\nHighest verified evidence: **${data.evidenceLevel.highestVerified} ${data.evidenceLevel.label}**. ${data.evidenceLevel.limitation}\n\n${Object.entries(data.sections).map(([name, items]) => `## ${name.replace(/([A-Z])/gu, ' $1').replace(/^./u, (character) => character.toUpperCase())}\n\n${items.map((item) => `- ${item}`).join('\n')}`).join('\n\n')}\n`;
   return [['docs/generated/release-summary.json', json], ['docs/generated/release-summary.md', md]];
 }
 
