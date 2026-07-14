@@ -46,6 +46,12 @@ export function buildFactGraph() {
       'inventory.skills': fact(project.data.inventory.skills, 'governance/project-state.generated.json', '/inventory/skills', project.sha256),
       'runtime.node': fact(project.data.runtime.node, 'governance/project-state.generated.json', '/runtime/node', project.sha256),
       'runtime.bash': fact(project.data.runtime.distributedBash, 'governance/project-state.generated.json', '/runtime/distributedBash', project.sha256),
+      'evaluation.live.datasetId': fact(project.data.evaluation.livePaired.datasetId, 'governance/project-state.generated.json', '/evaluation/livePaired/datasetId', project.sha256),
+      'evaluation.live.caseCount': fact(project.data.evaluation.livePaired.caseCount, 'governance/project-state.generated.json', '/evaluation/livePaired/caseCount', project.sha256),
+      'evaluation.live.plannedInvocations': fact(project.data.evaluation.livePaired.plannedInvocations, 'governance/project-state.generated.json', '/evaluation/livePaired/plannedInvocations', project.sha256),
+      'evaluation.realTask.datasetId': fact(project.data.evaluation.realTask.datasetId, 'governance/project-state.generated.json', '/evaluation/realTask/datasetId', project.sha256),
+      'evaluation.realTask.taskCount': fact(project.data.evaluation.realTask.taskCount, 'governance/project-state.generated.json', '/evaluation/realTask/taskCount', project.sha256),
+      'evaluation.realTask.plannedInvocations': fact(project.data.evaluation.realTask.plannedInvocations, 'governance/project-state.generated.json', '/evaluation/realTask/plannedInvocations', project.sha256),
     },
   };
 }

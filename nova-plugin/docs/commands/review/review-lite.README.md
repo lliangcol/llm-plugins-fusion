@@ -1,5 +1,17 @@
 ﻿# /nova-plugin:review-lite
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `review-lite`; stage: `review`; canonical skill: `nova-review`
+- Purpose: Deliver concise daily-review feedback with high signal and bounded depth.
+- Audience: `all-users`; support risk: `none`
+- Inputs: `REVIEW_SCOPE` (required)
+- Output contract: `review-lite-v2`; authorization: `read-only`
+- Effects: `workspace-read`
+- Related workflows: `review`
+<!-- generated:command-contract:end -->
+
 - 来源：`nova-plugin/commands/review-lite.md`
 
 ## 命令定位

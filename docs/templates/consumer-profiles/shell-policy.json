@@ -1,0 +1,5 @@
+{
+  "$schema": "path/to/llm-plugins-fusion/schemas/shell-command-policy.schema.json",
+  "schemaVersion": 1,
+  "allowCommands": []
+}

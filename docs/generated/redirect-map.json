@@ -1,0 +1,425 @@
+{
+  "schemaVersion": 1,
+  "redirects": [
+    {
+      "from": "docs/start-here.md",
+      "to": "docs/getting-started/README.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/getting-started.md",
+      "to": "docs/getting-started/first-workflow.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/adr/0001-truth-release-capability-evidence.md",
+      "to": "docs/project/decisions/0001-truth-release-capability-evidence.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/agents/ROUTING.md",
+      "to": "docs/reference/architecture/agent-routing.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/agents/PLUGIN_AWARE_ROUTING.md",
+      "to": "docs/reference/architecture/agent-routing.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/assets/README.md",
+      "to": "docs/operations/community/assets.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/compatibility/README.md",
+      "to": "docs/reference/compatibility/README.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/compatibility/public-api.md",
+      "to": "docs/reference/compatibility/public-api.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/compatibility/assistant-levels.md",
+      "to": "docs/reference/compatibility/assistant-levels.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/compatibility/contract-semver.md",
+      "to": "docs/reference/compatibility/contract-semver.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/framework/README.md",
+      "to": "docs/reference/architecture/framework.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/framework/second-product.md",
+      "to": "docs/guides/framework/second-product.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/consumers/README.md",
+      "to": "docs/guides/assistants/README.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/consumers/aider-setup.md",
+      "to": "docs/guides/assistants/aider.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/consumers/cline-setup.md",
+      "to": "docs/guides/assistants/cline.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/consumers/codex-setup.md",
+      "to": "docs/guides/assistants/codex.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/consumers/copilot-setup.md",
+      "to": "docs/guides/assistants/copilot.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/consumers/cursor-setup.md",
+      "to": "docs/guides/assistants/cursor.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/consumers/gemini-cli-setup.md",
+      "to": "docs/guides/assistants/gemini-cli.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/consumers/opencode-setup.md",
+      "to": "docs/guides/assistants/opencode.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/consumers/openhands-setup.md",
+      "to": "docs/guides/assistants/openhands.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/consumers/profile-contract.md",
+      "to": "docs/templates/consumer-profiles/contract.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/consumers/private-java-backend-template.md",
+      "to": "docs/templates/consumer-profiles/java-backend.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/consumers/frontend-project-template.md",
+      "to": "docs/templates/consumer-profiles/frontend.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/consumers/workbench-template.md",
+      "to": "docs/templates/consumer-profiles/workbench.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/consumers/shell-policy-template.json",
+      "to": "docs/templates/consumer-profiles/shell-policy.json",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/examples/README.md",
+      "to": "docs/tutorials/README.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/showcase/README.md",
+      "to": "docs/tutorials/README.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/examples/java-backend/redacted-feature.md",
+      "to": "docs/tutorials/java-backend.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/showcase/java-backend.md",
+      "to": "docs/tutorials/java-backend.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/examples/frontend/basic-feature.md",
+      "to": "docs/tutorials/frontend.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/showcase/frontend.md",
+      "to": "docs/tutorials/frontend.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/examples/primary-workflow-transcript.md",
+      "to": "docs/tutorials/first-workflow-transcript.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/examples/workflow-evaluation.md",
+      "to": "docs/tutorials/workflow-evaluation.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/examples/workflow-evaluation-record-template.md",
+      "to": "docs/templates/evidence/workflow-evaluation.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/showcase/release-and-docs.md",
+      "to": "docs/tutorials/release-and-docs.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/quality/benchmark.md",
+      "to": "docs/reference/evaluation/benchmark.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/llm-plugins-fusion-maintenance-status.md",
+      "to": "docs/operations/maintainers/status.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/maintainers/quickstart.md",
+      "to": "docs/operations/maintainers/README.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/maintainers/validation-index.md",
+      "to": "docs/operations/maintainers/validation.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/maintainers/task-catalog.md",
+      "to": "docs/operations/maintainers/validation.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/maintainers/troubleshooting.md",
+      "to": "docs/operations/maintainers/troubleshooting.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/maintainers/github-security-settings.md",
+      "to": "docs/operations/maintainers/github-security.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/maintainers/release-runbook.md",
+      "to": "docs/operations/releases/runbook.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/maintainers/deep-research-remediation-and-documentation-redesign-plan.md",
+      "to": "docs/project/plans/current-remediation.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/maintainers/post-remediation-audit.md",
+      "to": "docs/project/plans/current-remediation.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/maintainers/comprehensive-audit-remediation-plan.md",
+      "to": "docs/project/plans/current-remediation.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/project-optimization-plan.md",
+      "to": "docs/project/plans/current-remediation.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/growth/README.md",
+      "to": "docs/operations/community/metrics.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/marketplace/registry-author-workflow.md",
+      "to": "docs/operations/marketplace/registry-authoring.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/marketplace/compatibility-matrix.md",
+      "to": "docs/reference/compatibility/marketplace.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/marketplace/trust-policy.md",
+      "to": "docs/reference/security/marketplace-trust.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/marketplace/security-review-route.md",
+      "to": "docs/reference/security/security-review.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/marketplace/v3-readiness-evidence.md",
+      "to": "docs/project/plans/current-remediation.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/marketplace/multi-plugin-readiness.md",
+      "to": "docs/project/plans/multi-plugin-readiness.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/marketplace/portal-information-architecture.md",
+      "to": "docs/project/plans/portal-information-architecture.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/releases/3.0.0-notes.md",
+      "to": "docs/project/release-notes/3.0.0.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/releases/3.0.0-audit-closure.md",
+      "to": "docs/project/release-notes/3.0.0.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/releases/3.0.1-notes.md",
+      "to": "docs/project/release-notes/3.0.1.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/releases/release-validation-runbook.md",
+      "to": "docs/operations/releases/validation.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/releases/release-hygiene.md",
+      "to": "docs/operations/releases/hygiene.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/releases/operator-recovery-and-key-rotation.md",
+      "to": "docs/operations/releases/recovery-and-key-rotation.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/releases/release-evidence-template.md",
+      "to": "docs/templates/evidence/release.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/migrations/2.4.1-command-namespace.md",
+      "to": "docs/project/migrations/2.4.1-command-namespace.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/migrations/3.0.0-adapters-and-direct-commands.md",
+      "to": "docs/project/migrations/3.0.0-adapters-and-direct-commands.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/migrations/contract-v6.md",
+      "to": "docs/project/migrations/contract-v6.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/privacy/data-handling.md",
+      "to": "docs/reference/security/data-handling.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/workflows/context-safe-agent-workflows.md",
+      "to": "docs/guides/workflows/context-safe.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/workflows/source-controlled-checks.md",
+      "to": "docs/guides/workflows/source-controlled-checks.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/workflows/gsd-informed-hardening.md",
+      "to": "docs/guides/workflows/hardening.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/workflows/routing-validation-guardrails.md",
+      "to": "docs/reference/workflows/routing-guardrails.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/workflows/thin-harness-fat-skills.md",
+      "to": "docs/reference/architecture/skill-first-projection.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/workflows/verification-evidence-contract.md",
+      "to": "docs/reference/workflows/verification-evidence.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/prompts/README.md",
+      "to": "docs/templates/prompts/README.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/prompts/claude-code/fix-from-review.md",
+      "to": "docs/templates/prompts/claude-code/fix-from-review.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/prompts/claude-code/serial-checkpoint.md",
+      "to": "docs/templates/prompts/claude-code/serial-checkpoint.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/prompts/claude-code/subagent-execution.md",
+      "to": "docs/templates/prompts/claude-code/subagent-execution.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/prompts/codex/context-safe-review.md",
+      "to": "docs/templates/prompts/codex/context-safe-review.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/prompts/codex/final-verification.md",
+      "to": "docs/templates/prompts/codex/final-verification.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/prompts/common/checkpoint-artifact.md",
+      "to": "docs/templates/prompts/common/checkpoint-artifact.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/prompts/common/delivery-docs.md",
+      "to": "docs/templates/prompts/common/delivery-docs.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/prompts/common/html-artifact.md",
+      "to": "docs/templates/prompts/common/html-artifact.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/prompts/common/skill-harness-audit.md",
+      "to": "docs/templates/prompts/common/skill-harness-audit.md",
+      "kind": "compatibility-stub"
+    },
+    {
+      "from": "docs/prompts/common/workbench-tidy.md",
+      "to": "docs/templates/prompts/common/workbench-tidy.md",
+      "kind": "compatibility-stub"
+    }
+  ]
+}

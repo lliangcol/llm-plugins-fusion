@@ -4,7 +4,7 @@
   "title": "Generated project state",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "generatedFrom", "plugin", "runtime", "inventory", "workflow", "repositoryScripts", "productLanes", "hooks", "release", "sourceDigests"],
+  "required": ["schemaVersion", "generatedFrom", "plugin", "runtime", "inventory", "workflow", "evaluation", "repositoryScripts", "productLanes", "hooks", "release", "sourceDigests"],
   "properties": {
     "schemaVersion": { "const": 1 },
     "generatedFrom": { "const": "repository-domain-sources" },
@@ -12,6 +12,43 @@
     "runtime": { "type": "object" },
     "inventory": { "type": "object" },
     "workflow": { "type": "object" },
+    "evaluation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["livePaired", "realTask"],
+      "properties": {
+        "livePaired": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["datasetId", "sourcePath", "caseCount", "languageCounts", "kindCounts", "profileCaseCounts", "conditions", "attempts", "plannedInvocations"],
+          "properties": {
+            "datasetId": { "const": "live-paired" },
+            "sourcePath": { "const": "evals/live/cases.json" },
+            "caseCount": { "type": "integer", "minimum": 1 },
+            "languageCounts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+            "kindCounts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+            "profileCaseCounts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+            "conditions": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+            "attempts": { "type": "integer", "minimum": 1 },
+            "plannedInvocations": { "type": "integer", "minimum": 1 }
+          }
+        },
+        "realTask": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["datasetId", "sourcePath", "taskCount", "assistants", "conditions", "attempts", "plannedInvocations"],
+          "properties": {
+            "datasetId": { "const": "real-task-benchmark" },
+            "sourcePath": { "const": "benchmarks/real-tasks.json" },
+            "taskCount": { "type": "integer", "minimum": 1 },
+            "assistants": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+            "conditions": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+            "attempts": { "type": "integer", "minimum": 1 },
+            "plannedInvocations": { "type": "integer", "minimum": 1 }
+          }
+        }
+      }
+    },
     "repositoryScripts": { "type": "object" },
     "productLanes": { "type": "object" },
     "hooks": { "type": "object" },

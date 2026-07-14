@@ -1,0 +1,26 @@
+name: Good first task
+description: Propose a bounded public-safe documentation, generator, or fixture improvement.
+title: "[Good first task] "
+labels: ["good first issue"]
+body:
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Change surface
+      options: [Documentation contract, Generated output, Public fixture]
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Expected outcome
+      description: Describe one bounded outcome without private consumer facts.
+    validations:
+      required: true
+  - type: textarea
+    id: checks
+    attributes:
+      label: Suggested checks
+      value: "npm run check"
+    validations:
+      required: true

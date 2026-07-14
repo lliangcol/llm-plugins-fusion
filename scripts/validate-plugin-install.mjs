@@ -21,6 +21,7 @@ import { assertNodeVersion } from './lib/node-version.mjs';
 import { captureProcess, runProcess } from './lib/process-runner.mjs';
 import { requireOptionValue } from './lib/cli-args.mjs';
 import { runRouteSmoke } from './validate-plugin-route-live.mjs';
+import { diagnosticReport, diagnosticResult, loadReasonRegistry, writeDiagnosticReport } from './lib/diagnostics.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -28,7 +29,7 @@ const root = resolve(__dir, '..');
 assertNodeVersion({ label: 'plugin install smoke' });
 
 function usage() {
-  return 'Usage: node scripts/validate-plugin-install.mjs [--dry-run | --accept-user-scope-mutation] --isolated-home [--marketplace-source <path|owner/repo@ref>] [--expected-ref <ref>] [--expected-commit <sha>] [--evidence-source <source>] [--inventory-out <path>] [--route-smoke-out <path>]';
+  return 'Usage: node scripts/validate-plugin-install.mjs [--dry-run [--isolated-home] [--json] [--output-json <path>] | --accept-user-scope-mutation --isolated-home] [--marketplace-source <path|owner/repo@ref>] [--expected-ref <ref>] [--expected-commit <sha>] [--evidence-source <source>] [--inventory-out <path>] [--route-smoke-out <path>]';
 }
 
 export function parseArgs(args) {
@@ -42,6 +43,8 @@ export function parseArgs(args) {
     evidenceSource: null,
     inventoryOut: null,
     routeSmokeOut: null,
+    json: false,
+    outputJson: null,
     help: false,
   };
   for (let index = 0; index < args.length; index += 1) {
@@ -50,6 +53,11 @@ export function parseArgs(args) {
     else if (arg === '--dry-run') options.dryRun = true;
     else if (arg === '--accept-user-scope-mutation' || arg === '--yes') options.acceptedUserScopeMutation = true;
     else if (arg === '--isolated-home') options.isolatedHome = true;
+    else if (arg === '--json') options.json = true;
+    else if (arg === '--output-json') {
+      options.outputJson = requireOptionValue(args, index, arg);
+      index += 1;
+    }
     else if (arg === '--marketplace-source') {
       options.marketplaceSource = requireOptionValue(args, index, arg);
       index += 1;
@@ -324,6 +332,14 @@ export async function main(args = process.argv.slice(2)) {
     console.log(usage());
     return 0;
   }
+  if (options.dryRun && options.acceptedUserScopeMutation) {
+    console.error('ERROR --dry-run and --accept-user-scope-mutation are mutually exclusive.');
+    return 1;
+  }
+  if (!options.dryRun && (options.json || options.outputJson)) {
+    console.error('ERROR --json and --output-json are supported only with --dry-run.');
+    return 1;
+  }
 
   const marketplace = readJson('.claude-plugin/marketplace.json');
   const plugin = readJson('nova-plugin/.claude-plugin/plugin.json');
@@ -345,18 +361,19 @@ export async function main(args = process.argv.slice(2)) {
     return 1;
   }
 
-  console.log(`Marketplace: ${marketplaceName}`);
-  console.log(`Marketplace source: ${marketplaceSource}`);
-  console.log(`Expected ref: ${options.expectedRef ?? 'not asserted'}`);
-  console.log(`Plugin: ${plugin.name}`);
-  console.log(`Expected install id: ${pluginId}`);
-  console.log(`Expected version: ${plugin.version}`);
-  console.log(`Expected installed Skills: ${permissionSpec.expectedInventory.combinedSkillCount}`);
-  console.log(`Isolated home: ${options.isolatedHome ? 'enabled' : 'disabled'}`);
+  if (!options.json) {
+    console.log(`Marketplace: ${marketplaceName}`);
+    console.log(`Marketplace source: ${marketplaceSource}`);
+    console.log(`Expected ref: ${options.expectedRef ?? 'not asserted'}`);
+    console.log(`Plugin: ${plugin.name}`);
+    console.log(`Expected install id: ${pluginId}`);
+    console.log(`Expected version: ${plugin.version}`);
+    console.log(`Expected installed Skills: ${permissionSpec.expectedInventory.combinedSkillCount}`);
+    console.log(`Isolated home: ${options.isolatedHome ? 'enabled' : 'disabled'}`);
+  }
 
   if (options.dryRun) {
-    console.log('\nDry run only. Planned checks:');
-    for (const step of [
+    const steps = [
       'create and remove temporary HOME, USERPROFILE, XDG_CONFIG_HOME, XDG_DATA_HOME, and XDG_STATE_HOME',
       'claude --version',
       'claude plugin validate . and nova-plugin',
@@ -366,8 +383,18 @@ export async function main(args = process.argv.slice(2)) {
       'claude plugin list --json and installed tree digest',
       `claude plugin details and exact ${permissionSpec.expectedInventory.combinedSkillCount}-item Skills inventory comparison`,
       ...(options.routeSmokeOut ? ['OAuth /nova-plugin:route invocation with isolated configuration and zero project writes'] : []),
-    ]) console.log(`- ${step}`);
-    console.log('\nNo Claude CLI commands were run and no user-scope plugin state was changed.');
+    ];
+    const report = diagnosticReport('validate-plugin-install --dry-run', [diagnosticResult({
+      command: 'validate-plugin-install --dry-run', check: 'install-preview', status: 'passed', reasonCode: 'DRY_RUN_SAFE_PREVIEW',
+      expected: 'no Claude CLI invocation or user-scope mutation', actual: { isolatedHome: options.isolatedHome, plannedChecks: steps.length },
+    }, loadReasonRegistry(root))]);
+    if (options.outputJson) writeDiagnosticReport(resolve(root, options.outputJson), report);
+    if (options.json) console.log(JSON.stringify(report, null, 2));
+    else {
+      console.log('\nDry run only. Planned checks:');
+      for (const step of steps) console.log(`- ${step}`);
+      console.log('\nNo Claude CLI commands were run and no user-scope plugin state was changed.');
+    }
     return 0;
   }
 

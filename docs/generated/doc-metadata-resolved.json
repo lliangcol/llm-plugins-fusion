@@ -1,0 +1,2966 @@
+{
+  "schemaVersion": 1,
+  "documents": [
+    {
+      "path": ".github/pull_request_template.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "AGENTS.md",
+      "audience": "repository-users",
+      "contentType": "agent-adapter",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "CHANGELOG.md",
+      "audience": "repository-users",
+      "contentType": "entrypoint",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "CLAUDE.md",
+      "audience": "repository-users",
+      "contentType": "entrypoint",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "CODE_OF_CONDUCT.md",
+      "audience": "repository-users",
+      "contentType": "entrypoint",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "audience": "repository-users",
+      "contentType": "entrypoint",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "README.md",
+      "audience": "repository-users",
+      "contentType": "entrypoint",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "ROADMAP.md",
+      "audience": "repository-users",
+      "contentType": "entrypoint",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "SECURITY.md",
+      "audience": "repository-users",
+      "contentType": "entrypoint",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "adapters/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "adapters/claude/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "adapters/codex/AGENTS.md",
+      "audience": "repository-users",
+      "contentType": "agent-adapter",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "adapters/codex/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "adapters/generic-agent-skills/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/adr/0001-truth-release-capability-evidence.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/agents/PLUGIN_AWARE_ROUTING.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/agents/ROUTING.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/assets/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/compatibility/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/compatibility/assistant-levels.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/compatibility/contract-semver.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/compatibility/public-api.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/consumers/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/consumers/aider-setup.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/consumers/cline-setup.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/consumers/codex-setup.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/consumers/copilot-setup.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/consumers/cursor-setup.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/consumers/frontend-project-template.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/consumers/gemini-cli-setup.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/consumers/opencode-setup.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/consumers/openhands-setup.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/consumers/private-java-backend-template.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/consumers/profile-contract.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/consumers/workbench-template.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/examples/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/examples/frontend/basic-feature.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/examples/java-backend/redacted-feature.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/examples/primary-workflow-transcript.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/examples/workflow-evaluation-record-template.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/examples/workflow-evaluation.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/framework/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/framework/second-product.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/generated/assistant-compatibility.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/generated/command-matrix.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/generated/dependency-audit.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/generated/documentation-navigation.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/generated/effective-permissions.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/generated/evaluation-profiles.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/generated/prompt-surface-report.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/generated/real-task-benchmark.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/generated/release-summary.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/generated/surface-inventory.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/generated/workflow-catalog.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/getting-started.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/getting-started/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/getting-started/first-workflow.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/getting-started/install-claude-code.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/growth/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/aider.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/cline.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/codex.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/copilot.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/cursor.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/gemini-cli.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/opencode.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/assistants/openhands.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/framework/second-product.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/workflows/context-safe.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/workflows/hardening.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/guides/workflows/source-controlled-checks.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/llm-plugins-fusion-maintenance-status.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/maintainers/comprehensive-audit-remediation-plan.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/maintainers/deep-research-remediation-and-documentation-redesign-plan.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/maintainers/github-security-settings.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/maintainers/post-remediation-audit.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/maintainers/quickstart.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/maintainers/release-runbook.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/maintainers/task-catalog.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/maintainers/troubleshooting.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/maintainers/validation-index.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/marketplace/catalog.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/marketplace/compatibility-matrix.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/marketplace/multi-plugin-readiness.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/marketplace/portal-information-architecture.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/marketplace/registry-author-workflow.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/marketplace/security-review-route.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/marketplace/trust-policy.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/marketplace/v3-readiness-evidence.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/migrations/2.4.1-command-namespace.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/migrations/3.0.0-adapters-and-direct-commands.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/migrations/contract-v6.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/community/assets.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/community/metrics.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/maintainers/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/maintainers/diagnostics.md",
+      "audience": "maintainers",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/operations/maintainers/github-security.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/maintainers/status.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/maintainers/task-catalog.generated.md",
+      "audience": "maintainers",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/operations/maintainers/troubleshooting.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/maintainers/validation.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/marketplace/registry-authoring.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/releases/hygiene.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/releases/recovery-and-key-rotation.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/releases/runbook.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/operations/releases/validation.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/privacy/data-handling.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project-optimization-plan.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/decisions/0001-truth-release-capability-evidence.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/migrations/2.4.1-command-namespace.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/migrations/3.0.0-adapters-and-direct-commands.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/migrations/contract-v6.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/plans/current-remediation.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/plans/multi-plugin-readiness.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/plans/portal-information-architecture.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/release-notes/3.0.0.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/release-notes/3.0.1.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/prompts/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/prompts/claude-code/fix-from-review.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/prompts/claude-code/serial-checkpoint.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/prompts/claude-code/subagent-execution.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/prompts/codex/context-safe-review.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/prompts/codex/final-verification.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/prompts/common/checkpoint-artifact.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/prompts/common/delivery-docs.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/prompts/common/html-artifact.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/prompts/common/skill-harness-audit.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/prompts/common/workbench-tidy.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/quality/benchmark.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/architecture/agent-routing.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/architecture/framework.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/architecture/skill-first-projection.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/compatibility/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/compatibility/assistant-levels.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/compatibility/contract-semver.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/compatibility/marketplace.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/compatibility/public-api.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/evaluation/benchmark.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/reference/security/data-handling.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/security/marketplace-trust.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/security/security-review.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/workflows/routing-guardrails.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/reference/workflows/verification-evidence.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/releases/3.0.0-audit-closure.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/releases/3.0.0-notes.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/releases/3.0.1-notes.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/releases/operator-recovery-and-key-rotation.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/releases/release-evidence-template.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/releases/release-hygiene.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/releases/release-validation-runbook.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/showcase/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/showcase/frontend.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/showcase/java-backend.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/showcase/release-and-docs.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/start-here.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/consumer-profiles/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/consumer-profiles/contract.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/consumer-profiles/frontend.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/consumer-profiles/java-backend.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/consumer-profiles/workbench.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/evidence/release.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/evidence/workflow-evaluation.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/claude-code/fix-from-review.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/claude-code/serial-checkpoint.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/claude-code/subagent-execution.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/codex/context-safe-review.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/codex/final-verification.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/common/checkpoint-artifact.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/common/delivery-docs.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/common/html-artifact.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/common/skill-harness-audit.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/templates/prompts/common/workbench-tidy.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/tutorials/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/tutorials/consumer-minimal.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/tutorials/first-workflow-transcript.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/tutorials/frontend.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/tutorials/java-backend.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/tutorials/release-and-docs.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/tutorials/workflow-evaluation.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/workflows/context-safe-agent-workflows.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/workflows/gsd-informed-hardening.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/workflows/routing-validation-guardrails.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/workflows/source-controlled-checks.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/workflows/thin-harness-fat-skills.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/workflows/verification-evidence-contract.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "evals/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "fixtures/consumer/minimal/AGENTS.md",
+      "audience": "maintainers",
+      "contentType": "fixture-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "fixtures/consumer/minimal/README.md",
+      "audience": "maintainers",
+      "contentType": "fixture-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "fixtures/consumer/minimal/request.md",
+      "audience": "maintainers",
+      "contentType": "fixture-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "fixtures/products/minimal-plugin/contracts/design.md",
+      "audience": "maintainers",
+      "contentType": "fixture-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "fixtures/products/minimal-plugin/contracts/triage.md",
+      "audience": "maintainers",
+      "contentType": "fixture-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "fixtures/products/minimal-plugin/contracts/verify.md",
+      "audience": "maintainers",
+      "contentType": "fixture-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "fixtures/workflow/invoice-sync/README.md",
+      "audience": "maintainers",
+      "contentType": "fixture-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "fixtures/workflow/invoice-sync/inputs/planning-brief.md",
+      "audience": "maintainers",
+      "contentType": "fixture-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "fixtures/workflow/invoice-sync/inputs/product-note.md",
+      "audience": "maintainers",
+      "contentType": "fixture-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "fixtures/workflow/invoice-sync/plans/approved-implementation-plan.md",
+      "audience": "maintainers",
+      "contentType": "fixture-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "framework/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "governance/evidence/post-remediation-audit-2026-07-13.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/agents/architect.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/agents/builder.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/agents/orchestrator.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/agents/publisher.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/agents/reviewer.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/agents/verifier.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/backend-plan.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/codex-review-fix.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/codex-review-only.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/codex-verify-only.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/explore-lite.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/explore-review.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/explore.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/finalize-lite.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/finalize-work.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/implement-lite.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/implement-plan.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/implement-standard.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/plan-lite.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/plan-review.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/produce-plan.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/review-lite.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/review-only.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/review-strict.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/review.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/route.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/commands/senior-explore.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/architecture/agent-development-stack.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/architecture/dual-track-design.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/architecture/hooks-design.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/README.generated.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/codex/codex-review-fix.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/codex/codex-review-fix.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/codex/codex-review-fix.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/codex/codex-review-only.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/codex/codex-review-only.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/codex/codex-review-only.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/codex/codex-verify-only.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/codex/codex-verify-only.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/codex/codex-verify-only.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/explore-lite.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/explore-lite.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/explore-lite.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/explore-review.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/explore-review.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/explore-review.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/explore.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/explore.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/explore.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/route.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/route.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/route.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/senior-explore.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/senior-explore.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/explore/senior-explore.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/finalize/finalize-lite.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/finalize/finalize-lite.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/finalize/finalize-lite.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/finalize/finalize-work.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/finalize/finalize-work.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/finalize/finalize-work.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/implement/implement-lite.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/implement/implement-lite.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/implement/implement-lite.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/implement/implement-plan.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/implement/implement-plan.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/implement/implement-plan.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/implement/implement-standard.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/implement/implement-standard.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/implement/implement-standard.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/plan/backend-plan.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/plan/backend-plan.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/plan/backend-plan.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/plan/plan-lite.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/plan/plan-lite.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/plan/plan-lite.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/plan/plan-review.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/plan/plan-review.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/plan/plan-review.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/plan/produce-plan.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/plan/produce-plan.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/plan/produce-plan.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/review/review-lite.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/review/review-lite.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/review/review-lite.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/review/review-only.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/review/review-only.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/review/review-only.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/review/review-strict.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/review/review-strict.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/review/review-strict.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/review/review.README.en.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/review/review.README.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/commands/review/review.md",
+      "audience": "workflow-users",
+      "contentType": "command-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "workflow-specs/workflows.v6.json",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/guides/claude-code-commands-handbook.en.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/guides/claude-code-commands-handbook.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/guides/commands-reference-guide.en.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/guides/commands-reference-guide.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/docs/overview/README.en.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/packs/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/packs/dependency/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/packs/docs/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/packs/frontend/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/packs/java/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/packs/marketplace/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/packs/mcp/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/packs/release/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/packs/security/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/_shared/agent-routing.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/_shared/artifact-policy.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/_shared/output-contracts.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/_shared/parameter-resolution.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/_shared/safety-preflight.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/nova-codex-review-fix/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/nova-codex-review-fix/prompts/claude-fix.prompt.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/nova-codex-review-fix/prompts/codex-review.prompt.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/nova-codex-review-fix/prompts/codex-verify.prompt.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/nova-codex-review-only/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/nova-codex-verify-only/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/nova-explore/SKILL.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/nova-finalize-work/SKILL.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/nova-implement-plan/SKILL.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/nova-produce-plan/SKILL.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/nova-review/SKILL.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "nova-plugin/skills/nova-route/SKILL.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "workflow-specs/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    }
+  ]
+}

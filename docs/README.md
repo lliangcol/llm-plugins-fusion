@@ -32,6 +32,8 @@ knowledge-base content in the consumer-owned workspace.
 | Track growth metrics and manual promotion channels | [growth/README.md](growth/README.md) |
 | Understand local audit logs and data handling | [privacy/data-handling.md](privacy/data-handling.md) |
 | Inspect generated public surface inventory | [generated/surface-inventory.md](generated/surface-inventory.md) |
+| Browse generated task-oriented documentation navigation | [generated/documentation-navigation.md](generated/documentation-navigation.md) |
+| Compare generated workflow command contracts | [generated/command-matrix.md](generated/command-matrix.md) |
 | Adopt `nova-plugin` in a private project | [consumers/README.md](consumers/README.md) |
 | Maintain repository checks and release gates | [maintainers/quickstart.md](maintainers/quickstart.md) |
 | Find the script, npm shortcut, or CI job for a maintenance task | [maintainers/task-catalog.md](maintainers/task-catalog.md) |
@@ -174,9 +176,11 @@ docs/
 | [maintainers/quickstart.md](maintainers/quickstart.md) | Maintainer change paths, default checks, timing evidence, and install smoke boundary. |
 | [maintainers/validation-index.md](maintainers/validation-index.md) | Maintainer validation command, CI check, and change-routing inventory. |
 | [maintainers/troubleshooting.md](maintainers/troubleshooting.md) | Common local validation, Bash, Claude CLI, hooks, audit log, and registry drift troubleshooting. |
+| [operations/maintainers/diagnostics.md](operations/maintainers/diagnostics.md) | Generated diagnostic reason codes, status semantics, and remediation links. |
 | [maintainers/github-security-settings.md](maintainers/github-security-settings.md) | Branch protection, ruleset, CodeQL, secret scanning, Dependabot, and required-check guidance. |
 | [maintainers/post-remediation-audit.md](maintainers/post-remediation-audit.md) | Current execution plan, post-remediation audit, evidence boundaries, residual risks, and phased ROI roadmap. |
 | [maintainers/comprehensive-audit-remediation-plan.md](maintainers/comprehensive-audit-remediation-plan.md) | Complete remediation plan for the current 13-dimension audit, release hold enforcement, external evidence gates, API hardening, and final acceptance. |
+| [maintainers/deep-research-remediation-and-documentation-redesign-plan.md](maintainers/deep-research-remediation-and-documentation-redesign-plan.md) | Proposed report-wide remediation plan and separate full documentation information-architecture redesign. |
 
 ### Marketplace
 

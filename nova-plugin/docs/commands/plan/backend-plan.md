@@ -1,5 +1,17 @@
 ﻿# Skill: /nova-plugin:backend-plan
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `backend-plan`; stage: `plan`; canonical skill: `nova-produce-plan`
+- Purpose: Produce a complete Java and Spring backend design artifact for senior review without implementing code.
+- Audience: `backend-users`; support risk: `low`
+- Inputs: `REQUEST` (required), `PLAN_OUTPUT_PATH` (required)
+- Output contract: `backend-plan-v2`; authorization: `artifact-write`
+- Effects: `artifact-write`, `workspace-read`, `workspace-write`
+- Related workflows: `produce-plan`, `implement-plan`
+<!-- generated:command-contract:end -->
+
 - 来源：`nova-plugin/commands/backend-plan.md`
 
 ## 适用场景

@@ -1,5 +1,17 @@
 ﻿# Skill: /nova-plugin:produce-plan
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `produce-plan`; stage: `plan`; canonical skill: `nova-produce-plan`
+- Purpose: Write a review-ready plan artifact from explicit intent and constraints without implementing code.
+- Audience: `all-users`; support risk: `low`
+- Inputs: `REQUEST` (required), `PLAN_OUTPUT_PATH` (required), `PLAN_PROFILE`, `ANALYSIS_INPUTS`, `CONSTRAINTS`
+- Output contract: `produce-plan-v2`; authorization: `artifact-write`
+- Effects: `artifact-write`, `workspace-read`, `workspace-write`
+- Related workflows: `plan-review`, `implement-plan`
+<!-- generated:command-contract:end -->
+
 - 来源：`nova-plugin/commands/produce-plan.md`
 
 ## 适用场景

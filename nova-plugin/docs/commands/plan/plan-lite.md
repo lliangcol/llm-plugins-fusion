@@ -1,5 +1,17 @@
 ﻿# Skill: /nova-plugin:plan-lite
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `plan-lite`; stage: `plan`; canonical skill: `nova-produce-plan`
+- Purpose: Create a short execution plan with explicit scope, trade-offs, and risks without writing code.
+- Audience: `all-users`; support risk: `none`
+- Inputs: `REQUEST` (required), `CONSTRAINTS`
+- Output contract: `plan-lite-v2`; authorization: `read-only`
+- Effects: `workspace-read`
+- Related workflows: `produce-plan`
+<!-- generated:command-contract:end -->
+
 - 来源：`nova-plugin/commands/plan-lite.md`
 
 ## 适用场景

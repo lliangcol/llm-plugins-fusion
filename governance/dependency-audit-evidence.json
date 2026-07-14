@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "reasonCode": null,
+  "source": "npm-audit",
+  "lockDigest": "sha256:ca7cab5e7202d80b2903574390585eec8d2e2a2b50594a6659b71db3f4eb1feb",
+  "scope": {
+    "maintenanceDevOnly": true,
+    "runtimeDistributed": false
+  },
+  "vulnerabilities": {
+    "info": 0,
+    "low": 0,
+    "moderate": 0,
+    "high": 0,
+    "critical": 0,
+    "total": 0
+  },
+  "findings": [],
+  "exceptionsApplied": [],
+  "policyViolations": []
+}

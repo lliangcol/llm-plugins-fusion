@@ -68,8 +68,8 @@ test('fixture files exist', () => {
     `${demoRoot}/route-basic.json`,
     `${demoRoot}/review-signal.json`,
     `${demoRoot}/verification-evidence.json`,
-    'docs/examples/workflow-evaluation.md',
-    'docs/examples/workflow-evaluation-record-template.md',
+    'docs/tutorials/workflow-evaluation.md',
+    'docs/templates/evidence/workflow-evaluation.md',
   ]) {
     assert.equal(existsSync(resolve(root, relPath)), true, `missing ${relPath}`);
   }
@@ -106,18 +106,18 @@ test('headless demo docs and scripts stay linked', () => {
   ]) {
     assert.equal(existsSync(resolve(root, relPath)), true, `missing ${relPath}`);
   }
-  assertContainsAll('docs/getting-started.md', [
+  assertContainsAll('docs/getting-started/first-workflow.md', [
     'No-Credential Headless Demo',
     'npm run demo:route',
     'npm run demo:review',
     'They do not execute slash commands',
   ]);
-  assertContainsAll('docs/examples/README.md', [
+  assertContainsAll('docs/tutorials/README.md', [
     'Headless Demo Fixtures',
     'fixtures/demo',
     'not an LLM execution',
   ]);
-  assertContainsAll('docs/workflows/source-controlled-checks.md', [
+  assertContainsAll('docs/guides/workflows/source-controlled-checks.md', [
     'fixtures/demo',
     'scripts/demo-route.mjs',
     'scripts/demo-review.mjs',
@@ -133,17 +133,17 @@ test('workflow examples preserve public-safe redaction boundaries', () => {
     'runtime flags',
   ];
 
-  assertContainsAll('docs/examples/README.md', [
+  assertContainsAll('docs/tutorials/README.md', [
     'public-safe examples',
     'fictional or generic scenarios',
     ...commonPrivateSignals,
   ]);
-  assertContainsAll('docs/examples/workflow-evaluation.md', [
+  assertContainsAll('docs/tutorials/workflow-evaluation.md', [
     'public-safe scenarios',
     'intentionally fictional',
     ...commonPrivateSignals,
   ]);
-  assertContainsAll('docs/examples/workflow-evaluation-record-template.md', [
+  assertContainsAll('docs/templates/evidence/workflow-evaluation.md', [
     'disposable consumer fixture',
     'throwaway branch',
     'Do not paste private project names',
@@ -155,12 +155,12 @@ test('workflow examples preserve public-safe redaction boundaries', () => {
     ...commonPrivateSignals,
     'Do not copy private consumer facts',
   ]);
-  assertContainsAll('docs/examples/java-backend/redacted-feature.md', [
+  assertContainsAll('docs/tutorials/java-backend.md', [
     'fictional backend feature',
     'does not describe a real consumer',
     'Do not publish private Maven profiles',
   ]);
-  assertContainsAll('docs/examples/frontend/basic-feature.md', [
+  assertContainsAll('docs/tutorials/frontend.md', [
     'fictional frontend feature',
     'does not describe a real consumer',
     'Do not publish private package scripts',
@@ -227,7 +227,7 @@ test('approved implementation plan keeps bounded scope', () => {
 });
 
 test('workflow evaluation covers all five primary commands and rubric signals', () => {
-  const doc = read('docs/examples/workflow-evaluation.md');
+  const doc = read('docs/tutorials/workflow-evaluation.md');
   for (const command of [
     '/nova-plugin:explore',
     '/nova-plugin:produce-plan',

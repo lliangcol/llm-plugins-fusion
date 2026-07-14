@@ -4,6 +4,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { repoRoot } from './lib/repo-root.mjs';
+import { deriveEvaluationFacts } from './lib/evaluation-facts.mjs';
 
 const root = repoRoot(import.meta.url);
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
@@ -17,12 +18,13 @@ const interval = (values) => {
 
 export function benchmarkPlan() {
   const dataset = readJson('benchmarks/real-tasks.json');
+  const facts = deriveEvaluationFacts(root).realTask;
   if (dataset.tasks.length < 20 || dataset.tasks.length > 30) throw new Error('benchmark requires 20-30 fixed tasks');
   if (new Set(dataset.tasks.map((entry) => entry.id)).size !== dataset.tasks.length) throw new Error('benchmark task ids must be unique');
   if (new Set(dataset.tasks.map((entry) => entry.prompt.replace(/\s+/gu, ' ').trim().toLowerCase())).size !== dataset.tasks.length) throw new Error('benchmark prompts must be unique');
   if (JSON.stringify(dataset).match(/credential|secret|token_[a-z0-9]/iu)) throw new Error('benchmark must remain public-safe');
   if (JSON.stringify(dataset.conditions) !== JSON.stringify(['raw', 'wrapper-full', 'wrapper-compact'])) throw new Error('benchmark condition inventory drift');
-  return { schemaVersion: 1, status: 'AWAITING_LIVE_EVIDENCE', tasks: dataset.tasks.length, conditions: dataset.conditions, assistants: ['claude-code', 'codex'], attempts: 3, plannedInvocations: dataset.tasks.length * dataset.conditions.length * 2 * 3, externalGates: ['Claude and Codex credentials', 'evaluation budget'] };
+  return { schemaVersion: 1, status: 'AWAITING_LIVE_EVIDENCE', datasetId: facts.datasetId, tasks: facts.taskCount, conditions: facts.conditions, assistants: facts.assistants, attempts: facts.attempts, plannedInvocations: facts.plannedInvocations, externalGates: ['Claude and Codex credentials', 'evaluation budget'] };
 }
 
 function metrics(records) {

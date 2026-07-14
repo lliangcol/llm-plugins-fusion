@@ -2,6 +2,11 @@
 
 此目录保存 `nova-plugin` 的用户文档、命令文档和当前架构说明。`nova-plugin` 是公开多项目 AI 工程工作流框架的主插件交付物；marketplace 是安装与分发形式，不表示当前已经是成熟的多插件生态。当前文档覆盖由 `node scripts/validate-docs.mjs` 校验：Markdown 本地链接与锚点、命令文档 stage 位置、版本日期同步、`/nova-plugin:review LEVEL=lite` 契约，以及命令文档三件套完整性。
 
+命令合同块和索引由 `node scripts/generate-command-docs.mjs --write`
+从 workflow v6、behavior v2 和 `governance/workflow-docs.json` 生成。参见
+[commands/README.generated.md](commands/README.generated.md)，不要手工编辑标记的
+generated block。
+
 ## 快速入口
 
 | 分类 | 路径 | 内容 |

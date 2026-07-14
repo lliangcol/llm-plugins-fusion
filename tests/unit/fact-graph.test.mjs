@@ -10,4 +10,9 @@ test('fact graph keeps development and stable release clocks separate with sourc
   assert.match(graph.facts['release.corrections.activeHolds'].source, /release-corrections\.json#\/corrections/u);
   assert.equal(graph.facts['compatibility.effectiveLevels'].value.codex, 'L2');
   assert.match(graph.facts['development.version'].sourceSha256, /^[a-f0-9]{64}$/u);
+  assert.equal(graph.facts['evaluation.live.caseCount'].value, 168);
+  assert.equal(graph.facts['evaluation.live.plannedInvocations'].value, 1008);
+  assert.equal(graph.facts['evaluation.realTask.taskCount'].value, 24);
+  assert.equal(graph.facts['evaluation.realTask.plannedInvocations'].value, 432);
+  assert.notEqual(graph.facts['evaluation.live.datasetId'].value, graph.facts['evaluation.realTask.datasetId'].value);
 });

@@ -17,8 +17,8 @@ const root = resolve(__dir, '..');
 
 const packsRoot = resolve(root, 'nova-plugin/packs');
 const packsIndex = resolve(packsRoot, 'README.md');
-const agentRoutingDoc = resolve(root, 'docs/agents/ROUTING.md');
-const routingDoc = resolve(root, 'docs/agents/PLUGIN_AWARE_ROUTING.md');
+const agentRoutingDoc = resolve(root, 'docs/reference/architecture/agent-routing.md');
+const routingDoc = resolve(root, 'docs/reference/architecture/agent-routing.md');
 
 const expectedPacks = [
   'dependency',
@@ -188,20 +188,20 @@ expectContentRegex(
 );
 
 if (!existsSync(routingDoc)) {
-  record('docs/agents/PLUGIN_AWARE_ROUTING.md', 'missing plugin-aware routing doc');
+  record('docs/reference/architecture/agent-routing.md', 'missing plugin-aware routing doc');
 } else {
   const refs = extractRoutingPackRefs(readFileSync(routingDoc, 'utf8'));
   const missingRefs = refs.filter((pack) => !expectedPacks.includes(pack));
   if (missingRefs.length) {
     record(
-      'docs/agents/PLUGIN_AWARE_ROUTING.md',
+      'docs/reference/architecture/agent-routing.md',
       `references missing pack(s): ${missingRefs.join(', ')}`,
     );
   }
   const missingExpectedRefs = expectedPacks.filter((pack) => !refs.includes(pack));
   if (missingExpectedRefs.length) {
     record(
-      'docs/agents/PLUGIN_AWARE_ROUTING.md',
+      'docs/reference/architecture/agent-routing.md',
       `does not reference expected pack(s): ${missingExpectedRefs.join(', ')}`,
     );
   }

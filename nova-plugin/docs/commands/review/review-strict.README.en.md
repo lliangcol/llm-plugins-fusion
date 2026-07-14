@@ -1,5 +1,17 @@
 ﻿# /nova-plugin:review-strict
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `review-strict`; stage: `review`; canonical skill: `nova-review`
+- Purpose: Perform exhaustive production-critical review with explicit failure-cost reasoning and no implementation.
+- Audience: `reviewers`; support risk: `none`
+- Inputs: `REVIEW_SCOPE` (required)
+- Output contract: `review-strict-v2`; authorization: `read-only`
+- Effects: `workspace-read`
+- Related workflows: `review`
+<!-- generated:command-contract:end -->
+
 - Source: `nova-plugin/commands/review-strict.md`
 
 ## Command Positioning

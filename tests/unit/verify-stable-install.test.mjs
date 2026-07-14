@@ -34,17 +34,17 @@ test('stable install proof binds exact candidate and installed trees', () => {
   }
 });
 
-test('stable install main writes a proof for the source-controlled stable tree', () => {
+test('stable install main writes a proof for an exact governed tree', () => {
   const directory = mkdtempSync(resolve(tmpdir(), 'stable-proof-'));
   const out = resolve(directory, 'proof.json');
   try {
-    const archive = resolve(directory, 'stable.tar');
     const plugin = resolve(directory, 'plugin');
-    assert.equal(spawnSync('git', ['archive', '--format=tar', `--output=${archive}`, 'v4.0.0:nova-plugin'], { cwd: resolve(import.meta.dirname, '../..'), shell: false }).status, 0);
     mkdirSync(plugin);
-    assert.equal(spawnSync('tar', ['-xf', archive, '-C', plugin], { shell: false }).status, 0);
+    writeFileSync(resolve(plugin, 'plugin.json'), '{}\n');
+    const digest = treeDigest(plugin);
+    const channelText = JSON.stringify({ stable: { version: '4.0.0', tag: 'v4.0.0', commit: 'a'.repeat(40), pluginTreeSha256: digest } });
     const args = ['--candidate-root', plugin, '--installed-root', plugin, '--claude-version', 'test', '--out', out];
-    assert.equal(main(args), 0);
+    assert.equal(main(args, { channelText }), 0);
     assert.equal(JSON.parse(readFileSync(out, 'utf8')).matches, true);
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });

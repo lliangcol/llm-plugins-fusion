@@ -33,7 +33,7 @@
           "actorRole": "maintainer",
           "recordedAt": "2026-07-13T00:00:00Z",
           "evidence": {
-            "path": "docs/maintainers/post-remediation-audit.md",
+            "path": "governance/evidence/post-remediation-audit-2026-07-13.md",
             "sha256": "528e0456f1750f45dd020c3637036e1e5b923876d6abce328bada990841bba5c",
             "recordedAt": "2026-07-13T00:00:00Z"
           }

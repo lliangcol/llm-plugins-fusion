@@ -1,5 +1,17 @@
 ﻿# /nova-plugin:plan-review
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `plan-review`; stage: `review`; canonical skill: `nova-review`
+- Purpose: Assess plan decision clarity, assumptions, and execution risk without rewriting the plan.
+- Audience: `reviewers`; support risk: `none`
+- Inputs: `PLAN_INPUT_PATH` (required)
+- Output contract: `plan-review-v2`; authorization: `read-only`
+- Effects: `workspace-read`
+- Related workflows: `produce-plan`, `review`
+<!-- generated:command-contract:end -->
+
 - 来源：`nova-plugin/commands/plan-review.md`
 
 ## 命令定位

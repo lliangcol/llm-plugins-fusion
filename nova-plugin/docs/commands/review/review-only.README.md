@@ -1,5 +1,17 @@
 ﻿# /nova-plugin:review-only
 
+<!-- generated:command-contract:start -->
+> Generated from `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json`, and `governance/workflow-docs.json` by `node scripts/generate-command-docs.mjs --write`. Do not edit this block.
+
+- Workflow: `review-only`; stage: `review`; canonical skill: `nova-review`
+- Purpose: Perform standard evidence-grounded review and group findings by severity without implementation.
+- Audience: `reviewers`; support risk: `none`
+- Inputs: `REVIEW_SCOPE` (required)
+- Output contract: `review-only-v2`; authorization: `read-only`
+- Effects: `workspace-read`
+- Related workflows: `review`, `codex-review-only`
+<!-- generated:command-contract:end -->
+
 - 来源：`nova-plugin/commands/review-only.md`
 
 ## 命令定位

@@ -497,7 +497,7 @@ test('validate-packs enforces documentation-only enhanced and fallback boundarie
       'utf8',
     );
 
-    const agentRoutingPath = resolve(fixtureRoot, 'docs/agents/ROUTING.md');
+    const agentRoutingPath = resolve(fixtureRoot, 'docs/reference/architecture/agent-routing.md');
     const agentRouting = readFileSync(agentRoutingPath, 'utf8');
     assert.match(agentRouting, /documentation-only capability packs/);
     writeFileSync(
@@ -506,7 +506,7 @@ test('validate-packs enforces documentation-only enhanced and fallback boundarie
       'utf8',
     );
 
-    const pluginRoutingPath = resolve(fixtureRoot, 'docs/agents/PLUGIN_AWARE_ROUTING.md');
+    const pluginRoutingPath = resolve(fixtureRoot, 'docs/reference/architecture/agent-routing.md');
     const pluginRouting = readFileSync(pluginRoutingPath, 'utf8');
     assert.match(pluginRouting, /documentation and validation guidance only/);
     writeFileSync(
@@ -734,7 +734,7 @@ test('validate-github-workflows syncs required-check docs and print output with 
 
     const githubSecuritySettingsPath = resolve(
       fixtureRoot,
-      'docs/maintainers/github-security-settings.md',
+      'docs/operations/maintainers/github-security.md',
     );
     const githubSecuritySettings = readFileSync(githubSecuritySettingsPath, 'utf8');
     assert.match(githubSecuritySettings, /Required \/ Aggregate\r?\n/);
@@ -868,7 +868,7 @@ test('validate-docs enforces the deferred portal implementation boundary', () =>
   const fixtureRoot = resolve(tempRoot, 'repo');
   try {
     copyRepositoryFixture(fixtureRoot);
-    const portalIaPath = resolve(fixtureRoot, 'docs/marketplace/portal-information-architecture.md');
+    const portalIaPath = resolve(fixtureRoot, 'docs/project/plans/portal-information-architecture.md');
     const portalIa = readFileSync(portalIaPath, 'utf8');
     const driftedPortalIa = portalIa.replace(
       /It is not an implemented public portal,[\s\S]*?evidence that a public portal is active\./,
@@ -942,7 +942,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     );
     const maintenanceStatusPath = resolve(
       fixtureRoot,
-      'docs/llm-plugins-fusion-maintenance-status.md',
+      'docs/operations/maintainers/status.md',
     );
     const maintenanceStatus = readFileSync(maintenanceStatusPath, 'utf8');
     assert.match(maintenanceStatus, /public AI engineering workflow framework centered on\r?\n`nova-plugin`/);
@@ -981,7 +981,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const releaseEvidencePath = resolve(fixtureRoot, 'docs/releases/release-evidence-template.md');
+    const releaseEvidencePath = resolve(fixtureRoot, 'docs/templates/evidence/release.md');
     const releaseEvidence = readFileSync(releaseEvidencePath, 'utf8');
     assert.match(releaseEvidence, /replacement CI\/Linux evidence/);
     assert.match(releaseEvidence, /node scripts\/validate-github-workflows\.mjs:/);
@@ -1000,7 +1000,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const releaseRunbookPath = resolve(fixtureRoot, 'docs/releases/release-validation-runbook.md');
+    const releaseRunbookPath = resolve(fixtureRoot, 'docs/operations/releases/validation.md');
     const releaseRunbook = readFileSync(releaseRunbookPath, 'utf8');
     assert.match(releaseRunbook, /not slash-command output quality/);
     assert.match(releaseRunbook, /GitHub workflow contracts/);
@@ -1036,7 +1036,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const releaseHygienePath = resolve(fixtureRoot, 'docs/releases/release-hygiene.md');
+    const releaseHygienePath = resolve(fixtureRoot, 'docs/operations/releases/hygiene.md');
     const releaseHygiene = readFileSync(releaseHygienePath, 'utf8');
     assert.match(releaseHygiene, /unattended local release evidence should record it as pending/);
     assert.match(releaseHygiene, /node scripts\/validate-github-workflows\.mjs/);
@@ -1051,7 +1051,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const quickstartPath = resolve(fixtureRoot, 'docs/maintainers/quickstart.md');
+    const quickstartPath = resolve(fixtureRoot, 'docs/operations/maintainers/README.md');
     const quickstart = readFileSync(quickstartPath, 'utf8');
     assert.match(quickstart, /`Bash: WARN` or `skipped>0`/);
     assert.match(quickstart, /workflow trigger, permissions, workflow inventory, and required-check list/);
@@ -1073,7 +1073,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const troubleshootingPath = resolve(fixtureRoot, 'docs/maintainers/troubleshooting.md');
+    const troubleshootingPath = resolve(fixtureRoot, 'docs/operations/maintainers/troubleshooting.md');
     const troubleshooting = readFileSync(troubleshootingPath, 'utf8');
     assert.match(troubleshooting, /Do not loosen global permissions/);
     assert.match(troubleshooting, /## Fast Failure Map/);
@@ -1103,7 +1103,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
 
     const githubSecuritySettingsPath = resolve(
       fixtureRoot,
-      'docs/maintainers/github-security-settings.md',
+      'docs/operations/maintainers/github-security.md',
     );
     const githubSecuritySettings = readFileSync(githubSecuritySettingsPath, 'utf8');
     assert.match(githubSecuritySettings, /owner-verified checklist/);
@@ -1232,7 +1232,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const publicApiPath = resolve(fixtureRoot, 'docs/compatibility/public-api.md');
+    const publicApiPath = resolve(fixtureRoot, 'docs/reference/compatibility/public-api.md');
     const publicApi = readFileSync(publicApiPath, 'utf8');
     assert.match(publicApi, /The public API is intentionally narrow/);
     writeFileSync(
@@ -1244,7 +1244,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const trustPolicyPath = resolve(fixtureRoot, 'docs/marketplace/trust-policy.md');
+    const trustPolicyPath = resolve(fixtureRoot, 'docs/reference/security/marketplace-trust.md');
     const trustPolicy = readFileSync(trustPolicyPath, 'utf8');
     assert.match(trustPolicy, /repository-local marketplace metadata/);
     assert.match(trustPolicy, /validate-github-workflows/);
@@ -1266,7 +1266,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const securityReviewRoutePath = resolve(fixtureRoot, 'docs/marketplace/security-review-route.md');
+    const securityReviewRoutePath = resolve(fixtureRoot, 'docs/reference/security/security-review.md');
     const securityReviewRoute = readFileSync(securityReviewRoutePath, 'utf8');
     assert.match(securityReviewRoute, /Public Review Boundary/);
     assert.match(securityReviewRoute, /validate-github-workflows/);
@@ -1290,7 +1290,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
 
     const registryAuthorWorkflowPath = resolve(
       fixtureRoot,
-      'docs/marketplace/registry-author-workflow.md',
+      'docs/operations/marketplace/registry-authoring.md',
     );
     const registryAuthorWorkflow = readFileSync(registryAuthorWorkflowPath, 'utf8');
     assert.match(registryAuthorWorkflow, /Current Scope Boundary/);
@@ -1307,7 +1307,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const compatibilityMatrixPath = resolve(fixtureRoot, 'docs/marketplace/compatibility-matrix.md');
+    const compatibilityMatrixPath = resolve(fixtureRoot, 'docs/reference/compatibility/marketplace.md');
     const compatibilityMatrix = readFileSync(compatibilityMatrixPath, 'utf8');
     assert.match(compatibilityMatrix, /Evidence Scope Boundary/);
     assert.match(compatibilityMatrix, /validate-github-workflows/);
@@ -1326,7 +1326,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const optimizationPlanPath = resolve(fixtureRoot, 'docs/project-optimization-plan.md');
+    const optimizationPlanPath = resolve(fixtureRoot, 'docs/project/plans/current-remediation.md');
     const optimizationPlan = readFileSync(optimizationPlanPath, 'utf8');
     assert.match(optimizationPlan, /docs\s+index navigation contracts/);
     assert.match(optimizationPlan, /GitHub workflow permission, inventory, and required-check\s+contracts/);
@@ -1358,7 +1358,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const consumerReadmePath = resolve(fixtureRoot, 'docs/consumers/README.md');
+    const consumerReadmePath = resolve(fixtureRoot, 'docs/guides/assistants/README.md');
     const consumerReadme = readFileSync(consumerReadmePath, 'utf8');
     assert.match(consumerReadme, /Real consumer profiles must live in the consumer project itself/);
     writeFileSync(
@@ -1375,7 +1375,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const javaTemplatePath = resolve(fixtureRoot, 'docs/consumers/private-java-backend-template.md');
+    const javaTemplatePath = resolve(fixtureRoot, 'docs/templates/consumer-profiles/java-backend.md');
     const javaTemplate = readFileSync(javaTemplatePath, 'utf8');
     assert.match(javaTemplate, /Do not replace placeholders with real private values/);
     writeFileSync(
@@ -1396,7 +1396,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const frontendTemplatePath = resolve(fixtureRoot, 'docs/consumers/frontend-project-template.md');
+    const frontendTemplatePath = resolve(fixtureRoot, 'docs/templates/consumer-profiles/frontend.md');
     const frontendTemplate = readFileSync(frontendTemplatePath, 'utf8');
     assert.match(frontendTemplate, /Do not replace placeholders with real private values/);
     writeFileSync(
@@ -1417,7 +1417,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const promptReadmePath = resolve(fixtureRoot, 'docs/prompts/README.md');
+    const promptReadmePath = resolve(fixtureRoot, 'docs/templates/prompts/README.md');
     const promptReadme = readFileSync(promptReadmePath, 'utf8');
     assert.match(promptReadme, /public-safe prompt templates/);
     const driftedPromptReadme = promptReadme
@@ -1437,7 +1437,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const checkpointPromptPath = resolve(fixtureRoot, 'docs/prompts/common/checkpoint-artifact.md');
+    const checkpointPromptPath = resolve(fixtureRoot, 'docs/templates/prompts/common/checkpoint-artifact.md');
     const checkpointPrompt = readFileSync(checkpointPromptPath, 'utf8');
     assert.match(checkpointPrompt, /private consumer workbench/);
     writeFileSync(
@@ -1454,7 +1454,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const htmlPromptPath = resolve(fixtureRoot, 'docs/prompts/common/html-artifact.md');
+    const htmlPromptPath = resolve(fixtureRoot, 'docs/templates/prompts/common/html-artifact.md');
     const htmlPrompt = readFileSync(htmlPromptPath, 'utf8');
     assert.match(htmlPrompt, /derived reading artifacts/);
     writeFileSync(
@@ -1471,7 +1471,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const workbenchTidyPromptPath = resolve(fixtureRoot, 'docs/prompts/common/workbench-tidy.md');
+    const workbenchTidyPromptPath = resolve(fixtureRoot, 'docs/templates/prompts/common/workbench-tidy.md');
     const workbenchTidyPrompt = readFileSync(workbenchTidyPromptPath, 'utf8');
     assert.match(workbenchTidyPrompt, /private consumer workspace/);
     writeFileSync(
@@ -1490,7 +1490,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
 
     const sourceControlledChecksPath = resolve(
       fixtureRoot,
-      'docs/workflows/source-controlled-checks.md',
+      'docs/guides/workflows/source-controlled-checks.md',
     );
     const sourceControlledChecks = readFileSync(sourceControlledChecksPath, 'utf8');
     assert.match(sourceControlledChecks, /not a new\r?\nruntime/);
@@ -1522,7 +1522,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
 
     const verificationEvidencePath = resolve(
       fixtureRoot,
-      'docs/workflows/verification-evidence-contract.md',
+      'docs/reference/workflows/verification-evidence.md',
     );
     const verificationEvidence = readFileSync(verificationEvidencePath, 'utf8');
     assert.match(verificationEvidence, /Do not claim completion from tool success alone/);
@@ -1550,7 +1550,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
 
     const routingGuardrailsPath = resolve(
       fixtureRoot,
-      'docs/workflows/routing-validation-guardrails.md',
+      'docs/reference/workflows/routing-guardrails.md',
     );
     const routingGuardrails = readFileSync(routingGuardrailsPath, 'utf8');
     assert.match(routingGuardrails, /not evidence that validation has passed/);
@@ -1572,7 +1572,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const codexSetupPath = resolve(fixtureRoot, 'docs/consumers/codex-setup.md');
+    const codexSetupPath = resolve(fixtureRoot, 'docs/guides/assistants/codex.md');
     const codexSetup = readFileSync(codexSetupPath, 'utf8');
     assert.match(codexSetup, /do not\s+relax global permissions/);
     writeFileSync(
@@ -1584,7 +1584,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const cursorSetupPath = resolve(fixtureRoot, 'docs/consumers/cursor-setup.md');
+    const cursorSetupPath = resolve(fixtureRoot, 'docs/guides/assistants/cursor.md');
     const cursorSetup = readFileSync(cursorSetupPath, 'utf8');
     assert.match(cursorSetup, /agent sandbox settings/);
     writeFileSync(
@@ -1596,7 +1596,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const clineSetupPath = resolve(fixtureRoot, 'docs/consumers/cline-setup.md');
+    const clineSetupPath = resolve(fixtureRoot, 'docs/guides/assistants/cline.md');
     const clineSetup = readFileSync(clineSetupPath, 'utf8');
     assert.match(clineSetup, /broadening permissions or sandbox settings/);
     writeFileSync(
@@ -1608,7 +1608,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const aiderSetupPath = resolve(fixtureRoot, 'docs/consumers/aider-setup.md');
+    const aiderSetupPath = resolve(fixtureRoot, 'docs/guides/assistants/aider.md');
     const aiderSetup = readFileSync(aiderSetupPath, 'utf8');
     assert.match(aiderSetup, /treating the check as passed/);
     writeFileSync(
@@ -1620,7 +1620,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const openHandsSetupPath = resolve(fixtureRoot, 'docs/consumers/openhands-setup.md');
+    const openHandsSetupPath = resolve(fixtureRoot, 'docs/guides/assistants/openhands.md');
     const openHandsSetup = readFileSync(openHandsSetupPath, 'utf8');
     assert.match(openHandsSetup, /sandbox or workflow permissions/);
     writeFileSync(
@@ -1632,7 +1632,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const geminiSetupPath = resolve(fixtureRoot, 'docs/consumers/gemini-cli-setup.md');
+    const geminiSetupPath = resolve(fixtureRoot, 'docs/guides/assistants/gemini-cli.md');
     const geminiSetup = readFileSync(geminiSetupPath, 'utf8');
     assert.match(geminiSetup, /global tool permissions/);
     writeFileSync(
@@ -1644,7 +1644,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const openCodeSetupPath = resolve(fixtureRoot, 'docs/consumers/opencode-setup.md');
+    const openCodeSetupPath = resolve(fixtureRoot, 'docs/guides/assistants/opencode.md');
     const openCodeSetup = readFileSync(openCodeSetupPath, 'utf8');
     assert.match(openCodeSetup, /Store OpenCode-specific configuration in the consumer project/);
     writeFileSync(
@@ -1658,7 +1658,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const copilotSetupPath = resolve(fixtureRoot, 'docs/consumers/copilot-setup.md');
+    const copilotSetupPath = resolve(fixtureRoot, 'docs/guides/assistants/copilot.md');
     const copilotSetup = readFileSync(copilotSetupPath, 'utf8');
     assert.match(copilotSetup, /agent permissions/);
     writeFileSync(
@@ -1670,7 +1670,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const multiPluginReadinessPath = resolve(fixtureRoot, 'docs/marketplace/multi-plugin-readiness.md');
+    const multiPluginReadinessPath = resolve(fixtureRoot, 'docs/project/plans/multi-plugin-readiness.md');
     const multiPluginReadiness = readFileSync(multiPluginReadinessPath, 'utf8');
     assert.match(multiPluginReadiness, /Registry fixtures prove that generators can process/);
     writeFileSync(
@@ -1682,7 +1682,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const assetsPath = resolve(fixtureRoot, 'docs/assets/README.md');
+    const assetsPath = resolve(fixtureRoot, 'docs/operations/community/assets.md');
     const assets = readFileSync(assetsPath, 'utf8');
     assert.match(assets, /Visual assets are not a public portal/);
     writeFileSync(
@@ -1694,7 +1694,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const growthPath = resolve(fixtureRoot, 'docs/growth/README.md');
+    const growthPath = resolve(fixtureRoot, 'docs/operations/community/metrics.md');
     const growth = readFileSync(growthPath, 'utf8');
     assert.match(growth, /not a public portal/);
     writeFileSync(
@@ -1718,7 +1718,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       'utf8',
     );
 
-    const showcasePath = resolve(fixtureRoot, 'docs/showcase/README.md');
+    const showcasePath = resolve(fixtureRoot, 'docs/tutorials/README.md');
     const showcase = readFileSync(showcasePath, 'utf8');
     assert.match(showcase, /real consumer profiles/);
     writeFileSync(

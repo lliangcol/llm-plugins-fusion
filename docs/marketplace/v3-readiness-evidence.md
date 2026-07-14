@@ -1,7 +1,3 @@
-# Renamed: Production Multi-Plugin Readiness
+# Documentation moved
 
-Status: retired redirect
-
-The former version-named readiness ledger has moved to
-[multi-plugin-readiness.md](multi-plugin-readiness.md). Product-lane decisions
-are no longer named after released plugin versions.
+This public compatibility path is retained. The maintained document is [docs/project/plans/current-remediation.md](../project/plans/current-remediation.md).

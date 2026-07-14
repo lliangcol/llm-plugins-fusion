@@ -1,0 +1,122 @@
+<!-- migrated-from: docs/releases/release-evidence-template.md -->
+# Release Evidence Template
+
+Status: active
+Date: 2026-05-11
+
+Use this template before promoting a release tag or describing a branch as
+stable. It records whether validation ran against an exact tag or against
+unreleased `main`, and whether any local checks were skipped.
+
+For the step-by-step manual operation sequence, use
+[release-validation-runbook.md](../../operations/releases/validation.md).
+
+## Target Rules
+
+- Promote exact release tags such as `v4.0.0`; do not promote moving `main` as stable.
+- If `Exact tag` is `none`, the target is an unreleased development snapshot.
+- If local validation reports skipped checks, name each skipped check and the replacement CI/Linux evidence.
+- For minor releases, attach the manual five-command workflow evaluation record or explain why it is not applicable.
+- Treat `node scripts/validate-plugin-install.mjs` as a separate CI or isolated
+  test-user check because it may install or update user-scope Claude plugin
+  state when run with mutation flags.
+
+## Release Target
+
+```text
+Release or promotion target:
+Commit:
+Exact tag:
+Plugin version:
+Registry last-updated:
+Operator:
+Date:
+```
+
+## Environment
+
+```text
+Node.js:
+Git:
+Claude CLI:
+Codex CLI:
+Bash:
+Operating system:
+```
+
+## Validation Results
+
+```text
+node scripts/generate-registry.mjs --write (only if sources changed):
+node scripts/generate-registry.mjs (no-drift verification):
+node scripts/validate-all.mjs:
+npm test:
+npm run test:coverage:check:
+coverage artifact:
+node scripts/generate-release-checksums.mjs:
+checksum artifact:
+node scripts/validate-github-workflows.mjs:
+node scripts/validate-runtime-smoke.mjs:
+node scripts/validate-surface-budget.mjs:
+node scripts/generate-surface-inventory.mjs:
+node scripts/scan-distribution-risk.mjs:
+node scripts/validate-regression.mjs:
+node scripts/validate-plugin-install.mjs --dry-run:
+isolated install smoke artifact/run:
+git diff --check:
+bash -n nova-plugin/hooks/scripts/pre-write-check.sh:
+bash -n nova-plugin/hooks/scripts/post-audit-log.sh:
+Windows CI Node/PowerShell smoke:
+Windows CI Bash smoke:
+macOS CI smoke:
+```
+
+## Skipped Checks
+
+```text
+Skipped count:
+Skipped checks:
+Reason:
+CI/Linux or CI/Windows replacement evidence:
+```
+
+If Windows local validation reports skipped checks because Bash is unavailable,
+do not describe hook shell syntax or runtime smoke as locally passed. Promotion
+requires CI/Linux or CI/Windows Bash evidence that both hook `bash -n` checks
+and runtime smoke passed.
+
+## Release Notes Evidence
+
+```text
+CHANGELOG section:
+Generated marketplace outputs regenerated:
+Generated marketplace outputs no-drift verification:
+Surface inventory current:
+Release checksums current:
+README badge/version current:
+Catalog current:
+Deferred v3/public portal wording checked:
+```
+
+## Workflow Evaluation Evidence
+
+```text
+Manual evaluation source:
+Workflow evaluation record:
+Commands evaluated:
+Boundary control result:
+Facts vs assumptions result:
+Checkpoint artifact result:
+Skipped validation reporting result:
+Next-stage handoff result:
+Not applicable reason:
+```
+
+## Decision
+
+```text
+Promote / do not promote:
+Reason:
+Known limitations:
+Follow-up:
+```

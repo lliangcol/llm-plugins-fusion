@@ -8,6 +8,7 @@ import {
   auditOutcome,
   chmodBestEffort,
   health,
+  ensurePrivateDirectory,
   main,
   parsePayload,
   publicPathSummary,
@@ -84,4 +85,14 @@ test('audit writer rejects a linked parent component before creating its data di
     env: { CLAUDE_PLUGIN_DATA: resolve(root, 'linked-parent/plugin-data') },
   }), /path component is a symlink/u);
   assert.deepEqual(readdirSync(outside), []);
+});
+
+test('audit main degrades without throwing when its data root is not a directory', (t) => {
+  const root=mkdtempSync(resolve(tmpdir(),'nova-audit-invalid-root-')); t.after(()=>rmSync(root,{recursive:true,force:true})); const file=resolve(root,'not-a-directory'); writeFileSync(file,'x');
+  assert.equal(main('{"tool_name":"Read"}',{CLAUDE_PLUGIN_DATA:file}),0);
+});
+
+test('audit paths reject a Windows junction inside caller-owned components', { skip: process.platform !== 'win32' }, (t) => {
+  const root=mkdtempSync(resolve(tmpdir(),'nova-audit-junction-root-')); const outside=mkdtempSync(resolve(tmpdir(),'nova-audit-junction-outside-')); t.after(()=>{rmSync(root,{recursive:true,force:true});rmSync(outside,{recursive:true,force:true});});
+  const junction=resolve(root,'linked'); symlinkSync(outside,junction,'junction'); assert.throws(()=>ensurePrivateDirectory(resolve(junction,'audit-spool')),/symlink/u);
 });

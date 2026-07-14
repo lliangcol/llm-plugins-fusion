@@ -10,7 +10,7 @@ const read = (path) => readFileSync(resolve(root, path), 'utf8');
 const owners = read('.github/CODEOWNERS');
 const labels = read('.github/labels.yml');
 const security = read('SECURITY.md');
-const adr = read('docs/adr/0001-truth-release-capability-evidence.md');
+const adr = read('docs/project/decisions/0001-truth-release-capability-evidence.md');
 const reviewers = JSON.parse(read('governance/release-reviewers.json'));
 assert.match(owners, /^\*\s+@/m);
 for (const path of ['/.github/', '/schemas/', '/workflow-specs/', '/framework/', '/nova-plugin/hooks/', '/nova-plugin/runtime/']) assert.match(owners, new RegExp(`^${path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+@`, 'm'));
