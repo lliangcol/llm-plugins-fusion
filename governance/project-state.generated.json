@@ -23,6 +23,48 @@
     "namespace": "nova-plugin",
     "count": 21
   },
+  "evaluation": {
+    "livePaired": {
+      "datasetId": "live-paired",
+      "sourcePath": "evals/live/cases.json",
+      "caseCount": 168,
+      "languageCounts": {
+        "en": 84,
+        "zh": 84
+      },
+      "kindCounts": {
+        "adversarial": 84,
+        "approval": 42,
+        "route": 42
+      },
+      "profileCaseCounts": {
+        "critical": 8,
+        "full": 168
+      },
+      "conditions": [
+        "plugin-enabled",
+        "plugin-disabled"
+      ],
+      "attempts": 3,
+      "plannedInvocations": 1008
+    },
+    "realTask": {
+      "datasetId": "real-task-benchmark",
+      "sourcePath": "benchmarks/real-tasks.json",
+      "taskCount": 24,
+      "assistants": [
+        "claude-code",
+        "codex"
+      ],
+      "conditions": [
+        "raw",
+        "wrapper-full",
+        "wrapper-compact"
+      ],
+      "attempts": 3,
+      "plannedInvocations": 432
+    }
+  },
   "repositoryScripts": {
     "names": [
       "check",
@@ -245,6 +287,9 @@
     "governance/release-operations.json": "0848ee6adf667a31f9ba5fedd4a22a4da1c249b06f32b49c3633ea29539e10ce",
     "governance/adoption-evidence.json": "7439bbae52926fee5ce78ab562ac16260db37de5875c3b5bbc2a375f88cbd776",
     "governance/evidence-governance.json": "6599f260302b71c26e1afb49c2de0398da7ff42bced602b1df1669811de4c660",
+    "evals/live/cases.json": "50dcfcc856523e39c2e122b5984d39ec4b4e11215548ce398726f87e69211e88",
+    "evals/critical-live/cases.json": "ba35f4546f2fb145a93de523e274b29041bc37ec8d6d7581e1dba2d394eb9893",
+    "benchmarks/real-tasks.json": "4898ff8433c3ab39a45d8ce016cf954f53147b858798fcef5cb5bf85b65bcfe5",
     "nova-plugin/hooks/hooks.json": "aefa00ccba719be989caa22f310697a167a229eb99e78049aecd8675b0f2547a",
     "nova-plugin/runtime/shell-command-policy.json": "bbcb123c8f075afd89cbe81d434184811523d29efe415489fd91a100be9cae1d",
     ".nova/shell-policy.json": "b03b4ad3452bd13f95f14823b2a0e695d8de6f46f11b5b2d434d91f285d1279d"

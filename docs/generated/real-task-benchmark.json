@@ -2,6 +2,7 @@
   "plan": {
     "schemaVersion": 1,
     "status": "AWAITING_LIVE_EVIDENCE",
+    "datasetId": "real-task-benchmark",
     "tasks": 24,
     "conditions": [
       "raw",

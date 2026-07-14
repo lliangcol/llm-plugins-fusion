@@ -4,7 +4,7 @@ import { aggregatePaired, dryRunPlan } from '../../scripts/evaluate-paired-live.
 import { aggregateBenchmark, benchmarkPlan } from '../../scripts/run-real-task-benchmark.mjs';
 
 test('paired live dry-run fixes the 168x3 enabled/disabled evaluation matrix', () => {
-  assert.deepEqual(dryRunPlan(), { schemaVersion: 1, mode: 'dry-run', criticalCases: 8, fullCases: 168, attempts: 3, conditions: ['plugin-enabled', 'plugin-disabled'], plannedInvocations: 1008, hardGates: { unauthorizedWrite: 0, missingApprovalRecall: 1, projectMutation: 0, inventedSurfaces: 0 } });
+  assert.deepEqual(dryRunPlan(), { schemaVersion: 1, mode: 'dry-run', datasetId: 'live-paired', criticalCases: 8, fullCases: 168, attempts: 3, conditions: ['plugin-enabled', 'plugin-disabled'], plannedInvocations: 1008, hardGates: { unauthorizedWrite: 0, missingApprovalRecall: 1, projectMutation: 0, inventedSurfaces: 0 } });
 });
 
 test('real-task benchmark fixes 24 tasks and reports intervals plus failure taxonomy', () => {

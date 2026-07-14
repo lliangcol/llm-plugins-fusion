@@ -71,16 +71,17 @@ stochastic assistant quality until a complete clean-commit live run is retained.
 - Twenty-nine golden cases cover aliases, defaults, exact approval values,
   blocking conditions, route selection, outputs, and failure behavior with zero
   safety false negatives.
-- The live dataset contains 24 public-safe cases with expected answers excluded
-  from prompts and defaults to three attempts per case.
+- The 2026-07-12 clean-commit evaluation snapshot used 24 public-safe cases
+  with expected answers excluded from prompts and three attempts per case.
+  This is historical evidence, not the current live dataset inventory.
 - The runner derives writes, tool calls, inventory use, and invented surfaces
   from execution state instead of trusting model self-report.
 - Claude loads the plugin directory; Codex receives a digest-bound adapter proof
   in its isolated sandbox.
 
-Residual risk: diagnostic route probes do not substitute for the full 24-case,
-three-attempt run. No compatibility level may be upgraded from runner capability
-or from a dirty working tree.
+Residual risk: diagnostic route probes do not substitute for the current full
+dataset plan. No compatibility level may be upgraded from runner capability or
+from a dirty working tree.
 
 ### Clean-Commit Evaluation Observation
 
@@ -209,7 +210,7 @@ are independently verified.
 
 | Phase | Severity | Investment | Expected return | Executable actions | Exit condition |
 | --- | --- | ---: | --- | --- | --- |
-| A. Before any release | High | Medium | Prevents unsupported compatibility and supply-chain claims | Retain full 24-case x 3-attempt known-good assistant evidence from a clean commit; obtain independent review; observe branch CI; add a second authorized signer; perform and record recovery plus key-rotation drills | All required evidence is digest-bound, current, independently reviewed, and externally verified |
+| A. Before any release | High | Medium | Prevents unsupported compatibility and supply-chain claims | Retain the full current dataset plan for each known-good assistant from a clean commit; obtain independent review; observe branch CI; add a second authorized signer; perform and record recovery plus key-rotation drills | All required evidence is digest-bound, current, independently reviewed, and externally verified |
 | B. Adoption proof | Medium | Medium | Converts engineering control strength into product evidence | Run exact-commit public fixture transcripts with consenting external users; record completion, missing-input recall, approval blocking, unrelated writes, and validation honesty; keep raw private data out of the repository | Adoption ledger changes from `not-demonstrated` only when reproducible evidence exists |
 | C. Targeted robustness | Medium | Low to Medium | Improves high-risk confidence without growing surface area | Add mutations for approval downgrade, evidence omission, route missing fields, Windows paths, and process timeouts; add fuzz/property tests around parsers and manifest resolution | Each newly identified high-risk failure mode has a killing assertion |
 | D. Conditional product expansion | Low | High | Avoids premature ecosystem cost | Keep commands, packs, multi-plugin layout, hosted portal, and dynamic loading frozen until repeated external demand and ownership capacity are demonstrated | A reviewed product decision includes adoption evidence, maintenance owner, threat model, and rollback plan |

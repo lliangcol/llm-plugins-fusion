@@ -16,7 +16,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `benchmark` | Tests, coverage, simulations, demos, mutations, and live evaluation. |
 | `maintenance` | Diagnostics, repository administration, and reusable script libraries. |
 
-## Script Inventory (116)
+## Script Inventory (117)
 
 | Category | Script |
 | --- | --- |
@@ -55,6 +55,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `maintenance` | `scripts/lib/coverage-runner.mjs` |
 | `maintenance` | `scripts/lib/coverage-thresholds.mjs` |
 | `maintenance` | `scripts/lib/eval-dataset.mjs` |
+| `maintenance` | `scripts/lib/evaluation-facts.mjs` |
 | `maintenance` | `scripts/lib/label-catalog.mjs` |
 | `maintenance` | `scripts/lib/migration-cli.mjs` |
 | `maintenance` | `scripts/lib/node-version.mjs` |

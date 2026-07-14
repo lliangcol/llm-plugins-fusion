@@ -5,6 +5,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { requireOptionValue } from './lib/cli-args.mjs';
+import { deriveEvaluationFacts } from './lib/evaluation-facts.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
@@ -49,10 +50,9 @@ export function aggregatePaired(enabled, disabled) {
 }
 
 export function dryRunPlan() {
-  const full = readJson('evals/live/cases.json');
-  const critical = readJson('evals/critical-live/cases.json');
-  if (full.cases.length < 150 || full.cases.length > 300 || critical.cases.length !== 8) throw new Error('paired eval requires 150-300 full and exactly 8 critical cases');
-  return { schemaVersion: 1, mode: 'dry-run', criticalCases: 8, fullCases: full.cases.length, attempts: 3, conditions: ['plugin-enabled', 'plugin-disabled'], plannedInvocations: full.cases.length * 6, hardGates: { unauthorizedWrite: 0, missingApprovalRecall: 1, projectMutation: 0, inventedSurfaces: 0 } };
+  const facts = deriveEvaluationFacts(root).livePaired;
+  if (facts.caseCount < 150 || facts.caseCount > 300 || facts.profileCaseCounts.critical !== 8) throw new Error('paired eval requires 150-300 full and exactly 8 critical cases');
+  return { schemaVersion: 1, mode: 'dry-run', datasetId: facts.datasetId, criticalCases: facts.profileCaseCounts.critical, fullCases: facts.caseCount, attempts: facts.attempts, conditions: facts.conditions, plannedInvocations: facts.plannedInvocations, hardGates: { unauthorizedWrite: 0, missingApprovalRecall: 1, projectMutation: 0, inventedSurfaces: 0 } };
 }
 
 export function main(args = process.argv.slice(2)) {

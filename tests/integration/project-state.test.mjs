@@ -27,6 +27,10 @@ test('project state is generated from current repository domain sources', async 
   assert.equal(state.runtime.node, '>=22');
   assert.equal(state.inventory.commands, 21);
   assert.equal(state.inventory.skills, 6);
+  assert.equal(state.evaluation.livePaired.caseCount, 168);
+  assert.equal(state.evaluation.livePaired.plannedInvocations, 1008);
+  assert.equal(state.evaluation.realTask.taskCount, 24);
+  assert.equal(state.evaluation.realTask.plannedInvocations, 432);
   assert.ok(state.repositoryScripts.names.includes('check'));
   assert.equal(state.repositoryScripts.build, null);
   assert.equal(state.productLanes['production-multi-plugin-layout'].status, 'deferred');
@@ -62,7 +66,7 @@ test('stale active narratives are rejected by semantic rule ids', () => {
 test('project state, fact blocks, and generated surface values are current', () => {
   assert.ok(activeNarrativeDocuments(root).includes('ROADMAP.md'));
   const result = validateProjectState({ repoRoot: root });
-  assert.equal(result.factBlocks, 7);
+  assert.equal(result.factBlocks, 8);
   assert.ok(result.activeDocuments > 50);
   assert.equal(result.staleNarratives, 0);
 });

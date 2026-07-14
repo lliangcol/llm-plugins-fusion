@@ -5,7 +5,7 @@ Date: 2026-07-12
 
 ## Claim Boundary
 
-Static results prove dataset/spec integrity and simulation proves deterministic adapter state transitions. The checked-in live files below are legacy bare-CLI observations covering only two public-safe prompts; they do not load an adapter, prove broad model quality, establish production latency, or prove release publication. The current runner supports adapter-loaded 24-case, three-attempt evaluation, but that capability does not upgrade claims until a complete digest-bound record is retained.
+Static results prove dataset/spec integrity and simulation proves deterministic adapter state transitions. The checked-in live files below are legacy bare-CLI observations covering only two public-safe prompts; they do not load an adapter, prove broad model quality, establish production latency, or prove release publication. The current `live-paired` runner derives 168 cases and 1008 planned invocations from the dataset and paired-plan parameters. The separate `real-task-benchmark` derives 24 tasks and 432 planned invocations. Neither plan upgrades claims until complete digest-bound records are retained.
 
 ## Deterministic Gates
 

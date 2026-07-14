@@ -31,6 +31,7 @@ import { requireOptionValue } from '../lib/cli-args.mjs';
 import { parseSemVer } from '../lib/semver.mjs';
 import { validateActivePlanningAndReports } from './rules/active-planning-and-reports.mjs';
 import { validateLinksAndCommandDocs } from './rules/links-and-command-docs.mjs';
+import { deriveEvaluationFacts } from '../lib/evaluation-facts.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..', '..');
@@ -1800,6 +1801,22 @@ function validateToolVocabularyProse() {
   }
 }
 
+function validateEvaluationFactContracts() {
+  const facts = deriveEvaluationFacts(root);
+  const qualityPath = 'docs/quality/benchmark.md';
+  const quality = readFileSync(resolve(root, qualityPath), 'utf8');
+  const liveStatement = `current \`${facts.livePaired.datasetId}\` runner derives ${facts.livePaired.caseCount} cases and ${facts.livePaired.plannedInvocations} planned invocations`;
+  const realTaskStatement = `\`${facts.realTask.datasetId}\` derives ${facts.realTask.taskCount} tasks and ${facts.realTask.plannedInvocations} planned invocations`;
+  if (!quality.includes(liveStatement)) recordError(qualityPath, 'current live evaluation facts are not derived from the dataset identity');
+  if (!quality.includes(realTaskStatement)) recordError(qualityPath, 'real-task facts are not derived independently from the benchmark identity');
+
+  const evalReadmePath = 'evals/README.md';
+  const evalReadme = readFileSync(resolve(root, evalReadmePath), 'utf8');
+  if (/live\/cases\.json` contains 24 (?:hidden-label )?public-safe cases/iu.test(evalReadme)) {
+    recordError(evalReadmePath, 'current live dataset is described with the historical 24-case value');
+  }
+}
+
 validateLinksAndCommandDocs({
   root,
   CODEX_COMMAND_IDS,
@@ -1833,6 +1850,7 @@ validateMultiPluginReadinessEvidenceContracts();
 validateReviewLevelLiteContract();
 validateNamespacedCommandInvocations();
 validateToolVocabularyProse();
+validateEvaluationFactContracts();
 validateActivePlanningAndReports({
   root,
   HISTORY_SEGMENTS,
