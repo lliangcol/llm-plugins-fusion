@@ -197,6 +197,16 @@
       "disposition": "generated"
     },
     {
+      "path": "docs/generated/evaluation-profiles.json",
+      "target": "docs/generated/evaluation-profiles.json",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/evaluation-profiles.md",
+      "target": "docs/generated/evaluation-profiles.md",
+      "disposition": "generated"
+    },
+    {
       "path": "docs/generated/migration-manifest.json",
       "target": "docs/generated/migration-manifest.json",
       "disposition": "generated"
@@ -224,6 +234,16 @@
     {
       "path": "docs/generated/redirect-map.json",
       "target": "docs/generated/redirect-map.json",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/release-summary.json",
+      "target": "docs/generated/release-summary.json",
+      "disposition": "generated"
+    },
+    {
+      "path": "docs/generated/release-summary.md",
+      "target": "docs/generated/release-summary.md",
       "disposition": "generated"
     },
     {
@@ -854,6 +874,11 @@
     {
       "path": "docs/tutorials/README.md",
       "target": "docs/tutorials/README.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/tutorials/consumer-minimal.md",
+      "target": "docs/tutorials/consumer-minimal.md",
       "disposition": "retain"
     },
     {

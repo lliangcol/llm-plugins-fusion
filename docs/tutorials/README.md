@@ -1,6 +1,8 @@
 <!-- migrated-from: docs/examples/README.md -->
 # Redacted Examples
 
+For the smallest consumer integration path, see [Minimal consumer profile walkthrough](consumer-minimal.md).
+
 This directory contains public-safe examples for applying `nova-plugin` to
 consumer projects. Examples must use fictional or generic scenarios only.
 

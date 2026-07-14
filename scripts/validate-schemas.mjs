@@ -352,6 +352,8 @@ const targets = [
     data: loadJson('governance/dependency-audit-evidence.json'),
     label: 'governance/dependency-audit-evidence.json',
   },
+  { schema: loadJson('schemas/evaluation-profiles.schema.json'), data: loadJson('governance/evaluation-profiles.json'), label: 'governance/evaluation-profiles.json' },
+  { schema: loadJson('schemas/validation-performance.schema.json'), data: loadJson('governance/validation-performance.json'), label: 'governance/validation-performance.json' },
   {
     schema: loadJson('schemas/complexity-budget.schema.json'),
     data: loadJson('governance/complexity-budget.json'),
@@ -433,6 +435,8 @@ const schemaPaths = [
   'schemas/stable-install-proof.schema.json',
   'schemas/dependency-policy.schema.json',
   'schemas/dependency-audit-evidence.schema.json',
+  'schemas/evaluation-profiles.schema.json',
+  'schemas/validation-performance.schema.json',
   'schemas/release-channels.schema.json',
   'schemas/task-registry.schema.json',
   'schemas/complexity-budget.schema.json',

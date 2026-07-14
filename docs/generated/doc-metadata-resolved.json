@@ -443,6 +443,15 @@
       "generated": true
     },
     {
+      "path": "docs/generated/evaluation-profiles.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
       "path": "docs/generated/prompt-surface-report.md",
       "audience": "repository-users",
       "contentType": "generated-reference",
@@ -453,6 +462,15 @@
     },
     {
       "path": "docs/generated/real-task-benchmark.md",
+      "audience": "repository-users",
+      "contentType": "generated-reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "generator",
+      "generated": true
+    },
+    {
+      "path": "docs/generated/release-summary.md",
       "audience": "repository-users",
       "contentType": "generated-reference",
       "status": "current",
@@ -1560,6 +1578,15 @@
     },
     {
       "path": "docs/tutorials/README.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/tutorials/consumer-minimal.md",
       "audience": "repository-users",
       "contentType": "reference",
       "status": "current",

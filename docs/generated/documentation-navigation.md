@@ -153,6 +153,7 @@ Generated from `governance/doc-metadata.json` by `node scripts/generate-doc-gove
 - [docs/templates/prompts/common/skill-harness-audit.md](../../docs/templates/prompts/common/skill-harness-audit.md) — repository-users; reference
 - [docs/templates/prompts/common/workbench-tidy.md](../../docs/templates/prompts/common/workbench-tidy.md) — repository-users; reference
 - [docs/tutorials/README.md](../../docs/tutorials/README.md) — repository-users; reference
+- [docs/tutorials/consumer-minimal.md](../../docs/tutorials/consumer-minimal.md) — repository-users; reference
 - [docs/tutorials/first-workflow-transcript.md](../../docs/tutorials/first-workflow-transcript.md) — repository-users; reference
 - [docs/tutorials/frontend.md](../../docs/tutorials/frontend.md) — repository-users; reference
 - [docs/tutorials/java-backend.md](../../docs/tutorials/java-backend.md) — repository-users; reference

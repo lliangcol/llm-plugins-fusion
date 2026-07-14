@@ -379,6 +379,10 @@ async function main() {
     nodeTask('docs.governance.generated', 'validate document governance outputs', 'scripts/generate-doc-governance.mjs'),
     nodeTask('docs.migrations', 'validate documentation compatibility migrations', 'scripts/migrate-documentation-layout.mjs'),
     nodeTask('security.dependency-audit', 'validate dependency audit evidence', 'scripts/audit-dependencies.mjs'),
+    nodeTask('eval.profiles', 'validate layered evaluation profiles', 'scripts/generate-evaluation-profiles.mjs'),
+    nodeTask('performance.budget', 'validate performance budgets', 'scripts/validate-performance-budget.mjs'),
+    nodeTask('docs.tutorials', 'validate executable tutorials', 'scripts/validate-tutorials.mjs'),
+    nodeTask('release.summary', 'validate generated release summary', 'scripts/generate-release-summary.mjs'),
   ]);
 
   printTimingSummary();
