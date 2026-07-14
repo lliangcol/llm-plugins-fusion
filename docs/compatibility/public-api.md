@@ -67,6 +67,31 @@ workflow-specs/workflows.json
   -> nova-plugin/commands/<id>.md
 ```
 
+The 15 compatibility aliases are evidence-gated rather than scheduled for
+date-based removal. Their source policy is
+`workflow-specs/nova.product.json`; removal requires real benchmark evidence,
+a plugin-major release, a governed release decision, and migration
+documentation.
+
+## Generic Assistant Manifest
+
+`adapters/generic-agent-skills/manifest.json` is a generated public inventory
+validated by `schemas/assistant-manifest.schema.json`. It binds each workflow
+to its canonical skill, canonical-skill replacement for compatibility aliases, owner agents,
+recommended packs, typed inputs, effects, runtime requirements, permission
+policy, and output contract. Product metadata and the alias-removal gates are
+included so consumers do not need to reconstruct them from prose.
+
+`negotiateWorkflowSupport()` from `@llm-plugins-fusion/conformance` provides
+static, fail-closed capability negotiation. It reports `supported`,
+`approval-required`, or `unsupported` from the compiled workflow, declared
+adapter enforcement, available host capabilities, explicit approvals, and an
+optional host-owned enforcement declaration. Missing capability state and
+attempts to weaken workflow authorization fail closed. Malformed negotiation
+inputs, unknown effects, and adapters that explicitly declare unsupported
+enforcement also report `unsupported`. A static result is not evidence of live
+assistant invocation or enforcement.
+
 ## Stable Validation Entrypoints
 
 ```bash
@@ -126,3 +151,5 @@ Treat these as SemVer-significant:
 - Changing validation CLI success or failure semantics in a way that breaks
   existing release workflows.
 - Reintroducing a neutrally named unchecked filesystem compiler or loader.
+- Removing a retained compatibility alias before all product policy gates are
+  satisfied.

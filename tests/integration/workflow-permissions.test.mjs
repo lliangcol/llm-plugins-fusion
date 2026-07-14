@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import {
   buildEffectivePermissions,
+  buildRuntimePermissionSpec,
   generateWorkflowPermissionFiles,
 } from '../../scripts/generate-workflow-permissions.mjs';
 import { loadNovaWorkflowModel } from '../../scripts/lib/workflow-model.mjs';
@@ -26,6 +27,13 @@ test('canonical permissions reject overgrant and undergrant', () => {
   assert.throws(
     () => validateCompiledWorkflowModel(undergranted),
     /implement-plan: canonical local implementation must use the implementation profile/,
+  );
+
+  const missingAliasPolicy = structuredClone(loadNovaWorkflowModel(root));
+  delete missingAliasPolicy.product.compatibilityAliasPolicy;
+  assert.throws(
+    () => validateCompiledWorkflowModel(missingAliasPolicy),
+    /products with compatibility aliases must declare compatibilityAliasPolicy/,
   );
 });
 
@@ -53,6 +61,16 @@ test('workflow permission source defines the 21-command plus six-skill runtime s
       assert.equal(workflow.modelInvocable, false, `${workflow.id} must require explicit invocation`);
     }
   }
+});
+
+test('Nova runtime permissions project the host version from the product layer', () => {
+  const model = loadNovaWorkflowModel(root);
+  const spec = buildRuntimePermissionSpec(model.spec, model.product);
+  assert.equal(spec.knownGoodClaudeCli, model.product.runtimeCompatibility['claude-code']);
+  assert.throws(
+    () => buildRuntimePermissionSpec(model.spec, { ...model.product, runtimeCompatibility: {} }),
+    /runtimeCompatibility must declare claude-code/u,
+  );
 });
 
 test('workflow classes retain the native permission contract', async () => {

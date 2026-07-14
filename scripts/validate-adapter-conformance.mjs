@@ -13,7 +13,7 @@ const read = (path) => readFileSync(resolve(root, path), 'utf8');
 const readJson = (path) => JSON.parse(read(path));
 
 checkOrWrite();
-const { spec, adapterById } = loadNovaWorkflowModelV6(root);
+const { spec, product, adapterById } = loadNovaWorkflowModelV6(root);
 const generic = readJson('adapters/generic-agent-skills/manifest.json');
 const claude = readJson('adapters/claude/manifest.json');
 const codex = read('adapters/codex/AGENTS.md');
@@ -27,12 +27,23 @@ assert.equal(claude.commands.length, 21);
 assert.equal(claude.canonicalSkills.length, 6);
 assert.equal(claude.compatibilityCommandAliases.length, 15);
 assert.deepEqual(generic.protocolVersions, { workflow: '6.0.0', runtime: '4.0.0', adapter: '3.0.0' });
+assert.equal(generic.$schema, '../../schemas/assistant-manifest.schema.json');
+assert.equal(generic.schemaVersion, 3);
+assert.deepEqual(generic.product, {
+  namespace: product.pluginNamespace,
+  expectedWorkflowCount: product.expectedWorkflowCount,
+  canonicalEntrypoints: product.primaryEntrypoints,
+  agents: product.agents,
+  packs: product.packs,
+});
+assert.deepEqual(generic.aliasPolicy, product.compatibilityAliasPolicy);
 assert.equal(claude.contractEnforcement.effects, 'native-and-hook');
 assert.equal(adapterById.codex.contractEnforcement.approval, 'adapter');
 assert.equal(adapterById.generic.contractEnforcement.fallback, 'report-unsupported');
 assert.match(codex, /Never claim Claude hooks or permissions are active in Codex/);
 
-for (const workflow of generic.workflows) {
+for (const [index, workflow] of generic.workflows.entries()) {
+  const sourceWorkflow = spec.workflows[index];
   assert.equal(existsSync(resolve(root, 'adapters/generic-agent-skills', workflow.contract)), true, `${workflow.id}: contract missing`);
   assert.equal(existsSync(resolve(root, 'adapters/generic-agent-skills', workflow.runtimeContract)), true, `${workflow.id}: runtime contract missing`);
   assert.notEqual(workflow.permissionPolicy.credentials, 'preapproved', `${workflow.id}: credentials must not be implicit`);
@@ -40,6 +51,10 @@ for (const workflow of generic.workflows) {
   assert.equal(workflow.permissionPolicy.gitHistoryMutation, 'denied', `${workflow.id}: history mutation must not be implicit`);
   assert.ok(Array.isArray(workflow.inputs), `${workflow.id}: typed inputs missing`);
   assert.ok(Array.isArray(workflow.effects), `${workflow.id}: effects missing`);
+  assert.equal(workflow.canonicalSkill, `nova-${sourceWorkflow.canonicalSurfaceId}`, `${workflow.id}: canonical skill drift`);
+  assert.equal(workflow.replacement, sourceWorkflow.compatibilityAlias ? workflow.canonicalSkill : null, `${workflow.id}: replacement drift`);
+  assert.ok(Array.isArray(workflow.ownerAgents), `${workflow.id}: owner agents missing`);
+  assert.ok(Array.isArray(workflow.recommendedPacks), `${workflow.id}: recommended packs missing`);
   assert.equal(workflow.authorizationProfile.length > 0, true, `${workflow.id}: authorization profile missing`);
 }
 

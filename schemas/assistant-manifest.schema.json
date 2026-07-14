@@ -1,0 +1,214 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/assistant-manifest.schema.json",
+  "title": "Generated assistant workflow manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schemaVersion", "source", "product", "aliasPolicy", "maximumSupportedLevel", "declaredLevel", "evidenceRequiredFor", "protocolVersions", "contractEnforcement", "claimBoundary", "workflows"],
+  "properties": {
+    "$schema": { "const": "../../schemas/assistant-manifest.schema.json" },
+    "schemaVersion": { "const": 3 },
+    "source": { "type": "string", "minLength": 1 },
+    "product": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["namespace", "expectedWorkflowCount", "canonicalEntrypoints", "agents", "packs"],
+      "properties": {
+        "namespace": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "expectedWorkflowCount": { "type": "integer", "minimum": 1 },
+        "canonicalEntrypoints": { "$ref": "#/$defs/uniqueNames" },
+        "agents": { "$ref": "#/$defs/uniqueNames" },
+        "packs": { "$ref": "#/$defs/uniqueNames" }
+      }
+    },
+    "aliasPolicy": { "$ref": "#/$defs/aliasPolicy" },
+    "maximumSupportedLevel": { "$ref": "#/$defs/level" },
+    "declaredLevel": { "$ref": "#/$defs/level" },
+    "evidenceRequiredFor": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/evidenceLevel" } },
+    "protocolVersions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workflow", "runtime", "adapter"],
+      "properties": {
+        "workflow": { "type": "string", "pattern": "^6\\." },
+        "runtime": { "type": "string", "pattern": "^4\\." },
+        "adapter": { "type": "string", "pattern": "^3\\." }
+      }
+    },
+    "contractEnforcement": { "$ref": "#/$defs/contractEnforcement" },
+    "claimBoundary": { "type": "string", "minLength": 1 },
+    "workflows": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/workflow" } }
+  },
+  "$defs": {
+    "level": { "enum": ["L1", "L2", "L3", "L4"] },
+    "evidenceLevel": { "enum": ["L2", "L3", "L4"] },
+    "uniqueNames": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "aliasPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "removalRequires"],
+      "properties": {
+        "status": { "const": "evidence-gated" },
+        "removalRequires": {
+          "type": "array",
+          "minItems": 4,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": { "enum": ["real-benchmark-evidence", "plugin-major-release", "governed-release-decision", "migration-documentation"] }
+        }
+      }
+    },
+    "contractEnforcement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["inputs", "approval", "output", "effects", "fallback"],
+      "properties": {
+        "inputs": { "enum": ["native", "adapter", "advisory", "unsupported"] },
+        "approval": { "enum": ["native", "hook", "adapter", "advisory", "unsupported"] },
+        "output": { "enum": ["native", "adapter", "advisory", "unsupported"] },
+        "effects": { "enum": ["native-and-hook", "adapter", "advisory", "unsupported"] },
+        "fallback": { "enum": ["fail-closed", "report-unsupported"] }
+      }
+    },
+    "permissionState": { "enum": ["denied", "prompt", "preapproved", "unsupported", "explicit"] },
+    "permissionPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workspaceRead", "workspaceWrite", "shell", "network", "credentials", "userScopeMutation", "externalPublish", "gitHistoryMutation"],
+      "properties": {
+        "workspaceRead": { "$ref": "#/$defs/permissionState" },
+        "workspaceWrite": { "$ref": "#/$defs/permissionState" },
+        "shell": { "$ref": "#/$defs/permissionState" },
+        "network": { "$ref": "#/$defs/permissionState" },
+        "credentials": { "$ref": "#/$defs/permissionState" },
+        "userScopeMutation": { "$ref": "#/$defs/permissionState" },
+        "externalPublish": { "$ref": "#/$defs/permissionState" },
+        "gitHistoryMutation": { "$ref": "#/$defs/permissionState" }
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "canonicalSurfaceId", "canonicalSkill", "variantPreset", "compatibilityAlias", "replacement", "contract", "runtimeContract", "stage", "risk", "ownerAgents", "recommendedPacks", "requiredInputs", "inputs", "effects", "authorizationProfile", "enforcementRequirements", "evidenceRequirements", "outputContract", "runtimeRequirements", "permissionPolicy", "enforcement"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "canonicalSurfaceId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "canonicalSkill": { "type": "string", "pattern": "^nova-[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "variantPreset": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[A-Z][A-Z0-9_]*$" },
+          "additionalProperties": { "type": ["string", "boolean", "number", "null"] }
+        },
+        "compatibilityAlias": { "type": "boolean" },
+        "replacement": { "type": ["string", "null"], "pattern": "^nova-[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "contract": { "type": "string", "minLength": 1 },
+        "runtimeContract": { "type": "string", "minLength": 1 },
+        "stage": { "type": "string", "minLength": 1 },
+        "risk": { "enum": ["none", "low", "medium", "high"] },
+        "ownerAgents": { "$ref": "#/$defs/uniqueNames" },
+        "recommendedPacks": { "$ref": "#/$defs/uniqueNames" },
+        "requiredInputs": { "$ref": "#/$defs/uniqueNames" },
+        "inputs": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/input" }
+        },
+        "effects": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "enum": ["workspace-read", "workspace-write", "artifact-write", "shell", "network", "credentials", "user-scope-mutation", "external-publish", "git-history-mutation"] }
+        },
+        "authorizationProfile": { "type": "string", "minLength": 1 },
+        "enforcementRequirements": { "$ref": "#/$defs/uniqueNames" },
+        "evidenceRequirements": { "$ref": "#/$defs/uniqueNames" },
+        "outputContract": { "type": "string", "minLength": 1 },
+        "runtimeRequirements": { "$ref": "#/$defs/runtimeRequirements" },
+        "permissionPolicy": { "$ref": "#/$defs/permissionPolicy" },
+        "enforcement": { "type": "object", "minProperties": 1, "additionalProperties": { "enum": ["native-and-hook", "adapter", "advisory", "unsupported"] } }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "compatibilityAlias": { "const": true } }, "required": ["compatibilityAlias"] },
+          "then": { "properties": { "replacement": { "type": "string", "pattern": "^nova-[a-z0-9]+(?:-[a-z0-9]+)*$" } } },
+          "else": { "properties": { "replacement": { "type": "null" } } }
+        }
+      ]
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "type", "required"],
+      "properties": {
+        "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" },
+        "type": { "enum": ["string", "enum", "boolean", "path", "artifact-reference", "review-reference", "approval"] },
+        "required": { "type": "boolean" },
+        "values": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
+        "pathPolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["root", "mustExist", "kind", "readable", "writable", "outsideRoot"],
+          "properties": {
+            "root": { "enum": ["workspace", "artifact-root"] },
+            "mustExist": { "type": "boolean" },
+            "kind": { "enum": ["file", "directory", "either"] },
+            "readable": { "type": "boolean" },
+            "writable": { "type": "boolean" },
+            "outsideRoot": { "enum": ["deny", "explicit-authorization"] }
+          }
+        },
+        "approvalPolicy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mustBeExplicit", "mayInfer", "scope"],
+          "properties": {
+            "mustBeExplicit": { "const": true },
+            "mayInfer": { "const": false },
+            "scope": { "type": "string", "minLength": 1 },
+            "oneShot": { "type": "boolean" },
+            "expires": { "type": ["string", "null"] }
+          }
+        }
+      }
+    },
+    "runtimeRequirements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["executables", "network", "credentials"],
+      "properties": {
+        "executables": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "required", "versionEvidence"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1 },
+              "required": { "type": "boolean" },
+              "versionEvidence": { "enum": ["none", "versioned-evidence"] }
+            }
+          }
+        },
+        "network": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["need", "purpose"],
+          "properties": {
+            "need": { "enum": ["none", "optional", "required"] },
+            "purpose": { "type": "string" }
+          }
+        },
+        "credentials": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["need", "source"],
+          "properties": {
+            "need": { "enum": ["none", "optional", "required"] },
+            "source": { "enum": ["none", "assistant-owned-authentication", "consumer-owned-authentication"] }
+          }
+        }
+      }
+    }
+  }
+}

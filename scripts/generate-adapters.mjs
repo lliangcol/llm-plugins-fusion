@@ -14,41 +14,59 @@ function loadSpec() {
 }
 
 function genericManifest(model) {
-  const { spec, adapterById } = model;
+  const { spec, product, adapterById } = model;
   const adapter = adapterById.generic;
+  const aliasPolicy = product.compatibilityAliasPolicy;
+  if (!aliasPolicy) throw new Error('product compatibilityAliasPolicy missing');
   return {
-    schemaVersion: 2,
+    $schema: '../../schemas/assistant-manifest.schema.json',
+    schemaVersion: 3,
     source: 'workflow-specs/adapters/generic.json',
+    product: {
+      namespace: product.pluginNamespace,
+      expectedWorkflowCount: product.expectedWorkflowCount,
+      canonicalEntrypoints: product.primaryEntrypoints,
+      agents: product.agents,
+      packs: product.packs,
+    },
+    aliasPolicy,
     maximumSupportedLevel: adapter.maximumSupportedLevel,
     declaredLevel: adapter.declaredLevel,
     evidenceRequiredFor: adapter.evidenceRequiredFor,
     protocolVersions: adapter.protocolVersions,
     contractEnforcement: adapter.contractEnforcement,
     claimBoundary: 'Invocation and enforcement require an assistant-specific adapter and conformance evidence.',
-    workflows: spec.workflows.map((workflow) => ({
-      id: workflow.id,
-      canonicalSurfaceId: workflow.canonicalSurfaceId,
-      variantPreset: workflow.variantPreset,
-      compatibilityAlias: workflow.compatibilityAlias,
-      contract: `../../nova-plugin/${workflow.contractPath}`,
-      runtimeContract: `../../nova-plugin/runtime/contracts/${workflow.id}.json`,
-      stage: workflow.stage,
-      risk: workflow.risk,
-      requiredInputs: workflow.compatibilityProjection.requiredInputs,
-      inputs: workflow.inputs,
-      effects: workflow.effects,
-      authorizationProfile: workflow.authorizationProfile,
-      enforcementRequirements: workflow.enforcementRequirements,
-      evidenceRequirements: workflow.evidenceRequirements,
-      outputContract: workflow.outputContract,
-      runtimeRequirements: workflow.runtimeRequirements ?? {
-        executables: [],
-        network: { need: 'none', purpose: 'none' },
-        credentials: { need: 'none', source: 'none' },
-      },
-      permissionPolicy: spec.permissionProfiles[workflow.authorizationProfile].permissionPolicy,
-      enforcement: spec.assistantEnforcement,
-    })),
+    workflows: spec.workflows.map((workflow) => {
+      const canonicalSkill = `nova-${workflow.canonicalSurfaceId}`;
+      return {
+        id: workflow.id,
+        canonicalSurfaceId: workflow.canonicalSurfaceId,
+        canonicalSkill,
+        variantPreset: workflow.variantPreset,
+        compatibilityAlias: workflow.compatibilityAlias,
+        replacement: workflow.compatibilityAlias ? canonicalSkill : null,
+        contract: `../../nova-plugin/${workflow.contractPath}`,
+        runtimeContract: `../../nova-plugin/runtime/contracts/${workflow.id}.json`,
+        stage: workflow.stage,
+        risk: workflow.risk,
+        ownerAgents: workflow.ownerAgents,
+        recommendedPacks: workflow.recommendedPacks,
+        requiredInputs: workflow.compatibilityProjection.requiredInputs,
+        inputs: workflow.inputs,
+        effects: workflow.effects,
+        authorizationProfile: workflow.authorizationProfile,
+        enforcementRequirements: workflow.enforcementRequirements,
+        evidenceRequirements: workflow.evidenceRequirements,
+        outputContract: workflow.outputContract,
+        runtimeRequirements: workflow.runtimeRequirements ?? {
+          executables: [],
+          network: { need: 'none', purpose: 'none' },
+          credentials: { need: 'none', source: 'none' },
+        },
+        permissionPolicy: spec.permissionProfiles[workflow.authorizationProfile].permissionPolicy,
+        enforcement: spec.assistantEnforcement,
+      };
+    }),
   };
 }
 

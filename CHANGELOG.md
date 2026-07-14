@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Added
+- Added a schema-validated generic assistant manifest, product-owned
+  compatibility-alias gates, product-neutral runtime compatibility
+  compilation, and fail-closed static workflow capability negotiation.
 - Added digest-bound release correction enforcement across candidate,
   promotion, orchestration, recovery, and readiness workflows.
 - Added privacy-preserving adoption and release-operations governance schemas.

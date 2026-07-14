@@ -13,7 +13,7 @@ export function compileProductBundle(bundle) {
   const spec = {
     ...workflows,
     pluginNamespace: product.pluginNamespace,
-    knownGoodClaudeCli: product.runtimeCompatibility['claude-code'] ?? null,
+    runtimeCompatibility: product.runtimeCompatibility,
     primaryEntrypoints: product.primaryEntrypoints,
     toolVocabulary: product.tools,
     assistantEnforcement,

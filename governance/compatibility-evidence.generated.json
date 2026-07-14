@@ -9,7 +9,7 @@
     "workflow-specs/adapters/generic.json": "8881cf695b931f345a570a7973ff1982973a7b7bd96a7a7a3d91c203a3daf2de",
     "adapters/claude/manifest.json": "983c9ef396bee153b60c7d120bd5bf14167ec6252271cb3e4779fefef84fa335",
     "adapters/codex/AGENTS.md": "b1b61be7a050fd1c0143a0247eb78880c756982acdc33ff02b9ca038d18d0555",
-    "adapters/generic-agent-skills/manifest.json": "e344c9572956f194500d980fe890282c70f883b559e12f335161e5a2c1efa8d4",
+    "adapters/generic-agent-skills/manifest.json": "71b1c4689680947fd90f75c9aa24dfeff7610b3f7b8f079613f9194a8ba5d1d4",
     "governance/assistant-support.json": "d24356d1e875f83d9dde9e24bf9442b5aec290da7232907468dfc6ef40b0881c"
   },
   "knownGoodLanes": [
