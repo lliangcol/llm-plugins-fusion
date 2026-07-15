@@ -71,7 +71,7 @@ test('llmf repository plans use fixed argv without shell composition', () => {
 
   const drift = repositoryProfilePlan('generate', 'all');
   const write = repositoryProfilePlan('generate', 'all', { write: true });
-  assert.equal(drift.length, 22);
+  assert.equal(drift.length, 19);
   assert.equal(write.length, drift.length);
   assert.ok(drift.every((entry) => !entry.args.includes('--write')));
   assert.ok(write.every((entry) => entry.args.at(-1) === '--write'));

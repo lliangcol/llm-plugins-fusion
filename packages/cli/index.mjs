@@ -54,7 +54,7 @@ const generateProfiles = Object.freeze({
   docs: [
     ['diagnostics-docs', 'scripts/generate-diagnostics-docs.mjs'],
     ['command-docs', 'scripts/generate-command-docs.mjs'],
-    ['prompt-surface-report', 'scripts/generate-prompt-surface-report.mjs'],
+    ['prompt-surface-report', 'scripts/generate-surface-inventory.mjs', '--prompt-report'],
     ['doc-governance', 'scripts/generate-doc-governance.mjs'],
   ],
   runtime: [
@@ -68,16 +68,13 @@ const generateProfiles = Object.freeze({
   release: [
     ['registry', 'scripts/generate-registry.mjs'],
     ['surface-inventory', 'scripts/generate-surface-inventory.mjs'],
-    ['evaluation-profiles', 'scripts/generate-evaluation-profiles.mjs'],
     ['compatibility-evidence', 'scripts/generate-compatibility-evidence.mjs'],
     ['quality-report', 'scripts/generate-quality-report.mjs'],
-    ['evidence-levels', 'scripts/generate-evidence-levels.mjs'],
     ['project-state', 'scripts/generate-project-state.mjs'],
     ['fact-graph', 'scripts/generate-fact-graph.mjs'],
-    ['doc-facts', 'scripts/sync-doc-facts.mjs'],
     ['release-summary', 'scripts/generate-release-summary.mjs'],
     ['task-catalog', 'scripts/generate-task-catalog.mjs'],
-    ['control-plane', 'scripts/generate-control-plane-inventory.mjs'],
+    ['control-plane', 'scripts/validate-control-plane-complexity.mjs'],
   ],
 });
 
@@ -206,7 +203,7 @@ function init(root) {
   }
   const files = {
     'framework.json': { schemaVersion: 4, permissionStates: ['denied', 'prompt', 'preapproved', 'unsupported', 'explicit'], permissionPolicyKeys: ['workspaceRead', 'workspaceWrite', 'shell', 'network', 'credentials', 'userScopeMutation', 'externalPublish', 'gitHistoryMutation'], riskLevels: ['none', 'low', 'medium', 'high'], runtimeNeedLevels: ['none', 'optional', 'required'], credentialSources: ['none', 'assistant-owned-authentication', 'consumer-owned-authentication'], enforcementLevels: ['native-and-hook', 'adapter', 'advisory', 'unsupported'] },
-    'product.json': { schemaVersion: 2, pluginNamespace: 'example-flow', expectedWorkflowCount: 1, stages: ['intake'], primaryEntrypoints: ['triage'], runtimeCompatibility: { 'example-host': '1.0.0' }, adapterDefinitions: ['adapters/example.json'], agents: ['coordinator'], packs: [], tools: ['Inspect'] },
+    'product.json': { schemaVersion: 2, pluginNamespace: 'example-flow', expectedWorkflowCount: 1, stages: ['intake'], primaryEntrypoints: ['triage'], runtimeCompatibility: { 'example-host': '1.0.0' }, automaticRouting: { identity: 'canonical-surface-plus-variant-parameters', canonicalTargets: ['triage'], compatibilityAliases: 'excluded' }, adapterDefinitions: ['adapters/example.json'], agents: ['coordinator'], packs: [], tools: ['Inspect'] },
     'workflows.json': { schemaVersion: 5, contractVersions: { workflow: '5.0.0', runtime: '3.0.0', adapter: '2.0.0' }, permissionProfiles: { inspect: { allowedTools: ['Inspect'], disallowedTools: [], permissionPolicy: { workspaceRead: 'preapproved', workspaceWrite: 'denied', shell: 'denied', network: 'denied', credentials: 'denied', userScopeMutation: 'denied', externalPublish: 'denied', gitHistoryMutation: 'denied' } } }, workflows: [{ id: 'triage', stage: 'intake', ownerAgents: ['coordinator'], recommendedPacks: [], requiredInputs: ['REQUEST'], outputContract: 'triage-v1', risk: 'none', modelInvocable: true, subagentSafe: true, permissionProfile: 'inspect', legacyAlias: 'example-triage', contractPath: 'contracts/triage.md', canonicalSurfaceId: 'triage', variantPreset: {}, compatibilityAlias: false }] },
     'behaviors.json': { schemaVersion: 1, behaviors: [{ id: 'triage', purpose: 'Triage a request.', inputs: [{ name: 'REQUEST', required: true, aliases: [], description: 'Request.' }], decisionTable: [{ when: 'REQUEST exists.', action: 'Triage it.' }], invariants: ['No writes.'], stopConditions: ['REQUEST missing.'], workflowSteps: [{ id: 'triage', action: 'Triage.' }], deviationPolicy: { mode: 'forbid', instructions: 'No deviation.' }, output: { mode: 'chat', fields: [{ name: 'next step', required: true, description: 'Next step.' }], order: ['next step'], severityLevels: [] }, validation: ['One next step.'], failureOutput: { fields: ['status'], order: ['status'] } }] },
     'adapters/example.json': { schemaVersion: 1, id: 'example', enforcement: 'advisory', declaredLevel: 'L1', maximumSupportedLevel: 'L2', invocation: { kind: 'contract-manifest', prefix: 'example:' }, evidenceRequiredFor: ['L2'] },

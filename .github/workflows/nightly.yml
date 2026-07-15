@@ -3,6 +3,7 @@ name: Nightly Full Validation
 on:
   schedule:
     - cron: '17 3 * * *'
+    - cron: '23 3 * * 1'
   workflow_dispatch:
 
 permissions:
@@ -11,6 +12,7 @@ permissions:
 jobs:
   full:
     name: Nightly / Full (${{ matrix.label }})
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '17 3 * * *' }}
     strategy:
       fail-fast: false
       matrix:
@@ -36,3 +38,26 @@ jobs:
       - run: npm run test:coverage:check
       - if: runner.os == 'Linux'
         run: npm run test:mutation:critical && npm run test:fault-injection && npm run scan:distribution
+
+  dependency-audit:
+    name: Nightly / Dependency Audit
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.schedule == '23 3 * * 1' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node scripts/audit-dependencies.mjs --write
+      - run: node scripts/audit-dependency-licenses.mjs --write
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: always()
+        with:
+          name: dependency-audit
+          path: |
+            governance/dependency-governance.json
+            docs/generated/dependency-audit.md
+            docs/generated/dependency-license-audit.md

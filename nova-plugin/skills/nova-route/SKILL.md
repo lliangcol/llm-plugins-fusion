@@ -39,7 +39,7 @@ This file is the supporting behavioral contract for `/nova-plugin:route` and the
 
 - **Purpose:** Choose the shortest safe next workflow route before execution starts.
 - **Canonical inputs:** `REQUEST`(required aliases=INPUT,INTENT); `DEPTH`(optional aliases=MODE default="normal" exact="brief","normal")
-- **Decision entries:** 19; exact routes: `codex-review-fix`, `codex-review-only`, `codex-verify-only`, `senior-explore`, `explore-review`, `explore`, `backend-plan`, `plan-review`, `plan-lite`, `produce-plan`, `review-strict`, `review-lite`, `review-only`, `review`, `implement-plan`, `implement-lite`, `implement-standard`, `finalize-lite`, `finalize-work`.
+- **Decision entries:** 19; canonical routes and variants: `implement-plan {"EXECUTION_PROFILE":"codex-review-fix"}`, `review {"REVIEW_PROFILE":"codex-review-only"}`, `review {"REVIEW_PROFILE":"codex-verify-only"}`, `explore {"DEPTH":"deep"}`, `explore {"PERSPECTIVE":"reviewer"}`, `explore {}`, `produce-plan {"PLAN_PROFILE":"java-backend"}`, `review {"REVIEW_PROFILE":"plan"}`, `produce-plan {"PLAN_PROFILE":"lite"}`, `produce-plan {}`, `review {"LEVEL":"strict"}`, `review {"LEVEL":"lite"}`, `review {"LEVEL":"standard","MODE":"findings-only"}`, `review {}`, `implement-plan {}`, `implement-plan {"EXECUTION_PROFILE":"lite"}`, `implement-plan {"EXECUTION_PROFILE":"standard"}`, `finalize-work {"DEPTH":"lite"}`, `finalize-work {}`.
 - **Workflow steps:** `resolve-intent` → `classify` → `select` → `verify-surface` → `emit`
 - **Output:** mode=`chat`; order=`Canonical skill` → `Command alias (optional)` → `Variant parameters` → `Core agent` → `Capability packs` → `Required inputs` → `Validation expectations` → `Fallback path`; severity=none.
 - **Deviation/failure:** mode=`forbid`; failure order=`status` → `ambiguous intent` → `required choice` → `safe fallback`.
@@ -48,7 +48,7 @@ This file is the supporting behavioral contract for `/nova-plugin:route` and the
 
 ### Purpose
 
-Choose the next workflow step before work starts. This skill improves routing quality for agents that do not natively invoke Claude Code slash commands.
+Choose the next workflow step before work starts. It improves routing for agents that do not invoke Claude Code slash commands.
 
 ### Routing Table
 
@@ -87,7 +87,7 @@ when their narrower contract fits better than the primary command.
 | Review an implementation plan before edits | `/nova-plugin:plan-review` | `nova-review` | `{"REVIEW_PROFILE":"plan"}` | `reviewer` | `docs`, `security`, or domain packs |
 | Java/Spring backend plan | `/nova-plugin:backend-plan` | `nova-produce-plan` | `{"PLAN_PROFILE":"java-backend"}` | `architect` | `java`, `security`, `dependency` |
 | Fast review with bounded depth | `/nova-plugin:review-lite` | `nova-review` | `{"LEVEL":"lite"}` | `reviewer` | Domain packs from diff |
-| Review-only artifact or findings | `/nova-plugin:review-only` | `nova-review` | `{"LEVEL":"standard"}` | `reviewer` | `security`, `dependency`, or domain packs |
+| Review-only artifact or findings | `/nova-plugin:review-only` | `nova-review` | `{"LEVEL":"standard","MODE":"findings-only"}` | `reviewer` | `security`, `dependency`, or domain packs |
 | Strict/high-risk review | `/nova-plugin:review-strict` | `nova-review` | `{"LEVEL":"strict"}` | `reviewer` | `security`, `dependency`, plus domain packs |
 | Codex read-only review artifact | `/nova-plugin:codex-review-only` | `nova-review` | `{"REVIEW_PROFILE":"codex-review-only"}` | `reviewer` | Domain packs from diff |
 | Codex verification of existing review | `/nova-plugin:codex-verify-only` | `nova-review` | `{"REVIEW_PROFILE":"codex-verify-only"}` | `verifier` | Domain packs from review scope |
@@ -139,7 +139,7 @@ same fixed fields for the immediate next step:
 
 - Prefer a single next command when the next step is clear.
 - Prefer the five primary workflow entries unless a compatibility or specialized command is clearly better.
-- Prefer `review-only` whenever the user asks for read-only or findings-only review and excludes implementation or modification, even when severity grouping is not requested. Use the broader `review` hub only when no narrower review boundary is present.
+- For read-only or findings-only intent, select canonical `review` with `{"LEVEL":"standard","MODE":"findings-only"}`. The optional `/nova-plugin:review-only` alias may be reported for direct compatibility invocation but must not be the selected route identity.
 - Use only existing capability packs: `java`, `security`, `dependency`, `docs`, `release`, `marketplace`, `frontend`, and `mcp`.
 - Route source-grounding and official-documentation work through `docs`, `mcp`, or the relevant domain pack.
 - Route doubt-driven high-risk review through `security`, `dependency`, or the relevant domain pack, with `reviewer` ownership.
@@ -173,7 +173,7 @@ same fixed fields for the immediate next step:
 ## Verification
 
 - [ ] `REQUEST` was resolved or the missing input was named.
-- [ ] The canonical skill is one of the six 4.0 surfaces; any command alias and variant preset exist in the generated catalog.
+- [ ] The selected route is one of the six product-declared canonical targets; any command alias is optional compatibility information and the variant parameters exist in the generated catalog.
 - [ ] The core agent is one of `orchestrator`, `architect`, `builder`, `reviewer`, `verifier`, or `publisher`.
 - [ ] Capability packs are selected only from the existing pack set.
 - [ ] Required inputs use the selected workflows' exact canonical UPPER_SNAKE_CASE names and validation expectations are explicit.

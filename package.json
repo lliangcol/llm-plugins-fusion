@@ -1,6 +1,6 @@
 {
   "name": "llm-plugins-fusion-maintenance",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "private": true,
   "license": "MIT",
   "description": "Maintainer shortcuts for validating the llm-plugins-fusion repository.",
@@ -59,7 +59,7 @@
     "check": "npm run test:coverage:check && npm run validate:maintainer:evidence",
     "validate": "node scripts/validate-all.mjs",
     "validate:drift": "node scripts/generate-registry.mjs",
-    "sync:project-state": "node scripts/generate-project-state.mjs --write && node scripts/sync-doc-facts.mjs --write",
+    "sync:project-state": "node scripts/generate-project-state.mjs --write",
     "validate:project-state": "node scripts/validate-project-state.mjs",
     "validate:maintainer": "node scripts/validate-maintainer.mjs",
     "validate:maintainer:evidence": "node scripts/validate-maintainer.mjs --evidence-only",

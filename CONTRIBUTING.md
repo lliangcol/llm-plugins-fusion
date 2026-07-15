@@ -4,14 +4,14 @@
 ## Current Machine-Derived Project Facts
 
 Do not edit this block by hand. It is synchronized by
-`node scripts/sync-doc-facts.mjs --write` from repository domain sources and
-`governance/product-lanes.json`.
+`node scripts/generate-project-state.mjs --write` from repository domain
+sources and `governance/product-lanes.json`.
 
-- Plugin: `nova-plugin@4.0.0`; production plugins: 1; public path: `nova-plugin/`
+- Plugin: `nova-plugin@4.1.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 6 skills, 6 active agents, 8 capability packs
 - Workflow contract: schema v5, namespace `nova-plugin`, 21 workflows
-- Evaluation datasets: `live-paired` has 168 cases and 1008 planned paired invocations; `real-task-benchmark` has 24 tasks and 432 planned invocations
+- Evaluation datasets: `live-paired` has 168 cases and 2016 planned paired invocations; `real-task-benchmark` has 24 tasks and 432 planned invocations
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
@@ -53,9 +53,10 @@ issue。
 | Validator message improvement | 让失败消息更具体，但不放宽现有规则。 | `node scripts/validate-regression.mjs`, affected focused check |
 | Public-safe example | 增加或澄清 redacted examples、prompt templates 或 consumer profile contracts。 | `node scripts/validate-docs.mjs`, `node scripts/scan-distribution-risk.mjs` |
 
-维护者会在 GitHub 上手动使用 `good first issue` 和 `help wanted` 标签；本仓库
-当前没有 source-controlled label sync automation。若你想提议一个适合首次贡献的
-任务，请使用 feature request 表单，并说明建议的文件范围和最小验证命令。
+维护者使用 `good first issue` 和 `help wanted` 标记首贡献任务；标签目录
+由 `.github/labels.yml` 管理，并通过 PR Governance workflow 的
+create/update-no-delete job 同步。若你想提议任务，请使用 feature request
+表单，并说明建议的文件范围和最小验证命令。
 
 问题咨询、bug、功能建议和 showcase feedback 都应走现有 issue forms。不要记录
 不存在的论坛、聊天室或 public portal 作为支持渠道。
@@ -150,7 +151,7 @@ issue。
 
 ## 添加或维护 marketplace entry
 
-新增或修改插件 entry 时，请先阅读 [Registry Author Workflow](./docs/marketplace/registry-author-workflow.md)。核心规则：
+新增或修改插件 entry 时，请先阅读 [Registry Author Workflow](docs/operations/marketplace/registry-authoring.md)。核心规则：
 
 1. 插件自有字段写在 `<plugin>/.claude-plugin/plugin.json`。
 2. marketplace 展示字段和 repository-local metadata 写在 `.claude-plugin/registry.source.json`。
@@ -219,23 +220,22 @@ node scripts/validate-docs.mjs
 node scripts/validate-all.mjs
 ```
 
-## 添加新命令 / 新 skill
+## 修改 workflow surface
 
-每个命令与 skill 采用 1:1 映射：
+行为事实源是 v5/v1 authoring inputs 和治理元数据。不要直接编辑生成的
+command wrapper、v6/v2 IR、runtime contract 或 canonical Skill 中的生成行为块：
 
-| 类型 | 文件位置 | 命名 |
+| 目的 | Authoring source | 生成输出 |
 | --- | --- | --- |
-| 命令 | `nova-plugin/commands/<id>.md` | `<id>` |
-| skill | `nova-plugin/skills/nova-<id>/SKILL.md` | `nova-<id>` |
-| skill 文档 | `nova-plugin/skills/nova-<id>/README.md` | 可选，复杂 skill 推荐 |
-| 命令文档 | `nova-plugin/docs/commands/<stage>/<id>.md`、`<id>.README.md`、`<id>.README.en.md` | 命令使用说明 |
+| workflow 身份、alias、权限和参数 | `workflow-specs/workflows.json` | `workflows.v6.json`、commands、runtime contracts |
+| 决策、输入、输出与安全行为 | `workflow-specs/behaviors.json` | `behaviors.v2.json`、canonical Skill behavior |
+| 自动路由候选与 adapter 投影 | `workflow-specs/nova.product.json`、adapter sources | assistant manifests 与 adapter outputs |
+| 用户文档 | workflow docs governance 与 authoring docs | 三件套 command docs |
 
-Codex 命令文档使用集中目录 `nova-plugin/docs/commands/codex/`，不按 Review / Implement stage 拆分；仍需满足 `<id>.md`、`<id>.README.md`、`<id>.README.en.md` 三件套。
-
-添加后同步更新：
-- `README.md` 中的命令总览表
-- `nova-plugin/skills/README.md` 或相关用户文档
-- `CHANGELOG.md`
+先运行 `npm run llmf -- generate runtime --write`，再运行
+`npm run llmf -- generate docs --write`。任何新增 surface 都需要产品决策、
+兼容策略、评测版本和控制面“一增一减”说明；当前阶段优先复用六个 canonical
+Skills，不接受仅为扩大命令数量的贡献。
 
 ## 初始化 consumer profile
 

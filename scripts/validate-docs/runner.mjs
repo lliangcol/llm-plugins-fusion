@@ -646,16 +646,17 @@ function validateAuthoringSourceContracts() {
 }
 
 function validateReleasePromotionContracts() {
-  const plugin = readJson('nova-plugin/.claude-plugin/plugin.json');
+  const releaseChannels = readJson('governance/release-channels.json');
   const changelog = readFileSync(resolve(root, 'CHANGELOG.md'), 'utf8');
-  const latestStable = [...changelog.matchAll(/^## \[([^\]]+)\] - \d{4}-\d{2}-\d{2}$/gm)]
-    .map((match) => parseSemVer(match[1]))
-    .find((version) => version && !version.isPrerelease);
-  if (!latestStable) {
-    recordError('CHANGELOG.md', 'missing a stable SemVer release section for promotion baseline checks');
+  const stable = parseSemVer(releaseChannels.stable?.version);
+  if (!stable || stable.isPrerelease) {
+    recordError('governance/release-channels.json', 'stable channel has no stable SemVer promotion baseline');
     return;
   }
-  const tag = `v${latestStable.version}`;
+  if (!new RegExp(`^## \\[${escapeRegExp(stable.version)}\\] - \\d{4}-\\d{2}-\\d{2}$`, 'mu').test(changelog)) {
+    recordError('CHANGELOG.md', `missing stable channel release section for ${stable.version}`);
+  }
+  const tag = releaseChannels.stable.tag;
   const tagPattern = escapeRegExp(tag);
   const checks = [
     {
@@ -1187,7 +1188,7 @@ function validateDocsIndexContracts() {
     },
     {
       file: 'docs/README.md',
-      pattern: /Understand local audit logs and data handling[\s\S]*\(privacy\/data-handling\.md\)/,
+      pattern: /Understand local audit logs and data handling[\s\S]*\(reference\/security\/data-handling\.md\)/,
       label: 'docs index data handling start-here link',
     },
     {
@@ -1202,7 +1203,7 @@ function validateDocsIndexContracts() {
     },
     {
       file: 'docs/README.md',
-      pattern: /### Privacy[\s\S]*\[privacy\/data-handling\.md\]\(privacy\/data-handling\.md\)[\s\S]*Local audit log behavior, best-effort redaction boundary, disable switch, and public data handling rules/,
+      pattern: /### Privacy[\s\S]*\[privacy\/data-handling\.md\]\(reference\/security\/data-handling\.md\)[\s\S]*Local audit log behavior, best-effort redaction boundary, disable switch, and public data handling rules/,
       label: 'docs index privacy current document',
     },
   ];
@@ -1251,7 +1252,7 @@ function validateDataHandlingContracts() {
     },
     {
       file: 'SECURITY.md',
-      pattern: /本地审计日志、脱敏边界和 public-safe 数据处理规则见[\s\S]*\.\/docs\/privacy\/data-handling\.md/,
+      pattern: /本地审计日志、脱敏边界和 public-safe 数据处理规则见[\s\S]*(?:\.\/)?docs\/reference\/security\/data-handling\.md/,
       label: 'security policy data handling route',
     },
     {
@@ -1615,7 +1616,7 @@ function validateGrowthMetricsContracts() {
   const checks = [
     {
       file: 'docs/operations/community/metrics.md',
-      pattern: /local repository deliverable only[\s\S]*GitHub Topics,[\s\S]*Discussions,[\s\S]*social preview uploads,[\s\S]*real issue creation,[\s\S]*external posting[\s\S]*maintainer-owned manual actions[\s\S]*GitHub UI or\s+an authenticated workflow/,
+      pattern: /Repository Topics and bounded contribution issues may be\s+managed through an authenticated GitHub workflow[\s\S]*Discussions,[\s\S]*social preview\s+upload,[\s\S]*external posting,[\s\S]*user outreach,[\s\S]*consent,[\s\S]*private traffic data\s+remain maintainer-owned actions/,
       label: 'growth metrics manual action boundary',
     },
     {
@@ -1664,7 +1665,7 @@ function validateAssetsContracts() {
     },
     {
       file: 'docs/operations/community/assets.md',
-      pattern: /No demo GIF is currently tracked[\s\S]*Do not link GIFs from README or release notes\s+until the actual files exist/,
+      pattern: /nova-route-demo\.gif[\s\S]*deterministic `npm run demo:route` fixture output[\s\S]*nova-route-demo\.svg[\s\S]*Reviewable source/,
       label: 'assets tracked media boundary',
     },
     {
@@ -1787,16 +1788,17 @@ function validateReviewLevelLiteContract() {
 
   const skill = readFileSync(resolve(root, 'nova-plugin/skills/nova-review/SKILL.md'), 'utf8');
   const routes = [
-    ['lite', 'nova-review-lite'],
-    ['standard', 'nova-review-only'],
-    ['strict', 'nova-review-strict'],
+    ['lite', 'review {"LEVEL":"lite"}'],
+    ['standard', 'review {"LEVEL":"standard"}'],
+    ['strict', 'review {"LEVEL":"strict"}'],
+    ['findings-only', 'review {"MODE":"findings-only"}'],
   ];
-  for (const [level, target] of routes) {
-    const pattern = new RegExp(`\`${level}\`\\s*->\\s*\`${target}\``);
-    if (!pattern.test(skill)) {
-      recordError('nova-plugin/skills/nova-review/SKILL.md', `missing route ${level} -> ${target}`);
+  for (const [variant, target] of routes) {
+    if (!skill.includes(`\`${target}\``)) {
+      recordError('nova-plugin/skills/nova-review/SKILL.md', `missing canonical review variant ${variant}`);
     }
   }
+  if (!/automatic routing must not select the alias/iu.test(skill)) recordError('nova-plugin/skills/nova-review/SKILL.md', 'missing review-only automatic-routing exclusion');
 }
 
 function validateNamespacedCommandInvocations() {

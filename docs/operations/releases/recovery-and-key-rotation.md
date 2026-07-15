@@ -56,7 +56,7 @@ Run the manual `Release Recovery Drill` workflow with an immutable signed RC
 tag. It performs no publication. The workflow:
 
 1. fetches and verifies the signed annotated candidate tag;
-2. downloads the candidate bundle from GitHub Release;
+2. downloads the candidate evidence bundle from GitHub Release;
 3. verifies the GitHub artifact attestation and signer workflow;
 4. rejects unsafe archive paths before extraction;
 5. verifies the candidate envelope, promotion intent, control-bundle bytes and

@@ -193,13 +193,14 @@ jobs:
             --evidence .metrics/candidate-bundle/evidence/SHA256SUMS.txt --evidence .metrics/candidate-bundle/evidence/coverage-metadata.json \
             --evidence .metrics/candidate-bundle/evidence/validation-timings.json --evidence .metrics/candidate-bundle/evidence/inventory.json \
             --evidence .metrics/candidate-bundle/evidence/route-smoke.json --evidence .metrics/candidate-bundle/evidence/independent-review.json
-          node scripts/build-candidate-bundle.mjs --bundle-root .metrics/candidate-bundle --out ".metrics/nova-plugin-${CANDIDATE_TAG#v}-candidate-bundle.tar.gz"
+          test -f .metrics/candidate-bundle/promotion-intent.json
+          node scripts/build-candidate-bundle.mjs --bundle-root .metrics/candidate-bundle --out ".metrics/nova-plugin-${CANDIDATE_TAG#v}-evidence-bundle.tar.gz"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: candidate-bundle
           path: |
             .metrics/candidate-bundle/
-            .metrics/nova-plugin-*-candidate-bundle.tar.gz
+            .metrics/nova-plugin-*-evidence-bundle.tar.gz
           include-hidden-files: true
           if-no-files-found: error
 
@@ -230,7 +231,7 @@ jobs:
           node scripts/prepare-release.mjs
           shopt -s nullglob
           archives=(.metrics/candidate-bundle/artifacts/nova-plugin-*.tar.gz)
-          bundles=(.metrics/nova-plugin-*-candidate-bundle.tar.gz)
+          bundles=(.metrics/nova-plugin-*-evidence-bundle.tar.gz)
           test "${#archives[@]}" -eq 1
           test "${#bundles[@]}" -eq 1
           archive="${archives[0]}"
@@ -247,19 +248,16 @@ jobs:
       - uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
         with:
           subject-path: ${{ steps.files.outputs.bundle }}
-      - name: Reconcile exact candidate assets and publish immutable prerelease
+      - name: Reconcile three public candidate assets and publish immutable prerelease
         env:
           GH_TOKEN: ${{ github.token }}
           CANDIDATE_TAG: ${{ github.ref_name }}
         run: |
           set -euo pipefail
           mkdir .metrics/candidate-publish
-          cp .metrics/nova-plugin-*-candidate-bundle.tar.gz .metrics/candidate-publish/
-          cp .metrics/candidate-bundle/artifacts/* .metrics/candidate-publish/
-          cp .metrics/candidate-bundle/evidence/* .metrics/candidate-publish/
-          cp .metrics/candidate-bundle/candidate-core.json .metrics/candidate-publish/
-          cp .metrics/candidate-bundle/promotion-intent.json .metrics/candidate-publish/
-          cp .metrics/candidate-bundle/release-candidate.json .metrics/candidate-publish/
-          cp .metrics/candidate-bundle/release-control-bundle.* .metrics/candidate-publish/
+          cp .metrics/nova-plugin-*-evidence-bundle.tar.gz .metrics/candidate-publish/
+          cp .metrics/candidate-bundle/artifacts/nova-plugin-*.tar.gz .metrics/candidate-publish/
+          (cd .metrics/candidate-publish && sha256sum nova-plugin-*.tar.gz | LC_ALL=C sort > SHA256SUMS.txt)
+          test "$(find .metrics/candidate-publish -maxdepth 1 -type f | wc -l | tr -d ' ')" -eq 3
           node scripts/reconcile-github-release.mjs --prerelease --tag "${CANDIDATE_TAG}" \
             --assets-dir .metrics/candidate-publish --notes .metrics/release/release-notes.md

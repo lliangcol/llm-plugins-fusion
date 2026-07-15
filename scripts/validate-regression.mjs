@@ -663,9 +663,9 @@ test('validate-github-workflows enforces least-privilege workflow contracts', ()
     assert.match(output, /plugin install smoke isolation contract/);
     assert.match(output, /explicitly upload hidden \.metrics\/coverage content/);
     assert.match(output, /platform matrix must exercise the normal project-check path/);
-    assert.match(output, /dependency review severity must match governance\/dependency-policy\.json/);
-    assert.match(output, /dependency review denied licenses must match governance\/dependency-policy\.json/);
-    assert.match(output, /dependency review summary mode must match governance\/dependency-policy\.json/);
+    assert.match(output, /dependency review severity must match governance\/dependency-governance\.json/);
+    assert.match(output, /dependency review denied licenses must match governance\/dependency-governance\.json/);
+    assert.match(output, /dependency review summary mode must match governance\/dependency-governance\.json/);
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }
@@ -1334,15 +1334,15 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     const optimizationPlan = readFileSync(optimizationPlanPath, 'utf8');
     assert.match(optimizationPlan, /docs\s+index navigation contracts/);
     assert.match(optimizationPlan, /GitHub workflow permission, inventory, and required-check\s+contracts/);
-    assert.match(optimizationPlan, /workflow file\r?\n  inventory, required-check docs and print output/);
+    assert.match(optimizationPlan, /workflow file\s+inventory, required-check docs and print output/);
     writeFileSync(
       optimizationPlanPath,
       optimizationPlan.replace(
         /GitHub workflow permission, inventory, and required-check\s+contracts/g,
         'GitHub workflow permission contracts',
       ).replace(
-        /workflow file\r?\n  inventory, required-check docs and print output, /g,
-        '',
+        /workflow file\s+inventory, required-check docs and print output/g,
+        'workflow trigger syntax',
       ).replace(
         /maintainer diagnostic and security setting\s+semantics, /g,
         '',
@@ -1704,7 +1704,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     writeFileSync(
       growthPath,
       growth.replace(
-        / It is not a public portal,[\s\S]*?analytics publication surface\./,
+        /This is not a public portal,[\s\S]*?analytics publication surface\./,
         '',
       ),
       'utf8',
@@ -1725,7 +1725,14 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     const coverageReadmePath = resolve(fixtureRoot, 'README.md');
     const coverageReadme = readFileSync(coverageReadmePath, 'utf8');
     assert.match(coverageReadme, /branches 70%/);
-    writeFileSync(coverageReadmePath, coverageReadme.replace('branches 70%', 'branches 60%'), 'utf8');
+    assert.match(coverageReadme, /GitHub workflow 权限、库存和 required-check 合约/);
+    writeFileSync(
+      coverageReadmePath,
+      coverageReadme
+        .replace('branches 70%', 'branches 60%')
+        .replace(/GitHub workflow 权限、库存和 required-check 合约/g, 'GitHub workflow 权限'),
+      'utf8',
+    );
 
     const showcasePath = resolve(fixtureRoot, 'docs/tutorials/README.md');
     const showcase = readFileSync(showcasePath, 'utf8');

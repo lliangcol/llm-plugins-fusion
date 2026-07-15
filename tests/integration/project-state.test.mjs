@@ -5,14 +5,12 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import {
   buildProjectState,
-  projectStateContent,
-} from '../../scripts/generate-project-state.mjs';
-import {
   endMarker,
+  projectStateContent,
   renderProjectFactBlock,
   replaceProjectFactBlock,
   startMarker,
-} from '../../scripts/sync-doc-facts.mjs';
+} from '../../scripts/generate-project-state.mjs';
 import {
   activeNarrativeDocuments,
   staleNarrativeFindings,
@@ -23,12 +21,12 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
 test('project state is generated from current repository domain sources', async () => {
   const state = buildProjectState(root);
-  assert.equal(state.plugin.version, '4.0.0');
+  assert.equal(state.plugin.version, '4.1.0');
   assert.equal(state.runtime.node, '>=22');
   assert.equal(state.inventory.commands, 21);
   assert.equal(state.inventory.skills, 6);
   assert.equal(state.evaluation.livePaired.caseCount, 168);
-  assert.equal(state.evaluation.livePaired.plannedInvocations, 1008);
+  assert.equal(state.evaluation.livePaired.plannedInvocations, 2016);
   assert.equal(state.evaluation.realTask.taskCount, 24);
   assert.equal(state.evaluation.realTask.plannedInvocations, 432);
   assert.ok(state.repositoryScripts.names.includes('check'));

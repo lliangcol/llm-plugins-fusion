@@ -9,31 +9,37 @@
     "schemaVersion": { "const": 1 },
     "profiles": {
       "type": "array",
-      "minItems": 5,
-      "maxItems": 5,
+      "minItems": 6,
+      "maxItems": 6,
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "datasetId", "selection", "executionKind", "attempts", "conditions", "assistants"],
+        "required": ["id", "datasetId", "datasetVersion", "casesPath", "labelsPath", "selection", "executionKind", "attempts", "conditions", "assistants", "prerequisiteProfiles"],
         "properties": {
-          "id": { "enum": ["critical", "pr", "nightly", "release", "manual"] },
+          "id": { "enum": ["pilot", "critical", "pr", "nightly", "release", "manual"] },
           "datasetId": { "enum": ["critical-live", "live-paired"] },
+          "datasetVersion": { "const": 5 },
+          "casesPath": { "enum": ["evals/critical-live/v5/cases.json", "evals/live/v5/cases.json"] },
+          "labelsPath": { "type": ["string", "null"], "enum": [null, "evals/live/v5/labels.locked.json"] },
           "selection": {
             "type": "object",
             "additionalProperties": false,
             "properties": {
               "all": { "const": true },
-              "categories": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+              "categories": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+              "caseIds": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
             },
             "oneOf": [
               { "required": ["all"], "properties": { "all": { "const": true } } },
-              { "required": ["categories"], "properties": { "categories": { "type": "array", "minItems": 1 } } }
+              { "required": ["categories"], "properties": { "categories": { "type": "array", "minItems": 1 } } },
+              { "required": ["caseIds"], "properties": { "caseIds": { "type": "array", "minItems": 1 } } }
             ]
           },
           "executionKind": { "enum": ["plan-only", "simulation", "external-live"] },
           "attempts": { "type": "integer", "minimum": 1 },
           "conditions": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
-          "assistants": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
+          "assistants": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+          "prerequisiteProfiles": { "type": "array", "uniqueItems": true, "items": { "enum": ["pilot", "critical"] } }
         },
         "allOf": [
           {
@@ -41,15 +47,38 @@
             "then": { "properties": { "attempts": { "type": "integer", "minimum": 3, "maximum": 5 } } }
           },
           {
-            "if": { "properties": { "id": { "const": "critical" } }, "required": ["id"] },
+            "if": { "properties": { "id": { "enum": ["pilot", "critical"] } }, "required": ["id"] },
             "then": {
               "properties": {
                 "datasetId": { "const": "critical-live" },
+                "casesPath": { "const": "evals/critical-live/v5/cases.json" },
+                "labelsPath": { "const": null },
                 "attempts": { "type": "integer", "const": 3 },
                 "conditions": { "const": ["plugin-enabled", "plugin-disabled"] },
                 "assistants": { "const": ["claude-code", "codex"] }
               }
             }
+          },
+          {
+            "if": { "properties": { "datasetId": { "const": "live-paired" } }, "required": ["datasetId"] },
+            "then": {
+              "properties": {
+                "casesPath": { "const": "evals/live/v5/cases.json" },
+                "labelsPath": { "const": "evals/live/v5/labels.locked.json" }
+              }
+            }
+          },
+          {
+            "if": { "properties": { "id": { "enum": ["pilot", "pr", "nightly"] } }, "required": ["id"] },
+            "then": { "properties": { "prerequisiteProfiles": { "const": [] } } }
+          },
+          {
+            "if": { "properties": { "id": { "const": "critical" } }, "required": ["id"] },
+            "then": { "properties": { "prerequisiteProfiles": { "const": ["pilot"] } } }
+          },
+          {
+            "if": { "properties": { "id": { "enum": ["release", "manual"] } }, "required": ["id"] },
+            "then": { "properties": { "prerequisiteProfiles": { "const": ["pilot", "critical"] } } }
           }
         ]
       }

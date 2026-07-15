@@ -15,6 +15,18 @@
       "migration-documentation"
     ]
   },
+  "automaticRouting": {
+    "identity": "canonical-surface-plus-variant-parameters",
+    "canonicalTargets": [
+      "explore",
+      "finalize-work",
+      "implement-plan",
+      "produce-plan",
+      "review",
+      "route"
+    ],
+    "compatibilityAliases": "excluded"
+  },
   "adapterDefinitions": ["adapters/claude.json", "adapters/codex.json", "adapters/generic.json"],
   "agents": ["architect", "builder", "orchestrator", "publisher", "reviewer", "verifier"],
   "packs": ["dependency", "docs", "frontend", "java", "marketplace", "mcp", "release", "security"],

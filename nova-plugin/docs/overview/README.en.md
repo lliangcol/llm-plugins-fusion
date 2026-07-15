@@ -59,9 +59,9 @@ other coding assistants.
 
 | Audience | Start here | Goal |
 | --- | --- | --- |
-| Claude Code users | [Getting Started](../../../docs/getting-started.md) | Install `nova-plugin` and complete the first `/nova-plugin:route` workflow in minutes. |
-| Non-Claude users | `npm run demo:route` / [Consumer setup](../../../docs/consumers/README.md) | Understand the workflow with headless fixtures and Markdown contracts without assuming slash-command runtime support. |
-| Consumer maintainers | [Consumer profiles](../../../docs/consumers/README.md) | Keep private project context local while reusing the public workflow contract. |
+| Claude Code users | [Getting Started](../../../docs/getting-started/first-workflow.md) | Install `nova-plugin` and complete the first `/nova-plugin:route` workflow in minutes. |
+| Non-Claude users | `npm run demo:route` / [Consumer setup](../../../docs/guides/assistants/README.md) | Understand the workflow with headless fixtures and Markdown contracts without assuming slash-command runtime support. |
+| Consumer maintainers | [Consumer profiles](../../../docs/guides/assistants/README.md) | Keep private project context local while reusing the public workflow contract. |
 | Plugin authors | [CONTRIBUTING.md](../../../CONTRIBUTING.md) | Change commands or skills after reading the [skill-first design](../architecture/dual-track-design.md). |
 | First-time contributors | [First contribution path](../../../CONTRIBUTING.md#第一次贡献路径) | Start with docs clarification, fixture updates, validator messages, or public-safe examples. |
 | Maintainers | [Quality Gates](#quality-gates) | Run validation by change scope and record release evidence. |
@@ -70,11 +70,11 @@ other coding assistants.
 
 | Scenario | Entry | What it demonstrates |
 | --- | --- | --- |
-| Java backend | [docs/showcase/java-backend.md](../../../docs/showcase/java-backend.md) | Turning a vague backend task into explore, plan, review, implement, and finalize evidence. |
-| Frontend | [docs/showcase/frontend.md](../../../docs/showcase/frontend.md) | Converting UI work into component, state, accessibility, and screenshot validation boundaries. |
-| Release and docs | [docs/showcase/release-and-docs.md](../../../docs/showcase/release-and-docs.md) | Handling release notes, docs sync, validation evidence, and residual risk. |
+| Java backend | [docs/showcase/java-backend.md](../../../docs/tutorials/java-backend.md) | Turning a vague backend task into explore, plan, review, implement, and finalize evidence. |
+| Frontend | [docs/showcase/frontend.md](../../../docs/tutorials/frontend.md) | Converting UI work into component, state, accessibility, and screenshot validation boundaries. |
+| Release and docs | [docs/showcase/release-and-docs.md](../../../docs/tutorials/release-and-docs.md) | Handling release notes, docs sync, validation evidence, and residual risk. |
 
-Demo capture guidance lives in [docs/assets/README.md](../../../docs/assets/README.md). Growth metric definitions live in [docs/growth/README.md](../../../docs/growth/README.md).
+Demo capture guidance lives in [docs/assets/README.md](../../../docs/operations/community/assets.md). Growth metric definitions live in [docs/growth/README.md](../../../docs/operations/community/metrics.md).
 
 ## Security And Trust
 
@@ -125,7 +125,7 @@ so it should be described as an unreleased development snapshot until tagged.
 Before promoting a release, record the target commit, exact tag,
 `node scripts/validate-all.mjs`, `git diff --check`, Bash hook syntax checks,
 Codex runtime smoke, distribution risk scan, and skipped checks with the
-[release evidence template](../../../docs/releases/release-evidence-template.md).
+[release evidence template](../../../docs/templates/evidence/release.md).
 If Windows local validation reports skipped checks because Bash is not
 available, describe that exactly and rely on CI/Linux evidence for the Bash
 checks.
@@ -171,7 +171,7 @@ If you are not sure which command should start:
 /nova-plugin:route This task touches docs, versioning, and install validation; recommend the next nova workflow step
 ```
 
-Private consumer projects should maintain their own project-local profile before running the workflow. The public contract is in [docs/consumers/](../../../docs/consumers/README.md).
+Private consumer projects should maintain their own project-local profile before running the workflow. The public contract is in [docs/consumers/](../../../docs/guides/assistants/README.md).
 
 ### Default Workflow
 
@@ -310,34 +310,34 @@ llm-plugins-fusion/
 | [ROADMAP.md](../../../ROADMAP.md) | Roadmap, non-goals, and maintenance rules | Planning follow-up work |
 | [SECURITY.md](../../../SECURITY.md) | Support range, vulnerability reporting, and disclosure policy | Security issue handling |
 | [CODE_OF_CONDUCT.md](../../../CODE_OF_CONDUCT.md) | Contributor code of conduct | Community collaboration |
-| [Consumer profile templates](../../../docs/consumers/README.md) | Multi-project consumer profile contract and redacted Java backend / frontend templates | Private project adoption |
-| [Cursor setup](../../../docs/consumers/cursor-setup.md) | Consuming `nova-route` and core nova skills from Cursor rules | Non-Claude Code adoption |
-| [Gemini CLI setup](../../../docs/consumers/gemini-cli-setup.md) | Consuming nova workflows from Gemini CLI context or skills | Non-Claude Code adoption |
-| [OpenCode setup](../../../docs/consumers/opencode-setup.md) | OpenCode intent-to-skill routing and fallback notes | Non-Claude Code adoption |
-| [Copilot setup](../../../docs/consumers/copilot-setup.md) | GitHub Copilot instructions and core-agent mapping | Non-Claude Code adoption |
-| [Codex setup](../../../docs/consumers/codex-setup.md) | Codex Markdown skill consumption and Codex loop prerequisites | Codex / other agent adoption |
-| [Workbench consumer template](../../../docs/consumers/workbench-template.md) | Private workspace structure, naming, checkpoint, and handoff rules | Long-running process assets |
-| [Redacted examples](../../../docs/examples/README.md) | Redacted Java backend and frontend workflow examples | Writing private profiles or handoff templates |
-| [Workflow evaluation examples](../../../docs/examples/workflow-evaluation.md) | Public-safe five-stage workflow examples, rubrics, and failure signals | Evaluating command output quality |
-| [Context-safe workflows](../../../docs/workflows/context-safe-agent-workflows.md) | Review, fix, documentation, and handoff loops that avoid context blow-up | Large-task decomposition and resumability |
-| [Prompt template library](../../../docs/prompts/README.md) | Codex, Claude Code, and delivery documentation prompt templates | Copying into private consumer projects |
+| [Consumer profile templates](../../../docs/guides/assistants/README.md) | Multi-project consumer profile contract and redacted Java backend / frontend templates | Private project adoption |
+| [Cursor setup](../../../docs/guides/assistants/cursor.md) | Consuming `nova-route` and core nova skills from Cursor rules | Non-Claude Code adoption |
+| [Gemini CLI setup](../../../docs/guides/assistants/gemini-cli.md) | Consuming nova workflows from Gemini CLI context or skills | Non-Claude Code adoption |
+| [OpenCode setup](../../../docs/guides/assistants/opencode.md) | OpenCode intent-to-skill routing and fallback notes | Non-Claude Code adoption |
+| [Copilot setup](../../../docs/guides/assistants/copilot.md) | GitHub Copilot instructions and core-agent mapping | Non-Claude Code adoption |
+| [Codex setup](../../../docs/guides/assistants/codex.md) | Codex Markdown skill consumption and Codex loop prerequisites | Codex / other agent adoption |
+| [Workbench consumer template](../../../docs/templates/consumer-profiles/workbench.md) | Private workspace structure, naming, checkpoint, and handoff rules | Long-running process assets |
+| [Redacted examples](../../../docs/tutorials/README.md) | Redacted Java backend and frontend workflow examples | Writing private profiles or handoff templates |
+| [Workflow evaluation examples](../../../docs/tutorials/workflow-evaluation.md) | Public-safe five-stage workflow examples, rubrics, and failure signals | Evaluating command output quality |
+| [Context-safe workflows](../../../docs/guides/workflows/context-safe.md) | Review, fix, documentation, and handoff loops that avoid context blow-up | Large-task decomposition and resumability |
+| [Prompt template library](../../../docs/templates/prompts/README.md) | Codex, Claude Code, and delivery documentation prompt templates | Copying into private consumer projects |
 | [Command Reference Guide](../guides/commands-reference-guide.en.md) | Parameters, examples, workflow templates | Daily command lookup |
 | [Command Handbook](../guides/claude-code-commands-handbook.en.md) | Command selection and copy-ready usage | Quick start |
 | [Codex Loop Guide](../commands/codex/codex-review-fix.README.en.md) | review / fix / verify collaboration | Claude Code + Codex |
 | [Skill-first design](../architecture/dual-track-design.md) | Command and skill responsibilities | Changing commands or skills |
 | [Hooks design](../architecture/hooks-design.md) | Pre-write checks and audit hooks | Maintaining safety boundaries |
 | [Agent Development Stack](../architecture/agent-development-stack.md) | Five-layer architecture, source files, and validation gates | Understanding or maintaining the plugin stack |
-| [Core agent routing](../../../docs/agents/ROUTING.md) | Routing rules for 6 core agents and capability packs | Choosing or maintaining agents |
-| [Plugin-aware routing](../../../docs/agents/PLUGIN_AWARE_ROUTING.md) | Enhanced / fallback mode and pack activation rules | Maintaining pack routing |
+| [Core agent routing](../../../docs/reference/architecture/agent-routing.md) | Routing rules for 6 core agents and capability packs | Choosing or maintaining agents |
+| [Plugin-aware routing](../../../docs/reference/architecture/agent-routing.md) | Enhanced / fallback mode and pack activation rules | Maintaining pack routing |
 | [Marketplace catalog](../../../docs/marketplace/catalog.md) | Generated plugin catalog and compatibility evidence | Browsing marketplace entries |
-| [Marketplace portal IA](../../../docs/marketplace/portal-information-architecture.md) | Marketplace portal information architecture, data sources, current `v4.0.0` single-plugin boundary, and deferred multi-plugin boundary | Evaluating the deferred portal boundary |
-| [multi-plugin readiness evidence](../../../docs/marketplace/multi-plugin-readiness.md) | Version-independent evidence ledger for production multi-plugin activation | Evaluating demonstrated ownership and release pressure |
-| [Registry author workflow](../../../docs/marketplace/registry-author-workflow.md) | Plugin entry updates, scaffold dry-run, profiles, and validation flow | Plugin authors and maintainers |
-| [Compatibility matrix](../../../docs/marketplace/compatibility-matrix.md) | Claude Code, Codex CLI, Bash, Node.js, and optional enhanced tools | Reviewing compatibility |
-| [Trust policy](../../../docs/marketplace/trust-policy.md) | Trust/risk/deprecation/last-updated/maintainer semantics and review requirements | Reviewing marketplace metadata |
-| [Security review route](../../../docs/marketplace/security-review-route.md) | Security-sensitive plugin change route and minimum checks | Security review |
-| [Release hygiene](../../../docs/releases/release-hygiene.md) | Tag/version sync, generated drift, changelog, and pre-release review | Release preparation |
-| [Release evidence template](../../../docs/releases/release-evidence-template.md) | Environment, tag, validation, and skipped-check evidence before release or promotion | Release evidence capture |
+| [Marketplace portal IA](../../../docs/project/plans/portal-information-architecture.md) | Marketplace portal information architecture, data sources, current `v4.0.0` single-plugin boundary, and deferred multi-plugin boundary | Evaluating the deferred portal boundary |
+| [multi-plugin readiness evidence](../../../docs/project/plans/multi-plugin-readiness.md) | Version-independent evidence ledger for production multi-plugin activation | Evaluating demonstrated ownership and release pressure |
+| [Registry author workflow](../../../docs/operations/marketplace/registry-authoring.md) | Plugin entry updates, scaffold dry-run, profiles, and validation flow | Plugin authors and maintainers |
+| [Compatibility matrix](../../../docs/reference/compatibility/marketplace.md) | Claude Code, Codex CLI, Bash, Node.js, and optional enhanced tools | Reviewing compatibility |
+| [Trust policy](../../../docs/reference/security/marketplace-trust.md) | Trust/risk/deprecation/last-updated/maintainer semantics and review requirements | Reviewing marketplace metadata |
+| [Security review route](../../../docs/reference/security/security-review.md) | Security-sensitive plugin change route and minimum checks | Security review |
+| [Release hygiene](../../../docs/operations/releases/hygiene.md) | Tag/version sync, generated drift, changelog, and pre-release review | Release preparation |
+| [Release evidence template](../../../docs/templates/evidence/release.md) | Environment, tag, validation, and skipped-check evidence before release or promotion | Release evidence capture |
 | [Capability packs](../../packs/README.md) | Index for 8 domain capability packs | Maintaining packs |
 
 ## Maintenance

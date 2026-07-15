@@ -33,6 +33,7 @@ assert.deepEqual(generic.product, {
   namespace: product.pluginNamespace,
   expectedWorkflowCount: product.expectedWorkflowCount,
   canonicalEntrypoints: product.primaryEntrypoints,
+  automaticRouting: product.automaticRouting,
   agents: product.agents,
   packs: product.packs,
 });

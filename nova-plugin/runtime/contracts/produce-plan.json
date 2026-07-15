@@ -48,6 +48,7 @@
       "required": false,
       "values": [
         "general",
+        "lite",
         "java-backend"
       ]
     },
@@ -156,6 +157,7 @@
         "default": "general",
         "exactValues": [
           "general",
+          "lite",
           "java-backend"
         ]
       },
@@ -192,7 +194,10 @@
           "value": "java-backend"
         },
         "action": "Use the Java backend design profile.",
-        "route": "backend-plan"
+        "route": "produce-plan",
+        "variantParameters": {
+          "PLAN_PROFILE": "java-backend"
+        }
       }
     ],
     "invariants": [

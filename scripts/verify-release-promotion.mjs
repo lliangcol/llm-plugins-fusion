@@ -76,7 +76,7 @@ export function verifyPromotion({ args = process.argv.slice(2), env = process.en
   const releasePolicy = evaluateReleaseCorrections({
     mode: 'promote', stableTag: options.stableTag, candidateTag: options.expectedCandidateTag, sourceCommit: options.commit,
     corrections: correctionSource.document.corrections, correctionsSha256: correctionSource.sha256,
-    independentReview: { passed: true }, protectedPublication: { passed: false },
+    independentReview: { passed: true }, candidateVerification: { passed: true }, protectedPublication: { passed: false },
   });
   if (releasePolicy.status === 'BLOCKED_POLICY') assertReleaseReady(releasePolicy);
   if (options.githubOutput) {

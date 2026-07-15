@@ -31,7 +31,7 @@ Generated from `workflow-specs/workflows.v6.json` by `node scripts/generate-work
 | `/nova-plugin:review` | primary | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
 | `/nova-plugin:nova-review` | canonical | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
 | `/nova-plugin:review-lite` | deprecated-alias | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
-| `/nova-plugin:review-only` | deprecated-alias | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
+| `/nova-plugin:review-only` | deprecated-alias | none | false | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
 | `/nova-plugin:review-strict` | deprecated-alias | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
 | `/nova-plugin:route` | primary | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
 | `/nova-plugin:nova-route` | canonical | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |

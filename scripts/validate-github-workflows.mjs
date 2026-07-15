@@ -86,11 +86,6 @@ const WORKFLOW_CONTRACTS = [
     label: 'dependency review workflow top-level permissions',
   },
   {
-    file: '.github/workflows/dependency-audit.yml',
-    permissions: [['contents', 'read']],
-    label: 'dependency audit workflow top-level permissions',
-  },
-  {
     file: '.github/workflows/codeql.yml',
     permissions: [['contents', 'read'], ['security-events', 'write']],
     label: 'CodeQL workflow top-level permissions',
@@ -109,11 +104,6 @@ const WORKFLOW_CONTRACTS = [
     file: '.github/workflows/promote-release.yml',
     permissions: [['contents', 'read']],
     label: 'release promotion workflow top-level permissions',
-  },
-  {
-    file: '.github/workflows/label-sync.yml',
-    permissions: [['contents', 'read'], ['issues', 'write']],
-    label: 'label sync workflow top-level permissions',
   },
   {
     file: '.github/workflows/release-recovery-drill.yml',
@@ -595,7 +585,8 @@ function validateWorkflowContracts() {
     if (!candidateSrc.includes('npm install -g ./cli/claude-code.tgz')) recordError(candidateFile, 'candidate live gate must install the verified Claude package through an explicit local path');
     if (candidateSrc.includes('npm install -g ./cli/claude-code.tgz --ignore-scripts')) recordError(candidateFile, 'candidate live gate must allow the verified Claude package to install its native binary');
     if (!candidateSrc.includes('marketplace.canary.json') || !candidateSrc.includes('--expected-commit "${GITHUB_SHA}"') || !candidateSrc.includes('--evidence-source "lliangcol/llm-plugins-fusion@${GITHUB_REF_NAME}"')) recordError(candidateFile, 'candidate live gate must bind its temporary marketplace to the exact tag and commit');
-    if (!candidateSrc.includes('.metrics/nova-plugin-*-candidate-bundle.tar.gz') || !candidateSrc.includes('include-hidden-files: true') || !candidateSrc.includes('if-no-files-found: error')) recordError(candidateFile, 'candidate bundle upload must select explicit hidden files and fail closed when absent');
+    if (!candidateSrc.includes('.metrics/nova-plugin-*-evidence-bundle.tar.gz') || !candidateSrc.includes('include-hidden-files: true') || !candidateSrc.includes('if-no-files-found: error')) recordError(candidateFile, 'candidate evidence bundle upload must select explicit hidden files and fail closed when absent');
+    if (!candidateSrc.includes('test "$(find .metrics/candidate-publish -maxdepth 1 -type f | wc -l | tr -d \' \')" -eq 3')) recordError(candidateFile, 'candidate publication must expose exactly archive, checksums, and one evidence bundle');
     if (/ANTHROPIC_API_KEY/u.test(candidateSrc)) recordError(candidateFile, 'candidate live gate must not use ANTHROPIC_API_KEY');
   }
 
@@ -607,7 +598,7 @@ function validateWorkflowContracts() {
     if (!inputs['release-tag']?.required || !inputs['candidate-tag']?.required) recordError(promotionFile, 'promotion must require exact stable and candidate tags');
     if (/latest matching candidate|tail -n 1|sort -V/u.test(promotionSrc)) recordError(promotionFile, 'promotion must not infer the latest matching candidate');
     if (/Stage reviewed recovery verifier|Restore reviewed recovery verifier|cp scripts\/lib\/release-candidate/u.test(promotionSrc)) recordError(promotionFile, 'promotion must not mix current-main control with immutable release source');
-    for (const required of ['extract-release-bundle.mjs', 'verify-release-promotion.mjs', 'release-orchestrator.mjs', 'reconcile-github-release.mjs', '--candidate-core', '--promotion-intent', '--control-bundle-manifest']) {
+    for (const required of ['extract-release-bundle.mjs', 'verify-release-promotion.mjs', 'release-orchestrator.mjs', 'reconcile-github-release.mjs', '--candidate-core', '--promotion-intent', '--control-bundle-manifest', '--candidate-verification-passed', 'governance/evidence/*.md']) {
       if (!promotionSrc.includes(required)) recordError(promotionFile, `promotion is missing state-machine control ${required}`);
     }
     const verifyJob = model?.jobs?.verify;
@@ -622,6 +613,7 @@ function validateWorkflowContracts() {
     for (const required of ['verified-promotion-handoff-', 'handoff.sha256', 'sha256sum -c', 'actions/upload-artifact@', 'actions/download-artifact@']) {
       if (!promotionSrc.includes(required)) recordError(promotionFile, `promotion digest-bound handoff is missing ${required}`);
     }
+    if (!promotionSrc.includes('test "$(find "${handoff}/publish" -maxdepth 1 -type f | wc -l | tr -d \' \')" -eq 3')) recordError(promotionFile, 'stable publication must expose exactly archive, checksums, and one evidence bundle');
     for (const required of ["RELEASE_PROMOTION: '1'", 'CANDIDATE_TAG: ${{ inputs.candidate-tag }}', 'SOURCE_COMMIT: ${{ steps.identity.outputs.commit }}']) {
       if (!promotionSrc.includes(required)) recordError(promotionFile, `promotion release notes are missing exact fact input ${required}`);
     }
@@ -664,7 +656,7 @@ function validateWorkflowContracts() {
     recordError(smokeFile, 'plugin install smoke issue reporter must bind GH_REPO outside a Git checkout');
   }
 
-  const dependencyAuditFile = '.github/workflows/dependency-audit.yml';
+  const dependencyAuditFile = '.github/workflows/nightly.yml';
   const dependencyAuditSrc = readWorkflow(dependencyAuditFile);
   if (!dependencyAuditSrc) return;
   const dependencyAuditOnBlock = extractYamlBlock(dependencyAuditFile, dependencyAuditSrc, 'on', 0, 'dependency audit trigger block');
@@ -674,7 +666,7 @@ function validateWorkflowContracts() {
       recordError(dependencyAuditFile, 'dependency audit requires manual and scheduled triggers');
     }
     if (/^\s+(?:pull_request|push)\s*:/m.test(triggerText)) {
-      recordError(dependencyAuditFile, 'dependency audit must not duplicate pull-request or push dependency review');
+      recordError(dependencyAuditFile, 'nightly maintenance must not duplicate pull-request or push dependency review');
     }
   }
   for (const required of [
@@ -683,21 +675,42 @@ function validateWorkflowContracts() {
     'npm ci --ignore-scripts',
     'node scripts/audit-dependencies.mjs --write',
     'if: always()',
-    'governance/dependency-audit-evidence.json',
+    'governance/dependency-governance.json',
     'docs/generated/dependency-audit.md',
   ]) {
     if (!dependencyAuditSrc.includes(required)) recordError(dependencyAuditFile, `dependency audit evidence contract requires ${required}`);
   }
 
+  const labelSyncFile = '.github/workflows/pr-governance.yml';
+  const labelSyncSrc = readWorkflow(labelSyncFile);
+  if (!labelSyncSrc) return;
+  const labelSyncModel = parseWorkflow(labelSyncFile, labelSyncSrc);
+  const labelJob = labelSyncModel?.jobs?.['label-sync'];
+  if (!labelJob) recordError(labelSyncFile, 'PR governance workflow must include the label-sync maintenance job');
+  else {
+    if (JSON.stringify(labelJob.permissions) !== JSON.stringify({ contents: 'read', issues: 'write' })) recordError(labelSyncFile, 'label-sync job permissions must be exactly contents:read and issues:write');
+    if (!String(labelJob.if ?? '').includes("github.event_name == 'push'") || !String(labelJob.if ?? '').includes("github.event_name == 'workflow_dispatch'")) recordError(labelSyncFile, 'label-sync job must run only for push or manual dispatch');
+  }
+  for (const required of [
+    'workflow_dispatch:',
+    "branches: [main]",
+    "'.github/labels.yml'",
+    "'.github/workflows/pr-governance.yml'",
+    'node scripts/sync-github-labels.mjs --apply',
+    'GH_TOKEN: ${{ github.token }}',
+  ]) {
+    if (!labelSyncSrc.includes(required)) recordError(labelSyncFile, `label sync contract requires ${required}`);
+  }
+
   const dependencyReviewFile = '.github/workflows/dependency-review.yml';
   const dependencyReviewSrc = readWorkflow(dependencyReviewFile);
   if (!dependencyReviewSrc) return;
-  const dependencyPolicyFile = 'governance/dependency-policy.json';
+  const dependencyPolicyFile = 'governance/dependency-governance.json';
   const dependencyPolicySrc = readRequiredFile(dependencyPolicyFile);
   if (!dependencyPolicySrc) return;
   let dependencyPolicy;
   try {
-    dependencyPolicy = JSON.parse(dependencyPolicySrc);
+    dependencyPolicy = JSON.parse(dependencyPolicySrc).policy;
   } catch (error) {
     recordError(dependencyPolicyFile, `invalid dependency policy JSON: ${error.message}`);
     return;
@@ -779,7 +792,7 @@ function validatePrGovernanceContracts() {
     for (const type of ['submitted', 'edited', 'dismissed']) {
       if (!reviewTypes.includes(type)) recordError(workflowFile, `PR governance trigger is missing pull_request_review type ${type}`);
     }
-    if (triggers.push || triggers.pull_request_target) recordError(workflowFile, 'PR governance must run only on pull-request and review lifecycle events');
+    if (triggers.pull_request_target) recordError(workflowFile, 'PR governance must not use pull_request_target');
     const job = model?.jobs?.governance;
     if (job?.name !== PR_GOVERNANCE_CHECK) recordError(workflowFile, `governance job must expose stable check name "${PR_GOVERNANCE_CHECK}"`);
     if (job?.['timeout-minutes'] !== 5) recordError(workflowFile, 'PR governance must retain its five-minute lightweight timeout');
@@ -789,6 +802,7 @@ function validatePrGovernanceContracts() {
     const setupNode = steps.find((step) => String(step.uses ?? '').startsWith('actions/setup-node@'));
     if (String(setupNode?.with?.['node-version']) !== '22') recordError(workflowFile, 'PR governance must run on the minimum supported Node 22');
     if (!steps.some((step) => step.run === 'node scripts/validate-pr-governance.mjs')) recordError(workflowFile, 'PR governance must invoke the source-owned validator with fixed argv');
+    if (!String(job?.if ?? '').includes("github.event_name == 'pull_request'") || !String(job?.if ?? '').includes("github.event_name == 'pull_request_review'")) recordError(workflowFile, 'PR governance job must remain isolated to pull-request and review lifecycle events');
   }
 
   const templateFile = '.github/pull_request_template.md';

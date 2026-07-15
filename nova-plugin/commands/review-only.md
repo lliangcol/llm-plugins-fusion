@@ -7,14 +7,14 @@ destructive-actions: none
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash
 user-invocable: true
-disable-model-invocation: false
+disable-model-invocation: true
 ---
 
 # /nova-plugin:review-only
 
 **Deprecated compatibility alias:** this wrapper remains for the 4.x migration window.
 
-Load `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/review-only.json` and canonical skill `${CLAUDE_PLUGIN_ROOT}/skills/nova-review/SKILL.md`, then execute canonical surface `nova-review` with variant preset `{"LEVEL":"standard"}` merged beneath explicit non-conflicting `$ARGUMENTS`. Never copy or override behavior in this wrapper; the runtime contract and canonical skill are authoritative. If they differ, fail closed.
+Load `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/review-only.json` and canonical skill `${CLAUDE_PLUGIN_ROOT}/skills/nova-review/SKILL.md`, then execute canonical surface `nova-review` with variant preset `{"LEVEL":"standard","MODE":"findings-only"}` merged beneath explicit non-conflicting `$ARGUMENTS`. Never copy or override behavior in this wrapper; the runtime contract and canonical skill are authoritative. If they differ, fail closed.
 
 - Stage: review
 - Owner agents: reviewer

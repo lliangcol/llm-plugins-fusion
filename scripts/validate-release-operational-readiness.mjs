@@ -13,7 +13,10 @@ export function evaluateReleaseOperationalReadiness({ reviewers, operations, sig
   if (!['candidate', 'promote', 'recover', 'drill'].includes(mode)) throw new Error(`unsupported operational readiness mode: ${mode}`);
   const missing = [];
   if (reviewers.status !== 'configured' || reviewers.trustedUsers.length + reviewers.trustedTeams.length === 0) missing.push('TRUSTED_REVIEWERS_UNCONFIGURED');
-  if (mode !== 'candidate' && signers.length < 2) missing.push('SIGNER_REDUNDANCY_REQUIRED');
+  const requiredSigners = mode !== 'candidate' && operations.signing.overlapRequired
+    ? Math.max(2, operations.signing.minimumActiveSigners)
+    : operations.signing.minimumActiveSigners;
+  if (signers.length < requiredSigners) missing.push('SIGNER_REDUNDANCY_REQUIRED');
   if (mode !== 'candidate' && !operations.signing.lastRotationEvidence) missing.push('SIGNER_ROTATION_EVIDENCE_REQUIRED');
   if (mode === 'promote' && !operations.recovery.lastSuccessfulDrill) missing.push('RECOVERY_DRILL_EVIDENCE_REQUIRED');
   if (mode === 'promote' && !operations.protectedPublication.currentEvidence) missing.push('PROTECTED_ENVIRONMENT_EVIDENCE_REQUIRED');

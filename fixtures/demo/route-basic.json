@@ -4,7 +4,7 @@
   "title": "Route a documentation maintenance task",
   "request": "I need to update public docs, verify links, and summarize validation for a small workflow change.",
   "expected": {
-    "nextCommand": "/explore",
+    "nextCommand": "/nova-plugin:explore",
     "stage": "Explore",
     "packs": ["docs"],
     "requiredInputs": [

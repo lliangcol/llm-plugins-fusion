@@ -395,7 +395,8 @@
       "legacyAlias": "nova-review-only",
       "canonicalSurfaceId": "review",
       "variantPreset": {
-        "LEVEL": "standard"
+        "LEVEL": "standard",
+        "MODE": "findings-only"
       },
       "compatibilityAlias": true,
       "runtimeDelegation": false
