@@ -1,0 +1,15 @@
+{
+  "$schema": "../schemas/evidence-levels.schema.json",
+  "schemaVersion": 1,
+  "levels": [
+    { "id": "E0", "name": "Static", "proves": "Schemas, documentation, contracts, and generated drift", "doesNotProve": "CLI installation or assistant behavior" },
+    { "id": "E1", "name": "Fixture", "proves": "Deterministic educational rendering and fixture signals", "doesNotProve": "LLM, network, or installation behavior" },
+    { "id": "E2", "name": "Local smoke", "proves": "Local scripts, tutorials, and safe install planning paths", "doesNotProve": "User-scope installation or authenticated invocation" },
+    { "id": "E3", "name": "Isolated install", "proves": "An exact artifact installs in a disposable identity and its tree matches", "doesNotProve": "Assistant workflow adherence" },
+    { "id": "E4", "name": "Authenticated route", "proves": "An isolated read-only route invocation obeys installation, inventory, and no-write safety contracts", "doesNotProve": "Full workflow quality or broad adoption" },
+    { "id": "E5", "name": "Live evaluation", "proves": "Versioned multi-case behavior statistics for a named assistant and attempt policy", "doesNotProve": "Other versions, user projects, or production outcomes" }
+  ],
+  "sourceControlledStableProof": { "highestAcceptedLevel": "E3", "source": "governance/stable-install-proof.json" },
+  "dynamicEvidenceStorage": ["CI artifacts", "candidate bundles", "release control bundles"],
+  "forbiddenPayloads": ["credentials", "raw model response", "raw prompt", "local absolute paths"]
+}

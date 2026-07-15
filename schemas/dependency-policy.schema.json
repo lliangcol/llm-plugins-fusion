@@ -4,7 +4,7 @@
   "title": "Dependency review policy",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schemaVersion", "failOnSeverity", "deniedLicenses", "commentSummaryInPr", "auditExceptions", "distributedNodeRuntimeDependencies"],
+  "required": ["schemaVersion", "failOnSeverity", "deniedLicenses", "commentSummaryInPr", "auditExceptions", "licenseReviews", "distributedNodeRuntimeDependencies"],
   "properties": {
     "$schema": { "type": "string" },
     "schemaVersion": { "const": 1 },
@@ -20,6 +20,11 @@
     "auditExceptions": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["advisory", "scope", "reason", "owner", "expires"], "properties": {
       "advisory": { "type": "string", "minLength": 1 }, "scope": { "enum": ["direct", "transitive", "dev-only", "runtime-distributed", "archive-excluded"] },
       "reason": { "type": "string", "minLength": 1 }, "owner": { "type": "string", "minLength": 1 }, "expires": { "type": "string", "format": "date" }
-    } } }
+    } } },
+    "licenseReviews": { "type": "array", "items": { "type": "object", "additionalProperties": false, "required": ["package", "version", "expression", "decision", "reason", "owner", "expires"], "properties": {
+      "package": { "type": "string", "minLength": 1 }, "version": { "type": "string", "minLength": 1 }, "expression": { "type": ["string", "null"] },
+      "decision": { "enum": ["allow", "deny", "select"] }, "selectedLicense": { "type": "string", "minLength": 1 },
+      "reason": { "type": "string", "minLength": 1 }, "owner": { "type": "string", "minLength": 1 }, "expires": { "type": "string", "format": "date" }
+    }, "allOf": [{ "if": { "properties": { "decision": { "const": "select" } }, "required": ["decision"] }, "then": { "properties": { "selectedLicense": { "type": "string", "minLength": 1 } }, "required": ["selectedLicense"] } }] } }
   }
 }

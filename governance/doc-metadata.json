@@ -7,6 +7,8 @@
     { "pattern": "^docs/generated/", "contentType": "generated-reference", "generated": true, "sourceOfTruth": "generator" },
     { "pattern": "^docs/operations/maintainers/(diagnostics|task-catalog\\.generated)\\.md$", "audience": "maintainers", "contentType": "generated-reference", "generated": true, "sourceOfTruth": "generator" },
     { "pattern": "^docs/reference/evaluation/benchmark\\.md$", "contentType": "generated-reference", "generated": true, "sourceOfTruth": "generator" },
+    { "pattern": "^docs/project/plans/deep-research-engineering-risk-execution-plan\\.md$", "audience": "maintainers", "contentType": "execution-plan", "status": "current" },
+    { "pattern": "^docs/reference/architecture/control-plane\\.md$", "audience": "maintainers", "contentType": "architecture-reference", "status": "current" },
     { "pattern": "^nova-plugin/docs/commands/", "audience": "workflow-users", "contentType": "command-reference", "sourceOfTruth": "workflow-specs/workflows.v6.json" },
     { "pattern": "(^|/)AGENTS\\.md$", "contentType": "agent-adapter", "ownerSource": "CLAUDE.md" },
     { "pattern": "^tests/|^fixtures/", "audience": "maintainers", "contentType": "fixture-reference" }

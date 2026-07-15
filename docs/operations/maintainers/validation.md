@@ -30,7 +30,10 @@ gate is added, renamed, removed, or moved.
   for both passing and failing runs.
 - `.github/workflows/release-candidate.yml` uploads candidate validation
   evidence and blocks prerelease publication on isolated install smoke for the
-  exact RC tag. `.github/workflows/release.yml` delegates stable promotion to
+  exact RC tag. It also requires the exact governed Linux/Node 22 GitHub-hosted
+  performance profile; until 20 comparable samples establish that profile,
+  candidate performance remains Blocked rather than silently non-comparable.
+  `.github/workflows/release.yml` delegates stable promotion to
   `.github/workflows/promote-release.yml`, which reuses the verified candidate
   assets. The candidate bundle also publishes SHA-256 checksums for selected
   source-controlled release artifacts.
@@ -77,6 +80,8 @@ gate is added, renamed, removed, or moved.
 | Release Evidence | `node scripts/generate-release-evidence.mjs` | Machine-readable validation, coverage, install, live route, and checksum aggregation. |
 | Validate GitHub Workflows | `node scripts/validate-github-workflows.mjs` | Workflow permissions, inventory, action SHA pinning, required checks, NPM Test gate, and smoke boundaries. |
 | Dependency Review | `.github/workflows/dependency-review.yml` | Dependency graph comparison and dependency-review action. |
+| Dependency vulnerability audit | `node scripts/audit-dependencies.mjs` | Network-backed npm advisory evidence against the committed lockfile. |
+| Dependency license audit | `node scripts/audit-dependency-licenses.mjs` | Deterministic SPDX policy evidence for root, workspace, direct, transitive, optional, and development dependencies. |
 | CodeQL / Analyze JavaScript | `.github/workflows/codeql.yml` | Code scanning for JavaScript. |
 
 ## Change Routing
@@ -88,6 +93,7 @@ gate is added, renamed, removed, or moved.
 | Hook scripts or config | `node scripts/validate-hooks.mjs`, hook `bash -n`, `node scripts/validate-runtime-smoke.mjs` |
 | GitHub workflows | `node scripts/validate-github-workflows.mjs`, `npm run validate:maintainer` |
 | Test coverage evidence | `npm run test:coverage:check`, `node scripts/validate-github-workflows.mjs` when CI upload wiring changes |
+| Dependency policy or lockfile | `npm run validate:dependency-audit`, `npm run validate:license-audit`, `node scripts/validate-schemas.mjs` |
 | Registry or plugin metadata | `node scripts/generate-registry.mjs --write`, `npm run validate:drift`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs` |
 | Release evidence | `npm run validate:maintainer`, `node scripts/generate-release-checksums.mjs`, install smoke dry-run, and isolated install smoke when promotion evidence requires it |
 | Public surface inventory | `node scripts/generate-surface-inventory.mjs --write`, `node scripts/generate-surface-inventory.mjs`, `npm test` |

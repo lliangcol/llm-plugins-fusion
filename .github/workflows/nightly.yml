@@ -31,6 +31,8 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: npm run validate:maintainer
+        env:
+          NOVA_RUNNER_CLASS: github-hosted
       - run: npm run test:coverage:check
       - if: runner.os == 'Linux'
         run: npm run test:mutation:critical && npm run test:fault-injection && npm run scan:distribution

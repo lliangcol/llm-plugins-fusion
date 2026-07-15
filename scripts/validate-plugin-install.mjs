@@ -488,7 +488,19 @@ export async function main(args = process.argv.slice(2)) {
     }
 
     const routeSmoke = options.routeSmokeOut && validationErrors.length === 0
-      ? await runRouteSmoke({ pluginDir: installed.installPath, outPath: options.routeSmokeOut, env: isolated.env })
+      ? await runRouteSmoke({
+        pluginDir: installed.installPath,
+        outPath: options.routeSmokeOut,
+        env: isolated.env,
+        binding: {
+          ref: options.expectedRef ?? 'local',
+          commit: options.expectedCommit,
+          evidenceSource: options.evidenceSource ?? 'local-isolated-install',
+          artifactTreeDigest: sourceTreeDigest,
+          installedTreeDigest,
+          assistantVersion: claudeVersion,
+        },
+      })
       : null;
     const evidence = buildInstallEvidence({
       generatedAt: new Date().toISOString(),

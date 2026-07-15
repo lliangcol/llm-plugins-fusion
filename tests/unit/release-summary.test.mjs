@@ -15,11 +15,20 @@ const proof = {
   candidateTreeDigest: stable.pluginTreeSha256,
   installedTreeDigest: stable.pluginTreeSha256,
 };
+const evidenceLevels = {
+  levels: [
+    { id: 'E0', name: 'Static', doesNotProve: 'Installation or assistant behavior' },
+    { id: 'E3', name: 'Isolated install', doesNotProve: 'Assistant workflow adherence' },
+  ],
+  sourceControlledStableProof: { highestAcceptedLevel: 'E3' },
+};
 
 test('release summary verifies a stable install only when every governed identity matches', () => {
-  const summary = buildReleaseSummary({ channels: { stable }, proof, adoption: { status: 'not-demonstrated' } });
+  const summary = buildReleaseSummary({ channels: { stable }, proof, adoption: { status: 'not-demonstrated' }, evidenceLevels });
   assert.match(summary.sections.verified[1], /matches tree digest/u);
-  const stale = buildReleaseSummary({ channels: { stable }, proof: { ...proof, installedTreeDigest: 'c'.repeat(64) }, adoption: { status: 'not-demonstrated' } });
+  assert.deepEqual(summary.evidenceLevel, { highestVerified: 'E3', label: 'Isolated install', limitation: 'Does not prove assistant workflow adherence.' });
+  const stale = buildReleaseSummary({ channels: { stable }, proof: { ...proof, installedTreeDigest: 'c'.repeat(64) }, adoption: { status: 'not-demonstrated' }, evidenceLevels });
   assert.equal(stale.sections.verified.length, 1);
+  assert.equal(stale.evidenceLevel.highestVerified, 'E0');
   assert.ok(stale.sections.notVerified.includes('No matching stable install proof.'));
 });

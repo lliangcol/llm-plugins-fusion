@@ -1,6 +1,13 @@
 {
   "$schema": "../schemas/validation-performance.schema.json",
-  "schemaVersion": 1,
-  "platform": "windows-x64-node24",
-  "budgets": { "validateAllWallMs": 60000, "runtimeSmokeWallMs": 30000 }
+  "schemaVersion": 2,
+  "enforcement": "profile-required",
+  "minimumStableSamples": 20,
+  "profiles": [],
+  "legacyBudgets": {
+    "deprecated": true,
+    "validateAllWallMs": 60000,
+    "runtimeSmokeWallMs": 30000,
+    "note": "Retained for one minor as non-comparable summed-task policy; it is not enforced as elapsed wall time."
+  }
 }

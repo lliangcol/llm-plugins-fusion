@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/platform-evidence.schema.json",
+  "type": "object", "additionalProperties": false, "required": ["$schema", "schemaVersion", "tasks", "containerFallback"],
+  "properties": {
+    "$schema": { "type": "string" }, "schemaVersion": { "const": 1 },
+    "tasks": { "type": "array", "minItems": 1, "items": { "type": "object", "additionalProperties": false, "required": ["id", "classification", "localWindowsPath", "authoritativePath", "evidenceStrength", "reasonCode"], "properties": {
+      "id": { "type": "string" }, "classification": { "enum": ["native-node", "powershell-equivalent", "container-candidate", "bash-authoritative"] },
+      "localWindowsPath": { "type": ["string", "null"] }, "authoritativePath": { "type": "string" }, "evidenceStrength": { "enum": ["authoritative", "equivalent", "partial", "external"] }, "reasonCode": { "type": "string" }
+    } } },
+    "containerFallback": { "type": "object", "additionalProperties": false, "required": ["automatic", "enabled", "imageDigest", "network", "mount", "argv"], "properties": {
+      "automatic": { "const": false }, "enabled": { "type": "boolean" }, "imageDigest": { "type": ["string", "null"] }, "network": { "const": "none" }, "mount": { "const": "read-only" }, "argv": { "const": ["bash", "-n"] }
+    }, "allOf": [
+      { "if": { "properties": { "enabled": { "const": true } }, "required": ["enabled"] }, "then": { "properties": { "imageDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" } } } },
+      { "if": { "properties": { "enabled": { "const": false } }, "required": ["enabled"] }, "then": { "properties": { "imageDigest": { "type": "null" } } } }
+    ] }
+  }
+}

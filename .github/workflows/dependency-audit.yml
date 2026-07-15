@@ -20,6 +20,7 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - run: node scripts/audit-dependencies.mjs --write
+      - run: node scripts/audit-dependency-licenses.mjs --write
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: always()
         with:
@@ -27,3 +28,5 @@ jobs:
           path: |
             governance/dependency-audit-evidence.json
             docs/generated/dependency-audit.md
+            governance/dependency-license-evidence.json
+            docs/generated/dependency-license-audit.md

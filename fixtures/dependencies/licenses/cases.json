@@ -1,0 +1,5 @@
+{
+  "passed": ["MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "Apache-2.0 WITH LLVM-exception"],
+  "failed": ["GPL-3.0-only", "MIT AND GPL-3.0-only", "AGPL-3.0-or-later"],
+  "blocked": ["MIT OR GPL-3.0-only", "LicenseRef-Proprietary", null, ["MIT", "Apache-2.0"]]
+}

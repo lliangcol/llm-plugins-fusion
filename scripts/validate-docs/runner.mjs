@@ -837,7 +837,7 @@ function validateMaintainerDiagnosticContracts() {
     },
     {
       file: 'docs/operations/maintainers/troubleshooting.md',
-      pattern: /\| Bash hook syntax failure \| `bash -n nova-plugin\/hooks\/scripts\/pre-write-check\.sh` and `bash -n nova-plugin\/hooks\/scripts\/post-audit-log\.sh` \| Run only where Bash is available; treat Windows no-Bash skips as skipped, not passed\. \|/,
+      pattern: /\| Bash hook syntax failure \| `bash -n nova-plugin\/hooks\/scripts\/pre-write-check\.sh`, `bash -n nova-plugin\/hooks\/scripts\/pre-bash-check\.sh`, and `bash -n nova-plugin\/hooks\/scripts\/post-audit-log\.sh` \| Run only where Bash is available; treat Windows no-Bash skips as skipped, not passed\. \|/,
       label: 'maintainer troubleshooting hook syntax failure shortcut',
     },
     {
@@ -1247,6 +1247,11 @@ function validateValidatorCoverageNarrative() {
       file: 'README.md',
       pattern: /该入口覆盖[\s\S]*GitHub workflow 权限、库存和 required-check 合约/,
       label: 'README validate-all GitHub workflow coverage narrative',
+    },
+    {
+      file: 'README.md',
+      pattern: /lines 85%、branches 70%、functions 90%/,
+      label: 'README coverage threshold source alignment',
     },
     {
       file: 'docs/project/plans/current-remediation.md',

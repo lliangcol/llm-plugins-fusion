@@ -86,10 +86,12 @@ Generated from `governance/doc-metadata.json` by `node scripts/generate-doc-gove
 - [docs/privacy/data-handling.md](../../docs/privacy/data-handling.md) — repository-users; reference
 - [docs/project-optimization-plan.md](../../docs/project-optimization-plan.md) — repository-users; reference
 - [docs/project/decisions/0001-truth-release-capability-evidence.md](../../docs/project/decisions/0001-truth-release-capability-evidence.md) — repository-users; reference
+- [docs/project/decisions/0002-cli-and-extension-direction.md](../../docs/project/decisions/0002-cli-and-extension-direction.md) — repository-users; reference
 - [docs/project/migrations/2.4.1-command-namespace.md](../../docs/project/migrations/2.4.1-command-namespace.md) — repository-users; reference
 - [docs/project/migrations/3.0.0-adapters-and-direct-commands.md](../../docs/project/migrations/3.0.0-adapters-and-direct-commands.md) — repository-users; reference
 - [docs/project/migrations/contract-v6.md](../../docs/project/migrations/contract-v6.md) — repository-users; reference
 - [docs/project/plans/current-remediation.md](../../docs/project/plans/current-remediation.md) — repository-users; reference
+- [docs/project/plans/deep-research-engineering-risk-execution-plan.md](../../docs/project/plans/deep-research-engineering-risk-execution-plan.md) — maintainers; execution-plan
 - [docs/project/plans/multi-plugin-readiness.md](../../docs/project/plans/multi-plugin-readiness.md) — repository-users; reference
 - [docs/project/plans/portal-information-architecture.md](../../docs/project/plans/portal-information-architecture.md) — repository-users; reference
 - [docs/project/release-notes/3.0.0.md](../../docs/project/release-notes/3.0.0.md) — repository-users; reference
@@ -107,6 +109,7 @@ Generated from `governance/doc-metadata.json` by `node scripts/generate-doc-gove
 - [docs/prompts/common/workbench-tidy.md](../../docs/prompts/common/workbench-tidy.md) — repository-users; reference
 - [docs/quality/benchmark.md](../../docs/quality/benchmark.md) — repository-users; reference
 - [docs/reference/architecture/agent-routing.md](../../docs/reference/architecture/agent-routing.md) — repository-users; reference
+- [docs/reference/architecture/control-plane.md](../../docs/reference/architecture/control-plane.md) — maintainers; architecture-reference
 - [docs/reference/architecture/framework.md](../../docs/reference/architecture/framework.md) — repository-users; reference
 - [docs/reference/architecture/skill-first-projection.md](../../docs/reference/architecture/skill-first-projection.md) — repository-users; reference
 - [docs/reference/compatibility/README.md](../../docs/reference/compatibility/README.md) — repository-users; reference

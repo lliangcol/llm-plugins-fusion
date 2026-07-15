@@ -382,6 +382,7 @@ Hook shell 语法检查需要 Bash：
 
 ```bash
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 
