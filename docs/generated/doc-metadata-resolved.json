@@ -1046,6 +1046,15 @@
       "generated": false
     },
     {
+      "path": "docs/project/decisions/0003-canonical-review-routing.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
       "path": "docs/project/migrations/2.4.1-command-namespace.md",
       "audience": "repository-users",
       "contentType": "reference",

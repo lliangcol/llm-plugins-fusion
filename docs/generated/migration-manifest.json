@@ -577,6 +577,11 @@
       "disposition": "retain"
     },
     {
+      "path": "docs/project/decisions/0003-canonical-review-routing.md",
+      "target": "docs/project/decisions/0003-canonical-review-routing.md",
+      "disposition": "retain"
+    },
+    {
       "path": "docs/project/migrations/2.4.1-command-namespace.md",
       "target": "docs/project/migrations/2.4.1-command-namespace.md",
       "disposition": "retain"
