@@ -72,7 +72,9 @@ function liveEligibilityReasons(evidence) {
   for (const entry of evidence.cases ?? []) attempts.set(entry.caseId, (attempts.get(entry.caseId) ?? 0) + 1);
   if (evidence.sourceState !== 'clean-commit') reasons.push('live-source:not-clean');
   if (!/^v\d+\.\d+\.\d+(?:-rc\.\d+)?$/u.test(evidence.releaseTag ?? '')) reasons.push('live-source:exact-tag-missing');
-  if (evidence.assistant?.adapterLoaded !== true || !evidence.runtime?.adapterLoadProof) reasons.push('live-runtime:adapter-load-unproven');
+  const adapterLoadObserved = evidence.assistant?.adapterLoadObserved === 'observed'
+    || (evidence.assistant?.adapterLoaded === true && Boolean(evidence.runtime?.adapterLoadProof));
+  if (!adapterLoadObserved) reasons.push('live-runtime:adapter-load-unproven');
   if (!evidence.sourceDigests?.['scripts/run-live-assistant-evals.mjs'] || !evidence.sourceDigests?.['evals/live/cases.json'] || !evidence.sourceDigests?.['evals/live/labels.locked.json']) reasons.push('live-source:runner-or-dataset-digest-missing');
   if (caseIds.size < minimumLiveCases) reasons.push(`live-dataset:fewer-than-${minimumLiveCases}-cases`);
   if ([...attempts.values()].some((count) => count < minimumLiveAttempts) || attempts.size === 0) reasons.push(`live-dataset:fewer-than-${minimumLiveAttempts}-attempts`);

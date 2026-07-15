@@ -20,24 +20,28 @@
     "assistant": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "version", "executable", "adapterSha256", "adapterLoaded"],
+      "required": ["id", "version", "executable", "adapterSha256", "adapterStaged", "adapterLoadObserved"],
       "properties": {
         "id": { "type": "string", "minLength": 1 },
         "version": { "type": "string", "minLength": 1 },
         "executable": { "type": "string", "minLength": 1 },
         "adapterSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-        "adapterLoaded": { "type": "boolean" }
+        "adapterStaged": { "type": "boolean" },
+        "adapterLoadObserved": { "enum": ["observed", "unavailable", "not-applicable"] }
       }
     },
     "runtime": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["adapterLoadProof", "sandboxProfile", "toolPolicy", "environmentIsolation", "runnerSha256", "datasetSha256"],
+      "required": ["adapterLoadPolicy", "sandboxProfile", "toolPolicy", "environmentIsolation", "executableResolution", "invocationTimeoutMs", "maxTotalRuntimeMs", "runnerSha256", "datasetSha256"],
       "properties": {
-        "adapterLoadProof": { "type": ["string", "null"] },
+        "adapterLoadPolicy": { "type": "string", "minLength": 1 },
         "sandboxProfile": { "type": "string" },
         "toolPolicy": { "type": "string" },
         "environmentIsolation": { "type": "string" },
+        "executableResolution": { "enum": ["direct", "windows-exe", "windows-exe-shim", "windows-volta-shim", "windows-node-shim"] },
+        "invocationTimeoutMs": { "type": "integer", "minimum": 1, "maximum": 240000 },
+        "maxTotalRuntimeMs": { "type": "integer", "minimum": 1, "maximum": 900000 },
         "runnerSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
         "datasetSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
       }
@@ -76,23 +80,29 @@
           {
             "type": "object",
             "additionalProperties": false,
-            "required": ["caseId", "attempt", "processExit", "processFailure", "timedOut", "latencyMs", "projectDigestBefore", "projectDigestAfter", "zeroProjectWrites", "adapterLoaded", "adapterLoadProof", "unexpectedToolUse", "unexpectedNetworkUse", "selectedRoute", "requiredInputs", "routeValid", "top2RouteValid", "requiredInputsValid", "approvalValid", "shapeValid", "inventedSurfaces", "contractValid", "responseSummary", "parseFailure", "rawOutputSha256", "rawErrorSha256", "rawOutputBytes", "rawErrorBytes", "rawArtifactsRemoved"],
+            "required": ["caseId", "attempt", "processExit", "processFailure", "timedOut", "latencyMs", "projectDigestBefore", "projectDigestAfter", "zeroProjectWrites", "adapterStaged", "adapterLoadObserved", "adapterLoadReasonCode", "adapterLoadSignals", "observedTools", "allowedReadOnlyTools", "dangerousTools", "deniedDangerousTools", "unknownTools", "deniedUnknownTools", "selectedRoute", "requiredInputs", "routeValid", "top2RouteValid", "requiredInputsValid", "approvalValid", "shapeValid", "inventedSurfaces", "contractValid", "usageStatus", "usageReasonCode", "inputTokens", "outputTokens", "totalTokens", "costUsd", "responseSummary", "parseFailure", "rawOutputSha256", "rawErrorSha256", "rawOutputBytes", "rawErrorBytes", "rawArtifactsRemoved"],
             "properties": {
               "caseId": { "type": "string", "minLength": 1 },
               "kind": { "type": "string" },
               "approvalExpected": { "type": "boolean" },
               "attempt": { "type": "integer", "minimum": 1 },
               "processExit": { "type": ["integer", "null"] },
-              "processFailure": { "type": ["string", "null"], "enum": [null, "timeout", "rate-limit", "authentication", "nonzero-exit"] },
+              "processFailure": { "type": ["string", "null"], "enum": [null, "timeout", "total-timeout", "rate-limit", "authentication", "nonzero-exit"] },
               "timedOut": { "type": "boolean" },
               "latencyMs": { "type": "number", "minimum": 0 },
               "projectDigestBefore": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
               "projectDigestAfter": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
               "zeroProjectWrites": { "type": "boolean" },
-              "adapterLoaded": { "type": "boolean" },
-              "adapterLoadProof": { "type": ["string", "null"] },
-              "unexpectedToolUse": { "type": "array", "items": { "type": "string" } },
-              "unexpectedNetworkUse": { "type": "boolean" },
+              "adapterStaged": { "type": "boolean" },
+              "adapterLoadObserved": { "enum": ["observed", "unavailable", "not-applicable"] },
+              "adapterLoadReasonCode": { "enum": ["plugin-disabled", "adapter-not-staged", "claude-skill-observed", "claude-skill-not-observed", "codex-load-event-unavailable"] },
+              "adapterLoadSignals": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+              "observedTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+              "allowedReadOnlyTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+              "dangerousTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+              "deniedDangerousTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+              "unknownTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+              "deniedUnknownTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
               "selectedRoute": { "type": "array", "items": { "type": "string" } },
               "requiredInputs": { "type": "array", "items": { "type": "string" } },
               "routeValid": { "type": "boolean" },
@@ -108,8 +118,10 @@
               "rawErrorSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
               "rawOutputBytes": { "type": "integer", "minimum": 0 },
               "rawErrorBytes": { "type": "integer", "minimum": 0 },
-              "rawArtifactsRemoved": { "const": true }
-              ,"inputTokens": { "type": ["integer", "null"], "minimum": 0 }
+              "rawArtifactsRemoved": { "const": true },
+              "usageStatus": { "enum": ["reported", "unavailable"] },
+              "usageReasonCode": { "enum": ["cli-reported-usage", "cli-usage-unavailable"] },
+              "inputTokens": { "type": ["integer", "null"], "minimum": 0 }
               ,"outputTokens": { "type": ["integer", "null"], "minimum": 0 }
               ,"totalTokens": { "type": ["integer", "null"], "minimum": 0 }
               ,"costUsd": { "type": ["number", "null"], "minimum": 0 }
@@ -133,9 +145,13 @@
         "attemptsPerCase": { "type": "integer", "minimum": 1 },
         "uniqueCases": { "type": "integer", "minimum": 1 },
         "unexpectedWrites": { "type": "integer", "minimum": 0 },
-        "unexpectedToolUses": { "type": "integer", "minimum": 0 },
+        "unsafeToolUse": { "type": "integer", "minimum": 0 },
+        "deniedDangerousTools": { "type": "integer", "minimum": 0 },
+        "deniedUnknownTools": { "type": "integer", "minimum": 0 },
         "inventedSurfaces": { "type": "integer", "minimum": 0 },
-        "adapterLoadFailures": { "type": "integer", "minimum": 0 },
+        "adapterStagingFailures": { "type": "integer", "minimum": 0 },
+        "adapterLoadObserved": { "type": "integer", "minimum": 0 },
+        "adapterLoadUnavailable": { "type": "integer", "minimum": 0 },
         "rawArtifactCleanupFailures": { "type": "integer", "minimum": 0 }
       }
     },

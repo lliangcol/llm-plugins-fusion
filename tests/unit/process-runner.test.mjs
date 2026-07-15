@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { access, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { access, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -7,6 +7,7 @@ import {
   commandDetails,
   commandExists,
   formatCommand,
+  resolveExecutableInvocation,
   runProcess,
 } from '../../scripts/lib/process-runner.mjs';
 
@@ -133,4 +134,45 @@ test('command probes report available and missing commands', async () => {
 
   const missing = await commandExists('__nova_missing_command__', ['--version']);
   assert.equal(missing, false);
+});
+
+test('Windows executable resolution uses only direct executables or recognized fixed-argv shims', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'nova-windows-executable-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const env = { Path: root };
+  const direct = join(root, 'sample.exe');
+  await writeFile(direct, 'placeholder');
+  assert.deepEqual(resolveExecutableInvocation('sample', { platform: 'win32', env }), { command: direct, argsPrefix: [], resolutionKind: 'windows-exe' });
+  await rm(direct);
+
+  const volta = join(root, 'volta.exe');
+  const shim = join(root, 'sample.cmd');
+  await writeFile(volta, 'placeholder');
+  await writeFile(shim, '@echo off\r\nvolta run %~n0 %*\r\n');
+  assert.deepEqual(resolveExecutableInvocation('sample', { platform: 'win32', env }), { command: volta, argsPrefix: ['run', 'sample'], resolutionKind: 'windows-volta-shim' });
+
+  const script = join(root, 'node_modules', 'pkg', 'cli.js');
+  await mkdir(join(root, 'node_modules', 'pkg'), { recursive: true });
+  await writeFile(script, '');
+  await writeFile(shim, '@ECHO off\r\nSET "_prog=node"\r\n"%_prog%" "%dp0%\\node_modules\\pkg\\cli.js" %*\r\n');
+  const nodeShim = resolveExecutableInvocation(shim, { platform: 'win32', env, nodeExecutable: process.execPath });
+  assert.deepEqual(nodeShim, { command: process.execPath, argsPrefix: [script], resolutionKind: 'windows-node-shim' });
+
+  await writeFile(shim, '@echo off\r\necho unsafe %*\r\n');
+  assert.throws(() => resolveExecutableInvocation(shim, { platform: 'win32', env }), /unsupported \.cmd shim/u);
+});
+
+test('Windows bare commands prefer the configured Volta shim over an injected tool-image PATH', async (t) => {
+  const root = await mkdtemp(join(tmpdir(), 'nova-volta-precedence-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const imageBin = join(root, 'image-bin');
+  const voltaHome = join(root, 'volta-home');
+  const voltaBin = join(voltaHome, 'bin');
+  await mkdir(imageBin, { recursive: true });
+  await mkdir(voltaBin, { recursive: true });
+  await writeFile(join(imageBin, 'sample.cmd'), '@echo off\r\necho stale %*\r\n');
+  await writeFile(join(voltaBin, 'sample.cmd'), '@echo off\r\nvolta run %~n0 %*\r\n');
+  await writeFile(join(voltaBin, 'volta.exe'), 'placeholder');
+  const resolved = resolveExecutableInvocation('sample', { platform: 'win32', env: { Path: imageBin, VOLTA_HOME: voltaHome } });
+  assert.deepEqual(resolved, { command: join(voltaBin, 'volta.exe'), argsPrefix: ['run', 'sample'], resolutionKind: 'windows-volta-shim' });
 });

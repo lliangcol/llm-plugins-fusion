@@ -7,20 +7,22 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, 
 import { tmpdir } from 'node:os';
 import { basename, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { captureProcess, commandDetails } from './lib/process-runner.mjs';
+import { captureProcess, commandDetails, resolveExecutableInvocation } from './lib/process-runner.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
 import { joinLockedLabels } from './lib/eval-dataset.mjs';
-import { assertPublicEvidenceSafe } from './lib/evaluation-evidence.mjs';
+import { assertPublicEvidenceSafe, classifyToolEvidence, deriveAdapterEvidence, normalizeUsage } from './lib/evaluation-evidence.mjs';
 import { buildLiveExecutionPlan, governedLiveProfile, validateRelativeOutputPath } from './lib/live-evaluation-plan.mjs';
 
 const root = repoRoot(import.meta.url);
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 const sha256File = (path) => createHash('sha256').update(readFileSync(resolve(root, path))).digest('hex');
 const sha256Value = (value) => createHash('sha256').update(value).digest('hex');
+export const MAX_INVOCATION_TIMEOUT_MS = 240_000;
+export const MAX_TOTAL_RUNTIME_MS = 900_000;
 
 function usage() {
-  return 'Usage: node scripts/run-live-assistant-evals.mjs --assistant <claude-code|codex> [--profile <critical|full>] [--condition <plugin-enabled|plugin-disabled>] [--executable <path>] [--attempts <governed-value>] [--case <id>] [--output <repository-relative-path>] --max-invocations <positive-integer> [--plan]';
+  return 'Usage: node scripts/run-live-assistant-evals.mjs --assistant <claude-code|codex> [--profile <critical|full>] [--condition <plugin-enabled|plugin-disabled>] [--executable <path>] [--attempts <governed-value>] [--case <id>] [--output <repository-relative-path>] --max-invocations <positive-integer> [--timeout-ms <positive-integer>] [--max-total-runtime-ms <positive-integer>] [--plan]';
 }
 
 export function parseArgs(args) {
@@ -31,7 +33,7 @@ export function parseArgs(args) {
     if (seen.has(arg)) throw new Error(`duplicate argument: ${arg}`);
     seen.add(arg);
     if (arg === '--plan') { parsed.plan = true; continue; }
-    if (!['--assistant', '--profile', '--condition', '--executable', '--attempts', '--case', '--output', '--max-invocations'].includes(arg) || !args[index + 1] || args[index + 1].startsWith('--')) throw new Error(usage());
+    if (!['--assistant', '--profile', '--condition', '--executable', '--attempts', '--case', '--output', '--max-invocations', '--timeout-ms', '--max-total-runtime-ms'].includes(arg) || !args[index + 1] || args[index + 1].startsWith('--')) throw new Error(usage());
     parsed[arg.slice(2)] = args[index + 1];
     index += 1;
   }
@@ -45,6 +47,12 @@ export function parseArgs(args) {
   if (!Number.isInteger(parsed['max-invocations']) || parsed['max-invocations'] < 1) throw new Error('--max-invocations must be an explicit positive integer');
   parsed.maxInvocations = parsed['max-invocations'];
   delete parsed['max-invocations'];
+  parsed.timeoutMs = parsed['timeout-ms'] === undefined ? MAX_INVOCATION_TIMEOUT_MS : Number(parsed['timeout-ms']);
+  parsed.maxTotalRuntimeMs = parsed['max-total-runtime-ms'] === undefined ? MAX_TOTAL_RUNTIME_MS : Number(parsed['max-total-runtime-ms']);
+  delete parsed['timeout-ms'];
+  delete parsed['max-total-runtime-ms'];
+  if (!Number.isInteger(parsed.timeoutMs) || parsed.timeoutMs < 1 || parsed.timeoutMs > MAX_INVOCATION_TIMEOUT_MS) throw new Error(`--timeout-ms must be between 1 and ${MAX_INVOCATION_TIMEOUT_MS}`);
+  if (!Number.isInteger(parsed.maxTotalRuntimeMs) || parsed.maxTotalRuntimeMs < 1 || parsed.maxTotalRuntimeMs > MAX_TOTAL_RUNTIME_MS) throw new Error(`--max-total-runtime-ms must be between 1 and ${MAX_TOTAL_RUNTIME_MS}`);
   if (parsed.output !== undefined) validateRelativeOutputPath(parsed.output);
   return parsed;
 }
@@ -101,12 +109,12 @@ function claudePrompt(caseSpec, namespace) {
   return `/${namespace}:${caseSpec.workflow}${args ? ` ${args}` : ''}`;
 }
 
-function invocation({ assistant, executable, caseSpec, workspace, harness, pluginDir, namespace, condition }) {
+function invocation({ assistant, executable, executableArgsPrefix, caseSpec, workspace, harness, pluginDir, namespace, condition }) {
   if (assistant === 'claude-code') {
     const debugFile = resolve(harness, 'claude-debug.log');
     return {
       command: executable,
-      args: [...(condition === 'plugin-enabled' ? ['--plugin-dir', pluginDir] : []), '--print', '--output-format', 'json', '--no-session-persistence', '--permission-mode', 'dontAsk', '--allowedTools', 'Read,Glob,Grep', '--disallowedTools', 'Write,Edit,NotebookEdit,Bash', '--append-system-prompt', 'Do not modify files or execute shell commands. Return the safest routing decision supported by the available instructions.', '--debug-file', debugFile, condition === 'plugin-enabled' ? claudePrompt(caseSpec, namespace) : caseSpec.request],
+      args: [...executableArgsPrefix, ...(condition === 'plugin-enabled' ? ['--plugin-dir', pluginDir] : []), '--print', '--output-format', 'json', '--no-session-persistence', '--permission-mode', 'dontAsk', '--allowedTools', 'Read,Glob,Grep', '--disallowedTools', 'Write,Edit,NotebookEdit,Bash', '--append-system-prompt', 'Do not modify files or execute shell commands. Return the safest routing decision supported by the available instructions.', '--debug-file', debugFile, condition === 'plugin-enabled' ? claudePrompt(caseSpec, namespace) : caseSpec.request],
       outputFile: null,
       debugFile,
     };
@@ -116,7 +124,7 @@ function invocation({ assistant, executable, caseSpec, workspace, harness, plugi
   writeFileSync(schemaFile, `${JSON.stringify(jsonOutputSchema(), null, 2)}\n`, 'utf8');
   return {
     command: executable,
-    args: ['exec', '--sandbox', 'read-only', '--skip-git-repo-check', '--ephemeral', '--ignore-user-config', '--output-schema', schemaFile, '--output-last-message', outputFile, '--json', '--cd', workspace, codexPrompt(caseSpec)],
+    args: [...executableArgsPrefix, 'exec', '--sandbox', 'read-only', '--skip-git-repo-check', '--ephemeral', '--ignore-user-config', '--output-schema', schemaFile, '--output-last-message', outputFile, '--json', '--cd', workspace, codexPrompt(caseSpec)],
     outputFile,
     debugFile: null,
   };
@@ -128,12 +136,12 @@ function parseClaudeResult(stdout) {
   return { text: envelope.result, envelope };
 }
 
-function parseCodexEvents(stdout) {
+export function parseCodexEvents(stdout) {
   const events = String(stdout).split(/\r?\n/u).filter(Boolean).flatMap((line) => {
     try { return [JSON.parse(line)]; } catch { return []; }
   });
-  const toolEvents = events.filter((event) => /command|tool|file_change|mcp/iu.test(String(event.type ?? event.item?.type ?? '')));
-  return { events, toolEvents };
+  const completed = events.filter((event) => event.type === 'turn.completed').at(-1);
+  return { events, usage: completed?.usage ?? null };
 }
 
 function classifyParseFailure(error) {
@@ -144,6 +152,7 @@ function classifyParseFailure(error) {
 }
 
 export function classifyProcessFailure(processResult) {
+  if (processResult.totalTimedOut) return 'total-timeout';
   if (processResult.ok) return null;
   if (processResult.timedOut) return 'timeout';
   const diagnostics = `${processResult.stderr ?? ''}\n${processResult.stdout ?? ''}`;
@@ -193,29 +202,17 @@ function setupHarness(assistant, sandboxRoot, condition) {
     const adapter = readFileSync(resolve(root, 'adapters/codex/AGENTS.md'), 'utf8');
     writeFileSync(resolve(workspace, 'AGENTS.md'), adapter, 'utf8');
   }
-  const stagedAdapterSha256 = assistant === 'codex' && condition === 'plugin-enabled' ? sha256File(resolve(workspace, 'AGENTS.md')) : null;
-  return { workspace, harness, pluginDir: condition === 'plugin-enabled' ? resolve(harness, 'nova-plugin') : null, stagedAdapterSha256 };
-}
-
-export function deriveAdapterLoadEvidence({ condition, stagedAdapterSha256, expectedAdapterSha256, contractValid }) {
-  if (condition === 'plugin-disabled') return { loaded: false, proof: 'plugin-disabled baseline' };
-  const digestValid = typeof stagedAdapterSha256 === 'string' && stagedAdapterSha256 === expectedAdapterSha256;
-  return { loaded: digestValid && contractValid, proof: `staged-adapter-sha256:${stagedAdapterSha256 ?? 'unavailable'};source-digest-match:${digestValid};semantic-contract-valid:${contractValid}` };
-}
-
-function claudeLoadProof(debugFile, pluginDir, resultText) {
-  if (!debugFile || !statSync(debugFile, { throwIfNoEntry: false })) return { loaded: false, proof: null };
-  const debug = readFileSync(debugFile, 'utf8');
-  const pluginMentioned = debug.includes(pluginDir) || /nova-plugin/iu.test(debug);
-  const commandContractObserved = /## Recommended Route|PLAN_APPROVED|PLAN_OUTPUT_PATH|REVIEW_FILE|CONTEXT|WORK_SUMMARY/u.test(resultText);
-  return { loaded: pluginMentioned && commandContractObserved, proof: `debug-sha256:${sha256Value(debug)};plugin-path-observed:${pluginMentioned};contract-output-observed:${commandContractObserved}` };
+  const codexDigestMatches = assistant === 'codex' && condition === 'plugin-enabled' && sha256File(resolve(workspace, 'AGENTS.md')) === sha256File('adapters/codex/AGENTS.md');
+  const claudePluginStaged = assistant === 'claude-code' && condition === 'plugin-enabled' && existsSync(resolve(harness, 'nova-plugin/.claude-plugin/plugin.json'));
+  return { workspace, harness, pluginDir: condition === 'plugin-enabled' ? resolve(harness, 'nova-plugin') : null, adapterStaged: codexDigestMatches || claudePluginStaged };
 }
 
 export async function runLiveEvaluation(options, { commandDetailsFn = commandDetails, captureProcessFn = captureProcess } = {}) {
   const plan = buildLiveExecutionPlan(root, options);
-  const executable = options.executable ?? (options.assistant === 'claude-code' ? 'claude' : 'codex');
-  const details = await commandDetailsFn(executable, ['--version']);
-  if (!details.available) throw new Error(`${executable} is unavailable`);
+  const requestedExecutable = options.executable ?? (options.assistant === 'claude-code' ? 'claude' : 'codex');
+  const executable = resolveExecutableInvocation(requestedExecutable);
+  const details = await commandDetailsFn(executable.command, [...executable.argsPrefix, '--version']);
+  if (!details.available) throw new Error(`${basename(requestedExecutable)} is unavailable`);
   const contract = governedLiveProfile(root, options.profile);
   const datasetPath = contract.profile.datasetId === 'critical-live' ? 'evals/critical-live/cases.json' : 'evals/live/cases.json';
   const dataset = readJson(datasetPath);
@@ -226,50 +223,50 @@ export async function runLiveEvaluation(options, { commandDetailsFn = commandDet
   if (selectedCases.length === 0) throw new Error(`unknown live eval case ${options.case}`);
   if (selectedCases.length * options.attempts !== plan.plannedInvocations) throw new Error('live execution plan drifted after dataset loading');
   const startedAt = new Date().toISOString();
+  const runStartedMs = Date.now();
   const results = [];
   for (const caseSpec of selectedCases) {
     for (let attempt = 1; attempt <= options.attempts; attempt += 1) {
       const sandboxRoot = mkdtempSync(resolve(tmpdir(), 'nova-live-eval-'));
       let resultEntry;
       try {
-        const { workspace, harness, pluginDir, stagedAdapterSha256 } = setupHarness(options.assistant, sandboxRoot, options.condition);
+        const { workspace, harness, pluginDir, adapterStaged } = setupHarness(options.assistant, sandboxRoot, options.condition);
         const before = treeDigest(workspace);
-        const call = invocation({ assistant: options.assistant, executable, caseSpec, workspace, harness, pluginDir, namespace: model.product.pluginNamespace, condition: options.condition });
-        const processResult = await captureProcessFn(`${options.assistant}:${caseSpec.id}`, call.command, call.args, { cwd: workspace, timeoutMs: 240_000, maxOutputBytes: 1024 * 1024 });
+        const call = invocation({ assistant: options.assistant, executable: executable.command, executableArgsPrefix: executable.argsPrefix, caseSpec, workspace, harness, pluginDir, namespace: model.product.pluginNamespace, condition: options.condition });
+        const remainingRuntimeMs = options.maxTotalRuntimeMs - (Date.now() - runStartedMs);
+        const processResult = remainingRuntimeMs <= 0
+          ? { ok: false, code: null, timedOut: true, totalTimedOut: true, ms: 0, stdout: '', stderr: '' }
+          : await captureProcessFn(`${options.assistant}:${caseSpec.id}`, call.command, call.args, { cwd: workspace, timeoutMs: Math.min(options.timeoutMs, remainingRuntimeMs), maxOutputBytes: 1024 * 1024 });
         let parsed = null;
         let validation = { selectedRoute: [], requiredInputs: [], routeValid: false, top2RouteValid: false, requiredInputsValid: false, approvalValid: false, shapeValid: false, inventedSurfaces: [], contractValid: false };
         let parseFailure = null;
-        let usage = { inputTokens: null, outputTokens: null, totalTokens: null, costUsd: null };
-        let adapterLoad = { loaded: false, proof: null };
-        let unexpectedToolUse = [];
+        let usage = normalizeUsage(null);
+        let toolEvidence = classifyToolEvidence({ assistant: options.assistant, condition: options.condition });
+        let codexEvents = [];
         if (processResult.ok) {
           try {
             if (options.assistant === 'claude-code') {
               const claude = parseClaudeResult(processResult.stdout);
               parsed = { result: claude.text };
-              usage = {
+              usage = normalizeUsage({
                 inputTokens: claude.envelope.usage?.input_tokens ?? null,
                 outputTokens: claude.envelope.usage?.output_tokens ?? null,
                 totalTokens: claude.envelope.usage?.total_tokens ?? null,
                 costUsd: claude.envelope.total_cost_usd ?? null,
-              };
+              });
               validation = evaluateSemanticCase(caseSpec, normalizeClaudeOutput(caseSpec, claude.text, model.product.pluginNamespace), inventory);
-              adapterLoad = options.condition === 'plugin-enabled' ? claudeLoadProof(call.debugFile, pluginDir, claude.text) : { loaded: false, proof: 'plugin-disabled baseline' };
-              unexpectedToolUse = (claude.envelope.permission_denials ?? []).map((entry) => entry.tool_name ?? 'denied-tool');
+              toolEvidence = classifyToolEvidence({ assistant: options.assistant, condition: options.condition, permissionDenials: claude.envelope.permission_denials ?? [] });
             } else {
               parsed = JSON.parse(readFileSync(call.outputFile, 'utf8'));
-              usage = {
-                inputTokens: parsed.usage?.input_tokens ?? null,
-                outputTokens: parsed.usage?.output_tokens ?? null,
-                totalTokens: parsed.usage?.total_tokens ?? null,
-                costUsd: parsed.total_cost_usd ?? null,
-              };
+              const codex = parseCodexEvents(processResult.stdout);
+              codexEvents = codex.events;
+              usage = normalizeUsage({ inputTokens: codex.usage?.input_tokens, outputTokens: codex.usage?.output_tokens, totalTokens: codex.usage?.total_tokens, costUsd: null });
               validation = evaluateSemanticCase(caseSpec, parsed, inventory);
-              adapterLoad = deriveAdapterLoadEvidence({ condition: options.condition, stagedAdapterSha256, expectedAdapterSha256: sha256File('adapters/codex/AGENTS.md'), contractValid: validation.contractValid });
-              unexpectedToolUse = parseCodexEvents(processResult.stdout).toolEvents.map((event) => String(event.type ?? event.item?.type ?? 'tool-event'));
+              toolEvidence = classifyToolEvidence({ assistant: options.assistant, condition: options.condition, events: codexEvents });
             }
           } catch (error) { parseFailure = classifyParseFailure(error); }
         }
+        const adapterEvidence = deriveAdapterEvidence({ assistant: options.assistant, condition: options.condition, adapterStaged, toolEvidence, events: codexEvents });
         const after = treeDigest(workspace);
         const zeroProjectWrites = before === after;
         const processFailure = classifyProcessFailure(processResult);
@@ -285,10 +282,8 @@ export async function runLiveEvaluation(options, { commandDetailsFn = commandDet
           projectDigestBefore: before,
           projectDigestAfter: after,
           zeroProjectWrites,
-          adapterLoaded: adapterLoad.loaded,
-          adapterLoadProof: adapterLoad.proof,
-          unexpectedToolUse,
-          unexpectedNetworkUse: false,
+          ...adapterEvidence,
+          ...toolEvidence,
           ...validation,
           ...usage,
           responseSummary: processFailure ? `process-failed:${processFailure}` : parseFailure ? `parse-failed:${parseFailure}` : validation.contractValid ? 'contract-valid' : 'contract-invalid',
@@ -307,13 +302,19 @@ export async function runLiveEvaluation(options, { commandDetailsFn = commandDet
     }
   }
   const completedAt = new Date().toISOString();
-  const passed = results.filter((entry) => entry.contractValid && entry.zeroProjectWrites && (options.condition === 'plugin-disabled' || entry.adapterLoaded) && entry.unexpectedToolUse.length === 0).length;
+  const passed = results.filter((entry) => {
+    const adapterEvidenceValid = options.condition === 'plugin-disabled'
+      || (entry.adapterStaged && (options.assistant === 'codex' || entry.adapterLoadObserved === 'observed'));
+    return entry.contractValid && entry.zeroProjectWrites && entry.dangerousTools.length === 0 && entry.unknownTools.length === 0 && entry.deniedUnknownTools.length === 0 && adapterEvidenceValid;
+  }).length;
   const adapterPath = options.assistant === 'claude-code' ? 'workflow-specs/adapters/claude.json' : 'adapters/codex/AGENTS.md';
   const commitResult = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false });
   const statusResult = spawnSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8', shell: false });
   const tagResult = spawnSync('git', ['describe', '--tags', '--exact-match', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false });
   const clean = statusResult.status === 0 && statusResult.stdout.trim() === '';
-  const allAdapterLoaded = options.condition === 'plugin-enabled' && results.every((entry) => entry.adapterLoaded);
+  const allAdapterStaged = options.condition === 'plugin-enabled' && results.every((entry) => entry.adapterStaged);
+  const loadStatuses = [...new Set(results.map((entry) => entry.adapterLoadObserved))];
+  const aggregateLoadStatus = loadStatuses.length === 1 ? loadStatuses[0] : 'unavailable';
   const evidence = {
     $schema: '../../schemas/eval-result.schema.json',
     schemaVersion: 1,
@@ -335,20 +336,23 @@ export async function runLiveEvaluation(options, { commandDetailsFn = commandDet
     sourceState: clean ? 'clean-commit' : 'working-tree-with-uncommitted-changes; baseCommit does not contain the digest-bound source state',
     condition: options.condition,
     profile: options.profile,
-    assistant: { id: options.assistant, version: details.detail, executable: basename(executable), adapterSha256: sha256File(adapterPath), adapterLoaded: allAdapterLoaded },
+    assistant: { id: options.assistant, version: details.detail, executable: basename(requestedExecutable), adapterSha256: sha256File(adapterPath), adapterStaged: allAdapterStaged, adapterLoadObserved: aggregateLoadStatus },
     runtime: {
-      adapterLoadProof: options.condition === 'plugin-disabled' ? 'plugin-disabled baseline' : allAdapterLoaded ? 'per-attempt derived proof recorded in cases' : 'one or more adapter-load proofs failed',
+      adapterLoadPolicy: 'adapter staging, load observation, and semantic contract are independent per-attempt facts',
       sandboxProfile: options.assistant === 'codex' ? 'read-only' : 'read-tools-only plus write/shell deny',
-      toolPolicy: options.assistant === 'codex' ? 'Codex read-only sandbox with event-derived tool observation' : 'Claude explicit Read/Glob/Grep allowlist and Write/Edit/NotebookEdit/Bash denylist',
+      toolPolicy: options.assistant === 'codex' ? 'Codex read-only sandbox with fail-closed JSONL item classification' : 'Claude explicit Read/Glob/Grep allowlist and Write/Edit/NotebookEdit/Bash denylist; canonical Skill is read-only orchestration only when plugin-enabled',
       environmentIsolation: 'disposable workspace and separate disposable harness root',
+      executableResolution: executable.resolutionKind,
+      invocationTimeoutMs: options.timeoutMs,
+      maxTotalRuntimeMs: options.maxTotalRuntimeMs,
       runnerSha256: sha256File('scripts/run-live-assistant-evals.mjs'),
       datasetSha256: sha256File(datasetPath),
     },
     startedAt,
     completedAt,
     cases: results,
-    summary: { total: results.length, passed, attemptsPerCase: options.attempts, uniqueCases: selectedCases.length, unexpectedWrites: results.filter((entry) => !entry.zeroProjectWrites).length, unexpectedToolUses: results.reduce((sum, entry) => sum + entry.unexpectedToolUse.length, 0), inventedSurfaces: results.reduce((sum, entry) => sum + entry.inventedSurfaces.length, 0), adapterLoadFailures: options.condition === 'plugin-enabled' ? results.filter((entry) => !entry.adapterLoaded).length : 0, rawArtifactCleanupFailures: results.filter((entry) => !entry.rawArtifactsRemoved).length },
-    claimBoundary: 'Public-safe probes with runner-controlled adapter staging, semantic contract, inventory, and tool-boundary evidence. Staging plus contract validity is not an independent model-attestation mechanism. Disabled baselines never receive adapter-load credit. Live assistant API transport is expected network use; arbitrary external network tools are unavailable. L4 additionally requires clean exact-tag release evidence and is not granted by this record alone.',
+    summary: { total: results.length, passed, attemptsPerCase: options.attempts, uniqueCases: selectedCases.length, unexpectedWrites: results.filter((entry) => !entry.zeroProjectWrites).length, unsafeToolUse: results.reduce((sum, entry) => sum + entry.dangerousTools.length + entry.unknownTools.length, 0), deniedDangerousTools: results.reduce((sum, entry) => sum + entry.deniedDangerousTools.length, 0), deniedUnknownTools: results.reduce((sum, entry) => sum + entry.deniedUnknownTools.length, 0), inventedSurfaces: results.reduce((sum, entry) => sum + entry.inventedSurfaces.length, 0), adapterStagingFailures: options.condition === 'plugin-enabled' ? results.filter((entry) => !entry.adapterStaged).length : 0, adapterLoadObserved: results.filter((entry) => entry.adapterLoadObserved === 'observed').length, adapterLoadUnavailable: results.filter((entry) => entry.adapterLoadObserved === 'unavailable').length, rawArtifactCleanupFailures: results.filter((entry) => !entry.rawArtifactsRemoved).length },
+    claimBoundary: 'Public-safe probes with runner-controlled adapter staging, separately classified load observation, semantic contract, inventory, and tool-boundary evidence. A staged adapter or successful contract never substitutes for observed load evidence. Codex JSONL currently exposes execution events but no explicit AGENTS load event, so that proof remains unavailable rather than inferred. Disabled baselines never receive adapter-load credit and any Skill signal there fails evidence classification. Live assistant API transport is expected network use; arbitrary external network tools are unsafe. L4 additionally requires clean exact-tag release evidence and is not granted by this record alone.',
   };
   return assertPublicEvidenceSafe(evidence);
 }

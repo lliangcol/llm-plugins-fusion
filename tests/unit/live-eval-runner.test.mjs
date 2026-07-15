@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import test from 'node:test';
 import { resolve } from 'node:path';
-import { classifyProcessFailure, codexPrompt, deriveAdapterLoadEvidence, evaluateSemanticCase, extractJsonOutput, main as liveMain, parseArgs, runLiveEvaluation, validateLiveCase } from '../../scripts/run-live-assistant-evals.mjs';
-import { assertPublicEvidenceSafe } from '../../scripts/lib/evaluation-evidence.mjs';
+import { classifyProcessFailure, codexPrompt, evaluateSemanticCase, extractJsonOutput, main as liveMain, parseArgs, runLiveEvaluation, validateLiveCase } from '../../scripts/run-live-assistant-evals.mjs';
+import { assertPublicEvidenceSafe, classifyToolEvidence, deriveAdapterEvidence, normalizeUsage } from '../../scripts/lib/evaluation-evidence.mjs';
 import { buildLiveExecutionPlan } from '../../scripts/lib/live-evaluation-plan.mjs';
+import { validateStandardSchema } from '../../scripts/lib/schema-engine.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 
@@ -14,6 +15,8 @@ test('critical runner derives three attempts and the 96-invocation governed prof
   assert.equal(options.attempts, 3);
   assert.equal(plan.plannedInvocations, 3);
   assert.equal(plan.governedProfileInvocations, 96);
+  assert.equal(plan.invocationTimeoutMs, 240_000);
+  assert.equal(plan.maxTotalRuntimeMs, 900_000);
   assert.deepEqual(plan.assistants, ['codex']);
   assert.deepEqual(plan.conditions, ['plugin-enabled']);
   assert.equal(plan.writesOnPlan, false);
@@ -31,6 +34,8 @@ test('live runner fails closed on unknown arguments, unsafe output paths, and in
   assert.throws(() => parseArgs(['--assistant', 'codex', '--profile', 'other', '--max-invocations', '3']), /Usage/u);
   assert.throws(() => parseArgs(['--assistant', 'codex', '--condition', 'other', '--max-invocations', '3']), /Usage/u);
   assert.throws(() => parseArgs(['--assistant', 'codex', '--max-invocations', '1.5']), /positive integer/u);
+  assert.throws(() => parseArgs(['--assistant', 'codex', '--max-invocations', '3', '--timeout-ms', '240001']), /timeout-ms/u);
+  assert.throws(() => parseArgs(['--assistant', 'codex', '--max-invocations', '3', '--max-total-runtime-ms', '900001']), /max-total-runtime-ms/u);
 });
 
 test('public evaluation evidence rejects transcripts, credentials, and absolute paths', () => {
@@ -55,6 +60,7 @@ test('simulated live execution retains only normalized evidence and proves raw c
   assert.equal(result.summary.rawArtifactCleanupFailures, 0);
   assert.equal(result.cases.every((entry) => entry.rawArtifactsRemoved), true);
   assert.equal(JSON.stringify(result).includes('observedOutput'), false);
+  assert.deepEqual(validateStandardSchema(JSON.parse(readFileSync(resolve(root, 'schemas/eval-result.schema.json'), 'utf8')), result), []);
 });
 
 test('simulated Claude enabled and disabled paths normalize route and approval output', async () => {
@@ -65,17 +71,21 @@ test('simulated Claude enabled and disabled paths normalize route and approval o
       captureProcessFn: async (_label, _command, args) => {
         const debug = args[args.indexOf('--debug-file') + 1];
         writeFileSync(debug, 'nova-plugin loaded');
-        return { ok: true, code: 0, timedOut: false, ms: 2, stdout: JSON.stringify({ result: resultText, usage: { input_tokens: 2, output_tokens: 3, total_tokens: 5 }, total_cost_usd: 0.01, permission_denials: [] }), stderr: '' };
+        return { ok: true, code: 0, timedOut: false, ms: 2, stdout: JSON.stringify({ result: resultText, usage: { input_tokens: 2, output_tokens: 3, total_tokens: 5 }, total_cost_usd: 0.01, permission_denials: condition === 'plugin-enabled' ? [{ tool_name: 'Skill' }] : [] }), stderr: '' };
       },
     },
   );
   const enabled = await execute('plugin-enabled', 'critical-read-only-review', '## Recommended Route\n/nova-plugin:review-only\nREVIEW_SCOPE');
   assert.equal(enabled.summary.passed, 3);
-  assert.equal(enabled.assistant.adapterLoaded, true);
+  assert.equal(enabled.assistant.adapterStaged, true);
   assert.equal(enabled.cases[0].totalTokens, 5);
+  assert.equal(enabled.cases[0].usageStatus, 'reported');
+  assert.equal(enabled.cases[0].adapterLoadObserved, 'observed');
+  assert.deepEqual(enabled.cases[0].allowedReadOnlyTools, ['Skill']);
   const disabled = await execute('plugin-disabled', 'critical-missing-approval', 'PLAN_APPROVED is missing; block and stop');
   assert.equal(disabled.summary.passed, 3);
-  assert.equal(disabled.assistant.adapterLoaded, false);
+  assert.equal(disabled.assistant.adapterStaged, false);
+  assert.equal(disabled.assistant.adapterLoadObserved, 'not-applicable');
 });
 
 test('simulated parse and process failures remain normalized and bounded', async () => {
@@ -95,6 +105,41 @@ test('simulated parse and process failures remain normalized and bounded', async
   });
   assert.equal(limited.cases[0].processFailure, 'rate-limit');
   assert.equal(limited.cases[0].responseSummary, 'process-failed:rate-limit');
+});
+
+test('repeated Codex attempts preserve a third exact-route failure without changing adapter evidence', async () => {
+  const options = parseArgs(['--assistant', 'codex', '--profile', 'critical', '--condition', 'plugin-enabled', '--case', 'critical-read-only-review', '--max-invocations', '3']);
+  let attempt = 0;
+  const result = await runLiveEvaluation(options, {
+    commandDetailsFn: async () => ({ available: true, detail: 'codex test-version' }),
+    captureProcessFn: async (_label, _command, args) => {
+      attempt += 1;
+      const output = args[args.indexOf('--output-last-message') + 1];
+      writeFileSync(output, JSON.stringify({ selectedRoute: [attempt === 3 ? 'review-lite' : 'review-only'], requiredInputs: ['REVIEW_SCOPE'], blocked: false }));
+      return { ok: true, code: 0, timedOut: false, ms: 1, stdout: '{"type":"turn.completed","usage":{"input_tokens":4,"output_tokens":2,"total_tokens":6}}\n', stderr: '' };
+    },
+  });
+  assert.deepEqual(result.cases.map((entry) => entry.attempt), [1, 2, 3]);
+  assert.deepEqual(result.cases.map((entry) => entry.routeValid), [true, true, false]);
+  assert.deepEqual(result.cases.map((entry) => entry.contractValid), [true, true, false]);
+  assert.deepEqual(result.cases.map((entry) => entry.adapterLoadObserved), ['unavailable', 'unavailable', 'unavailable']);
+  assert.equal(result.summary.passed, 2);
+});
+
+test('live runner stops new invocations after the total runtime budget expires', async () => {
+  const options = parseArgs(['--assistant', 'codex', '--profile', 'critical', '--condition', 'plugin-disabled', '--case', 'critical-read-only-review', '--max-invocations', '3', '--max-total-runtime-ms', '1']);
+  let calls = 0;
+  const result = await runLiveEvaluation(options, {
+    commandDetailsFn: async () => ({ available: true, detail: 'codex test-version' }),
+    captureProcessFn: async (_label, _command, args) => {
+      calls += 1;
+      writeFileSync(args[args.indexOf('--output-last-message') + 1], JSON.stringify({ selectedRoute: ['review-only'], requiredInputs: ['REVIEW_SCOPE'], blocked: false }));
+      await new Promise((resolvePromise) => setTimeout(resolvePromise, 5));
+      return { ok: true, code: 0, timedOut: false, ms: 5, stdout: '{"type":"turn.completed"}\n', stderr: '' };
+    },
+  });
+  assert.equal(calls <= 1, true);
+  assert.equal(result.cases.some((entry) => entry.processFailure === 'total-timeout'), true);
 });
 
 test('live plan main returns before execution and embedded JSON parser fails closed', async () => {
@@ -143,10 +188,38 @@ test('shared semantic evaluator distinguishes exact match from top-two recall', 
   assert.equal(result.contractValid, false);
 });
 
-test('adapter load evidence cannot validate a disabled baseline', () => {
-  const enabled = deriveAdapterLoadEvidence({ condition: 'plugin-enabled', stagedAdapterSha256: 'a'.repeat(64), expectedAdapterSha256: 'a'.repeat(64), contractValid: true });
-  assert.equal(enabled.loaded, true);
-  assert.match(enabled.proof, /staged-adapter-sha256/u);
-  const disabled = deriveAdapterLoadEvidence({ condition: 'plugin-disabled', stagedAdapterSha256: 'a'.repeat(64), expectedAdapterSha256: 'a'.repeat(64), contractValid: true });
-  assert.deepEqual(disabled, { loaded: false, proof: 'plugin-disabled baseline' });
+test('tool evidence separates observed orchestration, dangerous, denied, and unknown tools', () => {
+  const claude = classifyToolEvidence({ assistant: 'claude-code', condition: 'plugin-enabled', permissionDenials: [{ tool_name: 'Skill' }, { tool_name: 'Bash' }, { tool_name: 'FutureTool' }] });
+  assert.deepEqual(claude.observedTools, ['Bash', 'FutureTool', 'Skill']);
+  assert.deepEqual(claude.allowedReadOnlyTools, ['Skill']);
+  assert.deepEqual(claude.dangerousTools, []);
+  assert.deepEqual(claude.deniedDangerousTools, ['Bash']);
+  assert.deepEqual(claude.deniedUnknownTools, ['FutureTool']);
+  const disabled = classifyToolEvidence({ assistant: 'claude-code', condition: 'plugin-disabled', permissionDenials: [{ tool_name: 'Skill' }] });
+  assert.deepEqual(disabled.deniedUnknownTools, ['Skill']);
+  const codex = classifyToolEvidence({ assistant: 'codex', condition: 'plugin-enabled', events: [
+    { type: 'item.started', item: { id: '1', type: 'plan_update' } },
+    { type: 'item.completed', item: { id: '1', type: 'plan_update' } },
+    { type: 'item.completed', item: { id: '2', type: 'command_execution' } },
+    { type: 'item.completed', item: { id: '3', type: 'future_tool' } },
+  ] });
+  assert.deepEqual(codex.allowedReadOnlyTools, ['plan_update']);
+  assert.deepEqual(codex.dangerousTools, ['command_execution']);
+  assert.deepEqual(codex.unknownTools, ['future_tool']);
+});
+
+test('adapter staging, load observation, and contract validity remain independent', () => {
+  const toolEvidence = classifyToolEvidence({ assistant: 'claude-code', condition: 'plugin-enabled', permissionDenials: [{ tool_name: 'Skill' }] });
+  const observed = deriveAdapterEvidence({ assistant: 'claude-code', condition: 'plugin-enabled', adapterStaged: true, toolEvidence });
+  assert.equal(observed.adapterLoadObserved, 'observed');
+  const codex = deriveAdapterEvidence({ assistant: 'codex', condition: 'plugin-enabled', adapterStaged: true, toolEvidence: classifyToolEvidence({ assistant: 'codex', condition: 'plugin-enabled' }), events: [{ type: 'turn.completed' }] });
+  assert.equal(codex.adapterLoadObserved, 'unavailable');
+  assert.equal(codex.adapterLoadReasonCode, 'codex-load-event-unavailable');
+  const disabled = deriveAdapterEvidence({ assistant: 'codex', condition: 'plugin-disabled', adapterStaged: true, toolEvidence: codex });
+  assert.equal(disabled.adapterLoadObserved, 'not-applicable');
+});
+
+test('usage reports stable availability state without inferred values', () => {
+  assert.deepEqual(normalizeUsage(null), { usageStatus: 'unavailable', usageReasonCode: 'cli-usage-unavailable', inputTokens: null, outputTokens: null, totalTokens: null, costUsd: null });
+  assert.deepEqual(normalizeUsage({ totalTokens: 3 }), { usageStatus: 'reported', usageReasonCode: 'cli-reported-usage', inputTokens: null, outputTokens: null, totalTokens: 3, costUsd: null });
 });
