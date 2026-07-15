@@ -87,6 +87,7 @@ Generated from `governance/doc-metadata.json` by `node scripts/generate-doc-gove
 - [docs/project-optimization-plan.md](../../docs/project-optimization-plan.md) — repository-users; reference
 - [docs/project/decisions/0001-truth-release-capability-evidence.md](../../docs/project/decisions/0001-truth-release-capability-evidence.md) — repository-users; reference
 - [docs/project/decisions/0002-cli-and-extension-direction.md](../../docs/project/decisions/0002-cli-and-extension-direction.md) — repository-users; reference
+- [docs/project/decisions/0003-canonical-review-routing.md](../../docs/project/decisions/0003-canonical-review-routing.md) — repository-users; reference
 - [docs/project/migrations/2.4.1-command-namespace.md](../../docs/project/migrations/2.4.1-command-namespace.md) — repository-users; reference
 - [docs/project/migrations/3.0.0-adapters-and-direct-commands.md](../../docs/project/migrations/3.0.0-adapters-and-direct-commands.md) — repository-users; reference
 - [docs/project/migrations/contract-v6.md](../../docs/project/migrations/contract-v6.md) — repository-users; reference
