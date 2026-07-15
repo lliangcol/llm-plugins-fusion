@@ -77,52 +77,52 @@
     "inventory.commands": {
       "value": 21,
       "source": "governance/project-state.generated.json#/inventory/commands",
-      "sourceSha256": "3b477a38b4cddf161d47a73e98faf3b34848a635747cfbc4e15a3fb6877cf732"
+      "sourceSha256": "2d3ec5ceb050117c0b9125e432222c04aa425fa4ab8c001b4f0d3d3233c1b8aa"
     },
     "inventory.skills": {
       "value": 6,
       "source": "governance/project-state.generated.json#/inventory/skills",
-      "sourceSha256": "3b477a38b4cddf161d47a73e98faf3b34848a635747cfbc4e15a3fb6877cf732"
+      "sourceSha256": "2d3ec5ceb050117c0b9125e432222c04aa425fa4ab8c001b4f0d3d3233c1b8aa"
     },
     "runtime.node": {
       "value": ">=22",
       "source": "governance/project-state.generated.json#/runtime/node",
-      "sourceSha256": "3b477a38b4cddf161d47a73e98faf3b34848a635747cfbc4e15a3fb6877cf732"
+      "sourceSha256": "2d3ec5ceb050117c0b9125e432222c04aa425fa4ab8c001b4f0d3d3233c1b8aa"
     },
     "runtime.bash": {
       "value": "3.2+",
       "source": "governance/project-state.generated.json#/runtime/distributedBash",
-      "sourceSha256": "3b477a38b4cddf161d47a73e98faf3b34848a635747cfbc4e15a3fb6877cf732"
+      "sourceSha256": "2d3ec5ceb050117c0b9125e432222c04aa425fa4ab8c001b4f0d3d3233c1b8aa"
     },
     "evaluation.live.datasetId": {
       "value": "live-paired",
       "source": "governance/project-state.generated.json#/evaluation/livePaired/datasetId",
-      "sourceSha256": "3b477a38b4cddf161d47a73e98faf3b34848a635747cfbc4e15a3fb6877cf732"
+      "sourceSha256": "2d3ec5ceb050117c0b9125e432222c04aa425fa4ab8c001b4f0d3d3233c1b8aa"
     },
     "evaluation.live.caseCount": {
       "value": 168,
       "source": "governance/project-state.generated.json#/evaluation/livePaired/caseCount",
-      "sourceSha256": "3b477a38b4cddf161d47a73e98faf3b34848a635747cfbc4e15a3fb6877cf732"
+      "sourceSha256": "2d3ec5ceb050117c0b9125e432222c04aa425fa4ab8c001b4f0d3d3233c1b8aa"
     },
     "evaluation.live.plannedInvocations": {
       "value": 1008,
       "source": "governance/project-state.generated.json#/evaluation/livePaired/plannedInvocations",
-      "sourceSha256": "3b477a38b4cddf161d47a73e98faf3b34848a635747cfbc4e15a3fb6877cf732"
+      "sourceSha256": "2d3ec5ceb050117c0b9125e432222c04aa425fa4ab8c001b4f0d3d3233c1b8aa"
     },
     "evaluation.realTask.datasetId": {
       "value": "real-task-benchmark",
       "source": "governance/project-state.generated.json#/evaluation/realTask/datasetId",
-      "sourceSha256": "3b477a38b4cddf161d47a73e98faf3b34848a635747cfbc4e15a3fb6877cf732"
+      "sourceSha256": "2d3ec5ceb050117c0b9125e432222c04aa425fa4ab8c001b4f0d3d3233c1b8aa"
     },
     "evaluation.realTask.taskCount": {
       "value": 24,
       "source": "governance/project-state.generated.json#/evaluation/realTask/taskCount",
-      "sourceSha256": "3b477a38b4cddf161d47a73e98faf3b34848a635747cfbc4e15a3fb6877cf732"
+      "sourceSha256": "2d3ec5ceb050117c0b9125e432222c04aa425fa4ab8c001b4f0d3d3233c1b8aa"
     },
     "evaluation.realTask.plannedInvocations": {
       "value": 432,
       "source": "governance/project-state.generated.json#/evaluation/realTask/plannedInvocations",
-      "sourceSha256": "3b477a38b4cddf161d47a73e98faf3b34848a635747cfbc4e15a3fb6877cf732"
+      "sourceSha256": "2d3ec5ceb050117c0b9125e432222c04aa425fa4ab8c001b4f0d3d3233c1b8aa"
     }
   }
 }

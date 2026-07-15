@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceDigests": {
-    "packageScripts": "sha256:f3107e78970667630baeaba5416f9e83a66f2091eed47e323ed687984b14dd53",
+    "packageScripts": "sha256:987ea7d8fde9687669f410e75b9a05448d89d690aee8894ee4ac58ce15804caf",
     "validationRegistry": "sha256:917ce7223b2e8468553500681a5ad3c2eed6f289e8748c1666c1efa6f6479c5d",
     "productLanes": "sha256:c888525caa05c1a9509996ddf9543ea84edec6379fc511a5584c86fbe910ce94"
   },
@@ -83,18 +83,6 @@
       "scope": "maintainer"
     },
     {
-      "name": "check:contracts",
-      "command": "node scripts/validate-all.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:coverage",
-      "command": "npm run test:coverage:check",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
       "name": "check:docs",
       "command": "npm run validate:docs && npm run validate:community",
       "owner": "maintainer task catalog",
@@ -121,12 +109,6 @@
     {
       "name": "check:security",
       "command": "npm run typecheck && npm run lint:shell && npm run lint:actions && npm run validate:github-workflows && npm run scan:secrets",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:tests",
-      "command": "npm test",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
@@ -187,12 +169,6 @@
     {
       "name": "eval:contracts",
       "command": "node scripts/evaluate-static-contracts.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "eval:dataset-integrity",
-      "command": "node scripts/validate-route-conformance.mjs",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
@@ -497,12 +473,6 @@
       "scope": "maintainer"
     },
     {
-      "name": "validate:command-docs",
-      "command": "node scripts/generate-command-docs.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
       "name": "validate:community",
       "command": "node scripts/validate-community-governance.mjs && node scripts/generate-quality-report.mjs",
       "owner": "maintainer task catalog",
@@ -521,26 +491,8 @@
       "scope": "maintainer"
     },
     {
-      "name": "validate:control-plane",
-      "command": "node scripts/generate-control-plane-inventory.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
       "name": "validate:dependency-audit",
       "command": "node scripts/audit-dependencies.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "validate:doc-governance",
-      "command": "node scripts/generate-doc-governance.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "validate:doc-migrations",
-      "command": "node scripts/migrate-documentation-layout.mjs",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
@@ -553,18 +505,6 @@
     {
       "name": "validate:drift",
       "command": "node scripts/generate-registry.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "validate:evaluation-profiles",
-      "command": "node scripts/generate-evaluation-profiles.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "validate:evidence-levels",
-      "command": "node scripts/generate-evidence-levels.mjs",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
@@ -617,12 +557,6 @@
       "scope": "maintainer"
     },
     {
-      "name": "validate:permissions",
-      "command": "node scripts/generate-workflow-permissions.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
       "name": "validate:platform-evidence",
       "command": "node scripts/validate-platform-evidence.mjs",
       "owner": "maintainer task catalog",
@@ -647,12 +581,6 @@
       "scope": "maintainer"
     },
     {
-      "name": "validate:release-channels",
-      "command": "node scripts/validate-release-channel-facts.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
       "name": "validate:release-operational-readiness",
       "command": "node scripts/validate-release-operational-readiness.mjs --mode candidate",
       "owner": "maintainer task catalog",
@@ -667,12 +595,6 @@
     {
       "name": "validate:release-readiness",
       "command": "node scripts/validate-release-readiness.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "validate:release-summary",
-      "command": "node scripts/generate-release-summary.mjs",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
@@ -709,12 +631,6 @@
     {
       "name": "validate:surface",
       "command": "node scripts/validate-surface-budget.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "validate:tasks",
-      "command": "node scripts/generate-task-catalog.mjs",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },

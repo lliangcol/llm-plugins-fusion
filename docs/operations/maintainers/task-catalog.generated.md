@@ -161,7 +161,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `release` | `scripts/verify-release-promotion.mjs` |
 | `release` | `scripts/verify-stable-install.mjs` |
 
-## npm Shortcuts (114)
+## npm Shortcuts (100)
 
 | Category | Shortcut | Command |
 | --- | --- | --- |
@@ -169,14 +169,11 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `evidence` | `npm run audit:licenses` | `node scripts/audit-dependency-licenses.mjs --write` |
 | `validate` | `npm run check` | `npm run test:coverage:check && npm run validate:maintainer:evidence` |
 | `validate` | `npm run check:compatibility` | `npm run validate:compatibility-evidence && npm run validate:second-product && npm run validate:portable-paths` |
-| `validate` | `npm run check:contracts` | `node scripts/validate-all.mjs` |
-| `validate` | `npm run check:coverage` | `npm run test:coverage:check` |
 | `validate` | `npm run check:docs` | `npm run validate:docs && npm run validate:community` |
 | `validate` | `npm run check:release` | `npm run test:coverage:check && npm run validate:maintainer:evidence && node scripts/validate-plugin-install.mjs --dry-run` |
 | `validate` | `npm run check:release-readiness` | `npm run validate:release-readiness -- --require-ready` |
 | `validate` | `npm run check:runtime` | `npm run validate:runtime && npm run validate:hook-truth` |
 | `validate` | `npm run check:security` | `npm run typecheck && npm run lint:shell && npm run lint:actions && npm run validate:github-workflows && npm run scan:secrets` |
-| `validate` | `npm run check:tests` | `npm test` |
 | `validate` | `npm run check:truth` | `npm run validate:release-truth && npm run validate:hook-truth && npm run validate:project-state && npm run validate:facts && npm run validate:drift` |
 | `validate` | `npm run ci:full` | `node scripts/validate-all.mjs` |
 | `validate` | `npm run ci:quick` | `node scripts/validate-schemas.mjs && node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs && node scripts/validate-hooks.mjs` |
@@ -187,7 +184,6 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `benchmark` | `npm run eval:adapters` | `node scripts/validate-adapter-conformance.mjs` |
 | `benchmark` | `npm run eval:behavior-golden` | `node scripts/validate-behavior-golden.mjs` |
 | `benchmark` | `npm run eval:contracts` | `node scripts/evaluate-static-contracts.mjs` |
-| `benchmark` | `npm run eval:dataset-integrity` | `node scripts/validate-route-conformance.mjs` |
 | `benchmark` | `npm run eval:evidence` | `node scripts/validate-assistant-evidence.mjs` |
 | `benchmark` | `npm run eval:live` | `node scripts/run-live-assistant-evals.mjs` |
 | `benchmark` | `npm run eval:live:dataset` | `node scripts/validate-live-eval-dataset.mjs` |
@@ -238,18 +234,12 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `npm run validate` | `node scripts/validate-all.mjs` |
 | `validate` | `npm run validate:behavior-contracts` | `node scripts/validate-runtime-behavior-contracts.mjs` |
 | `validate` | `npm run validate:bootstrap` | `node scripts/validate-bootstrap.mjs` |
-| `validate` | `npm run validate:command-docs` | `node scripts/generate-command-docs.mjs` |
 | `validate` | `npm run validate:community` | `node scripts/validate-community-governance.mjs && node scripts/generate-quality-report.mjs` |
 | `validate` | `npm run validate:compatibility-evidence` | `node scripts/generate-compatibility-evidence.mjs` |
 | `validate` | `npm run validate:complexity` | `node scripts/validate-control-plane-complexity.mjs` |
-| `validate` | `npm run validate:control-plane` | `node scripts/generate-control-plane-inventory.mjs` |
 | `validate` | `npm run validate:dependency-audit` | `node scripts/audit-dependencies.mjs` |
-| `validate` | `npm run validate:doc-governance` | `node scripts/generate-doc-governance.mjs` |
-| `validate` | `npm run validate:doc-migrations` | `node scripts/migrate-documentation-layout.mjs` |
 | `validate` | `npm run validate:docs` | `node scripts/validate-docs.mjs` |
 | `validate` | `npm run validate:drift` | `node scripts/generate-registry.mjs` |
-| `validate` | `npm run validate:evaluation-profiles` | `node scripts/generate-evaluation-profiles.mjs` |
-| `validate` | `npm run validate:evidence-levels` | `node scripts/generate-evidence-levels.mjs` |
 | `validate` | `npm run validate:facts` | `node scripts/generate-fact-graph.mjs` |
 | `validate` | `npm run validate:github-workflows` | `node scripts/validate-github-workflows.mjs` |
 | `validate` | `npm run validate:governance-freshness` | `node scripts/validate-governance-freshness.mjs` |
@@ -258,23 +248,19 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `npm run validate:maintainer` | `node scripts/validate-maintainer.mjs` |
 | `validate` | `npm run validate:maintainer:evidence` | `node scripts/validate-maintainer.mjs --evidence-only` |
 | `validate` | `npm run validate:performance` | `node scripts/validate-performance-budget.mjs` |
-| `validate` | `npm run validate:permissions` | `node scripts/generate-workflow-permissions.mjs` |
 | `validate` | `npm run validate:platform-evidence` | `node scripts/validate-platform-evidence.mjs` |
 | `validate` | `npm run validate:portable-paths` | `node scripts/validate-portable-paths.mjs` |
 | `validate` | `npm run validate:project-state` | `node scripts/validate-project-state.mjs` |
 | `validate` | `npm run validate:regression` | `node scripts/validate-regression.mjs` |
-| `validate` | `npm run validate:release-channels` | `node scripts/validate-release-channel-facts.mjs` |
 | `validate` | `npm run validate:release-operational-readiness` | `node scripts/validate-release-operational-readiness.mjs --mode candidate` |
 | `validate` | `npm run validate:release-operations` | `node scripts/validate-release-operations.mjs` |
 | `validate` | `npm run validate:release-readiness` | `node scripts/validate-release-readiness.mjs` |
-| `validate` | `npm run validate:release-summary` | `node scripts/generate-release-summary.mjs` |
 | `validate` | `npm run validate:release-truth` | `node scripts/validate-release-channel-facts.mjs` |
 | `validate` | `npm run validate:runtime` | `node scripts/validate-runtime-smoke.mjs` |
 | `validate` | `npm run validate:schemas` | `node scripts/validate-schemas.mjs` |
 | `validate` | `npm run validate:schemas:differential` | `node scripts/validate-schema-engine-differential.mjs` |
 | `validate` | `npm run validate:second-product` | `node scripts/validate-second-product-fixture.mjs` |
 | `validate` | `npm run validate:surface` | `node scripts/validate-surface-budget.mjs` |
-| `validate` | `npm run validate:tasks` | `node scripts/generate-task-catalog.mjs` |
 | `validate` | `npm run validate:tutorials` | `node scripts/validate-tutorials.mjs` |
 | `validate` | `npm run validate:workflow` | `node scripts/validate-workflow-fixtures.mjs` |
 | `validate` | `npm run validate:workflow-contract` | `node scripts/validate-workflow-contract-v5.mjs` |

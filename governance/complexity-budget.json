@@ -1,7 +1,11 @@
 {
   "$schema": "../schemas/complexity-budget.schema.json",
   "schemaVersion": 1,
+  "maximumPackageScripts": 100,
+  "maximumValidationTasks": 63,
   "maximumWorkflowFiles": 12,
+  "maximumGovernanceSources": 23,
+  "maximumGenerators": 25,
   "maximumReleaseYamlLogicLines": 250,
   "maximumManualCurrentFacts": 0,
   "maximumGeneratedProjectionLayers": 4,

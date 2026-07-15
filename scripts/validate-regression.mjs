@@ -135,9 +135,12 @@ test('package maintainer shortcuts include the GitHub workflow validator', () =>
     packageJson.scripts['validate:workflow'],
     'node scripts/validate-workflow-fixtures.mjs',
   );
-  assert.equal(packageJson.scripts['check:contracts'], 'node scripts/validate-all.mjs');
-  assert.equal(packageJson.scripts['check:tests'], 'npm test');
-  assert.equal(packageJson.scripts['check:coverage'], 'npm run test:coverage:check');
+  assert.equal(Object.hasOwn(packageJson.scripts, 'check:contracts'), false);
+  assert.equal(Object.hasOwn(packageJson.scripts, 'check:tests'), false);
+  assert.equal(Object.hasOwn(packageJson.scripts, 'check:coverage'), false);
+  assert.equal(packageJson.scripts.validate, 'node scripts/validate-all.mjs');
+  assert.equal(packageJson.scripts.test, 'npm run test:unit && npm run test:integration && npm run test:e2e');
+  assert.equal(packageJson.scripts['test:coverage:check'], 'node scripts/run-test-coverage.mjs --check');
   assert.match(packageJson.scripts['check:release'], /validate:maintainer/);
   assert.match(packageJson.scripts.check, /validate:maintainer/);
   assert.equal(Object.hasOwn(packageJson.scripts, 'build'), false, 'package scripts must not define build');

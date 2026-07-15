@@ -65,6 +65,63 @@ gate is added, renamed, removed, or moved.
 | `npm run scan:secrets` | Source-owned secret scan gate. | Alias for `node scripts/scan-distribution-risk.mjs`; exposes a named PR check for secret/private-data signals. |
 | `npm run scan:distribution` | Public distribution risk scan. | Redacts findings, scans patch/common/unknown text through 10 MiB, fails closed above that limit, and blocks tracked private/Codex runtime artifacts. |
 
+## Maintainer Entrypoint Families
+
+The recommended root shortcuts are intentionally limited to these task families.
+Focused implementation scripts remain callable directly when a narrower gate is
+needed, but they do not all need a second name in `package.json`.
+
+| Family | Recommended entrypoints |
+| --- | --- |
+| Doctor/demo | `doctor`, `validate:bootstrap`, `demo:all`, `demo:route`, `demo:review` |
+| Test/coverage | `test`, `test:unit`, `test:integration`, `test:e2e`, `test:coverage`, `test:coverage:check` |
+| Validate/check | `validate`, `ci:quick`, `ci:full`, `check`, `validate:maintainer`, plus focused `validate:*` gates that carry distinct policy or arguments |
+| Security | `check:security`, `scan:secrets`, `scan:distribution` |
+| Release | `check:release`, `check:release-readiness`, `release:*`, `validate:release-truth`, `validate:release-readiness` |
+| Generation | `generate:*`, `sync:project-state`, `normalize:surfaces`, `migrate:docs` |
+
+### Phase-one reference graph and migration map
+
+The phase-one review traced each root shortcut through package-to-package calls,
+the runnable validation registry, all workflow YAML, maintainer documentation,
+and shell/PowerShell/Node command strings. The following names were the only
+safe removals. A removed name is listed without runnable `npm run` syntax so
+documentation cannot accidentally reintroduce it as an active command.
+Here, "generated inventories" means both the generated maintainer task catalog
+and the generated control-plane inventory; neither is an execution caller.
+
+| Removed name | Classification | Repository references before removal | Replacement | Compatibility impact |
+| --- | --- | --- | --- | --- |
+| `eval:dataset-integrity` | exact duplicate | evaluation README and generated inventories | `eval:route` | Repository docs migrated; the underlying route-conformance task is unchanged. |
+| `check:contracts` | exact duplicate | generated inventories only | `validate` | Removes a repository-maintainer alias; the full validation command is unchanged. |
+| `check:tests` | unreferenced wrapper | generated inventories only | `test` | Removes a parameter-free forwarding alias. |
+| `check:coverage` | unreferenced wrapper | generated inventories only | `test:coverage:check` | Removes a parameter-free forwarding alias. |
+| `validate:release-channels` | exact duplicate | release runbook and generated inventories | `validate:release-truth` | Release runbook migrated; release fact validation is unchanged. |
+| `validate:evaluation-profiles` | generator/write variant | generated inventories only | `node scripts/generate-evaluation-profiles.mjs` | Read-only drift check remains available directly; the write entrypoint remains distinct. |
+| `validate:release-summary` | generator/write variant | generated inventories only | `node scripts/generate-release-summary.mjs` | Read-only drift check remains available directly; the write entrypoint remains distinct. |
+| `validate:tasks` | generator/write variant | generated inventories only | `node scripts/generate-task-catalog.mjs` | Read-only catalog validation remains in the runnable registry. |
+| `validate:control-plane` | generator/write variant | generated inventories only | `node scripts/generate-control-plane-inventory.mjs` | Read-only inventory validation remains in the runnable registry. |
+| `validate:evidence-levels` | generator/write variant | generated inventories only | `node scripts/generate-evidence-levels.mjs` | Read-only drift check remains available directly; the write entrypoint remains distinct. |
+| `validate:permissions` | generator/write variant | generated inventories only | `node scripts/generate-workflow-permissions.mjs` | CI and the runnable registry continue to call the same read-only generator. |
+| `validate:command-docs` | generator/write variant | generated inventories only | `node scripts/generate-command-docs.mjs` | Read-only drift check remains in the runnable registry; the write entrypoint remains distinct. |
+| `validate:doc-governance` | generator/write variant | generated inventories only | `node scripts/generate-doc-governance.mjs` | Read-only drift check remains in the runnable registry; the write entrypoint remains distinct. |
+| `validate:doc-migrations` | generator/write variant | generated inventories only | `node scripts/migrate-documentation-layout.mjs` | Read-only migration validation remains in the runnable registry; the write entrypoint remains distinct. |
+
+Retained compatibility and security mappings deliberately share one
+implementation rather than duplicating logic:
+
+| Retained name | Canonical implementation | Why it remains |
+| --- | --- | --- |
+| `ci:full` | `node scripts/validate-all.mjs` (same implementation as `validate`) | Widely documented compatibility name for existing maintainer automation. |
+| `scan:secrets` | `node scripts/scan-distribution-risk.mjs` | Required security entrypoint and named secret/private-data contract. |
+| `scan:distribution` | `node scripts/scan-distribution-risk.mjs` | Required distribution gate and SARIF/public-archive contract. |
+
+The write forms remain separate from validation. In particular,
+`generate:evaluation-profiles`, `generate:release-summary`,
+`generate:task-catalog`, `generate:control-plane`, `generate:evidence-levels`,
+`generate:command-docs`, `generate:doc-governance`, and `migrate:docs` keep
+`--write`; their direct read-only commands omit it.
+
 ## CI Check Map
 
 | CI check | Source command or workflow | Coverage |
@@ -99,293 +156,10 @@ gate is added, renamed, removed, or moved.
 | Public surface inventory | `node scripts/generate-surface-inventory.mjs --write`, `node scripts/generate-surface-inventory.mjs`, `npm test` |
 
 <!-- merged-from: docs/maintainers/task-catalog.md -->
-<details>
-<summary>Migrated source: docs/maintainers/task-catalog.md</summary>
+## Complete Task Catalog
 
-# Maintainer Task Catalog
-
-<!-- Generated by node scripts/generate-task-catalog.mjs --write. Do not edit by hand. -->
-
-This catalog classifies every repository maintenance script and npm shortcut, then maps the current GitHub Actions jobs. The source is `governance/task-registry.json`.
-
-## Categories
-
-| Category | Contract |
-| --- | --- |
-| `validate` | Deterministic validation, lint, policy, and security gates. |
-| `release` | Candidate build, promotion, reconciliation, and release proof operations. |
-| `evidence` | Generated facts, compatibility records, inventories, and quality evidence. |
-| `docs` | Documentation synchronization and documentation-specific generation. |
-| `migration` | Scaffolding, normalization, and versioned contract migrations. |
-| `benchmark` | Tests, coverage, simulations, demos, mutations, and live evaluation. |
-| `maintenance` | Diagnostics, repository administration, and reusable script libraries. |
-
-## Script Inventory (123)
-
-| Category | Script |
-| --- | --- |
-| `release` | `scripts/build-candidate-bundle.mjs` |
-| `release` | `scripts/build-release-artifacts.mjs` |
-| `release` | `scripts/build-release-control-bundle.mjs` |
-| `evidence` | `scripts/collect-github-metrics.mjs` |
-| `benchmark` | `scripts/demo-all.mjs` |
-| `benchmark` | `scripts/demo-review.mjs` |
-| `benchmark` | `scripts/demo-route.mjs` |
-| `maintenance` | `scripts/doctor.mjs` |
-| `benchmark` | `scripts/evaluate-adapter-simulation.mjs` |
-| `benchmark` | `scripts/evaluate-paired-live.mjs` |
-| `benchmark` | `scripts/evaluate-static-contracts.mjs` |
-| `benchmark` | `scripts/evaluate-workflow-surfaces.mjs` |
-| `release` | `scripts/extract-release-bundle.mjs` |
-| `evidence` | `scripts/generate-adapters.mjs` |
-| `evidence` | `scripts/generate-behavior-surfaces.mjs` |
-| `docs` | `scripts/generate-command-docs.mjs` |
-| `evidence` | `scripts/generate-compatibility-evidence.mjs` |
-| `docs` | `scripts/generate-diagnostics-docs.mjs` |
-| `docs` | `scripts/generate-doc-governance.mjs` |
-| `evidence` | `scripts/generate-eval-corpus.mjs` |
-| `evidence` | `scripts/generate-fact-graph.mjs` |
-| `evidence` | `scripts/generate-project-state.mjs` |
-| `docs` | `scripts/generate-prompt-surface-report.mjs` |
-| `evidence` | `scripts/generate-quality-report.mjs` |
-| `evidence` | `scripts/generate-registry.mjs` |
-| `release` | `scripts/generate-release-candidate.mjs` |
-| `release` | `scripts/generate-release-checksums.mjs` |
-| `release` | `scripts/generate-release-evidence.mjs` |
-| `evidence` | `scripts/generate-runtime-contracts.mjs` |
-| `evidence` | `scripts/generate-surface-inventory.mjs` |
-| `evidence` | `scripts/generate-task-catalog.mjs` |
-| `evidence` | `scripts/generate-validation-timing-trend.mjs` |
-| `evidence` | `scripts/generate-workflow-permissions.mjs` |
-| `maintenance` | `scripts/lib/bash-command.mjs` |
-| `maintenance` | `scripts/lib/canonical-json.mjs` |
-| `maintenance` | `scripts/lib/cli-args.mjs` |
-| `maintenance` | `scripts/lib/coverage-runner.mjs` |
-| `maintenance` | `scripts/lib/coverage-thresholds.mjs` |
-| `maintenance` | `scripts/lib/diagnostics.mjs` |
-| `maintenance` | `scripts/lib/eval-dataset.mjs` |
-| `maintenance` | `scripts/lib/evaluation-facts.mjs` |
-| `maintenance` | `scripts/lib/label-catalog.mjs` |
-| `maintenance` | `scripts/lib/migration-cli.mjs` |
-| `maintenance` | `scripts/lib/node-version.mjs` |
-| `maintenance` | `scripts/lib/process-runner.mjs` |
-| `maintenance` | `scripts/lib/release-candidate.mjs` |
-| `maintenance` | `scripts/lib/release-corrections.mjs` |
-| `maintenance` | `scripts/lib/release-review.mjs` |
-| `maintenance` | `scripts/lib/release-state-machine.mjs` |
-| `maintenance` | `scripts/lib/repo-root.mjs` |
-| `maintenance` | `scripts/lib/safe-tar.mjs` |
-| `maintenance` | `scripts/lib/schema-engine.mjs` |
-| `maintenance` | `scripts/lib/semver.mjs` |
-| `maintenance` | `scripts/lib/source-inventory.mjs` |
-| `maintenance` | `scripts/lib/test-discovery.mjs` |
-| `maintenance` | `scripts/lib/validate-workflow-model.mjs` |
-| `maintenance` | `scripts/lib/workflow-model.mjs` |
-| `validate` | `scripts/lint-frontmatter.mjs` |
-| `migration` | `scripts/migrate-command-frontmatter.mjs` |
-| `migration` | `scripts/migrate-skill-frontmatter.mjs` |
-| `migration` | `scripts/migrate-v5-surfaces.mjs` |
-| `migration` | `scripts/migrate-v6-contracts.mjs` |
-| `migration` | `scripts/normalize-workflow-surfaces.mjs` |
-| `release` | `scripts/prepare-release.mjs` |
-| `maintenance` | `scripts/print-github-security-settings.mjs` |
-| `maintenance` | `scripts/profile-validation.mjs` |
-| `release` | `scripts/reconcile-github-release.mjs` |
-| `release` | `scripts/release-orchestrator.mjs` |
-| `benchmark` | `scripts/run-critical-fault-injection.mjs` |
-| `benchmark` | `scripts/run-critical-mutations.mjs` |
-| `benchmark` | `scripts/run-live-assistant-evals.mjs` |
-| `benchmark` | `scripts/run-node-tests.mjs` |
-| `benchmark` | `scripts/run-real-task-benchmark.mjs` |
-| `benchmark` | `scripts/run-test-coverage.mjs` |
-| `migration` | `scripts/scaffold-consumer-profile.mjs` |
-| `migration` | `scripts/scaffold.mjs` |
-| `validate` | `scripts/scan-distribution-risk.mjs` |
-| `docs` | `scripts/sync-doc-facts.mjs` |
-| `maintenance` | `scripts/sync-github-labels.mjs` |
-| `validate` | `scripts/validate-adapter-conformance.mjs` |
-| `validate` | `scripts/validate-all.mjs` |
-| `validate` | `scripts/validate-assistant-evidence.mjs` |
-| `validate` | `scripts/validate-behavior-golden.mjs` |
-| `validate` | `scripts/validate-bootstrap.mjs` |
-| `validate` | `scripts/validate-claude-compat.mjs` |
-| `validate` | `scripts/validate-community-governance.mjs` |
-| `validate` | `scripts/validate-control-plane-complexity.mjs` |
-| `validate` | `scripts/validate-docs.mjs` |
-| `validate` | `scripts/validate-docs/rules/active-planning-and-reports.mjs` |
-| `validate` | `scripts/validate-docs/rules/links-and-command-docs.mjs` |
-| `validate` | `scripts/validate-docs/runner.mjs` |
-| `validate` | `scripts/validate-github-workflows.mjs` |
-| `validate` | `scripts/validate-governance-freshness.mjs` |
-| `validate` | `scripts/validate-hooks.mjs` |
-| `validate` | `scripts/validate-live-eval-dataset.mjs` |
-| `validate` | `scripts/validate-maintainer.mjs` |
-| `validate` | `scripts/validate-packs.mjs` |
-| `validate` | `scripts/validate-plugin-install.mjs` |
-| `validate` | `scripts/validate-plugin-route-live.mjs` |
-| `validate` | `scripts/validate-portable-paths.mjs` |
-| `validate` | `scripts/validate-project-state.mjs` |
-| `validate` | `scripts/validate-registry-fixtures.mjs` |
-| `validate` | `scripts/validate-regression.mjs` |
-| `validate` | `scripts/validate-release-channel-facts.mjs` |
-| `validate` | `scripts/validate-release-operational-readiness.mjs` |
-| `validate` | `scripts/validate-release-operations.mjs` |
-| `validate` | `scripts/validate-release-readiness.mjs` |
-| `validate` | `scripts/validate-route-conformance.mjs` |
-| `validate` | `scripts/validate-runtime-behavior-contracts.mjs` |
-| `validate` | `scripts/validate-runtime-smoke.mjs` |
-| `validate` | `scripts/validate-schema-engine-differential.mjs` |
-| `validate` | `scripts/validate-schemas.mjs` |
-| `validate` | `scripts/validate-second-product-fixture.mjs` |
-| `validate` | `scripts/validate-surface-budget.mjs` |
-| `validate` | `scripts/validate-workflow-contract-v5.mjs` |
-| `validate` | `scripts/validate-workflow-fixtures.mjs` |
-| `validate` | `scripts/validate-workflow-quality-evals.mjs` |
-| `validate` | `scripts/validate-workspaces.mjs` |
-| `validate` | `scripts/verify-agents.ps1` |
-| `validate` | `scripts/verify-agents.sh` |
-| `release` | `scripts/verify-independent-release-review.mjs` |
-| `release` | `scripts/verify-release-promotion.mjs` |
-| `release` | `scripts/verify-stable-install.mjs` |
-
-## npm Shortcuts (97)
-
-| Category | Shortcut | Command |
-| --- | --- | --- |
-| `validate` | `npm run check` | `npm run test:coverage:check && npm run validate:maintainer:evidence` |
-| `validate` | `npm run check:compatibility` | `npm run validate:compatibility-evidence && npm run validate:second-product && npm run validate:portable-paths` |
-| `validate` | `npm run check:contracts` | `node scripts/validate-all.mjs` |
-| `validate` | `npm run check:coverage` | `npm run test:coverage:check` |
-| `validate` | `npm run check:docs` | `npm run validate:docs && npm run validate:community` |
-| `validate` | `npm run check:release` | `npm run test:coverage:check && npm run validate:maintainer:evidence && node scripts/validate-plugin-install.mjs --dry-run` |
-| `validate` | `npm run check:release-readiness` | `npm run validate:release-readiness -- --require-ready` |
-| `validate` | `npm run check:runtime` | `npm run validate:runtime && npm run validate:hook-truth` |
-| `validate` | `npm run check:security` | `npm run typecheck && npm run lint:shell && npm run lint:actions && npm run validate:github-workflows && npm run scan:secrets` |
-| `validate` | `npm run check:tests` | `npm test` |
-| `validate` | `npm run check:truth` | `npm run validate:release-truth && npm run validate:hook-truth && npm run validate:project-state && npm run validate:facts && npm run validate:drift` |
-| `validate` | `npm run ci:full` | `node scripts/validate-all.mjs` |
-| `validate` | `npm run ci:quick` | `node scripts/validate-schemas.mjs && node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs && node scripts/validate-hooks.mjs` |
-| `benchmark` | `npm run demo:all` | `node scripts/demo-all.mjs` |
-| `benchmark` | `npm run demo:review` | `node scripts/demo-review.mjs` |
-| `benchmark` | `npm run demo:route` | `node scripts/demo-route.mjs` |
-| `maintenance` | `npm run doctor` | `node scripts/doctor.mjs` |
-| `benchmark` | `npm run eval:adapters` | `node scripts/validate-adapter-conformance.mjs` |
-| `benchmark` | `npm run eval:behavior-golden` | `node scripts/validate-behavior-golden.mjs` |
-| `benchmark` | `npm run eval:contracts` | `node scripts/evaluate-static-contracts.mjs` |
-| `benchmark` | `npm run eval:dataset-integrity` | `node scripts/validate-route-conformance.mjs` |
-| `benchmark` | `npm run eval:evidence` | `node scripts/validate-assistant-evidence.mjs` |
-| `benchmark` | `npm run eval:live` | `node scripts/run-live-assistant-evals.mjs` |
-| `benchmark` | `npm run eval:live:dataset` | `node scripts/validate-live-eval-dataset.mjs` |
-| `benchmark` | `npm run eval:paired:dry-run` | `node scripts/evaluate-paired-live.mjs --dry-run` |
-| `benchmark` | `npm run eval:quality` | `node scripts/validate-workflow-quality-evals.mjs` |
-| `benchmark` | `npm run eval:route` | `node scripts/validate-route-conformance.mjs` |
-| `benchmark` | `npm run eval:simulation` | `node scripts/evaluate-adapter-simulation.mjs` |
-| `benchmark` | `npm run eval:surfaces` | `node scripts/evaluate-workflow-surfaces.mjs` |
-| `evidence` | `npm run generate:adapters` | `node scripts/generate-adapters.mjs --write` |
-| `evidence` | `npm run generate:behavior-surfaces` | `node scripts/generate-behavior-surfaces.mjs --write` |
-| `docs` | `npm run generate:command-docs` | `node scripts/generate-command-docs.mjs --write` |
-| `evidence` | `npm run generate:compatibility-evidence` | `node scripts/generate-compatibility-evidence.mjs --write` |
-| `docs` | `npm run generate:diagnostics-docs` | `node scripts/generate-diagnostics-docs.mjs --write` |
-| `docs` | `npm run generate:doc-governance` | `node scripts/generate-doc-governance.mjs --write` |
-| `evidence` | `npm run generate:facts` | `node scripts/generate-fact-graph.mjs --write` |
-| `evidence` | `npm run generate:quality-report` | `node scripts/generate-quality-report.mjs --write` |
-| `evidence` | `npm run generate:runtime-contracts` | `node scripts/generate-runtime-contracts.mjs --write` |
-| `evidence` | `npm run generate:task-catalog` | `node scripts/generate-task-catalog.mjs --write` |
-| `validate` | `npm run lint` | `node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs && npm run typecheck` |
-| `validate` | `npm run lint:actions` | `actionlint` |
-| `validate` | `npm run lint:shell` | `shellcheck -x -P nova-plugin/skills/nova-codex-review-fix/scripts scripts/verify-agents.sh nova-plugin/hooks/scripts/*.sh nova-plugin/skills/nova-codex-review-fix/scripts/*.sh` |
-| `maintenance` | `npm run llmf` | `node packages/cli/bin/llmf.mjs` |
-| `migration` | `npm run normalize:surfaces` | `node scripts/normalize-workflow-surfaces.mjs --write` |
-| `release` | `npm run release:artifacts` | `node scripts/build-release-artifacts.mjs` |
-| `release` | `npm run release:candidate` | `node scripts/generate-release-candidate.mjs` |
-| `release` | `npm run release:control` | `node scripts/build-release-control-bundle.mjs` |
-| `release` | `npm run release:evidence` | `node scripts/generate-release-evidence.mjs` |
-| `release` | `npm run release:orchestrate` | `node scripts/release-orchestrator.mjs` |
-| `release` | `npm run release:promotion:verify` | `node scripts/verify-release-promotion.mjs` |
-| `migration` | `npm run scaffold:consumer` | `node scripts/scaffold-consumer-profile.mjs` |
-| `validate` | `npm run scan:distribution` | `node scripts/scan-distribution-risk.mjs` |
-| `validate` | `npm run scan:secrets` | `node scripts/scan-distribution-risk.mjs` |
-| `maintenance` | `npm run sync:project-state` | `node scripts/generate-project-state.mjs --write && node scripts/sync-doc-facts.mjs --write` |
-| `benchmark` | `npm run test` | `npm run test:unit && npm run test:integration && npm run test:e2e` |
-| `benchmark` | `npm run test:coverage` | `node scripts/run-test-coverage.mjs` |
-| `benchmark` | `npm run test:coverage:check` | `node scripts/run-test-coverage.mjs --check` |
-| `benchmark` | `npm run test:e2e` | `node scripts/run-node-tests.mjs --suite e2e` |
-| `benchmark` | `npm run test:fault-injection` | `node scripts/run-critical-fault-injection.mjs` |
-| `benchmark` | `npm run test:integration` | `node scripts/run-node-tests.mjs --suite integration` |
-| `benchmark` | `npm run test:mutation:critical` | `node scripts/run-critical-mutations.mjs` |
-| `benchmark` | `npm run test:unit` | `node scripts/run-node-tests.mjs --suite unit` |
-| `validate` | `npm run typecheck` | `tsc -p tsconfig.checkjs.json` |
-| `validate` | `npm run validate` | `node scripts/validate-all.mjs` |
-| `validate` | `npm run validate:behavior-contracts` | `node scripts/validate-runtime-behavior-contracts.mjs` |
-| `validate` | `npm run validate:bootstrap` | `node scripts/validate-bootstrap.mjs` |
-| `validate` | `npm run validate:command-docs` | `node scripts/generate-command-docs.mjs` |
-| `validate` | `npm run validate:community` | `node scripts/validate-community-governance.mjs && node scripts/generate-quality-report.mjs` |
-| `validate` | `npm run validate:compatibility-evidence` | `node scripts/generate-compatibility-evidence.mjs` |
-| `validate` | `npm run validate:complexity` | `node scripts/validate-control-plane-complexity.mjs` |
-| `validate` | `npm run validate:doc-governance` | `node scripts/generate-doc-governance.mjs` |
-| `validate` | `npm run validate:docs` | `node scripts/validate-docs.mjs` |
-| `validate` | `npm run validate:drift` | `node scripts/generate-registry.mjs` |
-| `validate` | `npm run validate:facts` | `node scripts/generate-fact-graph.mjs` |
-| `validate` | `npm run validate:github-workflows` | `node scripts/validate-github-workflows.mjs` |
-| `validate` | `npm run validate:governance-freshness` | `node scripts/validate-governance-freshness.mjs` |
-| `validate` | `npm run validate:hook-truth` | `node scripts/validate-hooks.mjs` |
-| `validate` | `npm run validate:maintainer` | `node scripts/validate-maintainer.mjs` |
-| `validate` | `npm run validate:maintainer:evidence` | `node scripts/validate-maintainer.mjs --evidence-only` |
-| `validate` | `npm run validate:permissions` | `node scripts/generate-workflow-permissions.mjs` |
-| `validate` | `npm run validate:portable-paths` | `node scripts/validate-portable-paths.mjs` |
-| `validate` | `npm run validate:project-state` | `node scripts/validate-project-state.mjs` |
-| `validate` | `npm run validate:regression` | `node scripts/validate-regression.mjs` |
-| `validate` | `npm run validate:release-channels` | `node scripts/validate-release-channel-facts.mjs` |
-| `validate` | `npm run validate:release-operational-readiness` | `node scripts/validate-release-operational-readiness.mjs --mode candidate` |
-| `validate` | `npm run validate:release-operations` | `node scripts/validate-release-operations.mjs` |
-| `validate` | `npm run validate:release-readiness` | `node scripts/validate-release-readiness.mjs` |
-| `validate` | `npm run validate:release-truth` | `node scripts/validate-release-channel-facts.mjs` |
-| `validate` | `npm run validate:runtime` | `node scripts/validate-runtime-smoke.mjs` |
-| `validate` | `npm run validate:schemas` | `node scripts/validate-schemas.mjs` |
-| `validate` | `npm run validate:schemas:differential` | `node scripts/validate-schema-engine-differential.mjs` |
-| `validate` | `npm run validate:second-product` | `node scripts/validate-second-product-fixture.mjs` |
-| `validate` | `npm run validate:surface` | `node scripts/validate-surface-budget.mjs` |
-| `validate` | `npm run validate:tasks` | `node scripts/generate-task-catalog.mjs` |
-| `validate` | `npm run validate:workflow` | `node scripts/validate-workflow-fixtures.mjs` |
-| `validate` | `npm run validate:workflow-contract` | `node scripts/validate-workflow-contract-v5.mjs` |
-| `validate` | `npm run validate:workspaces` | `node scripts/validate-workspaces.mjs` |
-
-## CI Job Map (26)
-
-| Workflow | Job |
-| --- | --- |
-| `.github/workflows/ci.yml` | `aggregate` |
-| `.github/workflows/ci.yml` | `classify` |
-| `.github/workflows/ci.yml` | `contracts` |
-| `.github/workflows/ci.yml` | `fast` |
-| `.github/workflows/ci.yml` | `live-evidence` |
-| `.github/workflows/ci.yml` | `package` |
-| `.github/workflows/ci.yml` | `platform` |
-| `.github/workflows/ci.yml` | `security` |
-| `.github/workflows/ci.yml` | `tests` |
-| `.github/workflows/codeql.yml` | `analyze` |
-| `.github/workflows/dependency-review.yml` | `dependency-review` |
-| `.github/workflows/label-sync.yml` | `sync` |
-| `.github/workflows/nightly.yml` | `full` |
-| `.github/workflows/plugin-install-smoke.yml` | `known-good-install-smoke` |
-| `.github/workflows/plugin-install-smoke.yml` | `latest-drift-check` |
-| `.github/workflows/plugin-install-smoke.yml` | `latest-drift-report` |
-| `.github/workflows/promote-release.yml` | `publish` |
-| `.github/workflows/promote-release.yml` | `verify` |
-| `.github/workflows/release-candidate.yml` | `assemble` |
-| `.github/workflows/release-candidate.yml` | `claude-package` |
-| `.github/workflows/release-candidate.yml` | `live` |
-| `.github/workflows/release-candidate.yml` | `preflight` |
-| `.github/workflows/release-candidate.yml` | `publish` |
-| `.github/workflows/release-candidate.yml` | `validate` |
-| `.github/workflows/release-recovery-drill.yml` | `recover` |
-| `.github/workflows/release.yml` | `recover` |
-
-## Change Routing
-
-- Add or rename a maintenance script: update `governance/task-registry.json` if no existing rule classifies it, then regenerate this catalog.
-- Add or rename an npm shortcut: keep `package.json` and the npm classification rules aligned.
-- Add or rename a CI job: regenerate this catalog and run `node scripts/validate-github-workflows.mjs`.
-- Validate without writing: run `node scripts/generate-task-catalog.mjs`.
-
-</details>
+The current generated inventory of maintenance scripts, root npm shortcuts,
+runnable validation tasks, and GitHub Actions jobs lives in
+[task-catalog.generated.md](task-catalog.generated.md). Regenerate it only
+through `node scripts/generate-task-catalog.mjs --write`; this validation index
+does not keep a second embedded copy.

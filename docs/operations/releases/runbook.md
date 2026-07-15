@@ -14,7 +14,7 @@ and recovery/key rotation remains in
 
 ```bash
 npm ci --ignore-scripts
-npm run validate:release-channels
+npm run validate:release-truth
 npm run typecheck
 npm run validate:maintainer
 npm run test:coverage:check
