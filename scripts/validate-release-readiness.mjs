@@ -44,7 +44,12 @@ export function validateReleaseReadiness(args = process.argv.slice(2)) {
     ...options,
     corrections: source.document.corrections,
     correctionsSha256: source.sha256,
-    independentReview: { passed: review?.passed === true && review.commit === options.sourceCommit && review.pullRequestHead === options.sourceCommit },
+    independentReview: {
+      passed: review?.passed === true
+        && review.commit === options.sourceCommit
+        && /^[a-f0-9]{40}$/u.test(review.pullRequestHead ?? '')
+        && review.expectedReviewCommit === review.pullRequestHead,
+    },
     protectedPublication: { passed: options.protectedPublicationApproved },
   });
   return { options, result };

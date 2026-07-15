@@ -63,8 +63,8 @@ locked dependency graph.
 
 The complete local security group also requires ShellCheck and actionlint.
 `npm run doctor` reports both tools explicitly. On macOS with Homebrew, install
-them with `brew install shellcheck actionlint`; then run `npm run
-check:security`. CI downloads checksum-verified ShellCheck `0.11.0` and
+them with `brew install shellcheck actionlint`; then run
+`npm run llmf -- check security`. CI downloads checksum-verified ShellCheck `0.11.0` and
 actionlint `1.7.12`, so release evidence should use those versions or the CI
 security lane when the local package manager provides a different build.
 

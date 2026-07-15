@@ -35,6 +35,16 @@
         "observer",
         "reviewer"
       ]
+    },
+    {
+      "name": "DEPTH",
+      "type": "enum",
+      "required": false,
+      "values": [
+        "lite",
+        "standard",
+        "deep"
+      ]
     }
   ],
   "effects": [
@@ -112,6 +122,18 @@
           "observer",
           "reviewer"
         ]
+      },
+      {
+        "name": "DEPTH",
+        "required": false,
+        "aliases": [],
+        "description": "Exploration depth for canonical and compatibility projections.",
+        "default": "standard",
+        "exactValues": [
+          "lite",
+          "standard",
+          "deep"
+        ]
       }
     ],
     "decisionTable": [
@@ -119,19 +141,78 @@
         "when": {
           "op": "input-equals",
           "input": "PERSPECTIVE",
-          "value": "observer"
-        },
-        "action": "Use neutral fact-gathering behavior.",
-        "route": "explore-lite"
-      },
-      {
-        "when": {
-          "op": "input-equals",
-          "input": "PERSPECTIVE",
           "value": "reviewer"
         },
         "action": "Use review-question behavior.",
-        "route": "explore-review"
+        "route": "explore",
+        "variantParameters": {
+          "PERSPECTIVE": "reviewer"
+        }
+      },
+      {
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-equals",
+              "input": "PERSPECTIVE",
+              "value": "observer"
+            },
+            {
+              "op": "input-equals",
+              "input": "DEPTH",
+              "value": "lite"
+            }
+          ]
+        },
+        "action": "Use concise neutral fact-gathering behavior.",
+        "route": "explore",
+        "variantParameters": {
+          "PERSPECTIVE": "observer",
+          "DEPTH": "lite"
+        }
+      },
+      {
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-equals",
+              "input": "PERSPECTIVE",
+              "value": "observer"
+            },
+            {
+              "op": "input-equals",
+              "input": "DEPTH",
+              "value": "standard"
+            }
+          ]
+        },
+        "action": "Use normal neutral fact-gathering behavior.",
+        "route": "explore",
+        "variantParameters": {}
+      },
+      {
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-equals",
+              "input": "PERSPECTIVE",
+              "value": "observer"
+            },
+            {
+              "op": "input-equals",
+              "input": "DEPTH",
+              "value": "deep"
+            }
+          ]
+        },
+        "action": "Use deep neutral fact-gathering behavior.",
+        "route": "explore",
+        "variantParameters": {
+          "DEPTH": "deep"
+        }
       }
     ],
     "invariants": [
@@ -142,12 +223,13 @@
     "stopConditions": [
       "INPUT is unresolved.",
       "PERSPECTIVE is not an exact allowed value.",
+      "DEPTH is not an exact allowed value.",
       "The request requires writes or implementation rather than exploration."
     ],
     "workflowSteps": [
       {
         "id": "resolve-input",
-        "action": "Resolve INPUT and PERSPECTIVE."
+        "action": "Resolve INPUT, PERSPECTIVE, and DEPTH."
       },
       {
         "id": "route",
@@ -195,7 +277,7 @@
     "validation": [
       "Confirm every assertion is a fact, labeled inference, or explicit assumption.",
       "Confirm the output contains no solution or implementation advice.",
-      "Confirm the selected route matches PERSPECTIVE."
+      "Confirm the selected route and structured parameters match PERSPECTIVE and DEPTH."
     ],
     "failureOutput": {
       "fields": [

@@ -57,6 +57,11 @@ gate is added, renamed, removed, or moved.
 | `npm run ci:quick` | Fast structural gate. | Schemas, frontmatter, docs, and hooks. |
 | `npm run ci:full` | Full default validation. | Alias for `node scripts/validate-all.mjs`. |
 | `npm run validate` | Full default validation. | Alias for `node scripts/validate-all.mjs`. |
+| `npm run llmf -- check quick` | Fast repository check profile. | Fixed-argv equivalent of the structural quick gate; unknown profiles fail closed. |
+| `npm run llmf -- check full` | Full repository check profile. | Runs `node scripts/validate-all.mjs` without shell composition. |
+| `npm run llmf -- check security` | Security repository check profile. | Runs typecheck, ShellCheck, actionlint, workflow validation, and the distribution-risk scan in order. |
+| `npm run llmf -- check release` | Release repository check profile. | Runs coverage, evidence-only maintainer validation, and install dry-run in order. |
+| `npm run llmf -- generate docs\|runtime\|release\|all` | Generated projection drift profiles. | Read-only by default; append `--write` explicitly to update every output in the selected profile. |
 | `npm run validate:drift` | Generated marketplace/catalog drift gate. | Alias for `node scripts/generate-registry.mjs`. |
 | `npm run validate:maintainer` | Maintainer release gate. | Adds `npm test`, generated registry drift, and whitespace checks. |
 | `npm run validate:github-workflows` | GitHub workflow contract gate. | Run after workflow, required-check, or release CI changes. |
@@ -75,12 +80,12 @@ needed, but they do not all need a second name in `package.json`.
 | --- | --- |
 | Doctor/demo | `doctor`, `validate:bootstrap`, `demo:all`, `demo:route`, `demo:review` |
 | Test/coverage | `test`, `test:unit`, `test:integration`, `test:e2e`, `test:coverage`, `test:coverage:check` |
-| Validate/check | `validate`, `ci:quick`, `ci:full`, `check`, `validate:maintainer`, plus focused `validate:*` gates that carry distinct policy or arguments |
-| Security | `check:security`, `scan:secrets`, `scan:distribution` |
-| Release | `check:release`, `check:release-readiness`, `release:*`, `validate:release-truth`, `validate:release-readiness` |
-| Generation | `generate:*`, `sync:project-state`, `normalize:surfaces`, `migrate:docs` |
+| Validate/check | `llmf check quick\|full`, `validate`, `ci:quick`, `ci:full`, `check`, `validate:maintainer`, plus focused `validate:*` gates that carry distinct policy or arguments |
+| Security | `llmf check security`, `scan:secrets`, `scan:distribution` |
+| Release | `llmf check release`, `check:release-readiness`, `release:*`, `validate:release-truth`, `validate:release-readiness` |
+| Generation | `llmf generate docs\|runtime\|release\|all [--write]`, `sync:project-state`, `normalize:surfaces`, `migrate:docs` |
 
-### Phase-one reference graph and migration map
+### Control-plane entrypoint migration
 
 The phase-one review traced each root shortcut through package-to-package calls,
 the runnable validation registry, all workflow YAML, maintainer documentation,
@@ -97,11 +102,11 @@ and the generated control-plane inventory; neither is an execution caller.
 | `check:tests` | unreferenced wrapper | generated inventories only | `test` | Removes a parameter-free forwarding alias. |
 | `check:coverage` | unreferenced wrapper | generated inventories only | `test:coverage:check` | Removes a parameter-free forwarding alias. |
 | `validate:release-channels` | exact duplicate | release runbook and generated inventories | `validate:release-truth` | Release runbook migrated; release fact validation is unchanged. |
-| `validate:evaluation-profiles` | generator/write variant | generated inventories only | `node scripts/generate-evaluation-profiles.mjs` | Read-only drift check remains available directly; the write entrypoint remains distinct. |
+| `validate:evaluation-profiles` | generator/write variant | generated inventories only | `node scripts/generate-quality-report.mjs` | Evaluation plans and the public quality report now share one lifecycle owner. |
 | `validate:release-summary` | generator/write variant | generated inventories only | `node scripts/generate-release-summary.mjs` | Read-only drift check remains available directly; the write entrypoint remains distinct. |
 | `validate:tasks` | generator/write variant | generated inventories only | `node scripts/generate-task-catalog.mjs` | Read-only catalog validation remains in the runnable registry. |
-| `validate:control-plane` | generator/write variant | generated inventories only | `node scripts/generate-control-plane-inventory.mjs` | Read-only inventory validation remains in the runnable registry. |
-| `validate:evidence-levels` | generator/write variant | generated inventories only | `node scripts/generate-evidence-levels.mjs` | Read-only drift check remains available directly; the write entrypoint remains distinct. |
+| `validate:control-plane` | generator/write variant | generated inventories only | `node scripts/validate-control-plane-complexity.mjs` | Inventory drift and complexity limits now share one lifecycle owner. |
+| `validate:evidence-levels` | generator/write variant | generated inventories only | `node scripts/generate-release-summary.mjs` | Evidence taxonomy and the release summary now share one lifecycle owner. |
 | `validate:permissions` | generator/write variant | generated inventories only | `node scripts/generate-workflow-permissions.mjs` | CI and the runnable registry continue to call the same read-only generator. |
 | `validate:command-docs` | generator/write variant | generated inventories only | `node scripts/generate-command-docs.mjs` | Read-only drift check remains in the runnable registry; the write entrypoint remains distinct. |
 | `validate:doc-governance` | generator/write variant | generated inventories only | `node scripts/generate-doc-governance.mjs` | Read-only drift check remains in the runnable registry; the write entrypoint remains distinct. |
@@ -116,11 +121,32 @@ implementation rather than duplicating logic:
 | `scan:secrets` | `node scripts/scan-distribution-risk.mjs` | Required security entrypoint and named secret/private-data contract. |
 | `scan:distribution` | `node scripts/scan-distribution-risk.mjs` | Required distribution gate and SARIF/public-archive contract. |
 
-The write forms remain separate from validation. In particular,
-`generate:evaluation-profiles`, `generate:release-summary`,
-`generate:task-catalog`, `generate:control-plane`, `generate:evidence-levels`,
-`generate:command-docs`, `generate:doc-governance`, and `migrate:docs` keep
-`--write`; their direct read-only commands omit it.
+Phase two removed 20 additional forwarding aliases after tracing repository
+callers and preserving their fixed task sequences in the private `llmf` CLI:
+
+| Removed names | Replacement | Compatibility and safety boundary |
+| --- | --- | --- |
+| `check:truth`, `check:runtime`, `check:compatibility` | `npm run llmf -- check full` or the focused direct validator | Full validation is a deterministic superset; distinct focused validators remain callable directly. |
+| `check:docs` | `npm run llmf -- check quick` plus a focused community gate when needed | The quick profile retains schema, frontmatter, docs, and hook checks; community validation remains a distinct direct task. |
+| `check:security` | `npm run llmf -- check security` | Preserves typecheck, ShellCheck, actionlint, GitHub workflow validation, and the distribution-risk scan in fixed order. |
+| `check:release` | `npm run llmf -- check release` | Preserves coverage, evidence-only maintainer validation, and install dry-run. |
+| `generate:diagnostics-docs`, `generate:command-docs`, `generate:doc-governance` | `npm run llmf -- generate docs --write` | Drift mode is the default; mutation requires explicit `--write`. |
+| `generate:adapters`, `generate:runtime-contracts`, `generate:behavior-surfaces` | `npm run llmf -- generate runtime --write` | The profile also checks or regenerates v6/v2 and workflow permissions before downstream runtime projections. |
+| `generate:evaluation-profiles`, `generate:release-summary`, `generate:compatibility-evidence`, `generate:facts`, `generate:task-catalog`, `generate:control-plane`, `generate:evidence-levels`, `generate:quality-report` | `npm run llmf -- generate release --write` | Governed evidence and release projections run sequentially; task catalog precedes the final control-plane inventory. |
+
+`llmf generate all` composes runtime, docs, and release profiles without a
+shell. Every child command uses fixed argv, stops on the first failure, and
+returns normalized JSON task evidence. `migrate:docs` remains separate because
+it changes compatibility paths rather than regenerating an ordinary projection.
+The aggregate also covers the registry, surface inventory, eval corpus, prompt
+surface report, project state, and generated documentation fact blocks through
+20 lifecycle-owned generators rather than five extra forwarding entrypoints.
+Identity-bound candidate, checksum, release-evidence, and timing generators stay
+separate because they require explicit inputs and must never guess release data.
+
+The phase-two operating target is 80 root package scripts beneath the governed
+safety ceiling of 100. Any new root shortcut must remove an existing shortcut
+in the same change so this 20% control-plane headroom is not consumed.
 
 ## CI Check Map
 

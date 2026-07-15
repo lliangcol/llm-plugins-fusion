@@ -25,10 +25,11 @@ tag or publishing release notes.
 existing `v*` tag, including with maintainer approval; publish a new patch
 version instead.
 
-Candidate bundles include the envelope, promotion intent, content-addressed
-control bundle, required promotion evidence, build SBOM, runtime-capability BOM,
-and build record. GitHub artifact attestations bind the plugin archive and the
-candidate bundle; no standalone provenance file is claimed. Stable promotion
+Candidate evidence bundles include the envelope, promotion intent,
+content-addressed control bundle, required promotion evidence, build SBOM,
+runtime-capability BOM, and build record. GitHub artifact attestations bind the
+plugin archive and the evidence bundle; no standalone provenance file is
+claimed. Stable promotion
 verifies both signed tags, the original candidate signer workflow attestation,
 every required digest and status, and the actual control-bundle archive and
 file inventory before publishing those exact candidate bytes. Deterministic
@@ -109,10 +110,11 @@ The release workflow is split by responsibility:
    tag and its exact candidate tag, then delegates to
    `.github/workflows/promote-release.yml`; pushing a stable tag alone does not
    publish a release.
-3. Promotion downloads the candidate bundle, verifies signed tag, original
+3. Promotion downloads the candidate evidence bundle, verifies signed tag, original
    attestation signer, commit, source, artifact, build/runtime BOMs, build
    record, control bundle, and required evidence, then reconciles a draft,
-   downloads every asset for exact verification, and publishes candidate bytes.
+   downloads every asset for exact verification, and exposes only the plugin
+   archive, `SHA256SUMS.txt`, and one comprehensive evidence bundle.
 
 ## Review Before Release
 

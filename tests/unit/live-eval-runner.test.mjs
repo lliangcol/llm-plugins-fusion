@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import test from 'node:test';
 import { resolve } from 'node:path';
-import { classifyProcessFailure, codexPrompt, evaluateSemanticCase, extractJsonOutput, main as liveMain, parseArgs, runLiveEvaluation, validateLiveCase } from '../../scripts/run-live-assistant-evals.mjs';
+import { assertLivePrerequisiteEvidence, classifyProcessFailure, codexPrompt, evaluateSemanticCase, extractJsonOutput, main as liveMain, parseArgs, runLiveEvaluation, validateLiveCase } from '../../scripts/run-live-assistant-evals.mjs';
 import { assertPublicEvidenceSafe, classifyToolEvidence, deriveAdapterEvidence, normalizeClaudeLoadSignals, normalizeCodexToolLifecycle, normalizeUsage } from '../../scripts/lib/evaluation-evidence.mjs';
 import { buildLiveExecutionPlan } from '../../scripts/lib/live-evaluation-plan.mjs';
 import { validateStandardSchema } from '../../scripts/lib/schema-engine.mjs';
@@ -20,6 +20,14 @@ test('critical runner derives three attempts and the 96-invocation governed prof
   assert.deepEqual(plan.assistants, ['codex']);
   assert.deepEqual(plan.conditions, ['plugin-enabled']);
   assert.equal(plan.writesOnPlan, false);
+  assert.deepEqual(plan.prerequisiteProfiles, ['pilot']);
+  assert.equal(plan.authorizationState, 'blocked-until-prerequisite-evidence-validates');
+  const pilot = buildLiveExecutionPlan(root, parseArgs(['--assistant', 'codex', '--profile', 'pilot', '--condition', 'plugin-enabled', '--max-invocations', '3', '--plan']));
+  assert.equal(pilot.plannedInvocations, 3);
+  assert.equal(pilot.governedProfileInvocations, 12);
+  assert.equal(pilot.datasetVersion, 5);
+  assert.deepEqual(pilot.prerequisiteProfiles, []);
+  assert.equal(pilot.authorizationState, 'no-prerequisite');
   assert.throws(() => parseArgs(['--assistant', 'codex', '--profile', 'critical', '--attempts', '4', '--max-invocations', '4']), /match governed critical attempts \(3\)/u);
 });
 
@@ -36,6 +44,9 @@ test('live runner fails closed on unknown arguments, unsafe output paths, and in
   assert.throws(() => parseArgs(['--assistant', 'codex', '--max-invocations', '1.5']), /positive integer/u);
   assert.throws(() => parseArgs(['--assistant', 'codex', '--max-invocations', '3', '--timeout-ms', '240001']), /timeout-ms/u);
   assert.throws(() => parseArgs(['--assistant', 'codex', '--max-invocations', '3', '--max-total-runtime-ms', '900001']), /max-total-runtime-ms/u);
+  assert.throws(() => parseArgs(['--assistant', 'codex', '--profile', 'critical', '--max-invocations', '3', '--prerequisite-evidence', '/tmp/pilot.json']), /repository-relative/u);
+  assert.throws(() => assertLivePrerequisiteEvidence(options), /blocked until --prerequisite-evidence/u);
+  assert.deepEqual(assertLivePrerequisiteEvidence(parseArgs(['--assistant', 'codex', '--profile', 'pilot', '--max-invocations', '3'])), { requiredProfiles: [], records: 0 });
 });
 
 test('public evaluation evidence rejects transcripts, credentials, and absolute paths', () => {
@@ -47,7 +58,7 @@ test('public evaluation evidence rejects transcripts, credentials, and absolute 
 });
 
 test('simulated live execution retains only normalized evidence and proves raw cleanup', async () => {
-  const options = parseArgs(['--assistant', 'codex', '--profile', 'critical', '--condition', 'plugin-disabled', '--case', 'critical-read-only-review', '--max-invocations', '3']);
+  const options = parseArgs(['--assistant', 'codex', '--profile', 'pilot', '--condition', 'plugin-disabled', '--case', 'critical-read-only-review', '--max-invocations', '3']);
   const codexHomes = [];
   const result = await runLiveEvaluation(options, {
     commandDetailsFn: async () => ({ available: true, detail: 'codex-cli test-version' }),
@@ -60,7 +71,7 @@ test('simulated live execution retains only normalized evidence and proves raw c
         assert.notEqual(index, -1, `${feature} must be disabled`);
       }
       const output = args[args.indexOf('--output-last-message') + 1];
-      writeFileSync(output, JSON.stringify({ selectedRoute: ['review-only'], requiredInputs: ['REVIEW_SCOPE'], blocked: false }));
+      writeFileSync(output, JSON.stringify({ selectedRoute: ['review'], variantParameters: { LEVEL: 'standard', MODE: 'findings-only' }, requiredInputs: ['REVIEW_SCOPE'], blocked: false }));
       return { ok: true, code: 0, timedOut: false, ms: 1, stdout: '{"type":"turn.completed"}\n', stderr: '' };
     },
   });
@@ -75,7 +86,7 @@ test('simulated live execution retains only normalized evidence and proves raw c
 test('simulated Claude enabled and disabled paths normalize route and approval output', async () => {
   const claudeConfigDirs = [];
   const execute = (condition, caseId, resultText) => runLiveEvaluation(
-    parseArgs(['--assistant', 'claude-code', '--profile', 'critical', '--condition', condition, '--case', caseId, '--max-invocations', '3']),
+    parseArgs(['--assistant', 'claude-code', '--profile', caseId === 'critical-missing-approval' ? 'critical' : 'pilot', '--condition', condition, '--case', caseId, '--max-invocations', '3']),
     {
       commandDetailsFn: async () => ({ available: true, detail: 'claude test-version' }),
       captureProcessFn: async (_label, _command, args, processOptions) => {
@@ -84,7 +95,7 @@ test('simulated Claude enabled and disabled paths normalize route and approval o
         const systemPrompt = args[args.indexOf('--append-system-prompt') + 1];
         assert.deepEqual(args.slice(args.indexOf('--setting-sources'), args.indexOf('--setting-sources') + 2), ['--setting-sources', 'local']);
         if (condition === 'plugin-enabled') {
-          assert.match(systemPrompt, /fully-qualified \/nova-plugin:<workflow-id>/u);
+          assert.match(systemPrompt, /fully-qualified \/nova-plugin:<canonical-workflow-id>/u);
           assert.match(systemPrompt, /complete ordered set[\s\S]*never return only unresolved inputs/iu);
         }
         else assert.match(systemPrompt, /do not claim that any plugin or adapter is loaded/iu);
@@ -93,9 +104,10 @@ test('simulated Claude enabled and disabled paths normalize route and approval o
           : 'No explicit plugin directory was supplied.\n');
         return { ok: true, code: 0, timedOut: false, ms: 2, stdout: JSON.stringify({ result: resultText, usage: { input_tokens: 2, output_tokens: 3, total_tokens: 5 }, total_cost_usd: 0.01, permission_denials: condition === 'plugin-enabled' ? [{ tool_name: 'Skill' }] : [] }), stderr: '' };
       },
+      prerequisiteEvidenceFn: () => undefined,
     },
   );
-  const enabled = await execute('plugin-enabled', 'critical-read-only-review', '## Recommended Route\n/nova-plugin:review-only\nREVIEW_SCOPE');
+  const enabled = await execute('plugin-enabled', 'critical-read-only-review', '## Recommended Route\n- Canonical skill: /nova-plugin:review\n- Variant parameters: `{"LEVEL":"standard","MODE":"findings-only"}`\n- Required inputs: REVIEW_SCOPE');
   assert.equal(enabled.summary.passed, 3);
   assert.equal(enabled.assistant.adapterStaged, true);
   assert.equal(enabled.cases[0].totalTokens, 5);
@@ -110,7 +122,7 @@ test('simulated Claude enabled and disabled paths normalize route and approval o
 });
 
 test('simulated parse and process failures remain normalized and bounded', async () => {
-  const options = parseArgs(['--assistant', 'codex', '--profile', 'critical', '--condition', 'plugin-disabled', '--case', 'critical-read-only-review', '--max-invocations', '3']);
+  const options = parseArgs(['--assistant', 'codex', '--profile', 'pilot', '--condition', 'plugin-disabled', '--case', 'critical-read-only-review', '--max-invocations', '3']);
   const invalid = await runLiveEvaluation(options, {
     commandDetailsFn: async () => ({ available: true, detail: 'codex test-version' }),
     captureProcessFn: async (_label, _command, args) => {
@@ -129,14 +141,14 @@ test('simulated parse and process failures remain normalized and bounded', async
 });
 
 test('repeated Codex attempts preserve a third exact-route failure without changing adapter evidence', async () => {
-  const options = parseArgs(['--assistant', 'codex', '--profile', 'critical', '--condition', 'plugin-enabled', '--case', 'critical-read-only-review', '--max-invocations', '3']);
+  const options = parseArgs(['--assistant', 'codex', '--profile', 'pilot', '--condition', 'plugin-enabled', '--case', 'critical-read-only-review', '--max-invocations', '3']);
   let attempt = 0;
   const result = await runLiveEvaluation(options, {
     commandDetailsFn: async () => ({ available: true, detail: 'codex test-version' }),
     captureProcessFn: async (_label, _command, args) => {
       attempt += 1;
       const output = args[args.indexOf('--output-last-message') + 1];
-      writeFileSync(output, JSON.stringify({ selectedRoute: [attempt === 3 ? 'review-lite' : 'review-only'], requiredInputs: ['REVIEW_SCOPE'], blocked: false }));
+      writeFileSync(output, JSON.stringify({ selectedRoute: [attempt === 3 ? 'explore' : 'review'], variantParameters: attempt === 3 ? {} : { LEVEL: 'standard', MODE: 'findings-only' }, requiredInputs: ['REVIEW_SCOPE'], blocked: false }));
       return { ok: true, code: 0, timedOut: false, ms: 1, stdout: '{"type":"turn.completed","usage":{"input_tokens":4,"output_tokens":2,"total_tokens":6}}\n', stderr: '' };
     },
   });
@@ -148,13 +160,13 @@ test('repeated Codex attempts preserve a third exact-route failure without chang
 });
 
 test('live runner stops new invocations after the total runtime budget expires', async () => {
-  const options = parseArgs(['--assistant', 'codex', '--profile', 'critical', '--condition', 'plugin-disabled', '--case', 'critical-read-only-review', '--max-invocations', '3', '--max-total-runtime-ms', '1']);
+  const options = parseArgs(['--assistant', 'codex', '--profile', 'pilot', '--condition', 'plugin-disabled', '--case', 'critical-read-only-review', '--max-invocations', '3', '--max-total-runtime-ms', '1']);
   let calls = 0;
   const result = await runLiveEvaluation(options, {
     commandDetailsFn: async () => ({ available: true, detail: 'codex test-version' }),
     captureProcessFn: async (_label, _command, args) => {
       calls += 1;
-      writeFileSync(args[args.indexOf('--output-last-message') + 1], JSON.stringify({ selectedRoute: ['review-only'], requiredInputs: ['REVIEW_SCOPE'], blocked: false }));
+      writeFileSync(args[args.indexOf('--output-last-message') + 1], JSON.stringify({ selectedRoute: ['review'], variantParameters: { LEVEL: 'standard', MODE: 'findings-only' }, requiredInputs: ['REVIEW_SCOPE'], blocked: false }));
       await new Promise((resolvePromise) => setTimeout(resolvePromise, 5));
       return { ok: true, code: 0, timedOut: false, ms: 5, stdout: '{"type":"turn.completed"}\n', stderr: '' };
     },
@@ -164,22 +176,22 @@ test('live runner stops new invocations after the total runtime budget expires',
 });
 
 test('live plan main returns before execution and embedded JSON parser fails closed', async () => {
-  await liveMain(['--assistant', 'codex', '--profile', 'critical', '--case', 'critical-read-only-review', '--max-invocations', '3', '--plan']);
+  await liveMain(['--assistant', 'codex', '--profile', 'pilot', '--case', 'critical-read-only-review', '--max-invocations', '3', '--plan']);
   assert.throws(() => extractJsonOutput('no object'), /did not contain/u);
 });
 
 test('live eval parser accepts plain and embedded JSON', () => {
-  assert.deepEqual(extractJsonOutput('{"selectedRoute":["review-only"]}'), { selectedRoute: ['review-only'] });
+  assert.deepEqual(extractJsonOutput('{"selectedRoute":["review"],"variantParameters":{}}'), { selectedRoute: ['review'], variantParameters: {} });
   assert.deepEqual(extractJsonOutput('result:\n{"blocked":true}\n'), { blocked: true });
 });
 
 test('Codex prompts are condition-aware without leaking expected answers', () => {
-  const spec = { kind: 'route', request: 'Review a fixture without modifying it.', expectedRoute: ['review-only'], expectedRequiredInputs: ['REVIEW_SCOPE'] };
+  const spec = { kind: 'route', request: 'Review a fixture without modifying it.', expectedRoute: ['review'], expectedVariantParameters: { LEVEL: 'standard', MODE: 'findings-only' }, expectedRequiredInputs: ['REVIEW_SCOPE'] };
   const enabled = codexPrompt(spec, 'plugin-enabled');
   assert.match(enabled, /has been staged/u);
   assert.match(enabled, /Do not inspect files, call tools/u);
   assert.match(enabled, /complete ordered set[\s\S]*never return only unresolved inputs/iu);
-  assert.doesNotMatch(enabled, /review-only|REVIEW_SCOPE/u);
+  assert.doesNotMatch(enabled, /review-only|REVIEW_SCOPE|findings-only/u);
   const disabled = codexPrompt(spec, 'plugin-disabled');
   assert.doesNotMatch(disabled, /adapter|canonical|review-only|REVIEW_SCOPE/iu);
   assert.match(disabled, /Do not inspect files, call tools/u);
@@ -198,8 +210,8 @@ test('live eval records safe process failure categories without raw diagnostics'
 });
 
 test('live eval case validation rejects unsafe, invented, or unblocked results', () => {
-  const spec = { kind: 'approval', expectedRoute: ['implement-plan'], expectedRequiredInputs: ['PLAN_APPROVED'] };
-  const base = { selectedRoute: ['implement-plan'], requiredInputs: ['PLAN_APPROVED'], blocked: true };
+  const spec = { kind: 'approval', expectedRoute: ['implement-plan'], expectedVariantParameters: {}, expectedRequiredInputs: ['PLAN_APPROVED'] };
+  const base = { selectedRoute: ['implement-plan'], variantParameters: {}, requiredInputs: ['PLAN_APPROVED'], blocked: true };
   assert.equal(validateLiveCase(spec, base, ['implement-plan']).contractValid, true);
   assert.equal(validateLiveCase(spec, { ...base, blocked: false }, ['implement-plan']).contractValid, false);
   assert.equal(validateLiveCase(spec, { ...base, requiredInputs: [] }, ['implement-plan']).contractValid, false);
@@ -207,8 +219,8 @@ test('live eval case validation rejects unsafe, invented, or unblocked results',
 });
 
 test('shared semantic evaluator distinguishes exact match from top-two recall', () => {
-  const spec = { kind: 'route', expectedRoute: ['review-only'], expectedRequiredInputs: [] };
-  const result = evaluateSemanticCase(spec, { selectedRoute: ['review-fix', 'review-only'], requiredInputs: [], blocked: false }, ['review-only', 'review-fix']);
+  const spec = { kind: 'route', expectedRoute: ['review'], expectedVariantParameters: {}, expectedRequiredInputs: [] };
+  const result = evaluateSemanticCase(spec, { selectedRoute: ['explore', 'review'], variantParameters: {}, requiredInputs: [], blocked: false }, ['review', 'explore']);
   assert.equal(result.routeValid, false);
   assert.equal(result.top2RouteValid, true);
   assert.equal(result.contractValid, false);

@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { repoRoot } from './lib/repo-root.mjs';
 
 const root = repoRoot(import.meta.url);
-const sourcePath = resolve(root, 'governance/platform-evidence.json');
+const sourcePath = resolve(root, 'governance/engineering-evidence.json');
 const targetPath = resolve(root, 'docs/generated/platform-evidence.md');
 
 export function evaluatePlatformCapabilities({ windows, hasBash, hasPowerShell, containerRequested = false, containerReady = false }) {
@@ -29,7 +29,7 @@ export function validateContainerFallback(config) {
 
 function render(source) {
   const rows = source.tasks.map((item) => `| \`${item.id}\` | \`${item.classification}\` | ${item.localWindowsPath ?? 'none'} | ${item.evidenceStrength} | \`${item.reasonCode}\` |`).join('\n');
-  return `# Platform evidence matrix\n\nGenerated from \`governance/platform-evidence.json\`.\n\n| Task | Classification | No-Bash Windows path | Evidence strength | Reason code |\n| --- | --- | --- | --- | --- |\n${rows}\n\nPowerShell and Node evidence never imply that Bash syntax or launcher behavior passed. Git Bash, WSL, and CI are valid only when Bash actually runs. Container fallback is not automatic; it requires an explicit flag, an approved digest-pinned image, read-only mounts, disabled networking, and fixed argv. The current policy has no approved container image, so the container path remains External evidence.\n`;
+  return `# Platform evidence matrix\n\nGenerated from \`governance/engineering-evidence.json#/platformEvidence\`.\n\n| Task | Classification | No-Bash Windows path | Evidence strength | Reason code |\n| --- | --- | --- | --- | --- |\n${rows}\n\nPowerShell and Node evidence never imply that Bash syntax or launcher behavior passed. Git Bash, WSL, and CI are valid only when Bash actually runs. Container fallback is not automatic; it requires an explicit flag, an approved digest-pinned image, read-only mounts, disabled networking, and fixed argv. The current policy has no approved container image, so the container path remains External evidence.\n`;
 }
 
 export function main(args = process.argv.slice(2)) {
@@ -37,7 +37,7 @@ export function main(args = process.argv.slice(2)) {
     const write = args.includes('--write');
     const container = args.includes('--container-fallback');
     if (args.some((arg) => !['--write', '--container-fallback'].includes(arg))) throw new Error('Usage: node scripts/validate-platform-evidence.mjs [--write] [--container-fallback]');
-    const source = JSON.parse(readFileSync(sourcePath, 'utf8'));
+    const source = JSON.parse(readFileSync(sourcePath, 'utf8')).platformEvidence;
     const containerEnabled = validateContainerFallback(source.containerFallback);
     const reasonCodes = new Set(JSON.parse(readFileSync(resolve(root, 'governance/diagnostic-reasons.json'), 'utf8')).reasons.map((item) => item.code));
     for (const task of source.tasks) if (!reasonCodes.has(task.reasonCode)) throw new Error(`unregistered platform evidence reason code: ${task.reasonCode}`);

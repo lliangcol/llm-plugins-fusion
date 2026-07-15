@@ -16,7 +16,10 @@ export const candidateSourcePaths = Object.freeze([
   'workflow-specs/adapters/generic.json',
   'governance/release-operations.json',
   'governance/release-corrections.json',
+  'governance/release-reviewers.json',
+  '.github/release-signers',
   'schemas/release-corrections.schema.json',
+  'schemas/release-reviewers.schema.json',
   'scripts/verify-independent-release-review.mjs',
   'scripts/lib/release-review.mjs',
   'scripts/build-release-control-bundle.mjs',
@@ -27,6 +30,7 @@ export const candidateSourcePaths = Object.freeze([
   '.github/workflows/release-candidate.yml',
   '.github/workflows/promote-release.yml',
   '.github/workflows/release.yml',
+  '.github/workflows/release-recovery-drill.yml',
 ]);
 
 export function sha256File(path) {

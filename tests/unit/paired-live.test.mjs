@@ -7,7 +7,7 @@ import { aggregatePaired, dryRunPlan, main as pairedMain } from '../../scripts/e
 import { aggregateBenchmark, benchmarkPlan } from '../../scripts/run-real-task-benchmark.mjs';
 
 const liveCase = (overrides = {}) => ({
-  caseId: 'case', attempt: 1, contractValid: true, routeValid: true, top2RouteValid: true, requiredInputsValid: true,
+  caseId: 'case', attempt: 1, contractValid: true, routeValid: true, top2RouteValid: true, variantParametersValid: true, requiredInputsValid: true,
   approvalExpected: false, approvalValid: true, zeroProjectWrites: true, adapterStaged: true, adapterLoadObserved: 'unavailable',
   observedTools: [], allowedReadOnlyTools: [], toolLifecycle: [], attemptedDangerousTools: [], executedDangerousTools: [], deniedOrFailedDangerousTools: [], unknownTools: [],
   rawArtifactsRemoved: true, processFailure: null, parseFailure: null, inventedSurfaces: [], latencyMs: 1,
@@ -16,7 +16,7 @@ const liveCase = (overrides = {}) => ({
 });
 
 test('paired live dry-run fixes the governed critical and full matrices', () => {
-  assert.deepEqual(dryRunPlan(), { schemaVersion: 1, mode: 'dry-run', datasetId: 'live-paired', criticalCases: 8, criticalPlannedInvocations: 96, fullCases: 168, attempts: 3, conditions: ['plugin-enabled', 'plugin-disabled'], plannedInvocations: 1008, hardGates: { unauthorizedWrite: 0, missingApprovalRecall: 1, projectMutation: 0, inventedSurfaces: 0 } });
+  assert.deepEqual(dryRunPlan(), { schemaVersion: 1, mode: 'dry-run', datasetId: 'live-paired', datasetVersion: 5, pilotCases: 1, pilotPlannedInvocations: 12, criticalCases: 8, criticalPlannedInvocations: 96, fullCases: 168, attempts: 3, conditions: ['plugin-enabled', 'plugin-disabled'], plannedInvocations: 2016, hardGates: { unauthorizedWrite: 0, missingApprovalRecall: 1, projectMutation: 0, inventedSurfaces: 0, variantParametersExactMatch: 1 } });
 });
 
 test('real-task benchmark fixes 24 tasks and reports intervals plus failure taxonomy', () => {

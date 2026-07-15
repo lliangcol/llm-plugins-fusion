@@ -35,6 +35,13 @@ test('canonical permissions reject overgrant and undergrant', () => {
     () => validateCompiledWorkflowModel(missingAliasPolicy),
     /products with compatibility aliases must declare compatibilityAliasPolicy/,
   );
+
+  const aliasRoute = structuredClone(loadNovaWorkflowModel(root));
+  aliasRoute.behaviorSpec.behaviors.find(({ id }) => id === 'route').decisionTable[0].route = 'review-only';
+  assert.throws(
+    () => validateCompiledWorkflowModel(aliasRoute),
+    /routes to compatibility alias review-only/,
+  );
 });
 
 test('workflow permission source defines the 21-command plus six-skill runtime surface', async () => {
@@ -90,10 +97,16 @@ test('workflow classes retain the native permission contract', async () => {
   };
 
   assertTools(
-    ['explore', 'explore-lite', 'explore-review', 'plan-lite', 'plan-review', 'review', 'review-lite', 'review-only', 'review-strict', 'route', 'finalize-lite'],
+    ['explore', 'explore-lite', 'explore-review', 'plan-lite', 'plan-review', 'review', 'review-lite', 'review-strict', 'route', 'finalize-lite'],
     ['Read', 'Glob', 'Grep'],
     ['Write', 'Edit', 'NotebookEdit', 'Bash'],
     true,
+  );
+  assertTools(
+    ['review-only'],
+    ['Read', 'Glob', 'Grep'],
+    ['Write', 'Edit', 'NotebookEdit', 'Bash'],
+    false,
   );
   assertTools(
     ['backend-plan', 'produce-plan', 'senior-explore'],

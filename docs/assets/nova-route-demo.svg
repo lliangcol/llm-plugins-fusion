@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title desc">
+  <title id="title">nova-plugin deterministic route demo</title>
+  <desc id="desc">A terminal-style rendering of the repository demo:route fixture. No LLM is invoked.</desc>
+  <rect width="1200" height="675" rx="28" fill="#0b1020"/>
+  <rect x="24" y="24" width="1152" height="627" rx="18" fill="#111827" stroke="#334155" stroke-width="2"/>
+  <circle cx="58" cy="58" r="8" fill="#fb7185"/>
+  <circle cx="84" cy="58" r="8" fill="#fbbf24"/>
+  <circle cx="110" cy="58" r="8" fill="#4ade80"/>
+  <text x="600" y="64" fill="#94a3b8" font-family="Menlo, Consolas, monospace" font-size="18" text-anchor="middle">npm run demo:route</text>
+  <g font-family="Menlo, Consolas, monospace" font-size="21">
+    <text x="58" y="118" fill="#60a5fa">$ npm run demo:route</text>
+    <text x="58" y="164" fill="#e2e8f0">Headless demo fixture: route-docs-maintenance</text>
+    <text x="58" y="202" fill="#e2e8f0">Mode: route</text>
+    <text x="58" y="240" fill="#e2e8f0">Title: Route a documentation maintenance task</text>
+    <text x="58" y="296" fill="#fbbf24">Boundary: deterministic local fixture only;</text>
+    <text x="58" y="330" fill="#fbbf24">no LLM, network, Claude Code, Codex, or install path is executed.</text>
+    <text x="58" y="386" fill="#cbd5e1">Request: update public docs, verify links, and summarize validation.</text>
+    <text x="58" y="442" fill="#4ade80">Expected next command: /nova-plugin:explore</text>
+    <text x="58" y="480" fill="#4ade80">Expected stage: Explore</text>
+    <text x="58" y="518" fill="#4ade80">Expected packs: docs</text>
+    <text x="58" y="582" fill="#94a3b8">Explore -&gt; Plan -&gt; Review -&gt; Implement -&gt; Finalize</text>
+  </g>
+  <text x="1142" y="622" fill="#64748b" font-family="Menlo, Consolas, monospace" font-size="16" text-anchor="end">source: scripts/demo-route.mjs</text>
+</svg>

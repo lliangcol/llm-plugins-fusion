@@ -26,7 +26,7 @@ const mapping = Object.freeze({
   'produce-plan': ['produce-plan', {}],
   review: ['review', {}],
   'review-lite': ['review', { LEVEL: 'lite' }],
-  'review-only': ['review', { LEVEL: 'standard' }],
+  'review-only': ['review', { LEVEL: 'standard', MODE: 'findings-only' }],
   'review-strict': ['review', { LEVEL: 'strict' }],
   route: ['route', {}],
   'senior-explore': ['explore', { DEPTH: 'deep' }],

@@ -11,7 +11,7 @@ test('release continuation requires and extends the prior verified ledger', () =
   try {
     const control = resolve(directory, 'control.json'); const intent = resolve(directory, 'intent.json'); const eventDir = resolve(directory, 'events');
     const sourceCommit = 'a'.repeat(40); const bundleSha256 = 'b'.repeat(64);
-    const document = { schemaVersion: 2, corrections: [{ id: 'REL-TEST', status: 'candidate-verified', affectedCommits: [sourceCommit], stableRelease: { tag: 'v4.0.0' }, targetRelease: { stableTag: 'v4.1.0', candidateTag: 'v4.1.0-rc.1', sourceCommit } }] };
+    const document = { schemaVersion: 3, corrections: [{ id: 'REL-TEST', status: 'candidate-verified', affectedCommits: [sourceCommit], stableRelease: { tag: 'v4.0.0' }, targetRelease: { stableTag: 'v4.1.0', candidateTag: 'v4.1.0-rc.1' } }] };
     const correctionSource = { document, sha256: canonicalSha256(document) };
     writeFileSync(control, `${JSON.stringify({ bundleSha256 })}\n`);
     writeFileSync(intent, `${JSON.stringify({ stableTag: 'v4.1.0', candidateTag: 'v4.1.0-rc.1', sourceCommit, candidateCoreSha256: 'c'.repeat(64), controlBundleSha256: bundleSha256, correctionsSha256: correctionSource.sha256 })}\n`);

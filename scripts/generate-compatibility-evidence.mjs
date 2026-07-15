@@ -75,7 +75,9 @@ function liveEligibilityReasons(evidence) {
   const adapterLoadObserved = evidence.assistant?.adapterLoadObserved === 'observed'
     || (evidence.assistant?.adapterLoaded === true && Boolean(evidence.runtime?.adapterLoadProof));
   if (!adapterLoadObserved) reasons.push('live-runtime:adapter-load-unproven');
-  if (!evidence.sourceDigests?.['scripts/run-live-assistant-evals.mjs'] || !evidence.sourceDigests?.['evals/live/cases.json'] || !evidence.sourceDigests?.['evals/live/labels.locked.json']) reasons.push('live-source:runner-or-dataset-digest-missing');
+  const casesPath = evidence.casesPath ?? 'evals/live/cases.json';
+  const labelsPath = evidence.labelsPath === undefined ? 'evals/live/labels.locked.json' : evidence.labelsPath;
+  if (evidence.datasetId !== 'live-paired' || !evidence.sourceDigests?.['scripts/run-live-assistant-evals.mjs'] || !evidence.sourceDigests?.[casesPath] || !labelsPath || !evidence.sourceDigests?.[labelsPath]) reasons.push('live-source:runner-or-release-dataset-digest-missing');
   if (caseIds.size < minimumLiveCases) reasons.push(`live-dataset:fewer-than-${minimumLiveCases}-cases`);
   if ([...attempts.values()].some((count) => count < minimumLiveAttempts) || attempts.size === 0) reasons.push(`live-dataset:fewer-than-${minimumLiveAttempts}-attempts`);
   return reasons;

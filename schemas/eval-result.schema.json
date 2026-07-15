@@ -16,7 +16,11 @@
     "sourceState": { "type": "string" },
     "releaseTag": { "type": ["string", "null"] },
     "condition": { "enum": ["plugin-enabled", "plugin-disabled"] },
-    "profile": { "enum": ["critical", "full"] },
+    "profile": { "enum": ["pilot", "critical", "full"] },
+    "datasetId": { "enum": ["critical-live", "live-paired"] },
+    "datasetVersion": { "const": 5 },
+    "casesPath": { "enum": ["evals/critical-live/v5/cases.json", "evals/live/v5/cases.json"] },
+    "labelsPath": { "type": ["string", "null"], "enum": [null, "evals/live/v5/labels.locked.json"] },
     "assistant": {
       "type": "object",
       "additionalProperties": false,
@@ -80,7 +84,7 @@
           {
             "type": "object",
             "additionalProperties": false,
-            "required": ["caseId", "attempt", "processExit", "processFailure", "timedOut", "latencyMs", "projectDigestBefore", "projectDigestAfter", "zeroProjectWrites", "adapterStaged", "adapterLoadObserved", "adapterLoadReasonCode", "adapterLoadSignals", "observedTools", "allowedReadOnlyTools", "toolLifecycle", "attemptedDangerousTools", "executedDangerousTools", "deniedOrFailedDangerousTools", "unknownTools", "selectedRoute", "requiredInputs", "routeValid", "top2RouteValid", "requiredInputsValid", "approvalValid", "shapeValid", "inventedSurfaces", "contractValid", "usageStatus", "usageReasonCode", "inputTokens", "outputTokens", "totalTokens", "costUsd", "responseSummary", "parseFailure", "rawOutputSha256", "rawErrorSha256", "rawOutputBytes", "rawErrorBytes", "rawArtifactsRemoved"],
+            "required": ["caseId", "attempt", "processExit", "processFailure", "timedOut", "latencyMs", "projectDigestBefore", "projectDigestAfter", "zeroProjectWrites", "adapterStaged", "adapterLoadObserved", "adapterLoadReasonCode", "adapterLoadSignals", "observedTools", "allowedReadOnlyTools", "toolLifecycle", "attemptedDangerousTools", "executedDangerousTools", "deniedOrFailedDangerousTools", "unknownTools", "selectedRoute", "variantParameters", "requiredInputs", "routeValid", "top2RouteValid", "variantParametersValid", "requiredInputsValid", "approvalValid", "shapeValid", "inventedSurfaces", "contractValid", "usageStatus", "usageReasonCode", "inputTokens", "outputTokens", "totalTokens", "costUsd", "responseSummary", "parseFailure", "rawOutputSha256", "rawErrorSha256", "rawOutputBytes", "rawErrorBytes", "rawArtifactsRemoved"],
             "properties": {
               "caseId": { "type": "string", "minLength": 1 },
               "kind": { "type": "string" },
@@ -119,9 +123,11 @@
               "deniedOrFailedDangerousTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
               "unknownTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
               "selectedRoute": { "type": "array", "items": { "type": "string" } },
+              "variantParameters": { "type": "object" },
               "requiredInputs": { "type": "array", "items": { "type": "string" } },
               "routeValid": { "type": "boolean" },
               "top2RouteValid": { "type": "boolean" },
+              "variantParametersValid": { "type": "boolean" },
               "requiredInputsValid": { "type": "boolean" },
               "approvalValid": { "type": "boolean" },
               "shapeValid": { "type": "boolean" },
@@ -172,5 +178,20 @@
       }
     },
     "claimBoundary": { "type": "string", "minLength": 1 }
-  }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "layer": { "const": "live-assistant" } }, "required": ["layer"] },
+      "then": {
+        "properties": {
+          "profile": {},
+          "datasetId": {},
+          "datasetVersion": {},
+          "casesPath": {},
+          "labelsPath": {}
+        },
+        "required": ["profile", "datasetId", "datasetVersion", "casesPath", "labelsPath"]
+      }
+    }
+  ]
 }

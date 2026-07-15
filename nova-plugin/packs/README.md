@@ -41,5 +41,5 @@ split the task into smaller units with evidence and skipped-check notes.
 ## Maintenance
 
 - Keep this index in sync with `nova-plugin/packs/*/README.md`.
-- Keep pack routing in sync with [plugin-aware routing](../../docs/agents/PLUGIN_AWARE_ROUTING.md).
+- Keep pack routing in sync with [plugin-aware routing](../../docs/reference/architecture/agent-routing.md).
 - Run `node scripts/validate-packs.mjs` after changing pack docs or routing references.

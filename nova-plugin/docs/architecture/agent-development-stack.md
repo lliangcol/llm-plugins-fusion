@@ -127,7 +127,7 @@ passed unless Bash actually ran them.
 
 - [Skill-first design](dual-track-design.md)
 - [Hooks design](hooks-design.md)
-- [Core agent routing](../../../docs/agents/ROUTING.md)
-- [Plugin-aware routing](../../../docs/agents/PLUGIN_AWARE_ROUTING.md)
+- [Core agent routing](../../../docs/reference/architecture/agent-routing.md)
+- [Plugin-aware routing](../../../docs/reference/architecture/agent-routing.md)
 - [Capability packs](../../packs/README.md)
 - [Marketplace catalog](../../../docs/marketplace/catalog.md)

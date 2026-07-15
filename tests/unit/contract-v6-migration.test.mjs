@@ -6,7 +6,7 @@ import { migrateBehaviorSpec, migrateWorkflowSpec } from '@llm-plugins-fusion/co
 import { compileRuntimeContracts } from '../../framework/compiler/compile-runtime-contracts.mjs';
 import { projectV5Compatibility } from '../../framework/compiler/project-v5-compatibility.mjs';
 import { validateStandardSchema } from '../../scripts/lib/schema-engine.mjs';
-import { buildPromptSurfaceReport, validatePromptSurfaceBudgets } from '../../scripts/generate-prompt-surface-report.mjs';
+import { buildPromptSurfaceReport, validatePromptSurfaceBudgets } from '../../scripts/generate-surface-inventory.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const read = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
@@ -59,7 +59,7 @@ test('v5 to v6 migration is deterministic and separates requirements authorizati
       }
     }
   }
-  assert.equal(explicitPredicates, 23);
+  assert.equal(explicitPredicates, 29);
   assert.ok(migratedBehaviors.behaviors.every((behavior) => !Object.hasOwn(behavior.output, 'effects')));
 });
 
