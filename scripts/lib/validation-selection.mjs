@@ -6,23 +6,49 @@ import { captureProcess } from './process-runner.mjs';
 
 const normalize = (value) => value.replaceAll('\\', '/').replace(/^\.\//u, '');
 
-export function globRegex(glob) {
-  let source = '^';
-  for (let index = 0; index < glob.length; index += 1) {
-    const char = glob[index];
-    if (char === '*' && glob[index + 1] === '*') {
-      source += glob[index + 2] === '/' ? '(?:.*/)?' : '.*';
-      index += glob[index + 2] === '/' ? 2 : 1;
-    } else if (char === '*') source += '[^/]*';
-    else if (char === '?') source += '[^/]';
-    else source += /[\\^$+?.()|{}[\]]/u.test(char) ? `\\${char}` : char;
+export function matchesGlob(path, glob) {
+  const value = normalize(path);
+  const pattern = normalize(glob);
+  const memo = new Map();
+
+  function match(patternIndex, valueIndex) {
+    const key = `${patternIndex}:${valueIndex}`;
+    if (memo.has(key)) return memo.get(key);
+
+    let result;
+    if (patternIndex === pattern.length) {
+      result = valueIndex === value.length;
+    } else if (pattern[patternIndex] === '*' && pattern[patternIndex + 1] === '*') {
+      if (pattern[patternIndex + 2] === '/') {
+        result = match(patternIndex + 3, valueIndex);
+        for (let slashIndex = value.indexOf('/', valueIndex); !result && slashIndex !== -1; slashIndex = value.indexOf('/', slashIndex + 1)) {
+          result = match(patternIndex + 3, slashIndex + 1);
+        }
+      } else {
+        result = match(patternIndex + 2, valueIndex)
+          || (valueIndex < value.length && match(patternIndex, valueIndex + 1));
+      }
+    } else if (pattern[patternIndex] === '*') {
+      result = match(patternIndex + 1, valueIndex)
+        || (valueIndex < value.length && value[valueIndex] !== '/' && match(patternIndex, valueIndex + 1));
+    } else if (pattern[patternIndex] === '?') {
+      result = valueIndex < value.length && value[valueIndex] !== '/'
+        && match(patternIndex + 1, valueIndex + 1);
+    } else {
+      result = valueIndex < value.length && pattern[patternIndex] === value[valueIndex]
+        && match(patternIndex + 1, valueIndex + 1);
+    }
+
+    memo.set(key, result);
+    return result;
   }
-  return new RegExp(`${source}$`, 'u');
+
+  return match(0, 0);
 }
 
 export function matchesAny(path, patterns) {
   const value = normalize(path);
-  return patterns.some((pattern) => globRegex(pattern).test(value));
+  return patterns.some((pattern) => matchesGlob(value, pattern));
 }
 
 export function selectValidationTasks(definitions, files, { forceFull = false } = {}) {
@@ -74,7 +100,7 @@ export function expandFileArguments(args, repoFiles) {
   for (const arg of args) {
     const normalized = normalize(arg);
     if (normalized.includes('*') || normalized.includes('?')) {
-      const matches = repoFiles.filter((file) => globRegex(normalized).test(file));
+      const matches = repoFiles.filter((file) => matchesGlob(file, normalized));
       if (matches.length === 0) values.push(normalized);
       else values.push(...matches);
     } else values.push(normalized);

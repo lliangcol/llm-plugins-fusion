@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { createValidationCache, expandFileArguments, globRegex, selectValidationTasks } from '../../scripts/lib/validation-selection.mjs';
+import { createValidationCache, expandFileArguments, matchesGlob, selectValidationTasks } from '../../scripts/lib/validation-selection.mjs';
 import { registryMetadata, validationTaskDefinitions } from '../../scripts/lib/validation-task-registry.mjs';
 
 test('runnable registry exposes the required review metadata', () => {
@@ -13,8 +13,13 @@ test('runnable registry exposes the required review metadata', () => {
 });
 
 test('glob matching and file argument expansion are platform independent', () => {
-  assert.equal(globRegex('docs/**').test('docs/README.md'), true);
-  assert.equal(globRegex('**/*.md').test('README.md'), true);
+  assert.equal(matchesGlob('docs/README.md', 'docs/**'), true);
+  assert.equal(matchesGlob('README.md', '**/*.md'), true);
+  assert.equal(matchesGlob('docs/nested/README.md', '**/*.md'), true);
+  assert.equal(matchesGlob('docs/nested/README.md', 'docs/**/README.md'), true);
+  assert.equal(matchesGlob('docs/nestedREADME.md', 'docs/**/README.md'), false);
+  assert.equal(matchesGlob('docs/[draft]+(one).md', 'docs/[draft]+(one).md'), true);
+  assert.equal(matchesGlob('docs/draftone.md', 'docs/[draft]+(one).md'), false);
   assert.deepEqual(expandFileArguments(['docs/*.md'], ['docs/README.md', 'docs/a.json']), ['docs/README.md']);
 });
 
