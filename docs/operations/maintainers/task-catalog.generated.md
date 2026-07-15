@@ -161,20 +161,14 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `release` | `scripts/verify-release-promotion.mjs` |
 | `release` | `scripts/verify-stable-install.mjs` |
 
-## npm Shortcuts (100)
+## npm Shortcuts (80)
 
 | Category | Shortcut | Command |
 | --- | --- | --- |
 | `evidence` | `npm run audit:dependencies` | `node scripts/audit-dependencies.mjs --write` |
 | `evidence` | `npm run audit:licenses` | `node scripts/audit-dependency-licenses.mjs --write` |
 | `validate` | `npm run check` | `npm run test:coverage:check && npm run validate:maintainer:evidence` |
-| `validate` | `npm run check:compatibility` | `npm run validate:compatibility-evidence && npm run validate:second-product && npm run validate:portable-paths` |
-| `validate` | `npm run check:docs` | `npm run validate:docs && npm run validate:community` |
-| `validate` | `npm run check:release` | `npm run test:coverage:check && npm run validate:maintainer:evidence && node scripts/validate-plugin-install.mjs --dry-run` |
 | `validate` | `npm run check:release-readiness` | `npm run validate:release-readiness -- --require-ready` |
-| `validate` | `npm run check:runtime` | `npm run validate:runtime && npm run validate:hook-truth` |
-| `validate` | `npm run check:security` | `npm run typecheck && npm run lint:shell && npm run lint:actions && npm run validate:github-workflows && npm run scan:secrets` |
-| `validate` | `npm run check:truth` | `npm run validate:release-truth && npm run validate:hook-truth && npm run validate:project-state && npm run validate:facts && npm run validate:drift` |
 | `validate` | `npm run ci:full` | `node scripts/validate-all.mjs` |
 | `validate` | `npm run ci:quick` | `node scripts/validate-schemas.mjs && node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs && node scripts/validate-hooks.mjs` |
 | `benchmark` | `npm run demo:all` | `node scripts/demo-all.mjs` |
@@ -192,20 +186,6 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `benchmark` | `npm run eval:route` | `node scripts/validate-route-conformance.mjs` |
 | `benchmark` | `npm run eval:simulation` | `node scripts/evaluate-adapter-simulation.mjs` |
 | `benchmark` | `npm run eval:surfaces` | `node scripts/evaluate-workflow-surfaces.mjs` |
-| `evidence` | `npm run generate:adapters` | `node scripts/generate-adapters.mjs --write` |
-| `evidence` | `npm run generate:behavior-surfaces` | `node scripts/generate-behavior-surfaces.mjs --write` |
-| `docs` | `npm run generate:command-docs` | `node scripts/generate-command-docs.mjs --write` |
-| `evidence` | `npm run generate:compatibility-evidence` | `node scripts/generate-compatibility-evidence.mjs --write` |
-| `evidence` | `npm run generate:control-plane` | `node scripts/generate-control-plane-inventory.mjs --write` |
-| `docs` | `npm run generate:diagnostics-docs` | `node scripts/generate-diagnostics-docs.mjs --write` |
-| `docs` | `npm run generate:doc-governance` | `node scripts/generate-doc-governance.mjs --write` |
-| `evidence` | `npm run generate:evaluation-profiles` | `node scripts/generate-evaluation-profiles.mjs --write` |
-| `evidence` | `npm run generate:evidence-levels` | `node scripts/generate-evidence-levels.mjs --write` |
-| `evidence` | `npm run generate:facts` | `node scripts/generate-fact-graph.mjs --write` |
-| `evidence` | `npm run generate:quality-report` | `node scripts/generate-quality-report.mjs --write` |
-| `evidence` | `npm run generate:release-summary` | `node scripts/generate-release-summary.mjs --write` |
-| `evidence` | `npm run generate:runtime-contracts` | `node scripts/generate-runtime-contracts.mjs --write` |
-| `evidence` | `npm run generate:task-catalog` | `node scripts/generate-task-catalog.mjs --write` |
 | `validate` | `npm run lint` | `node scripts/lint-frontmatter.mjs && node scripts/validate-docs.mjs && npm run typecheck` |
 | `validate` | `npm run lint:actions` | `actionlint` |
 | `validate` | `npm run lint:shell` | `shellcheck -x -P nova-plugin/skills/nova-codex-review-fix/scripts scripts/verify-agents.sh nova-plugin/hooks/scripts/*.sh nova-plugin/skills/nova-codex-review-fix/scripts/*.sh` |

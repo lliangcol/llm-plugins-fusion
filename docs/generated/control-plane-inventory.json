@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceDigests": {
-    "packageScripts": "sha256:987ea7d8fde9687669f410e75b9a05448d89d690aee8894ee4ac58ce15804caf",
+    "packageScripts": "sha256:688e11440d3448f69570344932888a30724fdcb1bc7bc0715ee65fc5146969a8",
     "validationRegistry": "sha256:917ce7223b2e8468553500681a5ad3c2eed6f289e8748c1666c1efa6f6479c5d",
     "productLanes": "sha256:c888525caa05c1a9509996ddf9543ea84edec6379fc511a5584c86fbe910ce94"
   },
@@ -77,44 +77,8 @@
       "scope": "maintainer"
     },
     {
-      "name": "check:compatibility",
-      "command": "npm run validate:compatibility-evidence && npm run validate:second-product && npm run validate:portable-paths",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:docs",
-      "command": "npm run validate:docs && npm run validate:community",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:release",
-      "command": "npm run test:coverage:check && npm run validate:maintainer:evidence && node scripts/validate-plugin-install.mjs --dry-run",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
       "name": "check:release-readiness",
       "command": "npm run validate:release-readiness -- --require-ready",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:runtime",
-      "command": "npm run validate:runtime && npm run validate:hook-truth",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:security",
-      "command": "npm run typecheck && npm run lint:shell && npm run lint:actions && npm run validate:github-workflows && npm run scan:secrets",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:truth",
-      "command": "npm run validate:release-truth && npm run validate:hook-truth && npm run validate:project-state && npm run validate:facts && npm run validate:drift",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
@@ -217,90 +181,6 @@
     {
       "name": "eval:surfaces",
       "command": "node scripts/evaluate-workflow-surfaces.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:adapters",
-      "command": "node scripts/generate-adapters.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:behavior-surfaces",
-      "command": "node scripts/generate-behavior-surfaces.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:command-docs",
-      "command": "node scripts/generate-command-docs.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:compatibility-evidence",
-      "command": "node scripts/generate-compatibility-evidence.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:control-plane",
-      "command": "node scripts/generate-control-plane-inventory.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:diagnostics-docs",
-      "command": "node scripts/generate-diagnostics-docs.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:doc-governance",
-      "command": "node scripts/generate-doc-governance.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:evaluation-profiles",
-      "command": "node scripts/generate-evaluation-profiles.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:evidence-levels",
-      "command": "node scripts/generate-evidence-levels.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:facts",
-      "command": "node scripts/generate-fact-graph.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:quality-report",
-      "command": "node scripts/generate-quality-report.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:release-summary",
-      "command": "node scripts/generate-release-summary.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:runtime-contracts",
-      "command": "node scripts/generate-runtime-contracts.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:task-catalog",
-      "command": "node scripts/generate-task-catalog.mjs --write",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
