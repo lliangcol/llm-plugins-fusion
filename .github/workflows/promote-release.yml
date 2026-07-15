@@ -124,9 +124,11 @@ jobs:
           for archive in "${archives[@]}"; do [[ "${archive}" == *evidence-bundle* ]] || filtered+=("${archive}"); done
           test "${#filtered[@]}" -eq 1
           test "${#bundles[@]}" -eq 1
-          printf 'archive=%s\n' "${filtered[0]}" >> "${GITHUB_OUTPUT}"
-          printf 'sbom=%s\n' '.metrics/promotion/bundle/artifacts/build-sbom.cdx.json' >> "${GITHUB_OUTPUT}"
-          printf 'bundle=%s\n' "${bundles[0]}" >> "${GITHUB_OUTPUT}"
+          {
+            printf 'archive=%s\n' "${filtered[0]}"
+            printf 'sbom=%s\n' '.metrics/promotion/bundle/artifacts/build-sbom.cdx.json'
+            printf 'bundle=%s\n' "${bundles[0]}"
+          } >> "${GITHUB_OUTPUT}"
       - name: Attest promoted archive and build SBOM
         uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
         with:
