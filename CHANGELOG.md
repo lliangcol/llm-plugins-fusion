@@ -44,7 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ### Fixed
 - Made Codex live-evaluation prompts condition-aware without leaking expected
   routes, and normalized JSONL tool lifecycles so completed dangerous calls,
-  denied or failed attempts, and unknown terminal states remain distinct.
+  denied or failed attempts, and unknown terminal states remain distinct; the
+  harness now also isolates Codex configuration and disables tool surfaces.
 - Corrected critical live-evaluation evidence semantics so canonical Claude
   `Skill` loading is read-only orchestration, unsafe and denied tools remain
   distinct, adapter staging/load/contract facts cannot impersonate one another,

@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import test from 'node:test';
 import { resolve } from 'node:path';
 import { classifyProcessFailure, codexPrompt, evaluateSemanticCase, extractJsonOutput, main as liveMain, parseArgs, runLiveEvaluation, validateLiveCase } from '../../scripts/run-live-assistant-evals.mjs';
@@ -48,9 +48,17 @@ test('public evaluation evidence rejects transcripts, credentials, and absolute 
 
 test('simulated live execution retains only normalized evidence and proves raw cleanup', async () => {
   const options = parseArgs(['--assistant', 'codex', '--profile', 'critical', '--condition', 'plugin-disabled', '--case', 'critical-read-only-review', '--max-invocations', '3']);
+  const codexHomes = [];
   const result = await runLiveEvaluation(options, {
     commandDetailsFn: async () => ({ available: true, detail: 'codex-cli test-version' }),
-    captureProcessFn: async (_label, _command, args) => {
+    captureProcessFn: async (_label, _command, args, processOptions) => {
+      codexHomes.push(processOptions.env.CODEX_HOME);
+      assert.equal(args.includes('web_search="disabled"'), true);
+      assert.equal(args.includes('mcp_servers={}'), true);
+      for (const feature of ['apps', 'browser_use', 'code_mode_host', 'plugins', 'shell_tool']) {
+        const index = args.findIndex((arg, position) => arg === feature && args[position - 1] === '--disable');
+        assert.notEqual(index, -1, `${feature} must be disabled`);
+      }
       const output = args[args.indexOf('--output-last-message') + 1];
       writeFileSync(output, JSON.stringify({ selectedRoute: ['review-only'], requiredInputs: ['REVIEW_SCOPE'], blocked: false }));
       return { ok: true, code: 0, timedOut: false, ms: 1, stdout: '{"type":"turn.completed"}\n', stderr: '' };
@@ -59,6 +67,7 @@ test('simulated live execution retains only normalized evidence and proves raw c
   assert.equal(result.summary.total, 3);
   assert.equal(result.summary.rawArtifactCleanupFailures, 0);
   assert.equal(result.cases.every((entry) => entry.rawArtifactsRemoved), true);
+  assert.equal(codexHomes.every((path) => !existsSync(path)), true);
   assert.equal(JSON.stringify(result).includes('observedOutput'), false);
   assert.deepEqual(validateStandardSchema(JSON.parse(readFileSync(resolve(root, 'schemas/eval-result.schema.json'), 'utf8')), result), []);
 });
@@ -70,6 +79,9 @@ test('simulated Claude enabled and disabled paths normalize route and approval o
       commandDetailsFn: async () => ({ available: true, detail: 'claude test-version' }),
       captureProcessFn: async (_label, _command, args) => {
         const debug = args[args.indexOf('--debug-file') + 1];
+        const systemPrompt = args[args.indexOf('--append-system-prompt') + 1];
+        if (condition === 'plugin-enabled') assert.match(systemPrompt, /fully-qualified \/nova-plugin:<workflow-id>/u);
+        else assert.match(systemPrompt, /do not claim that any plugin or adapter is loaded/iu);
         writeFileSync(debug, 'nova-plugin loaded');
         return { ok: true, code: 0, timedOut: false, ms: 2, stdout: JSON.stringify({ result: resultText, usage: { input_tokens: 2, output_tokens: 3, total_tokens: 5 }, total_cost_usd: 0.01, permission_denials: condition === 'plugin-enabled' ? [{ tool_name: 'Skill' }] : [] }), stderr: '' };
       },
