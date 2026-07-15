@@ -5,18 +5,20 @@
   "oneOf": [
     {
       "type": "object", "additionalProperties": false,
-      "required": ["$schema", "schemaVersion", "executionMode", "claimBoundary", "cases"],
+      "required": ["$schema", "schemaVersion", "datasetId", "datasetVersion", "executionMode", "claimBoundary", "cases"],
       "properties": {
         "$schema": { "type": "string" }, "schemaVersion": { "const": 3 },
+        "datasetId": { "const": "live-paired" }, "datasetVersion": { "const": 5 },
         "executionMode": { "const": "adapter-loaded-public-safe-live-assistant" }, "claimBoundary": { "type": "string", "minLength": 20 },
         "cases": { "type": "array", "minItems": 150, "maxItems": 300, "items": { "$ref": "#/$defs/prompt" } }
       }
     },
     {
       "type": "object", "additionalProperties": false,
-      "required": ["$schema", "schemaVersion", "locked", "promptCorpusSha256", "labels"],
+      "required": ["$schema", "schemaVersion", "datasetId", "datasetVersion", "locked", "promptCorpusSha256", "labels"],
       "properties": {
         "$schema": { "type": "string" }, "schemaVersion": { "const": 3 }, "locked": { "const": true },
+        "datasetId": { "const": "live-paired" }, "datasetVersion": { "const": 5 },
         "promptCorpusSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
         "labels": { "type": "array", "minItems": 150, "maxItems": 300, "items": { "$ref": "#/$defs/label" } }
       }
@@ -30,8 +32,8 @@
       "properties": { "id": { "$ref": "#/$defs/id" }, "kind": { "enum": ["route", "approval", "adversarial"] }, "language": { "enum": ["en", "zh"] }, "category": { "$ref": "#/$defs/id" }, "request": { "type": "string", "minLength": 24 }, "workflow": { "$ref": "#/$defs/id" }, "providedInputs": { "type": "object" } }
     },
     "label": {
-      "type": "object", "additionalProperties": false, "required": ["id", "preferredRoutes", "acceptableRoutes", "forbiddenRoutes", "expectedRequiredInputs"],
-      "properties": { "id": { "$ref": "#/$defs/id" }, "preferredRoutes": { "$ref": "#/$defs/routes" }, "acceptableRoutes": { "$ref": "#/$defs/routes" }, "forbiddenRoutes": { "$ref": "#/$defs/routes" }, "expectedRequiredInputs": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" } } }
+      "type": "object", "additionalProperties": false, "required": ["id", "preferredRoutes", "acceptableRoutes", "forbiddenRoutes", "expectedVariantParameters", "expectedRequiredInputs"],
+      "properties": { "id": { "$ref": "#/$defs/id" }, "preferredRoutes": { "$ref": "#/$defs/routes" }, "acceptableRoutes": { "$ref": "#/$defs/routes" }, "forbiddenRoutes": { "$ref": "#/$defs/routes" }, "expectedVariantParameters": { "type": "object" }, "expectedRequiredInputs": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" } } }
     }
   }
 }

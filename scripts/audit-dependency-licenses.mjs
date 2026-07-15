@@ -12,8 +12,7 @@ const require = createRequire(import.meta.url);
 const deprecatedLicenseIds = new Set(require('spdx-license-ids/deprecated'));
 const root = repoRoot(import.meta.url);
 const lockPath = resolve(root, 'package-lock.json');
-const policyPath = resolve(root, 'governance/dependency-policy.json');
-const evidencePath = resolve(root, 'governance/dependency-license-evidence.json');
+const bundlePath = resolve(root, 'governance/dependency-governance.json');
 const markdownPath = resolve(root, 'docs/generated/dependency-license-audit.md');
 const sha256 = (value) => `sha256:${createHash('sha256').update(value).digest('hex')}`;
 const load = (path) => JSON.parse(readFileSync(path, 'utf8'));
@@ -148,7 +147,8 @@ export function buildEvidence({ lock, policy, manifests = new Map(), lockRaw = J
 
 function currentInputs() {
   const lockRaw = readFileSync(lockPath, 'utf8');
-  const policyRaw = readFileSync(policyPath, 'utf8');
+  const bundle = load(bundlePath);
+  const policyRaw = `${JSON.stringify(bundle.policy, null, 2)}\n`;
   const lock = JSON.parse(lockRaw);
   const manifests = new Map();
   const workspacePaths = new Set(Object.values(lock.packages ?? {})
@@ -160,11 +160,11 @@ function currentInputs() {
       if (existsSync(manifestPath)) manifests.set(path, load(manifestPath));
     }
   }
-  return { lock, policy: JSON.parse(policyRaw), manifests, lockRaw, policyRaw };
+  return { lock, policy: bundle.policy, manifests, lockRaw, policyRaw };
 }
 
 function render(evidence) {
-  return `# Dependency license audit\n\nGenerated from the committed lockfile and \`governance/dependency-policy.json\`.\n\n- Status: **${evidence.status}**${evidence.reasonCode ? ` (${evidence.reasonCode})` : ''}\n- Lock digest: \`${evidence.lockDigest}\`\n- Policy digest: \`${evidence.policyDigest}\`\n- Packages: total=${evidence.summary.total}, passed=${evidence.summary.passed}, failed=${evidence.summary.failed}, blocked=${evidence.summary.blocked}\n- Scope: root, workspaces, direct, transitive, optional, and development dependencies\n- Distributed Node runtime dependencies: **no**\n\nVulnerability audit and license audit are independent evidence chains. Missing, custom, deprecated, or ambiguous SPDX metadata does not become a clean result without an owned, expiring policy review.\n`;
+  return `# Dependency license audit\n\nGenerated from the committed lockfile and \`governance/dependency-governance.json#/policy\`.\n\n- Status: **${evidence.status}**${evidence.reasonCode ? ` (${evidence.reasonCode})` : ''}\n- Lock digest: \`${evidence.lockDigest}\`\n- Policy digest: \`${evidence.policyDigest}\`\n- Packages: total=${evidence.summary.total}, passed=${evidence.summary.passed}, failed=${evidence.summary.failed}, blocked=${evidence.summary.blocked}\n- Scope: root, workspaces, direct, transitive, optional, and development dependencies\n- Distributed Node runtime dependencies: **no**\n\nVulnerability audit and license audit are independent evidence chains. Missing, custom, deprecated, or ambiguous SPDX metadata does not become a clean result without an owned, expiring policy review.\n`;
 }
 
 export function main(args = process.argv.slice(2)) {
@@ -173,12 +173,13 @@ export function main(args = process.argv.slice(2)) {
     const evidence = buildEvidence(currentInputs());
     const markdown = render(evidence);
     if (args[0] === '--write') {
-      mkdirSync(dirname(evidencePath), { recursive: true });
+      mkdirSync(dirname(bundlePath), { recursive: true });
       mkdirSync(dirname(markdownPath), { recursive: true });
-      writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`, 'utf8');
+      const bundle = load(bundlePath);
+      writeFileSync(bundlePath, `${JSON.stringify({ ...bundle, licenseEvidence: evidence }, null, 2)}\n`, 'utf8');
       writeFileSync(markdownPath, markdown, 'utf8');
     } else {
-      if (!existsSync(evidencePath) || readFileSync(evidencePath, 'utf8') !== `${JSON.stringify(evidence, null, 2)}\n`) throw new Error('dependency license evidence is stale; run with --write');
+      if (!existsSync(bundlePath) || JSON.stringify(load(bundlePath).licenseEvidence) !== JSON.stringify(evidence)) throw new Error('dependency license evidence is stale; run with --write');
       if (!existsSync(markdownPath) || readFileSync(markdownPath, 'utf8') !== markdown) throw new Error('dependency license audit documentation is stale; run with --write');
     }
     console.log(`OK dependency license evidence (${evidence.status}, packages=${evidence.summary.total})`);

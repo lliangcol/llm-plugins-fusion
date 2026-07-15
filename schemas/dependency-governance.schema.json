@@ -1,0 +1,578 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/dependency-governance.schema.json",
+  "title": "Dependency governance bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "policy",
+    "auditEvidence",
+    "licenseEvidence"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "failOnSeverity",
+        "deniedLicenses",
+        "commentSummaryInPr",
+        "auditExceptions",
+        "licenseReviews",
+        "distributedNodeRuntimeDependencies"
+      ],
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "failOnSeverity": {
+          "enum": [
+            "moderate",
+            "high",
+            "critical"
+          ]
+        },
+        "deniedLicenses": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9.+-]*$"
+          }
+        },
+        "commentSummaryInPr": {
+          "enum": [
+            "never",
+            "always",
+            "on-failure"
+          ]
+        },
+        "distributedNodeRuntimeDependencies": {
+          "const": false
+        },
+        "auditExceptions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "advisory",
+              "scope",
+              "reason",
+              "owner",
+              "expires"
+            ],
+            "properties": {
+              "advisory": {
+                "type": "string",
+                "minLength": 1
+              },
+              "scope": {
+                "enum": [
+                  "direct",
+                  "transitive",
+                  "dev-only",
+                  "runtime-distributed",
+                  "archive-excluded"
+                ]
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              },
+              "owner": {
+                "type": "string",
+                "minLength": 1
+              },
+              "expires": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        },
+        "licenseReviews": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "package",
+              "version",
+              "expression",
+              "decision",
+              "reason",
+              "owner",
+              "expires"
+            ],
+            "properties": {
+              "package": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "expression": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "decision": {
+                "enum": [
+                  "allow",
+                  "deny",
+                  "select"
+                ]
+              },
+              "selectedLicense": {
+                "type": "string",
+                "minLength": 1
+              },
+              "reason": {
+                "type": "string",
+                "minLength": 1
+              },
+              "owner": {
+                "type": "string",
+                "minLength": 1
+              },
+              "expires": {
+                "type": "string",
+                "format": "date"
+              }
+            },
+            "allOf": [
+              {
+                "if": {
+                  "properties": {
+                    "decision": {
+                      "const": "select"
+                    }
+                  },
+                  "required": [
+                    "decision"
+                  ]
+                },
+                "then": {
+                  "properties": {
+                    "selectedLicense": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "required": [
+                    "selectedLicense"
+                  ]
+                }
+              }
+            ]
+          }
+        }
+      }
+    },
+    "auditEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "status",
+        "reasonCode",
+        "source",
+        "lockDigest",
+        "scope",
+        "vulnerabilities",
+        "findings",
+        "exceptionsApplied",
+        "policyViolations"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "blocked"
+          ]
+        },
+        "reasonCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "const": "npm-audit"
+        },
+        "lockDigest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "maintenanceDevOnly",
+            "runtimeDistributed"
+          ],
+          "properties": {
+            "maintenanceDevOnly": {
+              "const": true
+            },
+            "runtimeDistributed": {
+              "const": false
+            }
+          }
+        },
+        "vulnerabilities": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "info",
+            "low",
+            "moderate",
+            "high",
+            "critical",
+            "total"
+          ],
+          "properties": {
+            "info": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "low": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "moderate": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "high": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "critical": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "total": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "dependency",
+              "severity",
+              "isDirect",
+              "advisories"
+            ],
+            "properties": {
+              "dependency": {
+                "type": "string",
+                "minLength": 1
+              },
+              "severity": {
+                "enum": [
+                  "info",
+                  "low",
+                  "moderate",
+                  "high",
+                  "critical"
+                ]
+              },
+              "isDirect": {
+                "type": "boolean"
+              },
+              "advisories": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "exceptionsApplied": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "advisory",
+              "scope",
+              "dependencies"
+            ],
+            "properties": {
+              "advisory": {
+                "type": "string",
+                "minLength": 1
+              },
+              "scope": {
+                "enum": [
+                  "direct",
+                  "transitive",
+                  "dev-only",
+                  "runtime-distributed",
+                  "archive-excluded"
+                ]
+              },
+              "dependencies": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              }
+            }
+          }
+        },
+        "policyViolations": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "licenseEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "status",
+        "reasonCode",
+        "lockDigest",
+        "policyDigest",
+        "scope",
+        "packages",
+        "summary",
+        "reviewsApplied"
+      ],
+      "properties": {
+        "$schema": {
+          "type": "string"
+        },
+        "schemaVersion": {
+          "const": 1
+        },
+        "status": {
+          "enum": [
+            "passed",
+            "failed",
+            "blocked"
+          ]
+        },
+        "reasonCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "lockDigest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "policyDigest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "scope": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "root",
+            "workspaces",
+            "direct",
+            "transitive",
+            "development",
+            "runtimeDistributed"
+          ],
+          "properties": {
+            "root": {
+              "type": "boolean"
+            },
+            "workspaces": {
+              "type": "boolean"
+            },
+            "direct": {
+              "type": "boolean"
+            },
+            "transitive": {
+              "type": "boolean"
+            },
+            "development": {
+              "type": "boolean"
+            },
+            "runtimeDistributed": {
+              "const": false
+            }
+          }
+        },
+        "packages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "path",
+              "name",
+              "version",
+              "direct",
+              "workspace",
+              "development",
+              "optional",
+              "licenseExpression",
+              "ast",
+              "status",
+              "reasonCode"
+            ],
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              },
+              "version": {
+                "type": "string",
+                "minLength": 1
+              },
+              "direct": {
+                "type": "boolean"
+              },
+              "workspace": {
+                "type": "boolean"
+              },
+              "development": {
+                "type": "boolean"
+              },
+              "optional": {
+                "type": "boolean"
+              },
+              "licenseExpression": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "ast": {
+                "type": [
+                  "object",
+                  "null"
+                ]
+              },
+              "status": {
+                "enum": [
+                  "passed",
+                  "failed",
+                  "blocked"
+                ]
+              },
+              "reasonCode": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "summary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "total",
+            "passed",
+            "failed",
+            "blocked"
+          ],
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "passed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "failed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "blocked": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "reviewsApplied": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "package",
+              "version",
+              "decision",
+              "owner",
+              "expires"
+            ],
+            "properties": {
+              "package": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              },
+              "decision": {
+                "enum": [
+                  "allow",
+                  "deny",
+                  "select"
+                ]
+              },
+              "owner": {
+                "type": "string"
+              },
+              "expires": {
+                "type": "string",
+                "format": "date"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

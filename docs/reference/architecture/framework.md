@@ -53,10 +53,14 @@ framework surface does not imply a mature multi-plugin ecosystem or portal.
 
 Run `npm run llmf -- <command>`. Use `npm run llmf -- --help` for the
 machine-readable command summary. Commands are `init`, `validate`, `build`,
-`test`, `eval`, `doctor`, `inspect`, and `migrate`. Output is one JSON object;
-exit codes are stable: 0 success, 2 usage, 3 validation, 4 I/O, and 5
-conformance. `init`, `build`, and `migrate --write` are the only commands that
-write files.
+`test`, `eval`, `doctor`, `inspect`, `migrate`, `check`, and `generate`. The
+repository-aware forms are `check quick|full|security|release` and `generate
+docs|runtime|release|all [--write]`; they accept only fixed profiles and fixed
+argv. Output is one JSON object; exit codes are stable: 0 success, 2 usage, 3
+validation, 4 I/O, and 5 conformance. `init`, `build`, `migrate --write`, and
+`generate --write` are the only commands that write repository source or
+generated projections. Checks may emit ignored local evidence such as coverage
+metrics. Generation is a drift check unless `--write` is explicit.
 
 For a second product, follow [second-product.md](../../guides/framework/second-product.md). For v5 to
 v6 migration, follow [contract-v6.md](../../project/migrations/contract-v6.md).

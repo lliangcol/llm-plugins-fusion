@@ -182,7 +182,7 @@ export function runCoverage({
     for (const failure of thresholdFailures) console.error(`ERROR ${failure}`);
     return 1;
   }
-  const criticalConfig = JSON.parse(readFileSync(resolve(root, 'governance/critical-coverage.json'), 'utf8'));
+  const criticalConfig = JSON.parse(readFileSync(resolve(root, 'governance/engineering-evidence.json'), 'utf8')).criticalCoverage;
   const criticalFailures = criticalCoverageFailures(parseCoverageFileRows(stdout), criticalConfig.modules);
   if (criticalFailures.length > 0) {
     for (const failure of criticalFailures) console.error(`ERROR ${failure}`);

@@ -38,8 +38,8 @@ This file is the supporting behavioral contract for `/nova-plugin:explore` and t
 ### Generated Behavior Index
 
 - **Purpose:** Align understanding and identify unknowns or risks without proposing solutions.
-- **Canonical inputs:** `INPUT`(required aliases=REQUEST,CONTEXT); `PERSPECTIVE`(optional aliases=MODE default="observer" exact="observer","reviewer")
-- **Decision entries:** 2; exact routes: `explore-lite`, `explore-review`.
+- **Canonical inputs:** `INPUT`(required aliases=REQUEST,CONTEXT); `PERSPECTIVE`(optional aliases=MODE default="observer" exact="observer","reviewer"); `DEPTH`(optional default="standard" exact="lite","standard","deep")
+- **Decision entries:** 4; canonical routes and variants: `explore {"PERSPECTIVE":"reviewer"}`, `explore {"PERSPECTIVE":"observer","DEPTH":"lite"}`, `explore {}`, `explore {"DEPTH":"deep"}`.
 - **Workflow steps:** `resolve-input` → `route` → `analyze` → `emit`
 - **Output:** mode=`chat`; order=`observations or what is clear` → `uncertainties or review questions` → `potential risks or risk signals`; severity=none.
 - **Deviation/failure:** mode=`forbid`; failure order=`status` → `missing input` → `allowed values` → `safe next action`.

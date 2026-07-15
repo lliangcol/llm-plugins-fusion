@@ -55,7 +55,7 @@ jobs:
           test "${stable_commit}" = "$(git rev-list -n 1 "${CANDIDATE_TAG}")"
           test "${stable_commit}" = "$(git rev-parse HEAD)"
           printf 'commit=%s\n' "${stable_commit}" >> "${GITHUB_OUTPUT}"
-      - name: Download and verify exact candidate bundle
+      - name: Download and verify exact candidate evidence bundle
         env:
           GH_TOKEN: ${{ github.token }}
           CANDIDATE_TAG: ${{ inputs.candidate-tag }}
@@ -63,14 +63,14 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p .metrics/promotion/download .metrics/promotion/bundle
-          gh release download "${CANDIDATE_TAG}" --dir .metrics/promotion/download --pattern 'nova-plugin-*-candidate-bundle.tar.gz'
+          gh release download "${CANDIDATE_TAG}" --dir .metrics/promotion/download --pattern 'nova-plugin-*-evidence-bundle.tar.gz'
           shopt -s nullglob
-          bundles=(.metrics/promotion/download/nova-plugin-*-candidate-bundle.tar.gz)
+          bundles=(.metrics/promotion/download/nova-plugin-*-evidence-bundle.tar.gz)
           test "${#bundles[@]}" -eq 1
           bundle="${bundles[0]}"
           gh attestation verify "${bundle}" --repo "${GITHUB_REPOSITORY}" --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" --source-ref "refs/tags/${CANDIDATE_TAG}" --source-digest "${SOURCE_COMMIT}"
           node scripts/extract-release-bundle.mjs --archive "${bundle}" --out .metrics/promotion/bundle
-          cp "${bundle}" .metrics/promotion/candidate-bundle.tar.gz
+          cp "${bundle}" .metrics/promotion/candidate-evidence-bundle.tar.gz
       - name: Verify candidate envelope, intent, control, evidence, and artifacts
         env:
           STABLE_TAG: ${{ inputs.release-tag }}
@@ -84,7 +84,7 @@ jobs:
             --promotion-intent .metrics/promotion/bundle/promotion-intent.json \
             --control-bundle-manifest .metrics/promotion/bundle/release-control-bundle.manifest.json \
             --bundle-root .metrics/promotion/bundle --artifact-dir .metrics/promotion/bundle/artifacts
-          node scripts/release-orchestrator.mjs --mode promote --state DRAFT --target-state ASSETS_RECONCILED \
+          node scripts/release-orchestrator.mjs --candidate-verification-passed --mode promote --state DRAFT --target-state ASSETS_RECONCILED \
             --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}" \
             --promotion-intent .metrics/promotion/bundle/promotion-intent.json \
             --control-bundle .metrics/promotion/bundle/release-control-bundle.manifest.json \
@@ -99,17 +99,18 @@ jobs:
           set -euo pipefail
           node scripts/prepare-release.mjs
           handoff=.metrics/promotion/handoff
-          mkdir -p "${handoff}/publish" "${handoff}/scripts/lib" "${handoff}/events" "${handoff}/governance"
-          cp .metrics/promotion/candidate-bundle.tar.gz "${handoff}/publish/"
-          cp .metrics/promotion/bundle/artifacts/* "${handoff}/publish/"
-          cp .metrics/promotion/bundle/evidence/* "${handoff}/publish/"
-          cp .metrics/promotion/bundle/candidate-core.json .metrics/promotion/bundle/promotion-intent.json .metrics/promotion/bundle/release-candidate.json .metrics/promotion/bundle/release-control-bundle.* "${handoff}/publish/"
+          mkdir -p "${handoff}/publish" "${handoff}/scripts/lib" "${handoff}/events" "${handoff}/governance/evidence"
+          cp .metrics/promotion/candidate-evidence-bundle.tar.gz "${handoff}/publish/nova-plugin-${RELEASE_TAG#v}-evidence-bundle.tar.gz"
+          cp .metrics/promotion/bundle/artifacts/nova-plugin-*.tar.gz "${handoff}/publish/"
+          (cd "${handoff}/publish" && sha256sum nova-plugin-*.tar.gz | LC_ALL=C sort > SHA256SUMS.txt)
+          test "$(find "${handoff}/publish" -maxdepth 1 -type f | wc -l | tr -d ' ')" -eq 3
           cp .metrics/release/release-notes.md "${handoff}/release-notes.md"
           cp .metrics/promotion/bundle/promotion-intent.json .metrics/promotion/bundle/release-control-bundle.manifest.json "${handoff}/"
           cp .metrics/promotion/events/* "${handoff}/events/"
           cp scripts/reconcile-github-release.mjs scripts/release-orchestrator.mjs "${handoff}/scripts/"
           cp scripts/lib/canonical-json.mjs scripts/lib/cli-args.mjs scripts/lib/release-state-machine.mjs scripts/lib/release-corrections.mjs "${handoff}/scripts/lib/"
           cp governance/release-corrections.json "${handoff}/governance/"
+          cp governance/evidence/*.md "${handoff}/governance/evidence/"
           checksum_file="${RUNNER_TEMP}/promotion-handoff.sha256"
           (cd "${handoff}" && find . -type f ! -name handoff.sha256 -print0 | sort -z | xargs -0 sha256sum > "${checksum_file}")
           mv "${checksum_file}" "${handoff}/handoff.sha256"
@@ -118,16 +119,25 @@ jobs:
         run: |
           shopt -s nullglob
           archives=(.metrics/promotion/handoff/publish/nova-plugin-*.tar.gz)
+          bundles=(.metrics/promotion/handoff/publish/nova-plugin-*-evidence-bundle.tar.gz)
           filtered=()
-          for archive in "${archives[@]}"; do [[ "${archive}" == *candidate-bundle* ]] || filtered+=("${archive}"); done
+          for archive in "${archives[@]}"; do [[ "${archive}" == *evidence-bundle* ]] || filtered+=("${archive}"); done
           test "${#filtered[@]}" -eq 1
-          printf 'archive=%s\n' "${filtered[0]}" >> "${GITHUB_OUTPUT}"
-          printf 'sbom=%s\n' '.metrics/promotion/handoff/publish/build-sbom.cdx.json' >> "${GITHUB_OUTPUT}"
+          test "${#bundles[@]}" -eq 1
+          {
+            printf 'archive=%s\n' "${filtered[0]}"
+            printf 'sbom=%s\n' '.metrics/promotion/bundle/artifacts/build-sbom.cdx.json'
+            printf 'bundle=%s\n' "${bundles[0]}"
+          } >> "${GITHUB_OUTPUT}"
       - name: Attest promoted archive and build SBOM
         uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
         with:
           subject-path: ${{ steps.release-files.outputs.archive }}
           sbom-path: ${{ steps.release-files.outputs.sbom }}
+      - name: Attest promoted evidence bundle
+        uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
+        with:
+          subject-path: ${{ steps.release-files.outputs.bundle }}
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: verified-promotion-handoff-${{ inputs.release-tag }}
@@ -158,12 +168,12 @@ jobs:
         run: |
           set -euo pipefail
           source_commit="$(node -e "const i=require('./handoff/promotion-intent.json'); process.stdout.write(i.sourceCommit)")"
-          node handoff/scripts/release-orchestrator.mjs --dry-run --protected-publication-approved --mode promote --state ASSETS_RECONCILED --target-state RELEASE_PUBLISHED \
+          node handoff/scripts/release-orchestrator.mjs --dry-run --candidate-verification-passed --protected-publication-approved --mode promote --state ASSETS_RECONCILED --target-state RELEASE_PUBLISHED \
             --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${source_commit}" \
             --promotion-intent handoff/promotion-intent.json --control-bundle handoff/release-control-bundle.manifest.json \
             --event-dir handoff/events --run-id "${GITHUB_RUN_ID}"
           node handoff/scripts/reconcile-github-release.mjs --tag "${STABLE_TAG}" --assets-dir handoff/publish --notes handoff/release-notes.md
-          node handoff/scripts/release-orchestrator.mjs --protected-publication-approved --mode promote --state ASSETS_RECONCILED --target-state RELEASE_PUBLISHED \
+          node handoff/scripts/release-orchestrator.mjs --candidate-verification-passed --protected-publication-approved --mode promote --state ASSETS_RECONCILED --target-state RELEASE_PUBLISHED \
             --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${source_commit}" \
             --promotion-intent handoff/promotion-intent.json --control-bundle handoff/release-control-bundle.manifest.json \
             --event-dir handoff/events --run-id "${GITHUB_RUN_ID}"

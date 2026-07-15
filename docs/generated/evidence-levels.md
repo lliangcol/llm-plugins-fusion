@@ -1,6 +1,6 @@
 # Engineering evidence levels
 
-Generated from `governance/evidence-levels.json`.
+Generated from `governance/engineering-evidence.json#/evidenceLevels`.
 
 | Level | Name | Proves | Does not prove |
 | --- | --- | --- | --- |

@@ -15,25 +15,31 @@
 
 ---
 
-## 30 秒看懂
+## 解决什么问题
 
-`llm-plugins-fusion` 是面向 LLM coding assistant 的公开 AI 工程工作流框架。当前主交付物是 `nova-plugin`：一个可通过 Claude Code marketplace 安装的 workflow plugin，用命令、skills、core agents、capability packs 和验证脚本，把临时 prompt 收敛成可复用、可审查、可交付的工程流程。
-
-跨 assistant 能力按证据分级：Claude Code 的 exact-tag 发布链路以 L4 为目标；没有当前 paired live evidence 时，Claude Code 与 Codex 都只声明 L2；通用 Agent Skills manifest 只声明 L1。能读取同一份 Markdown 不等于权限、安全或输出语义已经被验证，详见 [Assistant compatibility levels](./docs/compatibility/assistant-levels.md)。
+`llm-plugins-fusion` 把临时 prompt 变成可复用、可审查的工程流程。当前主交付物是 `nova-plugin`，围绕五个阶段组织 Claude Code 工作：
 
 ```text
 Explore -> Plan -> Review -> Implement -> Finalize
 ```
 
-Marketplace metadata 只是当前安装与分发机制。本仓库不描述为成熟多插件生态，也不把 deferred public portal 当作已实现能力。公开内容只保存通用 workflow、consumer profile 契约、脱敏模板、prompt 模板和 capability pack 指南；真实 consumer profile、endpoint、凭据、私有知识库、业务规则和私有仓库地址应保存在 consumer 项目自己的 `AGENTS.md`、`CLAUDE.md`、`.claude/` 或私有文档中。
+它适合需要先理解、再计划、审查后实施，并在交付时保留验证与残余风险的人。Marketplace metadata 只是安装与分发机制；本仓库不描述为成熟多插件生态，也不把 deferred public portal 当作已实现能力。
 
-## 3 分钟安装
+![nova-plugin route headless demo](./docs/assets/nova-route-demo.gif)
 
-只读 `nova-plugin` workflow 只需要 Claude Code 插件。启用 Write/Edit guard 的写入流程需要 Node.js 22+ 与 Bash 3.2+（用于缺少 Node 时 fail closed）；仓库维护校验需要 Node.js 22+；Codex 闭环命令还需要 Bash 与本机 Codex CLI。
+GIF 来自仓库内确定性 `demo:route` fixture，不是 Claude live 行为证据。完整、可复制的输出：
 
-稳定安装入口以正式 release tag 为准。当前稳定推广基线是 `v4.0.0`；
-`main` 可能包含 `CHANGELOG.md` `Unreleased` 下的后续优化，不能替代 exact
-release tag 作为稳定发布证据。
+```text
+Request: I need to update public docs, verify links, and summarize validation.
+Expected next command: /nova-plugin:explore
+Expected stage: Explore
+Expected packs:
+  - docs
+```
+
+## 90 秒安装
+
+稳定安装入口以正式 release tag 为准。当前稳定推广基线是 `v4.0.0`；`main` 可能包含 `Unreleased` 后续工作，不能替代 exact release tag 作为稳定发布证据。
 
 ```text
 /plugin marketplace add lliangcol/llm-plugins-fusion@v4.0.0
@@ -41,59 +47,22 @@ release tag 作为稳定发布证据。
 /nova-plugin:route 这项任务涉及文档、版本和安装验证，请推荐下一步 nova workflow
 ```
 
-确认插件可用：
-
-```text
-/plugin
-```
-
-第一次安装后先运行只读 `/nova-plugin:route`。如需跟踪开发分支，显式添加 marketplace `lliangcol/llm-plugins-fusion@main`；不要把 `main` 当作 Stable。
-
-没有 Claude Code 环境时，可以先用本地 headless demo 理解 workflow contract：
+第一次安装后用 `/plugin` 确认插件，再运行只读 `/nova-plugin:route`。没有 Claude Code 时可先执行：
 
 ```bash
 npm run demo:route
 npm run demo:review
 ```
 
-非 Claude 用户可以把 command / skill Markdown 当作可读契约消费；不要假设
-Claude slash-command runtime 行为会在其它 coding assistant 中自动存在。
-
-## 适用人群
-
-| 你是 | 先读 | 目标 |
-| --- | --- | --- |
-| 第一次进入仓库 | [Start Here](./docs/start-here.md) | 按安装、无凭据演示、兼容性、贡献或维护目标选择最短路径。 |
-| Claude Code 用户 | [Getting Started](./docs/getting-started.md) | 5 分钟内安装 `nova-plugin`，并用 `/nova-plugin:route` 完成第一次路由。 |
-| 非 Claude 用户 | `npm run demo:route` / [Consumer setup](./docs/consumers/README.md) | 用 headless fixtures 和 Markdown contracts 理解 workflow，不假设 slash-command runtime。 |
-| Consumer 项目维护者 | [Consumer profiles](./docs/consumers/README.md) | 在私有项目维护 profile，把公开仓库只当作通用 workflow 和模板来源。 |
-| 插件作者 | [CONTRIBUTING.md](./CONTRIBUTING.md) | 修改 command / skill 前确认 [Skill-first 设计](./nova-plugin/docs/architecture/dual-track-design.md)。 |
-| 首次贡献者 | [第一次贡献路径](./CONTRIBUTING.md#第一次贡献路径) | 从 docs clarification、fixture update、validator message 或 public-safe example 开始。 |
-| 维护者 | [Maintainer task catalog](./docs/maintainers/task-catalog.md) / [release runbook](./docs/maintainers/release-runbook.md) | 找到改动对应的检查，并按 candidate-to-stable 流程记录发布证据。 |
-
-## Showcase
-
-| 场景 | 入口 | 你会看到 |
-| --- | --- | --- |
-| Java backend | [docs/showcase/java-backend.md](./docs/showcase/java-backend.md) | 从模糊后端需求进入 explore、plan、review、implement、finalize 的证据链。 |
-| Frontend | [docs/showcase/frontend.md](./docs/showcase/frontend.md) | 把 UI 需求转成组件、状态、可访问性和截图验证边界。 |
-| Release and docs | [docs/showcase/release-and-docs.md](./docs/showcase/release-and-docs.md) | 用 nova workflow 处理发布说明、文档同步、验证证据和残余风险。 |
-
-更多视觉资产与录屏脚本见 [docs/assets/README.md](./docs/assets/README.md)，增长指标口径见 [docs/growth/README.md](./docs/growth/README.md)。
+非 Claude 用户可把 command / skill Markdown 当作契约消费，但不能假设 Claude slash-command runtime 会自动存在。兼容证据见 [Assistant compatibility levels](./docs/reference/compatibility/assistant-levels.md)。
 
 ## Security & Trust
 
-- 写入、Bash 和外部 CLI 流程必须通过明确参数、preflight、artifact 范围和验证证据约束；不建议用全局权限绕过作为默认运行方式。
-- 公开仓库不存放真实 consumer profile、endpoint、凭据、私有仓库地址、业务规则或私有知识库。
+- 写入、Bash 和外部 CLI 流程需要明确参数、preflight、artifact 范围和验证证据；不要把全局权限绕过作为默认配置。
+- 公开仓库不存放真实 consumer profile、endpoint、凭据、私有仓库地址、业务规则或私有知识库；安全问题按 [SECURITY.md](./SECURITY.md) 私下披露。
 - 本地默认质量门是 `node scripts/validate-all.mjs`；Windows 无 Bash 时，Bash-dependent 检查只能报告为 skipped，不能报告为 passed。
-- 生成物漂移的聚焦检查是 `npm run validate:drift`，它确认 marketplace metadata 和 catalog 与 source-of-truth 一致。
-- Surface inventory 漂移检查是 `node scripts/generate-surface-inventory.mjs`，它确认 command、skill、agent、pack 和 generated marketplace output 的派生清单是最新的。
-- 维护者发布前检查使用 `npm run validate:maintainer`，它在默认质量门之外还运行 `npm test`，并检查 generated registry 漂移和 `git diff --check`。
 - 测试覆盖率证据使用 `npm run test:coverage:check`，它通过 Node 内置 coverage 写入 `.metrics/coverage/`，要求所有受 Git 跟踪、非 `tests/**` 的维护 `.mjs` 都进入覆盖率分母，并执行 lines 85%、branches 70%、functions 90% 的发布阻断门槛；`npm run test:coverage` 保持仅采集模式。
-- Release checksum 证据使用 `node scripts/generate-release-checksums.mjs`，它通过 Node 内置 crypto 为选定 source-controlled release artifacts 生成 SHA-256 清单。
-- Claude 插件安装 smoke 的安全预览路径是 `node scripts/validate-plugin-install.mjs --dry-run`；真实 user-scope 安装/更新只应在隔离用户或 CI profile 中显式运行 `--accept-user-scope-mutation --isolated-home`。
-- 固定答案 route smoke 只证明 installation、invocation 与 safety contract；workflow 质量声明必须来自隐藏标签、paired baseline 的独立行为评估。
-- 安全问题请按 [SECURITY.md](./SECURITY.md) 私下披露，不要在公开 issue 中暴露漏洞细节。
+- 固定答案 route smoke 只证明 installation、invocation 与 safety contract；workflow 质量声明必须来自版本化、隐藏标签的 paired evaluation。
 
 ## 当前状态
 
@@ -128,42 +97,7 @@ node scripts/validate-all.mjs
 
 该入口覆盖 schema、registry fixtures、Claude 兼容性、command / skill frontmatter、canonical workflow 和 adapter 漂移、route 与 workflow-quality eval 数据集、core agent 集合、capability pack 结构、hooks、GitHub workflow 权限、库存和 required-check 合约（包括 action SHA pinning、NPM Test gate 和 Test Coverage evidence）、Codex runtime smoke、surface inventory 漂移、分发风险扫描、核心回归检查、workflow fixture 合约、Markdown 链接和命令文档覆盖。
 
-生成 marketplace、metadata 和 catalog 漂移的聚焦检查是：
-
-```bash
-npm run validate:drift
-```
-
-维护者发布前质量门是：
-
-```bash
-npm run validate:maintainer
-```
-
-该入口会运行默认质量门、`npm test`、生成 registry 漂移检查和 `git diff --check`。
-运行环境诊断可用：
-
-```bash
-npm run doctor
-```
-
-## Quick Start
-
-最短上手路径见 [docs/getting-started.md](./docs/getting-started.md)。
-
-常规工作流优先使用五个主入口：
-
-```text
-/nova-plugin:explore -> /nova-plugin:produce-plan -> /nova-plugin:review -> /nova-plugin:implement-plan -> /nova-plugin:finalize-work
-```
-
-| 当前目标 | 默认命令 | 说明 |
-| --- | --- | --- |
-| 先理解问题，不要方案 | `/nova-plugin:explore` | 收集事实、不确定性和风险信号。 |
-| 需要可评审计划 | `/nova-plugin:produce-plan` | 输出正式计划，供后续 review 和 implementation 使用。 |
-| 审查计划、代码或风险 | `/nova-plugin:review` | 默认标准级别，可用 `LEVEL=lite|strict` 调整深度。 |
-| 按已批准计划实施 | `/nova-plugin:implement-plan` | 需要明确的 plan 和 `PLAN_APPROVED=true`。 |
-| 交付总结和后续事项 | `/nova-plugin:finalize-work` | 固化 changed files、validation、限制和 next steps。 |
+聚焦入口：`npm run validate:drift` 检查生成漂移，`npm run validate:maintainer` 运行维护者门，`npm run doctor` 诊断本机环境。
 
 ## Command Map
 
@@ -188,33 +122,6 @@ Codex 闭环是高级路径，需要 Codex CLI 和 Bash：
 ```text
 /nova-plugin:codex-review-fix
 ```
-
-## Core Agents + Packs
-
-`nova-plugin` 的 agent 体系由 6 个短小、route-focused 的 core agents 承担通用职责，再通过 8 个 capability packs 补充领域规则。Packs 是文档化能力包，不做复杂运行时动态加载；已安装插件只作为 enhanced mode，缺失时必须可通过 fallback mode 完成任务。
-
-| Core agent | 职责 |
-| --- | --- |
-| `orchestrator` | 拆解任务、选择 agent + pack、合并结果、发现缺失输入。 |
-| `architect` | 架构方案、边界、风险、迁移计划、技术决策。 |
-| `builder` | 实现、重构、集成、按计划修改项目文件。 |
-| `reviewer` | 代码、设计、安全、质量审查，输出优先级发现。 |
-| `verifier` | 测试、静态检查、依赖安全、CI/local validation。 |
-| `publisher` | README、docs、CHANGELOG、release notes、handoff。 |
-
-Capability packs: `java`, `security`, `dependency`, `docs`, `release`, `marketplace`, `frontend`, `mcp`。
-
-## Five-Layer Architecture
-
-`nova-plugin` 可以按五层维护：规则记忆、skill 行为契约、确定性护栏、core-agent 委派和 marketplace 分发。完整说明见 [Agent Development Stack](./nova-plugin/docs/architecture/agent-development-stack.md)。
-
-| 层 | 当前事实源 | 维护重点 |
-| --- | --- | --- |
-| Memory | `CLAUDE.md`、`AGENTS.md`、`docs/consumers/` | Claude 规范事实源、非 Claude agent 适配、consumer profile 边界、公开/私有信息分离。 |
-| Skills | `nova-plugin/skills/`、`nova-plugin/commands/` | command / skill 一对一、参数、安全边界和输出契约。 |
-| Guardrails | `nova-plugin/hooks/`、`scripts/validate-*.mjs` | hook、schema、frontmatter、docs 和发布校验。 |
-| Delegation | `nova-plugin/agents/`、`nova-plugin/packs/` | 6 个 core agents、8 个 capability packs、enhanced / fallback 路由。 |
-| Distribution | `.claude-plugin/`、`nova-plugin/.claude-plugin/plugin.json` | marketplace metadata、生成 catalog、安装分发边界。 |
 
 ## What Is Included
 
@@ -253,147 +160,45 @@ llm-plugins-fusion/
 
 | 需要 | 入口 |
 | --- | --- |
-| 快速安装和开始使用 | [Getting Started](./docs/getting-started.md) |
+| 快速安装和开始使用 | [Getting Started](docs/getting-started/first-workflow.md) |
 | 查看所有仓库级公开文档 | [仓库文档总索引](./docs/README.md) |
 | 查看插件文档、命令文档和架构说明 | [nova-plugin 文档索引](./nova-plugin/docs/README.md) |
 | 查命令参数、示例和 workflow 模板 | [命令完全参考手册](./nova-plugin/docs/guides/commands-reference-guide.md) |
 | 复制命令选择和使用模板 | [命令使用手册](./nova-plugin/docs/guides/claude-code-commands-handbook.md) |
-| 接入私有 consumer 项目 | [Consumer profile templates](./docs/consumers/README.md) |
-| 复用公开安全 workflow 示例 | [Redacted examples](./docs/examples/README.md) |
-| 维护 marketplace metadata | [Registry author workflow](./docs/marketplace/registry-author-workflow.md) |
-| 维护仓库检查、CI 和发布 gate | [Maintainer quickstart](./docs/maintainers/quickstart.md) |
-| 查看公共 API 和兼容边界 | [Public API compatibility](./docs/compatibility/public-api.md) |
-| 准备发布证据 | [Release evidence template](./docs/releases/release-evidence-template.md) |
-| 了解 agent routing 和 capability packs | [Core agent 路由](./docs/agents/ROUTING.md)、[Capability packs](./nova-plugin/packs/README.md) |
+| 接入私有 consumer 项目 | [Consumer profile templates](docs/guides/assistants/README.md) |
+| 复用公开安全 workflow 示例 | [Redacted examples](docs/tutorials/README.md) |
+| 维护 marketplace metadata | [Registry author workflow](docs/operations/marketplace/registry-authoring.md) |
+| 维护仓库检查、CI 和发布 gate | [Maintainer quickstart](docs/operations/maintainers/README.md) |
+| 查看公共 API 和兼容边界 | [Public API compatibility](docs/reference/compatibility/public-api.md) |
+| 准备发布证据 | [Release evidence template](docs/templates/evidence/release.md) |
+| 了解 agent routing 和 capability packs | [Core agent 路由](docs/reference/architecture/agent-routing.md)、[Capability packs](./nova-plugin/packs/README.md) |
 | 阅读英文概览 | [English overview](./nova-plugin/docs/overview/README.en.md) |
 
 ## Maintenance
 
-主要事实源：
-
-- `nova-plugin/.claude-plugin/plugin.json`：插件元信息与版本事实源
-- `.claude-plugin/registry.source.json`：registry、marketplace 展示字段和 trust/risk/maintainer/evidence 元数据事实源
-- `.claude-plugin/marketplace.json`、`.claude-plugin/marketplace.metadata.json`、`docs/marketplace/catalog.md`：生成输出，不要手工编辑
-- `CHANGELOG.md`、`SECURITY.md`、`CLAUDE.md`、`AGENTS.md`：版本、支持范围、库存或行为边界变化时同步
-- `package.json` / `package-lock.json`：维护者便捷脚本与锁定的开发期 Ajv schema 工具链；先运行 `npm ci --ignore-scripts`。分发的 `nova-plugin` 归档不携带 Node package 运行时依赖；发布归档使用 `release:artifacts` 而不是通用 `build`
-
-Skill 是行为事实源，command 仅是生成的入口 wrapper：
+先阅读 [CLAUDE.md](./CLAUDE.md) 和 [CONTRIBUTING.md](./CONTRIBUTING.md)。行为修改从 v5/v1 authoring source 与治理元数据开始，v6/v2 IR、Skill 行为块、runtime contract 和 command wrapper 都由生成器维护：
 
 ```text
-workflow-specs/workflows.json
-  -> nova-plugin/skills/nova-<canonical-surface>/SKILL.md
+workflow-specs/workflows.json + workflow-specs/behaviors.json
+  -> workflows.v6.json + behaviors.v2.json
+  -> canonical Skill behavior + runtime contracts
   -> nova-plugin/commands/<id>.md
 ```
 
-每个命令必须有三份命令文档：
-
-```text
-nova-plugin/docs/commands/<stage>/<id>.md
-nova-plugin/docs/commands/<stage>/<id>.README.md
-nova-plugin/docs/commands/<stage>/<id>.README.en.md
-```
-
-Codex 命令集中放在 `nova-plugin/docs/commands/codex/`，这是命令文档按 stage 目录组织规则的明确例外。
-
-Generated marketplace files 必须从源文件更新：
-
-```bash
-node scripts/generate-registry.mjs --write
-```
-
-稳定推广对象是正式 release tag，例如 `v4.0.0`。`main` 可能包含 `CHANGELOG.md` `Unreleased` 下的后续文档或优化工作，不能替代 release tag 作为安装、推广或发布证据。
+不要直接编辑生成的 marketplace、v6/v2、runtime contract 或 command wrapper。聚合入口是 `npm run llmf -- generate docs|runtime|release|all --write`。
 
 ## Quality Gates
 
-全量检查：
-
 ```bash
-node scripts/validate-all.mjs
-```
-
-文档类改动的最小检查：
-
-```bash
-node scripts/validate-docs.mjs
+npm ci --ignore-scripts
+npm run ci:quick
+npm test
+npm run test:coverage:check
+npm run validate:maintainer
 git diff --check
 ```
 
-维护者也可以使用不引入依赖的 npm 快捷入口：
-
-```bash
-npm run doctor
-npm run demo:route
-npm run demo:review
-npm run test
-npm run test:coverage
-npm run test:coverage:check
-npm run test:unit
-npm run test:integration
-npm run test:e2e
-npm run lint
-npm run ci:quick
-npm run ci:full
-npm run validate
-npm run validate:drift
-npm run validate:maintainer
-npm run validate:docs
-npm run validate:schemas
-npm run validate:github-workflows
-npm run validate:runtime
-npm run validate:regression
-npm run validate:surface
-npm run validate:workflow
-npm run scan:secrets
-npm run scan:distribution
-```
-
-按变更范围运行：
-
-```bash
-node scripts/generate-registry.mjs
-node scripts/validate-schemas.mjs
-node scripts/validate-registry-fixtures.mjs
-node scripts/validate-claude-compat.mjs
-node scripts/lint-frontmatter.mjs
-node scripts/validate-packs.mjs
-node scripts/validate-hooks.mjs
-node scripts/validate-github-workflows.mjs
-node scripts/validate-runtime-smoke.mjs
-node scripts/generate-surface-inventory.mjs
-node scripts/scan-distribution-risk.mjs
-node scripts/validate-regression.mjs
-node scripts/validate-workflow-fixtures.mjs
-node scripts/validate-docs.mjs
-```
-
-Agent 检查：
-
-```bash
-bash scripts/verify-agents.sh
-```
-
-Windows PowerShell：
-
-```powershell
-.\scripts\verify-agents.ps1
-```
-
-Hook shell 语法检查需要 Bash：
-
-```bash
-bash -n nova-plugin/hooks/scripts/pre-write-check.sh
-bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
-bash -n nova-plugin/hooks/scripts/post-audit-log.sh
-```
-
-Claude 插件安装 smoke 的 dry run 不会调用 Claude CLI，也不会修改 user-scope 插件状态。真实安装/更新 smoke 需要 Claude CLI，且会修改 user-scope 插件状态，因此只应在隔离用户或 CI profile 中显式运行：
-
-```bash
-node scripts/validate-plugin-install.mjs --dry-run
-node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home
-```
-
-默认 PR CI 只运行 dry run；tag release workflow 会在 disposable runner 上运行 isolated user-scope install smoke 并阻断发布，手动或定时的 `.github/workflows/plugin-install-smoke.yml` 继续提供独立安装 smoke 证据。
+默认全量入口仍是 `node scripts/validate-all.mjs`。该入口覆盖 schema、registry fixtures、Claude 兼容性、workflow/adapter 漂移、评测数据、hooks、GitHub workflow 权限、库存和 required-check 合约、runtime smoke、分发风险、回归、fixtures 与文档链接。安装 smoke 默认使用只读 `node scripts/validate-plugin-install.mjs --dry-run`；真实 user-scope 变更只在隔离 CI 或测试用户中显式授权。
 
 ## Contributing
 

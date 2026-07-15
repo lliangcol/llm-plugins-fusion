@@ -94,11 +94,16 @@
       "type": "object",
       "additionalProperties": false,
       "required": ["when", "action"],
+      "dependentRequired": {
+        "route": ["variantParameters"],
+        "variantParameters": ["route"]
+      },
       "properties": {
         "when": { "oneOf": [{ "$ref": "#/$defs/nonEmptyString" }, { "$ref": "#/$defs/predicate" }] },
         "predicate": { "$ref": "#/$defs/predicate" },
         "action": { "$ref": "#/$defs/nonEmptyString" },
-        "route": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+        "route": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "variantParameters": { "type": "object" }
       }
     },
     "predicate": {

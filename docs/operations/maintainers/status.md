@@ -5,14 +5,14 @@
 ## Current Machine-Derived Project Facts
 
 Do not edit this block by hand. It is synchronized by
-`node scripts/sync-doc-facts.mjs --write` from repository domain sources and
-`governance/product-lanes.json`.
+`node scripts/generate-project-state.mjs --write` from repository domain
+sources and `governance/product-lanes.json`.
 
-- Plugin: `nova-plugin@4.0.0`; production plugins: 1; public path: `nova-plugin/`
+- Plugin: `nova-plugin@4.1.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 6 skills, 6 active agents, 8 capability packs
 - Workflow contract: schema v5, namespace `nova-plugin`, 21 workflows
-- Evaluation datasets: `live-paired` has 168 cases and 1008 planned paired invocations; `real-task-benchmark` has 24 tasks and 432 planned invocations
+- Evaluation datasets: `live-paired` has 168 cases and 2016 planned paired invocations; `real-task-benchmark` has 24 tasks and 432 planned invocations
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None

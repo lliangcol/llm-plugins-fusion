@@ -6,7 +6,7 @@
 - Workflow: `implement-plan`; stage: `implement`; canonical skill: `nova-implement-plan`
 - Purpose: Execute an explicitly approved plan step by step with traceability and minimal deviation.
 - Audience: `all-users`; support risk: `medium`
-- Inputs: `PLAN_INPUT_PATH` (required), `PLAN_APPROVED` (required)
+- Inputs: `PLAN_INPUT_PATH` (required), `PLAN_APPROVED` (required), `EXECUTION_PROFILE`
 - Output contract: `implementation-plan-v2`; authorization: `implementation`
 - Effects: `shell`, `workspace-read`, `workspace-write`
 - Related workflows: `produce-plan`, `finalize-work`

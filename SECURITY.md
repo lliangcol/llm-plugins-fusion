@@ -4,14 +4,14 @@
 ## Current Machine-Derived Project Facts
 
 Do not edit this block by hand. It is synchronized by
-`node scripts/sync-doc-facts.mjs --write` from repository domain sources and
-`governance/product-lanes.json`.
+`node scripts/generate-project-state.mjs --write` from repository domain
+sources and `governance/product-lanes.json`.
 
-- Plugin: `nova-plugin@4.0.0`; production plugins: 1; public path: `nova-plugin/`
+- Plugin: `nova-plugin@4.1.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 6 skills, 6 active agents, 8 capability packs
 - Workflow contract: schema v5, namespace `nova-plugin`, 21 workflows
-- Evaluation datasets: `live-paired` has 168 cases and 1008 planned paired invocations; `real-task-benchmark` has 24 tasks and 432 planned invocations
+- Evaluation datasets: `live-paired` has 168 cases and 2016 planned paired invocations; `real-task-benchmark` has 24 tasks and 432 planned invocations
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
@@ -69,9 +69,9 @@ tab -> Report a vulnerability）；若该入口对报告者不可用，再使用
 7. **Bash 语法收敛**：只接受 bare executable；path-qualified executable、未引用 glob/brace/tilde/变量/命令或 process substitution、shell operator 与未登记 argv 均 fail closed。引用后的字面特殊字符仍必须通过 rule-specific validator。
 
 安全敏感的插件、registry、hook、脚本或 write-capable command 变更应按
-[Security Review Route](./docs/marketplace/security-review-route.md) 执行评审。
+[Security Review Route](docs/reference/security/security-review.md) 执行评审。
 本地审计日志、脱敏边界和 public-safe 数据处理规则见
-[Data Handling And Local Audit Logs](./docs/privacy/data-handling.md)。
+[Data Handling And Local Audit Logs](docs/reference/security/data-handling.md)。
 
 ## 披露策略
 

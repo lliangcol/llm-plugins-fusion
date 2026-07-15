@@ -23,7 +23,16 @@ const roots = [
   'scripts/release-orchestrator.mjs',
 ];
 const explicit = [
+  '.github/release-signers',
+  'governance/release-corrections.json',
+  'governance/evidence/post-remediation-audit-2026-07-13.md',
+  'governance/evidence/release-candidate-authorization-2026-07-16.md',
+  'governance/release-operations.json',
+  'governance/release-reviewers.json',
   'schemas/release-candidate.schema.json',
+  'schemas/release-corrections.schema.json',
+  'schemas/release-operations.schema.json',
+  'schemas/release-reviewers.schema.json',
   'schemas/promotion-intent.schema.json',
   'schemas/release-event.schema.json',
   'schemas/release-ledger.schema.json',

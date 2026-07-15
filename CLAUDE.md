@@ -4,14 +4,14 @@
 ## Current Machine-Derived Project Facts
 
 Do not edit this block by hand. It is synchronized by
-`node scripts/sync-doc-facts.mjs --write` from repository domain sources and
-`governance/product-lanes.json`.
+`node scripts/generate-project-state.mjs --write` from repository domain
+sources and `governance/product-lanes.json`.
 
-- Plugin: `nova-plugin@4.0.0`; production plugins: 1; public path: `nova-plugin/`
+- Plugin: `nova-plugin@4.1.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 6 skills, 6 active agents, 8 capability packs
 - Workflow contract: schema v5, namespace `nova-plugin`, 21 workflows
-- Evaluation datasets: `live-paired` has 168 cases and 1008 planned paired invocations; `real-task-benchmark` has 24 tasks and 432 planned invocations
+- Evaluation datasets: `live-paired` has 168 cases and 2016 planned paired invocations; `real-task-benchmark` has 24 tasks and 432 planned invocations
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
@@ -68,7 +68,7 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 - Release evidence template: `docs/releases/release-evidence-template.md`
 - Product-lane decisions: `governance/product-lanes.json`
 - Generated project-state aggregate: `governance/project-state.generated.json`
-- Maintainer npm shortcuts: `package.json` (`doctor`, `validate:bootstrap`, `demo:all`, `demo:route`,
+- Maintainer npm shortcuts: `package.json` (`llmf`, `doctor`, `validate:bootstrap`, `demo:all`, `demo:route`,
   `demo:review`, `validate`,
   `test`, `test:coverage`, `test:coverage:check`, `test:unit`,
   `test:integration`, `test:e2e`, `lint`,
@@ -112,7 +112,7 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 | Project optimization record | `docs/project-optimization-plan.md` |
 | Release evidence and hygiene | `docs/releases/` |
 | Product-lane decisions | `governance/product-lanes.json` |
-| Dependency review policy | `governance/dependency-policy.json` |
+| Dependency policy and evidence | `governance/dependency-governance.json` |
 | Generated project truth | `governance/project-state.generated.json` |
 
 Generated marketplace files must be updated from their sources with:
@@ -147,9 +147,7 @@ llm-plugins-fusion/
 |-- .github/workflows/
 |   |-- ci.yml
 |   |-- codeql.yml
-|   |-- dependency-audit.yml
 |   |-- dependency-review.yml
-|   |-- label-sync.yml
 |   |-- plugin-install-smoke.yml
 |   |-- pr-governance.yml
 |   |-- nightly.yml
@@ -247,6 +245,11 @@ npm run test:e2e
 npm run lint
 npm run ci:quick
 npm run ci:full
+npm run llmf -- check quick
+npm run llmf -- check full
+npm run llmf -- check security
+npm run llmf -- check release
+npm run llmf -- generate all
 npm run validate:drift
 npm run validate
 npm run validate:maintainer

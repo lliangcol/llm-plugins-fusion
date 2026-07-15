@@ -11,7 +11,8 @@
   "id": "review-only",
   "canonicalSurfaceId": "review",
   "variantPreset": {
-    "LEVEL": "standard"
+    "LEVEL": "standard",
+    "MODE": "findings-only"
   },
   "compatibilityAlias": true,
   "stage": "review",

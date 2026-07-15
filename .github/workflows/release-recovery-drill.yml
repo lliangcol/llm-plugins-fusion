@@ -56,9 +56,9 @@ jobs:
           node scripts/validate-release-readiness.mjs --require-ready --mode drill \
             --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}"
           mkdir -p .metrics/recovery/download .metrics/recovery/bundle
-          gh release download "${CANDIDATE_TAG}" --dir .metrics/recovery/download --pattern 'nova-plugin-*-candidate-bundle.tar.gz'
+          gh release download "${CANDIDATE_TAG}" --dir .metrics/recovery/download --pattern 'nova-plugin-*-evidence-bundle.tar.gz'
           shopt -s nullglob
-          bundles=(.metrics/recovery/download/nova-plugin-*-candidate-bundle.tar.gz)
+          bundles=(.metrics/recovery/download/nova-plugin-*-evidence-bundle.tar.gz)
           test "${#bundles[@]}" -eq 1
           bundle="${bundles[0]}"
           gh attestation verify "${bundle}" --repo "${GITHUB_REPOSITORY}" --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" --source-ref "refs/tags/${CANDIDATE_TAG}" --source-digest "${SOURCE_COMMIT}"
@@ -67,7 +67,7 @@ jobs:
             --manifest .metrics/recovery/bundle/release-candidate.json --candidate-core .metrics/recovery/bundle/candidate-core.json \
             --promotion-intent .metrics/recovery/bundle/promotion-intent.json --control-bundle-manifest .metrics/recovery/bundle/release-control-bundle.manifest.json \
             --bundle-root .metrics/recovery/bundle --artifact-dir .metrics/recovery/bundle/artifacts
-          node scripts/release-orchestrator.mjs --mode drill --state DRAFT --target-state PROMOTION_READY \
+          node scripts/release-orchestrator.mjs --candidate-verification-passed --mode drill --state DRAFT --target-state PROMOTION_READY \
             --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}" \
             --promotion-intent .metrics/recovery/bundle/promotion-intent.json --control-bundle .metrics/recovery/bundle/release-control-bundle.manifest.json \
             --event-dir .metrics/recovery/events --run-id "${GITHUB_RUN_ID}"

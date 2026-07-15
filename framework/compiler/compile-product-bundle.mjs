@@ -15,6 +15,7 @@ export function compileProductBundle(bundle) {
     pluginNamespace: product.pluginNamespace,
     runtimeCompatibility: product.runtimeCompatibility,
     primaryEntrypoints: product.primaryEntrypoints,
+    automaticRouting: product.automaticRouting,
     toolVocabulary: product.tools,
     assistantEnforcement,
   };
