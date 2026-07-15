@@ -61,6 +61,21 @@ function lifecycleLabel(entry) {
   return [entry.toolType, entry.server ?? 'server-unavailable', entry.tool ?? 'tool-unavailable'].join(':');
 }
 
+export function normalizeClaudeLoadSignals(debugText, pluginId = 'nova-plugin') {
+  const publicPluginId = publicIdentifier(pluginId);
+  if (!publicPluginId || publicPluginId.startsWith('sha256:')) return [];
+  const escapedPluginId = pluginId.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  const pluginPattern = new RegExp(`\\b${escapedPluginId}\\b`, 'iu');
+  const signals = [];
+  for (const line of String(debugText ?? '').split(/\r?\n/u)) {
+    if (!pluginPattern.test(line)) continue;
+    if (/\bLoaded plugin from path\b/iu.test(line)) signals.push(`claude-debug:plugin-loaded:${publicPluginId}`);
+    const surface = line.match(/\bLoaded\s+(\d+)\s+(commands|skills|agents)\s+from plugin\b/iu);
+    if (surface) signals.push(`claude-debug:plugin-surface-loaded:${publicPluginId}:${surface[2].toLowerCase()}:${surface[1]}`);
+  }
+  return uniqueSorted(signals);
+}
+
 export function normalizeCodexToolLifecycle(events) {
   const items = new Map();
   for (const [index, event] of events.entries()) {
@@ -129,16 +144,18 @@ export function classifyToolEvidence({ assistant, condition, permissionDenials =
   };
 }
 
-export function deriveAdapterEvidence({ assistant, condition, adapterStaged, toolEvidence, events = [] }) {
+export function deriveAdapterEvidence({ assistant, condition, adapterStaged, toolEvidence, events = [], claudeLoadSignals = [] }) {
   if (condition === 'plugin-disabled') return { adapterStaged: false, adapterLoadObserved: 'not-applicable', adapterLoadReasonCode: 'plugin-disabled', adapterLoadSignals: [] };
   if (!adapterStaged) return { adapterStaged: false, adapterLoadObserved: 'unavailable', adapterLoadReasonCode: 'adapter-not-staged', adapterLoadSignals: [] };
   if (assistant === 'claude-code') {
-    const skillObserved = toolEvidence.allowedReadOnlyTools.includes('Skill');
+    const normalizedSignals = uniqueSorted(claudeLoadSignals);
+    const skillSurfaceLoaded = normalizedSignals.some((signal) => /:skills:[1-9]\d*$/u.test(signal));
+    const observed = skillSurfaceLoaded;
     return {
       adapterStaged: true,
-      adapterLoadObserved: skillObserved ? 'observed' : 'unavailable',
-      adapterLoadReasonCode: skillObserved ? 'claude-skill-observed' : 'claude-skill-not-observed',
-      adapterLoadSignals: skillObserved ? ['Skill'] : [],
+      adapterLoadObserved: observed ? 'observed' : 'unavailable',
+      adapterLoadReasonCode: observed ? 'claude-debug-plugin-load-observed' : normalizedSignals.length > 0 ? 'claude-debug-load-signal-incomplete' : 'claude-debug-load-signal-unavailable',
+      adapterLoadSignals: normalizedSignals,
     };
   }
   const eventTypes = uniqueSorted(events.map((event) => {

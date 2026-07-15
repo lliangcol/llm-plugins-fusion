@@ -11,7 +11,7 @@ import { captureProcess, commandDetails, resolveExecutableInvocation } from './l
 import { repoRoot } from './lib/repo-root.mjs';
 import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
 import { joinLockedLabels } from './lib/eval-dataset.mjs';
-import { assertPublicEvidenceSafe, classifyToolEvidence, deriveAdapterEvidence, normalizeUsage } from './lib/evaluation-evidence.mjs';
+import { assertPublicEvidenceSafe, classifyToolEvidence, deriveAdapterEvidence, normalizeClaudeLoadSignals, normalizeUsage } from './lib/evaluation-evidence.mjs';
 import { buildLiveExecutionPlan, governedLiveProfile, validateRelativeOutputPath } from './lib/live-evaluation-plan.mjs';
 
 const root = repoRoot(import.meta.url);
@@ -103,7 +103,7 @@ export function codexPrompt(caseSpec, condition) {
     return `Classify this request using only ordinary general reasoning: ${caseSpec.request}\n${schemaOnly} Use concise generic route labels, list only inputs you would need before proceeding, and set blocked when execution should stop.`;
   }
   const providedInputs = caseSpec.kind === 'approval' ? `\nProvided inputs: ${JSON.stringify(caseSpec.providedInputs ?? {})}` : '';
-  return `A repository workflow adapter has been staged for this isolated workspace. Use that staged workflow contract to classify this request without restating or overriding its routing rules: ${caseSpec.request}${providedInputs}\n${schemaOnly} Select exactly one route from the staged contract, use its required input names, and set blocked when a required input or approval is unresolved.`;
+  return `A repository workflow adapter has been staged for this isolated workspace. Use that staged workflow contract to classify this request without restating or overriding its routing rules: ${caseSpec.request}${providedInputs}\n${schemaOnly} Select exactly one route from the staged contract. Return the complete ordered set of that route's canonical required input names even when values are present, inferred, or resolved; never return only unresolved inputs. Set blocked when a required input or approval is unresolved.`;
 }
 
 function claudePrompt(caseSpec, namespace) {
@@ -116,14 +116,14 @@ function invocation({ assistant, executable, executableArgsPrefix, caseSpec, wor
   if (assistant === 'claude-code') {
     const debugFile = resolve(harness, 'claude-debug.log');
     const systemPrompt = condition === 'plugin-enabled'
-      ? `Do not inspect files, execute shell commands, or modify the environment. Return the routing contract's recommendation using fully-qualified /${namespace}:<workflow-id> syntax and its canonical required input names.`
+      ? `Do not inspect files, execute shell commands, or modify the environment. Return the routing contract's recommendation using fully-qualified /${namespace}:<workflow-id> syntax. Always return the complete ordered set of the selected workflow's canonical required input names even when values are present, inferred, or resolved; never return only unresolved inputs.`
       : 'Do not inspect files, call tools, execute commands, or modify the environment. Use ordinary general reasoning only and do not claim that any plugin or adapter is loaded.';
     return {
       command: executable,
-      args: [...executableArgsPrefix, ...(condition === 'plugin-enabled' ? ['--plugin-dir', pluginDir] : []), '--print', '--output-format', 'json', '--no-session-persistence', '--permission-mode', 'dontAsk', '--allowedTools', 'Read,Glob,Grep', '--disallowedTools', 'Write,Edit,NotebookEdit,Bash', '--append-system-prompt', systemPrompt, '--debug-file', debugFile, condition === 'plugin-enabled' ? claudePrompt(caseSpec, namespace) : caseSpec.request],
+      args: [...executableArgsPrefix, ...(condition === 'plugin-enabled' ? ['--plugin-dir', pluginDir] : []), '--print', '--output-format', 'json', '--no-session-persistence', '--permission-mode', 'dontAsk', '--setting-sources', 'local', '--allowedTools', 'Read,Glob,Grep', '--disallowedTools', 'Write,Edit,NotebookEdit,Bash', '--append-system-prompt', systemPrompt, '--debug-file', debugFile, condition === 'plugin-enabled' ? claudePrompt(caseSpec, namespace) : caseSpec.request],
       outputFile: null,
       debugFile,
-      env: process.env,
+      env: { ...process.env, CLAUDE_CONFIG_DIR: resolve(harness, 'claude-config') },
     };
   }
   const schemaFile = resolve(harness, 'output-schema.json');
@@ -216,6 +216,12 @@ function setupHarness(assistant, sandboxRoot, condition) {
     const authSource = resolve(process.env.CODEX_HOME ?? resolve(homedir(), '.codex'), 'auth.json');
     if (existsSync(authSource)) cpSync(authSource, resolve(codexHome, 'auth.json'));
   }
+  if (assistant === 'claude-code') {
+    const claudeConfig = resolve(harness, 'claude-config');
+    mkdirSync(claudeConfig, { recursive: true });
+    const credentialSource = resolve(process.env.CLAUDE_CONFIG_DIR ?? resolve(homedir(), '.claude'), '.credentials.json');
+    if (existsSync(credentialSource)) cpSync(credentialSource, resolve(claudeConfig, '.credentials.json'));
+  }
   const codexDigestMatches = assistant === 'codex' && condition === 'plugin-enabled' && sha256File(resolve(workspace, 'AGENTS.md')) === sha256File('adapters/codex/AGENTS.md');
   const claudePluginStaged = assistant === 'claude-code' && condition === 'plugin-enabled' && existsSync(resolve(harness, 'nova-plugin/.claude-plugin/plugin.json'));
   return { workspace, harness, pluginDir: condition === 'plugin-enabled' ? resolve(harness, 'nova-plugin') : null, adapterStaged: codexDigestMatches || claudePluginStaged };
@@ -280,7 +286,10 @@ export async function runLiveEvaluation(options, { commandDetailsFn = commandDet
             }
           } catch (error) { parseFailure = classifyParseFailure(error); }
         }
-        const adapterEvidence = deriveAdapterEvidence({ assistant: options.assistant, condition: options.condition, adapterStaged, toolEvidence, events: codexEvents });
+        const claudeLoadSignals = options.assistant === 'claude-code' && call.debugFile && existsSync(call.debugFile)
+          ? normalizeClaudeLoadSignals(readFileSync(call.debugFile, 'utf8'))
+          : [];
+        const adapterEvidence = deriveAdapterEvidence({ assistant: options.assistant, condition: options.condition, adapterStaged, toolEvidence, events: codexEvents, claudeLoadSignals });
         const after = treeDigest(workspace);
         const zeroProjectWrites = before === after;
         const processFailure = classifyProcessFailure(processResult);

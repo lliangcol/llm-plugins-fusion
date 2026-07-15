@@ -327,8 +327,8 @@
         "deprecated": false
       },
       "canonicalSkill": {
-        "bytes": 13129,
-        "estimatedTokens": 3276,
+        "bytes": 13537,
+        "estimatedTokens": 3378,
         "id": "route"
       }
     },

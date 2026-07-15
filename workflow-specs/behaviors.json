@@ -2343,12 +2343,12 @@
           "route": "review-lite"
         },
         {
-          "when": "Intent requires standard severity-grouped read-only review with no implementation.",
-          "action": "Route to review only.",
+          "when": "After external, plan-review, strict, and lite review conditions are excluded, intent requires a read-only or findings-only review and prohibits implementation or modification; explicit severity grouping is not required.",
+          "action": "Route to the standard findings-only review workflow.",
           "route": "review-only"
         },
         {
-          "when": "Intent requires review but no narrower review contract is explicit.",
+          "when": "Intent requires a general review, does not specify a read-only, findings-only, no-change, lite, strict, external, or plan-review boundary, and no narrower review contract matches.",
           "action": "Route to the review hub.",
           "route": "review"
         },
@@ -2384,7 +2384,7 @@
         "Do not modify files or execute downstream work.",
         "Do not claim validation has run.",
         "Begin exactly with ## Recommended Route and emit no preamble or trailing commentary.",
-        "Name required inputs using only the selected workflows' canonical UPPER_SNAKE_CASE input names, plus validation expectations and fallback."
+        "Always emit the complete ordered set of the selected workflows' canonical UPPER_SNAKE_CASE required input names, even when values are present, inferred, or resolved; never emit only unresolved inputs."
       ],
       "stopConditions": [
         "REQUEST is unresolved.",
@@ -2477,7 +2477,7 @@
         "Confirm the most specific matching route was selected before considering a hub.",
         "Confirm selected the canonical skill, compatibility alias, and preset exist in the generated catalog.",
         "Confirm agents and packs exist in the product inventory.",
-        "Confirm required inputs exactly equal the canonical names and order of the selected workflows.",
+        "Confirm required inputs exactly equal the complete canonical names and order of the selected workflows even when their values are present, inferred, or resolved.",
         "Confirm the response contains routing only."
       ],
       "failureOutput": {

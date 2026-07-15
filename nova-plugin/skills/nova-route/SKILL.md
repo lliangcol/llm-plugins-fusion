@@ -110,8 +110,10 @@ when their narrower contract fits better than the primary command.
 
 `Required inputs` names the selected downstream workflow's canonical inputs,
 not the route command's own `REQUEST`. Use the exact UPPER_SNAKE_CASE names
-from the generated behavior contract and runtime contract. Do not translate
-them into prose or substitute aliases.
+from the generated behavior contract and runtime contract. Always list the
+complete ordered required-input set even when values are already present,
+inferable, or resolved; never list only unresolved inputs. Do not translate
+the names into prose or substitute aliases.
 
 For `DEPTH=normal`, include a one-sentence rationale inside the appropriate
 fixed field. For `DEPTH=brief`, keep every field concise. Do not add content
@@ -137,6 +139,7 @@ same fixed fields for the immediate next step:
 
 - Prefer a single next command when the next step is clear.
 - Prefer the five primary workflow entries unless a compatibility or specialized command is clearly better.
+- Prefer `review-only` whenever the user asks for read-only or findings-only review and excludes implementation or modification, even when severity grouping is not requested. Use the broader `review` hub only when no narrower review boundary is present.
 - Use only existing capability packs: `java`, `security`, `dependency`, `docs`, `release`, `marketplace`, `frontend`, and `mcp`.
 - Route source-grounding and official-documentation work through `docs`, `mcp`, or the relevant domain pack.
 - Route doubt-driven high-risk review through `security`, `dependency`, or the relevant domain pack, with `reviewer` ownership.

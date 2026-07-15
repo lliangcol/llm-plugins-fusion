@@ -27,5 +27,5 @@ Budgets: at most 16 files, 20000 estimated tokens, and 8% cross-file exact-parag
 | `review-lite` | 4 | 14323 | 3577 | 0.00% |
 | `review-only` | 6 | 19533 | 4881 | 0.00% |
 | `review-strict` | 6 | 19602 | 4898 | 0.00% |
-| `route` | 4 | 26978 | 6739 | 0.00% |
+| `route` | 4 | 27795 | 6944 | 0.00% |
 | `senior-explore` | 5 | 17228 | 4304 | 0.00% |

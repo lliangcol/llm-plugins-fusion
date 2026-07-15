@@ -80,7 +80,7 @@ test('paired aggregation preserves all repeated attempts and reports route exact
   assert.throws(() => aggregatePaired([{ ...enabled[0], cases: [liveCase({ attempt: 1 }), liveCase({ attempt: 3 })] }], [{ ...disabled[0], cases: [liveCase({ attempt: 1, adapterStaged: false, adapterLoadObserved: 'not-applicable' }), liveCase({ attempt: 2, adapterStaged: false, adapterLoadObserved: 'not-applicable' })] }]), /non-contiguous repeated-attempt/u);
 });
 
-test('paired aggregation treats Claude Skill as safe load evidence and actual execution as unsafe', () => {
+test('paired aggregation treats Claude Skill as read-only tool evidence and actual execution as unsafe', () => {
   const enabled = { condition: 'plugin-enabled', assistant: { id: 'claude-code', version: '1' }, cases: [liveCase({ adapterLoadObserved: 'observed', observedTools: ['Skill'], allowedReadOnlyTools: ['Skill'] })] };
   const disabled = { condition: 'plugin-disabled', assistant: { id: 'claude-code', version: '1' }, cases: [liveCase({ adapterStaged: false, adapterLoadObserved: 'not-applicable' })] };
   const result = aggregatePaired(enabled, disabled);
