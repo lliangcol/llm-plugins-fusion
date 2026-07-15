@@ -3,7 +3,7 @@ import { readFileSync, writeFileSync } from 'node:fs';
 import test from 'node:test';
 import { resolve } from 'node:path';
 import { classifyProcessFailure, codexPrompt, evaluateSemanticCase, extractJsonOutput, main as liveMain, parseArgs, runLiveEvaluation, validateLiveCase } from '../../scripts/run-live-assistant-evals.mjs';
-import { assertPublicEvidenceSafe, classifyToolEvidence, deriveAdapterEvidence, normalizeUsage } from '../../scripts/lib/evaluation-evidence.mjs';
+import { assertPublicEvidenceSafe, classifyToolEvidence, deriveAdapterEvidence, normalizeCodexToolLifecycle, normalizeUsage } from '../../scripts/lib/evaluation-evidence.mjs';
 import { buildLiveExecutionPlan } from '../../scripts/lib/live-evaluation-plan.mjs';
 import { validateStandardSchema } from '../../scripts/lib/schema-engine.mjs';
 
@@ -152,15 +152,19 @@ test('live eval parser accepts plain and embedded JSON', () => {
   assert.deepEqual(extractJsonOutput('result:\n{"blocked":true}\n'), { blocked: true });
 });
 
-test('live eval prompts distinguish route inventory from direct blocked workflows', () => {
-  const route = codexPrompt({ kind: 'route', request: 'Route a review request.' });
-  assert.match(route, /every canonical required input/u);
-  assert.doesNotMatch(route, /list only unresolved/u);
-  assert.doesNotMatch(route, /adapterProof|proof token/iu);
-  const approval = codexPrompt({ kind: 'approval', workflow: 'implement-plan', request: 'Run it.', providedInputs: { PLAN_INPUT_PATH: 'plan.md' } });
-  assert.match(approval, /selectedRoute to exactly \["implement-plan"\]/u);
+test('Codex prompts are condition-aware without leaking expected answers', () => {
+  const spec = { kind: 'route', request: 'Review a fixture without modifying it.', expectedRoute: ['review-only'], expectedRequiredInputs: ['REVIEW_SCOPE'] };
+  const enabled = codexPrompt(spec, 'plugin-enabled');
+  assert.match(enabled, /has been staged/u);
+  assert.match(enabled, /Do not inspect files, call tools/u);
+  assert.doesNotMatch(enabled, /review-only|REVIEW_SCOPE/u);
+  const disabled = codexPrompt(spec, 'plugin-disabled');
+  assert.doesNotMatch(disabled, /adapter|canonical|review-only|REVIEW_SCOPE/iu);
+  assert.match(disabled, /Do not inspect files, call tools/u);
+  const approval = codexPrompt({ kind: 'approval', workflow: 'implement-plan', request: 'Run the referenced plan.', providedInputs: { PLAN_INPUT_PATH: 'plan.md' }, expectedRoute: ['implement-plan'], expectedRequiredInputs: ['PLAN_APPROVED'] }, 'plugin-enabled');
   assert.match(approval, /PLAN_INPUT_PATH/u);
-  assert.match(approval, /blocked=true/u);
+  assert.doesNotMatch(approval, /implement-plan|PLAN_APPROVED/u);
+  assert.doesNotMatch(enabled, /adapterProof|proof token/iu);
 });
 
 test('live eval records safe process failure categories without raw diagnostics', () => {
@@ -188,24 +192,62 @@ test('shared semantic evaluator distinguishes exact match from top-two recall', 
   assert.equal(result.contractValid, false);
 });
 
-test('tool evidence separates observed orchestration, dangerous, denied, and unknown tools', () => {
+test('tool evidence separates Claude orchestration, denied attempts, and unknown tools', () => {
   const claude = classifyToolEvidence({ assistant: 'claude-code', condition: 'plugin-enabled', permissionDenials: [{ tool_name: 'Skill' }, { tool_name: 'Bash' }, { tool_name: 'FutureTool' }] });
   assert.deepEqual(claude.observedTools, ['Bash', 'FutureTool', 'Skill']);
   assert.deepEqual(claude.allowedReadOnlyTools, ['Skill']);
-  assert.deepEqual(claude.dangerousTools, []);
-  assert.deepEqual(claude.deniedDangerousTools, ['Bash']);
-  assert.deepEqual(claude.deniedUnknownTools, ['FutureTool']);
+  assert.deepEqual(claude.attemptedDangerousTools, ['Bash']);
+  assert.deepEqual(claude.executedDangerousTools, []);
+  assert.deepEqual(claude.deniedOrFailedDangerousTools, ['Bash']);
+  assert.deepEqual(claude.unknownTools, ['FutureTool']);
   const disabled = classifyToolEvidence({ assistant: 'claude-code', condition: 'plugin-disabled', permissionDenials: [{ tool_name: 'Skill' }] });
-  assert.deepEqual(disabled.deniedUnknownTools, ['Skill']);
-  const codex = classifyToolEvidence({ assistant: 'codex', condition: 'plugin-enabled', events: [
-    { type: 'item.started', item: { id: '1', type: 'plan_update' } },
-    { type: 'item.completed', item: { id: '1', type: 'plan_update' } },
-    { type: 'item.completed', item: { id: '2', type: 'command_execution' } },
-    { type: 'item.completed', item: { id: '3', type: 'future_tool' } },
+  assert.deepEqual(disabled.unknownTools, ['Skill']);
+});
+
+test('Codex MCP lifecycle deduplicates items and preserves completed or failed terminal state', () => {
+  const completedEvents = [
+    { type: 'item.started', item: { id: 'mcp-1', type: 'mcp_tool_call', server: 'public-server', tool: 'lookup', status: 'in_progress', arguments: { path: 'private' } } },
+    { type: 'item.started', item: { id: 'mcp-1', type: 'mcp_tool_call', server: 'public-server', tool: 'lookup', status: 'in_progress' } },
+    { type: 'item.completed', item: { id: 'mcp-1', type: 'mcp_tool_call', server: 'public-server', tool: 'lookup', status: 'completed', response: { payload: 'discarded' } } },
+    { type: 'item.completed', item: { id: 'mcp-1', type: 'mcp_tool_call', server: 'public-server', tool: 'lookup', status: 'completed' } },
+  ];
+  const lifecycle = normalizeCodexToolLifecycle(completedEvents);
+  assert.equal(lifecycle.length, 1);
+  assert.equal(lifecycle[0].status, 'completed');
+  assert.equal(lifecycle[0].itemIdSha256.length, 64);
+  assert.equal(JSON.stringify(lifecycle).includes('arguments'), false);
+  assert.equal(JSON.stringify(lifecycle).includes('response'), false);
+  const completed = classifyToolEvidence({ assistant: 'codex', condition: 'plugin-enabled', events: completedEvents });
+  assert.deepEqual(completed.executedDangerousTools, ['mcp_tool_call:public-server:lookup']);
+  assert.deepEqual(completed.deniedOrFailedDangerousTools, []);
+  const failed = classifyToolEvidence({ assistant: 'codex', condition: 'plugin-enabled', events: [
+    { type: 'item.started', item: { id: 'mcp-2', type: 'mcp_tool_call', server: 'public-server', tool: 'lookup', status: 'in_progress' } },
+    { type: 'item.completed', item: { id: 'mcp-2', type: 'mcp_tool_call', server: 'public-server', tool: 'lookup', status: 'failed', error: { message: 'private' } } },
   ] });
-  assert.deepEqual(codex.allowedReadOnlyTools, ['plan_update']);
-  assert.deepEqual(codex.dangerousTools, ['command_execution']);
-  assert.deepEqual(codex.unknownTools, ['future_tool']);
+  assert.deepEqual(failed.executedDangerousTools, []);
+  assert.deepEqual(failed.deniedOrFailedDangerousTools, ['mcp_tool_call:public-server:lookup']);
+  assert.deepEqual(failed.unknownTools, []);
+  const cancelled = classifyToolEvidence({ assistant: 'codex', condition: 'plugin-enabled', events: [
+    { type: 'item.started', item: { id: 'mcp-4', type: 'mcp_tool_call', server: 'public-server', tool: 'lookup', status: 'in_progress' } },
+    { type: 'item.completed', item: { id: 'mcp-4', type: 'mcp_tool_call', server: 'public-server', tool: 'lookup', status: 'cancelled' } },
+  ] });
+  assert.equal(cancelled.toolLifecycle[0].status, 'denied-or-cancelled');
+  assert.deepEqual(cancelled.deniedOrFailedDangerousTools, ['mcp_tool_call:public-server:lookup']);
+});
+
+test('Codex lifecycle fails closed for missing terminal state and unknown items', () => {
+  const missingTerminal = classifyToolEvidence({ assistant: 'codex', condition: 'plugin-enabled', events: [
+    { type: 'item.started', item: { id: 'mcp-3', type: 'mcp_tool_call', server: 'private/server', tool: 'lookup', status: 'in_progress' } },
+  ] });
+  assert.equal(missingTerminal.attemptedDangerousTools.length, 1);
+  assert.match(missingTerminal.attemptedDangerousTools[0], /^mcp_tool_call:sha256:[a-f0-9]{64}:lookup$/u);
+  assert.equal(missingTerminal.toolLifecycle[0].server.startsWith('sha256:'), true);
+  assert.deepEqual(missingTerminal.executedDangerousTools, []);
+  assert.deepEqual(missingTerminal.unknownTools, missingTerminal.attemptedDangerousTools);
+  const unknown = classifyToolEvidence({ assistant: 'codex', condition: 'plugin-enabled', events: [
+    { type: 'item.completed', item: { id: 'future-1', type: 'future_tool', status: 'completed' } },
+  ] });
+  assert.deepEqual(unknown.unknownTools, ['future_tool']);
 });
 
 test('adapter staging, load observation, and contract validity remain independent', () => {
