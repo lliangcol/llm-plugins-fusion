@@ -1,6 +1,6 @@
 # Platform evidence matrix
 
-Generated from `governance/platform-evidence.json`.
+Generated from `governance/engineering-evidence.json#/platformEvidence`.
 
 | Task | Classification | No-Bash Windows path | Evidence strength | Reason code |
 | --- | --- | --- | --- | --- |

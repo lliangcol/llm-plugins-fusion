@@ -38,8 +38,8 @@ This file is the supporting behavioral contract for `/nova-plugin:produce-plan` 
 ### Generated Behavior Index
 
 - **Purpose:** Write a review-ready plan artifact from explicit intent and constraints without implementing code.
-- **Canonical inputs:** `REQUEST`(required aliases=PLAN_INTENT,INPUT); `PLAN_OUTPUT_PATH`(required aliases=OUTPUT_PATH); `PLAN_PROFILE`(optional aliases=PROFILE default="general" exact="general","java-backend"); `ANALYSIS_INPUTS`(optional aliases=EVIDENCE); `CONSTRAINTS`(optional aliases=BOUNDARIES)
-- **Decision entries:** 2; exact routes: `backend-plan`.
+- **Canonical inputs:** `REQUEST`(required aliases=PLAN_INTENT,INPUT); `PLAN_OUTPUT_PATH`(required aliases=OUTPUT_PATH); `PLAN_PROFILE`(optional aliases=PROFILE default="general" exact="general","lite","java-backend"); `ANALYSIS_INPUTS`(optional aliases=EVIDENCE); `CONSTRAINTS`(optional aliases=BOUNDARIES)
+- **Decision entries:** 2; canonical routes and variants: `produce-plan {"PLAN_PROFILE":"java-backend"}`.
 - **Workflow steps:** `validate-inputs` → `load-evidence` → `select-profile` → `write-plan` → `summarize`
 - **Output:** mode=`artifact`; order=`artifact path` → `executive summary`; severity=none.
 - **Deviation/failure:** mode=`approval-required`; failure order=`status` → `blocker` → `required input` → `safe next action`.

@@ -12,6 +12,7 @@ const rootPackage = readJson('package.json');
 const plugin = readJson('nova-plugin/.claude-plugin/plugin.json');
 const registry = readJson('.claude-plugin/registry.source.json');
 const marketplace = readJson('.claude-plugin/marketplace.json');
+const marketplaceCanary = readJson('.claude-plugin/marketplace.canary.json');
 const marketplaceMetadata = readJson('.claude-plugin/marketplace.metadata.json');
 const facts = readJson('governance/facts.generated.json');
 const changelog = readText('CHANGELOG.md');
@@ -23,6 +24,7 @@ const errors = [];
 const stable = channels.stable;
 const registryPlugin = registry.plugins.find((entry) => entry.localSource === './nova-plugin');
 const marketplacePlugin = marketplace.plugins.find((entry) => entry.name === plugin.name);
+const marketplaceCanaryPlugin = marketplaceCanary.plugins.find((entry) => entry.name === plugin.name);
 const marketplaceMetadataPlugin = marketplaceMetadata.plugins.find((entry) => entry.name === plugin.name);
 const factValue = (id) => facts.facts?.[id]?.value;
 const expect = (condition, message) => {
@@ -30,9 +32,17 @@ const expect = (condition, message) => {
 };
 
 expect(stable.tag === `v${stable.version}`, 'stable tag must be v<stable.version>');
-expect(rootPackage.version === stable.version, 'root package version must match the stable release-channel version');
 expect(rootPackage.license === plugin.license, 'root package SPDX license must match the plugin license');
-expect(plugin.version === stable.version, 'plugin version must match the stable release-channel version');
+expect(plugin.version === rootPackage.version, 'plugin version must match the root development version');
+expect(marketplaceCanaryPlugin?.version === plugin.version, 'generated canary marketplace version must match the development version');
+if (rootPackage.version !== stable.version) {
+  const authorizedCandidates = factValue('release.corrections.authorizedCandidates');
+  expect(
+    Array.isArray(authorizedCandidates)
+      && authorizedCandidates.some((entry) => entry.stableTag === `v${rootPackage.version}`),
+    'an unreleased development version must have a governed candidate authorization',
+  );
+}
 expect(registryPlugin?.distributionSource?.ref === stable.tag, 'registry stable distribution ref must match the stable tag');
 expect(registryPlugin?.distributionSource?.sha === stable.commit, 'registry stable distribution SHA must match the stable commit');
 expect(marketplacePlugin?.version === stable.version, 'generated marketplace version must match the stable release-channel version');
@@ -43,10 +53,11 @@ expect(factValue('release.stable.version') === stable.version, 'generated fact g
 expect(factValue('release.stable.tag') === stable.tag, 'generated fact graph stable tag is stale');
 expect(factValue('release.stable.commit') === stable.commit, 'generated fact graph stable commit is stale');
 expect(changelog.includes(`## [${stable.version}]`), `CHANGELOG is missing ${stable.version}`);
+expect(changelog.includes(`## [${rootPackage.version}]`), `CHANGELOG is missing development version ${rootPackage.version}`);
 expect(!/stable channel pinned to `v3\.2\.0`|no 4\.0 release or compatibility upgrade is claimed/u.test(changelog), 'CHANGELOG contains the retired pre-release 4.0 narrative');
 expect(readme.includes(`releases/tag/${stable.tag}`) && readme.includes(`当前稳定推广基线是 \`${stable.tag}\``), 'README stable release facts are stale');
-expect(security.includes(`nova-plugin@${stable.version}`), 'SECURITY plugin version fact is stale');
-expect(contributing.includes(`nova-plugin@${stable.version}`), 'CONTRIBUTING plugin version fact is stale');
+expect(security.includes(`nova-plugin@${rootPackage.version}`), 'SECURITY development plugin version fact is stale');
+expect(contributing.includes(`nova-plugin@${rootPackage.version}`), 'CONTRIBUTING development plugin version fact is stale');
 
 if (errors.length > 0) {
   console.error(`Release-channel fact validation failed (${errors.length} error${errors.length === 1 ? '' : 's'}):`);

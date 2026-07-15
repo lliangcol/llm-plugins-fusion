@@ -10,7 +10,7 @@
   "signing": {
     "allowedSignersFile": ".github/release-signers",
     "minimumActiveSigners": 1,
-    "inventoryReviewedAt": "2026-07-12",
+    "inventoryReviewedAt": "2026-07-16",
     "rotationReviewCadenceDays": 90,
     "overlapRequired": true,
     "lastRotationEvidence": null,
@@ -29,7 +29,7 @@
   },
   "labels": {
     "source": ".github/labels.yml",
-    "workflow": ".github/workflows/label-sync.yml",
+    "workflow": ".github/workflows/pr-governance.yml",
     "mode": "create-update-no-delete"
   }
 }

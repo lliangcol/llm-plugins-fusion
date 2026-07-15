@@ -27,6 +27,16 @@
       "disposition": "move-with-stub"
     },
     {
+      "path": "docs/assets/nova-route-demo.gif",
+      "target": "docs/assets/nova-route-demo.gif",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/assets/nova-route-demo.svg",
+      "target": "docs/assets/nova-route-demo.svg",
+      "disposition": "retain"
+    },
+    {
       "path": "docs/assets/social-preview-1280x640.png",
       "target": "docs/assets/social-preview-1280x640.png",
       "disposition": "retain"
@@ -492,6 +502,11 @@
       "disposition": "retain"
     },
     {
+      "path": "docs/operations/community/java-spring-demo.md",
+      "target": "docs/operations/community/java-spring-demo.md",
+      "disposition": "retain"
+    },
+    {
       "path": "docs/operations/community/metrics.md",
       "target": "docs/operations/community/metrics.md",
       "disposition": "retain"
@@ -849,6 +864,11 @@
     {
       "path": "docs/templates/consumer-profiles/workbench.md",
       "target": "docs/templates/consumer-profiles/workbench.md",
+      "disposition": "retain"
+    },
+    {
+      "path": "docs/templates/evidence/adoption-record.md",
+      "target": "docs/templates/evidence/adoption-record.md",
       "disposition": "retain"
     },
     {

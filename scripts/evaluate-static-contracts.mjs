@@ -18,9 +18,17 @@ export function buildResult() {
   const dataset = readJson('evals/route/cases.json');
   const workflows = new Map(spec.workflows.map((entry) => [entry.id, entry]));
   const cases = dataset.cases.map((entry) => {
-    const invented = entry.commands.filter((id) => !workflows.has(id));
-    const mappingValid = entry.commands.every((id, index) => entry.skills[index] === `nova-${workflows.get(id)?.canonicalSurfaceId}`);
-    const required = [...new Set(entry.commands.flatMap((id) => workflows.get(id)?.requiredInputs ?? []))];
+    const aliases = entry.commandAliases ?? [];
+    const selected = entry.commands.map((id, index) => aliases[index] ?? id);
+    const invented = [...entry.commands, ...aliases].filter((id) => !workflows.has(id));
+    const mappingValid = entry.commands.every((id, index) => {
+      const workflow = workflows.get(id);
+      const selectedWorkflow = workflows.get(selected[index]);
+      return entry.skills[index] === `nova-${workflow?.canonicalSurfaceId}`
+        && selectedWorkflow?.canonicalSurfaceId === workflow?.canonicalSurfaceId
+        && JSON.stringify(entry.variantParameters[index]) === JSON.stringify(selectedWorkflow?.variantPreset ?? {});
+    });
+    const required = [...new Set(selected.flatMap((id) => workflows.get(id)?.requiredInputs ?? []))];
     const inputsValid = JSON.stringify(required) === JSON.stringify(entry.requiredInputs);
     return { id: entry.id, inventedSurface: invented, mappingValid, inputsValid, passed: invented.length === 0 && mappingValid && inputsValid };
   });

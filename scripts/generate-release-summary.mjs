@@ -8,6 +8,17 @@ import { repoRoot } from './lib/repo-root.mjs';
 const root = repoRoot(import.meta.url);
 const read = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 
+export function renderEvidenceLevels(source) {
+  return `# Engineering evidence levels\n\nGenerated from \`governance/engineering-evidence.json#/evidenceLevels\`.\n\n| Level | Name | Proves | Does not prove |\n| --- | --- | --- | --- |\n${source.levels.map((item) => `| ${item.id} | ${item.name} | ${item.proves} | ${item.doesNotProve} |`).join('\n')}\n\nThe highest accepted source-controlled stable proof is **${source.sourceControlledStableProof.highestAcceptedLevel}** from \`${source.sourceControlledStableProof.source}\`. Dynamic E3-E5 records remain in ${source.dynamicEvidenceStorage.join(', ')} unless a governed promotion process accepts a public-safe summary. Credentials, raw prompts, raw model responses, and local absolute paths are forbidden.\n`;
+}
+
+function evidenceLevelOutput() {
+  const source = read('governance/engineering-evidence.json').evidenceLevels;
+  const expectedIds = ['E0', 'E1', 'E2', 'E3', 'E4', 'E5'];
+  if (JSON.stringify(source.levels.map((item) => item.id)) !== JSON.stringify(expectedIds)) throw new Error('evidence levels must remain ordered E0 through E5');
+  return ['docs/generated/evidence-levels.md', renderEvidenceLevels(source)];
+}
+
 export function buildReleaseSummary({ channels, proof, adoption, evidenceLevels }) {
   const stable = channels.stable;
   const proofMatches = proof.matches === true
@@ -55,11 +66,11 @@ export function outputs() {
     channels: read('governance/release-channels.json'),
     proof: read('governance/stable-install-proof.json'),
     adoption: read('governance/adoption-evidence.json'),
-    evidenceLevels: read('governance/evidence-levels.json'),
+    evidenceLevels: read('governance/engineering-evidence.json').evidenceLevels,
   });
   const json = `${JSON.stringify(data, null, 2)}\n`;
   const md = `# Generated release summary\n\nVersion **${data.release.version}**; exact stable tag **${data.release.tag}**; plugin tree digest \`${data.release.pluginTreeSha256}\`.\n\nHighest verified evidence: **${data.evidenceLevel.highestVerified} ${data.evidenceLevel.label}**. ${data.evidenceLevel.limitation}\n\n${Object.entries(data.sections).map(([name, items]) => `## ${name.replace(/([A-Z])/gu, ' $1').replace(/^./u, (character) => character.toUpperCase())}\n\n${items.map((item) => `- ${item}`).join('\n')}`).join('\n\n')}\n`;
-  return [['docs/generated/release-summary.json', json], ['docs/generated/release-summary.md', md]];
+  return [evidenceLevelOutput(), ['docs/generated/release-summary.json', json], ['docs/generated/release-summary.md', md]];
 }
 
 export function checkOrWrite({ write = false } = {}) {
@@ -80,7 +91,7 @@ export function main(args = process.argv.slice(2)) {
   try {
     if (args.some((arg) => arg !== '--write')) throw new Error('Usage: node scripts/generate-release-summary.mjs [--write]');
     checkOrWrite({ write: args.includes('--write') });
-    console.log(args.includes('--write') ? 'Wrote release summary' : 'OK release summary');
+    console.log(args.includes('--write') ? 'Wrote release evidence projections' : 'OK release evidence projections');
     return 0;
   } catch (error) {
     console.error(`ERROR ${error.message}`);

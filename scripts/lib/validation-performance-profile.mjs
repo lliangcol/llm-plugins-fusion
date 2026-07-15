@@ -3,11 +3,12 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 const hashFile = (path) => `sha256:${createHash('sha256').update(readFileSync(path)).digest('hex')}`;
+const hashValue = (value) => `sha256:${createHash('sha256').update(JSON.stringify(value)).digest('hex')}`;
 
 export function validationEvidenceDigests(root) {
   return {
     registry: hashFile(resolve(root, 'scripts/lib/validation-task-registry.mjs')),
-    policy: hashFile(resolve(root, 'governance/validation-performance.json')),
+    policy: hashValue(JSON.parse(readFileSync(resolve(root, 'governance/engineering-evidence.json'), 'utf8')).validationPerformance),
   };
 }
 

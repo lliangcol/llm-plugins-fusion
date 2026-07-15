@@ -6,6 +6,11 @@
   "stages": ["intake", "shape", "assure"],
   "primaryEntrypoints": ["triage", "design", "verify"],
   "runtimeCompatibility": { "mock-host": "1.0.0" },
+  "automaticRouting": {
+    "identity": "canonical-surface-plus-variant-parameters",
+    "canonicalTargets": ["design", "triage", "verify"],
+    "compatibilityAliases": "excluded"
+  },
   "adapterDefinitions": ["adapters/mock.json"],
   "agents": ["coordinator", "designer", "checker"],
   "packs": ["logic"],

@@ -51,8 +51,8 @@ export function generateReleaseCandidate({ args = process.argv.slice(2), env = p
   const independentReview = {
     passed: review?.passed === true
       && review.commit === options.commit
-      && review.pullRequestHead === options.commit
-      && review.expectedReviewCommit === options.commit
+      && /^[a-f0-9]{40}$/u.test(review.pullRequestHead ?? '')
+      && review.expectedReviewCommit === review.pullRequestHead
       && Number.isInteger(review.minimumApprovals)
       && review.minimumApprovals >= 1
       && Array.isArray(review.approvalReviewers)

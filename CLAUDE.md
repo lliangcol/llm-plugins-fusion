@@ -4,14 +4,14 @@
 ## Current Machine-Derived Project Facts
 
 Do not edit this block by hand. It is synchronized by
-`node scripts/sync-doc-facts.mjs --write` from repository domain sources and
-`governance/product-lanes.json`.
+`node scripts/generate-project-state.mjs --write` from repository domain
+sources and `governance/product-lanes.json`.
 
-- Plugin: `nova-plugin@4.0.0`; production plugins: 1; public path: `nova-plugin/`
+- Plugin: `nova-plugin@4.1.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 6 skills, 6 active agents, 8 capability packs
 - Workflow contract: schema v5, namespace `nova-plugin`, 21 workflows
-- Evaluation datasets: `live-paired` has 168 cases and 1008 planned paired invocations; `real-task-benchmark` has 24 tasks and 432 planned invocations
+- Evaluation datasets: `live-paired` has 168 cases and 2016 planned paired invocations; `real-task-benchmark` has 24 tasks and 432 planned invocations
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
@@ -68,7 +68,7 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 - Release evidence template: `docs/releases/release-evidence-template.md`
 - Product-lane decisions: `governance/product-lanes.json`
 - Generated project-state aggregate: `governance/project-state.generated.json`
-- Maintainer npm shortcuts: `package.json` (`doctor`, `validate:bootstrap`, `demo:all`, `demo:route`,
+- Maintainer npm shortcuts: `package.json` (`llmf`, `doctor`, `validate:bootstrap`, `demo:all`, `demo:route`,
   `demo:review`, `validate`,
   `test`, `test:coverage`, `test:coverage:check`, `test:unit`,
   `test:integration`, `test:e2e`, `lint`,
@@ -95,11 +95,12 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 | Registry-owned marketplace fields | `.claude-plugin/registry.source.json` |
 | Generated marketplace outputs | `.claude-plugin/marketplace.json`, `.claude-plugin/marketplace.metadata.json`, `docs/marketplace/catalog.md` |
 | Marketplace and plugin schemas | `schemas/registry-source.schema.json`, `schemas/marketplace.schema.json`, `schemas/marketplace-metadata.schema.json`, `schemas/plugin.schema.json` |
-| Canonical workflow, capability, ownership, input, and output contracts | `workflow-specs/workflows.json` |
-| Generated runtime permissions and workflow catalogs | `nova-plugin/runtime/workflow-permissions.json`, `nova-plugin/runtime/route-output-contract.json`, `docs/generated/workflow-catalog.*` |
-| Assistant adapters and evaluation datasets | `adapters/`, `evals/` |
-| Commands | `nova-plugin/commands/*.md` |
-| Skills | `nova-plugin/skills/nova-*/SKILL.md` |
+| Workflow authoring sources | `workflow-specs/workflows.json` (v5 compatibility input), `workflow-specs/behaviors.json` (v1 compatibility input) |
+| Product and assistant authoring metadata | `workflow-specs/framework.json`, `workflow-specs/nova.product.json`, `workflow-specs/adapters/*.json`, `governance/workflow-docs.json` |
+| Generated typed workflow projections | `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json` |
+| Generated runtime permissions, contracts, adapters, commands, and catalogs | `nova-plugin/runtime/`, `adapters/claude/manifest.json`, `adapters/codex/AGENTS.md`, `adapters/generic-agent-skills/manifest.json`, `nova-plugin/commands/*.md`, `docs/generated/workflow-catalog.*` |
+| Canonical Skill explanatory prose | `nova-plugin/skills/nova-*/SKILL.md` outside generated frontmatter and `BEGIN/END GENERATED BEHAVIOR CONTRACT` markers |
+| Evaluation datasets | `evals/` |
 | Shared skill policies | `nova-plugin/skills/_shared/` |
 | Command docs | `nova-plugin/docs/commands/` |
 | Active agents | `nova-plugin/agents/` |
@@ -111,7 +112,7 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 | Project optimization record | `docs/project-optimization-plan.md` |
 | Release evidence and hygiene | `docs/releases/` |
 | Product-lane decisions | `governance/product-lanes.json` |
-| Dependency review policy | `governance/dependency-policy.json` |
+| Dependency policy and evidence | `governance/dependency-governance.json` |
 | Generated project truth | `governance/project-state.generated.json` |
 
 Generated marketplace files must be updated from their sources with:
@@ -120,12 +121,19 @@ Generated marketplace files must be updated from their sources with:
 node scripts/generate-registry.mjs --write
 ```
 
-Workflow surfaces, runtime permissions, route ownership, catalogs, and adapters
-must be regenerated from `workflow-specs/workflows.json` with:
+Workflow behavior is authored in the v5/v1 compatibility inputs and product,
+adapter, and documentation metadata listed above. Never hand-edit
+`workflows.v6.json`, `behaviors.v2.json`, generated command wrappers, generated
+Skill frontmatter, or generated Skill behavior blocks. Regenerate the typed IR
+first, then its projections:
 
 ```bash
+node scripts/migrate-v6-contracts.mjs --write
 node scripts/generate-workflow-permissions.mjs --write
+node scripts/generate-runtime-contracts.mjs --write
+node scripts/generate-behavior-surfaces.mjs --write
 node scripts/generate-adapters.mjs --write
+node scripts/generate-command-docs.mjs --write
 ```
 
 ## Repository Layout
@@ -139,9 +147,7 @@ llm-plugins-fusion/
 |-- .github/workflows/
 |   |-- ci.yml
 |   |-- codeql.yml
-|   |-- dependency-audit.yml
 |   |-- dependency-review.yml
-|   |-- label-sync.yml
 |   |-- plugin-install-smoke.yml
 |   |-- pr-governance.yml
 |   |-- nightly.yml
@@ -239,6 +245,11 @@ npm run test:e2e
 npm run lint
 npm run ci:quick
 npm run ci:full
+npm run llmf -- check quick
+npm run llmf -- check full
+npm run llmf -- check security
+npm run llmf -- check release
+npm run llmf -- generate all
 npm run validate:drift
 npm run validate
 npm run validate:maintainer
@@ -307,10 +318,15 @@ Skills are the canonical runtime behavior surface. All commands are generated
 compatibility or discoverability wrappers and must not duplicate behavior:
 
 ```text
-workflow-specs/workflows.json
-  -> nova-plugin/skills/nova-<canonical-surface>/SKILL.md
+workflow-specs/workflows.json + workflow-specs/behaviors.json
+  -> workflow-specs/workflows.v6.json + workflow-specs/behaviors.v2.json
+  -> nova-plugin/skills/nova-<canonical-surface>/SKILL.md generated block
   -> nova-plugin/commands/<id>.md
 ```
+
+Maintainers may edit explanatory Skill prose outside the generated behavior
+markers, but it must not override the IR. Command wrapper bodies and managed
+frontmatter are generator-owned.
 
 Command frontmatter must include:
 
@@ -425,22 +441,35 @@ evidence.
 
 ## Change Workflows
 
-### Modify an Existing Command
+### Modify an Existing Workflow Surface
 
-1. Edit `nova-plugin/commands/<id>.md`.
-2. Edit `nova-plugin/skills/nova-<id>/SKILL.md`.
-3. Update command docs or `nova-plugin/skills/README.md` when user-facing
-   behavior changes.
-4. Update `CHANGELOG.md` and decide whether a version bump is required when
+1. Edit `workflow-specs/workflows.json` for identity, inputs, ownership,
+   permissions, effects, or surface metadata. Edit
+   `workflow-specs/behaviors.json` for decisions, steps, invariants, stops,
+   outputs, or failure behavior. Update `workflow-specs/nova.product.json`,
+   `workflow-specs/adapters/*.json`, or `governance/workflow-docs.json` only
+   when their owned metadata changes.
+2. Run `node scripts/migrate-v6-contracts.mjs --write`; do not edit
+   `workflow-specs/workflows.v6.json` or `workflow-specs/behaviors.v2.json`.
+3. Regenerate affected projections with the workflow, runtime, behavior,
+   adapter, and command-doc generators listed under Sources of Truth. Do not
+   edit generated command wrappers or generated Skill blocks.
+4. Edit explanatory prose outside the generated block in the canonical Skill,
+   `nova-plugin/skills/README.md`, or other user docs only when useful. That
+   prose must remain consistent with the generated contract.
+5. Update `CHANGELOG.md` and decide whether a version bump is required when
    behavior, parameters, outputs, tool permissions, or safety boundaries change.
-5. Run `node scripts/lint-frontmatter.mjs`.
+6. Run the focused workflow checks and `node scripts/validate-all.mjs` for any
+   cross-layer change.
 
-### Add a New Command and Skill
+### Add a New Workflow Surface
 
-Every new command must have a matching skill and three command docs:
+Define the workflow and behavior in the authoring sources first. A new
+canonical surface also needs a Skill container for explanatory prose; aliases
+reuse that canonical Skill. The generators own the command wrapper and the
+contract blocks in the three command docs:
 
 ```text
-nova-plugin/commands/<id>.md
 nova-plugin/skills/nova-<id>/SKILL.md
 nova-plugin/docs/commands/<stage>/<id>.md
 nova-plugin/docs/commands/<stage>/<id>.README.md
@@ -450,10 +479,12 @@ nova-plugin/docs/commands/<stage>/<id>.README.en.md
 For Codex commands, place the three docs under
 `nova-plugin/docs/commands/codex/` instead of a stage directory.
 
-Also update `README.md`, `CHANGELOG.md`, `nova-plugin/skills/README.md`,
-`CLAUDE.md`, `AGENTS.md`, plugin version metadata, registry source, generated
-marketplace outputs, and generated catalog when counts, version, or public
-behavior change. Run `node scripts/validate-all.mjs`.
+After creating any required prose shells, run the migration and projection
+generators. Also update `README.md`, `CHANGELOG.md`,
+`nova-plugin/skills/README.md`, `CLAUDE.md`, `AGENTS.md`, plugin version
+metadata, and registry source when counts, version, or public behavior change;
+regenerate marketplace and catalog outputs instead of editing them. Run
+`node scripts/validate-all.mjs`.
 
 ### Modify Plugin Metadata or Version
 

@@ -37,6 +37,9 @@ export function buildFactGraph() {
       'release.stable.commit': fact(channels.data.stable.commit, 'governance/release-channels.json', '/stable/commit', channels.sha256),
       'release.stable.state': fact(channels.data.stable.state, 'governance/release-channels.json', '/stable/state', channels.sha256),
       'release.corrections.activeHolds': fact(corrections.data.corrections.filter((entry) => entry.status === 'active-release-hold').map((entry) => entry.id), 'governance/release-corrections.json', '/corrections', corrections.sha256),
+      'release.corrections.authorizedCandidates': fact(corrections.data.corrections
+        .filter((entry) => entry.status === 'authorized-for-new-candidate')
+        .map((entry) => ({ id: entry.id, ...entry.targetRelease })), 'governance/release-corrections.json', '/corrections', corrections.sha256),
       'release.corrections.lifecycle': fact(Object.fromEntries(corrections.data.corrections.map((entry) => [entry.id, entry.status])), 'governance/release-corrections.json', '/corrections', corrections.sha256),
       'release.canary.ref': fact(channels.data.canary.ref, 'governance/release-channels.json', '/canary/ref', channels.sha256),
       'compatibility.effectiveLevels': fact(support, 'governance/compatibility-evidence.generated.json', '/currentClaims', compatibility.sha256),

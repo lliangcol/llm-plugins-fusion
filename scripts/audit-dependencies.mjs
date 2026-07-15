@@ -8,9 +8,9 @@ import { pathToFileURL } from 'node:url';
 import { repoRoot } from './lib/repo-root.mjs';
 
 const root = repoRoot(import.meta.url);
-const evidencePath = resolve(root, 'governance/dependency-audit-evidence.json');
+const bundlePath = resolve(root, 'governance/dependency-governance.json');
 const markdownPath = resolve(root, 'docs/generated/dependency-audit.md');
-const policy = JSON.parse(readFileSync(resolve(root, 'governance/dependency-policy.json'), 'utf8'));
+const policy = JSON.parse(readFileSync(bundlePath, 'utf8')).policy;
 const digest = `sha256:${createHash('sha256').update(readFileSync(resolve(root, 'package-lock.json'))).digest('hex')}`;
 export const severities = ['info', 'low', 'moderate', 'high', 'critical'];
 
@@ -128,7 +128,7 @@ export function auditEvidenceFromOutput(raw, { commandFailed = false } = {}) {
 }
 
 function render(evidence) {
-  return `# Dependency audit evidence\n\nGenerated from \`governance/dependency-audit-evidence.json\`.\n\n- Status: **${evidence.status}**${evidence.reasonCode ? ` (${evidence.reasonCode})` : ''}\n- Source: npm audit against the committed lockfile\n- Scope: maintainer development dependencies; distributed Node runtime dependencies: **no**\n- Policy threshold: ${policy.failOnSeverity}\n- Lock digest: \`${evidence.lockDigest}\`\n- Vulnerabilities: ${severities.map((key) => `${key}=${evidence.vulnerabilities[key]}`).join(', ')}; total=${evidence.vulnerabilities.total}\n- Findings at any severity: ${evidence.findings.length}\n- Exceptions applied: ${evidence.exceptionsApplied.length}\n- Unexcepted policy violations: ${evidence.policyViolations.length}\n\nA blocked network audit is not a clean result. Exceptions require an owner, reason, applicable scope, and unexpired date; unmatched or partially covered advisories continue to fail closed.\n`;
+  return `# Dependency audit evidence\n\nGenerated from \`governance/dependency-governance.json#/auditEvidence\`.\n\n- Status: **${evidence.status}**${evidence.reasonCode ? ` (${evidence.reasonCode})` : ''}\n- Source: npm audit against the committed lockfile\n- Scope: maintainer development dependencies; distributed Node runtime dependencies: **no**\n- Policy threshold: ${policy.failOnSeverity}\n- Lock digest: \`${evidence.lockDigest}\`\n- Vulnerabilities: ${severities.map((key) => `${key}=${evidence.vulnerabilities[key]}`).join(', ')}; total=${evidence.vulnerabilities.total}\n- Findings at any severity: ${evidence.findings.length}\n- Exceptions applied: ${evidence.exceptionsApplied.length}\n- Unexcepted policy violations: ${evidence.policyViolations.length}\n\nA blocked network audit is not a clean result. Exceptions require an owner, reason, applicable scope, and unexpired date; unmatched or partially covered advisories continue to fail closed.\n`;
 }
 
 export function validateEvidence(evidence, dependencyPolicy = policy, now = Date.now()) {
@@ -182,10 +182,11 @@ export function main(args = process.argv.slice(2)) {
     if (args.includes('--write')) {
       const evidence = capture();
       mkdirSync(dirname(markdownPath), { recursive: true });
-      writeFileSync(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`);
+      const bundle = JSON.parse(readFileSync(bundlePath, 'utf8'));
+      writeFileSync(bundlePath, `${JSON.stringify({ ...bundle, auditEvidence: evidence }, null, 2)}\n`);
       writeFileSync(markdownPath, render(evidence));
     }
-    const evidence = JSON.parse(readFileSync(evidencePath, 'utf8'));
+    const evidence = JSON.parse(readFileSync(bundlePath, 'utf8')).auditEvidence;
     validateEvidence(evidence);
     console.log(`OK dependency audit evidence (${evidence.status}, total=${evidence.vulnerabilities.total})`);
     return evidence.status === 'passed' ? 0 : 1;

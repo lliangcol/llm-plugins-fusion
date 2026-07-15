@@ -4,14 +4,16 @@ import { posix, resolve, win32 } from 'node:path';
 const readJson = (repoRoot, path) => JSON.parse(readFileSync(resolve(repoRoot, path), 'utf8'));
 
 const runnerProfiles = {
+  pilot: 'pilot',
   critical: 'critical',
   full: 'release',
 };
 
 function selectedProfileCases(profile, dataset) {
   const categories = profile.selection.categories ?? [];
+  const caseIds = profile.selection.caseIds ?? [];
   if (profile.selection.all === true) return dataset.cases;
-  return dataset.cases.filter((entry) => categories.includes(entry.category));
+  return dataset.cases.filter((entry) => categories.includes(entry.category) || caseIds.includes(entry.id));
 }
 
 export function governedLiveProfile(repoRoot, runnerProfile) {
@@ -24,7 +26,9 @@ export function governedLiveProfile(repoRoot, runnerProfile) {
     throw new Error(`${governedId} attempts must be governed between 3 and 5`);
   }
   if (governedId === 'critical' && profile.attempts !== 3) throw new Error('critical attempts must be governed at exactly 3');
-  const dataset = readJson(repoRoot, profile.datasetId === 'critical-live' ? 'evals/critical-live/cases.json' : 'evals/live/cases.json');
+  if (governedId === 'pilot' && profile.attempts !== 3) throw new Error('pilot attempts must be governed at exactly 3');
+  const dataset = readJson(repoRoot, profile.casesPath);
+  if (dataset.datasetId !== profile.datasetId || dataset.datasetVersion !== profile.datasetVersion) throw new Error(`${governedId} semantic dataset identity differs from the governed profile`);
   const cases = selectedProfileCases(profile, dataset);
   if (cases.length === 0) throw new Error(`${governedId} selects no live evaluation cases`);
   return { profile, dataset, cases, runnerProfile, governedId };
@@ -61,6 +65,9 @@ export function buildLiveExecutionPlan(repoRoot, options) {
     runnerProfile: options.profile,
     governedProfile: contract.governedId,
     datasetId: contract.profile.datasetId,
+    datasetVersion: contract.profile.datasetVersion,
+    casesPath: contract.profile.casesPath,
+    labelsPath: contract.profile.labelsPath,
     cases: cases.map((entry) => entry.id),
     caseCount: cases.length,
     assistants: [options.assistant],
@@ -71,6 +78,9 @@ export function buildLiveExecutionPlan(repoRoot, options) {
     invocationTimeoutMs: options.timeoutMs,
     maxTotalRuntimeMs: options.maxTotalRuntimeMs,
     governedProfileInvocations: governedInvocations,
+    prerequisiteProfiles: contract.profile.prerequisiteProfiles,
+    prerequisiteEvidenceProvided: options.prerequisiteEvidence?.length ?? 0,
+    authorizationState: contract.profile.prerequisiteProfiles.length === 0 ? 'no-prerequisite' : 'blocked-until-prerequisite-evidence-validates',
     outputLocation: validateRelativeOutputPath(options.output),
     rawOutputLocation: 'disposable OS temporary directory; removed after every attempt',
     estimatedEvidenceLevel: cases.length === contract.cases.length ? 'E4 component; E5 requires the complete governed multi-assistant paired profile' : 'E4 pilot',

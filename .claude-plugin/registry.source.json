@@ -42,12 +42,12 @@
           "skills": "nova-plugin/skills/",
           "docs": "nova-plugin/docs/README.md",
           "validation": "scripts/validate-all.mjs",
-          "prerequisites": "docs/marketplace/compatibility-matrix.md"
+          "prerequisites": "docs/reference/compatibility/marketplace.md"
         },
         "review": {
-          "trustPolicy": "docs/marketplace/trust-policy.md",
-          "securityReview": "docs/marketplace/security-review-route.md",
-          "releaseHygiene": "docs/releases/release-hygiene.md"
+          "trustPolicy": "docs/reference/security/marketplace-trust.md",
+          "securityReview": "docs/reference/security/security-review.md",
+          "releaseHygiene": "docs/operations/releases/hygiene.md"
         }
       }
     }

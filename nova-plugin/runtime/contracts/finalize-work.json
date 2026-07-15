@@ -28,6 +28,15 @@
       "name": "WORK_SUMMARY",
       "type": "string",
       "required": true
+    },
+    {
+      "name": "DEPTH",
+      "type": "enum",
+      "required": false,
+      "values": [
+        "lite",
+        "standard"
+      ]
     }
   ],
   "effects": [
@@ -93,6 +102,17 @@
           "WORK_SCOPE"
         ],
         "description": "Completed changes and validation context; current task context may satisfy it explicitly."
+      },
+      {
+        "name": "DEPTH",
+        "required": false,
+        "aliases": [],
+        "description": "Handoff detail level.",
+        "default": "standard",
+        "exactValues": [
+          "lite",
+          "standard"
+        ]
       }
     ],
     "decisionTable": [
@@ -118,13 +138,14 @@
     ],
     "stopConditions": [
       "WORK_SUMMARY cannot be resolved.",
+      "DEPTH is not an exact allowed value.",
       "Workspace evidence is insufficient to distinguish completed, skipped, and blocked validation.",
       "A requested action would publish or mutate the workspace."
     ],
     "workflowSteps": [
       {
         "id": "freeze-state",
-        "action": "Freeze the current completed state."
+        "action": "Freeze the current completed state and resolve DEPTH."
       },
       {
         "id": "detect-mode",
