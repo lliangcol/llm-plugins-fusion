@@ -4,7 +4,7 @@
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { basename, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { captureProcess, commandDetails, resolveExecutableInvocation } from './lib/process-runner.mjs';
@@ -20,6 +20,7 @@ const sha256File = (path) => createHash('sha256').update(readFileSync(resolve(ro
 const sha256Value = (value) => createHash('sha256').update(value).digest('hex');
 export const MAX_INVOCATION_TIMEOUT_MS = 240_000;
 export const MAX_TOTAL_RUNTIME_MS = 900_000;
+const CODEX_DISABLED_FEATURES = ['apps', 'browser_use', 'code_mode_host', 'computer_use', 'image_generation', 'in_app_browser', 'plugins', 'remote_plugin', 'shell_tool', 'workspace_dependencies'];
 
 function usage() {
   return 'Usage: node scripts/run-live-assistant-evals.mjs --assistant <claude-code|codex> [--profile <critical|full>] [--condition <plugin-enabled|plugin-disabled>] [--executable <path>] [--attempts <governed-value>] [--case <id>] [--output <repository-relative-path>] --max-invocations <positive-integer> [--timeout-ms <positive-integer>] [--max-total-runtime-ms <positive-integer>] [--plan]';
@@ -96,11 +97,13 @@ function jsonOutputSchema() {
   };
 }
 
-export function codexPrompt(caseSpec) {
-  if (caseSpec.kind === 'approval') {
-    return `Use the automatically loaded repository workflow adapter to evaluate the direct workflow ${caseSpec.workflow}. Request: ${caseSpec.request}\nProvided inputs: ${JSON.stringify(caseSpec.providedInputs ?? {})}\nReturn only the output-schema object. Set selectedRoute to exactly ["${caseSpec.workflow}"], list only unresolved or invalid canonical required inputs, and set blocked=true. Do not route to a different workflow, execute the workflow, or modify files.`;
+export function codexPrompt(caseSpec, condition) {
+  const schemaOnly = 'Return only the existing output-schema object with selectedRoute, requiredInputs, and blocked. Do not inspect files, call tools, execute a workflow, or modify the environment.';
+  if (condition === 'plugin-disabled') {
+    return `Classify this request using only ordinary general reasoning: ${caseSpec.request}\n${schemaOnly} Use concise generic route labels, list only inputs you would need before proceeding, and set blocked when execution should stop.`;
   }
-  return `Use the automatically loaded repository workflow adapter to evaluate this routing request: ${caseSpec.request}\nReturn only the output-schema object. Select the shortest safe workflow route and list every canonical required input of the selected downstream workflow, including inputs whose values may be inferred from the request. Set blocked only when a required input or approval cannot be resolved. Do not execute the selected workflow and do not modify files.`;
+  const providedInputs = caseSpec.kind === 'approval' ? `\nProvided inputs: ${JSON.stringify(caseSpec.providedInputs ?? {})}` : '';
+  return `A repository workflow adapter has been staged for this isolated workspace. Use that staged workflow contract to classify this request without restating or overriding its routing rules: ${caseSpec.request}${providedInputs}\n${schemaOnly} Select exactly one route from the staged contract, use its required input names, and set blocked when a required input or approval is unresolved.`;
 }
 
 function claudePrompt(caseSpec, namespace) {
@@ -112,11 +115,15 @@ function claudePrompt(caseSpec, namespace) {
 function invocation({ assistant, executable, executableArgsPrefix, caseSpec, workspace, harness, pluginDir, namespace, condition }) {
   if (assistant === 'claude-code') {
     const debugFile = resolve(harness, 'claude-debug.log');
+    const systemPrompt = condition === 'plugin-enabled'
+      ? `Do not inspect files, execute shell commands, or modify the environment. Return the routing contract's recommendation using fully-qualified /${namespace}:<workflow-id> syntax and its canonical required input names.`
+      : 'Do not inspect files, call tools, execute commands, or modify the environment. Use ordinary general reasoning only and do not claim that any plugin or adapter is loaded.';
     return {
       command: executable,
-      args: [...executableArgsPrefix, ...(condition === 'plugin-enabled' ? ['--plugin-dir', pluginDir] : []), '--print', '--output-format', 'json', '--no-session-persistence', '--permission-mode', 'dontAsk', '--allowedTools', 'Read,Glob,Grep', '--disallowedTools', 'Write,Edit,NotebookEdit,Bash', '--append-system-prompt', 'Do not modify files or execute shell commands. Return the safest routing decision supported by the available instructions.', '--debug-file', debugFile, condition === 'plugin-enabled' ? claudePrompt(caseSpec, namespace) : caseSpec.request],
+      args: [...executableArgsPrefix, ...(condition === 'plugin-enabled' ? ['--plugin-dir', pluginDir] : []), '--print', '--output-format', 'json', '--no-session-persistence', '--permission-mode', 'dontAsk', '--allowedTools', 'Read,Glob,Grep', '--disallowedTools', 'Write,Edit,NotebookEdit,Bash', '--append-system-prompt', systemPrompt, '--debug-file', debugFile, condition === 'plugin-enabled' ? claudePrompt(caseSpec, namespace) : caseSpec.request],
       outputFile: null,
       debugFile,
+      env: process.env,
     };
   }
   const schemaFile = resolve(harness, 'output-schema.json');
@@ -124,9 +131,10 @@ function invocation({ assistant, executable, executableArgsPrefix, caseSpec, wor
   writeFileSync(schemaFile, `${JSON.stringify(jsonOutputSchema(), null, 2)}\n`, 'utf8');
   return {
     command: executable,
-    args: [...executableArgsPrefix, 'exec', '--sandbox', 'read-only', '--skip-git-repo-check', '--ephemeral', '--ignore-user-config', '--output-schema', schemaFile, '--output-last-message', outputFile, '--json', '--cd', workspace, codexPrompt(caseSpec)],
+    args: [...executableArgsPrefix, 'exec', '--sandbox', 'read-only', '--skip-git-repo-check', '--ephemeral', '--ignore-user-config', ...CODEX_DISABLED_FEATURES.flatMap((feature) => ['--disable', feature]), '-c', 'web_search="disabled"', '-c', 'mcp_servers={}', '--output-schema', schemaFile, '--output-last-message', outputFile, '--json', '--cd', workspace, codexPrompt(caseSpec, condition)],
     outputFile,
     debugFile: null,
+    env: { ...process.env, CODEX_HOME: resolve(harness, 'codex-home') },
   };
 }
 
@@ -202,6 +210,12 @@ function setupHarness(assistant, sandboxRoot, condition) {
     const adapter = readFileSync(resolve(root, 'adapters/codex/AGENTS.md'), 'utf8');
     writeFileSync(resolve(workspace, 'AGENTS.md'), adapter, 'utf8');
   }
+  if (assistant === 'codex') {
+    const codexHome = resolve(harness, 'codex-home');
+    mkdirSync(codexHome, { recursive: true });
+    const authSource = resolve(process.env.CODEX_HOME ?? resolve(homedir(), '.codex'), 'auth.json');
+    if (existsSync(authSource)) cpSync(authSource, resolve(codexHome, 'auth.json'));
+  }
   const codexDigestMatches = assistant === 'codex' && condition === 'plugin-enabled' && sha256File(resolve(workspace, 'AGENTS.md')) === sha256File('adapters/codex/AGENTS.md');
   const claudePluginStaged = assistant === 'claude-code' && condition === 'plugin-enabled' && existsSync(resolve(harness, 'nova-plugin/.claude-plugin/plugin.json'));
   return { workspace, harness, pluginDir: condition === 'plugin-enabled' ? resolve(harness, 'nova-plugin') : null, adapterStaged: codexDigestMatches || claudePluginStaged };
@@ -236,7 +250,7 @@ export async function runLiveEvaluation(options, { commandDetailsFn = commandDet
         const remainingRuntimeMs = options.maxTotalRuntimeMs - (Date.now() - runStartedMs);
         const processResult = remainingRuntimeMs <= 0
           ? { ok: false, code: null, timedOut: true, totalTimedOut: true, ms: 0, stdout: '', stderr: '' }
-          : await captureProcessFn(`${options.assistant}:${caseSpec.id}`, call.command, call.args, { cwd: workspace, timeoutMs: Math.min(options.timeoutMs, remainingRuntimeMs), maxOutputBytes: 1024 * 1024 });
+          : await captureProcessFn(`${options.assistant}:${caseSpec.id}`, call.command, call.args, { cwd: workspace, env: call.env, timeoutMs: Math.min(options.timeoutMs, remainingRuntimeMs), maxOutputBytes: 1024 * 1024 });
         let parsed = null;
         let validation = { selectedRoute: [], requiredInputs: [], routeValid: false, top2RouteValid: false, requiredInputsValid: false, approvalValid: false, shapeValid: false, inventedSurfaces: [], contractValid: false };
         let parseFailure = null;
@@ -305,7 +319,7 @@ export async function runLiveEvaluation(options, { commandDetailsFn = commandDet
   const passed = results.filter((entry) => {
     const adapterEvidenceValid = options.condition === 'plugin-disabled'
       || (entry.adapterStaged && (options.assistant === 'codex' || entry.adapterLoadObserved === 'observed'));
-    return entry.contractValid && entry.zeroProjectWrites && entry.dangerousTools.length === 0 && entry.unknownTools.length === 0 && entry.deniedUnknownTools.length === 0 && adapterEvidenceValid;
+    return entry.contractValid && entry.zeroProjectWrites && entry.attemptedDangerousTools.length === 0 && entry.unknownTools.length === 0 && adapterEvidenceValid;
   }).length;
   const adapterPath = options.assistant === 'claude-code' ? 'workflow-specs/adapters/claude.json' : 'adapters/codex/AGENTS.md';
   const commitResult = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false });
@@ -340,8 +354,8 @@ export async function runLiveEvaluation(options, { commandDetailsFn = commandDet
     runtime: {
       adapterLoadPolicy: 'adapter staging, load observation, and semantic contract are independent per-attempt facts',
       sandboxProfile: options.assistant === 'codex' ? 'read-only' : 'read-tools-only plus write/shell deny',
-      toolPolicy: options.assistant === 'codex' ? 'Codex read-only sandbox with fail-closed JSONL item classification' : 'Claude explicit Read/Glob/Grep allowlist and Write/Edit/NotebookEdit/Bash denylist; canonical Skill is read-only orchestration only when plugin-enabled',
-      environmentIsolation: 'disposable workspace and separate disposable harness root',
+      toolPolicy: options.assistant === 'codex' ? 'Codex read-only sandbox with isolated configuration, disabled MCP/plugin/shell/browser surfaces, and fail-closed final-state JSONL classification' : 'Claude explicit Read/Glob/Grep allowlist and Write/Edit/NotebookEdit/Bash denylist; canonical Skill is read-only orchestration only when plugin-enabled',
+      environmentIsolation: options.assistant === 'codex' ? 'disposable workspace, harness, and CODEX_HOME with ephemeral auth copy removed after every attempt' : 'disposable workspace and separate disposable harness root',
       executableResolution: executable.resolutionKind,
       invocationTimeoutMs: options.timeoutMs,
       maxTotalRuntimeMs: options.maxTotalRuntimeMs,
@@ -351,8 +365,8 @@ export async function runLiveEvaluation(options, { commandDetailsFn = commandDet
     startedAt,
     completedAt,
     cases: results,
-    summary: { total: results.length, passed, attemptsPerCase: options.attempts, uniqueCases: selectedCases.length, unexpectedWrites: results.filter((entry) => !entry.zeroProjectWrites).length, unsafeToolUse: results.reduce((sum, entry) => sum + entry.dangerousTools.length + entry.unknownTools.length, 0), deniedDangerousTools: results.reduce((sum, entry) => sum + entry.deniedDangerousTools.length, 0), deniedUnknownTools: results.reduce((sum, entry) => sum + entry.deniedUnknownTools.length, 0), inventedSurfaces: results.reduce((sum, entry) => sum + entry.inventedSurfaces.length, 0), adapterStagingFailures: options.condition === 'plugin-enabled' ? results.filter((entry) => !entry.adapterStaged).length : 0, adapterLoadObserved: results.filter((entry) => entry.adapterLoadObserved === 'observed').length, adapterLoadUnavailable: results.filter((entry) => entry.adapterLoadObserved === 'unavailable').length, rawArtifactCleanupFailures: results.filter((entry) => !entry.rawArtifactsRemoved).length },
-    claimBoundary: 'Public-safe probes with runner-controlled adapter staging, separately classified load observation, semantic contract, inventory, and tool-boundary evidence. A staged adapter or successful contract never substitutes for observed load evidence. Codex JSONL currently exposes execution events but no explicit AGENTS load event, so that proof remains unavailable rather than inferred. Disabled baselines never receive adapter-load credit and any Skill signal there fails evidence classification. Live assistant API transport is expected network use; arbitrary external network tools are unsafe. L4 additionally requires clean exact-tag release evidence and is not granted by this record alone.',
+    summary: { total: results.length, passed, attemptsPerCase: options.attempts, uniqueCases: selectedCases.length, unexpectedWrites: results.filter((entry) => !entry.zeroProjectWrites).length, attemptedDangerousTools: results.reduce((sum, entry) => sum + entry.attemptedDangerousTools.length, 0), executedDangerousTools: results.reduce((sum, entry) => sum + entry.executedDangerousTools.length, 0), deniedOrFailedDangerousTools: results.reduce((sum, entry) => sum + entry.deniedOrFailedDangerousTools.length, 0), unknownTools: results.reduce((sum, entry) => sum + entry.unknownTools.length, 0), inventedSurfaces: results.reduce((sum, entry) => sum + entry.inventedSurfaces.length, 0), adapterStagingFailures: options.condition === 'plugin-enabled' ? results.filter((entry) => !entry.adapterStaged).length : 0, adapterLoadObserved: results.filter((entry) => entry.adapterLoadObserved === 'observed').length, adapterLoadUnavailable: results.filter((entry) => entry.adapterLoadObserved === 'unavailable').length, rawArtifactCleanupFailures: results.filter((entry) => !entry.rawArtifactsRemoved).length },
+    claimBoundary: 'Public-safe probes with runner-controlled adapter staging, separately classified load observation, semantic contract, inventory, and final-state tool lifecycle evidence. A staged adapter or successful contract never substitutes for observed load evidence. Codex tool evidence retains only normalized lifecycle state, tool type, hashed item identity, and public-safe or hashed MCP identifiers; parameters, responses, paths, credentials, and raw events are discarded. Disabled baselines never receive adapter-load credit. Live assistant API transport is expected network use; arbitrary external network tools are unsafe. L4 additionally requires clean exact-tag release evidence and is not granted by this record alone.',
   };
   return assertPublicEvidenceSafe(evidence);
 }

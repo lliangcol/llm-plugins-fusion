@@ -80,7 +80,7 @@
           {
             "type": "object",
             "additionalProperties": false,
-            "required": ["caseId", "attempt", "processExit", "processFailure", "timedOut", "latencyMs", "projectDigestBefore", "projectDigestAfter", "zeroProjectWrites", "adapterStaged", "adapterLoadObserved", "adapterLoadReasonCode", "adapterLoadSignals", "observedTools", "allowedReadOnlyTools", "dangerousTools", "deniedDangerousTools", "unknownTools", "deniedUnknownTools", "selectedRoute", "requiredInputs", "routeValid", "top2RouteValid", "requiredInputsValid", "approvalValid", "shapeValid", "inventedSurfaces", "contractValid", "usageStatus", "usageReasonCode", "inputTokens", "outputTokens", "totalTokens", "costUsd", "responseSummary", "parseFailure", "rawOutputSha256", "rawErrorSha256", "rawOutputBytes", "rawErrorBytes", "rawArtifactsRemoved"],
+            "required": ["caseId", "attempt", "processExit", "processFailure", "timedOut", "latencyMs", "projectDigestBefore", "projectDigestAfter", "zeroProjectWrites", "adapterStaged", "adapterLoadObserved", "adapterLoadReasonCode", "adapterLoadSignals", "observedTools", "allowedReadOnlyTools", "toolLifecycle", "attemptedDangerousTools", "executedDangerousTools", "deniedOrFailedDangerousTools", "unknownTools", "selectedRoute", "requiredInputs", "routeValid", "top2RouteValid", "requiredInputsValid", "approvalValid", "shapeValid", "inventedSurfaces", "contractValid", "usageStatus", "usageReasonCode", "inputTokens", "outputTokens", "totalTokens", "costUsd", "responseSummary", "parseFailure", "rawOutputSha256", "rawErrorSha256", "rawOutputBytes", "rawErrorBytes", "rawArtifactsRemoved"],
             "properties": {
               "caseId": { "type": "string", "minLength": 1 },
               "kind": { "type": "string" },
@@ -99,10 +99,25 @@
               "adapterLoadSignals": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
               "observedTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
               "allowedReadOnlyTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-              "dangerousTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-              "deniedDangerousTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+              "toolLifecycle": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["toolType", "status"],
+                  "properties": {
+                    "toolType": { "type": "string", "minLength": 1 },
+                    "status": { "enum": ["started", "completed", "failed", "denied-or-cancelled", "unknown"] },
+                    "itemIdSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+                    "server": { "type": "string", "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]{0,63}|sha256:[a-f0-9]{64})$" },
+                    "tool": { "type": "string", "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]{0,63}|sha256:[a-f0-9]{64})$" }
+                  }
+                }
+              },
+              "attemptedDangerousTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+              "executedDangerousTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+              "deniedOrFailedDangerousTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
               "unknownTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-              "deniedUnknownTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
               "selectedRoute": { "type": "array", "items": { "type": "string" } },
               "requiredInputs": { "type": "array", "items": { "type": "string" } },
               "routeValid": { "type": "boolean" },
@@ -145,9 +160,10 @@
         "attemptsPerCase": { "type": "integer", "minimum": 1 },
         "uniqueCases": { "type": "integer", "minimum": 1 },
         "unexpectedWrites": { "type": "integer", "minimum": 0 },
-        "unsafeToolUse": { "type": "integer", "minimum": 0 },
-        "deniedDangerousTools": { "type": "integer", "minimum": 0 },
-        "deniedUnknownTools": { "type": "integer", "minimum": 0 },
+        "attemptedDangerousTools": { "type": "integer", "minimum": 0 },
+        "executedDangerousTools": { "type": "integer", "minimum": 0 },
+        "deniedOrFailedDangerousTools": { "type": "integer", "minimum": 0 },
+        "unknownTools": { "type": "integer", "minimum": 0 },
         "inventedSurfaces": { "type": "integer", "minimum": 0 },
         "adapterStagingFailures": { "type": "integer", "minimum": 0 },
         "adapterLoadObserved": { "type": "integer", "minimum": 0 },
