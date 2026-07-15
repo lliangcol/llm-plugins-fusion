@@ -68,6 +68,8 @@ export function buildLiveExecutionPlan(repoRoot, options) {
     attempts: contract.profile.attempts,
     plannedInvocations,
     maxInvocations: options.maxInvocations,
+    invocationTimeoutMs: options.timeoutMs,
+    maxTotalRuntimeMs: options.maxTotalRuntimeMs,
     governedProfileInvocations: governedInvocations,
     outputLocation: validateRelativeOutputPath(options.output),
     rawOutputLocation: 'disposable OS temporary directory; removed after every attempt',

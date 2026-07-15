@@ -42,6 +42,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - Removed duplicate full-suite execution from `npm run check` by reusing the coverage-owned test inventory before maintainer working-tree evidence checks.
 
 ### Fixed
+- Corrected critical live-evaluation evidence semantics so canonical Claude
+  `Skill` loading is read-only orchestration, unsafe and denied tools remain
+  distinct, adapter staging/load/contract facts cannot impersonate one another,
+  unavailable usage stays null, and Windows CLI shims execute through fixed
+  argv without enabling a general shell.
 - Reconciled the critical live profile with the runner at three attempts (96
   governed invocations) and removed retained model output from checked-in
   evaluation evidence without changing compatibility levels.

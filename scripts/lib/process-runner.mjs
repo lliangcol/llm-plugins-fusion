@@ -1,4 +1,6 @@
 import { spawn } from 'node:child_process';
+import { readFileSync, realpathSync, statSync } from 'node:fs';
+import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { sanitizeAuditField } from '../../nova-plugin/runtime/secret-rules.mjs';
 
 export const DEFAULT_TIMEOUT_MS = 120_000;
@@ -7,6 +9,94 @@ export const DEFAULT_MAX_OUTPUT_BYTES = 1_048_576;
 
 export function formatCommand(command, args = []) {
   return sanitizeAuditField([command, ...args].join(' '), 500);
+}
+
+function regularFile(path) {
+  try { return statSync(path).isFile(); } catch { return false; }
+}
+
+function windowsPathEntries(env) {
+  return String(env.Path ?? env.PATH ?? '').split(';').filter(Boolean);
+}
+
+function windowsCommandCandidates(command, env, extensions = ['.exe', '.cmd']) {
+  const hasPath = isAbsolute(command) || /[\\/]/u.test(command);
+  const extension = extname(command).toLowerCase();
+  const names = extension ? [command] : extensions.map((entry) => `${command}${entry}`);
+  if (hasPath) return names.map((entry) => resolve(entry));
+  const voltaBin = env.VOLTA_HOME ? resolve(env.VOLTA_HOME, 'bin') : null;
+  const searchPaths = [...new Set([voltaBin, ...windowsPathEntries(env)].filter(Boolean))];
+  return searchPaths.flatMap((entry) => names.map((name) => join(entry, name)));
+}
+
+function firstRegularFile(candidates) {
+  return candidates.find((candidate) => regularFile(candidate)) ?? null;
+}
+
+function containedRegularFile(root, path) {
+  if (!regularFile(path)) return false;
+  const physicalRoot = realpathSync(root);
+  const physicalPath = realpathSync(path);
+  const rel = relative(physicalRoot, physicalPath);
+  return rel !== '' && rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel);
+}
+
+function cmdShimSource(path) {
+  return readFileSync(path, 'utf8').replace(/\r\n/gu, '\n').trim();
+}
+
+function resolveWindowsRelativeTarget(root, target) {
+  const segments = target.split(/[\\/]/u);
+  if (segments.includes('..')) return null;
+  return resolve(root, ...segments);
+}
+
+function isVoltaShim(path) {
+  return extname(path).toLowerCase() === '.cmd'
+    && regularFile(path)
+    && cmdShimSource(path).toLowerCase() === '@echo off\nvolta run %~n0 %*';
+}
+
+function resolveCmdShim(path, { env, nodeExecutable }) {
+  const source = cmdShimSource(path);
+  if (isVoltaShim(path)) {
+    const volta = firstRegularFile(windowsCommandCandidates('volta', env, ['.exe']));
+    if (!volta) throw new Error(`cannot execute ${basename(path)} safely: volta.exe is unavailable`);
+    return { command: volta, argsPrefix: ['run', basename(path, extname(path))], resolutionKind: 'windows-volta-shim' };
+  }
+  const executableTarget = source.match(/"%dp0%\\([^"\r\n]+\.exe)"\s+%\*\s*$/iu)?.[1];
+  if (executableTarget) {
+    const executable = resolveWindowsRelativeTarget(dirname(path), executableTarget);
+    if (!executable) throw new Error(`cannot execute ${basename(path)} safely: executable shim target escapes its directory`);
+    if (containedRegularFile(dirname(path), executable)) return { command: executable, argsPrefix: [], resolutionKind: 'windows-exe-shim' };
+  }
+  const npmTarget = source.match(/"%_prog%"\s+"%dp0%\\([^"\r\n]+\.js)"\s+%\*\s*$/iu)?.[1];
+  if (npmTarget) {
+    const script = resolveWindowsRelativeTarget(dirname(path), npmTarget);
+    if (!script) throw new Error(`cannot execute ${basename(path)} safely: Node shim target escapes its directory`);
+    if (containedRegularFile(dirname(path), script)) {
+      const adjacentNode = resolve(dirname(path), 'node.exe');
+      return { command: regularFile(adjacentNode) ? adjacentNode : nodeExecutable, argsPrefix: [script], resolutionKind: 'windows-node-shim' };
+    }
+  }
+  throw new Error(`cannot execute ${basename(path)} safely: unsupported .cmd shim; provide a direct .exe or a recognized fixed-argv shim`);
+}
+
+export function resolveExecutableInvocation(command, {
+  platform = process.platform,
+  env = process.env,
+  nodeExecutable = process.execPath,
+} = {}) {
+  if (typeof command !== 'string' || command.length === 0) throw new Error('executable must be a non-empty string');
+  if (platform !== 'win32') return { command, argsPrefix: [], resolutionKind: 'direct' };
+  const candidates = windowsCommandCandidates(command, env);
+  const bareCommand = !isAbsolute(command) && !/[\\/]/u.test(command);
+  const resolvedPath = (bareCommand ? candidates.find((candidate) => isVoltaShim(candidate)) : null) ?? firstRegularFile(candidates);
+  if (!resolvedPath) throw new Error(`${basename(command)} is unavailable`);
+  const extension = extname(resolvedPath).toLowerCase();
+  if (extension === '.exe') return { command: resolvedPath, argsPrefix: [], resolutionKind: 'windows-exe' };
+  if (extension === '.cmd') return resolveCmdShim(resolvedPath, { env, nodeExecutable });
+  throw new Error(`cannot execute ${basename(resolvedPath)} safely: unsupported Windows executable type`);
 }
 
 function sanitizedArgs(args) {
