@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Added
+- Added fail-closed live-evaluation previews and explicit invocation budgets,
+  with governed profile attempts, public-safe result summaries, disposable raw
+  artifacts, and multi-assistant paired aggregation.
 - Added a lightweight required PR Governance check for non-placeholder review
   evidence, explicit large-change exceptions, and current-head independent
   approval on the existing shared sensitive-path policy.
@@ -39,6 +42,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - Removed duplicate full-suite execution from `npm run check` by reusing the coverage-owned test inventory before maintainer working-tree evidence checks.
 
 ### Fixed
+- Reconciled the critical live profile with the runner at three attempts (96
+  governed invocations) and removed retained model output from checked-in
+  evaluation evidence without changing compatibility levels.
 - Bound validation cache hits to validator implementations, shared libraries,
   the locked toolchain, and the exact Node runtime; restored fail-closed
   runtime-smoke/result integrity checks for performance evidence; prevented

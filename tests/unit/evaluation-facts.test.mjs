@@ -11,6 +11,7 @@ test('evaluation facts derive each plan from its own dataset identity', () => {
     mkdirSync(join(root, 'evals/live'), { recursive: true });
     mkdirSync(join(root, 'evals/critical-live'), { recursive: true });
     mkdirSync(join(root, 'benchmarks'), { recursive: true });
+    mkdirSync(join(root, 'governance'), { recursive: true });
     writeFileSync(join(root, 'evals/live/cases.json'), JSON.stringify({ cases: [
       { language: 'en', kind: 'route' },
       { language: 'zh', kind: 'approval' },
@@ -20,10 +21,15 @@ test('evaluation facts derive each plan from its own dataset identity', () => {
       conditions: ['raw', 'wrapper-full', 'wrapper-compact'],
       tasks: [{}, {}, {}],
     }));
+    writeFileSync(join(root, 'governance/evaluation-profiles.json'), JSON.stringify({ profiles: [
+      { id: 'critical', datasetId: 'critical-live', attempts: 3, conditions: ['plugin-enabled', 'plugin-disabled'], assistants: ['claude-code', 'codex'] },
+      { id: 'release', datasetId: 'live-paired', attempts: 3, conditions: ['plugin-enabled', 'plugin-disabled'], assistants: ['claude-code', 'codex'] },
+    ] }));
 
     const facts = deriveEvaluationFacts(root);
     assert.equal(facts.livePaired.caseCount, 2);
     assert.equal(facts.livePaired.plannedInvocations, 12);
+    assert.equal(facts.criticalLive.plannedInvocations, 12);
     assert.deepEqual(facts.livePaired.languageCounts, { en: 1, zh: 1 });
     assert.equal(facts.realTask.taskCount, 3);
     assert.equal(facts.realTask.plannedInvocations, 54);

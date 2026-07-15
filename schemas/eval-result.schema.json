@@ -76,7 +76,7 @@
           {
             "type": "object",
             "additionalProperties": false,
-            "required": ["caseId", "attempt", "processExit", "processFailure", "timedOut", "latencyMs", "projectDigestBefore", "projectDigestAfter", "zeroProjectWrites", "adapterLoaded", "adapterLoadProof", "unexpectedToolUse", "unexpectedNetworkUse", "selectedRoute", "requiredInputs", "routeValid", "top2RouteValid", "requiredInputsValid", "approvalValid", "shapeValid", "inventedSurfaces", "contractValid", "observedOutput", "parseError", "outputSha256"],
+            "required": ["caseId", "attempt", "processExit", "processFailure", "timedOut", "latencyMs", "projectDigestBefore", "projectDigestAfter", "zeroProjectWrites", "adapterLoaded", "adapterLoadProof", "unexpectedToolUse", "unexpectedNetworkUse", "selectedRoute", "requiredInputs", "routeValid", "top2RouteValid", "requiredInputsValid", "approvalValid", "shapeValid", "inventedSurfaces", "contractValid", "responseSummary", "parseFailure", "rawOutputSha256", "rawErrorSha256", "rawOutputBytes", "rawErrorBytes", "rawArtifactsRemoved"],
             "properties": {
               "caseId": { "type": "string", "minLength": 1 },
               "kind": { "type": "string" },
@@ -102,9 +102,13 @@
               "shapeValid": { "type": "boolean" },
               "inventedSurfaces": { "type": "array", "items": { "type": "string" } },
               "contractValid": { "type": "boolean" },
-              "observedOutput": { "type": ["object", "null"] },
-              "parseError": { "type": ["string", "null"] },
-              "outputSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+              "responseSummary": { "type": "string", "minLength": 1 },
+              "parseFailure": { "type": ["string", "null"], "enum": [null, "missing-output", "invalid-json", "invalid-response"] },
+              "rawOutputSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "rawErrorSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "rawOutputBytes": { "type": "integer", "minimum": 0 },
+              "rawErrorBytes": { "type": "integer", "minimum": 0 },
+              "rawArtifactsRemoved": { "const": true }
               ,"inputTokens": { "type": ["integer", "null"], "minimum": 0 }
               ,"outputTokens": { "type": ["integer", "null"], "minimum": 0 }
               ,"totalTokens": { "type": ["integer", "null"], "minimum": 0 }
@@ -131,7 +135,8 @@
         "unexpectedWrites": { "type": "integer", "minimum": 0 },
         "unexpectedToolUses": { "type": "integer", "minimum": 0 },
         "inventedSurfaces": { "type": "integer", "minimum": 0 },
-        "adapterLoadFailures": { "type": "integer", "minimum": 0 }
+        "adapterLoadFailures": { "type": "integer", "minimum": 0 },
+        "rawArtifactCleanupFailures": { "type": "integer", "minimum": 0 }
       }
     },
     "claimBoundary": { "type": "string", "minLength": 1 }

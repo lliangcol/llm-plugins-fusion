@@ -3,7 +3,7 @@
 
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
-import { cpSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { basename, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -11,6 +11,8 @@ import { captureProcess, commandDetails } from './lib/process-runner.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
 import { joinLockedLabels } from './lib/eval-dataset.mjs';
+import { assertPublicEvidenceSafe } from './lib/evaluation-evidence.mjs';
+import { buildLiveExecutionPlan, governedLiveProfile, validateRelativeOutputPath } from './lib/live-evaluation-plan.mjs';
 
 const root = repoRoot(import.meta.url);
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
@@ -18,22 +20,32 @@ const sha256File = (path) => createHash('sha256').update(readFileSync(resolve(ro
 const sha256Value = (value) => createHash('sha256').update(value).digest('hex');
 
 function usage() {
-  return 'Usage: node scripts/run-live-assistant-evals.mjs --assistant <claude-code|codex> [--profile <critical|full>] [--condition <plugin-enabled|plugin-disabled>] [--executable <path>] [--attempts <3-5>] [--case <id>] [--output <path>]';
+  return 'Usage: node scripts/run-live-assistant-evals.mjs --assistant <claude-code|codex> [--profile <critical|full>] [--condition <plugin-enabled|plugin-disabled>] [--executable <path>] [--attempts <governed-value>] [--case <id>] [--output <repository-relative-path>] --max-invocations <positive-integer> [--plan]';
 }
 
 export function parseArgs(args) {
-  const parsed = { attempts: 3, profile: 'full', condition: 'plugin-enabled' };
+  const parsed = { profile: 'full', condition: 'plugin-enabled', plan: false };
+  const seen = new Set();
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
-    if (!['--assistant', '--profile', '--condition', '--executable', '--attempts', '--case', '--output'].includes(arg) || !args[index + 1]) throw new Error(usage());
+    if (seen.has(arg)) throw new Error(`duplicate argument: ${arg}`);
+    seen.add(arg);
+    if (arg === '--plan') { parsed.plan = true; continue; }
+    if (!['--assistant', '--profile', '--condition', '--executable', '--attempts', '--case', '--output', '--max-invocations'].includes(arg) || !args[index + 1] || args[index + 1].startsWith('--')) throw new Error(usage());
     parsed[arg.slice(2)] = args[index + 1];
     index += 1;
   }
   if (!['claude-code', 'codex'].includes(parsed.assistant)) throw new Error(usage());
   if (!['critical', 'full'].includes(parsed.profile)) throw new Error(usage());
   if (!['plugin-enabled', 'plugin-disabled'].includes(parsed.condition)) throw new Error(usage());
-  parsed.attempts = Number(parsed.attempts);
-  if (!Number.isInteger(parsed.attempts) || parsed.attempts < 3 || parsed.attempts > 5) throw new Error('--attempts must be an integer from 3 to 5');
+  const contract = governedLiveProfile(root, parsed.profile);
+  if (parsed.attempts !== undefined && Number(parsed.attempts) !== contract.profile.attempts) throw new Error(`--attempts must match governed ${contract.governedId} attempts (${contract.profile.attempts})`);
+  parsed.attempts = contract.profile.attempts;
+  parsed['max-invocations'] = Number(parsed['max-invocations']);
+  if (!Number.isInteger(parsed['max-invocations']) || parsed['max-invocations'] < 1) throw new Error('--max-invocations must be an explicit positive integer');
+  parsed.maxInvocations = parsed['max-invocations'];
+  delete parsed['max-invocations'];
+  if (parsed.output !== undefined) validateRelativeOutputPath(parsed.output);
   return parsed;
 }
 
@@ -124,6 +136,13 @@ function parseCodexEvents(stdout) {
   return { events, toolEvents };
 }
 
+function classifyParseFailure(error) {
+  const message = String(error?.message ?? error);
+  if (/ENOENT|missing|did not contain/iu.test(message)) return 'missing-output';
+  if (/JSON|Unexpected token|Expected property/iu.test(message)) return 'invalid-json';
+  return 'invalid-response';
+}
+
 export function classifyProcessFailure(processResult) {
   if (processResult.ok) return null;
   if (processResult.timedOut) return 'timeout';
@@ -167,6 +186,7 @@ function normalizeClaudeOutput(caseSpec, text, namespace) {
 function setupHarness(assistant, sandboxRoot, condition) {
   const workspace = resolve(sandboxRoot, 'workspace');
   const harness = resolve(sandboxRoot, 'harness');
+  mkdirSync(harness, { recursive: true });
   cpSync(resolve(root, 'fixtures/consumer/minimal'), workspace, { recursive: true });
   if (condition === 'plugin-enabled') cpSync(resolve(root, 'nova-plugin'), resolve(harness, 'nova-plugin'), { recursive: true });
   if (assistant === 'codex' && condition === 'plugin-enabled') {
@@ -191,30 +211,35 @@ function claudeLoadProof(debugFile, pluginDir, resultText) {
   return { loaded: pluginMentioned && commandContractObserved, proof: `debug-sha256:${sha256Value(debug)};plugin-path-observed:${pluginMentioned};contract-output-observed:${commandContractObserved}` };
 }
 
-async function run(options) {
+export async function runLiveEvaluation(options, { commandDetailsFn = commandDetails, captureProcessFn = captureProcess } = {}) {
+  const plan = buildLiveExecutionPlan(root, options);
   const executable = options.executable ?? (options.assistant === 'claude-code' ? 'claude' : 'codex');
-  const details = await commandDetails(executable, ['--version']);
+  const details = await commandDetailsFn(executable, ['--version']);
   if (!details.available) throw new Error(`${executable} is unavailable`);
-  const datasetPath = options.profile === 'critical' ? 'evals/critical-live/cases.json' : 'evals/live/cases.json';
+  const contract = governedLiveProfile(root, options.profile);
+  const datasetPath = contract.profile.datasetId === 'critical-live' ? 'evals/critical-live/cases.json' : 'evals/live/cases.json';
   const dataset = readJson(datasetPath);
   if (options.profile === 'full') dataset.cases = joinLockedLabels(dataset, readJson('evals/live/labels.locked.json'));
   const model = loadNovaWorkflowModel(root);
   const inventory = model.spec.workflows.map((entry) => entry.id);
   const selectedCases = options.case ? dataset.cases.filter((entry) => entry.id === options.case) : dataset.cases;
   if (selectedCases.length === 0) throw new Error(`unknown live eval case ${options.case}`);
+  if (selectedCases.length * options.attempts !== plan.plannedInvocations) throw new Error('live execution plan drifted after dataset loading');
   const startedAt = new Date().toISOString();
   const results = [];
   for (const caseSpec of selectedCases) {
     for (let attempt = 1; attempt <= options.attempts; attempt += 1) {
       const sandboxRoot = mkdtempSync(resolve(tmpdir(), 'nova-live-eval-'));
+      let resultEntry;
       try {
         const { workspace, harness, pluginDir, stagedAdapterSha256 } = setupHarness(options.assistant, sandboxRoot, options.condition);
         const before = treeDigest(workspace);
         const call = invocation({ assistant: options.assistant, executable, caseSpec, workspace, harness, pluginDir, namespace: model.product.pluginNamespace, condition: options.condition });
-        const processResult = await captureProcess(`${options.assistant}:${caseSpec.id}`, call.command, call.args, { cwd: workspace, timeoutMs: 240_000, maxOutputBytes: 1024 * 1024 });
+        const processResult = await captureProcessFn(`${options.assistant}:${caseSpec.id}`, call.command, call.args, { cwd: workspace, timeoutMs: 240_000, maxOutputBytes: 1024 * 1024 });
         let parsed = null;
         let validation = { selectedRoute: [], requiredInputs: [], routeValid: false, top2RouteValid: false, requiredInputsValid: false, approvalValid: false, shapeValid: false, inventedSurfaces: [], contractValid: false };
-        let parseError = null;
+        let parseFailure = null;
+        let usage = { inputTokens: null, outputTokens: null, totalTokens: null, costUsd: null };
         let adapterLoad = { loaded: false, proof: null };
         let unexpectedToolUse = [];
         if (processResult.ok) {
@@ -222,26 +247,39 @@ async function run(options) {
             if (options.assistant === 'claude-code') {
               const claude = parseClaudeResult(processResult.stdout);
               parsed = { result: claude.text };
+              usage = {
+                inputTokens: claude.envelope.usage?.input_tokens ?? null,
+                outputTokens: claude.envelope.usage?.output_tokens ?? null,
+                totalTokens: claude.envelope.usage?.total_tokens ?? null,
+                costUsd: claude.envelope.total_cost_usd ?? null,
+              };
               validation = evaluateSemanticCase(caseSpec, normalizeClaudeOutput(caseSpec, claude.text, model.product.pluginNamespace), inventory);
               adapterLoad = options.condition === 'plugin-enabled' ? claudeLoadProof(call.debugFile, pluginDir, claude.text) : { loaded: false, proof: 'plugin-disabled baseline' };
               unexpectedToolUse = (claude.envelope.permission_denials ?? []).map((entry) => entry.tool_name ?? 'denied-tool');
             } else {
               parsed = JSON.parse(readFileSync(call.outputFile, 'utf8'));
+              usage = {
+                inputTokens: parsed.usage?.input_tokens ?? null,
+                outputTokens: parsed.usage?.output_tokens ?? null,
+                totalTokens: parsed.usage?.total_tokens ?? null,
+                costUsd: parsed.total_cost_usd ?? null,
+              };
               validation = evaluateSemanticCase(caseSpec, parsed, inventory);
               adapterLoad = deriveAdapterLoadEvidence({ condition: options.condition, stagedAdapterSha256, expectedAdapterSha256: sha256File('adapters/codex/AGENTS.md'), contractValid: validation.contractValid });
               unexpectedToolUse = parseCodexEvents(processResult.stdout).toolEvents.map((event) => String(event.type ?? event.item?.type ?? 'tool-event'));
             }
-          } catch (error) { parseError = error.message; }
+          } catch (error) { parseFailure = classifyParseFailure(error); }
         }
         const after = treeDigest(workspace);
         const zeroProjectWrites = before === after;
-        results.push({
+        const processFailure = classifyProcessFailure(processResult);
+        resultEntry = {
           caseId: caseSpec.id,
           kind: caseSpec.kind,
           approvalExpected: caseSpec.kind === 'approval',
           attempt,
           processExit: processResult.code,
-          processFailure: classifyProcessFailure(processResult),
+          processFailure,
           timedOut: processResult.timedOut,
           latencyMs: processResult.ms,
           projectDigestBefore: before,
@@ -252,17 +290,20 @@ async function run(options) {
           unexpectedToolUse,
           unexpectedNetworkUse: false,
           ...validation,
-          inputTokens: parsed?.usage?.input_tokens ?? null,
-          outputTokens: parsed?.usage?.output_tokens ?? null,
-          totalTokens: parsed?.usage?.total_tokens ?? null,
-          costUsd: parsed?.total_cost_usd ?? null,
-          observedOutput: parsed,
-          parseError,
-          outputSha256: sha256Value(processResult.stdout ?? ''),
-        });
+          ...usage,
+          responseSummary: processFailure ? `process-failed:${processFailure}` : parseFailure ? `parse-failed:${parseFailure}` : validation.contractValid ? 'contract-valid' : 'contract-invalid',
+          parseFailure,
+          rawOutputSha256: sha256Value(processResult.stdout ?? ''),
+          rawErrorSha256: sha256Value(processResult.stderr ?? ''),
+          rawOutputBytes: Buffer.byteLength(processResult.stdout ?? ''),
+          rawErrorBytes: Buffer.byteLength(processResult.stderr ?? ''),
+        };
       } finally {
         rmSync(sandboxRoot, { recursive: true, force: true });
       }
+      resultEntry.rawArtifactsRemoved = !existsSync(sandboxRoot);
+      if (!resultEntry.rawArtifactsRemoved) throw new Error('failed to remove raw live evaluation artifacts');
+      results.push(resultEntry);
     }
   }
   const completedAt = new Date().toISOString();
@@ -272,8 +313,8 @@ async function run(options) {
   const statusResult = spawnSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8', shell: false });
   const tagResult = spawnSync('git', ['describe', '--tags', '--exact-match', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false });
   const clean = statusResult.status === 0 && statusResult.stdout.trim() === '';
-  const allAdapterLoaded = results.every((entry) => entry.adapterLoaded);
-  return {
+  const allAdapterLoaded = options.condition === 'plugin-enabled' && results.every((entry) => entry.adapterLoaded);
+  const evidence = {
     $schema: '../../schemas/eval-result.schema.json',
     schemaVersion: 1,
     layer: 'live-assistant',
@@ -296,7 +337,7 @@ async function run(options) {
     profile: options.profile,
     assistant: { id: options.assistant, version: details.detail, executable: basename(executable), adapterSha256: sha256File(adapterPath), adapterLoaded: allAdapterLoaded },
     runtime: {
-      adapterLoadProof: allAdapterLoaded ? 'per-attempt derived proof recorded in cases' : 'one or more adapter-load proofs failed',
+      adapterLoadProof: options.condition === 'plugin-disabled' ? 'plugin-disabled baseline' : allAdapterLoaded ? 'per-attempt derived proof recorded in cases' : 'one or more adapter-load proofs failed',
       sandboxProfile: options.assistant === 'codex' ? 'read-only' : 'read-tools-only plus write/shell deny',
       toolPolicy: options.assistant === 'codex' ? 'Codex read-only sandbox with event-derived tool observation' : 'Claude explicit Read/Glob/Grep allowlist and Write/Edit/NotebookEdit/Bash denylist',
       environmentIsolation: 'disposable workspace and separate disposable harness root',
@@ -306,14 +347,20 @@ async function run(options) {
     startedAt,
     completedAt,
     cases: results,
-    summary: { total: results.length, passed, attemptsPerCase: options.attempts, uniqueCases: selectedCases.length, unexpectedWrites: results.filter((entry) => !entry.zeroProjectWrites).length, unexpectedToolUses: results.reduce((sum, entry) => sum + entry.unexpectedToolUse.length, 0), inventedSurfaces: results.reduce((sum, entry) => sum + entry.inventedSurfaces.length, 0), adapterLoadFailures: results.filter((entry) => !entry.adapterLoaded).length },
+    summary: { total: results.length, passed, attemptsPerCase: options.attempts, uniqueCases: selectedCases.length, unexpectedWrites: results.filter((entry) => !entry.zeroProjectWrites).length, unexpectedToolUses: results.reduce((sum, entry) => sum + entry.unexpectedToolUse.length, 0), inventedSurfaces: results.reduce((sum, entry) => sum + entry.inventedSurfaces.length, 0), adapterLoadFailures: options.condition === 'plugin-enabled' ? results.filter((entry) => !entry.adapterLoaded).length : 0, rawArtifactCleanupFailures: results.filter((entry) => !entry.rawArtifactsRemoved).length },
     claimBoundary: 'Public-safe probes with runner-controlled adapter staging, semantic contract, inventory, and tool-boundary evidence. Staging plus contract validity is not an independent model-attestation mechanism. Disabled baselines never receive adapter-load credit. Live assistant API transport is expected network use; arbitrary external network tools are unavailable. L4 additionally requires clean exact-tag release evidence and is not granted by this record alone.',
   };
+  return assertPublicEvidenceSafe(evidence);
 }
 
 export async function main(args = process.argv.slice(2)) {
   const options = parseArgs(args);
-  const result = await run(options);
+  const plan = assertPublicEvidenceSafe(buildLiveExecutionPlan(root, options));
+  if (options.plan) {
+    process.stdout.write(`${JSON.stringify(plan, null, 2)}\n`);
+    return;
+  }
+  const result = await runLiveEvaluation(options);
   const content = `${JSON.stringify(result, null, 2)}\n`;
   if (options.output) writeFileSync(resolve(root, options.output), content, 'utf8');
   else process.stdout.write(content);
