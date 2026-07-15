@@ -16,7 +16,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `benchmark` | Tests, coverage, simulations, demos, mutations, and live evaluation. |
 | `maintenance` | Diagnostics, repository administration, and reusable script libraries. |
 
-## Script Inventory (136)
+## Script Inventory (138)
 
 | Category | Script |
 | --- | --- |
@@ -70,6 +70,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `maintenance` | `scripts/lib/label-catalog.mjs` |
 | `maintenance` | `scripts/lib/migration-cli.mjs` |
 | `maintenance` | `scripts/lib/node-version.mjs` |
+| `maintenance` | `scripts/lib/pr-governance.mjs` |
 | `maintenance` | `scripts/lib/process-runner.mjs` |
 | `maintenance` | `scripts/lib/release-candidate.mjs` |
 | `maintenance` | `scripts/lib/release-corrections.mjs` |
@@ -132,6 +133,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `scripts/validate-plugin-install.mjs` |
 | `validate` | `scripts/validate-plugin-route-live.mjs` |
 | `validate` | `scripts/validate-portable-paths.mjs` |
+| `validate` | `scripts/validate-pr-governance.mjs` |
 | `validate` | `scripts/validate-project-state.mjs` |
 | `validate` | `scripts/validate-registry-fixtures.mjs` |
 | `validate` | `scripts/validate-regression.mjs` |
@@ -344,7 +346,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `docs.tutorials` | `validate` | `scripts/validate-tutorials.mjs` | 3 | `never` |
 | `release.summary` | `release` | `scripts/generate-release-summary.mjs` | 5 | `never` |
 
-## CI Job Map (27)
+## CI Job Map (28)
 
 | Workflow | Job |
 | --- | --- |
@@ -365,6 +367,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `.github/workflows/plugin-install-smoke.yml` | `known-good-install-smoke` |
 | `.github/workflows/plugin-install-smoke.yml` | `latest-drift-check` |
 | `.github/workflows/plugin-install-smoke.yml` | `latest-drift-report` |
+| `.github/workflows/pr-governance.yml` | `governance` |
 | `.github/workflows/promote-release.yml` | `publish` |
 | `.github/workflows/promote-release.yml` | `verify` |
 | `.github/workflows/release-candidate.yml` | `assemble` |

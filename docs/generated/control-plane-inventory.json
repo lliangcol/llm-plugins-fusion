@@ -2799,6 +2799,20 @@
       "qualityGate": "scripts/validate-github-workflows.mjs"
     },
     {
+      "path": ".github/workflows/pr-governance.yml",
+      "owner": "GitHub Actions control plane",
+      "inputs": [
+        "repository source",
+        "GitHub event context"
+      ],
+      "outputs": [
+        "governance"
+      ],
+      "generated": false,
+      "scope": "maintainer",
+      "qualityGate": "scripts/validate-github-workflows.mjs"
+    },
+    {
       "path": ".github/workflows/promote-release.yml",
       "owner": "GitHub Actions control plane",
       "inputs": [

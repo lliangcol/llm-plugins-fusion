@@ -8,6 +8,7 @@ import {
   LARGE_CHANGE_LIMITS,
   parseCodeOwnerPaths,
   parsePrBody,
+  stripHtmlComments,
 } from '../../scripts/lib/pr-governance.mjs';
 
 const COMPLETE_BODY = `## Summary
@@ -38,6 +39,12 @@ test('PR body parser and required evidence reject blank template sections', () =
   assert.equal(result.ok, false);
   assert.match(result.errors.join('\n'), /Summary.*concrete evidence/u);
   assert.match(result.errors.join('\n'), /missing required PR section "Why"/u);
+});
+
+test('HTML comment stripping removes nested and unclosed placeholder content', () => {
+  assert.equal(stripHtmlComments('safe<!-- outer <!-- nested --> tail -->done'), 'safedone');
+  assert.equal(stripHtmlComments('safe<!-- unclosed'), 'safe');
+  assert.equal(stripHtmlComments('<!-- only <!-- nested --> comment -->'), '');
 });
 
 test('the tracked PR template fails until required placeholders are replaced', () => {

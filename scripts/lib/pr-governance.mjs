@@ -11,8 +11,35 @@ export const REQUIRED_SECTIONS = Object.freeze([
   'Validation Results',
 ]);
 
-function stripHtmlComments(value) {
-  return String(value ?? '').replace(/<!--[\s\S]*?-->/gu, '').trim();
+/** @param {unknown} value */
+export function stripHtmlComments(value) {
+  const input = String(value ?? '');
+  let cursor = 0;
+  let output = '';
+
+  while (cursor < input.length) {
+    const opening = input.indexOf('<!--', cursor);
+    if (opening === -1) return `${output}${input.slice(cursor)}`.trim();
+    output += input.slice(cursor, opening);
+
+    let depth = 1;
+    let scan = opening + 4;
+    while (depth > 0) {
+      const nestedOpening = input.indexOf('<!--', scan);
+      const closing = input.indexOf('-->', scan);
+      if (closing === -1) return output.trim();
+      if (nestedOpening !== -1 && nestedOpening < closing) {
+        depth += 1;
+        scan = nestedOpening + 4;
+      } else {
+        depth -= 1;
+        scan = closing + 3;
+      }
+    }
+    cursor = scan;
+  }
+
+  return output.trim();
 }
 
 function normalizedLogin(value) {
