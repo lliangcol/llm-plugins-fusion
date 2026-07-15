@@ -2,9 +2,28 @@
 
 ## Summary
 
-- What changed:
-- Why it changed:
-- Maintainer owner:
+<!-- Describe the concrete change. Leaving this section blank fails PR Governance. -->
+
+## Why
+
+<!-- Explain the problem, evidence, or decision that makes this change necessary. -->
+
+## Maintainer Owner
+
+<!-- Name the accountable maintainer as a GitHub handle, for example @octocat. -->
+
+## Risk
+
+<!-- Describe affected trust boundaries and failure modes, or explain why risk is low. -->
+
+## Large Change Exception
+
+The review budget is at most 50 changed files and 1,000 added plus deleted
+lines. Split larger changes, or complete all three fields below.
+
+- Status: not-required
+- Reason: <!-- For a large PR, explain why splitting would increase risk or reduce reviewability. -->
+- Owner: <!-- For a large PR, name the exception owner as @github-handle. -->
 
 ## Marketplace Metadata
 
@@ -27,9 +46,19 @@
 - [ ] If this changes release, signing, provenance, workflows, or candidate evidence, a reviewer distinct from the PR author and future candidate actor has approved it. Candidate publication will verify this from GitHub review history; this checkbox is not evidence by itself.
 - [ ] Signing-key or recovery changes follow `docs/releases/operator-recovery-and-key-rotation.md` and do not claim a drill or rotation occurred without a run/evidence record.
 
-## Validation
+## Validation Results
 
-Paste the commands run and summarize the result:
+<!-- Paste commands run and summarize each result. Blank content fails PR Governance. -->
+
+## Validation Reference
+
+Replace the example block with observed results in the section above.
+
+```text
+command --that-was-run  # passed, failed, or skipped with a concrete reason
+```
+
+Common repository checks include:
 
 ```text
 node scripts/generate-registry.mjs
@@ -45,6 +74,7 @@ Bash hook syntax:
 
 ```text
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 

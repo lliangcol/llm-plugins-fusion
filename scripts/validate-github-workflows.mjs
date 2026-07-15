@@ -54,6 +54,7 @@ try {
   process.exit(1);
 }
 const errors = [];
+const PR_GOVERNANCE_CHECK = 'PR Governance';
 const EXTERNAL_REQUIRED_CHECKS = [
   'Dependency Review',
   'CodeQL / Analyze JavaScript',
@@ -63,6 +64,11 @@ const WORKFLOW_CONTRACTS = [
     file: '.github/workflows/ci.yml',
     permissions: [['contents', 'read']],
     label: 'CI workflow top-level permissions',
+  },
+  {
+    file: '.github/workflows/pr-governance.yml',
+    permissions: [['contents', 'read'], ['pull-requests', 'read']],
+    label: 'PR governance workflow top-level permissions',
   },
   {
     file: '.github/workflows/nightly.yml',
@@ -741,6 +747,7 @@ function validateRequiredCheckContracts() {
 
   const expectedRequiredChecks = [
     ...ciChecks,
+    PR_GOVERNANCE_CHECK,
     ...EXTERNAL_REQUIRED_CHECKS,
   ];
 
@@ -756,6 +763,54 @@ function validateRequiredCheckContracts() {
     expectedRequiredChecks,
     'print GitHub security settings required checks',
   );
+}
+
+function validatePrGovernanceContracts() {
+  const workflowFile = '.github/workflows/pr-governance.yml';
+  const workflowSrc = readWorkflow(workflowFile);
+  if (workflowSrc) {
+    const model = parseWorkflow(workflowFile, workflowSrc);
+    const triggers = model?.on ?? {};
+    const pullRequestTypes = triggers?.pull_request?.types ?? [];
+    const reviewTypes = triggers?.pull_request_review?.types ?? [];
+    for (const type of ['opened', 'edited', 'synchronize', 'reopened', 'ready_for_review']) {
+      if (!pullRequestTypes.includes(type)) recordError(workflowFile, `PR governance trigger is missing pull_request type ${type}`);
+    }
+    for (const type of ['submitted', 'edited', 'dismissed']) {
+      if (!reviewTypes.includes(type)) recordError(workflowFile, `PR governance trigger is missing pull_request_review type ${type}`);
+    }
+    if (triggers.push || triggers.pull_request_target) recordError(workflowFile, 'PR governance must run only on pull-request and review lifecycle events');
+    const job = model?.jobs?.governance;
+    if (job?.name !== PR_GOVERNANCE_CHECK) recordError(workflowFile, `governance job must expose stable check name "${PR_GOVERNANCE_CHECK}"`);
+    if (job?.['timeout-minutes'] !== 5) recordError(workflowFile, 'PR governance must retain its five-minute lightweight timeout');
+    const steps = job?.steps ?? [];
+    const checkout = steps.find((step) => String(step.uses ?? '').startsWith('actions/checkout@'));
+    if (checkout?.with?.['persist-credentials'] !== false) recordError(workflowFile, 'PR governance checkout must not persist Git credentials');
+    const setupNode = steps.find((step) => String(step.uses ?? '').startsWith('actions/setup-node@'));
+    if (String(setupNode?.with?.['node-version']) !== '22') recordError(workflowFile, 'PR governance must run on the minimum supported Node 22');
+    if (!steps.some((step) => step.run === 'node scripts/validate-pr-governance.mjs')) recordError(workflowFile, 'PR governance must invoke the source-owned validator with fixed argv');
+  }
+
+  const templateFile = '.github/pull_request_template.md';
+  const template = readRequiredFile(templateFile);
+  if (template) {
+    for (const heading of ['Summary', 'Why', 'Maintainer Owner', 'Risk', 'Validation Results', 'Large Change Exception']) {
+      if (!new RegExp(`^## ${escapeRegExp(heading)}\\s*$`, 'mu').test(template)) recordError(templateFile, `missing machine-validated section "${heading}"`);
+    }
+    for (const field of ['Status:', 'Reason:', 'Owner:']) {
+      if (!template.includes(field)) recordError(templateFile, `large change exception is missing ${field}`);
+    }
+    if (!template.includes('bash -n nova-plugin/hooks/scripts/pre-bash-check.sh')) recordError(templateFile, 'Bash syntax checklist must include pre-bash-check.sh');
+  }
+
+  const ownersFile = '.github/CODEOWNERS';
+  const owners = readRequiredFile(ownersFile);
+  if (owners) {
+    for (const path of ['/scripts/validate-github-workflows.mjs', '/scripts/validate-pr-governance.mjs', '/scripts/lib/pr-governance.mjs']) {
+      if (!owners.includes(path)) recordError(ownersFile, `PR governance policy surface must have an explicit code owner: ${path}`);
+    }
+  }
+
 }
 
 function validateCiRuntimeEvidenceContracts() {
@@ -820,6 +875,7 @@ function validateNpmCacheContracts() {
 validateWorkflowInventory();
 validateWorkflowContracts();
 validateRequiredCheckContracts();
+validatePrGovernanceContracts();
 validateCiRuntimeEvidenceContracts();
 validateNpmCacheContracts();
 

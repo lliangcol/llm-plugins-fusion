@@ -143,6 +143,7 @@ llm-plugins-fusion/
 |   |-- dependency-review.yml
 |   |-- label-sync.yml
 |   |-- plugin-install-smoke.yml
+|   |-- pr-governance.yml
 |   |-- nightly.yml
 |   |-- promote-release.yml
 |   |-- release-candidate.yml
@@ -535,8 +536,14 @@ schemas, docs, frontmatter, and `scripts/verify-agents.ps1`, PSScriptAnalyzer,
 a Windows Bash smoke job for hook syntax and Codex runtime smoke, and a macOS
 smoke job for schemas, frontmatter, docs, agent verification, and runtime
 smoke. Workflow YAML is limited to orchestration and fixed argv; release
-identity and transition semantics live in the Node release state machine. Real
-user-scope plugin install smoke is isolated in `.github/workflows/plugin-install-smoke.yml` for manual or
+identity and transition semantics live in the Node release state machine.
+PR governance is exposed as a separate lightweight required check that validates
+non-placeholder PR evidence, large-change exceptions, and current-head independent
+approval for sensitive paths. The tracked validator owns behavior and explicit
+`.github/CODEOWNERS` entries own the sensitive-path set; GitHub code-owner
+review and stale-approval settings remain required owner-side controls. Real
+user-scope plugin install smoke is isolated in
+`.github/workflows/plugin-install-smoke.yml` for manual or
 scheduled evidence and in `.github/workflows/release-candidate.yml` as an
 exact-RC-tag blocker. Stable `.github/workflows/release.yml` only delegates
 promotion of the already verified candidate; install smoke is not a default
