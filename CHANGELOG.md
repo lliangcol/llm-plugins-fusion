@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Added
+- Added a lightweight required PR Governance check for non-placeholder review
+  evidence, explicit large-change exceptions, and current-head independent
+  approval on the existing shared sensitive-path policy.
 - Added a runnable validation registry with fail-closed full, incremental, and
   shadow selection; opt-in content caching; and profile-bound elapsed-time
   evidence that keeps summed task duration diagnostic-only.

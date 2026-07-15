@@ -8,6 +8,7 @@
 
 const requiredChecks = [
   'Required / Aggregate',
+  'PR Governance',
   'Dependency Review',
   'CodeQL / Analyze JavaScript',
 ];
@@ -23,6 +24,7 @@ read-only and does not require network access.`);
 console.log('GitHub security settings checklist');
 console.log('');
 console.log('- Protect main with pull requests, stale approval dismissal, and no force pushes.');
+console.log('- Require code-owner review after confirming each sensitive surface has an eligible non-author reviewer.');
 console.log('- Keep default Actions token permissions read-only unless a workflow needs write access.');
 console.log('- Enable Dependency graph, Dependabot alerts, Dependabot security updates, CodeQL, and secret scanning.');
 console.log('- Enable public issue creation while keeping blank issues disabled and security reports private.');

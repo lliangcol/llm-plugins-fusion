@@ -4,7 +4,7 @@ Generated from package scripts, the runnable validation registry, GitHub workflo
 
 - Package scripts: 114
 - Runnable validation tasks: 63
-- GitHub workflows: 11
+- GitHub workflows: 12
 - Governance sources: 23
 - Generators: 25
 
