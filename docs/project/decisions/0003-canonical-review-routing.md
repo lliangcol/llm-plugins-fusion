@@ -31,10 +31,10 @@ Automatic routing selects only the six canonical surface identifiers:
 ```text
 explore
 produce-plan
-plan-review
-implement
 review
-finalize
+implement-plan
+finalize-work
+route
 ```
 
 The canonical review invocation is `/nova-plugin:review`. A route result may
