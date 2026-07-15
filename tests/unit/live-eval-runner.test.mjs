@@ -3,7 +3,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import test from 'node:test';
 import { resolve } from 'node:path';
 import { classifyProcessFailure, codexPrompt, evaluateSemanticCase, extractJsonOutput, main as liveMain, parseArgs, runLiveEvaluation, validateLiveCase } from '../../scripts/run-live-assistant-evals.mjs';
-import { assertPublicEvidenceSafe, classifyToolEvidence, deriveAdapterEvidence, normalizeCodexToolLifecycle, normalizeUsage } from '../../scripts/lib/evaluation-evidence.mjs';
+import { assertPublicEvidenceSafe, classifyToolEvidence, deriveAdapterEvidence, normalizeClaudeLoadSignals, normalizeCodexToolLifecycle, normalizeUsage } from '../../scripts/lib/evaluation-evidence.mjs';
 import { buildLiveExecutionPlan } from '../../scripts/lib/live-evaluation-plan.mjs';
 import { validateStandardSchema } from '../../scripts/lib/schema-engine.mjs';
 
@@ -73,16 +73,24 @@ test('simulated live execution retains only normalized evidence and proves raw c
 });
 
 test('simulated Claude enabled and disabled paths normalize route and approval output', async () => {
+  const claudeConfigDirs = [];
   const execute = (condition, caseId, resultText) => runLiveEvaluation(
     parseArgs(['--assistant', 'claude-code', '--profile', 'critical', '--condition', condition, '--case', caseId, '--max-invocations', '3']),
     {
       commandDetailsFn: async () => ({ available: true, detail: 'claude test-version' }),
-      captureProcessFn: async (_label, _command, args) => {
+      captureProcessFn: async (_label, _command, args, processOptions) => {
+        claudeConfigDirs.push(processOptions.env.CLAUDE_CONFIG_DIR);
         const debug = args[args.indexOf('--debug-file') + 1];
         const systemPrompt = args[args.indexOf('--append-system-prompt') + 1];
-        if (condition === 'plugin-enabled') assert.match(systemPrompt, /fully-qualified \/nova-plugin:<workflow-id>/u);
+        assert.deepEqual(args.slice(args.indexOf('--setting-sources'), args.indexOf('--setting-sources') + 2), ['--setting-sources', 'local']);
+        if (condition === 'plugin-enabled') {
+          assert.match(systemPrompt, /fully-qualified \/nova-plugin:<workflow-id>/u);
+          assert.match(systemPrompt, /complete ordered set[\s\S]*never return only unresolved inputs/iu);
+        }
         else assert.match(systemPrompt, /do not claim that any plugin or adapter is loaded/iu);
-        writeFileSync(debug, 'nova-plugin loaded');
+        writeFileSync(debug, condition === 'plugin-enabled'
+          ? 'Loaded plugin from path: /redacted/location/nova-plugin\nLoaded 6 skills from plugin nova-plugin\n'
+          : 'No explicit plugin directory was supplied.\n');
         return { ok: true, code: 0, timedOut: false, ms: 2, stdout: JSON.stringify({ result: resultText, usage: { input_tokens: 2, output_tokens: 3, total_tokens: 5 }, total_cost_usd: 0.01, permission_denials: condition === 'plugin-enabled' ? [{ tool_name: 'Skill' }] : [] }), stderr: '' };
       },
     },
@@ -98,6 +106,7 @@ test('simulated Claude enabled and disabled paths normalize route and approval o
   assert.equal(disabled.summary.passed, 3);
   assert.equal(disabled.assistant.adapterStaged, false);
   assert.equal(disabled.assistant.adapterLoadObserved, 'not-applicable');
+  assert.equal(claudeConfigDirs.every((path) => !existsSync(path)), true);
 });
 
 test('simulated parse and process failures remain normalized and bounded', async () => {
@@ -169,6 +178,7 @@ test('Codex prompts are condition-aware without leaking expected answers', () =>
   const enabled = codexPrompt(spec, 'plugin-enabled');
   assert.match(enabled, /has been staged/u);
   assert.match(enabled, /Do not inspect files, call tools/u);
+  assert.match(enabled, /complete ordered set[\s\S]*never return only unresolved inputs/iu);
   assert.doesNotMatch(enabled, /review-only|REVIEW_SCOPE/u);
   const disabled = codexPrompt(spec, 'plugin-disabled');
   assert.doesNotMatch(disabled, /adapter|canonical|review-only|REVIEW_SCOPE/iu);
@@ -264,13 +274,47 @@ test('Codex lifecycle fails closed for missing terminal state and unknown items'
 
 test('adapter staging, load observation, and contract validity remain independent', () => {
   const toolEvidence = classifyToolEvidence({ assistant: 'claude-code', condition: 'plugin-enabled', permissionDenials: [{ tool_name: 'Skill' }] });
-  const observed = deriveAdapterEvidence({ assistant: 'claude-code', condition: 'plugin-enabled', adapterStaged: true, toolEvidence });
+  const deniedOnly = deriveAdapterEvidence({ assistant: 'claude-code', condition: 'plugin-enabled', adapterStaged: true, toolEvidence });
+  assert.equal(deniedOnly.adapterLoadObserved, 'unavailable');
+  const observed = deriveAdapterEvidence({
+    assistant: 'claude-code',
+    condition: 'plugin-enabled',
+    adapterStaged: true,
+    toolEvidence,
+    claudeLoadSignals: ['claude-debug:plugin-loaded:nova-plugin', 'claude-debug:plugin-surface-loaded:nova-plugin:skills:6'],
+  });
   assert.equal(observed.adapterLoadObserved, 'observed');
   const codex = deriveAdapterEvidence({ assistant: 'codex', condition: 'plugin-enabled', adapterStaged: true, toolEvidence: classifyToolEvidence({ assistant: 'codex', condition: 'plugin-enabled' }), events: [{ type: 'turn.completed' }] });
   assert.equal(codex.adapterLoadObserved, 'unavailable');
   assert.equal(codex.adapterLoadReasonCode, 'codex-load-event-unavailable');
   const disabled = deriveAdapterEvidence({ assistant: 'codex', condition: 'plugin-disabled', adapterStaged: true, toolEvidence: codex });
   assert.equal(disabled.adapterLoadObserved, 'not-applicable');
+});
+
+test('Claude debug load evidence is normalized without paths parameters responses or raw log text', () => {
+  const debug = [
+    '2026-07-15 Loaded plugin from path: /redacted/location/nova-plugin',
+    '2026-07-15 Loaded 21 commands from plugin nova-plugin',
+    '2026-07-15 Loaded 6 skills from plugin nova-plugin',
+    '2026-07-15 request payload for nova-plugin',
+  ].join('\n');
+  const signals = normalizeClaudeLoadSignals(debug);
+  assert.deepEqual(signals, [
+    'claude-debug:plugin-loaded:nova-plugin',
+    'claude-debug:plugin-surface-loaded:nova-plugin:commands:21',
+    'claude-debug:plugin-surface-loaded:nova-plugin:skills:6',
+  ]);
+  assert.doesNotMatch(JSON.stringify(signals), /redacted|location|request|payload/iu);
+  assert.deepEqual(assertPublicEvidenceSafe({ adapterLoadSignals: signals }).adapterLoadSignals, signals);
+  const incomplete = deriveAdapterEvidence({
+    assistant: 'claude-code',
+    condition: 'plugin-enabled',
+    adapterStaged: true,
+    toolEvidence: classifyToolEvidence({ assistant: 'claude-code', condition: 'plugin-enabled' }),
+    claudeLoadSignals: ['claude-debug:plugin-loaded:nova-plugin'],
+  });
+  assert.equal(incomplete.adapterLoadObserved, 'unavailable');
+  assert.equal(incomplete.adapterLoadReasonCode, 'claude-debug-load-signal-incomplete');
 });
 
 test('usage reports stable availability state without inferred values', () => {

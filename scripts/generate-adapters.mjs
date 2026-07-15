@@ -87,7 +87,7 @@ Codex should treat the referenced \`nova-plugin/skills/nova-*/SKILL.md\` files a
 
 For write-capable workflows, require explicit approval and remain inside the user-provided workspace. Runtime requirements describe what execution needs; permission policy separately describes what may be preapproved, prompted, explicitly authorized, denied, or unsupported. Never interpret a prompted network or credential requirement as implicit authorization. User-scope mutation, external publish, and Git history mutation remain denied unless a consumer repository separately authorizes them.
 
-When routing, prefer the first exact specialized condition below over a broader hub. Return the selected workflow's canonical required input names exactly as UPPER_SNAKE_CASE; never substitute the route workflow's own REQUEST or a prose description.
+When routing, prefer the first exact specialized condition below over a broader hub. Return the complete ordered set of the selected workflow's canonical required input names exactly as UPPER_SNAKE_CASE even when values are present, inferred, or resolved; never return only unresolved inputs or substitute the route workflow's own REQUEST or a prose description.
 
 | Routing condition | Workflow | Action |
 | --- | --- | --- |

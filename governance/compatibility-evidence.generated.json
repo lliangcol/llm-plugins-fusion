@@ -8,7 +8,7 @@
     "workflow-specs/adapters/codex.json": "64d7d5750f5dfce4384d22f90fae5f6b5443ba22748bef7d944d3fddc5698e44",
     "workflow-specs/adapters/generic.json": "8881cf695b931f345a570a7973ff1982973a7b7bd96a7a7a3d91c203a3daf2de",
     "adapters/claude/manifest.json": "983c9ef396bee153b60c7d120bd5bf14167ec6252271cb3e4779fefef84fa335",
-    "adapters/codex/AGENTS.md": "b1b61be7a050fd1c0143a0247eb78880c756982acdc33ff02b9ca038d18d0555",
+    "adapters/codex/AGENTS.md": "697b4154fe8c858136604ce753f5c1f6e18b670ac0010daf4f9b7ff4214a91bf",
     "adapters/generic-agent-skills/manifest.json": "71b1c4689680947fd90f75c9aa24dfeff7610b3f7b8f079613f9194a8ba5d1d4",
     "governance/assistant-support.json": "d24356d1e875f83d9dde9e24bf9442b5aec290da7232907468dfc6ef40b0881c"
   },

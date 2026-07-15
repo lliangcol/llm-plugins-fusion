@@ -8,7 +8,7 @@ Codex should treat the referenced `nova-plugin/skills/nova-*/SKILL.md` files as 
 
 For write-capable workflows, require explicit approval and remain inside the user-provided workspace. Runtime requirements describe what execution needs; permission policy separately describes what may be preapproved, prompted, explicitly authorized, denied, or unsupported. Never interpret a prompted network or credential requirement as implicit authorization. User-scope mutation, external publish, and Git history mutation remain denied unless a consumer repository separately authorizes them.
 
-When routing, prefer the first exact specialized condition below over a broader hub. Return the selected workflow's canonical required input names exactly as UPPER_SNAKE_CASE; never substitute the route workflow's own REQUEST or a prose description.
+When routing, prefer the first exact specialized condition below over a broader hub. Return the complete ordered set of the selected workflow's canonical required input names exactly as UPPER_SNAKE_CASE even when values are present, inferred, or resolved; never return only unresolved inputs or substitute the route workflow's own REQUEST or a prose description.
 
 | Routing condition | Workflow | Action |
 | --- | --- | --- |
@@ -24,8 +24,8 @@ When routing, prefer the first exact specialized condition below over a broader 
 | `{"op":"semantic-condition","condition":"Intent requires a formal review-ready plan artifact at an explicit path."}` | produce-plan | Route to plan production. |
 | `{"op":"semantic-condition","condition":"Intent requires a strict production-critical or security audit."}` | review-strict | Route to strict review. |
 | `{"op":"semantic-condition","condition":"Intent requires a fast review of a small patch with only obvious findings."}` | review-lite | Route to lightweight review. |
-| `{"op":"semantic-condition","condition":"Intent requires standard severity-grouped read-only review with no implementation."}` | review-only | Route to review only. |
-| `{"op":"semantic-condition","condition":"Intent requires review but no narrower review contract is explicit."}` | review | Route to the review hub. |
+| `{"op":"semantic-condition","condition":"After external, plan-review, strict, and lite review conditions are excluded, intent requires a read-only or findings-only review and prohibits implementation or modification; explicit severity grouping is not required."}` | review-only | Route to the standard findings-only review workflow. |
+| `{"op":"semantic-condition","condition":"Intent requires a general review, does not specify a read-only, findings-only, no-change, lite, strict, external, or plan-review boundary, and no narrower review contract matches."}` | review | Route to the review hub. |
 | `{"op":"semantic-condition","condition":"Intent requires execution of an explicitly approved plan file."}` | implement-plan | Route to approved-plan implementation. |
 | `{"op":"semantic-condition","condition":"Intent requires a small bounded fix with focused validation."}` | implement-lite | Route to lightweight implementation. |
 | `{"op":"semantic-condition","condition":"Intent requires execution of explicit confirmed steps."}` | implement-standard | Route to standard implementation. |

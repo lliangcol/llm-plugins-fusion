@@ -42,6 +42,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - Removed duplicate full-suite execution from `npm run check` by reusing the coverage-owned test inventory before maintainer working-tree evidence checks.
 
 ### Fixed
+- Clarified the source-owned `review-only` versus `review` boundary, required
+  complete canonical input-name output even when values are already resolved,
+  and replaced denied-Skill load inference with normalized Claude debug load
+  evidence from an isolated configuration.
 - Made Codex live-evaluation prompts condition-aware without leaking expected
   routes, and normalized JSONL tool lifecycles so completed dangerous calls,
   denied or failed attempts, and unknown terminal states remain distinct; the

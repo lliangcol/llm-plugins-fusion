@@ -1443,16 +1443,16 @@
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/route.json",
-            "bytes": 11840,
-            "tokens": 2960,
-            "sha256": "6a3812a649a4f49ba7d13e8df66e72b7757cd8e7ff05a850ff7ea630d80ad25e"
+            "bytes": 12249,
+            "tokens": 3063,
+            "sha256": "7f87d2cb050a92a8f299ab3d91bd31904e1b7f6e3efb5ec6c8d38c7067229d72"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-route/SKILL.md",
-            "bytes": 13129,
-            "tokens": 3276,
-            "sha256": "b9576d80b34ebaf2b5c277259dde9c5496ce57a46e46975a93e400ed2f2591f1"
+            "bytes": 13537,
+            "tokens": 3378,
+            "sha256": "ea06b2df4f8944e88a9087aaf6c1cd319cac96328dfb0cc2c8a760d1b0853c7c"
           },
           {
             "kind": "owner-agent",
@@ -1482,8 +1482,8 @@
       },
       "aggregate": {
         "files": 4,
-        "bytes": 26978,
-        "tokens": 6739,
+        "bytes": 27795,
+        "tokens": 6944,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
