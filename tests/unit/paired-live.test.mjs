@@ -27,16 +27,17 @@ test('real-task benchmark fixes 24 tasks and reports intervals plus failure taxo
 });
 
 test('paired aggregation reports baseline delta and enforces safety gates', () => {
-  const enabledCase = { caseId: 'case', attempt: 1, contractValid: true, routeValid: true, requiredInputsValid: true, approvalExpected: true, approvalValid: true, zeroProjectWrites: true, inventedSurfaces: [], latencyMs: 10, totalTokens: 20, costUsd: 0.02 };
-  const disabledCase = { ...enabledCase, contractValid: false, latencyMs: 8, totalTokens: 10, costUsd: 0.01 };
+  const enabledCase = { caseId: 'case', attempt: 1, contractValid: true, routeValid: true, requiredInputsValid: true, approvalExpected: true, approvalValid: true, zeroProjectWrites: true, adapterLoaded: true, unexpectedToolUse: [], rawArtifactsRemoved: true, processFailure: null, parseFailure: null, inventedSurfaces: [], latencyMs: 10, totalTokens: 20, costUsd: 0.02 };
+  const disabledCase = { ...enabledCase, contractValid: false, adapterLoaded: false, latencyMs: 8, totalTokens: 10, costUsd: 0.01 };
   const result = aggregatePaired({ cases: [enabledCase] }, { cases: [disabledCase] });
   assert.equal(result.safetyPassed, true);
+  assert.equal(result.evidencePassed, true);
   assert.equal(result.metrics.baselineTaskSuccessDelta, 1);
   assert.equal(result.pairs[0].tokenDelta, 10);
 });
 
 test('paired aggregation preserves unavailable metrics and uses real top-two recall', () => {
-  const enabledCase = { caseId: 'case', attempt: 1, contractValid: false, routeValid: false, top2RouteValid: true, requiredInputsValid: true, approvalExpected: false, approvalValid: true, zeroProjectWrites: true, inventedSurfaces: [], latencyMs: 10, totalTokens: null, costUsd: null };
+  const enabledCase = { caseId: 'case', attempt: 1, contractValid: false, routeValid: false, top2RouteValid: true, requiredInputsValid: true, approvalExpected: false, approvalValid: true, zeroProjectWrites: true, adapterLoaded: true, unexpectedToolUse: [], rawArtifactsRemoved: true, processFailure: null, parseFailure: null, inventedSurfaces: [], latencyMs: 10, totalTokens: null, costUsd: null };
   const disabledCase = { ...enabledCase, top2RouteValid: false, latencyMs: 8, totalTokens: 10, costUsd: 0.01 };
   const result = aggregatePaired({ cases: [enabledCase] }, { cases: [disabledCase] });
   assert.equal(result.metrics.routeExactMatch, 0);
@@ -46,12 +47,21 @@ test('paired aggregation preserves unavailable metrics and uses real top-two rec
 });
 
 test('paired aggregation combines multiple assistants without key collisions', () => {
-  const base = { caseId: 'case', attempt: 1, contractValid: true, routeValid: true, top2RouteValid: true, requiredInputsValid: true, approvalExpected: false, approvalValid: true, zeroProjectWrites: true, inventedSurfaces: [], latencyMs: 1, totalTokens: null, costUsd: null };
+  const base = { caseId: 'case', attempt: 1, contractValid: true, routeValid: true, top2RouteValid: true, requiredInputsValid: true, approvalExpected: false, approvalValid: true, zeroProjectWrites: true, adapterLoaded: true, unexpectedToolUse: [], rawArtifactsRemoved: true, processFailure: null, parseFailure: null, inventedSurfaces: [], latencyMs: 1, totalTokens: null, costUsd: null };
   const enabled = ['claude-code', 'codex'].map((id) => ({ condition: 'plugin-enabled', assistant: { id }, cases: [base] }));
-  const disabled = ['claude-code', 'codex'].map((id) => ({ condition: 'plugin-disabled', assistant: { id }, cases: [base] }));
+  const disabled = ['claude-code', 'codex'].map((id) => ({ condition: 'plugin-disabled', assistant: { id }, cases: [{ ...base, adapterLoaded: false }] }));
   const result = aggregatePaired(enabled, disabled);
   assert.equal(result.pairs.length, 2);
   assert.deepEqual(result.pairs.map((entry) => entry.assistantId), ['claude-code', 'codex']);
+});
+
+test('paired aggregation fails closed on tool use, cleanup, and adapter-load gaps', () => {
+  const enabled = { condition: 'plugin-enabled', assistant: { id: 'claude-code', version: '1' }, cases: [{ caseId: 'case', attempt: 1, contractValid: true, routeValid: true, top2RouteValid: true, requiredInputsValid: true, approvalExpected: false, approvalValid: true, zeroProjectWrites: true, adapterLoaded: true, unexpectedToolUse: ['Skill'], rawArtifactsRemoved: true, processFailure: null, parseFailure: null, inventedSurfaces: [], latencyMs: 1, totalTokens: null, costUsd: null }] };
+  const disabled = { condition: 'plugin-disabled', assistant: { id: 'claude-code', version: '1' }, cases: [{ ...enabled.cases[0], adapterLoaded: false, unexpectedToolUse: [] }] };
+  const result = aggregatePaired(enabled, disabled);
+  assert.equal(result.safetyPassed, false);
+  assert.equal(result.evidencePassed, false);
+  assert.equal(result.metrics.unexpectedToolUses, 1);
 });
 
 test('paired CLI supports dry-run, writes a report, and fails closed on invalid input', (t) => {
@@ -59,7 +69,7 @@ test('paired CLI supports dry-run, writes a report, and fails closed on invalid 
   assert.equal(pairedMain(['--unknown']), 1);
   const directory=mkdtempSync(resolve(tmpdir(),'paired-main-')); t.after(()=>rmSync(directory,{recursive:true,force:true}));
   const enabled=resolve(directory,'enabled.json'); const disabled=resolve(directory,'disabled.json'); const out=resolve(directory,'report.json');
-  const base={caseId:'case',attempt:1,contractValid:true,routeValid:true,top2RouteValid:true,requiredInputsValid:true,approvalExpected:false,approvalValid:true,zeroProjectWrites:true,inventedSurfaces:[],latencyMs:1,totalTokens:null,costUsd:null};
+  const base={caseId:'case',attempt:1,contractValid:true,routeValid:true,top2RouteValid:true,requiredInputsValid:true,approvalExpected:false,approvalValid:true,zeroProjectWrites:true,adapterLoaded:true,unexpectedToolUse:[],rawArtifactsRemoved:true,processFailure:null,parseFailure:null,inventedSurfaces:[],latencyMs:1,totalTokens:null,costUsd:null};
   writeFileSync(enabled,JSON.stringify({cases:[base]})); writeFileSync(disabled,JSON.stringify({cases:[base]}));
   assert.equal(pairedMain(['--enabled',enabled,'--disabled',disabled,'--out',out]),0); assert.equal(JSON.parse(readFileSync(out,'utf8')).safetyPassed,true);
 });
