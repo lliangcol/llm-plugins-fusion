@@ -605,6 +605,46 @@ function validateProjectPositioningContracts() {
   }
 }
 
+function validateAuthoringSourceContracts() {
+  const checks = [
+    {
+      file: 'CLAUDE.md',
+      pattern: /Workflow authoring sources[\s\S]*`workflow-specs\/workflows\.json` \(v5 compatibility input\)[\s\S]*`workflow-specs\/behaviors\.json` \(v1 compatibility input\)/,
+      label: 'CLAUDE workflow authoring source boundary',
+    },
+    {
+      file: 'CLAUDE.md',
+      pattern: /Never hand-edit[\s\S]*`workflows\.v6\.json`, `behaviors\.v2\.json`, generated command wrappers,[\s\S]*generated Skill behavior blocks[\s\S]*node scripts\/migrate-v6-contracts\.mjs --write/,
+      label: 'CLAUDE generated workflow projection boundary',
+    },
+    {
+      file: 'AGENTS.md',
+      pattern: /Do not hand-edit `workflow-specs\/workflows\.v6\.json`,[\s\S]*`workflow-specs\/behaviors\.v2\.json`, generated command wrappers,[\s\S]*node scripts\/migrate-v6-contracts\.mjs --write/,
+      label: 'AGENTS generated workflow projection boundary',
+    },
+    {
+      file: 'workflow-specs/README.md',
+      pattern: /`workflows\.json` and `behaviors\.json` files are the authoring[\s\S]*sources[\s\S]*Do not[\s\S]*hand-edit `workflows\.v6\.json` or `behaviors\.v2\.json`/,
+      label: 'workflow specs authoring source boundary',
+    },
+    {
+      file: 'workflow-specs/README.md',
+      pattern: /node scripts\/migrate-v6-contracts\.mjs --write[\s\S]*node scripts\/generate-workflow-permissions\.mjs --write[\s\S]*node scripts\/generate-runtime-contracts\.mjs --write[\s\S]*node scripts\/generate-behavior-surfaces\.mjs --write[\s\S]*node scripts\/generate-adapters\.mjs --write[\s\S]*node scripts\/generate-command-docs\.mjs --write/,
+      label: 'workflow specs projection order',
+    },
+  ];
+  for (const check of checks) expectContentRegex(check.file, check.pattern, check.label);
+
+  const claudePath = 'CLAUDE.md';
+  const claude = readFileSync(resolve(root, claudePath), 'utf8');
+  for (const stale of [
+    /### Modify an Existing Command[\s\S]{0,500}?Edit `nova-plugin\/commands\/<id>\.md`/,
+    /### Modify an Existing Command[\s\S]{0,700}?Edit `nova-plugin\/skills\/nova-<id>\/SKILL\.md`/,
+  ]) {
+    if (stale.test(claude)) recordError(claudePath, 'stale direct-edit workflow bypasses authoring sources');
+  }
+}
+
 function validateReleasePromotionContracts() {
   const plugin = readJson('nova-plugin/.claude-plugin/plugin.json');
   const changelog = readFileSync(resolve(root, 'CHANGELOG.md'), 'utf8');
@@ -1835,6 +1875,7 @@ validateLinksAndCommandDocs({
 validateVersionReferences();
 validateInventoryFacts();
 validateProjectPositioningContracts();
+validateAuthoringSourceContracts();
 validateReleasePromotionContracts();
 validateMaintainerDiagnosticContracts();
 validatePublicApiCompatibilityContracts();
