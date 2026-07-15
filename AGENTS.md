@@ -128,6 +128,11 @@ npm run test:e2e
 npm run lint
 npm run ci:quick
 npm run ci:full
+npm run llmf -- check quick
+npm run llmf -- check full
+npm run llmf -- check security
+npm run llmf -- check release
+npm run llmf -- generate all
 npm run validate
 npm run validate:drift
 npm run validate:maintainer

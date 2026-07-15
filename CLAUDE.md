@@ -68,7 +68,7 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 - Release evidence template: `docs/releases/release-evidence-template.md`
 - Product-lane decisions: `governance/product-lanes.json`
 - Generated project-state aggregate: `governance/project-state.generated.json`
-- Maintainer npm shortcuts: `package.json` (`doctor`, `validate:bootstrap`, `demo:all`, `demo:route`,
+- Maintainer npm shortcuts: `package.json` (`llmf`, `doctor`, `validate:bootstrap`, `demo:all`, `demo:route`,
   `demo:review`, `validate`,
   `test`, `test:coverage`, `test:coverage:check`, `test:unit`,
   `test:integration`, `test:e2e`, `lint`,
@@ -239,6 +239,11 @@ npm run test:e2e
 npm run lint
 npm run ci:quick
 npm run ci:full
+npm run llmf -- check quick
+npm run llmf -- check full
+npm run llmf -- check security
+npm run llmf -- check release
+npm run llmf -- generate all
 npm run validate:drift
 npm run validate
 npm run validate:maintainer
