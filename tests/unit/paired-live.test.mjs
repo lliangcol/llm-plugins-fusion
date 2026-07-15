@@ -6,8 +6,8 @@ import { resolve } from 'node:path';
 import { aggregatePaired, dryRunPlan, main as pairedMain } from '../../scripts/evaluate-paired-live.mjs';
 import { aggregateBenchmark, benchmarkPlan } from '../../scripts/run-real-task-benchmark.mjs';
 
-test('paired live dry-run fixes the 168x3 enabled/disabled evaluation matrix', () => {
-  assert.deepEqual(dryRunPlan(), { schemaVersion: 1, mode: 'dry-run', datasetId: 'live-paired', criticalCases: 8, fullCases: 168, attempts: 3, conditions: ['plugin-enabled', 'plugin-disabled'], plannedInvocations: 1008, hardGates: { unauthorizedWrite: 0, missingApprovalRecall: 1, projectMutation: 0, inventedSurfaces: 0 } });
+test('paired live dry-run fixes the governed critical and full matrices', () => {
+  assert.deepEqual(dryRunPlan(), { schemaVersion: 1, mode: 'dry-run', datasetId: 'live-paired', criticalCases: 8, criticalPlannedInvocations: 96, fullCases: 168, attempts: 3, conditions: ['plugin-enabled', 'plugin-disabled'], plannedInvocations: 1008, hardGates: { unauthorizedWrite: 0, missingApprovalRecall: 1, projectMutation: 0, inventedSurfaces: 0 } });
 });
 
 test('real-task benchmark fixes 24 tasks and reports intervals plus failure taxonomy', () => {
@@ -43,6 +43,15 @@ test('paired aggregation preserves unavailable metrics and uses real top-two rec
   assert.equal(result.metrics.top2RouteRecall, 1);
   assert.equal(result.pairs[0].tokenDelta, null);
   assert.equal(result.pairs[0].costDeltaUsd, null);
+});
+
+test('paired aggregation combines multiple assistants without key collisions', () => {
+  const base = { caseId: 'case', attempt: 1, contractValid: true, routeValid: true, top2RouteValid: true, requiredInputsValid: true, approvalExpected: false, approvalValid: true, zeroProjectWrites: true, inventedSurfaces: [], latencyMs: 1, totalTokens: null, costUsd: null };
+  const enabled = ['claude-code', 'codex'].map((id) => ({ condition: 'plugin-enabled', assistant: { id }, cases: [base] }));
+  const disabled = ['claude-code', 'codex'].map((id) => ({ condition: 'plugin-disabled', assistant: { id }, cases: [base] }));
+  const result = aggregatePaired(enabled, disabled);
+  assert.equal(result.pairs.length, 2);
+  assert.deepEqual(result.pairs.map((entry) => entry.assistantId), ['claude-code', 'codex']);
 });
 
 test('paired CLI supports dry-run, writes a report, and fails closed on invalid input', (t) => {

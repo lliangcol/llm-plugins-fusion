@@ -4,22 +4,24 @@ import { buildEvaluationProfiles } from '../../scripts/generate-evaluation-profi
 
 const datasets = {
   live: [{ category: 'direct' }, { category: 'pressure' }],
+  'critical-live': [{ category: 'critical' }],
   critical: [{ category: 'critical' }],
 };
 
 const profiles = [
-  { id: 'critical', datasetId: 'critical', selection: { all: true }, executionKind: 'external-live', attempts: 1, conditions: ['on'], assistants: ['codex'] },
+  { id: 'critical', datasetId: 'critical-live', selection: { all: true }, executionKind: 'external-live', attempts: 3, conditions: ['on'], assistants: ['codex'] },
   { id: 'pr', datasetId: 'live', selection: { categories: ['direct'] }, executionKind: 'plan-only', attempts: 1, conditions: ['dry-run'], assistants: [] },
   { id: 'nightly', datasetId: 'live', selection: { categories: ['pressure'] }, executionKind: 'simulation', attempts: 1, conditions: ['simulation'], assistants: [] },
-  { id: 'release', datasetId: 'live', selection: { all: true }, executionKind: 'external-live', attempts: 2, conditions: ['on', 'off'], assistants: ['codex'] },
-  { id: 'manual', datasetId: 'live', selection: { all: true }, executionKind: 'external-live', attempts: 1, conditions: ['on'], assistants: ['codex'] },
+  { id: 'release', datasetId: 'live', selection: { all: true }, executionKind: 'external-live', attempts: 3, conditions: ['on', 'off'], assistants: ['codex'] },
+  { id: 'manual', datasetId: 'live', selection: { all: true }, executionKind: 'external-live', attempts: 3, conditions: ['on'], assistants: ['codex'] },
 ];
 
 test('evaluation profiles require the exact governed inventory and derive planned work', () => {
   const rows = buildEvaluationProfiles({ profiles }, datasets);
   assert.equal(rows.find((row) => row.id === 'pr').planned, 1);
-  assert.equal(rows.find((row) => row.id === 'release').planned, 8);
-  assert.equal(rows.find((row) => row.id === 'release').blocked, 8);
+  assert.equal(rows.find((row) => row.id === 'critical').planned, 3);
+  assert.equal(rows.find((row) => row.id === 'release').planned, 12);
+  assert.equal(rows.find((row) => row.id === 'release').blocked, 12);
   assert.throws(() => buildEvaluationProfiles({ profiles: profiles.slice(1) }, datasets), /each governed profile exactly once/u);
 });
 
@@ -29,4 +31,5 @@ test('evaluation profiles reject ambiguous, empty, and unsupported selections', 
   assert.throws(() => buildEvaluationProfiles({ profiles: replace('pr', { selection: { all: true, categories: ['direct'] } }) }, datasets), /either all cases or/u);
   assert.throws(() => buildEvaluationProfiles({ profiles: replace('pr', { selection: { categories: ['missing'] } }) }, datasets), /unknown category/u);
   assert.throws(() => buildEvaluationProfiles({ profiles: replace('release', { assistants: [] }) }, datasets), /requires assistants/u);
+  assert.throws(() => buildEvaluationProfiles({ profiles: replace('critical', { attempts: 4 }) }, datasets), /exactly 3 attempts/u);
 });

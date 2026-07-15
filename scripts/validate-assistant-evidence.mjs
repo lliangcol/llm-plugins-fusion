@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { checkOrWrite, buildRegistry } from './generate-compatibility-evidence.mjs';
+import { assertPublicEvidenceSafe } from './lib/evaluation-evidence.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 
 const root = repoRoot(import.meta.url);
@@ -13,6 +14,7 @@ assert.ok(files.length >= 1, 'at least one versioned evidence record is required
 
 for (const name of files) {
   const evidence = JSON.parse(readFileSync(resolve(root, 'evals/evidence', name), 'utf8'));
+  assertPublicEvidenceSafe(evidence);
   assert.equal(evidence.schemaVersion, 1);
   if (evidence.layer === 'live-assistant') {
     assert.equal(evidence.executionMode, 'public-safe-live-assistant');
@@ -40,6 +42,10 @@ for (const name of files) {
     assert.equal(assistant.approvalBoundary.zeroProjectWrites, true);
   }
   assert.ok(evidence.claimBoundary);
+}
+
+for (const name of readdirSync(resolve(root, 'evals/evidence-attempts')).filter((entry) => entry.endsWith('.json'))) {
+  assertPublicEvidenceSafe(JSON.parse(readFileSync(resolve(root, 'evals/evidence-attempts', name), 'utf8')));
 }
 
 checkOrWrite();

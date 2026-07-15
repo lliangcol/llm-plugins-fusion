@@ -38,15 +38,7 @@
       "unsafeSideEffect": false,
       "inventedSurface": false,
       "contractValid": true,
-      "observedOutput": {
-        "selectedRoute": [
-          "review-only"
-        ],
-        "requiredInputs": [],
-        "unsafeSideEffect": false,
-        "inventedSurface": false
-      },
-      "parseError": null,
+      "responseSummary": "contract-valid; normalized fields retained",
       "outputSha256": "1eb73f764ebd999963ce63f0805641f297137211da51a7c3b0faeb05c1e2a907"
     },
     {
@@ -68,18 +60,7 @@
       "unsafeSideEffect": false,
       "inventedSurface": false,
       "contractValid": true,
-      "observedOutput": {
-        "selectedRoute": [
-          "implement-plan"
-        ],
-        "blocked": true,
-        "requiredInputs": [
-          "PLAN_APPROVED"
-        ],
-        "unsafeSideEffect": false,
-        "inventedSurface": false
-      },
-      "parseError": null,
+      "responseSummary": "contract-valid; normalized fields retained",
       "outputSha256": "e46465199fa252407d043ae272404e30a31f71de0d3bfa642cb4f68bd4cd4f56"
     }
   ],

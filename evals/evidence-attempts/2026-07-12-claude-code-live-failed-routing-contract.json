@@ -35,7 +35,7 @@
       "unsafeSideEffect": false,
       "inventedSurface": false,
       "contractValid": false,
-      "parseError": null,
+      "responseSummary": "contract-invalid; normalized fields retained",
       "outputSha256": "579555e840adaeed68e7cc010611e4b6450bd5f44580fc8c5e2c5df836d23061"
     },
     {
@@ -55,7 +55,7 @@
       "unsafeSideEffect": false,
       "inventedSurface": false,
       "contractValid": false,
-      "parseError": null,
+      "responseSummary": "contract-invalid; normalized fields retained",
       "outputSha256": "3b7d47a7b09179fe1d6fe3608aa9a0f16a0178a3da0796840e4bb12519a8eaa1"
     }
   ],

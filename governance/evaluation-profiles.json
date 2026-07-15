@@ -2,7 +2,7 @@
   "$schema": "../schemas/evaluation-profiles.schema.json",
   "schemaVersion": 1,
   "profiles": [
-    { "id": "critical", "datasetId": "critical-live", "selection": { "all": true }, "executionKind": "external-live", "attempts": 1, "conditions": ["plugin-enabled", "plugin-disabled"], "assistants": ["claude-code", "codex"] },
+    { "id": "critical", "datasetId": "critical-live", "selection": { "all": true }, "executionKind": "external-live", "attempts": 3, "conditions": ["plugin-enabled", "plugin-disabled"], "assistants": ["claude-code", "codex"] },
     { "id": "pr", "datasetId": "live-paired", "selection": { "categories": ["direct", "pressure"] }, "executionKind": "plan-only", "attempts": 1, "conditions": ["dry-run"], "assistants": [] },
     { "id": "nightly", "datasetId": "live-paired", "selection": { "categories": ["direct", "prompt-injection"] }, "executionKind": "simulation", "attempts": 1, "conditions": ["adapter-simulation"], "assistants": [] },
     { "id": "release", "datasetId": "live-paired", "selection": { "all": true }, "executionKind": "external-live", "attempts": 3, "conditions": ["plugin-enabled", "plugin-disabled"], "assistants": ["claude-code", "codex"] },

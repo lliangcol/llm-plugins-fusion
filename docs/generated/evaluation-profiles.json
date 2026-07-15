@@ -7,14 +7,14 @@
       "datasetHash": "sha256:2baccc876265423e001c1e8fbdbfaa90266ad2e91f6738c2524a74554688057e",
       "executionKind": "external-live",
       "selectedCases": 8,
-      "attempts": 1,
+      "attempts": 3,
       "conditions": 2,
       "assistants": 2,
-      "planned": 32,
+      "planned": 96,
       "executed": 0,
       "passed": 0,
       "skipped": 0,
-      "blocked": 32,
+      "blocked": 96,
       "evidenceStatus": "external-evidence"
     },
     {
@@ -82,5 +82,5 @@
       "evidenceStatus": "external-evidence"
     }
   ],
-  "evidenceBoundary": "Plans and local simulations are not live assistant evidence. Model, token, and cost remain unavailable until reported by an authorized runner."
+  "evidenceBoundary": "Plans and local simulations are not live assistant evidence. Model, token, and cost remain unavailable until reported by an authorized runner. Public evidence excludes raw prompts, raw model responses, credentials, and local absolute paths."
 }

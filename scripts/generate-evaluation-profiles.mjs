@@ -27,6 +27,8 @@ export function buildEvaluationProfiles(registry, datasets) {
     const external = profile.executionKind === 'external-live';
     if (external && profile.assistants.length === 0) throw new Error(`${profile.id} external-live profile requires assistants`);
     if (!external && profile.assistants.length > 0) throw new Error(`${profile.id} non-live profile must not claim assistant executions`);
+    if (external && (!Number.isInteger(profile.attempts) || profile.attempts < 3 || profile.attempts > 5)) throw new Error(`${profile.id} external-live attempts must be between 3 and 5`);
+    if (profile.id === 'critical' && (profile.attempts !== 3 || profile.datasetId !== 'critical-live')) throw new Error('critical profile must use critical-live with exactly 3 attempts');
     const planned = external ? cases.length * profile.attempts * profile.conditions.length * profile.assistants.length : cases.length;
     return {
       id: profile.id,
@@ -55,7 +57,7 @@ export function outputs() {
   };
   const rows = buildEvaluationProfiles(registry, datasets);
   const facts = deriveEvaluationFacts(root).realTask;
-  const json = `${JSON.stringify({ schemaVersion: 1, profiles: rows, evidenceBoundary: 'Plans and local simulations are not live assistant evidence. Model, token, and cost remain unavailable until reported by an authorized runner.' }, null, 2)}\n`;
+  const json = `${JSON.stringify({ schemaVersion: 1, profiles: rows, evidenceBoundary: 'Plans and local simulations are not live assistant evidence. Model, token, and cost remain unavailable until reported by an authorized runner. Public evidence excludes raw prompts, raw model responses, credentials, and local absolute paths.' }, null, 2)}\n`;
   const md = `# Evaluation profiles\n\nGenerated from \`governance/evaluation-profiles.json\`. Planned, executed, passed, skipped, and blocked are never interchangeable.\n\n| Profile | Dataset | Mode | Cases | Planned | Executed | Passed | Skipped | Blocked | Evidence |\n| --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |\n${rows.map((row) => `| ${row.id} | ${row.datasetId} | ${row.executionKind} | ${row.selectedCases} | ${row.planned} | ${row.executed} | ${row.passed} | ${row.skipped} | ${row.blocked} | ${row.evidenceStatus} |`).join('\n')}\n\nThe ${facts.taskCount}-task real-task benchmark remains a separate dataset with ${facts.plannedInvocations} planned external invocations and zero newly authorized executions in this remediation. Legacy minimal CLI observations do not raise compatibility levels.\n`;
   return [['docs/generated/evaluation-profiles.json', json], ['docs/generated/evaluation-profiles.md', md]];
 }

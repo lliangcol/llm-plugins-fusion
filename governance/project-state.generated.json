@@ -48,6 +48,21 @@
       "attempts": 3,
       "plannedInvocations": 1008
     },
+    "criticalLive": {
+      "datasetId": "critical-live",
+      "sourcePath": "evals/critical-live/cases.json",
+      "caseCount": 8,
+      "assistants": [
+        "claude-code",
+        "codex"
+      ],
+      "conditions": [
+        "plugin-enabled",
+        "plugin-disabled"
+      ],
+      "attempts": 3,
+      "plannedInvocations": 96
+    },
     "realTask": {
       "datasetId": "real-task-benchmark",
       "sourcePath": "benchmarks/real-tasks.json",

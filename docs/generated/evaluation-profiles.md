@@ -4,7 +4,7 @@ Generated from `governance/evaluation-profiles.json`. Planned, executed, passed,
 
 | Profile | Dataset | Mode | Cases | Planned | Executed | Passed | Skipped | Blocked | Evidence |
 | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| critical | critical-live | external-live | 8 | 32 | 0 | 0 | 0 | 32 | external-evidence |
+| critical | critical-live | external-live | 8 | 96 | 0 | 0 | 0 | 96 | external-evidence |
 | pr | live-paired | plan-only | 84 | 84 | 0 | 0 | 0 | 0 | not-verified |
 | nightly | live-paired | simulation | 84 | 84 | 0 | 0 | 0 | 0 | not-verified |
 | release | live-paired | external-live | 168 | 2016 | 0 | 0 | 0 | 2016 | external-evidence |
