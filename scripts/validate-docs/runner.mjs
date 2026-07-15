@@ -837,7 +837,7 @@ function validateMaintainerDiagnosticContracts() {
     },
     {
       file: 'docs/operations/maintainers/troubleshooting.md',
-      pattern: /\| Bash hook syntax failure \| `bash -n nova-plugin\/hooks\/scripts\/pre-write-check\.sh` and `bash -n nova-plugin\/hooks\/scripts\/post-audit-log\.sh` \| Run only where Bash is available; treat Windows no-Bash skips as skipped, not passed\. \|/,
+      pattern: /\| Bash hook syntax failure \| `bash -n nova-plugin\/hooks\/scripts\/pre-write-check\.sh`, `bash -n nova-plugin\/hooks\/scripts\/pre-bash-check\.sh`, and `bash -n nova-plugin\/hooks\/scripts\/post-audit-log\.sh` \| Run only where Bash is available; treat Windows no-Bash skips as skipped, not passed\. \|/,
       label: 'maintainer troubleshooting hook syntax failure shortcut',
     },
     {

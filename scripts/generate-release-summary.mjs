@@ -8,7 +8,7 @@ import { repoRoot } from './lib/repo-root.mjs';
 const root = repoRoot(import.meta.url);
 const read = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 
-export function buildReleaseSummary({ channels, proof, adoption }) {
+export function buildReleaseSummary({ channels, proof, adoption, evidenceLevels }) {
   const stable = channels.stable;
   const proofMatches = proof.matches === true
     && stable.state === 'INSTALL_PROVEN'
@@ -17,6 +17,10 @@ export function buildReleaseSummary({ channels, proof, adoption }) {
     && proof.stable?.commit === stable.commit
     && proof.candidateTreeDigest === stable.pluginTreeSha256
     && proof.installedTreeDigest === stable.pluginTreeSha256;
+  const evidenceLevelId = proofMatches ? evidenceLevels.sourceControlledStableProof.highestAcceptedLevel : 'E0';
+  const evidenceLevel = evidenceLevels.levels.find((level) => level.id === evidenceLevelId);
+  if (!evidenceLevel) throw new Error(`evidence taxonomy does not define ${evidenceLevelId}`);
+  const limitation = `Does not prove ${evidenceLevel.doesNotProve.charAt(0).toLowerCase()}${evidenceLevel.doesNotProve.slice(1)}.`;
   return {
     schemaVersion: 1,
     release: {
@@ -26,9 +30,9 @@ export function buildReleaseSummary({ channels, proof, adoption }) {
       pluginTreeSha256: stable.pluginTreeSha256,
     },
     evidenceLevel: {
-      highestVerified: proofMatches ? 'E3' : 'E0',
-      label: proofMatches ? 'Isolated install' : 'Static',
-      limitation: proofMatches ? 'Does not prove assistant workflow adherence.' : 'Does not prove installation or assistant behavior.',
+      highestVerified: evidenceLevel.id,
+      label: evidenceLevel.name,
+      limitation,
     },
     sections: {
       verified: [
@@ -51,6 +55,7 @@ export function outputs() {
     channels: read('governance/release-channels.json'),
     proof: read('governance/stable-install-proof.json'),
     adoption: read('governance/adoption-evidence.json'),
+    evidenceLevels: read('governance/evidence-levels.json'),
   });
   const json = `${JSON.stringify(data, null, 2)}\n`;
   const md = `# Generated release summary\n\nVersion **${data.release.version}**; exact stable tag **${data.release.tag}**; plugin tree digest \`${data.release.pluginTreeSha256}\`.\n\nHighest verified evidence: **${data.evidenceLevel.highestVerified} ${data.evidenceLevel.label}**. ${data.evidenceLevel.limitation}\n\n${Object.entries(data.sections).map(([name, items]) => `## ${name.replace(/([A-Z])/gu, ' $1').replace(/^./u, (character) => character.toUpperCase())}\n\n${items.map((item) => `- ${item}`).join('\n')}`).join('\n\n')}\n`;

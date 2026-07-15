@@ -11,9 +11,21 @@ const policy = JSON.parse(readFileSync(resolve(root, 'governance/validation-perf
 
 export function validatePerformanceReport(report, performancePolicy = policy, { requireProfile = null, currentDigests = validationEvidenceDigests(root) } = {}) {
   if (report?.command !== 'validate-all') throw new Error('performance evidence must be a validate-all diagnostics report');
-  if (!report.summary) return { comparable: false, status: 'not-comparable', reason: 'legacy report has summed task durations but no observed elapsed wall time' };
+  if (!report.summary) {
+    if (report.schemaVersion === 2) throw new Error('diagnostics schema v2 performance evidence requires an observed summary');
+    return { comparable: false, status: 'not-comparable', reason: 'legacy report has summed task durations but no observed elapsed wall time' };
+  }
   const { summary } = report;
   for (const key of ['elapsedWallMs', 'sumTaskMs', 'runtimeSmokeMs']) if (!Number.isFinite(summary[key]) || summary[key] < 0) throw new Error(`performance evidence has invalid ${key}`);
+  if (!Array.isArray(report.results) || report.results.length === 0) throw new Error('performance evidence has no validation results');
+  if (summary.selectedTaskCount !== report.results.length) throw new Error('performance evidence selected task count does not match validation results');
+  if (report.results.some((result) => ['blocked', 'failed'].includes(result.status))) throw new Error('performance evidence contains a blocked or failed validation result');
+  for (const result of report.results) if (!Number.isFinite(result.actual?.durationMs) || result.actual.durationMs < 0) throw new Error(`performance evidence has an invalid duration for ${result.check ?? 'unknown check'}`);
+  const observedSumTaskMs = report.results.reduce((sum, result) => sum + result.actual.durationMs, 0);
+  if (observedSumTaskMs !== summary.sumTaskMs) throw new Error('performance evidence summed task duration does not match validation results');
+  const runtimeResults = report.results.filter((result) => result.check === 'runtime.smoke');
+  if (runtimeResults.length !== 1 || runtimeResults[0].status !== 'passed') throw new Error('performance evidence requires exactly one passed runtime.smoke result');
+  if (runtimeResults[0].actual?.durationMs !== summary.runtimeSmokeMs) throw new Error('performance evidence runtime smoke summary does not match validation results');
   if (summary.mode !== 'full' || summary.cacheHitCount !== 0) throw new Error('fresh-process performance evidence requires full mode with zero cache hits');
   if (!summary.profile?.comparable) {
     if (requireProfile) throw new Error(`Blocked: required performance profile ${requireProfile} is unavailable or non-comparable`);

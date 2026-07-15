@@ -9,7 +9,10 @@
       "localWindowsPath": { "type": ["string", "null"] }, "authoritativePath": { "type": "string" }, "evidenceStrength": { "enum": ["authoritative", "equivalent", "partial", "external"] }, "reasonCode": { "type": "string" }
     } } },
     "containerFallback": { "type": "object", "additionalProperties": false, "required": ["automatic", "enabled", "imageDigest", "network", "mount", "argv"], "properties": {
-      "automatic": { "const": false }, "enabled": { "type": "boolean" }, "imageDigest": { "type": ["string", "null"] }, "network": { "const": "none" }, "mount": { "const": "read-only" }, "argv": { "type": "array", "items": { "type": "string" } }
-    } }
+      "automatic": { "const": false }, "enabled": { "type": "boolean" }, "imageDigest": { "type": ["string", "null"] }, "network": { "const": "none" }, "mount": { "const": "read-only" }, "argv": { "const": ["bash", "-n"] }
+    }, "allOf": [
+      { "if": { "properties": { "enabled": { "const": true } }, "required": ["enabled"] }, "then": { "properties": { "imageDigest": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" } } } },
+      { "if": { "properties": { "enabled": { "const": false } }, "required": ["enabled"] }, "then": { "properties": { "imageDigest": { "type": "null" } } } }
+    ] }
   }
 }

@@ -370,6 +370,7 @@ const targets = [
   { schema: loadJson('schemas/evaluation-profiles.schema.json'), data: loadJson('governance/evaluation-profiles.json'), label: 'governance/evaluation-profiles.json' },
   { schema: loadJson('schemas/validation-performance.schema.json'), data: loadJson('governance/validation-performance.json'), label: 'governance/validation-performance.json' },
   { schema: loadJson('schemas/platform-evidence.schema.json'), data: loadJson('governance/platform-evidence.json'), label: 'governance/platform-evidence.json' },
+  { schema: loadJson('schemas/evidence-levels.schema.json'), data: loadJson('governance/evidence-levels.json'), label: 'governance/evidence-levels.json' },
   {
     schema: loadJson('schemas/complexity-budget.schema.json'),
     data: loadJson('governance/complexity-budget.json'),
@@ -455,6 +456,7 @@ const schemaPaths = [
   'schemas/evaluation-profiles.schema.json',
   'schemas/validation-performance.schema.json',
   'schemas/platform-evidence.schema.json',
+  'schemas/evidence-levels.schema.json',
   'schemas/release-channels.schema.json',
   'schemas/task-registry.schema.json',
   'schemas/complexity-budget.schema.json',

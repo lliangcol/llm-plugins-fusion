@@ -45,3 +45,31 @@ test('content cache invalidates when input or output content changes', () => {
     assert.match(readFileSync(join(root, '.cache/nova-validate/docs.validate.json'), 'utf8'), /"status": "passed"/u);
   } finally { rmSync(root, { recursive: true, force: true }); }
 });
+
+test('content cache binds validator implementation, shared libraries, and locked toolchain inputs', () => {
+  const root = mkdtempSync(join(tmpdir(), 'nova-cache-engine-'));
+  try {
+    mkdirSync(join(root, 'docs'), { recursive: true });
+    mkdirSync(join(root, 'scripts', 'lib'), { recursive: true });
+    writeFileSync(join(root, 'docs', 'input.md'), 'stable');
+    writeFileSync(join(root, 'scripts', 'validate-docs.mjs'), 'export default 1;');
+    writeFileSync(join(root, 'scripts', 'lib', 'shared.mjs'), 'export default 1;');
+    writeFileSync(join(root, 'package.json'), '{}');
+    writeFileSync(join(root, 'package-lock.json'), '{}');
+    writeFileSync(join(root, '.node-version'), '24');
+    const definition = { ...validationTaskDefinitions.find((entry) => entry.id === 'docs.validate'), inputs: ['docs/input.md'], outputs: [] };
+    const task = { id: definition.id, label: definition.label };
+    const repoFiles = ['docs/input.md', 'scripts/validate-docs.mjs', 'scripts/lib/shared.mjs', 'package.json', 'package-lock.json', '.node-version'];
+    const cache = createValidationCache({ root, definitions: [definition], repoFiles, enabled: true });
+    cache.store(task, { ok: true });
+    assert.equal(cache.lookup(task)?.cached, true);
+    writeFileSync(join(root, 'scripts', 'validate-docs.mjs'), 'export default 2;');
+    assert.equal(cache.lookup(task), null);
+    cache.store(task, { ok: true });
+    writeFileSync(join(root, 'scripts', 'lib', 'shared.mjs'), 'export default 2;');
+    assert.equal(cache.lookup(task), null);
+    cache.store(task, { ok: true });
+    writeFileSync(join(root, 'package-lock.json'), '{"lockfileVersion":3}');
+    assert.equal(cache.lookup(task), null);
+  } finally { rmSync(root, { recursive: true, force: true }); }
+});

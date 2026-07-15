@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Added
+- Added a runnable validation registry with fail-closed full, incremental, and
+  shadow selection; opt-in content caching; and profile-bound elapsed-time
+  evidence that keeps summed task duration diagnostic-only.
+- Added deterministic SPDX license auditing for the complete npm lockfile,
+  governed expiring reviews, generated license evidence, and scheduled CI
+  collection independent from vulnerability audit evidence.
+- Added platform evidence and E0-E5 engineering-evidence taxonomies, a
+  generated maintainer control-plane inventory, and digest-bound isolated
+  install plus authenticated-route evidence metadata.
 - Added a schema-validated generic assistant manifest, product-owned
   compatibility-alias gates, product-neutral runtime compatibility
   compilation, and fail-closed static workflow capability negotiation.
@@ -27,6 +36,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - Removed duplicate full-suite execution from `npm run check` by reusing the coverage-owned test inventory before maintainer working-tree evidence checks.
 
 ### Fixed
+- Bound validation cache hits to validator implementations, shared libraries,
+  the locked toolchain, and the exact Node runtime; restored fail-closed
+  runtime-smoke/result integrity checks for performance evidence; prevented
+  SPDX branch selection from bypassing custom, deprecated, or AND-obligation
+  review; and synchronized documentation with all three Bash hook launchers.
 - Made preview filesystem loading and compilation validate by default; retained
   explicit `Unchecked` APIs and a deprecated 4.x validated compatibility alias.
 - Reconciled the `4.0.0` changelog narrative with the published `v4.0.0` stable release and added a dedicated release-channel drift check.

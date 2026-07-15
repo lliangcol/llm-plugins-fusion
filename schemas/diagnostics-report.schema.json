@@ -54,5 +54,11 @@
         }
       }
     }
-  }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "schemaVersion": { "const": 2 } }, "required": ["schemaVersion"] },
+      "then": { "properties": { "summary": {} }, "required": ["summary"] }
+    }
+  ]
 }

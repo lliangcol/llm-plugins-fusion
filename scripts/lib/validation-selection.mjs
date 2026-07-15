@@ -106,14 +106,30 @@ export function createValidationCache({ root, definitions, repoFiles, enabled = 
   const definitionById = new Map(definitions.map((definition) => [definition.id, definition]));
   const fileDigestCache = new Map();
   const comparableEnvironment = {
-    nodeMajor: process.versions.node.split('.')[0], platform: process.platform, arch: process.arch, concurrency: process.env.NOVA_VALIDATE_CONCURRENCY ?? '3',
+    nodeVersion: process.versions.node, platform: process.platform, arch: process.arch, concurrency: process.env.NOVA_VALIDATE_CONCURRENCY ?? '3',
     engineDigest: hash(Buffer.concat([
       readFileSync(fileURLToPath(import.meta.url)),
       readFileSync(fileURLToPath(new URL('./validation-task-registry.mjs', import.meta.url))),
     ])),
   };
+  const sharedImplementationInputs = repoFiles.filter((file) => matchesAny(file, [
+    'package.json',
+    'package-lock.json',
+    '.node-version',
+    'scripts/lib/**',
+  ]));
+  function implementationInputs(definition) {
+    const candidate = definition.runner?.args?.[0];
+    if (!candidate || !['node', 'command'].includes(definition.runner.kind)) return [];
+    const normalized = normalize(candidate);
+    return repoFiles.includes(normalized) ? [normalized] : [];
+  }
   function keyFor(definition) {
-    const inputs = repoFiles.filter((file) => matchesAny(file, definition.inputs));
+    const inputs = [...new Set([
+      ...repoFiles.filter((file) => matchesAny(file, definition.inputs)),
+      ...sharedImplementationInputs,
+      ...implementationInputs(definition),
+    ])];
     return hash(JSON.stringify({ definition, comparableEnvironment, inputDigest: digestPaths(root, inputs, fileDigestCache) }));
   }
   function outputDigest(definition) { return digestPaths(root, definition.outputs, fileDigestCache); }

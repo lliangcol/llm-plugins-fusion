@@ -67,6 +67,7 @@ jobs:
         env:
           NOVA_VALIDATE_WRITE_TIMINGS: '1'
           NOVA_RUNNER_CLASS: github-hosted
+          NOVA_REQUIRED_VALIDATION_PROFILE: linux-x64-node22-github-hosted-3-fresh-process-full-uncached
       - run: npm run test:coverage:check
       - run: npm run release:artifacts
         env:

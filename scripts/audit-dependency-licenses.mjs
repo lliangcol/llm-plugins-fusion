@@ -18,13 +18,6 @@ const markdownPath = resolve(root, 'docs/generated/dependency-license-audit.md')
 const sha256 = (value) => `sha256:${createHash('sha256').update(value).digest('hex')}`;
 const load = (path) => JSON.parse(readFileSync(path, 'utf8'));
 
-function collectLicenseIds(ast, values = []) {
-  if (ast?.license) values.push(ast.license);
-  if (ast?.left) collectLicenseIds(ast.left, values);
-  if (ast?.right) collectLicenseIds(ast.right, values);
-  return values;
-}
-
 function astSummary(ast) {
   if (ast.license) return { license: ast.license, ...(ast.exception ? { exception: ast.exception } : {}) };
   return { conjunction: ast.conjunction, left: astSummary(ast.left), right: astSummary(ast.right) };
@@ -43,6 +36,23 @@ function evaluateAst(ast, denied) {
   }
   if (left === right) return left;
   return 'blocked';
+}
+
+function evaluateSelectedAst(ast, selectedLicense, denied) {
+  if (ast.license) return { containsSelection: ast.license === selectedLicense, status: evaluateAst(ast, denied) };
+  const left = evaluateSelectedAst(ast.left, selectedLicense, denied);
+  const right = evaluateSelectedAst(ast.right, selectedLicense, denied);
+  if (ast.conjunction === 'or') {
+    const selected = [left, right].filter((branch) => branch.containsSelection);
+    if (selected.length === 0) return { containsSelection: false, status: 'blocked' };
+    if (selected.some((branch) => branch.status === 'passed')) return { containsSelection: true, status: 'passed' };
+    return { containsSelection: true, status: selected.some((branch) => branch.status === 'failed') ? 'failed' : 'blocked' };
+  }
+  if (left.status === 'failed' || right.status === 'failed') return { containsSelection: left.containsSelection || right.containsSelection, status: 'failed' };
+  return {
+    containsSelection: left.containsSelection || right.containsSelection,
+    status: left.status === 'blocked' || right.status === 'blocked' ? 'blocked' : 'passed',
+  };
 }
 
 function matchingReview(policy, item, expression, now) {
@@ -71,8 +81,10 @@ export function evaluateLicense(expression, item, policy, now = Date.now()) {
   if (review?.decision === 'deny') return { ast, status: 'failed', reasonCode: 'DENIED_LICENSE', review };
   if (review?.decision === 'allow' && status === 'blocked') return { ast, status: 'passed', reasonCode: null, review };
   if (review?.decision === 'select' && status === 'blocked' && ast) {
-    const ids = collectLicenseIds(ast);
-    if (ids.includes(review.selectedLicense) && !policy.deniedLicenses.includes(review.selectedLicense)) {
+    const selection = typeof review.selectedLicense === 'string'
+      ? evaluateSelectedAst(ast, review.selectedLicense, new Set(policy.deniedLicenses))
+      : { containsSelection: false, status: 'blocked' };
+    if (selection.containsSelection && selection.status === 'passed') {
       return { ast, status: 'passed', reasonCode: null, review };
     }
   }
@@ -84,6 +96,9 @@ export function canonicalInventory(lock, manifests = new Map()) {
   const rootEntry = lock.packages[''];
   if (!rootEntry?.name || !rootEntry?.version) throw new Error('package-lock.json root package metadata is incomplete');
   const directNames = new Set(Object.keys({ ...rootEntry.dependencies, ...rootEntry.devDependencies, ...rootEntry.optionalDependencies }));
+  const workspacePaths = new Set(Object.values(lock.packages)
+    .filter((entry) => entry.link === true && typeof entry.resolved === 'string')
+    .map((entry) => entry.resolved.replaceAll('\\', '/')));
   const entries = [];
   for (const [path, entry] of Object.entries(lock.packages)) {
     if (entry.link === true) {
@@ -94,13 +109,14 @@ export function canonicalInventory(lock, manifests = new Map()) {
       if (manifest && (manifest.name !== source.name || manifest.version !== source.version)) throw new Error(`workspace link ${path} does not match ${target}/package.json`);
       continue;
     }
-    const workspace = path.startsWith('packages/');
+    const workspace = workspacePaths.has(path);
     const name = entry.name ?? (path === '' ? rootEntry.name : path.split('node_modules/').at(-1));
     const version = entry.version;
     if (!name || !version) throw new Error(`lock entry ${path || '(root)'} is missing name/version`);
+    const rootDependencyPath = `node_modules/${name}`;
     entries.push({
       path: path || '.', name, version,
-      direct: path === '' || workspace || directNames.has(name),
+      direct: path === '' || workspace || (directNames.has(name) && path === rootDependencyPath),
       workspace,
       development: entry.dev === true || path === '' || workspace,
       optional: entry.optional === true,
@@ -135,8 +151,11 @@ function currentInputs() {
   const policyRaw = readFileSync(policyPath, 'utf8');
   const lock = JSON.parse(lockRaw);
   const manifests = new Map();
-  for (const [path, entry] of Object.entries(lock.packages ?? {})) {
-    if (path === '' || path.startsWith('packages/')) {
+  const workspacePaths = new Set(Object.values(lock.packages ?? {})
+    .filter((entry) => entry.link === true && typeof entry.resolved === 'string')
+    .map((entry) => entry.resolved.replaceAll('\\', '/')));
+  for (const path of ['', ...workspacePaths]) {
+    if (path === '' || workspacePaths.has(path)) {
       const manifestPath = resolve(root, path || '.', 'package.json');
       if (existsSync(manifestPath)) manifests.set(path, load(manifestPath));
     }

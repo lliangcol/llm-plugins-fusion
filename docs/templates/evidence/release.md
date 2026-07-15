@@ -67,6 +67,7 @@ node scripts/validate-plugin-install.mjs --dry-run:
 isolated install smoke artifact/run:
 git diff --check:
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh:
+bash -n nova-plugin/hooks/scripts/pre-bash-check.sh:
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh:
 Windows CI Node/PowerShell smoke:
 Windows CI Bash smoke:

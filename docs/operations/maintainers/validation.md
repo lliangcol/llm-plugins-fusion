@@ -30,7 +30,10 @@ gate is added, renamed, removed, or moved.
   for both passing and failing runs.
 - `.github/workflows/release-candidate.yml` uploads candidate validation
   evidence and blocks prerelease publication on isolated install smoke for the
-  exact RC tag. `.github/workflows/release.yml` delegates stable promotion to
+  exact RC tag. It also requires the exact governed Linux/Node 22 GitHub-hosted
+  performance profile; until 20 comparable samples establish that profile,
+  candidate performance remains Blocked rather than silently non-comparable.
+  `.github/workflows/release.yml` delegates stable promotion to
   `.github/workflows/promote-release.yml`, which reuses the verified candidate
   assets. The candidate bundle also publishes SHA-256 checksums for selected
   source-controlled release artifacts.

@@ -30,7 +30,7 @@ export function npmInvocation({
   return { command: 'npm', argsPrefix: [] };
 }
 
-export async function main({ platform = process.platform, runner = runProcess, runTestGates = true } = {}) {
+export async function main({ platform = process.platform, runner = runProcess, runTestGates = true, env = process.env } = {}) {
   let failed = 0;
   async function run(label, command, args = []) {
     console.log(`\n== ${label} ==`);
@@ -49,12 +49,15 @@ export async function main({ platform = process.platform, runner = runProcess, r
     return true;
   }
 
-  const npm = npmInvocation({ platform });
+  const npm = npmInvocation({ platform, env });
   if (runTestGates) {
     await run('npm run test:unit', npm.command, [...npm.argsPrefix, 'run', 'test:unit']);
     await run('npm run test:integration', npm.command, [...npm.argsPrefix, 'run', 'test:integration']);
     await run('npm run test:e2e', npm.command, [...npm.argsPrefix, 'run', 'test:e2e']);
-    await run('benchmark validate all', process.execPath, ['scripts/profile-validation.mjs', '--benchmark']);
+    const benchmarkArgs = ['scripts/profile-validation.mjs', '--benchmark'];
+    const requiredProfile = env.NOVA_REQUIRED_VALIDATION_PROFILE?.trim();
+    if (requiredProfile) benchmarkArgs.push('--require-profile', requiredProfile);
+    await run('benchmark validate all', process.execPath, benchmarkArgs);
   }
   await run('generated registry drift check', process.execPath, ['scripts/generate-registry.mjs']);
   await run('git diff --check', 'git', ['diff', '--check']);

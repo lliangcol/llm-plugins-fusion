@@ -1,4 +1,5 @@
 {
+  "$schema": "../schemas/evidence-levels.schema.json",
   "schemaVersion": 1,
   "levels": [
     { "id": "E0", "name": "Static", "proves": "Schemas, documentation, contracts, and generated drift", "doesNotProve": "CLI installation or assistant behavior" },

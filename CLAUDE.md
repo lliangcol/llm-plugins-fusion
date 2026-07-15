@@ -201,6 +201,7 @@ node scripts/validate-packs.mjs
 node scripts/validate-hooks.mjs
 node scripts/validate-github-workflows.mjs
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 node scripts/validate-runtime-smoke.mjs
 node scripts/validate-surface-budget.mjs

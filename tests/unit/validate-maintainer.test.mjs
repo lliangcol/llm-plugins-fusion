@@ -25,7 +25,22 @@ test('maintainer validation selects npm without a shell on every platform', asyn
     [expectedCommand, [...prefix, 'run', 'test:integration']],
     [expectedCommand, [...prefix, 'run', 'test:e2e']],
   ]);
+  assert.deepEqual(calls.find(({ label }) => label === 'benchmark validate all').args, ['scripts/profile-validation.mjs', '--benchmark']);
   assert.ok(calls.every(({ options }) => !Object.hasOwn(options, 'shell')));
+});
+
+test('candidate validation forwards an exact required performance profile', async () => {
+  const calls = [];
+  const profile = 'linux-x64-node22-github-hosted-3-fresh-process-full-uncached';
+  const status = await main({
+    env: { ...process.env, NOVA_REQUIRED_VALIDATION_PROFILE: profile },
+    runner: async (label, command, args) => {
+      calls.push({ label, command, args });
+      return { ok: true, code: 0 };
+    },
+  });
+  assert.equal(status, 0);
+  assert.deepEqual(calls.find(({ label }) => label === 'benchmark validate all').args, ['scripts/profile-validation.mjs', '--benchmark', '--require-profile', profile]);
 });
 
 test('maintainer evidence-only mode reuses prior test evidence without rerunning suites', async () => {
