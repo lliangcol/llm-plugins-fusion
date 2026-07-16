@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "sourceDigests": {
     "packageScripts": "sha256:826dbdc3cffccbb4e39ba5387a477419cbba6b621683d1a45b62f8261944f4b0",
-    "validationRegistry": "sha256:fc26e21db403ceacd3af13c19fe338132e9e874d765c7cde39238f2c9860a653",
+    "validationRegistry": "sha256:0c671ff26f7ecb1a0c12d79ae6f66b69a422590f437fe542570045032bc5231a",
     "productLanes": "sha256:c888525caa05c1a9509996ddf9543ea84edec6379fc511a5584c86fbe910ce94"
   },
   "boundaries": [
@@ -1963,12 +1963,17 @@
         "VALIDATION_FAILED"
       ],
       "id": "performance.policy",
-      "label": "validate performance policy",
+      "label": "validate externally verifiable manifest-backed performance policy",
       "group": 3,
       "inputs": [
         "governance/engineering-evidence.json",
+        "governance/evidence/validation-performance-samples.json",
         "schemas/engineering-evidence.schema.json",
-        "scripts/validate-performance-budget.mjs"
+        "schemas/validation-performance*.schema.json",
+        "scripts/validate-performance-budget.mjs",
+        "scripts/lib/canonical-json.mjs",
+        "scripts/lib/github-actions-performance-provenance.mjs",
+        ".github/workflows/ci.yml"
       ],
       "runner": "scripts/validate-performance-budget.mjs",
       "args": [
@@ -2029,7 +2034,8 @@
         "scripts/*release*.mjs",
         "docs/operations/releases/**",
         "docs/templates/evidence/**",
-        "governance/engineering-evidence.json"
+        "governance/engineering-evidence.json",
+        "governance/evidence/validation-performance-samples.json"
       ],
       "runner": "scripts/generate-release-summary.mjs",
       "args": [

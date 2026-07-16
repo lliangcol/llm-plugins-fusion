@@ -2,16 +2,21 @@
 /** Compact atomic audit spool records under a cross-process directory lock. */
 
 import {
+  accessSync,
+  constants,
   lstatSync,
   mkdirSync,
+  realpathSync,
   readdirSync,
   renameSync,
   rmSync,
+  statSync,
   unlinkSync,
 } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { hostname } from 'node:os';
 import { resolve } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { sanitizeAuditField } from '../../runtime/secret-rules.mjs';
 import {
   appendPrivateFile,
@@ -26,6 +31,27 @@ const spoolDir = resolve(logDir, 'audit-spool');
 const lockDir = resolve(logDir, '.audit-compact.lock');
 const lockOwnerPath = resolve(lockDir, 'owner.json');
 const staleLockTtlMs = Number.parseInt(process.env.NOVA_AUDIT_LOCK_TTL_MS ?? '300000', 10);
+
+export function trustedPsExecutable({
+  platform = process.platform,
+  candidates = ['/bin/ps', '/usr/bin/ps'],
+  realpath = realpathSync,
+  stat = statSync,
+  access = accessSync,
+} = {}) {
+  if (platform === 'win32') return null;
+  for (const candidate of candidates) {
+    try {
+      const physical = realpath(candidate);
+      if (!stat(physical).isFile()) continue;
+      access(physical, constants.X_OK);
+      return physical;
+    } catch { /* try the next fixed system path */ }
+  }
+  return null;
+}
+
+const psExecutable = trustedPsExecutable();
 
 function health(reason) {
   try {
@@ -46,8 +72,12 @@ function processExists(pid) {
 }
 
 function processStartIdentity(pid) {
-  if (!Number.isInteger(pid) || pid <= 0) return null;
-  const result = spawnSync('ps', ['-o', 'lstart=', '-p', String(pid)], { encoding: 'utf8', shell: false });
+  if (!Number.isInteger(pid) || pid <= 0 || !psExecutable) return null;
+  const result = spawnSync(psExecutable, ['-o', 'lstart=', '-p', String(pid)], {
+    encoding: 'utf8',
+    env: { LC_ALL: 'C', PATH: '/usr/bin:/bin' },
+    shell: false,
+  });
   return result.status === 0 && result.stdout.trim() ? result.stdout.trim() : null;
 }
 
@@ -106,34 +136,38 @@ function acquireLock() {
   }
 }
 
-if (process.env.NOVA_AUDIT_DISABLED === '1') process.exit(0);
-
-let locked = false;
-try {
-  ensurePrivateDirectory(logDir);
-  locked = acquireLock();
-  if (!locked) process.exit(0);
-  ensurePrivateDirectory(spoolDir);
-  const logFile = resolve(logDir, 'audit.log');
-  const records = readdirSync(spoolDir).filter((name) => name.endsWith('.json')).sort();
-  const logStats = assertPrivateRegularFile(logFile, { allowMissing: true });
-  if (records.length && logStats?.size > 5_242_880) {
-    assertPrivateRegularFile(`${logFile}.1`, { allowMissing: true });
-    renameSync(logFile, `${logFile}.1`);
+export function main() {
+  if (process.env.NOVA_AUDIT_DISABLED === '1') return 0;
+  let locked = false;
+  try {
+    ensurePrivateDirectory(logDir);
+    locked = acquireLock();
+    if (!locked) return 0;
+    ensurePrivateDirectory(spoolDir);
+    const logFile = resolve(logDir, 'audit.log');
+    const records = readdirSync(spoolDir).filter((name) => name.endsWith('.json')).sort();
+    const logStats = assertPrivateRegularFile(logFile, { allowMissing: true });
+    if (records.length && logStats?.size > 5_242_880) {
+      assertPrivateRegularFile(`${logFile}.1`, { allowMissing: true });
+      renameSync(logFile, `${logFile}.1`);
+    }
+    appendPrivateFile(logFile, '');
+    for (const name of records) {
+      const path = resolve(spoolDir, name);
+      const { content: raw, stats } = readPrivateFile(path);
+      JSON.parse(raw);
+      appendPrivateFile(logFile, raw.endsWith('\n') ? raw : `${raw}\n`);
+      const current = assertPrivateRegularFile(path);
+      if (current.dev !== stats.dev || current.ino !== stats.ino) throw new Error(`audit spool record changed during compaction: ${name}`);
+      unlinkSync(path);
+    }
+    return 0;
+  } catch (error) {
+    health(error.message);
+    return 1;
+  } finally {
+    if (locked) rmSync(lockDir, { recursive: true, force: true });
   }
-  appendPrivateFile(logFile, '');
-  for (const name of records) {
-    const path = resolve(spoolDir, name);
-    const { content: raw, stats } = readPrivateFile(path);
-    JSON.parse(raw);
-    appendPrivateFile(logFile, raw.endsWith('\n') ? raw : `${raw}\n`);
-    const current = assertPrivateRegularFile(path);
-    if (current.dev !== stats.dev || current.ino !== stats.ino) throw new Error(`audit spool record changed during compaction: ${name}`);
-    unlinkSync(path);
-  }
-} catch (error) {
-  health(error.message);
-  process.exitCode = 1;
-} finally {
-  if (locked) rmSync(lockDir, { recursive: true, force: true });
 }
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) process.exitCode = main();

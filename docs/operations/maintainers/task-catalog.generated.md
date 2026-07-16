@@ -16,7 +16,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `benchmark` | Tests, coverage, simulations, demos, mutations, and live evaluation. |
 | `maintenance` | Diagnostics, repository administration, and reusable script libraries. |
 
-## Script Inventory (135)
+## Script Inventory (137)
 
 | Category | Script |
 | --- | --- |
@@ -55,6 +55,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `evidence` | `scripts/generate-task-catalog.mjs` |
 | `evidence` | `scripts/generate-validation-timing-trend.mjs` |
 | `evidence` | `scripts/generate-workflow-permissions.mjs` |
+| `maintenance` | `scripts/lib/adoption-evidence.mjs` |
 | `maintenance` | `scripts/lib/bash-command.mjs` |
 | `maintenance` | `scripts/lib/canonical-json.mjs` |
 | `maintenance` | `scripts/lib/cli-args.mjs` |
@@ -64,6 +65,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `maintenance` | `scripts/lib/eval-dataset.mjs` |
 | `maintenance` | `scripts/lib/evaluation-evidence.mjs` |
 | `maintenance` | `scripts/lib/evaluation-facts.mjs` |
+| `maintenance` | `scripts/lib/github-actions-performance-provenance.mjs` |
 | `maintenance` | `scripts/lib/label-catalog.mjs` |
 | `maintenance` | `scripts/lib/live-evaluation-plan.mjs` |
 | `maintenance` | `scripts/lib/migration-cli.mjs` |
@@ -288,9 +290,9 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `docs.migrations` | `migration` | `scripts/migrate-documentation-layout.mjs` | 6 | `content` |
 | `security.dependency-audit` | `evidence` | `scripts/audit-dependencies.mjs` | 6 | `never` |
 | `security.license-audit` | `evidence` | `scripts/audit-dependency-licenses.mjs` | 6 | `never` |
-| `performance.policy` | `validate` | `scripts/validate-performance-budget.mjs` | 3 | `never` |
+| `performance.policy` | `validate` | `scripts/validate-performance-budget.mjs` | 8 | `never` |
 | `docs.tutorials` | `validate` | `scripts/validate-tutorials.mjs` | 3 | `never` |
-| `release.summary` | `release` | `scripts/generate-release-summary.mjs` | 6 | `never` |
+| `release.summary` | `release` | `scripts/generate-release-summary.mjs` | 7 | `never` |
 
 ## CI Job Map (28)
 

@@ -17,8 +17,8 @@ sources and `governance/product-lanes.json`.
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh`, `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh`
-- Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
+- Active PreToolUse launcher: `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh`, `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh`
+- Active PostToolUse launcher: `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh post-write-verify`, `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh post-audit-log`
 <!-- generated:project-state:end -->
 
 This file provides canonical Claude Code guidance for this repository. Keep
@@ -430,14 +430,26 @@ routing docs, migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
   workflow, but cannot roll back the completed write.
 - `PostToolUse`, `PostToolUseFailure`, and `PermissionDenied` also match
   `Write|Edit|NotebookEdit|Bash` and asynchronously invoke
-  `hooks/scripts/post-audit-log.mjs` through exec-form Node.
+  `hooks/scripts/post-audit-log.mjs` through the privileged-mode
+  `hooks/scripts/trusted-node-hook.sh` launcher. `SessionEnd` uses the same
+  launcher for final audit compaction.
 
-Post-use audit hooks use exec-form Node.js 22+ with `CLAUDE_PLUGIN_ROOT`.
-PreToolUse retains a Bash 3.2+ launcher because a missing exec-form Node command
-is non-blocking in the supported Claude runtime; Codex helpers also use Bash. Exit 0
-means that the hook made no blocking decision; it is not a permission grant.
-`NOVA_WRITE_GUARD_DISABLED=1` is an explicit bypass and is not valid release
-evidence.
+Every active Node hook uses an exec-form Bash 3.2+ privileged-mode launcher
+that rejects startup/preload environment controls and resolves a physical
+Node.js 22+ executable outside `CLAUDE_PROJECT_DIR` before startup. A missing
+trusted Node command fails closed. Exit 0 means that the hook made no blocking
+decision; it is not a permission grant.
+Claude Code resolves the initial bare exec-form `bash` and applies startup
+settings before plugin code runs. Treat a trusted system Bash, an absolute
+project-free `PATH`, and reviewed project/local settings without
+`disableAllHooks` or hook-trust environment injection as host prerequisites;
+`doctor` and `validate:bootstrap` verify the current checkout. A managed policy
+with a managed-enabled plugin is required when that startup boundary must be
+organizationally enforced. During the session a blocking `ConfigChange` hook
+freezes project/local settings, while the write guard freezes project
+`bash`/`bash.exe` bootstrap shadows, Git metadata, and the full distributed
+hook/runtime implementation closure. `NOVA_WRITE_GUARD_DISABLED=1` is rejected
+fail closed rather than acting as a bypass.
 
 ## Change Workflows
 

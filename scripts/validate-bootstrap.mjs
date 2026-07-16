@@ -5,7 +5,12 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { REQUIRED_NODE_MAJOR, nodeMajorVersion } from './lib/node-version.mjs';
 import { captureProcess } from './lib/process-runner.mjs';
-import { resolveBashCommand } from './lib/bash-command.mjs';
+import { resolveBashCommand, trustedHookBashIdentity } from './lib/bash-command.mjs';
+import {
+  assertArtifactRootsOutsideExecutableSearch,
+  configuredArtifactRoots,
+} from '../nova-plugin/runtime/safe-workspace-path.mjs';
+import { inspectProjectHookSettings } from '../nova-plugin/runtime/hook-bootstrap-trust.mjs';
 import { diagnosticReport, diagnosticResult, loadReasonRegistry, renderDiagnosticReport, writeDiagnosticReport } from './lib/diagnostics.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 
@@ -29,6 +34,25 @@ export async function buildBootstrapReport() {
   add({ check: 'locked-toolchain', status: installedAjv === packageJson.devDependencies.ajv ? 'passed' : 'blocked', reasonCode: installedAjv === packageJson.devDependencies.ajv ? 'CHECK_PASSED' : 'TOOLCHAIN_NOT_INSTALLED', expected: `ajv@${packageJson.devDependencies.ajv}`, actual: installedAjv ?? 'not installed' });
   const bash = await processCheck(resolveBashCommand());
   add({ check: 'bash', status: bash.ok ? 'passed' : 'skipped', reasonCode: bash.ok ? 'CHECK_PASSED' : 'BASH_CAPABILITY_UNAVAILABLE', actual: bash.ok ? (bash.stdout || bash.stderr).split(/\r?\n/u)[0] : 'not available', skippedReason: bash.ok ? undefined : 'Bash-dependent gates require an installed Bash runtime.' });
+  const projectSettingsTrust = inspectProjectHookSettings(root);
+  add({ check: 'hook-startup-project-settings', status: projectSettingsTrust.trusted ? 'passed' : 'failed', reasonCode: projectSettingsTrust.trusted ? 'CHECK_PASSED' : 'HOOK_PROJECT_SETTINGS_UNTRUSTED', actual: projectSettingsTrust.trusted ? 'no startup hook-disable or trust-environment controls' : projectSettingsTrust.reason });
+  let artifactRoots = [];
+  let artifactRootTrust = { trusted: true, reason: null };
+  try {
+    artifactRoots = configuredArtifactRoots();
+    assertArtifactRootsOutsideExecutableSearch({ artifactRoots, cwd: root, projectRoot: root });
+  } catch (error) {
+    artifactRootTrust = { trusted: false, reason: error.message };
+  }
+  add({ check: 'hook-artifact-roots', status: artifactRootTrust.trusted ? 'passed' : 'failed', reasonCode: artifactRootTrust.trusted ? 'CHECK_PASSED' : 'HOOK_ARTIFACT_ROOT_UNTRUSTED', actual: artifactRootTrust.trusted ? (artifactRoots.length ? artifactRoots.join(', ') : 'none configured') : artifactRootTrust.reason });
+  let hookBootstrap;
+  try {
+    hookBootstrap = trustedHookBashIdentity(root, process.env, artifactRoots);
+  } catch (error) {
+    hookBootstrap = { trusted: false, identity: null, reason: error.message };
+  }
+  add({ check: 'hook-bootstrap-bash', status: hookBootstrap.trusted ? 'passed' : 'failed', reasonCode: hookBootstrap.trusted ? 'CHECK_PASSED' : 'HOOK_BOOTSTRAP_UNTRUSTED', actual: hookBootstrap.identity?.physical ?? hookBootstrap.reason });
+  add({ check: 'write-guard-bypass', status: process.env.NOVA_WRITE_GUARD_DISABLED === '1' ? 'failed' : 'passed', reasonCode: process.env.NOVA_WRITE_GUARD_DISABLED === '1' ? 'WRITE_GUARD_DISABLED' : 'CHECK_PASSED', actual: process.env.NOVA_WRITE_GUARD_DISABLED === '1' ? 'forbidden bypass requested by environment' : 'not requested' });
   for (const tool of ['claude', 'codex']) {
     const result = await processCheck(tool);
     add({ check: `${tool}-cli`, status: result.ok ? 'passed' : 'skipped', reasonCode: result.ok ? 'CHECK_PASSED' : 'OPTIONAL_TOOL_UNAVAILABLE', actual: result.ok ? (result.stdout || result.stderr).split(/\r?\n/u)[0] : 'not available', skippedReason: result.ok ? undefined : `${tool} CLI is optional for local deterministic checks.` });

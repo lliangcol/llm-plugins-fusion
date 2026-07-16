@@ -106,9 +106,9 @@ export const validationTaskDefinitions = [
   node('docs.migrations', 'validate documentation compatibility migrations', 'scripts/migrate-documentation-layout.mjs', 3, patterns.docs, { cachePolicy: 'content' }),
   node('security.dependency-audit', 'validate dependency vulnerability evidence', 'scripts/audit-dependencies.mjs', 3, patterns.dependency),
   node('security.license-audit', 'validate dependency license evidence', 'scripts/audit-dependency-licenses.mjs', 3, patterns.dependency),
-  node('performance.policy', 'validate performance policy', 'scripts/validate-performance-budget.mjs', 3, ['governance/engineering-evidence.json', 'schemas/engineering-evidence.schema.json', 'scripts/validate-performance-budget.mjs']),
+  node('performance.policy', 'validate externally verifiable manifest-backed performance policy', 'scripts/validate-performance-budget.mjs', 3, ['governance/engineering-evidence.json', 'governance/evidence/validation-performance-samples.json', 'schemas/engineering-evidence.schema.json', 'schemas/validation-performance*.schema.json', 'scripts/validate-performance-budget.mjs', 'scripts/lib/canonical-json.mjs', 'scripts/lib/github-actions-performance-provenance.mjs', '.github/workflows/ci.yml']),
   node('docs.tutorials', 'validate executable tutorials', 'scripts/validate-tutorials.mjs', 3, ['docs/tutorials/**', 'fixtures/**', 'scripts/validate-tutorials.mjs']),
-  node('release.summary', 'validate evidence taxonomy and generated release summary', 'scripts/generate-release-summary.mjs', 3, [...patterns.release, 'governance/engineering-evidence.json']),
+  node('release.summary', 'validate evidence taxonomy and generated release summary', 'scripts/generate-release-summary.mjs', 3, [...patterns.release, 'governance/engineering-evidence.json', 'governance/evidence/validation-performance-samples.json']),
 ];
 
 export function registryMetadata() {
@@ -138,7 +138,7 @@ async function dynamicRunners(definition, { root, bashCommand, hasBash }) {
   }
   if (definition.runner.dynamicKind === 'hook-syntax') {
     if (!hasBash) return [{ ...definition, run: async () => process.platform === 'win32' ? skippedResult(definition, 'WARNING hook shell syntax: bash not found; local Bash evidence is skipped') : failedResult(definition, 'bash is required outside Windows') }];
-    return ['pre-write-check.sh', 'pre-bash-check.sh', 'post-audit-log.sh'].map((file) => {
+    return ['pre-write-check.sh', 'pre-bash-check.sh', 'trusted-node-hook.sh', 'post-audit-log.sh'].map((file) => {
       const id = `hooks.syntax.${file.split('.')[0].replaceAll('-', '')}`;
       const label = `hook shell syntax nova-plugin/hooks/scripts/${file}`;
       return { ...definition, id, label, run: async () => ({ ...await run(bashCommand, ['-n', `nova-plugin/hooks/scripts/${file}`], label), id }) };

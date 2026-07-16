@@ -411,6 +411,16 @@ source nova-plugin/skills/nova-codex-review-fix/scripts/codex-common.sh
 node_executable
 `, { outputPattern: /node\.exe/ });
 
+await runTempBash('node_executable rejects Node older than 22', `
+tmp="$(dirname "$0")/bin"
+mkdir "$tmp"
+printf '%s\\n' '#!/usr/bin/env bash' 'echo "v21.99.0"' > "$tmp/node"
+chmod +x "$tmp/node"
+PATH="$tmp:/usr/bin:/bin"
+source nova-plugin/runtime/bash-common.sh
+nova_node_command
+`, { expectFailure: true });
+
 await runTempBash('ensure_codex_available rejects unusable shim', `
 tmp="$(dirname "$0")/bin"
 mkdir "$tmp"

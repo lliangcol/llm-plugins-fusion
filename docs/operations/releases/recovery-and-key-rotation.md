@@ -52,17 +52,46 @@ Existing tags are never moved or deleted.
 
 ## Recovery Drill
 
-Run the manual `Release Recovery Drill` workflow with an immutable signed RC
-tag. It performs no publication. The workflow:
+Recovery reuses an already-published immutable signed RC tag. Fetch only that
+identity and repeat `git verify-tag` before the drill:
+
+```bash
+CANDIDATE_TAG="v4.1.0-rc.1"
+git fetch --no-tags origin \
+  "refs/tags/${CANDIDATE_TAG}:refs/tags/${CANDIDATE_TAG}"
+git verify-tag "${CANDIDATE_TAG}"
+```
+
+`Release Recovery Drill` starts only through `repository_dispatch` evaluated
+from protected `main`; a tag push does not trigger it. The tag is
+`client_payload` data, and the dispatching identity must have `Contents: write`:
+
+```bash
+gh api --method POST repos/lliangcol/llm-plugins-fusion/dispatches \
+  -f event_type=release-recovery-drill \
+  -F 'client_payload[stable_tag]=v4.1.0' \
+  -F 'client_payload[candidate_tag]=v4.1.0-rc.1'
+```
+
+Record the run URL and exact `github.workflow_sha`. The workflow performs no
+publication. It:
 
 1. fetches and verifies the signed annotated candidate tag;
 2. downloads the candidate evidence bundle from GitHub Release;
-3. verifies the GitHub artifact attestation and signer workflow;
-4. rejects unsafe archive paths before extraction;
-5. verifies the candidate envelope, promotion intent, control-bundle bytes and
+3. verifies the unopened GitHub artifact generically against
+   `.github/workflows/release-candidate.yml@refs/heads/main` and rejects
+   self-hosted provenance;
+4. rejects unsafe archive paths, extracts the bundle, and reads the bounded
+   `candidate.workflowSourceCommit`;
+5. repeats attestation verification with that exact source and signer digest;
+6. verifies the candidate envelope, promotion intent, control-bundle bytes and
    inventory, commit, source, evidence, build/runtime BOMs, build record, and
    artifact digests with the normal promotion verifier; and
-6. uploads the recovered evidence as a drill artifact.
+7. uploads the recovered evidence as a drill artifact.
+
+That attestation proves protected-main workflow provenance. The candidate
+source commit is independently proved by the signed immutable tag; workflow
+provenance must not be used as a substitute for tag identity.
 
 Record the successful run URL and date in
 `governance/release-operations.json` under `recovery.lastSuccessfulDrill` in a reviewed PR.

@@ -315,12 +315,15 @@
         "schemaVersion",
         "enforcement",
         "minimumStableSamples",
+        "maximumSampleAgeDays",
+        "externalProvenance",
+        "budgetDerivation",
         "profiles",
         "legacyBudgets"
       ],
       "properties": {
         "schemaVersion": {
-          "const": 2
+          "const": 3
         },
         "enforcement": {
           "const": "profile-required"
@@ -328,6 +331,54 @@
         "minimumStableSamples": {
           "type": "integer",
           "minimum": 20
+        },
+        "maximumSampleAgeDays": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "externalProvenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "apiVersion",
+            "requiredForEligibility"
+          ],
+          "properties": {
+            "mode": {
+              "const": "github-actions-api-and-artifact"
+            },
+            "apiVersion": {
+              "const": "2026-03-10"
+            },
+            "requiredForEligibility": {
+              "const": true
+            }
+          }
+        },
+        "budgetDerivation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "method",
+            "percentileBasisPoints",
+            "headroomBasisPoints",
+            "roundingMs"
+          ],
+          "properties": {
+            "method": {
+              "const": "p95-plus-headroom"
+            },
+            "percentileBasisPoints": {
+              "const": 9500
+            },
+            "headroomBasisPoints": {
+              "const": 2500
+            },
+            "roundingMs": {
+              "const": 1000
+            }
+          }
         },
         "profiles": {
           "type": "array",
@@ -342,7 +393,8 @@
               "runnerClass",
               "concurrency",
               "scenario",
-              "sampleCount",
+              "collection",
+              "sampleManifest",
               "budgets",
               "owner",
               "reason",
@@ -385,12 +437,67 @@
                   "incremental-cache-warm"
                 ]
               },
-              "sampleCount": {
-                "type": "integer",
-                "minimum": 1
+              "collection": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "repository",
+                  "workflowPath",
+                  "workflowRef",
+                  "jobName",
+                  "artifactName"
+                ],
+                "properties": {
+                  "repository": {
+                    "type": "string",
+                    "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+                  },
+                  "workflowPath": {
+                    "type": "string",
+                    "pattern": "^\\.github/workflows/[A-Za-z0-9._-]+\\.ya?ml$"
+                  },
+                  "workflowRef": {
+                    "type": "string",
+                    "pattern": "^refs/heads/[A-Za-z0-9._/-]+$"
+                  },
+                  "jobName": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "artifactName": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "sampleManifest": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": [
+                  "path",
+                  "canonicalSha256",
+                  "aggregateSha256"
+                ],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "pattern": "^governance/evidence/[A-Za-z0-9._-]+\\.json$"
+                  },
+                  "canonicalSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "aggregateSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                }
               },
               "budgets": {
-                "type": "object",
+                "type": [
+                  "object",
+                  "null"
+                ],
                 "additionalProperties": false,
                 "required": [
                   "elapsedWallMs",

@@ -32,7 +32,7 @@ maintainer gate again.
 | Distribution risk scan secret, private path, or `.codex/` artifact finding | `npm run scan:distribution` | Remove or redact the active public content; use allowlists only for intentional historical warnings. |
 | Capability pack documentation-only, enhanced, or fallback boundary failure | `node scripts/validate-packs.mjs` | Keep packs as documentation guidance; do not introduce runtime dynamic loading as a fix. |
 | `validate surface budget` warning or failure | `npm run validate:surface` | Split bloated shipped surfaces or update the allowlist only with a rationale and split plan. |
-| Bash hook syntax failure | `bash -n nova-plugin/hooks/scripts/pre-write-check.sh`, `bash -n nova-plugin/hooks/scripts/pre-bash-check.sh`, and `bash -n nova-plugin/hooks/scripts/post-audit-log.sh` | Run only where Bash is available; treat Windows no-Bash skips as skipped, not passed. |
+| Bash hook syntax failure | `bash -n nova-plugin/hooks/scripts/pre-write-check.sh`, `bash -n nova-plugin/hooks/scripts/pre-bash-check.sh`, `bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh`, and `bash -n nova-plugin/hooks/scripts/post-audit-log.sh` | Run only where Bash is available; treat Windows no-Bash skips as skipped, not passed. |
 | Codex runtime helper smoke failure | `node scripts/validate-runtime-smoke.mjs` | Use CI/Linux for replacement evidence when local Bash is unavailable. |
 
 ## Windows Without Bash
@@ -46,6 +46,7 @@ Use a Bash-capable shell or CI/Linux to verify:
 ```bash
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
+bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 node scripts/validate-runtime-smoke.mjs
 ```
@@ -90,9 +91,11 @@ bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 
 For hook schema failures, compare against `nova-plugin/hooks/hooks.json`.
 
-If Node.js 22+ is unavailable, Write/Edit/NotebookEdit must fail closed. An operator may set
-`NOVA_WRITE_GUARD_DISABLED=1` for an explicit temporary bypass, but must record
-that the guard was disabled; such a run is not release evidence. Bash file
+If Node.js 22+ is unavailable, Write/Edit/NotebookEdit must fail closed.
+`NOVA_WRITE_GUARD_DISABLED=1` is obsolete and now fails closed; remove it rather
+than treating it as an operator bypass. Before starting Claude Code, review
+project/local settings for `disableAllHooks` and security-sensitive `env` keys,
+or enforce the plugin through managed policy. Bash file
 redirection is outside the PreToolUse matcher and remains governed by normal
 permissions, sandboxing, secret scans, and release gates.
 

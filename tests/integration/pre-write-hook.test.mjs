@@ -71,6 +71,56 @@ test('write guard fails closed for malformed payloads and secrets', async () => 
   assert.equal(ordinary.ok, true, ordinary.stderr);
 });
 
+test('write guard rejects structurally incomplete payloads and untrusted startup inputs', async (t) => {
+  for (const [payload, pattern] of [
+    [{ tool_name: 'Write' }, /缺少 tool_input/u],
+    [{ tool_name: 'Read', tool_input: {} }, /不支持的写入工具/u],
+    [{ tool_name: 'Write', tool_input: { content: 'text' } }, /缺少 file_path/u],
+  ]) {
+    const result = await runGuard(payload);
+    assert.equal(result.code, 2, result.stderr);
+    assert.match(result.stderr, pattern);
+  }
+
+  const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-startup-'));
+  t.after(() => rm(temp, { recursive: true, force: true }));
+  const project = join(temp, 'workspace');
+  await mkdir(join(project, '.claude'), { recursive: true });
+  await writeFile(join(project, '.claude/settings.json'), '{"disableAllHooks":true}\n');
+  const untrustedSettings = await runGuard(writePayload(join(project, 'output.txt'), 'text'), { projectRoot: project });
+  assert.equal(untrustedSettings.code, 2, untrustedSettings.stderr);
+  assert.match(untrustedSettings.stderr, /settings.*信任边界/u);
+
+  await rm(join(project, '.claude/settings.json'));
+  const artifactConflict = await runGuard(writePayload(join(project, 'output.txt'), 'text'), {
+    projectRoot: project,
+    env: { NOVA_EXPLICIT_ARTIFACT_ROOT: temp },
+  });
+  assert.equal(artifactConflict.code, 2, artifactConflict.stderr);
+  assert.match(artifactConflict.stderr, /artifact root.*信任边界/u);
+});
+
+test('write guard rejects malformed Edit replacement fields and invalid UTF-8', async (t) => {
+  const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-edit-input-'));
+  t.after(() => rm(temp, { recursive: true, force: true }));
+  const target = join(temp, 'target.txt');
+  await writeFile(target, 'old');
+
+  for (const [toolInput, pattern] of [
+    [{ file_path: target, old_string: '', new_string: 'new' }, /old_string.*非空字符串/u],
+    [{ file_path: target, old_string: 'old', new_string: 42 }, /new_string.*字符串/u],
+  ]) {
+    const result = await runGuard({ tool_name: 'Edit', tool_input: toolInput });
+    assert.equal(result.code, 2, result.stderr);
+    assert.match(result.stderr, pattern);
+  }
+
+  await writeFile(target, Buffer.from([0xc3, 0x28]));
+  const invalidUtf8 = await runGuard(editPayload(target, 'old', 'new'));
+  assert.equal(invalidUtf8.code, 2, invalidUtf8.stderr);
+  assert.match(invalidUtf8.stderr, /UTF-8/u);
+});
+
 test('write guard reconstructs Edit content before validating hooks.json', async (t) => {
   const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-edit-'));
   t.after(() => rm(temp, { recursive: true, force: true }));
@@ -96,6 +146,69 @@ test('write guard rejects shell control-path mutation', async (t) => {
   const result = await runGuard(writePayload(policy, '{"schemaVersion":1,"allowCommands":[]}\n'), { projectRoot: temp });
   assert.equal(result.code, 2);
   assert.match(result.stderr, /control path cannot be modified/u);
+});
+
+test('write guard rejects Git metadata that can change brokered command behavior', async (t) => {
+  const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-git-control-'));
+  t.after(() => rm(temp, { recursive: true, force: true }));
+  await mkdir(join(temp, '.git'));
+  const config = join(temp, '.git/config');
+  await writeFile(config, '[core]\n\trepositoryformatversion = 0\n');
+
+  for (const payload of [
+    writePayload(config, '[diff]\n\texternal = ./agent-controlled-helper\n'),
+    editPayload(config, '[core]', '[diff "agent"]\n\tcommand = ./agent-controlled-helper\n[core]'),
+    writePayload(join(temp, '.git/hooks/pre-commit'), '#!/bin/sh\nexit 0\n'),
+    writePayload(join(temp, 'nested/.git/config'), '[diff]\n\texternal = ./agent-controlled-helper\n'),
+    writePayload(join(temp, '.GIT/config'), '[diff]\n\texternal = ./agent-controlled-helper\n'),
+    writePayload(join(temp, 'nested/.GiT/hooks/pre-commit'), '#!/bin/sh\nexit 0\n'),
+  ]) {
+    const result = await runGuard(payload, { projectRoot: temp });
+    assert.equal(result.code, 2, result.stderr);
+    assert.match(result.stderr, /agent control path cannot be modified/u);
+  }
+
+  assert.equal(await readFile(config, 'utf8'), '[core]\n\trepositoryformatversion = 0\n');
+});
+
+test('write guard rejects its complete hook and runtime trust closure with case-folded aliases', async (t) => {
+  const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-trust-closure-'));
+  t.after(() => rm(temp, { recursive: true, force: true }));
+  const pluginRoot = join(temp, 'nova-plugin');
+  for (const relativePath of [
+    'runtime/bash-common.sh',
+    'runtime/secret-rules.mjs',
+    'hooks/scripts/pre-bash-check.sh',
+    'hooks/scripts/pre-write-check.mjs',
+    'hooks/scripts/trusted-node-hook.sh',
+    'hooks/scripts/hooks-schema.mjs',
+    'hooks/scripts/post-write-verify.mjs',
+  ]) {
+    const target = join(pluginRoot, relativePath);
+    const result = await runGuard(writePayload(target, 'agent-controlled replacement\n'), {
+      projectRoot: temp,
+      env: { CLAUDE_PLUGIN_ROOT: pluginRoot },
+    });
+    assert.equal(result.code, 2, `${relativePath}: ${result.stderr}`);
+    assert.match(result.stderr, /agent control path cannot be modified/u);
+  }
+
+  for (const target of [
+    join(temp, '.NOVA/shell-policy.json'),
+    join(temp, '.CLAUDE/settings.json'),
+    join(temp, '.claude/SETTINGS.LOCAL.JSON'),
+    join(temp, 'bin/bash'),
+    join(temp, 'tools/BASH.EXE'),
+    join(pluginRoot, 'RUNTIME/bash-common.sh'),
+    join(pluginRoot, 'HOOKS/scripts/trusted-node-hook.sh'),
+  ]) {
+    const result = await runGuard(writePayload(target, 'agent-controlled replacement\n'), {
+      projectRoot: temp,
+      env: { CLAUDE_PLUGIN_ROOT: pluginRoot },
+    });
+    assert.equal(result.code, 2, result.stderr);
+    assert.match(result.stderr, /agent control path cannot be modified/u);
+  }
 });
 
 test('write guard enforces Edit matching and replace_all semantics', async (t) => {
@@ -282,7 +395,7 @@ test('write guard rejects oversized Write payloads', async (t) => {
   assert.match(result.stderr, /Write 内容超过安全扫描大小上限/);
 });
 
-test('Bash launcher fails closed without Node and honors explicit opt-out', async () => {
+test('Bash launcher fails closed without Node and rejects the obsolete environment bypass', async () => {
   const script = resolve(root, 'nova-plugin/hooks/scripts/pre-write-check.sh');
   const bash = bashCommand();
   const env = { PATH: '/usr/bin:/bin', CLAUDE_PLUGIN_ROOT: resolve(root, 'nova-plugin') };
@@ -297,6 +410,6 @@ test('Bash launcher fails closed without Node and honors explicit opt-out', asyn
     args: [script],
     env: { ...env, NOVA_WRITE_GUARD_DISABLED: '1' },
   });
-  assert.equal(disabled.ok, true, disabled.stderr);
-  assert.match(disabled.stderr, /explicitly disabled/);
+  assert.equal(disabled.code, 2, disabled.stderr);
+  assert.match(disabled.stderr, /not accepted by the fail-closed write guard/);
 });

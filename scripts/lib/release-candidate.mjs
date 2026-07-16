@@ -17,16 +17,26 @@ export const candidateSourcePaths = Object.freeze([
   'governance/release-operations.json',
   'governance/release-corrections.json',
   'governance/release-reviewers.json',
+  'governance/engineering-evidence.json',
+  'governance/evidence/validation-performance-samples.json',
   '.github/release-signers',
   'schemas/release-corrections.schema.json',
   'schemas/release-reviewers.schema.json',
+  'schemas/engineering-evidence.schema.json',
+  'schemas/validation-performance.schema.json',
+  'schemas/validation-performance-samples.schema.json',
   'scripts/verify-independent-release-review.mjs',
   'scripts/lib/release-review.mjs',
   'scripts/build-release-control-bundle.mjs',
   'scripts/release-orchestrator.mjs',
   'scripts/lib/release-state-machine.mjs',
   'scripts/lib/release-corrections.mjs',
+  'scripts/validate-performance-budget.mjs',
+  'scripts/lib/canonical-json.mjs',
+  'scripts/lib/github-actions-performance-provenance.mjs',
+  'scripts/lib/validation-performance-profile.mjs',
   'governance/release-channels.json',
+  '.github/workflows/ci.yml',
   '.github/workflows/release-candidate.yml',
   '.github/workflows/promote-release.yml',
   '.github/workflows/release.yml',
@@ -42,6 +52,62 @@ export function parseCandidateTag(tag) {
   if (!match) throw new Error('candidate tag must match v<stable-semver>-rc.<number>');
   requireSemVer(match[1], 'candidate stable version');
   return { tag, stableVersion: match[1], number: Number(match[2]) };
+}
+
+export function verifyCandidateObservation({
+  candidateReleaseMetadata,
+  candidateTag,
+  sourceCommit,
+  repository,
+  candidateCreatedAt,
+  minimumObservationHours,
+  now = () => new Date(),
+}) {
+  if (!Number.isInteger(minimumObservationHours) || minimumObservationHours < 1) {
+    throw new Error('candidate observation policy requires a positive whole-hour minimum');
+  }
+  if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/u.test(repository ?? '')) {
+    throw new Error('candidate observation requires an exact GitHub repository');
+  }
+  if (!/^[a-f0-9]{40}$/u.test(sourceCommit ?? '')) throw new Error('candidate observation requires a full source commit');
+  if (!Number.isInteger(candidateReleaseMetadata?.id) || candidateReleaseMetadata.id < 1) {
+    throw new Error('candidate observation requires a GitHub Release id');
+  }
+  if (candidateReleaseMetadata.tag_name !== candidateTag) {
+    throw new Error('candidate observation release tag does not match the selected candidate');
+  }
+  if (candidateReleaseMetadata.draft !== false || candidateReleaseMetadata.prerelease !== true) {
+    throw new Error('candidate observation requires a published prerelease');
+  }
+  if (typeof candidateReleaseMetadata.url !== 'string' || !candidateReleaseMetadata.url.endsWith(`/repos/${repository}/releases/${candidateReleaseMetadata.id}`)) {
+    throw new Error('candidate observation GitHub Release API identity is invalid');
+  }
+  const publishedAt = new Date(candidateReleaseMetadata.published_at ?? '');
+  const createdAt = new Date(candidateCreatedAt ?? '');
+  const observedAt = now();
+  if (Number.isNaN(publishedAt.getTime())) throw new Error('candidate observation published_at is invalid');
+  if (Number.isNaN(createdAt.getTime())) throw new Error('candidate manifest createdAt is invalid');
+  if (!(observedAt instanceof Date) || Number.isNaN(observedAt.getTime())) throw new Error('candidate observation current time is invalid');
+  if (publishedAt.getTime() < createdAt.getTime()) throw new Error('candidate release predates its candidate manifest');
+  const elapsedMs = observedAt.getTime() - publishedAt.getTime();
+  if (elapsedMs < 0) throw new Error('candidate release published_at is in the future');
+  const minimumObservationMs = minimumObservationHours * 60 * 60 * 1000;
+  if (elapsedMs < minimumObservationMs) {
+    throw new Error(`candidate observation is incomplete: ${Math.floor(elapsedMs / 1000)}s/${minimumObservationHours * 60 * 60}s`);
+  }
+  return {
+    schemaVersion: 1,
+    status: 'passed',
+    source: 'github-releases-api-published-at',
+    releaseId: candidateReleaseMetadata.id,
+    repository,
+    candidateTag,
+    sourceCommit,
+    publishedAt: publishedAt.toISOString(),
+    observedAt: observedAt.toISOString(),
+    observedDurationSeconds: Math.floor(elapsedMs / 1000),
+    minimumObservationHours,
+  };
 }
 
 function exactlyOne(names, predicate, label) {
@@ -197,6 +263,7 @@ export function buildReleaseCandidate({
   root,
   tag,
   commit,
+  workflowSourceCommit,
   artifactDir,
   bundleRoot = artifactDir,
   evidencePaths = [],
@@ -206,6 +273,7 @@ export function buildReleaseCandidate({
 }) {
   const candidate = parseCandidateTag(tag);
   if (!/^[a-f0-9]{40}$/.test(commit ?? '')) throw new Error('candidate commit must be a full Git SHA');
+  if (!/^[a-f0-9]{40}$/.test(workflowSourceCommit ?? '')) throw new Error('workflow source commit must be a full Git SHA');
   if (!controlBundle || !/^[a-f0-9]{64}$/u.test(controlBundle.sha256 ?? '') || !Number.isInteger(controlBundle.bytes)) {
     throw new Error('candidate requires a content-addressed release control bundle');
   }
@@ -218,12 +286,13 @@ export function buildReleaseCandidate({
   }
   const sourceDigests = Object.fromEntries(candidateSourcePaths.map((path) => [path, sha256File(resolve(root, path))]));
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     candidate: {
       tag: candidate.tag,
       number: candidate.number,
       stableVersion: candidate.stableVersion,
       commit,
+      workflowSourceCommit,
       createdAt: now().toISOString(),
     },
     sourceDigests,
@@ -240,8 +309,23 @@ export function buildReleaseCandidate({
   };
 }
 
-export function verifyReleasePromotion({ root, stableTag, expectedCandidateTag = null, commit, manifest, artifactDir, bundleRoot = resolve(artifactDir, '..') }) {
-  if (manifest?.schemaVersion !== 2) throw new Error('candidate manifest schema must be 2');
+export function verifyReleasePromotion({
+  root,
+  stableTag,
+  expectedCandidateTag = null,
+  commit,
+  manifest,
+  artifactDir,
+  bundleRoot = resolve(artifactDir, '..'),
+  candidateReleaseMetadata,
+  repository,
+  minimumObservationHours,
+  now = () => new Date(),
+}) {
+  if (manifest?.schemaVersion !== 3) throw new Error('candidate manifest schema must be 3');
+  if (!/^[a-f0-9]{40}$/u.test(manifest?.candidate?.workflowSourceCommit ?? '')) {
+    throw new Error('candidate manifest workflow source commit must be a full Git SHA');
+  }
   if (!/^[a-f0-9]{64}$/u.test(manifest?.controlBundle?.sha256 ?? '') || !Number.isInteger(manifest?.controlBundle?.bytes)) {
     throw new Error('candidate manifest does not bind a release control bundle');
   }
@@ -255,6 +339,15 @@ export function verifyReleasePromotion({ root, stableTag, expectedCandidateTag =
     throw new Error('candidate stable version does not match stable tag');
   }
   if (manifest.candidate.commit !== commit) throw new Error('candidate and stable tags do not point to the same commit');
+  const observation = verifyCandidateObservation({
+    candidateReleaseMetadata,
+    candidateTag: candidate.tag,
+    sourceCommit: commit,
+    repository,
+    candidateCreatedAt: manifest.candidate.createdAt,
+    minimumObservationHours,
+    now,
+  });
   const plugin = JSON.parse(readFileSync(resolve(root, 'nova-plugin/.claude-plugin/plugin.json'), 'utf8'));
   if (plugin.version !== stable.version) throw new Error('stable tag does not match plugin version');
   for (const [path, expected] of Object.entries(manifest.sourceDigests ?? {})) {
@@ -288,6 +381,8 @@ export function verifyReleasePromotion({ root, stableTag, expectedCandidateTag =
     stableTag,
     stableVersion: stable.version,
     commit,
+    workflowSourceCommit: manifest.candidate.workflowSourceCommit,
     artifactDigest: actualArtifacts.find((artifact) => artifact.kind === 'archive').sha256,
+    observation,
   };
 }

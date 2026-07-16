@@ -3,20 +3,36 @@
 
 set -euo pipefail
 
-if [ "${NOVA_WRITE_GUARD_DISABLED:-0}" = "1" ]; then
-  echo "[nova-plugin] WARNING: write guard explicitly disabled by NOVA_WRITE_GUARD_DISABLED=1; no permission decision was made." >&2
-  exit 0
+if [ "${BASH_ENV+x}" = "x" ] || [ "${ENV+x}" = "x" ]; then
+  echo "[nova-plugin] BASH_ENV/ENV inheritance is not allowed for guarded shell launchers; write blocked." >&2
+  exit 2
 fi
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd -- "$SCRIPT_DIR/../.." >/dev/null 2>&1 && pwd -P)}"
+if [ "${NODE_OPTIONS+x}" = "x" ]; then
+  echo "[nova-plugin] NODE_OPTIONS inheritance is not allowed before guarded Node startup; write blocked." >&2
+  exit 2
+fi
+
+if [ "${NOVA_WRITE_GUARD_DISABLED:-0}" = "1" ]; then
+  echo "[nova-plugin] NOVA_WRITE_GUARD_DISABLED=1 is not accepted by the fail-closed write guard; write blocked." >&2
+  exit 2
+fi
+
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+SCRIPT_PARENT="."
+case "$SCRIPT_PATH" in
+  */*) SCRIPT_PARENT="${SCRIPT_PATH%/*}" ;;
+esac
+SCRIPT_DIR="$(cd -P -- "$SCRIPT_PARENT" >/dev/null 2>&1 && builtin pwd -P)"
+PLUGIN_ROOT="$(cd -P -- "$SCRIPT_DIR/../.." >/dev/null 2>&1 && builtin pwd -P)"
+export CLAUDE_PLUGIN_ROOT="$PLUGIN_ROOT"
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=../../runtime/bash-common.sh
 source "$PLUGIN_ROOT/runtime/bash-common.sh"
 
-if ! NODE_BIN="$(nova_node_command)"; then
-  echo "[nova-plugin] Node.js 22+ is required by the active write guard; write blocked." >&2
-  echo "  Set NOVA_WRITE_GUARD_DISABLED=1 only for an explicit, temporary bypass." >&2
+PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-$(builtin pwd -P)}"
+if ! NODE_BIN="$(nova_node_command "$PROJECT_ROOT")"; then
+  echo "[nova-plugin] A trusted Node.js 22+ executable outside the project is required by the active write guard; write blocked." >&2
   exit 2
 fi
 
