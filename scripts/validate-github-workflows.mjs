@@ -911,7 +911,7 @@ function validateWorkflowContracts() {
       jobId: 'verify',
       expectedVerifyTags: 2,
       trustDirectory: 'promotion-trust',
-      expectedBootstrapRef: '${{ job.workflow_sha }}',
+      expectedBootstrapRef: '${{ github.workflow_sha }}',
     })) errors.push(`  - ${finding}`);
     for (const finding of promotionTagIdentityErrors(promotionFile, model)) errors.push(`  - ${finding}`);
     for (const finding of releaseBundleAttestationOrderErrors(promotionFile, model, 'verify')) errors.push(`  - ${finding}`);

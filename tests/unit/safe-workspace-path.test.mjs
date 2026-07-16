@@ -125,12 +125,20 @@ test('artifact roots cannot overlap executable search, broad project ancestors, 
     () => assertArtifactRootsOutsideExecutableSearch({ artifactRoots: [hiddenControl], projectRoot: workspace, env: { PATH: trustedBin } }),
     /security-sensitive control directory/u,
   );
-  const hiddenHomeRoot = await mkdtemp(join(homedir(), '.nova-artifact-root-'));
-  t.after(() => rm(hiddenHomeRoot, { recursive: true, force: true }));
-  assert.throws(
-    () => assertArtifactRootsOutsideExecutableSearch({ artifactRoots: [hiddenHomeRoot], projectRoot: workspace, env: { PATH: trustedBin } }),
-    /hidden user control directory/u,
-  );
+  let hiddenHomeRoot;
+  try {
+    hiddenHomeRoot = await mkdtemp(join(homedir(), '.nova-artifact-root-'));
+  } catch (error) {
+    if (!['EACCES', 'EPERM'].includes(error?.code)) throw error;
+    t.diagnostic(`hidden-home artifact-root probe unavailable: ${error.code}`);
+  }
+  if (hiddenHomeRoot) {
+    t.after(() => rm(hiddenHomeRoot, { recursive: true, force: true }));
+    assert.throws(
+      () => assertArtifactRootsOutsideExecutableSearch({ artifactRoots: [hiddenHomeRoot], projectRoot: workspace, env: { PATH: trustedBin } }),
+      /hidden user control directory/u,
+    );
+  }
 
   const controlledGit = join(artifacts, 'controlled-git');
   await writeFile(controlledGit, '#!/bin/sh\nexit 0\n');

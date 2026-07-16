@@ -21,7 +21,8 @@ function cleanGuardEnvironment(overrides = {}) {
   const env = { ...process.env };
   for (const variable of Object.keys(env)) {
     if (guardedEnvironmentVariables.includes(variable)
-      || variable.toUpperCase().startsWith('GIT_')) delete env[variable];
+      || variable.toUpperCase().startsWith('GIT_')
+      || variable.startsWith('BASH_FUNC_')) delete env[variable];
   }
   return { ...env, ...overrides };
 }

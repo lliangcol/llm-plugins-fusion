@@ -30,7 +30,7 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-          ref: ${{ job.workflow_sha }}
+          ref: ${{ github.workflow_sha }}
       - name: Verify explicit signed tag identity before repository code
         id: identity
         env:
@@ -38,8 +38,8 @@ jobs:
           CANDIDATE_TAG: ${{ inputs.candidate-tag }}
           EVENT_NAME: ${{ github.event_name }}
           TRIGGER_REF: ${{ github.ref }}
-          PROMOTION_WORKFLOW_REF: ${{ job.workflow_ref }}
-          PROMOTION_WORKFLOW_COMMIT: ${{ job.workflow_sha }}
+          PROMOTION_WORKFLOW_REF: ${{ github.workflow_ref }}
+          PROMOTION_WORKFLOW_COMMIT: ${{ github.workflow_sha }}
         run: |
           set -euo pipefail
           test "${EVENT_NAME}" = repository_dispatch
