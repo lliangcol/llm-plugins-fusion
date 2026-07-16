@@ -1,6 +1,6 @@
 ---
 name: nova-review
-description: Unified review Hub Skill. Route by LEVEL to lite, standard, or strict review outputs; no code modification.
+description: Unified canonical review Skill. Apply LEVEL and MODE to review depth and output shape; no code modification.
 license: MIT
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash
@@ -11,7 +11,7 @@ metadata:
   nova-model-invocable: "true"
   nova-subagent-safe: "true"
   nova-destructive-actions: "none"
-argument-hint: "Example: review LEVEL=lite INPUT='small PR diff'"
+argument-hint: "Example: review LEVEL=standard MODE=findings-only REVIEW_SCOPE='small PR diff'"
 ---
 
 ## Shared Execution Policy
@@ -37,9 +37,9 @@ This file is the supporting behavioral contract for `/nova-plugin:review` and th
 
 ### Generated Behavior Index
 
-- **Purpose:** Route code or design review to the requested depth and emit evidence-grounded findings without implementation.
-- **Canonical inputs:** `REVIEW_SCOPE`(required aliases=INPUT,SCOPE); `LEVEL`(optional aliases=DEPTH default="standard" exact="lite","standard","strict")
-- **Decision entries:** 3; exact routes: `review-lite`, `review-only`, `review-strict`.
+- **Purpose:** Perform evidence-grounded code or design review at the requested depth and output mode without implementation.
+- **Canonical inputs:** `REVIEW_SCOPE`(required aliases=INPUT,SCOPE); `LEVEL`(optional aliases=DEPTH default="standard" exact="lite","standard","strict"); `MODE`(optional default="full" exact="full","findings-only"); `REVIEW_PROFILE`(optional default="general" exact="general","plan","codex-review-only","codex-verify-only")
+- **Decision entries:** 7; canonical routes and variants: `review {"REVIEW_PROFILE":"plan"}`, `review {"REVIEW_PROFILE":"codex-review-only"}`, `review {"REVIEW_PROFILE":"codex-verify-only"}`, `review {"MODE":"findings-only"}`, `review {"LEVEL":"lite"}`, `review {"LEVEL":"standard"}`, `review {"LEVEL":"strict"}`.
 - **Workflow steps:** `resolve-scope` → `route` → `inspect` → `emit`
 - **Output:** mode=`chat`; order=`findings` → `impact rationale` → `directional guidance`; severity=`Critical`, `Major`, `Minor`.
 - **Deviation/failure:** mode=`forbid`; failure order=`status` → `missing input` → `allowed values` → `safe next action`.
@@ -48,31 +48,31 @@ This file is the supporting behavioral contract for `/nova-plugin:review` and th
 
 ### Purpose
 
-Provide structured review findings for code/design artifacts, with routing by requested depth.
+Provide structured review findings for code/design artifacts through one
+canonical surface, with depth and output shape selected by parameters.
 
 ### Inputs
 
 | Parameter | Required | Default    | Notes                  | Example                 |
 | --------- | -------- | ---------- | ---------------------- | ----------------------- |
-| `LEVEL`   | No       | `standard` | `lite`, `standard`, or `strict` | `lite`                  |
-| `INPUT`   | Yes      | N/A        | Review target content  | `PR diff / module code` |
+| `LEVEL` | No | `standard` | `lite`, `standard`, or `strict` | `lite` |
+| `MODE` | No | `full` | `full` or `findings-only` | `findings-only` |
+| `REVIEW_SCOPE` | Yes | N/A | Review target content; `INPUT` and `SCOPE` are accepted aliases | `PR diff / module code` |
 
 ### Outputs
 
-- `lite`: concise bullet findings through `nova-review-lite`.
-- `standard` and `strict`: severity buckets through `Critical`, `Major`, `Minor`.
+- `MODE=full`: complete review output at the selected `LEVEL`.
+- `MODE=findings-only`: stop after prioritized findings at the selected `LEVEL`.
+- `standard` and `strict` use severity buckets through `Critical`, `Major`, `Minor`.
 - Directional suggestions only.
 
 ### Workflow
 
-1. Parse level and target.
-2. Hub routing policy:
-
-- `lite` -> `nova-review-lite`
-- `standard` -> `nova-review-only`
-- `strict` -> `nova-review-strict`
-
-3. Emit findings with impact rationale.
+1. Parse scope, `LEVEL`, and `MODE`.
+2. Keep the selected identity as canonical `nova-review`; apply depth and
+   output shape as structured parameters.
+3. Emit findings with impact rationale, stopping after findings when
+   `MODE=findings-only`.
 
 ### Examples
 
@@ -112,11 +112,19 @@ If not specified, use `standard` level.
 LEVEL:
 <LEVEL>
 
-##### INPUT (Required)
+##### MODE (Optional)
+
+- `full` (default) → Complete review output at the selected depth
+- `findings-only` → Stop after prioritized findings; do not add implementation
+
+MODE:
+<MODE>
+
+##### REVIEW_SCOPE (Required)
 
 The code, design, or content to review.
 
-INPUT:
+REVIEW_SCOPE:
 $ARGUMENTS
 
 ---
@@ -247,7 +255,9 @@ It only **evaluates and documents issues**.
 
 #### 4.0 VARIANT PROFILES
 
-- `LEVEL=lite|standard|strict` replaces `review-lite`, `review-only`, and `review-strict`.
+- `LEVEL=lite|standard|strict` selects review depth without changing the canonical surface.
+- `MODE=findings-only` replaces the output boundary formerly inferred from `review-only`.
+- `/nova-plugin:review-only` remains a direct 4.x compatibility invocation with `LEVEL=standard MODE=findings-only`; automatic routing must not select the alias.
 - `REVIEW_PROFILE=plan` replaces `plan-review`.
 - `REVIEW_PROFILE=codex-review-only|codex-verify-only` uses the retained compatibility assets under `skills/nova-codex-review-fix/` and requires explicit shell, network, and assistant-owned authentication approval.
 

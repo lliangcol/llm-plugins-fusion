@@ -16,7 +16,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `benchmark` | Tests, coverage, simulations, demos, mutations, and live evaluation. |
 | `maintenance` | Diagnostics, repository administration, and reusable script libraries. |
 
-## Script Inventory (140)
+## Script Inventory (135)
 
 | Category | Script |
 | --- | --- |
@@ -39,15 +39,11 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `evidence` | `scripts/generate-behavior-surfaces.mjs` |
 | `docs` | `scripts/generate-command-docs.mjs` |
 | `evidence` | `scripts/generate-compatibility-evidence.mjs` |
-| `evidence` | `scripts/generate-control-plane-inventory.mjs` |
 | `docs` | `scripts/generate-diagnostics-docs.mjs` |
 | `docs` | `scripts/generate-doc-governance.mjs` |
 | `evidence` | `scripts/generate-eval-corpus.mjs` |
-| `evidence` | `scripts/generate-evaluation-profiles.mjs` |
-| `evidence` | `scripts/generate-evidence-levels.mjs` |
 | `evidence` | `scripts/generate-fact-graph.mjs` |
 | `evidence` | `scripts/generate-project-state.mjs` |
-| `docs` | `scripts/generate-prompt-surface-report.mjs` |
 | `evidence` | `scripts/generate-quality-report.mjs` |
 | `evidence` | `scripts/generate-registry.mjs` |
 | `release` | `scripts/generate-release-candidate.mjs` |
@@ -55,7 +51,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `release` | `scripts/generate-release-evidence.mjs` |
 | `release` | `scripts/generate-release-summary.mjs` |
 | `evidence` | `scripts/generate-runtime-contracts.mjs` |
-| `evidence` | `scripts/generate-surface-inventory.mjs` |
+| `docs` | `scripts/generate-surface-inventory.mjs` |
 | `evidence` | `scripts/generate-task-catalog.mjs` |
 | `evidence` | `scripts/generate-validation-timing-trend.mjs` |
 | `evidence` | `scripts/generate-workflow-permissions.mjs` |
@@ -110,7 +106,6 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `migration` | `scripts/scaffold-consumer-profile.mjs` |
 | `migration` | `scripts/scaffold.mjs` |
 | `validate` | `scripts/scan-distribution-risk.mjs` |
-| `docs` | `scripts/sync-doc-facts.mjs` |
 | `maintenance` | `scripts/sync-github-labels.mjs` |
 | `validate` | `scripts/validate-adapter-conformance.mjs` |
 | `validate` | `scripts/validate-all.mjs` |
@@ -201,7 +196,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `migration` | `npm run scaffold:consumer` | `node scripts/scaffold-consumer-profile.mjs` |
 | `validate` | `npm run scan:distribution` | `node scripts/scan-distribution-risk.mjs` |
 | `validate` | `npm run scan:secrets` | `node scripts/scan-distribution-risk.mjs` |
-| `maintenance` | `npm run sync:project-state` | `node scripts/generate-project-state.mjs --write && node scripts/sync-doc-facts.mjs --write` |
+| `maintenance` | `npm run sync:project-state` | `node scripts/generate-project-state.mjs --write` |
 | `benchmark` | `npm run test` | `npm run test:unit && npm run test:integration && npm run test:e2e` |
 | `benchmark` | `npm run test:coverage` | `node scripts/run-test-coverage.mjs` |
 | `benchmark` | `npm run test:coverage:check` | `node scripts/run-test-coverage.mjs --check` |
@@ -246,7 +241,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `npm run validate:workflow-contract` | `node scripts/validate-workflow-contract-v5.mjs` |
 | `validate` | `npm run validate:workspaces` | `node scripts/validate-workspaces.mjs` |
 
-## Runnable Validation Registry (63)
+## Runnable Validation Registry (46)
 
 | Task id | Category | Runner | Inputs | Cache |
 | --- | --- | --- | --- | --- |
@@ -257,24 +252,14 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `registry.fixtures` | `validate` | `scripts/validate-registry-fixtures.mjs` | 3 | `never` |
 | `claude.manifest.static` | `validate` | `scripts/validate-claude-compat.mjs` | 2 | `never` |
 | `frontmatter.lint` | `validate` | `scripts/lint-frontmatter.mjs` | 3 | `never` |
-| `workflow.permissions` | `evidence` | `scripts/generate-workflow-permissions.mjs` | 6 | `never` |
-| `workflow.contract.v5` | `validate` | `scripts/validate-workflow-contract-v5.mjs` | 6 | `never` |
-| `workflow.contract.v6.projection` | `migration` | `scripts/migrate-v6-contracts.mjs` | 6 | `never` |
-| `workflow.eval.corpus.projection` | `evidence` | `scripts/generate-eval-corpus.mjs` | 6 | `never` |
-| `workflow.behavior.surfaces` | `evidence` | `scripts/generate-behavior-surfaces.mjs` | 6 | `never` |
-| `workflow.runtime.contracts` | `evidence` | `scripts/generate-runtime-contracts.mjs` | 6 | `never` |
-| `workflow.runtime.behavior` | `validate` | `scripts/validate-runtime-behavior-contracts.mjs` | 6 | `never` |
-| `workflow.behavior.golden` | `validate` | `scripts/validate-behavior-golden.mjs` | 10 | `never` |
-| `workflow.live.dataset` | `validate` | `scripts/validate-live-eval-dataset.mjs` | 2 | `never` |
-| `workflow.real-task.benchmark` | `benchmark` | `scripts/run-real-task-benchmark.mjs` | 2 | `never` |
+| `workflow.contracts` | `validate` | `node-batch` | 6 | `never` |
 | `workflow.second-product` | `validate` | `scripts/validate-second-product-fixture.mjs` | 7 | `never` |
 | `schemas.differential` | `validate` | `scripts/validate-schema-engine-differential.mjs` | 4 | `never` |
 | `release.operations` | `validate` | `scripts/validate-release-operations.mjs` | 5 | `never` |
 | `governance.freshness` | `validate` | `scripts/validate-governance-freshness.mjs` | 2 | `never` |
 | `release.channels` | `validate` | `scripts/validate-release-channel-facts.mjs` | 5 | `never` |
-| `control.complexity` | `validate` | `scripts/validate-control-plane-complexity.mjs` | 3 | `never` |
+| `control.complexity` | `validate` | `scripts/validate-control-plane-complexity.mjs` | 5 | `never` |
 | `control.task.catalog` | `evidence` | `scripts/generate-task-catalog.mjs` | 4 | `never` |
-| `control.inventory` | `evidence` | `scripts/generate-control-plane-inventory.mjs` | 5 | `never` |
 | `facts.graph` | `evidence` | `scripts/generate-fact-graph.mjs` | 3 | `never` |
 | `platform.file.urls` | `validate` | `scripts/validate-portable-paths.mjs` | 2 | `never` |
 | `workflow.surface.normalization` | `migration` | `scripts/normalize-workflow-surfaces.mjs` | 6 | `never` |
@@ -286,17 +271,12 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `hooks.syntax` | `validate` | `hook-syntax` | 4 | `never` |
 | `runtime.smoke` | `validate` | `runtime-smoke` | 4 | `never` |
 | `surface.budget` | `validate` | `scripts/validate-surface-budget.mjs` | 2 | `never` |
-| `surface.inventory` | `evidence` | `scripts/generate-surface-inventory.mjs` | 3 | `content` |
+| `surface.inventory` | `docs` | `scripts/generate-surface-inventory.mjs` | 3 | `content` |
 | `distribution.risk` | `validate` | `scripts/scan-distribution-risk.mjs` | 7 | `content` |
 | `regression.validate` | `validate` | `scripts/validate-regression.mjs` | 7 | `never` |
 | `workflow.fixtures` | `validate` | `scripts/validate-workflow-fixtures.mjs` | 7 | `never` |
-| `workflow.route.conformance` | `validate` | `scripts/validate-route-conformance.mjs` | 7 | `never` |
-| `workflow.static.contract` | `benchmark` | `scripts/evaluate-static-contracts.mjs` | 7 | `never` |
-| `workflow.adapter.simulation` | `benchmark` | `scripts/evaluate-adapter-simulation.mjs` | 7 | `never` |
-| `workflow.surface.ab` | `benchmark` | `scripts/evaluate-workflow-surfaces.mjs` | 7 | `never` |
+| `workflow.evaluations` | `validate` | `node-batch` | 12 | `never` |
 | `assistant.adapters` | `validate` | `scripts/validate-adapter-conformance.mjs` | 7 | `never` |
-| `workflow.quality.dataset` | `validate` | `scripts/validate-workflow-quality-evals.mjs` | 7 | `never` |
-| `workflow.paired.dry-run` | `validate` | `node` | 7 | `never` |
 | `assistant.live.evidence` | `validate` | `scripts/validate-assistant-evidence.mjs` | 3 | `never` |
 | `assistant.compatibility.registry` | `evidence` | `scripts/generate-compatibility-evidence.mjs` | 3 | `never` |
 | `quality.public.report` | `evidence` | `scripts/generate-quality-report.mjs` | 3 | `content` |
@@ -308,11 +288,9 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `docs.migrations` | `migration` | `scripts/migrate-documentation-layout.mjs` | 6 | `content` |
 | `security.dependency-audit` | `evidence` | `scripts/audit-dependencies.mjs` | 6 | `never` |
 | `security.license-audit` | `evidence` | `scripts/audit-dependency-licenses.mjs` | 6 | `never` |
-| `eval.profiles` | `evidence` | `scripts/generate-evaluation-profiles.mjs` | 2 | `never` |
-| `evidence.levels` | `evidence` | `scripts/generate-evidence-levels.mjs` | 3 | `never` |
 | `performance.policy` | `validate` | `scripts/validate-performance-budget.mjs` | 3 | `never` |
 | `docs.tutorials` | `validate` | `scripts/validate-tutorials.mjs` | 3 | `never` |
-| `release.summary` | `release` | `scripts/generate-release-summary.mjs` | 5 | `never` |
+| `release.summary` | `release` | `scripts/generate-release-summary.mjs` | 6 | `never` |
 
 ## CI Job Map (28)
 
@@ -328,14 +306,14 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `.github/workflows/ci.yml` | `security` |
 | `.github/workflows/ci.yml` | `tests` |
 | `.github/workflows/codeql.yml` | `analyze` |
-| `.github/workflows/dependency-audit.yml` | `audit` |
 | `.github/workflows/dependency-review.yml` | `dependency-review` |
-| `.github/workflows/label-sync.yml` | `sync` |
+| `.github/workflows/nightly.yml` | `dependency-audit` |
 | `.github/workflows/nightly.yml` | `full` |
 | `.github/workflows/plugin-install-smoke.yml` | `known-good-install-smoke` |
 | `.github/workflows/plugin-install-smoke.yml` | `latest-drift-check` |
 | `.github/workflows/plugin-install-smoke.yml` | `latest-drift-report` |
 | `.github/workflows/pr-governance.yml` | `governance` |
+| `.github/workflows/pr-governance.yml` | `label-sync` |
 | `.github/workflows/promote-release.yml` | `publish` |
 | `.github/workflows/promote-release.yml` | `verify` |
 | `.github/workflows/release-candidate.yml` | `assemble` |

@@ -4,7 +4,7 @@ import { evaluateReleaseOperationalReadiness } from '../../scripts/validate-rele
 
 const reviewers = { status: 'configured', trustedUsers: ['peer'], trustedTeams: [] };
 const operations = {
-  signing: { inventoryReviewedAt: '2026-07-01', rotationReviewCadenceDays: 90, lastRotationEvidence: { path: 'evidence' } },
+  signing: { minimumActiveSigners: 1, overlapRequired: true, inventoryReviewedAt: '2026-07-01', rotationReviewCadenceDays: 90, lastRotationEvidence: { path: 'evidence' } },
   recovery: { lastSuccessfulDrill: { path: 'evidence' } },
   protectedPublication: { currentEvidence: { path: 'evidence' } },
 };

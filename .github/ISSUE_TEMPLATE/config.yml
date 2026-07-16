@@ -4,7 +4,7 @@ contact_links:
     url: https://github.com/lliangcol/llm-plugins-fusion/security/policy
     about: Report vulnerabilities privately; do not disclose security details in a public issue.
   - name: Getting Started
-    url: https://github.com/lliangcol/llm-plugins-fusion/blob/main/docs/getting-started.md
+    url: https://github.com/lliangcol/llm-plugins-fusion/blob/main/docs/getting-started/first-workflow.md
     about: Read setup, installation, and workflow guidance before opening a support issue.
   - name: Showcase and growth feedback
     url: https://github.com/lliangcol/llm-plugins-fusion/issues/new?template=showcase_feedback.yml

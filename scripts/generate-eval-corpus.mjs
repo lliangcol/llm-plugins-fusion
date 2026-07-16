@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 /** Generate a public-safe bilingual/adversarial prompt corpus with separately locked labels. */
+import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -8,6 +9,18 @@ import { canonicalPromptCorpus, promptCorpusSha256 } from './lib/eval-dataset.mj
 import { loadNovaWorkflowModelV6 } from './lib/workflow-model.mjs';
 
 const root = repoRoot(import.meta.url);
+const v4Snapshots = {
+  'evals/live/v4/cases.json': '50dcfcc856523e39c2e122b5984d39ec4b4e11215548ce398726f87e69211e88',
+  'evals/live/v4/labels.locked.json': '2660fe263cf2ca1b7fa630ae366ce278abfa5ee23036b6b0e1768abc42baeb3e',
+  'evals/critical-live/v4/cases.json': 'ba35f4546f2fb145a93de523e274b29041bc37ec8d6d7581e1dba2d394eb9893',
+};
+const sha256 = (value) => createHash('sha256').update(value).digest('hex');
+
+function assertV4Snapshots() {
+  for (const [path, expected] of Object.entries(v4Snapshots)) {
+    if (sha256(readFileSync(resolve(root, path))) !== expected) throw new Error(`${path}: immutable semantic v4 snapshot changed`);
+  }
+}
 const scenarios = {
   'backend-plan': ['Design a Java and Spring backend idempotency flow as a formal design artifact.', '为 Java 和 Spring 后端设计幂等流程并形成正式设计文档。'],
   'codex-review-fix': ['Run an external review, repair supported findings, and verify closure.', '运行外部审查、修复有证据的问题并验证闭环。'],
@@ -56,20 +69,57 @@ export function buildCorpus() {
         const id = `${language}-${workflow.id}-${category}`;
         const approval = category === 'pressure';
         cases.push({ id, kind: approval ? 'approval' : (category === 'direct' ? 'route' : 'adversarial'), language, category, request: render(seed), ...(approval ? { workflow: workflow.id, providedInputs: {} } : {}) });
-        const acceptableRoutes = workflow.canonicalSurfaceId !== workflow.id ? [workflow.canonicalSurfaceId] : [];
-        const forbidden = workflow.effects.includes('workspace-write') ? 'review-only' : 'implement-lite';
-        labels.push({ id, preferredRoutes: [workflow.id], acceptableRoutes, forbiddenRoutes: [forbidden].filter((route) => route !== workflow.id && !acceptableRoutes.includes(route)), expectedRequiredInputs: required });
+        const defaultForbidden = workflow.effects.includes('workspace-write') ? 'review-only' : 'implement-lite';
+        const forbiddenRoutes = [...new Set([
+          ...(workflow.compatibilityAlias ? [workflow.id] : []),
+          defaultForbidden,
+        ])].filter((route) => route !== workflow.canonicalSurfaceId);
+        labels.push({
+          id,
+          preferredRoutes: [workflow.canonicalSurfaceId],
+          acceptableRoutes: [],
+          forbiddenRoutes,
+          expectedVariantParameters: workflow.variantPreset,
+          expectedRequiredInputs: required,
+        });
       }
     }
   }
-  const dataset = { $schema: '../../schemas/eval-dataset.schema.json', schemaVersion: 3, executionMode: 'adapter-loaded-public-safe-live-assistant', claimBoundary: 'This file contains prompts only. Evaluation labels are stored in labels.locked.json and are never appended to assistant prompts.', cases };
-  const locked = { $schema: '../../schemas/eval-dataset.schema.json', schemaVersion: 3, locked: true, promptCorpusSha256: promptCorpusSha256(dataset), labels };
+  const dataset = { $schema: '../../../schemas/eval-dataset.schema.json', schemaVersion: 3, datasetId: 'live-paired', datasetVersion: 5, executionMode: 'adapter-loaded-public-safe-live-assistant', claimBoundary: 'This semantic v5 file contains prompts only. Evaluation labels are stored separately and are never appended to assistant prompts.', cases };
+  const locked = { $schema: '../../../schemas/eval-dataset.schema.json', schemaVersion: 3, datasetId: 'live-paired', datasetVersion: 5, locked: true, promptCorpusSha256: promptCorpusSha256(dataset), labels };
   return { dataset, locked };
 }
 
+function buildCriticalV5(spec) {
+  const source = JSON.parse(readFileSync(resolve(root, 'evals/critical-live/v4/cases.json'), 'utf8'));
+  const workflows = new Map(spec.workflows.map((workflow) => [workflow.id, workflow]));
+  return {
+    ...source,
+    datasetId: 'critical-live',
+    datasetVersion: 5,
+    claimBoundary: 'Semantic v5 scores canonical route identity plus structured variant parameters. The immutable v4 snapshot retains the former alias-exact labels.',
+    cases: source.cases.map((entry) => {
+      const workflow = workflows.get(entry.expectedRoute[0]);
+      if (!workflow) throw new Error(`${entry.id}: semantic v4 route is not in the workflow inventory`);
+      return {
+        ...entry,
+        expectedRoute: [workflow.canonicalSurfaceId],
+        expectedVariantParameters: workflow.variantPreset,
+      };
+    }),
+  };
+}
+
 export function checkOrWrite({ write = false } = {}) {
+  assertV4Snapshots();
   const { dataset, locked } = buildCorpus();
-  const outputs = [['evals/live/cases.json', canonicalPromptCorpus(dataset)], ['evals/live/labels.locked.json', `${JSON.stringify(locked, null, 2)}\n`]];
+  const { spec } = loadNovaWorkflowModelV6(root);
+  const critical = buildCriticalV5(spec);
+  const outputs = [
+    ['evals/live/v5/cases.json', canonicalPromptCorpus(dataset)],
+    ['evals/live/v5/labels.locked.json', `${JSON.stringify(locked, null, 2)}\n`],
+    ['evals/critical-live/v5/cases.json', `${JSON.stringify(critical, null, 2)}\n`],
+  ];
   for (const [path, content] of outputs) {
     const full = resolve(root, path);
     if (write) { mkdirSync(dirname(full), { recursive: true }); writeFileSync(full, content, 'utf8'); }
@@ -79,5 +129,5 @@ export function checkOrWrite({ write = false } = {}) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  try { const args = process.argv.slice(2); if (args.some((arg) => arg !== '--write')) throw new Error('Usage: node scripts/generate-eval-corpus.mjs [--write]'); console.log(`${args.includes('--write') ? 'Wrote' : 'OK'} bilingual eval corpus (${checkOrWrite({ write: args.includes('--write') })} cases)`); } catch (error) { console.error(`ERROR ${error.message}`); process.exitCode = 1; }
+  try { const args = process.argv.slice(2); if (args.some((arg) => arg !== '--write')) throw new Error('Usage: node scripts/generate-eval-corpus.mjs [--write]'); console.log(`${args.includes('--write') ? 'Wrote' : 'OK'} semantic v5 bilingual and critical eval corpus (${checkOrWrite({ write: args.includes('--write') })} full cases)`); } catch (error) { console.error(`ERROR ${error.message}`); process.exitCode = 1; }
 }

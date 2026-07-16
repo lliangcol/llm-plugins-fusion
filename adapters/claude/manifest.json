@@ -19,6 +19,18 @@
     "effects": "native-and-hook",
     "fallback": "fail-closed"
   },
+  "automaticRouting": {
+    "identity": "canonical-surface-plus-variant-parameters",
+    "canonicalTargets": [
+      "explore",
+      "finalize-work",
+      "implement-plan",
+      "produce-plan",
+      "review",
+      "route"
+    ],
+    "compatibilityAliases": "excluded"
+  },
   "verificationEntrypoints": [
     "../../scripts/validate-plugin-install.mjs",
     "../../scripts/validate-plugin-route-live.mjs",

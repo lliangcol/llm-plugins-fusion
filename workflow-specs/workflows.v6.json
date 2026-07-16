@@ -559,6 +559,16 @@
             "observer",
             "reviewer"
           ]
+        },
+        {
+          "name": "DEPTH",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "lite",
+            "standard",
+            "deep"
+          ]
         }
       ],
       "effects": [
@@ -763,6 +773,15 @@
           "name": "WORK_SUMMARY",
           "type": "string",
           "required": true
+        },
+        {
+          "name": "DEPTH",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "lite",
+            "standard"
+          ]
         }
       ],
       "effects": [
@@ -893,6 +912,16 @@
             "oneShot": true,
             "expires": null
           }
+        },
+        {
+          "name": "EXECUTION_PROFILE",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "lite",
+            "standard",
+            "codex-review-fix"
+          ]
         }
       ],
       "effects": [
@@ -1141,6 +1170,7 @@
           "required": false,
           "values": [
             "general",
+            "lite",
             "java-backend"
           ]
         },
@@ -1217,6 +1247,26 @@
             "lite",
             "standard",
             "strict"
+          ]
+        },
+        {
+          "name": "MODE",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "full",
+            "findings-only"
+          ]
+        },
+        {
+          "name": "REVIEW_PROFILE",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "general",
+            "plan",
+            "codex-review-only",
+            "codex-verify-only"
           ]
         }
       ],
@@ -1304,14 +1354,15 @@
       ],
       "outputContract": "review-only-v2",
       "risk": "none",
-      "modelInvocable": true,
+      "modelInvocable": false,
       "subagentSafe": true,
       "permissionProfile": "read-only",
       "legacyAlias": "nova-review-only",
       "contractPath": "skills/nova-review/SKILL.md",
       "canonicalSurfaceId": "review",
       "variantPreset": {
-        "LEVEL": "standard"
+        "LEVEL": "standard",
+        "MODE": "findings-only"
       },
       "compatibilityAlias": true,
       "inputs": [

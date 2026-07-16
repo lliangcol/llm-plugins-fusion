@@ -10,14 +10,15 @@ const countBy = (entries, key) => Object.fromEntries(
 );
 
 export function deriveEvaluationFacts(repoRoot) {
-  const liveDataset = readJson(repoRoot, 'evals/live/cases.json');
-  const criticalDataset = readJson(repoRoot, 'evals/critical-live/cases.json');
   const realTaskDataset = readJson(repoRoot, 'benchmarks/real-tasks.json');
   const evaluationProfiles = readJson(repoRoot, 'governance/evaluation-profiles.json').profiles;
 
   const releaseProfile = evaluationProfiles.find((entry) => entry.id === 'release');
   const criticalProfile = evaluationProfiles.find((entry) => entry.id === 'critical');
-  if (!releaseProfile || !criticalProfile) throw new Error('governed release and critical evaluation profiles are required');
+  const pilotProfile = evaluationProfiles.find((entry) => entry.id === 'pilot');
+  if (!releaseProfile || !criticalProfile || !pilotProfile) throw new Error('governed pilot, release, and critical evaluation profiles are required');
+  const liveDataset = readJson(repoRoot, releaseProfile.casesPath);
+  const criticalDataset = readJson(repoRoot, criticalProfile.casesPath);
   const liveAttempts = releaseProfile.attempts;
   const liveConditions = releaseProfile.conditions;
   const realTaskAssistants = ['claude-code', 'codex'];
@@ -26,21 +27,29 @@ export function deriveEvaluationFacts(repoRoot) {
   return {
     livePaired: {
       datasetId: 'live-paired',
-      sourcePath: 'evals/live/cases.json',
+      datasetVersion: releaseProfile.datasetVersion,
+      sourcePath: releaseProfile.casesPath,
+      labelsPath: releaseProfile.labelsPath,
       caseCount: liveDataset.cases.length,
       languageCounts: countBy(liveDataset.cases, 'language'),
       kindCounts: countBy(liveDataset.cases, 'kind'),
       profileCaseCounts: {
+        pilot: pilotProfile.selection.caseIds.length,
         critical: criticalDataset.cases.length,
         full: liveDataset.cases.length,
       },
+      assistants: releaseProfile.assistants,
       conditions: liveConditions,
       attempts: liveAttempts,
-      plannedInvocations: liveDataset.cases.length * liveConditions.length * liveAttempts,
+      plannedInvocations: liveDataset.cases.length
+        * releaseProfile.assistants.length
+        * liveConditions.length
+        * liveAttempts,
     },
     criticalLive: {
       datasetId: criticalProfile.datasetId,
-      sourcePath: 'evals/critical-live/cases.json',
+      datasetVersion: criticalProfile.datasetVersion,
+      sourcePath: criticalProfile.casesPath,
       caseCount: criticalDataset.cases.length,
       assistants: criticalProfile.assistants,
       conditions: criticalProfile.conditions,

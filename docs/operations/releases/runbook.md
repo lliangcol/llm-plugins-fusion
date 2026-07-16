@@ -59,25 +59,28 @@ The Release Notes summary should state these facts at the top:
 
 ## 4. Verify As A Consumer
 
-Download the release assets, then verify the archive attestation:
+The public download surface contains exactly the plugin archive,
+`SHA256SUMS.txt`, and one comprehensive evidence bundle. Download all three,
+then verify both attested archives:
 
 ```bash
 gh release download v4.0.0 --repo lliangcol/llm-plugins-fusion --dir nova-plugin-v4.0.0
 gh attestation verify nova-plugin-v4.0.0/nova-plugin-4.0.0.tar.gz --repo lliangcol/llm-plugins-fusion
+gh attestation verify nova-plugin-v4.0.0/nova-plugin-4.0.0-evidence-bundle.tar.gz --repo lliangcol/llm-plugins-fusion
 ```
 
-Confirm that `SHA256SUMS.txt` records the archive digest and compare it with a
-locally computed digest:
+Confirm that `SHA256SUMS.txt` records both archive digests and compare them with
+locally computed digests:
 
 ```bash
-sha256sum nova-plugin-v4.0.0/nova-plugin-4.0.0.tar.gz
-grep 'nova-plugin-4.0.0.tar.gz$' nova-plugin-v4.0.0/SHA256SUMS.txt
+(cd nova-plugin-v4.0.0 && sha256sum -c SHA256SUMS.txt)
 ```
 
-Inspect `artifact-manifest.json`, `build-sbom.cdx.json`,
-`runtime-capabilities.cdx.json`, `inventory.json`, and
-`nova-build-record.json`; their presence complements the attestation but does
-not by itself prove runtime safety.
+The evidence bundle contains `artifact-manifest.json`, `build-sbom.cdx.json`,
+`runtime-capabilities.cdx.json`, `inventory.json`, `nova-build-record.json`,
+the candidate envelope, review record, and release control bundle. Their
+presence complements the attestation but does not by itself prove runtime
+safety.
 
 ## 5. Close The Release
 

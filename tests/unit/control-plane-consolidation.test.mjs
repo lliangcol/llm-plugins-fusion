@@ -2,14 +2,13 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
-import { buildInventory } from '../../scripts/generate-control-plane-inventory.mjs';
-import { inventoryBudgetErrors } from '../../scripts/validate-control-plane-complexity.mjs';
+import { buildInventory, inventoryBudgetErrors } from '../../scripts/validate-control-plane-complexity.mjs';
 import { registryMetadata } from '../../scripts/lib/validation-task-registry.mjs';
 import { repositoryProfilePlan } from '../../packages/cli/index.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const packageJson = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'));
-const registryRunners = new Set(registryMetadata().map((task) => task.runner));
+const registryRunners = new Set(registryMetadata().flatMap((task) => [task.runner, ...(task.components ?? []).map((component) => component.runner)]));
 
 const removedEntrypoints = {
   'eval:dataset-integrity': { replacement: 'eval:route', command: 'node scripts/validate-route-conformance.mjs' },
@@ -17,11 +16,11 @@ const removedEntrypoints = {
   'check:tests': { replacement: 'test', command: 'npm run test:unit && npm run test:integration && npm run test:e2e' },
   'check:coverage': { replacement: 'test:coverage:check', command: 'node scripts/run-test-coverage.mjs --check' },
   'validate:release-channels': { replacement: 'validate:release-truth', command: 'node scripts/validate-release-channel-facts.mjs' },
-  'validate:evaluation-profiles': { replacement: null, command: 'node scripts/generate-evaluation-profiles.mjs' },
+  'validate:evaluation-profiles': { replacement: null, command: 'node scripts/generate-quality-report.mjs' },
   'validate:release-summary': { replacement: null, command: 'node scripts/generate-release-summary.mjs' },
   'validate:tasks': { replacement: null, command: 'node scripts/generate-task-catalog.mjs' },
-  'validate:control-plane': { replacement: null, command: 'node scripts/generate-control-plane-inventory.mjs' },
-  'validate:evidence-levels': { replacement: null, command: 'node scripts/generate-evidence-levels.mjs' },
+  'validate:control-plane': { replacement: null, command: 'node scripts/validate-control-plane-complexity.mjs' },
+  'validate:evidence-levels': { replacement: null, command: 'node scripts/generate-release-summary.mjs' },
   'validate:permissions': { replacement: null, command: 'node scripts/generate-workflow-permissions.mjs' },
   'validate:command-docs': { replacement: null, command: 'node scripts/generate-command-docs.mjs' },
   'validate:doc-governance': { replacement: null, command: 'node scripts/generate-doc-governance.mjs' },

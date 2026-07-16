@@ -505,7 +505,7 @@
       "visibility": "deprecated-alias",
       "destructiveActions": "none",
       "userInvocable": true,
-      "modelInvocable": true,
+      "modelInvocable": false,
       "preapprovedTools": [
         "Read",
         "Glob",

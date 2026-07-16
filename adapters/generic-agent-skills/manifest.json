@@ -13,6 +13,18 @@
       "implement-plan",
       "finalize-work"
     ],
+    "automaticRouting": {
+      "identity": "canonical-surface-plus-variant-parameters",
+      "canonicalTargets": [
+        "explore",
+        "finalize-work",
+        "implement-plan",
+        "produce-plan",
+        "review",
+        "route"
+      ],
+      "compatibilityAliases": "excluded"
+    },
     "agents": [
       "architect",
       "builder",
@@ -516,6 +528,16 @@
             "observer",
             "reviewer"
           ]
+        },
+        {
+          "name": "DEPTH",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "lite",
+            "standard",
+            "deep"
+          ]
         }
       ],
       "effects": [
@@ -791,6 +813,15 @@
           "name": "WORK_SUMMARY",
           "type": "string",
           "required": true
+        },
+        {
+          "name": "DEPTH",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "lite",
+            "standard"
+          ]
         }
       ],
       "effects": [
@@ -955,6 +986,16 @@
             "oneShot": true,
             "expires": null
           }
+        },
+        {
+          "name": "EXECUTION_PROFILE",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "lite",
+            "standard",
+            "codex-review-fix"
+          ]
         }
       ],
       "effects": [
@@ -1273,6 +1314,7 @@
           "required": false,
           "values": [
             "general",
+            "lite",
             "java-backend"
           ]
         },
@@ -1366,6 +1408,26 @@
             "lite",
             "standard",
             "strict"
+          ]
+        },
+        {
+          "name": "MODE",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "full",
+            "findings-only"
+          ]
+        },
+        {
+          "name": "REVIEW_PROFILE",
+          "type": "enum",
+          "required": false,
+          "values": [
+            "general",
+            "plan",
+            "codex-review-only",
+            "codex-verify-only"
           ]
         }
       ],
@@ -1481,7 +1543,8 @@
       "canonicalSurfaceId": "review",
       "canonicalSkill": "nova-review",
       "variantPreset": {
-        "LEVEL": "standard"
+        "LEVEL": "standard",
+        "MODE": "findings-only"
       },
       "compatibilityAlias": true,
       "replacement": "nova-review",

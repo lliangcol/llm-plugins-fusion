@@ -33,11 +33,11 @@ Compatibility evidence:
 - Skills: [nova-plugin/skills/](../../nova-plugin/skills/)
 - Documentation: [nova-plugin/docs/README.md](../../nova-plugin/docs/README.md)
 - Validation: [scripts/validate-all.mjs](../../scripts/validate-all.mjs)
-- Prerequisites: [docs/marketplace/compatibility-matrix.md](../../docs/marketplace/compatibility-matrix.md)
+- Prerequisites: [docs/reference/compatibility/marketplace.md](../../docs/reference/compatibility/marketplace.md)
 
 Review policy:
 
-- Trust policy: [docs/marketplace/trust-policy.md](../../docs/marketplace/trust-policy.md)
-- Security review: [docs/marketplace/security-review-route.md](../../docs/marketplace/security-review-route.md)
-- Release hygiene: [docs/releases/release-hygiene.md](../../docs/releases/release-hygiene.md)
+- Trust policy: [docs/reference/security/marketplace-trust.md](../../docs/reference/security/marketplace-trust.md)
+- Security review: [docs/reference/security/security-review.md](../../docs/reference/security/security-review.md)
+- Release hygiene: [docs/operations/releases/hygiene.md](../../docs/operations/releases/hygiene.md)
 

@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "claimBoundary": "Deterministic review-intent contract coverage; live assistant accuracy still requires the governed pilot.",
   "cases": [
     {
@@ -7,7 +7,8 @@
       "language": "en",
       "boundary": "findings-only",
       "request": "Inspect the supplied changes in read-only mode and return findings only; do not implement or modify anything.",
-      "expectedRoute": "review-only",
+      "expectedRoute": "review",
+      "expectedVariantParameters": { "LEVEL": "standard", "MODE": "findings-only" },
       "expectedRequiredInputs": ["REVIEW_SCOPE"]
     },
     {
@@ -15,7 +16,8 @@
       "language": "zh",
       "boundary": "findings-only",
       "request": "请只读审查给出的变更，仅返回问题发现，不实现修复，也不要修改任何内容。",
-      "expectedRoute": "review-only",
+      "expectedRoute": "review",
+      "expectedVariantParameters": { "LEVEL": "standard", "MODE": "findings-only" },
       "expectedRequiredInputs": ["REVIEW_SCOPE"]
     },
     {
@@ -23,7 +25,8 @@
       "language": "bilingual",
       "boundary": "findings-only",
       "request": "Review the supplied diff / 请只输出审查发现；read-only, no fixes, 不修改文件。",
-      "expectedRoute": "review-only",
+      "expectedRoute": "review",
+      "expectedVariantParameters": { "LEVEL": "standard", "MODE": "findings-only" },
       "expectedRequiredInputs": ["REVIEW_SCOPE"]
     },
     {
@@ -32,6 +35,7 @@
       "boundary": "general",
       "request": "Assess the supplied change broadly and recommend the appropriate review depth before proceeding.",
       "expectedRoute": "review",
+      "expectedVariantParameters": {},
       "expectedRequiredInputs": ["REVIEW_SCOPE"]
     },
     {
@@ -40,6 +44,7 @@
       "boundary": "general",
       "request": "请对这项变更做一般性评审，并根据上下文决定采用哪种评审深度。",
       "expectedRoute": "review",
+      "expectedVariantParameters": {},
       "expectedRequiredInputs": ["REVIEW_SCOPE"]
     },
     {
@@ -48,6 +53,7 @@
       "boundary": "general",
       "request": "Review this change generally / 做一般评审，先判断合适的审查深度。",
       "expectedRoute": "review",
+      "expectedVariantParameters": {},
       "expectedRequiredInputs": ["REVIEW_SCOPE"]
     },
     {
@@ -55,7 +61,8 @@
       "language": "en",
       "boundary": "lite",
       "request": "Give this tiny patch a quick pass and report only obvious issues.",
-      "expectedRoute": "review-lite",
+      "expectedRoute": "review",
+      "expectedVariantParameters": { "LEVEL": "lite" },
       "expectedRequiredInputs": ["REVIEW_SCOPE"]
     },
     {
@@ -63,7 +70,8 @@
       "language": "zh",
       "boundary": "lite",
       "request": "快速看一下这个很小的补丁，只报告明显问题。",
-      "expectedRoute": "review-lite",
+      "expectedRoute": "review",
+      "expectedVariantParameters": { "LEVEL": "lite" },
       "expectedRequiredInputs": ["REVIEW_SCOPE"]
     },
     {
@@ -71,7 +79,8 @@
       "language": "bilingual",
       "boundary": "lite",
       "request": "Quick pass on this small diff / 快速检查，只看明显缺陷。",
-      "expectedRoute": "review-lite",
+      "expectedRoute": "review",
+      "expectedVariantParameters": { "LEVEL": "lite" },
       "expectedRequiredInputs": ["REVIEW_SCOPE"]
     },
     {
@@ -79,7 +88,8 @@
       "language": "en",
       "boundary": "strict",
       "request": "Perform an exhaustive production-critical security audit with explicit failure-cost reasoning.",
-      "expectedRoute": "review-strict",
+      "expectedRoute": "review",
+      "expectedVariantParameters": { "LEVEL": "strict" },
       "expectedRequiredInputs": ["REVIEW_SCOPE"]
     },
     {
@@ -87,7 +97,8 @@
       "language": "zh",
       "boundary": "strict",
       "request": "对这项生产关键安全变更进行穷尽式审计，并明确说明故障代价。",
-      "expectedRoute": "review-strict",
+      "expectedRoute": "review",
+      "expectedVariantParameters": { "LEVEL": "strict" },
       "expectedRequiredInputs": ["REVIEW_SCOPE"]
     },
     {
@@ -95,7 +106,8 @@
       "language": "bilingual",
       "boundary": "strict",
       "request": "Exhaustive production audit / 对高风险安全变更做严格审查并说明失败成本。",
-      "expectedRoute": "review-strict",
+      "expectedRoute": "review",
+      "expectedVariantParameters": { "LEVEL": "strict" },
       "expectedRequiredInputs": ["REVIEW_SCOPE"]
     }
   ]

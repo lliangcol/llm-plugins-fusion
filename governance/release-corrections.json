@@ -1,11 +1,11 @@
 {
   "$schema": "../schemas/release-corrections.schema.json",
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "corrections": [
     {
       "id": "LPF-AUTO-2026-07-RC-001",
       "issue": 73,
-      "status": "active-release-hold",
+      "status": "authorized-for-new-candidate",
       "affectedCommits": [
         "1510209e1e9bc9fd9f9d3cedbbfde13f0f77b1b5",
         "affd8fd5cee082fa7454fbe335edfe4c8c4be097"
@@ -27,6 +27,15 @@
         "requiresProtectedPublicationEvidence": true,
         "requiresInstallProof": true
       },
+      "targetRelease": {
+        "stableTag": "v4.1.0",
+        "candidateTag": "v4.1.0-rc.1"
+      },
+      "authorizationEvidence": {
+        "path": "governance/evidence/release-candidate-authorization-2026-07-16.md",
+        "sha256": "034735909f3a51046fa829e92d044f12d5b7cd7e24e1a5b2f5ea29a2965ba7c7",
+        "recordedAt": "2026-07-16T00:00:00Z"
+      },
       "auditTrail": [
         {
           "action": "created",
@@ -36,6 +45,16 @@
             "path": "governance/evidence/post-remediation-audit-2026-07-13.md",
             "sha256": "528e0456f1750f45dd020c3637036e1e5b923876d6abce328bada990841bba5c",
             "recordedAt": "2026-07-13T00:00:00Z"
+          }
+        },
+        {
+          "action": "authorized",
+          "actorRole": "maintainer",
+          "recordedAt": "2026-07-16T00:00:00Z",
+          "evidence": {
+            "path": "governance/evidence/release-candidate-authorization-2026-07-16.md",
+            "sha256": "034735909f3a51046fa829e92d044f12d5b7cd7e24e1a5b2f5ea29a2965ba7c7",
+            "recordedAt": "2026-07-16T00:00:00Z"
           }
         }
       ]

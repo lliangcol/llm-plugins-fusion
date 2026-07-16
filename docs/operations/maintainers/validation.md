@@ -102,11 +102,11 @@ and the generated control-plane inventory; neither is an execution caller.
 | `check:tests` | unreferenced wrapper | generated inventories only | `test` | Removes a parameter-free forwarding alias. |
 | `check:coverage` | unreferenced wrapper | generated inventories only | `test:coverage:check` | Removes a parameter-free forwarding alias. |
 | `validate:release-channels` | exact duplicate | release runbook and generated inventories | `validate:release-truth` | Release runbook migrated; release fact validation is unchanged. |
-| `validate:evaluation-profiles` | generator/write variant | generated inventories only | `node scripts/generate-evaluation-profiles.mjs` | Read-only drift check remains available directly; the write entrypoint remains distinct. |
+| `validate:evaluation-profiles` | generator/write variant | generated inventories only | `node scripts/generate-quality-report.mjs` | Evaluation plans and the public quality report now share one lifecycle owner. |
 | `validate:release-summary` | generator/write variant | generated inventories only | `node scripts/generate-release-summary.mjs` | Read-only drift check remains available directly; the write entrypoint remains distinct. |
 | `validate:tasks` | generator/write variant | generated inventories only | `node scripts/generate-task-catalog.mjs` | Read-only catalog validation remains in the runnable registry. |
-| `validate:control-plane` | generator/write variant | generated inventories only | `node scripts/generate-control-plane-inventory.mjs` | Read-only inventory validation remains in the runnable registry. |
-| `validate:evidence-levels` | generator/write variant | generated inventories only | `node scripts/generate-evidence-levels.mjs` | Read-only drift check remains available directly; the write entrypoint remains distinct. |
+| `validate:control-plane` | generator/write variant | generated inventories only | `node scripts/validate-control-plane-complexity.mjs` | Inventory drift and complexity limits now share one lifecycle owner. |
+| `validate:evidence-levels` | generator/write variant | generated inventories only | `node scripts/generate-release-summary.mjs` | Evidence taxonomy and the release summary now share one lifecycle owner. |
 | `validate:permissions` | generator/write variant | generated inventories only | `node scripts/generate-workflow-permissions.mjs` | CI and the runnable registry continue to call the same read-only generator. |
 | `validate:command-docs` | generator/write variant | generated inventories only | `node scripts/generate-command-docs.mjs` | Read-only drift check remains in the runnable registry; the write entrypoint remains distinct. |
 | `validate:doc-governance` | generator/write variant | generated inventories only | `node scripts/generate-doc-governance.mjs` | Read-only drift check remains in the runnable registry; the write entrypoint remains distinct. |
@@ -139,7 +139,8 @@ shell. Every child command uses fixed argv, stops on the first failure, and
 returns normalized JSON task evidence. `migrate:docs` remains separate because
 it changes compatibility paths rather than regenerating an ordinary projection.
 The aggregate also covers the registry, surface inventory, eval corpus, prompt
-surface report, project state, and generated documentation fact blocks.
+surface report, project state, and generated documentation fact blocks through
+20 lifecycle-owned generators rather than five extra forwarding entrypoints.
 Identity-bound candidate, checksum, release-evidence, and timing generators stay
 separate because they require explicit inputs and must never guess release data.
 

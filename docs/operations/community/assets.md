@@ -18,9 +18,8 @@ actions unless performed through the GitHub UI or an authenticated workflow.
 | Asset | Purpose |
 | --- | --- |
 | [social-preview-1280x640.png](../../assets/social-preview-1280x640.png) | GitHub social preview candidate for repository settings upload. |
-
-No demo GIF is currently tracked. Do not link GIFs from README or release notes
-until the actual files exist.
+| [nova-route-demo.gif](../../assets/nova-route-demo.gif) | README terminal card generated from the deterministic `npm run demo:route` fixture output. |
+| [nova-route-demo.svg](../../assets/nova-route-demo.svg) | Reviewable source for the route demo GIF. |
 
 Before adding a demo GIF or short video to public docs, the captured run must
 have matching command evidence from `npm run doctor`, `npm run
@@ -41,6 +40,9 @@ terminal session as product evidence.
   `docs/assets/social-preview-1280x640.png`.
 
 ## Demo Capture Storyboard
+
+For the complete Java/Spring script, use
+[Java/Spring workflow recording guide](java-spring-demo.md).
 
 Use real terminal output from a public-safe environment. Do not create fake GIFs
 or mock command results.
@@ -73,7 +75,9 @@ or mock command results.
   development snapshot.
 - Run `npm run doctor` in the repository before capture and record warnings.
 - Use `fixtures/workflow/invoice-sync/` or another public-safe fixture for
-  workflow demonstrations.
+workflow demonstrations.
+- Keep deterministic headless demo assets explicitly labeled as no-LLM contract
+  evidence; they do not replace a separately consented Claude Code recording.
 - If Bash checks are skipped on Windows, show the skipped status explicitly and
   cite CI/Linux evidence for release promotion.
 - Keep the final GIF, source recording notes, and transcript reviewable before

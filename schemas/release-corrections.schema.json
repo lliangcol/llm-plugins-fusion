@@ -7,7 +7,7 @@
   "additionalProperties": false,
   "properties": {
     "$schema": { "type": "string" },
-    "schemaVersion": { "const": 2 },
+    "schemaVersion": { "const": 3 },
     "corrections": {
       "type": "array",
       "items": { "$ref": "#/$defs/correction" }
@@ -30,12 +30,11 @@
     },
     "targetRelease": {
       "type": "object",
-      "required": ["stableTag", "candidateTag", "sourceCommit"],
+      "required": ["stableTag", "candidateTag"],
       "additionalProperties": false,
       "properties": {
         "stableTag": { "$ref": "#/$defs/tag" },
-        "candidateTag": { "$ref": "#/$defs/candidateTag" },
-        "sourceCommit": { "$ref": "#/$defs/sha" }
+        "candidateTag": { "$ref": "#/$defs/candidateTag" }
       }
     },
     "correction": {

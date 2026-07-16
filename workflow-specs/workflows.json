@@ -649,14 +649,15 @@
       ],
       "outputContract": "review-only-v2",
       "risk": "none",
-      "modelInvocable": true,
+      "modelInvocable": false,
       "subagentSafe": true,
       "permissionProfile": "read-only",
       "legacyAlias": "nova-review-only",
       "contractPath": "skills/nova-review/SKILL.md",
       "canonicalSurfaceId": "review",
       "variantPreset": {
-        "LEVEL": "standard"
+        "LEVEL": "standard",
+        "MODE": "findings-only"
       },
       "compatibilityAlias": true
     },

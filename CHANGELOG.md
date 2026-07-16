@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+No changes are queued after the `4.1.0` candidate baseline yet.
+
+## [4.1.0] - 2026-07-16
+
+Release lifecycle: this section defines the `4.1.0` candidate baseline. Stable
+status is determined only by the governed release channel and exact-tag
+evidence, not by this changelog heading.
+
 ### Added
 - Added fail-closed live-evaluation previews and explicit invocation budgets,
   with governed profile attempts, public-safe result summaries, disposable raw
@@ -793,7 +801,8 @@ must not replace the exact release tag as stable evidence.
 - MIT 开源协议
 - 中英双语 README 文档
 
-[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v4.0.0...HEAD
+[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.0.1...v3.1.0

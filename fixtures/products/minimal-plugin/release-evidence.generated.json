@@ -14,7 +14,7 @@
   },
   "sourceDigests": {
     "framework.json": "73a24979564d9a155dc8fd1b4446ada15ffc9ba1b3f84311b79763e66d6cb298",
-    "product.json": "850774432f6c3e1dd6e6dcd77a121e5eab762428adc535238ac7010da15919e5",
+    "product.json": "072004013db78771e86231f3f91d959a823a877463a25082eb35cb485cf0c5f2",
     "workflows.json": "b8e3df8a1b62cee6274f97d8d468afe677b7e39ce3fa959d965fd19d251c475a",
     "behaviors.json": "de2b9c1fe643f01f395d2fa00fc584be0713937300fdf9d98f825bf9db40dbc2",
     "adapters/mock.json": "0f072ca43cf063a38a0099600af7a3e66824b0b019478526b12884a5495dece6",
@@ -22,7 +22,7 @@
     "contracts/design.md": "0cc5ac3c079f4af378ee6e37be72c27daf0f3f559e5e794c55c706f9e047253e",
     "contracts/verify.md": "06f04f26d8bda8c811b85247da75776ab8de8135a7c8e21e34c3a86fd77c08e5"
   },
-  "compiledArtifactSha256": "b04f9cc002bea8b817166346339f7c09b20b8741f814d3b3922f7ad84c2a9eb9",
+  "compiledArtifactSha256": "c60bcaf12927eb294a907a168f48afc9c5c643aa3554273bda27e542bfecdcd8",
   "gates": {
     "frameworkLoaded": true,
     "productLoaded": true,

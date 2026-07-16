@@ -15,8 +15,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 10296,
-        "estimatedTokens": 2566,
+        "bytes": 10352,
+        "estimatedTokens": 2580,
         "id": "produce-plan"
       }
     },
@@ -32,8 +32,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7912,
-        "estimatedTokens": 1971,
+        "bytes": 8005,
+        "estimatedTokens": 1995,
         "id": "implement-plan"
       }
     },
@@ -49,8 +49,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7631,
-        "estimatedTokens": 1903,
+        "bytes": 8781,
+        "estimatedTokens": 2189,
         "id": "review"
       }
     },
@@ -66,8 +66,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7631,
-        "estimatedTokens": 1903,
+        "bytes": 8781,
+        "estimatedTokens": 2189,
         "id": "review"
       }
     },
@@ -81,8 +81,8 @@
         "deprecated": false
       },
       "canonicalSkill": {
-        "bytes": 6581,
-        "estimatedTokens": 1641,
+        "bytes": 6766,
+        "estimatedTokens": 1687,
         "id": "explore"
       }
     },
@@ -99,8 +99,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 6581,
-        "estimatedTokens": 1641,
+        "bytes": 6766,
+        "estimatedTokens": 1687,
         "id": "explore"
       }
     },
@@ -116,8 +116,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 6581,
-        "estimatedTokens": 1641,
+        "bytes": 6766,
+        "estimatedTokens": 1687,
         "id": "explore"
       }
     },
@@ -133,8 +133,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7464,
-        "estimatedTokens": 1856,
+        "bytes": 7526,
+        "estimatedTokens": 1872,
         "id": "finalize-work"
       }
     },
@@ -148,8 +148,8 @@
         "deprecated": false
       },
       "canonicalSkill": {
-        "bytes": 7464,
-        "estimatedTokens": 1856,
+        "bytes": 7526,
+        "estimatedTokens": 1872,
         "id": "finalize-work"
       }
     },
@@ -165,8 +165,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7912,
-        "estimatedTokens": 1971,
+        "bytes": 8005,
+        "estimatedTokens": 1995,
         "id": "implement-plan"
       }
     },
@@ -180,8 +180,8 @@
         "deprecated": false
       },
       "canonicalSkill": {
-        "bytes": 7912,
-        "estimatedTokens": 1971,
+        "bytes": 8005,
+        "estimatedTokens": 1995,
         "id": "implement-plan"
       }
     },
@@ -197,8 +197,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7912,
-        "estimatedTokens": 1971,
+        "bytes": 8005,
+        "estimatedTokens": 1995,
         "id": "implement-plan"
       }
     },
@@ -214,8 +214,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 10296,
-        "estimatedTokens": 2566,
+        "bytes": 10352,
+        "estimatedTokens": 2580,
         "id": "produce-plan"
       }
     },
@@ -231,8 +231,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7631,
-        "estimatedTokens": 1903,
+        "bytes": 8781,
+        "estimatedTokens": 2189,
         "id": "review"
       }
     },
@@ -246,8 +246,8 @@
         "deprecated": false
       },
       "canonicalSkill": {
-        "bytes": 10296,
-        "estimatedTokens": 2566,
+        "bytes": 10352,
+        "estimatedTokens": 2580,
         "id": "produce-plan"
       }
     },
@@ -261,8 +261,8 @@
         "deprecated": false
       },
       "canonicalSkill": {
-        "bytes": 7631,
-        "estimatedTokens": 1903,
+        "bytes": 8781,
+        "estimatedTokens": 2189,
         "id": "review"
       }
     },
@@ -278,25 +278,26 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7631,
-        "estimatedTokens": 1903,
+        "bytes": 8781,
+        "estimatedTokens": 2189,
         "id": "review"
       }
     },
     {
       "id": "review-only",
       "commandWrapper": {
-        "bytes": 1143,
-        "estimatedTokens": 286,
+        "bytes": 1165,
+        "estimatedTokens": 292,
         "canonicalSurfaceId": "review",
         "variantPreset": {
-          "LEVEL": "standard"
+          "LEVEL": "standard",
+          "MODE": "findings-only"
         },
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7631,
-        "estimatedTokens": 1903,
+        "bytes": 8781,
+        "estimatedTokens": 2189,
         "id": "review"
       }
     },
@@ -312,8 +313,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7631,
-        "estimatedTokens": 1903,
+        "bytes": 8781,
+        "estimatedTokens": 2189,
         "id": "review"
       }
     },
@@ -327,8 +328,8 @@
         "deprecated": false
       },
       "canonicalSkill": {
-        "bytes": 13537,
-        "estimatedTokens": 3378,
+        "bytes": 13985,
+        "estimatedTokens": 3490,
         "id": "route"
       }
     },
@@ -344,8 +345,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 6581,
-        "estimatedTokens": 1641,
+        "bytes": 6766,
+        "estimatedTokens": 1687,
         "id": "explore"
       }
     }
