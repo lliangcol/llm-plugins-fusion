@@ -100,14 +100,25 @@ test('post-write verifier revalidates only exact protected hooks configuration',
   assert.equal(allowed.ok, true, allowed.stderr);
 });
 
-test('post-write verifier reports shell control-path mutation', async (t) => {
+test('post-write verifier reports agent control-path mutation', async (t) => {
   const { workspace } = await fixture(t);
   await mkdir(join(workspace, '.nova'));
   const policy = join(workspace, '.nova/shell-policy.json');
   await writeFile(policy, '{"schemaVersion":1,"allowCommands":[]}\n');
   const blocked = await runVerifier(workspace, policy);
   assert.equal(blocked.code, 2);
-  assert.match(blocked.stderr, /Shell policy control path was modified/u);
+  assert.match(blocked.stderr, /Agent control path was modified/u);
+
+  await mkdir(join(workspace, '.git'));
+  const gitConfig = join(workspace, '.git/config');
+  await writeFile(gitConfig, '[diff]\n\texternal = ./agent-controlled-helper\n');
+  const gitBlocked = await runVerifier(workspace, gitConfig);
+  assert.equal(gitBlocked.code, 2);
+  assert.match(gitBlocked.stderr, /Agent control path was modified/u);
+
+  const foldedGitBlocked = await runVerifier(workspace, join(workspace, '.GIT/config'));
+  assert.equal(foldedGitBlocked.code, 2);
+  assert.match(foldedGitBlocked.stderr, /Agent control path was modified/u);
 });
 
 test('post-write verifier rejects malformed payloads and missing actual targets', async (t) => {

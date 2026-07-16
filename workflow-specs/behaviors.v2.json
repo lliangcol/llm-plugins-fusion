@@ -643,6 +643,18 @@
             "observer",
             "reviewer"
           ]
+        },
+        {
+          "name": "DEPTH",
+          "required": false,
+          "aliases": [],
+          "description": "Exploration depth for canonical and compatibility projections.",
+          "default": "standard",
+          "exactValues": [
+            "lite",
+            "standard",
+            "deep"
+          ]
         }
       ],
       "decisionTable": [
@@ -650,19 +662,78 @@
           "when": {
             "op": "input-equals",
             "input": "PERSPECTIVE",
-            "value": "observer"
-          },
-          "action": "Use neutral fact-gathering behavior.",
-          "route": "explore-lite"
-        },
-        {
-          "when": {
-            "op": "input-equals",
-            "input": "PERSPECTIVE",
             "value": "reviewer"
           },
           "action": "Use review-question behavior.",
-          "route": "explore-review"
+          "route": "explore",
+          "variantParameters": {
+            "PERSPECTIVE": "reviewer"
+          }
+        },
+        {
+          "when": {
+            "op": "all",
+            "args": [
+              {
+                "op": "input-equals",
+                "input": "PERSPECTIVE",
+                "value": "observer"
+              },
+              {
+                "op": "input-equals",
+                "input": "DEPTH",
+                "value": "lite"
+              }
+            ]
+          },
+          "action": "Use concise neutral fact-gathering behavior.",
+          "route": "explore",
+          "variantParameters": {
+            "PERSPECTIVE": "observer",
+            "DEPTH": "lite"
+          }
+        },
+        {
+          "when": {
+            "op": "all",
+            "args": [
+              {
+                "op": "input-equals",
+                "input": "PERSPECTIVE",
+                "value": "observer"
+              },
+              {
+                "op": "input-equals",
+                "input": "DEPTH",
+                "value": "standard"
+              }
+            ]
+          },
+          "action": "Use normal neutral fact-gathering behavior.",
+          "route": "explore",
+          "variantParameters": {}
+        },
+        {
+          "when": {
+            "op": "all",
+            "args": [
+              {
+                "op": "input-equals",
+                "input": "PERSPECTIVE",
+                "value": "observer"
+              },
+              {
+                "op": "input-equals",
+                "input": "DEPTH",
+                "value": "deep"
+              }
+            ]
+          },
+          "action": "Use deep neutral fact-gathering behavior.",
+          "route": "explore",
+          "variantParameters": {
+            "DEPTH": "deep"
+          }
         }
       ],
       "invariants": [
@@ -673,12 +744,13 @@
       "stopConditions": [
         "INPUT is unresolved.",
         "PERSPECTIVE is not an exact allowed value.",
+        "DEPTH is not an exact allowed value.",
         "The request requires writes or implementation rather than exploration."
       ],
       "workflowSteps": [
         {
           "id": "resolve-input",
-          "action": "Resolve INPUT and PERSPECTIVE."
+          "action": "Resolve INPUT, PERSPECTIVE, and DEPTH."
         },
         {
           "id": "route",
@@ -726,7 +798,7 @@
       "validation": [
         "Confirm every assertion is a fact, labeled inference, or explicit assumption.",
         "Confirm the output contains no solution or implementation advice.",
-        "Confirm the selected route matches PERSPECTIVE."
+        "Confirm the selected route and structured parameters match PERSPECTIVE and DEPTH."
       ],
       "failureOutput": {
         "fields": [
@@ -1041,6 +1113,17 @@
             "WORK_SCOPE"
           ],
           "description": "Completed changes and validation context; current task context may satisfy it explicitly."
+        },
+        {
+          "name": "DEPTH",
+          "required": false,
+          "aliases": [],
+          "description": "Handoff detail level.",
+          "default": "standard",
+          "exactValues": [
+            "lite",
+            "standard"
+          ]
         }
       ],
       "decisionTable": [
@@ -1066,13 +1149,14 @@
       ],
       "stopConditions": [
         "WORK_SUMMARY cannot be resolved.",
+        "DEPTH is not an exact allowed value.",
         "Workspace evidence is insufficient to distinguish completed, skipped, and blocked validation.",
         "A requested action would publish or mutate the workspace."
       ],
       "workflowSteps": [
         {
           "id": "freeze-state",
-          "action": "Freeze the current completed state."
+          "action": "Freeze the current completed state and resolve DEPTH."
         },
         {
           "id": "detect-mode",
@@ -1313,6 +1397,18 @@
             true,
             "true"
           ]
+        },
+        {
+          "name": "EXECUTION_PROFILE",
+          "required": false,
+          "aliases": [],
+          "description": "Canonical implementation or retained compatibility execution profile.",
+          "default": "standard",
+          "exactValues": [
+            "lite",
+            "standard",
+            "codex-review-fix"
+          ]
         }
       ],
       "decisionTable": [
@@ -1354,13 +1450,14 @@
       "stopConditions": [
         "PLAN_INPUT_PATH is missing or unreadable.",
         "PLAN_APPROVED is not exactly true.",
+        "EXECUTION_PROFILE is not an exact allowed value.",
         "A non-trivial deviation is required.",
         "Permission, dependency, or overlapping-change blockers prevent safe execution."
       ],
       "workflowSteps": [
         {
           "id": "validate-approval",
-          "action": "Validate both required inputs and exact approval."
+          "action": "Validate both required inputs, exact approval, and EXECUTION_PROFILE."
         },
         {
           "id": "load-plan",
@@ -1865,6 +1962,7 @@
           "default": "general",
           "exactValues": [
             "general",
+            "lite",
             "java-backend"
           ]
         },
@@ -1901,7 +1999,10 @@
             "value": "java-backend"
           },
           "action": "Use the Java backend design profile.",
-          "route": "backend-plan"
+          "route": "produce-plan",
+          "variantParameters": {
+            "PLAN_PROFILE": "java-backend"
+          }
         }
       ],
       "invariants": [
@@ -1989,7 +2090,7 @@
     },
     {
       "id": "review",
-      "purpose": "Route code or design review to the requested depth and emit evidence-grounded findings without implementation.",
+      "purpose": "Perform evidence-grounded code or design review at the requested depth and output mode without implementation.",
       "inputs": [
         {
           "name": "REVIEW_SCOPE",
@@ -2013,35 +2114,171 @@
             "standard",
             "strict"
           ]
+        },
+        {
+          "name": "MODE",
+          "required": false,
+          "aliases": [],
+          "description": "Review output mode.",
+          "default": "full",
+          "exactValues": [
+            "full",
+            "findings-only"
+          ]
+        },
+        {
+          "name": "REVIEW_PROFILE",
+          "required": false,
+          "aliases": [],
+          "description": "Canonical general review or retained compatibility review profile.",
+          "default": "general",
+          "exactValues": [
+            "general",
+            "plan",
+            "codex-review-only",
+            "codex-verify-only"
+          ]
         }
       ],
       "decisionTable": [
         {
           "when": {
             "op": "input-equals",
-            "input": "LEVEL",
-            "value": "lite"
+            "input": "REVIEW_PROFILE",
+            "value": "plan"
           },
-          "action": "Use concise high-signal review.",
-          "route": "review-lite"
+          "action": "Use plan decision-clarity and execution-risk review behavior.",
+          "route": "review",
+          "variantParameters": {
+            "REVIEW_PROFILE": "plan"
+          }
         },
         {
           "when": {
             "op": "input-equals",
-            "input": "LEVEL",
-            "value": "standard"
+            "input": "REVIEW_PROFILE",
+            "value": "codex-review-only"
           },
-          "action": "Use normal severity-grouped review.",
-          "route": "review-only"
+          "action": "Use the retained read-only external Codex review profile after its explicit runtime approvals.",
+          "route": "review",
+          "variantParameters": {
+            "REVIEW_PROFILE": "codex-review-only"
+          }
         },
         {
           "when": {
             "op": "input-equals",
-            "input": "LEVEL",
-            "value": "strict"
+            "input": "REVIEW_PROFILE",
+            "value": "codex-verify-only"
           },
-          "action": "Use exhaustive failure-cost-aware review.",
-          "route": "review-strict"
+          "action": "Use the retained read-only external Codex verification profile after its explicit runtime approvals.",
+          "route": "review",
+          "variantParameters": {
+            "REVIEW_PROFILE": "codex-verify-only"
+          }
+        },
+        {
+          "when": {
+            "op": "all",
+            "args": [
+              {
+                "op": "input-equals",
+                "input": "REVIEW_PROFILE",
+                "value": "general"
+              },
+              {
+                "op": "input-equals",
+                "input": "MODE",
+                "value": "findings-only"
+              }
+            ]
+          },
+          "action": "Stop after prioritized findings at the resolved review depth.",
+          "route": "review",
+          "variantParameters": {
+            "MODE": "findings-only"
+          }
+        },
+        {
+          "when": {
+            "op": "all",
+            "args": [
+              {
+                "op": "input-equals",
+                "input": "REVIEW_PROFILE",
+                "value": "general"
+              },
+              {
+                "op": "input-equals",
+                "input": "MODE",
+                "value": "full"
+              },
+              {
+                "op": "input-equals",
+                "input": "LEVEL",
+                "value": "lite"
+              }
+            ]
+          },
+          "action": "Use concise high-signal full review.",
+          "route": "review",
+          "variantParameters": {
+            "LEVEL": "lite"
+          }
+        },
+        {
+          "when": {
+            "op": "all",
+            "args": [
+              {
+                "op": "input-equals",
+                "input": "REVIEW_PROFILE",
+                "value": "general"
+              },
+              {
+                "op": "input-equals",
+                "input": "MODE",
+                "value": "full"
+              },
+              {
+                "op": "input-equals",
+                "input": "LEVEL",
+                "value": "standard"
+              }
+            ]
+          },
+          "action": "Use normal severity-grouped full review.",
+          "route": "review",
+          "variantParameters": {
+            "LEVEL": "standard"
+          }
+        },
+        {
+          "when": {
+            "op": "all",
+            "args": [
+              {
+                "op": "input-equals",
+                "input": "REVIEW_PROFILE",
+                "value": "general"
+              },
+              {
+                "op": "input-equals",
+                "input": "MODE",
+                "value": "full"
+              },
+              {
+                "op": "input-equals",
+                "input": "LEVEL",
+                "value": "strict"
+              }
+            ]
+          },
+          "action": "Use exhaustive failure-cost-aware full review.",
+          "route": "review",
+          "variantParameters": {
+            "LEVEL": "strict"
+          }
         }
       ],
       "invariants": [
@@ -2052,16 +2289,18 @@
       "stopConditions": [
         "REVIEW_SCOPE is unresolved.",
         "LEVEL is not an exact allowed value.",
+        "MODE is not an exact allowed value.",
+        "REVIEW_PROFILE is not an exact allowed value.",
         "The request requires implementation rather than review."
       ],
       "workflowSteps": [
         {
           "id": "resolve-scope",
-          "action": "Resolve review scope and exact level."
+          "action": "Resolve review scope, exact level, exact mode, and exact review profile."
         },
         {
           "id": "route",
-          "action": "Select the matching review workflow."
+          "action": "Apply the matching canonical review parameters."
         },
         {
           "id": "inspect",
@@ -2107,7 +2346,7 @@
         ]
       },
       "validation": [
-        "Confirm the selected route matches LEVEL.",
+        "Confirm the canonical review parameters match LEVEL, MODE, and REVIEW_PROFILE.",
         "Confirm findings are grounded in reviewed evidence.",
         "Confirm no implementation patch or release decision appears."
       ],
@@ -2499,7 +2738,10 @@
             "condition": "Intent explicitly requires the external Codex review, fix, and verify closure loop."
           },
           "action": "Route to the complete external closure workflow.",
-          "route": "codex-review-fix"
+          "route": "implement-plan",
+          "variantParameters": {
+            "EXECUTION_PROFILE": "codex-review-fix"
+          }
         },
         {
           "when": {
@@ -2507,7 +2749,10 @@
             "condition": "Intent explicitly requires external Codex review only with no fixes."
           },
           "action": "Route to external review only.",
-          "route": "codex-review-only"
+          "route": "review",
+          "variantParameters": {
+            "REVIEW_PROFILE": "codex-review-only"
+          }
         },
         {
           "when": {
@@ -2515,7 +2760,10 @@
             "condition": "Intent explicitly requires verification of an existing external review artifact."
           },
           "action": "Route to external verification only.",
-          "route": "codex-verify-only"
+          "route": "review",
+          "variantParameters": {
+            "REVIEW_PROFILE": "codex-verify-only"
+          }
         },
         {
           "when": {
@@ -2523,7 +2771,10 @@
             "condition": "Intent requires a deep or systematic analysis artifact without solutioning."
           },
           "action": "Route to senior exploration.",
-          "route": "senior-explore"
+          "route": "explore",
+          "variantParameters": {
+            "DEPTH": "deep"
+          }
         },
         {
           "when": {
@@ -2531,7 +2782,10 @@
             "condition": "Intent requires reviewer-perspective exploration questions without solutions."
           },
           "action": "Route to reviewer exploration.",
-          "route": "explore-review"
+          "route": "explore",
+          "variantParameters": {
+            "PERSPECTIVE": "reviewer"
+          }
         },
         {
           "when": {
@@ -2539,7 +2793,8 @@
             "condition": "Intent requires factual understanding, unknowns, or risk without solutions."
           },
           "action": "Route to the exploration hub.",
-          "route": "explore"
+          "route": "explore",
+          "variantParameters": {}
         },
         {
           "when": {
@@ -2547,7 +2802,10 @@
             "condition": "Intent explicitly requires a Java or Spring twelve-section backend design."
           },
           "action": "Route to the specialized backend plan.",
-          "route": "backend-plan"
+          "route": "produce-plan",
+          "variantParameters": {
+            "PLAN_PROFILE": "java-backend"
+          }
         },
         {
           "when": {
@@ -2555,7 +2813,10 @@
             "condition": "Intent requires review of an existing plan without rewriting it."
           },
           "action": "Route to plan review.",
-          "route": "plan-review"
+          "route": "review",
+          "variantParameters": {
+            "REVIEW_PROFILE": "plan"
+          }
         },
         {
           "when": {
@@ -2563,7 +2824,10 @@
             "condition": "Intent requires a lightweight plan with no artifact file."
           },
           "action": "Route to lightweight planning.",
-          "route": "plan-lite"
+          "route": "produce-plan",
+          "variantParameters": {
+            "PLAN_PROFILE": "lite"
+          }
         },
         {
           "when": {
@@ -2571,7 +2835,8 @@
             "condition": "Intent requires a formal review-ready plan artifact at an explicit path."
           },
           "action": "Route to plan production.",
-          "route": "produce-plan"
+          "route": "produce-plan",
+          "variantParameters": {}
         },
         {
           "when": {
@@ -2579,7 +2844,10 @@
             "condition": "Intent requires a strict production-critical or security audit."
           },
           "action": "Route to strict review.",
-          "route": "review-strict"
+          "route": "review",
+          "variantParameters": {
+            "LEVEL": "strict"
+          }
         },
         {
           "when": {
@@ -2587,23 +2855,31 @@
             "condition": "Intent requires a fast review of a small patch with only obvious findings."
           },
           "action": "Route to lightweight review.",
-          "route": "review-lite"
+          "route": "review",
+          "variantParameters": {
+            "LEVEL": "lite"
+          }
         },
         {
           "when": {
             "op": "semantic-condition",
-            "condition": "Intent requires standard severity-grouped read-only review with no implementation."
+            "condition": "After external, plan-review, strict, and lite review conditions are excluded, intent requires a read-only or findings-only review and prohibits implementation or modification; explicit severity grouping is not required."
           },
-          "action": "Route to review only.",
-          "route": "review-only"
+          "action": "Route to canonical review in standard findings-only mode.",
+          "route": "review",
+          "variantParameters": {
+            "LEVEL": "standard",
+            "MODE": "findings-only"
+          }
         },
         {
           "when": {
             "op": "semantic-condition",
-            "condition": "Intent requires review but no narrower review contract is explicit."
+            "condition": "Intent requires a general review, does not specify a read-only, findings-only, no-change, lite, strict, external, or plan-review boundary, and no narrower review contract matches."
           },
           "action": "Route to the review hub.",
-          "route": "review"
+          "route": "review",
+          "variantParameters": {}
         },
         {
           "when": {
@@ -2611,7 +2887,8 @@
             "condition": "Intent requires execution of an explicitly approved plan file."
           },
           "action": "Route to approved-plan implementation.",
-          "route": "implement-plan"
+          "route": "implement-plan",
+          "variantParameters": {}
         },
         {
           "when": {
@@ -2619,7 +2896,10 @@
             "condition": "Intent requires a small bounded fix with focused validation."
           },
           "action": "Route to lightweight implementation.",
-          "route": "implement-lite"
+          "route": "implement-plan",
+          "variantParameters": {
+            "EXECUTION_PROFILE": "lite"
+          }
         },
         {
           "when": {
@@ -2627,7 +2907,10 @@
             "condition": "Intent requires execution of explicit confirmed steps."
           },
           "action": "Route to standard implementation.",
-          "route": "implement-standard"
+          "route": "implement-plan",
+          "variantParameters": {
+            "EXECUTION_PROFILE": "standard"
+          }
         },
         {
           "when": {
@@ -2635,7 +2918,10 @@
             "condition": "Intent requires a short factual closure summary only."
           },
           "action": "Route to lightweight finalization.",
-          "route": "finalize-lite"
+          "route": "finalize-work",
+          "variantParameters": {
+            "DEPTH": "lite"
+          }
         },
         {
           "when": {
@@ -2643,16 +2929,17 @@
             "condition": "Intent requires a complete handoff or pull-request-ready closeout."
           },
           "action": "Route to full finalization.",
-          "route": "finalize-work"
+          "route": "finalize-work",
+          "variantParameters": {}
         }
       ],
       "invariants": [
-        "Recommend only existing canonical skills, compatibility command aliases, agents, and packs.",
-        "Prefer an exact specialized route over a broader hub when its condition matches.",
+        "Select only product-declared canonical automatic-routing targets; compatibility command aliases are optional direct-invocation information, never exact route identities.",
+        "Express specialized behavior only through structured variantParameters on the canonical route.",
         "Do not modify files or execute downstream work.",
         "Do not claim validation has run.",
         "Begin exactly with ## Recommended Route and emit no preamble or trailing commentary.",
-        "Name required inputs using only the selected workflows' canonical UPPER_SNAKE_CASE input names, plus validation expectations and fallback."
+        "Always emit the complete ordered set of the selected workflows' canonical UPPER_SNAKE_CASE required input names, even when values are present, inferred, or resolved; never emit only unresolved inputs."
       ],
       "stopConditions": [
         "REQUEST is unresolved.",
@@ -2742,10 +3029,10 @@
         "severityLevels": []
       },
       "validation": [
-        "Confirm the most specific matching route was selected before considering a hub.",
-        "Confirm selected the canonical skill, compatibility alias, and preset exist in the generated catalog.",
+        "Confirm the most specific matching canonical route and structured variant parameters were selected.",
+        "Confirm the canonical target is automatic-routing eligible and any optional compatibility alias and preset exist in the generated catalog.",
         "Confirm agents and packs exist in the product inventory.",
-        "Confirm required inputs exactly equal the canonical names and order of the selected workflows.",
+        "Confirm required inputs exactly equal the complete canonical names and order of the selected workflows even when their values are present, inferred, or resolved.",
         "Confirm the response contains routing only."
       ],
       "failureOutput": {

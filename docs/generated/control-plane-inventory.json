@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sourceDigests": {
-    "packageScripts": "sha256:f3107e78970667630baeaba5416f9e83a66f2091eed47e323ed687984b14dd53",
-    "validationRegistry": "sha256:917ce7223b2e8468553500681a5ad3c2eed6f289e8748c1666c1efa6f6479c5d",
+    "packageScripts": "sha256:826dbdc3cffccbb4e39ba5387a477419cbba6b621683d1a45b62f8261944f4b0",
+    "validationRegistry": "sha256:0c671ff26f7ecb1a0c12d79ae6f66b69a422590f437fe542570045032bc5231a",
     "productLanes": "sha256:c888525caa05c1a9509996ddf9543ea84edec6379fc511a5584c86fbe910ce94"
   },
   "boundaries": [
@@ -77,62 +77,8 @@
       "scope": "maintainer"
     },
     {
-      "name": "check:compatibility",
-      "command": "npm run validate:compatibility-evidence && npm run validate:second-product && npm run validate:portable-paths",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:contracts",
-      "command": "node scripts/validate-all.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:coverage",
-      "command": "npm run test:coverage:check",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:docs",
-      "command": "npm run validate:docs && npm run validate:community",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:release",
-      "command": "npm run test:coverage:check && npm run validate:maintainer:evidence && node scripts/validate-plugin-install.mjs --dry-run",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
       "name": "check:release-readiness",
       "command": "npm run validate:release-readiness -- --require-ready",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:runtime",
-      "command": "npm run validate:runtime && npm run validate:hook-truth",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:security",
-      "command": "npm run typecheck && npm run lint:shell && npm run lint:actions && npm run validate:github-workflows && npm run scan:secrets",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:tests",
-      "command": "npm test",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "check:truth",
-      "command": "npm run validate:release-truth && npm run validate:hook-truth && npm run validate:project-state && npm run validate:facts && npm run validate:drift",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
@@ -191,12 +137,6 @@
       "scope": "maintainer"
     },
     {
-      "name": "eval:dataset-integrity",
-      "command": "node scripts/validate-route-conformance.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
       "name": "eval:evidence",
       "command": "node scripts/validate-assistant-evidence.mjs",
       "owner": "maintainer task catalog",
@@ -241,90 +181,6 @@
     {
       "name": "eval:surfaces",
       "command": "node scripts/evaluate-workflow-surfaces.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:adapters",
-      "command": "node scripts/generate-adapters.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:behavior-surfaces",
-      "command": "node scripts/generate-behavior-surfaces.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:command-docs",
-      "command": "node scripts/generate-command-docs.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:compatibility-evidence",
-      "command": "node scripts/generate-compatibility-evidence.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:control-plane",
-      "command": "node scripts/generate-control-plane-inventory.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:diagnostics-docs",
-      "command": "node scripts/generate-diagnostics-docs.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:doc-governance",
-      "command": "node scripts/generate-doc-governance.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:evaluation-profiles",
-      "command": "node scripts/generate-evaluation-profiles.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:evidence-levels",
-      "command": "node scripts/generate-evidence-levels.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:facts",
-      "command": "node scripts/generate-fact-graph.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:quality-report",
-      "command": "node scripts/generate-quality-report.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:release-summary",
-      "command": "node scripts/generate-release-summary.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:runtime-contracts",
-      "command": "node scripts/generate-runtime-contracts.mjs --write",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "generate:task-catalog",
-      "command": "node scripts/generate-task-catalog.mjs --write",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
@@ -420,7 +276,7 @@
     },
     {
       "name": "sync:project-state",
-      "command": "node scripts/generate-project-state.mjs --write && node scripts/sync-doc-facts.mjs --write",
+      "command": "node scripts/generate-project-state.mjs --write",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
@@ -497,12 +353,6 @@
       "scope": "maintainer"
     },
     {
-      "name": "validate:command-docs",
-      "command": "node scripts/generate-command-docs.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
       "name": "validate:community",
       "command": "node scripts/validate-community-governance.mjs && node scripts/generate-quality-report.mjs",
       "owner": "maintainer task catalog",
@@ -521,26 +371,8 @@
       "scope": "maintainer"
     },
     {
-      "name": "validate:control-plane",
-      "command": "node scripts/generate-control-plane-inventory.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
       "name": "validate:dependency-audit",
       "command": "node scripts/audit-dependencies.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "validate:doc-governance",
-      "command": "node scripts/generate-doc-governance.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "validate:doc-migrations",
-      "command": "node scripts/migrate-documentation-layout.mjs",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
@@ -553,18 +385,6 @@
     {
       "name": "validate:drift",
       "command": "node scripts/generate-registry.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "validate:evaluation-profiles",
-      "command": "node scripts/generate-evaluation-profiles.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "validate:evidence-levels",
-      "command": "node scripts/generate-evidence-levels.mjs",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
@@ -617,12 +437,6 @@
       "scope": "maintainer"
     },
     {
-      "name": "validate:permissions",
-      "command": "node scripts/generate-workflow-permissions.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
       "name": "validate:platform-evidence",
       "command": "node scripts/validate-platform-evidence.mjs",
       "owner": "maintainer task catalog",
@@ -647,12 +461,6 @@
       "scope": "maintainer"
     },
     {
-      "name": "validate:release-channels",
-      "command": "node scripts/validate-release-channel-facts.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
       "name": "validate:release-operational-readiness",
       "command": "node scripts/validate-release-operational-readiness.mjs --mode candidate",
       "owner": "maintainer task catalog",
@@ -667,12 +475,6 @@
     {
       "name": "validate:release-readiness",
       "command": "node scripts/validate-release-readiness.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "validate:release-summary",
-      "command": "node scripts/generate-release-summary.mjs",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
@@ -709,12 +511,6 @@
     {
       "name": "validate:surface",
       "command": "node scripts/validate-surface-budget.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "validate:tasks",
-      "command": "node scripts/generate-task-catalog.mjs",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
@@ -976,8 +772,8 @@
         "CHECK_PASSED",
         "VALIDATION_FAILED"
       ],
-      "id": "workflow.permissions",
-      "label": "validate workflow permissions",
+      "id": "workflow.contracts",
+      "label": "validate workflow contracts and projections",
       "group": 1,
       "inputs": [
         "workflow-specs/**",
@@ -987,293 +783,44 @@
         "adapters/**",
         "evals/**"
       ],
-      "runner": "scripts/generate-workflow-permissions.mjs",
-      "args": [
-        "scripts/generate-workflow-permissions.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "workflow.contract.v5",
-      "label": "validate workflow capability contract v5",
-      "group": 1,
-      "inputs": [
-        "workflow-specs/**",
-        "nova-plugin/commands/**",
-        "nova-plugin/skills/**",
-        "nova-plugin/runtime/contracts/**",
-        "adapters/**",
-        "evals/**"
-      ],
-      "runner": "scripts/validate-workflow-contract-v5.mjs",
-      "args": [
-        "scripts/validate-workflow-contract-v5.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "workflow.contract.v6.projection",
-      "label": "validate deterministic Contract v6 projection",
-      "group": 1,
-      "inputs": [
-        "workflow-specs/**",
-        "nova-plugin/commands/**",
-        "nova-plugin/skills/**",
-        "nova-plugin/runtime/contracts/**",
-        "adapters/**",
-        "evals/**"
-      ],
-      "runner": "scripts/migrate-v6-contracts.mjs",
-      "args": [
-        "scripts/migrate-v6-contracts.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "workflow.eval.corpus.projection",
-      "label": "validate deterministic bilingual eval corpus",
-      "group": 1,
-      "inputs": [
-        "workflow-specs/**",
-        "nova-plugin/commands/**",
-        "nova-plugin/skills/**",
-        "nova-plugin/runtime/contracts/**",
-        "adapters/**",
-        "evals/**"
-      ],
-      "runner": "scripts/generate-eval-corpus.mjs",
-      "args": [
-        "scripts/generate-eval-corpus.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "workflow.behavior.surfaces",
-      "label": "validate generated behavior surfaces",
-      "group": 1,
-      "inputs": [
-        "workflow-specs/**",
-        "nova-plugin/commands/**",
-        "nova-plugin/skills/**",
-        "nova-plugin/runtime/contracts/**",
-        "adapters/**",
-        "evals/**"
-      ],
-      "runner": "scripts/generate-behavior-surfaces.mjs",
-      "args": [
-        "scripts/generate-behavior-surfaces.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "workflow.runtime.contracts",
-      "label": "validate behavior-complete runtime contracts",
-      "group": 1,
-      "inputs": [
-        "workflow-specs/**",
-        "nova-plugin/commands/**",
-        "nova-plugin/skills/**",
-        "nova-plugin/runtime/contracts/**",
-        "adapters/**",
-        "evals/**"
-      ],
-      "runner": "scripts/generate-runtime-contracts.mjs",
-      "args": [
-        "scripts/generate-runtime-contracts.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "workflow.runtime.behavior",
-      "label": "validate direct command behavior contracts",
-      "group": 1,
-      "inputs": [
-        "workflow-specs/**",
-        "nova-plugin/commands/**",
-        "nova-plugin/skills/**",
-        "nova-plugin/runtime/contracts/**",
-        "adapters/**",
-        "evals/**"
-      ],
-      "runner": "scripts/validate-runtime-behavior-contracts.mjs",
-      "args": [
-        "scripts/validate-runtime-behavior-contracts.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "workflow.behavior.golden",
-      "label": "validate behavior IR golden suites",
-      "group": 1,
-      "inputs": [
-        "workflow-specs/**",
-        "nova-plugin/commands/**",
-        "nova-plugin/skills/**",
-        "nova-plugin/runtime/contracts/**",
-        "adapters/**",
-        "evals/**",
-        "tests/**",
-        "fixtures/**",
-        "scripts/run-*.mjs",
-        "scripts/validate-regression.mjs"
-      ],
-      "runner": "scripts/validate-behavior-golden.mjs",
-      "args": [
-        "scripts/validate-behavior-golden.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "workflow.live.dataset",
-      "label": "validate live eval dataset",
-      "group": 1,
-      "inputs": [
-        "evals/**",
-        "schemas/eval-*.json"
-      ],
-      "runner": "scripts/validate-live-eval-dataset.mjs",
-      "args": [
-        "scripts/validate-live-eval-dataset.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "workflow.real-task.benchmark",
-      "label": "validate real-task benchmark plan and report",
-      "group": 1,
-      "inputs": [
-        "evals/**",
-        "scripts/run-real-task-benchmark.mjs"
-      ],
-      "runner": "scripts/run-real-task-benchmark.mjs",
-      "args": [
-        "scripts/run-real-task-benchmark.mjs"
+      "runner": "node-batch",
+      "args": [],
+      "components": [
+        {
+          "label": "validate workflow permissions",
+          "runner": "scripts/generate-workflow-permissions.mjs",
+          "args": []
+        },
+        {
+          "label": "validate workflow capability contract v5",
+          "runner": "scripts/validate-workflow-contract-v5.mjs",
+          "args": []
+        },
+        {
+          "label": "validate deterministic Contract v6 projection",
+          "runner": "scripts/migrate-v6-contracts.mjs",
+          "args": []
+        },
+        {
+          "label": "validate deterministic bilingual eval corpus",
+          "runner": "scripts/generate-eval-corpus.mjs",
+          "args": []
+        },
+        {
+          "label": "validate generated behavior surfaces",
+          "runner": "scripts/generate-behavior-surfaces.mjs",
+          "args": []
+        },
+        {
+          "label": "validate behavior-complete runtime contracts",
+          "runner": "scripts/generate-runtime-contracts.mjs",
+          "args": []
+        },
+        {
+          "label": "validate direct command behavior contracts",
+          "runner": "scripts/validate-runtime-behavior-contracts.mjs",
+          "args": []
+        }
       ]
     },
     {
@@ -1446,12 +993,14 @@
         "VALIDATION_FAILED"
       ],
       "id": "control.complexity",
-      "label": "validate control-plane complexity budget",
+      "label": "validate control-plane inventory and complexity budget",
       "group": 1,
       "inputs": [
         "governance/complexity-budget.json",
         "scripts/**",
-        "package.json"
+        "package.json",
+        ".github/**",
+        "docs/generated/control-plane-inventory.*"
       ],
       "runner": "scripts/validate-control-plane-complexity.mjs",
       "args": [
@@ -1486,37 +1035,6 @@
       "runner": "scripts/generate-task-catalog.mjs",
       "args": [
         "scripts/generate-task-catalog.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "control.inventory",
-      "label": "validate generated control-plane inventory",
-      "group": 1,
-      "inputs": [
-        "package.json",
-        "scripts/**",
-        "governance/**",
-        ".github/**",
-        "docs/reference/architecture/control-plane.md"
-      ],
-      "runner": "scripts/generate-control-plane-inventory.mjs",
-      "args": [
-        "scripts/generate-control-plane-inventory.mjs"
       ]
     },
     {
@@ -1739,8 +1257,8 @@
       "label": "validate platform evidence matrix",
       "group": 2,
       "inputs": [
-        "governance/platform-evidence.json",
-        "schemas/platform-evidence.schema.json",
+        "governance/engineering-evidence.json",
+        "schemas/engineering-evidence.schema.json",
         "docs/generated/platform-evidence.md",
         ".github/workflows/ci.yml"
       ],
@@ -1979,120 +1497,73 @@
         "CHECK_PASSED",
         "VALIDATION_FAILED"
       ],
-      "id": "workflow.route.conformance",
-      "label": "validate route conformance cases",
+      "id": "workflow.evaluations",
+      "label": "validate deterministic workflow evaluations",
       "group": 3,
       "inputs": [
         "evals/**",
+        "schemas/eval-*.json",
         "workflow-specs/**",
         "nova-plugin/commands/**",
         "nova-plugin/skills/**",
         "nova-plugin/runtime/contracts/**",
         "adapters/**",
-        "evals/**"
-      ],
-      "runner": "scripts/validate-route-conformance.mjs",
-      "args": [
-        "scripts/validate-route-conformance.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "workflow.static.contract",
-      "label": "validate static contract baseline",
-      "group": 3,
-      "inputs": [
         "evals/**",
-        "workflow-specs/**",
-        "nova-plugin/commands/**",
-        "nova-plugin/skills/**",
-        "nova-plugin/runtime/contracts/**",
-        "adapters/**",
-        "evals/**"
+        "tests/**",
+        "fixtures/**",
+        "scripts/run-*.mjs",
+        "scripts/validate-regression.mjs"
       ],
-      "runner": "scripts/evaluate-static-contracts.mjs",
-      "args": [
-        "scripts/evaluate-static-contracts.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "workflow.adapter.simulation",
-      "label": "validate adapter simulation baseline",
-      "group": 3,
-      "inputs": [
-        "evals/**",
-        "workflow-specs/**",
-        "nova-plugin/commands/**",
-        "nova-plugin/skills/**",
-        "nova-plugin/runtime/contracts/**",
-        "adapters/**",
-        "evals/**"
-      ],
-      "runner": "scripts/evaluate-adapter-simulation.mjs",
-      "args": [
-        "scripts/evaluate-adapter-simulation.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "workflow.surface.ab",
-      "label": "validate workflow surface A/B evidence",
-      "group": 3,
-      "inputs": [
-        "evals/**",
-        "workflow-specs/**",
-        "nova-plugin/commands/**",
-        "nova-plugin/skills/**",
-        "nova-plugin/runtime/contracts/**",
-        "adapters/**",
-        "evals/**"
-      ],
-      "runner": "scripts/evaluate-workflow-surfaces.mjs",
-      "args": [
-        "scripts/evaluate-workflow-surfaces.mjs"
+      "runner": "node-batch",
+      "args": [],
+      "components": [
+        {
+          "label": "validate behavior IR golden suites",
+          "runner": "scripts/validate-behavior-golden.mjs",
+          "args": []
+        },
+        {
+          "label": "validate live eval dataset",
+          "runner": "scripts/validate-live-eval-dataset.mjs",
+          "args": []
+        },
+        {
+          "label": "validate real-task benchmark plan and report",
+          "runner": "scripts/run-real-task-benchmark.mjs",
+          "args": []
+        },
+        {
+          "label": "validate route conformance cases",
+          "runner": "scripts/validate-route-conformance.mjs",
+          "args": []
+        },
+        {
+          "label": "validate static contract baseline",
+          "runner": "scripts/evaluate-static-contracts.mjs",
+          "args": []
+        },
+        {
+          "label": "validate adapter simulation baseline",
+          "runner": "scripts/evaluate-adapter-simulation.mjs",
+          "args": []
+        },
+        {
+          "label": "validate workflow surface A/B evidence",
+          "runner": "scripts/evaluate-workflow-surfaces.mjs",
+          "args": []
+        },
+        {
+          "label": "validate workflow quality dataset",
+          "runner": "scripts/validate-workflow-quality-evals.mjs",
+          "args": []
+        },
+        {
+          "label": "validate paired live evaluation plan",
+          "runner": "scripts/evaluate-paired-live.mjs",
+          "args": [
+            "--dry-run"
+          ]
+        }
       ]
     },
     {
@@ -2126,73 +1597,6 @@
       "runner": "scripts/validate-adapter-conformance.mjs",
       "args": [
         "scripts/validate-adapter-conformance.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "workflow.quality.dataset",
-      "label": "validate workflow quality dataset",
-      "group": 3,
-      "inputs": [
-        "evals/**",
-        "workflow-specs/**",
-        "nova-plugin/commands/**",
-        "nova-plugin/skills/**",
-        "nova-plugin/runtime/contracts/**",
-        "adapters/**",
-        "evals/**"
-      ],
-      "runner": "scripts/validate-workflow-quality-evals.mjs",
-      "args": [
-        "scripts/validate-workflow-quality-evals.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "workflow.paired.dry-run",
-      "label": "validate paired live evaluation plan",
-      "group": 3,
-      "inputs": [
-        "evals/**",
-        "workflow-specs/**",
-        "nova-plugin/commands/**",
-        "nova-plugin/skills/**",
-        "nova-plugin/runtime/contracts/**",
-        "adapters/**",
-        "evals/**"
-      ],
-      "runner": "node",
-      "args": [
-        "scripts/evaluate-paired-live.mjs",
-        "--dry-run"
       ]
     },
     {
@@ -2270,7 +1674,7 @@
         "VALIDATION_FAILED"
       ],
       "id": "quality.public.report",
-      "label": "validate public quality report",
+      "label": "validate evaluation profiles and public quality report",
       "group": 3,
       "inputs": [
         "docs/**",
@@ -2558,70 +1962,18 @@
         "CHECK_PASSED",
         "VALIDATION_FAILED"
       ],
-      "id": "eval.profiles",
-      "label": "validate layered evaluation profiles",
-      "group": 3,
-      "inputs": [
-        "evals/**",
-        "governance/evaluation-profiles.json"
-      ],
-      "runner": "scripts/generate-evaluation-profiles.mjs",
-      "args": [
-        "scripts/generate-evaluation-profiles.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
-      "id": "evidence.levels",
-      "label": "validate engineering evidence taxonomy",
-      "group": 3,
-      "inputs": [
-        "governance/evidence-levels.json",
-        "docs/generated/evidence-levels.md",
-        "governance/stable-install-proof.json"
-      ],
-      "runner": "scripts/generate-evidence-levels.mjs",
-      "args": [
-        "scripts/generate-evidence-levels.mjs"
-      ]
-    },
-    {
-      "outputs": [],
-      "deps": [],
-      "platforms": [
-        "windows",
-        "linux",
-        "macos"
-      ],
-      "networkPolicy": "deny",
-      "mutationPolicy": "deny",
-      "cachePolicy": "never",
-      "timeoutMs": 120000,
-      "reasonCodes": [
-        "CHECK_PASSED",
-        "VALIDATION_FAILED"
-      ],
       "id": "performance.policy",
-      "label": "validate performance policy",
+      "label": "validate externally verifiable manifest-backed performance policy",
       "group": 3,
       "inputs": [
-        "governance/validation-performance.json",
-        "schemas/validation-performance.schema.json",
-        "scripts/validate-performance-budget.mjs"
+        "governance/engineering-evidence.json",
+        "governance/evidence/validation-performance-samples.json",
+        "schemas/engineering-evidence.schema.json",
+        "schemas/validation-performance*.schema.json",
+        "scripts/validate-performance-budget.mjs",
+        "scripts/lib/canonical-json.mjs",
+        "scripts/lib/github-actions-performance-provenance.mjs",
+        ".github/workflows/ci.yml"
       ],
       "runner": "scripts/validate-performance-budget.mjs",
       "args": [
@@ -2674,14 +2026,16 @@
         "VALIDATION_FAILED"
       ],
       "id": "release.summary",
-      "label": "validate generated release summary",
+      "label": "validate evidence taxonomy and generated release summary",
       "group": 3,
       "inputs": [
         "governance/release-*.json",
         "governance/stable-install-proof.json",
         "scripts/*release*.mjs",
         "docs/operations/releases/**",
-        "docs/templates/evidence/**"
+        "docs/templates/evidence/**",
+        "governance/engineering-evidence.json",
+        "governance/evidence/validation-performance-samples.json"
       ],
       "runner": "scripts/generate-release-summary.mjs",
       "args": [
@@ -2727,20 +2081,6 @@
       "qualityGate": "scripts/validate-github-workflows.mjs"
     },
     {
-      "path": ".github/workflows/dependency-audit.yml",
-      "owner": "GitHub Actions control plane",
-      "inputs": [
-        "repository source",
-        "GitHub event context"
-      ],
-      "outputs": [
-        "audit"
-      ],
-      "generated": false,
-      "scope": "maintainer",
-      "qualityGate": "scripts/validate-github-workflows.mjs"
-    },
-    {
       "path": ".github/workflows/dependency-review.yml",
       "owner": "GitHub Actions control plane",
       "inputs": [
@@ -2755,20 +2095,6 @@
       "qualityGate": "scripts/validate-github-workflows.mjs"
     },
     {
-      "path": ".github/workflows/label-sync.yml",
-      "owner": "GitHub Actions control plane",
-      "inputs": [
-        "repository source",
-        "GitHub event context"
-      ],
-      "outputs": [
-        "sync"
-      ],
-      "generated": false,
-      "scope": "maintainer",
-      "qualityGate": "scripts/validate-github-workflows.mjs"
-    },
-    {
       "path": ".github/workflows/nightly.yml",
       "owner": "GitHub Actions control plane",
       "inputs": [
@@ -2776,7 +2102,8 @@
         "GitHub event context"
       ],
       "outputs": [
-        "full"
+        "full",
+        "dependency-audit"
       ],
       "generated": false,
       "scope": "maintainer",
@@ -2806,7 +2133,8 @@
         "GitHub event context"
       ],
       "outputs": [
-        "governance"
+        "governance",
+        "label-sync"
       ],
       "generated": false,
       "scope": "maintainer",
@@ -2895,25 +2223,7 @@
       "qualityGate": "scripts/validate-schemas.mjs"
     },
     {
-      "path": "governance/critical-coverage.json",
-      "owner": "governed repository policy",
-      "generated": false,
-      "qualityGate": "scripts/validate-schemas.mjs"
-    },
-    {
-      "path": "governance/dependency-audit-evidence.json",
-      "owner": "governed repository policy",
-      "generated": false,
-      "qualityGate": "scripts/validate-schemas.mjs"
-    },
-    {
-      "path": "governance/dependency-license-evidence.json",
-      "owner": "governed repository policy",
-      "generated": false,
-      "qualityGate": "scripts/validate-schemas.mjs"
-    },
-    {
-      "path": "governance/dependency-policy.json",
+      "path": "governance/dependency-governance.json",
       "owner": "governed repository policy",
       "generated": false,
       "qualityGate": "scripts/validate-schemas.mjs"
@@ -2937,6 +2247,12 @@
       "qualityGate": "scripts/validate-schemas.mjs"
     },
     {
+      "path": "governance/engineering-evidence.json",
+      "owner": "governed repository policy",
+      "generated": false,
+      "qualityGate": "scripts/validate-schemas.mjs"
+    },
+    {
       "path": "governance/evaluation-profiles.json",
       "owner": "governed repository policy",
       "generated": false,
@@ -2944,18 +2260,6 @@
     },
     {
       "path": "governance/evidence-governance.json",
-      "owner": "governed repository policy",
-      "generated": false,
-      "qualityGate": "scripts/validate-schemas.mjs"
-    },
-    {
-      "path": "governance/evidence-levels.json",
-      "owner": "governed repository policy",
-      "generated": false,
-      "qualityGate": "scripts/validate-schemas.mjs"
-    },
-    {
-      "path": "governance/platform-evidence.json",
       "owner": "governed repository policy",
       "generated": false,
       "qualityGate": "scripts/validate-schemas.mjs"
@@ -3003,12 +2307,6 @@
       "qualityGate": "scripts/validate-schemas.mjs"
     },
     {
-      "path": "governance/validation-performance.json",
-      "owner": "governed repository policy",
-      "generated": false,
-      "qualityGate": "scripts/validate-schemas.mjs"
-    },
-    {
       "path": "governance/workflow-docs.json",
       "owner": "governed repository policy",
       "generated": false,
@@ -3037,11 +2335,6 @@
       "outputScope": "generated projection"
     },
     {
-      "path": "scripts/generate-control-plane-inventory.mjs",
-      "owner": "maintainer control plane",
-      "outputScope": "generated projection"
-    },
-    {
       "path": "scripts/generate-diagnostics-docs.mjs",
       "owner": "maintainer control plane",
       "outputScope": "generated projection"
@@ -3057,27 +2350,12 @@
       "outputScope": "generated projection"
     },
     {
-      "path": "scripts/generate-evaluation-profiles.mjs",
-      "owner": "maintainer control plane",
-      "outputScope": "generated projection"
-    },
-    {
-      "path": "scripts/generate-evidence-levels.mjs",
-      "owner": "maintainer control plane",
-      "outputScope": "generated projection"
-    },
-    {
       "path": "scripts/generate-fact-graph.mjs",
       "owner": "maintainer control plane",
       "outputScope": "generated projection"
     },
     {
       "path": "scripts/generate-project-state.mjs",
-      "owner": "maintainer control plane",
-      "outputScope": "generated projection"
-    },
-    {
-      "path": "scripts/generate-prompt-surface-report.mjs",
       "owner": "maintainer control plane",
       "outputScope": "generated projection"
     },
@@ -3133,11 +2411,6 @@
     },
     {
       "path": "scripts/generate-workflow-permissions.mjs",
-      "owner": "maintainer control plane",
-      "outputScope": "generated projection"
-    },
-    {
-      "path": "scripts/sync-doc-facts.mjs",
       "owner": "maintainer control plane",
       "outputScope": "generated projection"
     }

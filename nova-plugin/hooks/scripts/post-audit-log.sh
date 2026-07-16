@@ -7,13 +7,20 @@ if [ "${NOVA_AUDIT_DISABLED:-0}" = "1" ]; then
   exit 0
 fi
 
-SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd -- "$SCRIPT_DIR/../.." >/dev/null 2>&1 && pwd -P)}"
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+SCRIPT_PARENT="."
+case "$SCRIPT_PATH" in
+  */*) SCRIPT_PARENT="${SCRIPT_PATH%/*}" ;;
+esac
+SCRIPT_DIR="$(cd -P -- "$SCRIPT_PARENT" >/dev/null 2>&1 && builtin pwd -P)"
+PLUGIN_ROOT="$(cd -P -- "$SCRIPT_DIR/../.." >/dev/null 2>&1 && builtin pwd -P)"
+export CLAUDE_PLUGIN_ROOT="$PLUGIN_ROOT"
 # shellcheck source-path=SCRIPTDIR
 # shellcheck source=../../runtime/bash-common.sh
 source "$PLUGIN_ROOT/runtime/bash-common.sh"
 
-if ! NODE_BIN="$(nova_node_command)"; then
+PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-$(builtin pwd -P)}"
+if ! NODE_BIN="$(nova_node_command "$PROJECT_ROOT")"; then
   echo "[nova-plugin] WARNING: audit logger skipped because Node.js 22+ is unavailable." >&2
   exit 0
 fi

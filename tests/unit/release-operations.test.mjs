@@ -78,6 +78,10 @@ test('independent review verifier writes current merged-PR evidence', async () =
     assert.deepEqual(evidence.approvalReviewers, ['peer']);
     assert.deepEqual(JSON.parse(readFileSync(output, 'utf8')), evidence);
     await assert.rejects(verifyIndependentReview({ args: [], env: {}, fetchImpl }), /required/u);
+    await assert.rejects(
+      verifyIndependentReview({ args: ['--unknown', 'value'], env: {}, fetchImpl }),
+      /unknown argument/u,
+    );
   } finally {
     rmSync(directory, { recursive: true, force: true });
   }

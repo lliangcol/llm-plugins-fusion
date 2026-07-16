@@ -8,6 +8,7 @@
             "type": "command",
             "command": "bash",
             "args": [
+              "-p",
               "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"
             ],
             "timeout": 10,
@@ -22,6 +23,7 @@
             "type": "command",
             "command": "bash",
             "args": [
+              "-p",
               "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"
             ],
             "timeout": 10,
@@ -36,8 +38,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs"],
+            "command": "bash",
+            "args": [
+              "-p",
+              "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh",
+              "post-write-verify"
+            ],
             "timeout": 10,
             "statusMessage": "复验实际写入路径与受保护配置..."
           }
@@ -48,8 +54,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs"],
+            "command": "bash",
+            "args": [
+              "-p",
+              "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh",
+              "post-audit-log"
+            ],
             "timeout": 5,
             "async": true
           }
@@ -62,8 +72,12 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs"],
+            "command": "bash",
+            "args": [
+              "-p",
+              "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh",
+              "post-audit-log"
+            ],
             "timeout": 5,
             "async": true
           }
@@ -76,10 +90,32 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs"],
+            "command": "bash",
+            "args": [
+              "-p",
+              "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh",
+              "post-audit-log"
+            ],
             "timeout": 5,
             "async": true
+          }
+        ]
+      }
+    ],
+    "ConfigChange": [
+      {
+        "matcher": "project_settings|local_settings",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash",
+            "args": [
+              "-p",
+              "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh",
+              "config-change-guard"
+            ],
+            "timeout": 10,
+            "statusMessage": "冻结会话中的 project/local settings 变更..."
           }
         ]
       }
@@ -90,9 +126,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node",
+            "command": "bash",
             "args": [
-              "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/audit-compactor.mjs"
+              "-p",
+              "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh",
+              "audit-compactor"
             ],
             "timeout": 10
           }

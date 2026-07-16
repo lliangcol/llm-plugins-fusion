@@ -35,8 +35,8 @@ export function loadReleaseCorrections(root, path = 'governance/release-correcti
   const absolutePath = assertContained(root, resolve(root, path));
   const sourceText = readFileSync(absolutePath, 'utf8');
   const document = JSON.parse(sourceText);
-  if (document?.schemaVersion !== 2 || !Array.isArray(document.corrections)) {
-    throw new Error('release correction document must use schemaVersion 2');
+  if (document?.schemaVersion !== 3 || !Array.isArray(document.corrections)) {
+    throw new Error('release correction document must use schemaVersion 3');
   }
   for (const correction of document.corrections) {
     const references = [correction.authorizationEvidence, correction.candidateEvidence, correction.resolutionEvidence, ...(correction.auditTrail ?? []).map((entry) => entry.evidence)].filter(Boolean);
@@ -73,7 +73,7 @@ export function evaluateReleaseCorrections({
   correctionsSha256,
   independentReview = null,
   protectedPublication = null,
-  installProof = null,
+  candidateVerification = null,
 }) {
   if (!['candidate', 'promote', 'recover', 'drill'].includes(mode)) throw new Error(`unsupported release correction mode: ${mode}`);
   if (!/^v\d+\.\d+\.\d+$/u.test(stableTag ?? '')) throw new Error('release correction evaluation requires a stable tag');
@@ -98,13 +98,14 @@ export function evaluateReleaseCorrections({
     missingEvidence.push(...unauthorized.map((entry) => `CORRECTION_AUTHORIZATION:${entry.id}`));
   } else if (active.length) {
     const identityMismatch = active.some((entry) => entry.targetRelease?.stableTag !== stableTag
-      || entry.targetRelease?.candidateTag !== candidateTag
-      || entry.targetRelease?.sourceCommit !== sourceCommit);
+      || entry.targetRelease?.candidateTag !== candidateTag);
     if (identityMismatch) {
       status = 'BLOCKED_POLICY';
       reasonCode = 'CORRECTION_IDENTITY_MISMATCH';
       maximumPermittedState = 'DRAFT';
-    } else if (mode !== 'candidate' && active.some((entry) => entry.status === 'authorized-for-new-candidate')) {
+    } else if (mode !== 'candidate'
+      && active.some((entry) => entry.status === 'authorized-for-new-candidate')
+      && candidateVerification?.passed !== true) {
       status = 'BLOCKED_POLICY';
       reasonCode = 'CANDIDATE_NOT_VERIFIED';
       maximumPermittedState = 'CANDIDATE_TAGGED';

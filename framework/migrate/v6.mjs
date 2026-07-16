@@ -1,5 +1,7 @@
 /** Pure Contract v5/v1 to v6/v2 migration helpers. */
 
+import { projectTypedInput } from './contract-coherence.mjs';
+
 const effectNames = {
   workspaceRead: 'workspace-read',
   workspaceWrite: 'workspace-write',
@@ -30,33 +32,6 @@ function validatePredicate(predicate, inputNames, label) {
   throw new Error(`${label}: unsupported predicate op ${predicate.op ?? 'missing'}`);
 }
 
-function inputType(input) {
-  if (input.type) return input.type;
-  if (typeof input.default === 'boolean' || input.exactValues?.every((value) => typeof value === 'boolean')) return 'boolean';
-  if (input.exactValues) return 'enum';
-  return 'string';
-}
-
-function typedInput(input) {
-  const type = inputType(input);
-  const result = { name: input.name, type, required: input.required };
-  if (type === 'enum') result.values = input.exactValues;
-  if (['path', 'artifact-reference', 'review-reference'].includes(type)) {
-    if (!input.pathPolicy) throw new Error(`${input.name}: typed path input requires pathPolicy`);
-    result.pathPolicy = structuredClone(input.pathPolicy);
-  } else if (input.pathPolicy) throw new Error(`${input.name}: pathPolicy requires a path-like input type`);
-  if (type === 'approval') {
-    result.approvalPolicy = {
-      mustBeExplicit: true,
-      mayInfer: false,
-      scope: input.name,
-      oneShot: true,
-      expires: null,
-    };
-  }
-  return result;
-}
-
 export function migrateWorkflowSpec(v5, behaviorSpec) {
   if (v5.schemaVersion !== 5) throw new Error('v5 workflow source is required');
   if (behaviorSpec.schemaVersion !== 1) throw new Error('v1 behavior source is required');
@@ -81,7 +56,7 @@ export function migrateWorkflowSpec(v5, behaviorSpec) {
       if (!behavior) throw new Error(`missing behavior for ${workflow.id}`);
       const profile = v5.permissionProfiles[workflow.permissionProfile];
       if (!profile) throw new Error(`${workflow.id}: missing permission profile ${workflow.permissionProfile}`);
-      const inputs = behavior.inputs.map(typedInput);
+      const inputs = behavior.inputs.map(projectTypedInput);
       const policy = profile.permissionPolicy;
       const effects = Object.entries(effectNames)
         .filter(([key]) => policy[key] !== 'denied' && policy[key] !== 'unsupported')

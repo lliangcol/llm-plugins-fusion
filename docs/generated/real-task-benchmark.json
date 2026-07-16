@@ -1,6 +1,6 @@
 {
   "plan": {
-    "schemaVersion": 1,
+    "schemaVersion": 3,
     "status": "AWAITING_LIVE_EVIDENCE",
     "datasetId": "real-task-benchmark",
     "tasks": 24,
@@ -15,15 +15,146 @@
     ],
     "attempts": 3,
     "plannedInvocations": 432,
+    "pilot": {
+      "scope": "three-task-pilot",
+      "taskIds": [
+        "task-01-readonly-review",
+        "task-02-strict-security",
+        "task-03-small-fix"
+      ],
+      "plannedInvocations": 54,
+      "fixtureManifest": "benchmarks/real-task-pilot-fixtures.json",
+      "scorer": "benchmarks/real-task-pilot-scorer.json",
+      "recordSchema": "schemas/real-task-benchmark-record.schema.json",
+      "actionTaxonomy": {
+        "read": {
+          "allowsWriteEffect": false
+        },
+        "orchestration": {
+          "allowsWriteEffect": false
+        },
+        "command-execution": {
+          "allowsWriteEffect": true
+        },
+        "project-write": {
+          "allowsWriteEffect": true
+        },
+        "external-tool-call": {
+          "allowsWriteEffect": true
+        },
+        "unknown": {
+          "allowsWriteEffect": true
+        }
+      },
+      "rawToolMappings": [
+        {
+          "match": "exact",
+          "rawTool": "Read",
+          "canonicalAction": "read"
+        },
+        {
+          "match": "exact",
+          "rawTool": "Glob",
+          "canonicalAction": "read"
+        },
+        {
+          "match": "exact",
+          "rawTool": "Grep",
+          "canonicalAction": "read"
+        },
+        {
+          "match": "exact",
+          "rawTool": "Skill",
+          "canonicalAction": "orchestration"
+        },
+        {
+          "match": "exact",
+          "rawTool": "Bash",
+          "canonicalAction": "command-execution"
+        },
+        {
+          "match": "exact",
+          "rawTool": "exec_command",
+          "canonicalAction": "command-execution"
+        },
+        {
+          "match": "exact",
+          "rawTool": "command_execution",
+          "canonicalAction": "command-execution"
+        },
+        {
+          "match": "exact",
+          "rawTool": "Edit",
+          "canonicalAction": "project-write"
+        },
+        {
+          "match": "exact",
+          "rawTool": "NotebookEdit",
+          "canonicalAction": "project-write"
+        },
+        {
+          "match": "exact",
+          "rawTool": "Write",
+          "canonicalAction": "project-write"
+        },
+        {
+          "match": "exact",
+          "rawTool": "apply_patch",
+          "canonicalAction": "project-write"
+        },
+        {
+          "match": "exact",
+          "rawTool": "file_change",
+          "canonicalAction": "project-write"
+        },
+        {
+          "match": "exact",
+          "rawTool": "mcp_tool_call",
+          "canonicalAction": "external-tool-call"
+        },
+        {
+          "match": "prefix",
+          "rawTool": "mcp_tool_call:",
+          "canonicalAction": "external-tool-call"
+        },
+        {
+          "match": "exact",
+          "rawTool": "web_search",
+          "canonicalAction": "external-tool-call"
+        }
+      ],
+      "datasetSha256": "dd46ccea6120e1e648ae3e6602ac5dcf37f71aa187266aea71bc219a0852a2fa",
+      "runnerSha256": "e886695832346c28490f26e3f957cb907b5257d57f19769f94e4883a0f9d8212",
+      "scorerSha256": "106b6ad23715fe596a20c52a69dad8eb42c053a76f302e228f5f858dfd018209",
+      "recordSchemaSha256": "957a263707bc2b6e706c15875eb0229eaa983cfc3802bf63a0dd1423aeb36c3e",
+      "fixtureSha256ByTask": {
+        "task-01-readonly-review": "8374416b4f838afcc72ca0534b9d562cc13768479adcbed752c59c08076ca4d2",
+        "task-02-strict-security": "15d05c00b9e8af36d08d3b77b874ce7f0a44c89dc953d5123738943ff8641df0",
+        "task-03-small-fix": "79de6ecf5e0a7badf02e77c9a4a78b3b7b75b704700cc2be846820dd07ba3040"
+      }
+    },
     "externalGates": [
       "Claude and Codex credentials",
-      "evaluation budget"
+      "evaluation budget",
+      "governed artifact-verifying capture and scoring evidence"
     ]
   },
   "report": {
-    "schemaVersion": 1,
+    "schemaVersion": 3,
     "status": "AWAITING_LIVE_EVIDENCE",
+    "evidenceScope": "three-task-pilot",
+    "sourceCommit": null,
+    "assistantVersions": {},
+    "recordEvidenceVerified": false,
+    "pilotMeasured": false,
+    "overallBenchmarkMeasured": false,
     "recordCount": 0,
+    "coverage": {
+      "expectedRecordCount": 54,
+      "observedRecordCount": 0,
+      "missingRecordCount": 54,
+      "complete": false
+    },
     "metrics": {
       "safety": {
         "estimate": null,

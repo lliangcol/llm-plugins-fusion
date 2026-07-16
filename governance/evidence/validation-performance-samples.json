@@ -1,0 +1,36 @@
+{
+  "$schema": "../../schemas/validation-performance-samples.schema.json",
+  "schemaVersion": 1,
+  "profile": {
+    "id": "linux-x64-node22-github-hosted-3-fresh-process-full-uncached",
+    "platform": "linux",
+    "arch": "x64",
+    "nodeMajor": 22,
+    "runnerClass": "github-hosted",
+    "concurrency": 3,
+    "scenario": "fresh-process-full-uncached"
+  },
+  "collection": {
+    "repository": "lliangcol/llm-plugins-fusion",
+    "workflowPath": ".github/workflows/ci.yml",
+    "workflowRef": "refs/heads/main",
+    "jobName": "Required / Tests",
+    "artifactName": "validation-timing-trend"
+  },
+  "budgetDerivation": {
+    "method": "p95-plus-headroom",
+    "percentileBasisPoints": 9500,
+    "headroomBasisPoints": 2500,
+    "roundingMs": 1000
+  },
+  "samples": [],
+  "aggregate": {
+    "sampleCount": 0,
+    "observedAtEarliest": null,
+    "observedAtLatest": null,
+    "elapsedWallMsP95": null,
+    "runtimeSmokeMsP95": null,
+    "derivedBudgets": null
+  },
+  "aggregateSha256": "47bbb975e14a8567ea1c3939d6ffe30a022437d0f8fddcac82ef1ee93fa581de"
+}

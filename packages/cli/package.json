@@ -1,6 +1,6 @@
 {
   "name": "@llm-plugins-fusion/cli",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -11,9 +11,9 @@
     ".": "./index.mjs"
   },
   "dependencies": {
-    "@llm-plugins-fusion/compiler": "4.0.0",
-    "@llm-plugins-fusion/conformance": "4.0.0",
-    "@llm-plugins-fusion/spec": "4.0.0",
+    "@llm-plugins-fusion/compiler": "4.1.0",
+    "@llm-plugins-fusion/conformance": "4.1.0",
+    "@llm-plugins-fusion/spec": "4.1.0",
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1"
   },

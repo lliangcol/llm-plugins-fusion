@@ -2,10 +2,15 @@
 /** Default-deny validation command broker for Bash PreToolUse events. */
 
 import { createHash } from 'node:crypto';
-import { lstatSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
+import { accessSync, constants, lstatSync, mkdirSync, readFileSync, realpathSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { delimiter, dirname, isAbsolute, join, posix, relative, resolve, win32 } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  assertArtifactRootsOutsideExecutableSearch,
+  configuredArtifactRoots,
+} from '../../runtime/safe-workspace-path.mjs';
+import { inspectProjectHookSettings } from '../../runtime/hook-bootstrap-trust.mjs';
 
 const moduleDir = dirname(fileURLToPath(import.meta.url));
 const defaultPolicyPath = resolve(moduleDir, '../../runtime/shell-command-policy.json');
@@ -13,6 +18,48 @@ function trustedExecutableToken(token) {
   if (typeof token !== 'string' || !/^[a-z0-9][a-z0-9._-]*$/iu.test(token)) return null;
   if (token.includes('/') || token.includes('\\')) return null;
   return token.toLowerCase();
+}
+
+const executableEnvironmentDenyRules = Object.freeze({
+  git: Object.freeze({
+    // Git exposes a broad, evolving GIT_* environment API. Several variables
+    // can redirect repository/config lookup or launch helpers despite safe
+    // argv (for example GIT_CONFIG_PARAMETERS can set diff.external). Keep the
+    // broker fail-closed for the entire namespace instead of maintaining a
+    // necessarily incomplete denylist.
+    exact: Object.freeze(['PAGER']),
+    prefixes: Object.freeze(['GIT_']),
+  }),
+  rg: Object.freeze({
+    exact: Object.freeze(['RIPGREP_CONFIG_PATH']),
+    prefixes: Object.freeze([]),
+  }),
+});
+
+function isLiteralCatPager(executable, variable, value) {
+  return trustedExecutableToken(executable) === 'git'
+    && (variable === 'GIT_PAGER' || variable === 'PAGER')
+    && value === 'cat';
+}
+
+/**
+ * Return inherited variables that can change the selected executable's behavior
+ * or launch another program despite an otherwise read-only argv policy.
+ *
+ * @param {string} executable
+ * @param {NodeJS.ProcessEnv} [env]
+ */
+export function rejectedEnvironmentForExecutable(executable, env = process.env) {
+  const rule = executableEnvironmentDenyRules[trustedExecutableToken(executable)];
+  if (!rule) return [];
+  const exact = new Set(rule.exact);
+  return Object.keys(env)
+    .filter((variable) => {
+      const normalized = variable.toUpperCase();
+      if (isLiteralCatPager(executable, normalized, env[variable])) return false;
+      return exact.has(normalized) || rule.prefixes.some((prefix) => normalized.startsWith(prefix));
+    })
+    .sort();
 }
 
 function tokenizeDetailed(command) {
@@ -111,9 +158,11 @@ export function loadProjectPolicy(workspaceRoot, relativePath) {
   return { policy: errors.length ? null : policy, errors, digest: createHash('sha256').update(raw).digest('hex') };
 }
 
-/** @param {string} token @param {{workspaceRoot?: string, env?: NodeJS.ProcessEnv}} [options] */
-function executableIdentity(token, { workspaceRoot = process.cwd(), env = process.env } = {}) {
-  const pathEntries = String(env.PATH ?? '').split(delimiter).filter(Boolean);
+/** @param {string} token @param {{workspaceRoot?: string, effectiveCwd?: string, env?: NodeJS.ProcessEnv}} [options] */
+function executableIdentity(token, { workspaceRoot = process.cwd(), effectiveCwd = workspaceRoot, env = process.env } = {}) {
+  const physicalWorkspaceRoot = realpathSync(workspaceRoot);
+  const physicalEffectiveCwd = realpathSync(effectiveCwd);
+  const pathEntries = String(env.PATH ?? '').split(delimiter);
   const names = [token];
   if (process.platform === 'win32') {
     names.length = 0;
@@ -123,11 +172,15 @@ function executableIdentity(token, { workspaceRoot = process.cwd(), env = proces
   }
   for (const entry of pathEntries) {
     for (const name of names) {
-      const candidate = resolve(entry, name);
+      // Shells interpret relative and empty PATH entries from the command cwd.
+      const candidate = resolve(physicalEffectiveCwd, entry, name);
       const stats = statSync(candidate, { throwIfNoEntry: false });
       if (!stats?.isFile()) continue;
+      try { accessSync(candidate, constants.X_OK); } catch { continue; }
       const real = realpathSync.native(candidate);
-      if (pathInside(realpathSync(workspaceRoot), real)) throw new Error(`executable resolves inside the workspace: ${token}`);
+      if (pathInside(physicalWorkspaceRoot, candidate) || pathInside(physicalWorkspaceRoot, real)) {
+        throw new Error(`executable resolves inside the workspace: ${token}`);
+      }
       return { real, dev: stats.dev, ino: stats.ino };
     }
   }
@@ -175,10 +228,26 @@ function matchesRule(tokens, rule) {
 
 /**
  * @param {string} command
- * @param {{workspaceRoot?: string, basePolicy?: any, sessionId?: string | null, stateRoot?: string, env?: NodeJS.ProcessEnv}} [options]
+ * @param {{projectRoot?: string, workspaceRoot?: string, effectiveCwd?: string, artifactRoots?: string[], basePolicy?: any, sessionId?: string | null, stateRoot?: string, env?: NodeJS.ProcessEnv}} [options]
  */
-export function authorizeBashCommand(command, { workspaceRoot = process.cwd(), basePolicy = readBasePolicy(), sessionId = null, stateRoot, env = process.env } = {}) {
+export function authorizeBashCommand(command, options = {}) {
+  const {
+    basePolicy = readBasePolicy(),
+    sessionId = null,
+    stateRoot,
+    env = process.env,
+  } = options;
+  const projectRoot = resolve(options.projectRoot ?? options.workspaceRoot ?? process.cwd());
+  const effectiveCwd = resolve(options.effectiveCwd ?? projectRoot);
   const reasons = [];
+  const projectSettingsTrust = inspectProjectHookSettings(projectRoot);
+  if (!projectSettingsTrust.trusted) reasons.push(...projectSettingsTrust.findings);
+  try {
+    const artifactRoots = options.artifactRoots ?? configuredArtifactRoots(env);
+    assertArtifactRootsOutsideExecutableSearch({ artifactRoots, cwd: effectiveCwd, projectRoot, env });
+  } catch (error) {
+    reasons.push(`explicit artifact root conflicts with executable trust: ${error.message}`);
+  }
   if (typeof command !== 'string' || command.trim() === '') return { allowed: false, source: null, ruleId: null, reasons: ['Bash command must be a non-empty string'] };
   if (Buffer.byteLength(command, 'utf8') > basePolicy.maxCommandBytes) reasons.push('command exceeds the guarded size limit');
   if (/[\r\n]/u.test(command)) reasons.push('shell composition, expansion, redirection, pipes, or command substitution are not allowed');
@@ -193,15 +262,45 @@ export function authorizeBashCommand(command, { workspaceRoot = process.cwd(), b
   }
   if (tokens[0] && /^[A-Za-z_][A-Za-z0-9_]*=/u.test(tokens[0])) reasons.push('environment assignment prefixes are not allowed');
   if (tokens[0] && !trustedExecutableToken(tokens[0])) reasons.push('executable must be a bare trusted command token without path semantics');
+  for (const variable of ['BASH_ENV', 'ENV']) {
+    if (Object.hasOwn(env, variable)) reasons.push(`${variable} is not allowed for guarded Bash execution`);
+  }
+  if (tokens[0]) {
+    for (const variable of rejectedEnvironmentForExecutable(tokens[0], env)) {
+      reasons.push(`${variable} is not allowed for guarded ${trustedExecutableToken(tokens[0])} execution`);
+    }
+  }
+  const executable = trustedExecutableToken(tokens[0]);
+  const usesLiteralCatPager = executable === 'git' && Object.entries(env)
+    .some(([variable, value]) => isLiteralCatPager(executable, variable.toUpperCase(), value));
+  if (usesLiteralCatPager) {
+    if (Object.hasOwn(env, 'BASH_FUNC_cat%%')) {
+      reasons.push('exported Bash function overrides the trusted Git pager: cat');
+    } else {
+      try {
+        executableIdentity('cat', { workspaceRoot: projectRoot, effectiveCwd, env });
+      } catch (error) {
+        reasons.push(`trusted Git pager cat could not be resolved safely: ${error.message}`);
+      }
+    }
+  }
+  if (tokens[0] && Object.hasOwn(env, `BASH_FUNC_${tokens[0]}%%`)) reasons.push(`exported Bash function overrides executable resolution: ${tokens[0]}`);
   if (tokens.slice(1).some((token) => isAbsolute(token) || posix.isAbsolute(token) || win32.isAbsolute(token) || token.split(/[\\/]/u).includes('..'))) reasons.push('absolute or parent-traversal arguments are not allowed');
+  try {
+    const physicalProjectRoot = realpathSync(projectRoot);
+    const physicalEffectiveCwd = realpathSync(effectiveCwd);
+    if (!pathInside(physicalProjectRoot, physicalEffectiveCwd)) reasons.push('Bash cwd is outside the project root');
+  } catch (error) {
+    reasons.push(`Bash project root or cwd could not be resolved: ${error.message}`);
+  }
   if (reasons.length) return { allowed: false, source: null, ruleId: null, reasons: [...new Set(reasons)] };
 
-  try { executableIdentity(tokens[0], { workspaceRoot, env }); } catch (error) { reasons.push(error.message); }
+  try { executableIdentity(tokens[0], { workspaceRoot: projectRoot, effectiveCwd, env }); } catch (error) { reasons.push(error.message); }
 
-  const project = loadProjectPolicy(workspaceRoot, basePolicy.projectPolicyPath);
+  const project = loadProjectPolicy(projectRoot, basePolicy.projectPolicyPath);
   if (project.errors.length) reasons.push(...project.errors);
   if (sessionId) {
-    try { pinSessionPolicy({ sessionId, workspaceRoot, basePolicy, projectDigest: project.digest, stateRoot }); } catch (error) { reasons.push(error.message); }
+    try { pinSessionPolicy({ sessionId, workspaceRoot: projectRoot, basePolicy, projectDigest: project.digest, stateRoot }); } catch (error) { reasons.push(error.message); }
   }
   if (reasons.length) return { allowed: false, source: null, ruleId: null, reasons: [...new Set(reasons)] };
 
@@ -230,7 +329,9 @@ function main() {
   let payload;
   try { payload = JSON.parse(readFileSync(0, 'utf8')); } catch { block(['hook payload is not valid JSON']); }
   if (payload?.tool_name !== 'Bash') block([`unexpected tool ${JSON.stringify(payload?.tool_name)}`]);
-  const decision = authorizeBashCommand(payload?.tool_input?.command, { workspaceRoot: payload?.cwd ?? process.cwd(), sessionId: payload?.session_id });
+  const projectRoot = resolve(process.env.CLAUDE_PROJECT_DIR || payload?.cwd || process.cwd());
+  const effectiveCwd = resolve(payload?.cwd || projectRoot);
+  const decision = authorizeBashCommand(payload?.tool_input?.command, { projectRoot, effectiveCwd, sessionId: payload?.session_id });
   if (!decision.allowed) block(decision.reasons);
 }
 

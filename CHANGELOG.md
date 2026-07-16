@@ -9,6 +9,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
+### Fixed
+- Made validated loading and runtime compilation reject drift between Contract
+  v6 typed inputs, behavior inputs, and the v5 compatibility projection.
+- Made candidate and promotion workflows fail closed on an absent or
+  under-sampled governed performance profile. Candidate preflight now derives
+  count and budget from a schema-valid, content-addressed manifest and uses the
+  GitHub Actions API plus downloaded artifact bytes to corroborate every run
+  attempt, job, source ref, artifact digest, and raw timing report; repository
+  records cannot self-prove provenance. Release workflows also require Node.js
+  22 in every Node/npm job, forbid source-free npm cache setup, and verify
+  signed refs from protected-main signer policy before executing any checked-out
+  repository code, including repository-local Actions.
+- Bound stable promotion to a GitHub Releases API `published_at` observation
+  window of at least 168 hours and retained normalized, digest-bound observation
+  evidence in the promotion handoff.
+- Added a digest-bound three-task real-task pilot contract, strict record
+  validation, canonical consumer-profile scaffolding, source-commit-bound
+  adoption records, and an accurate 21-command to six-Skill index. Complete
+  caller-supplied pilot records remain diagnostic until retained result, score,
+  tool, and write artifacts are independently resolved and recomputed. Pilot
+  tool evidence now maps Claude, Codex, and MCP names into canonical actions,
+  normalizes event lifecycle, and reconciles every aggregate write count with
+  executed event effects.
+- Made repository-local adoption inputs require unique, current,
+  retention-bounded records with complete schema validation, non-reusable tracked evidence paths,
+  globally unique file digests, exact file bytes, reachable source commits, and
+  schema-validated validation/consent attestations that cross-bind the public
+  record fields, claimed signals, artifact digest, and consent scope; generated
+  Java consumer policy now uses the broker-compatible canonical `mvn test`
+  command. These records are explicitly maintainer-attested and cannot unlock
+  `demonstrated` until an independent external provenance verifier is added.
+- Aligned candidate publication, stable promotion, and recovery documentation
+  on protected-main `repository_dispatch` entrypoints, signed locally verified
+  tags, payload-only tag inputs, recorded workflow SHAs, and the separate
+  workflow-provenance versus signed-source-identity proof boundary.
+
+### Security
+- Bound Bash project policy, session pinning, and PATH-shadow containment to
+  `CLAUDE_PROJECT_DIR` while treating a nested event `cwd` only as the effective
+  command directory. Privileged-mode launchers now reject inherited startup
+  files and exported command overrides, while PATH resolution skips
+  non-executable candidates and still rejects workspace shadows. Both guarded
+  launchers reject `NODE_OPTIONS` before probing Node, and the Bash broker now
+  rejects Git and ripgrep environment overrides that can execute helpers or
+  replace the reviewed read-only argv semantics.
+- Made stable dispatch payloads fail inside the signed-ref trust step instead
+  of producing skipped green jobs, and required generic bundle attestation
+  before promotion or recovery extraction followed by exact workflow-digest
+  verification after the bounded candidate-core read.
+- Blocked Write/Edit access to project Git control metadata at every nesting
+  level so an agent cannot turn an otherwise read-only brokered Git command
+  into external code execution through repository config or hooks.
+- Routed every active post-use, failure, permission-denied, and session-end Node
+  hook through one privileged-mode trusted launcher that rejects preload and
+  shell-function inheritance plus project-controlled Node PATH shadows. Audit
+  process identity probes now use a verified fixed system `ps` path instead of
+  PATH lookup.
+- Case-folded hook control paths for case-insensitive volumes, froze project
+  hook-disabling settings and the complete distributed hook/runtime trust
+  closure, removed pre-trust PATH helper lookups, and made diagnostics reject
+  a missing, relative, project-owned, or otherwise untrusted host Bash
+  bootstrap.
+- Added startup project-settings and artifact-root trust preflight, rejected
+  the obsolete environment bypass, excluded broad, hidden-control, and
+  executable-search artifact roots, and blocked project/local ConfigChange
+  activation for the lifetime of an already-guarded session. Existing startup
+  settings remain an explicit host boundary; managed policy is required to
+  enforce that boundary before the first plugin hook.
+
+## [4.1.0] - 2026-07-16
+
+Release lifecycle: this section defines the `4.1.0` candidate baseline. Stable
+status is determined only by the governed release channel and exact-tag
+evidence, not by this changelog heading.
+
 ### Added
 - Added fail-closed live-evaluation previews and explicit invocation budgets,
   with governed profile attempts, public-safe result summaries, disposable raw
@@ -42,6 +117,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 - Removed duplicate full-suite execution from `npm run check` by reusing the coverage-owned test inventory before maintainer working-tree evidence checks.
 
 ### Fixed
+- Clarified the source-owned `review-only` versus `review` boundary, required
+  complete canonical input-name output even when values are already resolved,
+  and replaced denied-Skill load inference with normalized Claude debug load
+  evidence from an isolated configuration.
+- Made Codex live-evaluation prompts condition-aware without leaking expected
+  routes, and normalized JSONL tool lifecycles so completed dangerous calls,
+  denied or failed attempts, and unknown terminal states remain distinct; the
+  harness now also isolates Codex configuration and disables tool surfaces.
 - Corrected critical live-evaluation evidence semantics so canonical Claude
   `Skill` loading is read-only orchestration, unsafe and denied tools remain
   distinct, adapter staging/load/contract facts cannot impersonate one another,
@@ -785,7 +868,8 @@ must not replace the exact release tag as stable evidence.
 - MIT 开源协议
 - 中英双语 README 文档
 
-[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v4.0.0...HEAD
+[Unreleased]: https://github.com/lliangcol/llm-plugins-fusion/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.2.0...v4.0.0
 [3.2.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.1.0...v3.2.0
 [3.1.0]: https://github.com/lliangcol/llm-plugins-fusion/compare/v3.0.1...v3.1.0

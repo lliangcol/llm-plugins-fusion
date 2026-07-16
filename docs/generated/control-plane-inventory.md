@@ -2,11 +2,11 @@
 
 Generated from package scripts, the runnable validation registry, GitHub workflows, governance sources, generators, and product lanes.
 
-- Package scripts: 114
-- Runnable validation tasks: 63
-- GitHub workflows: 12
-- Governance sources: 23
-- Generators: 25
+- Package scripts: 80
+- Runnable validation tasks: 46
+- GitHub workflows: 10
+- Governance sources: 18
+- Generators: 20
 
 | Boundary | Path | Scope | Generated | Quality gate |
 | --- | --- | --- | --- | --- |

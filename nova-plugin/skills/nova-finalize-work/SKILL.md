@@ -39,7 +39,7 @@ This file is the supporting behavioral contract for `/nova-plugin:finalize-work`
 ### Generated Behavior Index
 
 - **Purpose:** Package completed work into review-ready handoff text without changing the completed state.
-- **Canonical inputs:** `WORK_SUMMARY`(required aliases=WORK_SCOPE)
+- **Canonical inputs:** `WORK_SUMMARY`(required aliases=WORK_SCOPE); `DEPTH`(optional default="standard" exact="lite","standard")
 - **Decision entries:** 2.
 - **Workflow steps:** `freeze-state` → `detect-mode` → `package` → `verify-sections`
 - **Output:** mode=`chat`; order=`title or commit message` → `change summary` → `validation` → `handoff` → `out-of-scope follow-up`; severity=none.

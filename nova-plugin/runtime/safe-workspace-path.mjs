@@ -1,10 +1,13 @@
 import {
+  accessSync,
+  constants,
   existsSync,
   lstatSync,
   realpathSync,
   statSync,
 } from 'node:fs';
-import path, { delimiter, dirname, isAbsolute, relative, resolve, sep } from 'node:path';
+import { homedir } from 'node:os';
+import path, { basename, delimiter, dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 
 /**
  * @typedef {object} WorkspaceTargetOptions
@@ -16,9 +19,18 @@ import path, { delimiter, dirname, isAbsolute, relative, resolve, sep } from 'no
  * @property {boolean} [protectedTarget]
  */
 
-function comparable(value, platform = process.platform) {
-  const normalized = resolve(value);
-  return platform === 'win32' ? normalized.toLowerCase() : normalized;
+function comparable(value) {
+  // Control paths are ASCII-owned names. Fold them on every platform so the
+  // guard remains safe on case-insensitive macOS/Linux volumes as well as
+  // Windows. The conservative false positive on a case-sensitive volume is
+  // preferable to letting an alias of the same physical control path through.
+  return resolve(value).toLowerCase();
+}
+
+function comparablePathInside(root, target) {
+  const rootValue = comparable(root).replace(/[\\/]+$/u, '');
+  const targetValue = comparable(target);
+  return targetValue === rootValue || targetValue.startsWith(`${rootValue}${sep}`);
 }
 
 export function isPathInside(root, target, { platform = process.platform, pathApi = path } = {}) {
@@ -59,6 +71,95 @@ export function configuredArtifactRoots(env = process.env) {
     return parsed;
   }
   return raw.split(delimiter).filter(Boolean);
+}
+
+const GUARDED_EXECUTABLE_NAMES = Object.freeze([
+  'bash',
+  'bash.exe',
+  'node',
+  'node.exe',
+  'git',
+  'rg',
+  'npm',
+  'shellcheck',
+  'cat',
+]);
+const SENSITIVE_CONTROL_SEGMENTS = new Set([
+  '.git',
+  '.claude',
+  '.codex',
+  '.ssh',
+  '.gnupg',
+]);
+
+function executableNamesForPlatform(name, env, platform) {
+  if (platform !== 'win32' || /\.[A-Za-z0-9]+$/u.test(name)) return [name];
+  const extensions = String(env.PATHEXT ?? '.COM;.EXE;.BAT;.CMD')
+    .split(';')
+    .filter(Boolean);
+  return [name, ...extensions.map((extension) => `${name}${extension.toLowerCase()}`)];
+}
+
+export function assertArtifactRootsOutsideExecutableSearch({
+  artifactRoots = [],
+  cwd = process.cwd(),
+  projectRoot = cwd,
+  env = process.env,
+  executableNames = GUARDED_EXECUTABLE_NAMES,
+  platform = process.platform,
+} = {}) {
+  if (!artifactRoots.length) return [];
+  const roots = artifactRoots.map((entry, index) => canonicalAllowedRoot(entry, `artifact root ${index + 1}`));
+  const project = resolve(projectRoot);
+  const home = resolve(homedir());
+  for (const root of roots) {
+    if (root.lexical === project) continue;
+    if (dirname(root.lexical) === root.lexical) {
+      throw new Error(`artifact root must not be a filesystem root: ${root.lexical}`);
+    }
+    if (isPathInside(root.lexical, home, { platform })) {
+      throw new Error(`artifact root must not contain the user home directory: ${root.lexical}`);
+    }
+    if (root.lexical !== project && isPathInside(root.lexical, project, { platform })) {
+      throw new Error(`artifact root must not broaden above the project root: ${root.lexical}`);
+    }
+    const rootSegments = relative(home, root.lexical).split(sep).filter(Boolean);
+    if (isPathInside(home, root.lexical, { platform }) && rootSegments.some((segment) => segment.startsWith('.'))) {
+      throw new Error(`artifact root must not be inside a hidden user control directory: ${root.lexical}`);
+    }
+    if (resolve(root.lexical) !== home && root.lexical.split(/[\\/]/u).some((segment) => SENSITIVE_CONTROL_SEGMENTS.has(segment.toLowerCase()))) {
+      throw new Error(`artifact root must not be a security-sensitive control directory: ${root.lexical}`);
+    }
+  }
+  const pathEntries = String(env.PATH ?? '').split(delimiter);
+  for (const rawEntry of pathEntries) {
+    const lexicalEntry = resolve(cwd, rawEntry || '.');
+    let physicalEntry = lexicalEntry;
+    try { physicalEntry = realpathSync.native(lexicalEntry); } catch { /* missing PATH entries cannot contain executables yet */ }
+    for (const root of roots) {
+      if (isPathInside(root.lexical, lexicalEntry, { platform }) || isPathInside(root.real, physicalEntry, { platform })) {
+        throw new Error(`artifact root ${root.lexical} contains executable PATH entry ${lexicalEntry}`);
+      }
+    }
+    for (const executable of executableNames) {
+      for (const name of executableNamesForPlatform(executable, env, platform)) {
+        const candidate = resolve(lexicalEntry, name);
+        try {
+          if (!statSync(candidate).isFile()) continue;
+          accessSync(candidate, constants.X_OK);
+          const physicalCandidate = realpathSync.native(candidate);
+          for (const root of roots) {
+            if (isPathInside(root.lexical, candidate, { platform }) || isPathInside(root.real, physicalCandidate, { platform })) {
+              throw new Error(`artifact root ${root.lexical} controls guarded executable ${candidate}`);
+            }
+          }
+        } catch (error) {
+          if (error.message?.includes('controls guarded executable')) throw error;
+        }
+      }
+    }
+  }
+  return roots.map((root) => root.lexical);
 }
 
 function nearestExistingAncestor(target) {
@@ -157,10 +258,10 @@ export function protectedHooksPaths({ projectRoot, pluginRoot }) {
 export function protectedShellControlPaths({ projectRoot, pluginRoot }) {
   return [
     resolve(projectRoot, '.nova/shell-policy.json'),
-    resolve(pluginRoot, 'runtime/shell-command-policy.json'),
-    resolve(pluginRoot, 'runtime/safe-workspace-path.mjs'),
-    resolve(pluginRoot, 'hooks/scripts/pre-bash-check.mjs'),
-    resolve(pluginRoot, 'hooks/scripts/pre-write-check.mjs'),
+    resolve(projectRoot, '.claude/settings.json'),
+    resolve(projectRoot, '.claude/settings.local.json'),
+    resolve(pluginRoot, 'runtime'),
+    resolve(pluginRoot, 'hooks/scripts'),
   ].map((entry) => comparable(entry));
 }
 
@@ -170,5 +271,23 @@ export function isProtectedHooksPath(target, options) {
 
 
 export function isProtectedShellControlPath(target, options) {
-  return protectedShellControlPaths(options).includes(comparable(target));
+  const targetValue = resolve(target);
+  const absoluteSegments = targetValue.split(/[\\/]/u).filter(Boolean);
+  if (absoluteSegments.some((segment) => segment.toLowerCase() === '.git')) return true;
+  if (isPathInside(options.projectRoot, targetValue)) {
+    if (['bash', 'bash.exe'].includes(basename(targetValue).toLowerCase())) return true;
+  }
+  if ([
+    resolve(options.projectRoot, '.nova/shell-policy.json'),
+    resolve(options.projectRoot, '.claude/settings.json'),
+    resolve(options.projectRoot, '.claude/settings.local.json'),
+  ].some((controlPath) => comparable(targetValue) === comparable(controlPath))) return true;
+  for (const artifactRoot of options.artifactRoots ?? []) {
+    const root = resolve(artifactRoot);
+    if (comparable(root) === comparable(options.projectRoot) || !isPathInside(root, targetValue)) continue;
+    const segments = relative(root, targetValue).split(sep).filter(Boolean);
+    if (segments.some((segment) => SENSITIVE_CONTROL_SEGMENTS.has(segment.toLowerCase()))) return true;
+  }
+  return [resolve(options.pluginRoot, 'runtime'), resolve(options.pluginRoot, 'hooks/scripts')]
+    .some((root) => comparablePathInside(root, targetValue));
 }

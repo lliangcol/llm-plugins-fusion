@@ -17,10 +17,11 @@ function releaseEventPath(eventDir, sequence, transition) {
 }
 
 export function parseReleaseOrchestratorArgs(args) {
-  const options = { mode: null, state: null, targetState: null, stableTag: null, candidateTag: null, sourceCommit: null, promotionIntent: null, controlBundle: null, eventDir: null, runId: null, dryRun: false, protectedPublicationApproved: false };
+  const options = { mode: null, state: null, targetState: null, stableTag: null, candidateTag: null, sourceCommit: null, promotionIntent: null, controlBundle: null, eventDir: null, runId: null, dryRun: false, candidateVerificationPassed: false, protectedPublicationApproved: false };
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === '--dry-run') { options.dryRun = true; continue; }
+    if (arg === '--candidate-verification-passed') { options.candidateVerificationPassed = true; continue; }
     if (arg === '--protected-publication-approved') { options.protectedPublicationApproved = true; continue; }
     const value = () => requireOptionValue(args, index, arg);
     if (arg === '--mode') options.mode = value();
@@ -57,7 +58,8 @@ export function orchestrateRelease(options, now = () => new Date(), correctionSo
   const releasePolicy = evaluateReleaseCorrections({
     mode: options.mode, stableTag: options.stableTag, candidateTag: options.candidateTag, sourceCommit: options.sourceCommit,
     corrections: correctionSource.document.corrections, correctionsSha256: correctionSource.sha256,
-    independentReview: { passed: correctionSource.document.corrections.every((entry) => !['authorized-for-new-candidate'].includes(entry.status)) },
+    independentReview: { passed: options.candidateVerificationPassed },
+    candidateVerification: { passed: options.candidateVerificationPassed },
     protectedPublication: { passed: options.protectedPublicationApproved },
   });
   if (releasePolicy.status === 'BLOCKED_POLICY') assertReleaseReady(releasePolicy);

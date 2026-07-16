@@ -6,7 +6,7 @@
 - Workflow: `finalize-work`; stage: `finalize`; canonical skill: `nova-finalize-work`
 - Purpose: Package completed work into review-ready handoff text without changing the completed state.
 - Audience: `all-users`; support risk: `none`
-- Inputs: `WORK_SUMMARY` (required)
+- Inputs: `WORK_SUMMARY` (required), `DEPTH`
 - Output contract: `finalize-work-v2`; authorization: `read-only-shell-prompt`
 - Effects: `shell`, `workspace-read`
 - Related workflows: `finalize-lite`

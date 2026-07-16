@@ -1,14 +1,17 @@
+import { validateContractCoherence } from '../migrate/contract-coherence.mjs';
+
 /** Compile generic workflow policy plus behavior-complete IR into runtime contracts. */
 export function compileRuntimeContract(spec, workflow, behavior) {
   const authorizationProfile = workflow.authorizationProfile ?? workflow.permissionProfile;
   const profile = spec.permissionProfiles[authorizationProfile];
   if (!profile) throw new Error(`${workflow.id}: unknown permission profile ${authorizationProfile}`);
   if (!behavior || behavior.id !== workflow.id) throw new Error(`${workflow.id}: missing behavior IR`);
-  const behaviorRequired = behavior.inputs.filter((input) => input.required).map((input) => input.name);
+  const coherenceFailures = validateContractCoherence(
+    { schemaVersion: spec.schemaVersion, workflows: [workflow] },
+    { schemaVersion: behavior.schemaVersion, behaviors: [behavior] },
+  );
+  if (coherenceFailures.length > 0) throw new Error(coherenceFailures.join('; '));
   const requiredInputs = workflow.compatibilityProjection?.requiredInputs ?? workflow.requiredInputs;
-  if (JSON.stringify(behaviorRequired) !== JSON.stringify(requiredInputs)) {
-    throw new Error(`${workflow.id}: behavior required inputs differ from workflow policy`);
-  }
   return {
     schemaVersion: spec.schemaVersion === 6 ? 4 : 3,
     sourceSchemaVersion: spec.schemaVersion,
@@ -62,6 +65,7 @@ export function compileRuntimeContract(spec, workflow, behavior) {
 }
 
 export function compileRuntimeContracts(spec, behaviorSpec) {
-  const behaviors = new Map((behaviorSpec?.behaviors ?? []).map((behavior) => [behavior.id, { ...behavior, schemaVersion: behaviorSpec.schemaVersion }]));
+  const behaviorSchemaVersion = behaviorSpec?.schemaVersion ?? (spec.schemaVersion === 6 ? 2 : 1);
+  const behaviors = new Map((behaviorSpec?.behaviors ?? []).map((behavior) => [behavior.id, { ...behavior, schemaVersion: behaviorSchemaVersion }]));
   return spec.workflows.map((workflow) => compileRuntimeContract(spec, workflow, behaviors.get(workflow.id)));
 }

@@ -58,7 +58,7 @@ test('release orchestrator consumes exact local intent and control identities in
     const intent = resolve(directory, 'intent.json');
     const sourceCommit = 'a'.repeat(40);
     const bundleSha256 = 'b'.repeat(64);
-    const correctionSource = { document: { schemaVersion: 2, corrections: [] }, sha256: 'd'.repeat(64) };
+    const correctionSource = { document: { schemaVersion: 3, corrections: [] }, sha256: 'd'.repeat(64) };
     writeFileSync(control, `${JSON.stringify({ bundleSha256 })}\n`);
     writeFileSync(intent, `${JSON.stringify({ stableTag: 'v4.0.0', candidateTag: 'v4.0.0-rc.1', sourceCommit, candidateCoreSha256: 'c'.repeat(64), controlBundleSha256: bundleSha256, correctionsSha256: correctionSource.sha256 })}\n`);
     const result = orchestrateRelease({ mode: 'drill', state: 'DRAFT', targetState: 'CANDIDATE_VERIFIED', stableTag: 'v4.0.0', candidateTag: 'v4.0.0-rc.1', sourceCommit, promotionIntent: intent, controlBundle: control, eventDir: resolve(directory, 'events'), runId: 'unit', dryRun: true }, () => new Date(0), correctionSource);
@@ -68,8 +68,9 @@ test('release orchestrator consumes exact local intent and control identities in
 
 test('release orchestrator parser covers explicit flags and rejects invalid identities', () => {
   const base = ['--mode', 'drill', '--state', 'DRAFT', '--target-state', 'PROMOTION_READY', '--stable-tag', 'v4.1.0', '--candidate-tag', 'v4.1.0-rc.1', '--source-commit', 'a'.repeat(40), '--promotion-intent', 'intent.json', '--control-bundle', 'control.json', '--event-dir', 'events', '--run-id', '1'];
-  const parsed = parseReleaseOrchestratorArgs([...base, '--dry-run', '--protected-publication-approved']);
+  const parsed = parseReleaseOrchestratorArgs([...base, '--dry-run', '--candidate-verification-passed', '--protected-publication-approved']);
   assert.equal(parsed.dryRun, true);
+  assert.equal(parsed.candidateVerificationPassed, true);
   assert.equal(parsed.protectedPublicationApproved, true);
   assert.throws(() => parseReleaseOrchestratorArgs(base.with(1, 'candidate')), /mode must/u);
   assert.throws(() => parseReleaseOrchestratorArgs(base.with(11, 'short')), /full Git SHA/u);

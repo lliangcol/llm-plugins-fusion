@@ -6,7 +6,7 @@
 - Workflow: `explore`; stage: `explore`; canonical skill: `nova-explore`
 - Purpose: Align understanding and identify unknowns or risks without proposing solutions.
 - Audience: `all-users`; support risk: `none`
-- Inputs: `INPUT` (required), `PERSPECTIVE`
+- Inputs: `INPUT` (required), `PERSPECTIVE`, `DEPTH`
 - Output contract: `exploration-v2`; authorization: `read-only`
 - Effects: `workspace-read`
 - Related workflows: `route`, `produce-plan`

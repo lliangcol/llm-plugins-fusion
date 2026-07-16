@@ -20,14 +20,17 @@
         "livePaired": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["datasetId", "sourcePath", "caseCount", "languageCounts", "kindCounts", "profileCaseCounts", "conditions", "attempts", "plannedInvocations"],
+          "required": ["datasetId", "datasetVersion", "sourcePath", "labelsPath", "caseCount", "languageCounts", "kindCounts", "profileCaseCounts", "assistants", "conditions", "attempts", "plannedInvocations"],
           "properties": {
             "datasetId": { "const": "live-paired" },
-            "sourcePath": { "const": "evals/live/cases.json" },
+            "datasetVersion": { "const": 5 },
+            "sourcePath": { "const": "evals/live/v5/cases.json" },
+            "labelsPath": { "const": "evals/live/v5/labels.locked.json" },
             "caseCount": { "type": "integer", "minimum": 1 },
             "languageCounts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
             "kindCounts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
             "profileCaseCounts": { "type": "object", "additionalProperties": { "type": "integer", "minimum": 0 } },
+            "assistants": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
             "conditions": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
             "attempts": { "type": "integer", "minimum": 1 },
             "plannedInvocations": { "type": "integer", "minimum": 1 }
@@ -36,10 +39,11 @@
         "criticalLive": {
           "type": "object",
           "additionalProperties": false,
-          "required": ["datasetId", "sourcePath", "caseCount", "assistants", "conditions", "attempts", "plannedInvocations"],
+          "required": ["datasetId", "datasetVersion", "sourcePath", "caseCount", "assistants", "conditions", "attempts", "plannedInvocations"],
           "properties": {
             "datasetId": { "const": "critical-live" },
-            "sourcePath": { "const": "evals/critical-live/cases.json" },
+            "datasetVersion": { "const": 5 },
+            "sourcePath": { "const": "evals/critical-live/v5/cases.json" },
             "caseCount": { "type": "integer", "minimum": 1 },
             "assistants": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
             "conditions": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },

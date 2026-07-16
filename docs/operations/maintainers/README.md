@@ -15,7 +15,7 @@ see [validation-index.md](validation.md).
 | --- | --- | --- |
 | Documentation only | `README.md`, `docs/**`, `nova-plugin/docs/**`, `CLAUDE.md`, `AGENTS.md` | `npm run validate:docs`, `git diff --check` |
 | Command or skill behavior | `nova-plugin/commands/**`, `nova-plugin/skills/**`, command docs | `node scripts/lint-frontmatter.mjs`, `node scripts/validate-docs.mjs`, `node scripts/validate-surface-budget.mjs` |
-| Hooks or guardrails | `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, runtime scripts | `node scripts/validate-hooks.mjs`, `bash -n nova-plugin/hooks/scripts/pre-write-check.sh`, `bash -n nova-plugin/hooks/scripts/pre-bash-check.sh`, `bash -n nova-plugin/hooks/scripts/post-audit-log.sh`, `node scripts/validate-runtime-smoke.mjs` |
+| Hooks or guardrails | `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, runtime scripts | `node scripts/validate-hooks.mjs`, `bash -n nova-plugin/hooks/scripts/pre-write-check.sh`, `bash -n nova-plugin/hooks/scripts/pre-bash-check.sh`, `bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh`, `bash -n nova-plugin/hooks/scripts/post-audit-log.sh`, `node scripts/validate-runtime-smoke.mjs` |
 | Registry or marketplace metadata | `.claude-plugin/registry.source.json`, `nova-plugin/.claude-plugin/plugin.json` | `node scripts/generate-registry.mjs --write`, `npm run validate:drift`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs`, `node scripts/validate-claude-compat.mjs` |
 | CI or release workflow | `.github/workflows/**`, release docs | `npm run validate:github-workflows`, `npm run ci:quick`, `npm run validate:maintainer`, review changed workflow trigger, permissions, workflow inventory, and required-check list, plus action SHA pins |
 | Release preparation | version sources, `CHANGELOG.md`, generated marketplace outputs | `npm run validate:maintainer`, `node scripts/generate-release-checksums.mjs`, `node scripts/validate-plugin-install.mjs --dry-run`, isolated install smoke when promotion evidence requires it |
@@ -63,8 +63,8 @@ locked dependency graph.
 
 The complete local security group also requires ShellCheck and actionlint.
 `npm run doctor` reports both tools explicitly. On macOS with Homebrew, install
-them with `brew install shellcheck actionlint`; then run `npm run
-check:security`. CI downloads checksum-verified ShellCheck `0.11.0` and
+them with `brew install shellcheck actionlint`; then run
+`npm run llmf -- check security`. CI downloads checksum-verified ShellCheck `0.11.0` and
 actionlint `1.7.12`, so release evidence should use those versions or the CI
 security lane when the local package manager provides a different build.
 

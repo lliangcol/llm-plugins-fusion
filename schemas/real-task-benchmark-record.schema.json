@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/real-task-benchmark-record.schema.json",
+  "title": "Submitted Real Task Benchmark Record",
+  "description": "A caller-supplied normalized pilot record. Schema validity and digest-shaped fields do not establish independently verified or measured evidence.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "taskId",
+    "assistant",
+    "condition",
+    "attempt",
+    "sourceCommit",
+    "datasetSha256",
+    "runnerSha256",
+    "scorerSha256",
+    "recordSchemaSha256",
+    "fixtureSha256",
+    "observedAt",
+    "resultEvidence",
+    "toolEvidence",
+    "writeEvidence",
+    "usage"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "taskId": { "type": "string", "pattern": "^task-[a-z0-9-]+$" },
+    "assistant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "enum": ["claude-code", "codex"] },
+        "version": { "type": "string", "minLength": 1, "maxLength": 160 }
+      }
+    },
+    "condition": { "enum": ["raw", "wrapper-full", "wrapper-compact"] },
+    "attempt": { "type": "integer", "minimum": 1, "maximum": 3 },
+    "sourceCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "datasetSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "runnerSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "scorerSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "recordSchemaSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "fixtureSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "observedAt": { "type": "string", "format": "date-time" },
+    "resultEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["taskSuccess", "safetyPassed", "outputSha256", "scoreSha256", "failureCategory"],
+      "properties": {
+        "taskSuccess": { "type": "boolean" },
+        "safetyPassed": { "type": "boolean" },
+        "outputSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "scoreSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "failureCategory": {
+          "type": ["string", "null"],
+          "enum": [
+            null,
+            "approval-boundary",
+            "fixture-mutation",
+            "incomplete-evidence",
+            "incorrect-finding",
+            "incorrect-fix",
+            "missing-test",
+            "unsafe-tool-use",
+            "unauthorized-write"
+          ]
+        }
+      }
+    },
+    "toolEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "traceSha256",
+        "lifecycle"
+      ],
+      "properties": {
+        "traceSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "lifecycle": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["eventIdSha256", "rawTool", "canonicalAction", "status", "writeEffect"],
+            "properties": {
+              "eventIdSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "rawTool": { "type": "string", "pattern": "^[A-Za-z0-9_.:-]{1,160}$" },
+              "canonicalAction": {
+                "enum": ["read", "orchestration", "command-execution", "project-write", "external-tool-call", "unknown"]
+              },
+              "status": {
+                "enum": ["completed", "denied", "failed-before-execution", "failed-after-execution", "unknown"]
+              },
+              "writeEffect": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["projectWrites", "authorizedArtifactWrites", "unauthorizedWrites"],
+                "properties": {
+                  "projectWrites": { "type": "integer", "minimum": 0 },
+                  "authorizedArtifactWrites": { "type": "integer", "minimum": 0 },
+                  "unauthorizedWrites": { "type": "integer", "minimum": 0 }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "writeEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["traceSha256", "projectWrites", "authorizedArtifactWrites", "unauthorizedWrites"],
+      "properties": {
+        "traceSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "projectWrites": { "type": "integer", "minimum": 0 },
+        "authorizedArtifactWrites": { "type": "integer", "minimum": 0 },
+        "unauthorizedWrites": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "usage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["latencyMs", "totalTokens", "costUsd"],
+      "properties": {
+        "latencyMs": { "type": "integer", "minimum": 0 },
+        "totalTokens": { "type": ["integer", "null"], "minimum": 0 },
+        "costUsd": { "type": ["number", "null"], "minimum": 0 }
+      }
+    }
+  }
+}

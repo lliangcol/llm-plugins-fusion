@@ -1,4 +1,5 @@
-import { existsSync } from 'node:fs';
+import { accessSync, constants, existsSync, realpathSync, statSync } from 'node:fs';
+import { delimiter, isAbsolute, resolve, sep } from 'node:path';
 
 export function resolveBashCommand(platform = process.platform, env = process.env) {
   if (platform !== 'win32') return env.NOVA_BASH_BIN || 'bash';
@@ -9,6 +10,62 @@ export function resolveBashCommand(platform = process.platform, env = process.en
     env.LOCALAPPDATA ? `${env.LOCALAPPDATA}\\Programs\\Git\\bin\\bash.exe` : null,
   ].filter((candidate) => typeof candidate === 'string');
   return candidates.find((candidate) => existsSync(candidate)) ?? 'bash';
+}
+
+export function resolveExecutableOnPath(command, {
+  cwd = process.cwd(),
+  env = process.env,
+  platform = process.platform,
+} = {}) {
+  const names = [];
+  if (isAbsolute(command)) names.push(command);
+  else if (platform === 'win32') {
+    const lower = command.toLowerCase();
+    names.push(lower.endsWith('.exe') ? command : `${command}.exe`);
+  } else names.push(command);
+  const roots = isAbsolute(command) ? [''] : String(env.PATH ?? '').split(delimiter);
+  for (const root of roots) {
+    for (const name of names) {
+      const lexical = isAbsolute(name) ? resolve(name) : resolve(cwd, root || '.', name);
+      try {
+        if (!statSync(lexical).isFile()) continue;
+        accessSync(lexical, constants.X_OK);
+        return { lexical, physical: realpathSync.native(lexical) };
+      } catch { /* continue through the executable search path */ }
+    }
+  }
+  return null;
+}
+
+export function pathIdentityInside(root, candidate) {
+  const candidateValue = resolve(candidate).toLowerCase();
+  const rootValues = [resolve(root)];
+  try { rootValues.push(realpathSync.native(root)); } catch { /* caller reports missing roots elsewhere */ }
+  return rootValues.some((value) => {
+    const rootValue = value.toLowerCase();
+    return candidateValue === rootValue || candidateValue.startsWith(`${rootValue}${sep}`);
+  });
+}
+
+export function trustedHookBashIdentity(projectRoot, env = process.env, writableRoots = []) {
+  const untrustedRoots = [projectRoot, ...writableRoots];
+  for (const entry of String(env.PATH ?? '').split(delimiter)) {
+    if (!entry || !isAbsolute(entry)) {
+      return { trusted: false, identity: null, reason: 'PATH contains an empty or relative entry that can resolve inside the writable project' };
+    }
+    const lexicalEntry = resolve(entry);
+    let physicalEntry = lexicalEntry;
+    try { physicalEntry = realpathSync.native(lexicalEntry); } catch { /* a missing external entry cannot currently contain bash */ }
+    if (untrustedRoots.some((root) => pathIdentityInside(root, lexicalEntry) || pathIdentityInside(root, physicalEntry))) {
+      return { trusted: false, identity: null, reason: 'PATH contains an entry inside an agent-writable root' };
+    }
+  }
+  const identity = resolveExecutableOnPath('bash', { cwd: projectRoot, env });
+  if (!identity) return { trusted: false, identity: null, reason: 'bash is not resolvable as a real executable on PATH' };
+  if (untrustedRoots.some((root) => pathIdentityInside(root, identity.lexical) || pathIdentityInside(root, identity.physical))) {
+    return { trusted: false, identity, reason: 'bash resolves inside an agent-writable root' };
+  }
+  return { trusted: true, identity, reason: null };
 }
 
 export function pathForBash(value, command = resolveBashCommand(), platform = process.platform) {

@@ -893,6 +893,15 @@
       "generated": false
     },
     {
+      "path": "docs/operations/community/java-spring-demo.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
       "path": "docs/operations/community/metrics.md",
       "audience": "repository-users",
       "contentType": "reference",
@@ -1038,6 +1047,15 @@
     },
     {
       "path": "docs/project/decisions/0002-cli-and-extension-direction.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "docs/project/decisions/0003-canonical-review-routing.md",
       "audience": "repository-users",
       "contentType": "reference",
       "status": "current",
@@ -1523,6 +1541,15 @@
       "generated": false
     },
     {
+      "path": "docs/templates/evidence/adoption-record.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
       "path": "docs/templates/evidence/release.md",
       "audience": "repository-users",
       "contentType": "reference",
@@ -1866,6 +1893,15 @@
     },
     {
       "path": "governance/evidence/post-remediation-audit-2026-07-13.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
+      "path": "governance/evidence/release-candidate-authorization-2026-07-16.md",
       "audience": "repository-users",
       "contentType": "reference",
       "status": "current",

@@ -8,7 +8,7 @@ import { runProcess } from './lib/process-runner.mjs';
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const profileDir = resolve(root, '.metrics/cpu-prof');
 const reportPath = '.metrics/validation-benchmark.json';
-const help = `Usage: node scripts/profile-validation.mjs [--benchmark [--require-profile <id>]]\n\nNo arguments writes a CPU hotspot profile marked non-comparable.\n--benchmark runs one fresh Node process in full/no-cache mode and validates observed elapsed time after the child exits.\n`;
+const help = `Usage: node scripts/profile-validation.mjs [--benchmark [--require-profile <id>]]\n\nNo arguments writes a CPU hotspot profile marked non-comparable.\n--benchmark runs one fresh Node process in full/no-cache mode and validates observed elapsed time after the child exits. A required governed profile also verifies every retained sample against GitHub Actions and requires GH_TOKEN or GITHUB_TOKEN.\n`;
 
 export async function main({ args = process.argv.slice(2), runner = runProcess, mkdirFn = mkdir } = {}) {
   if (args.includes('--help') || args.includes('-h')) { console.log(help); return 0; }
@@ -30,7 +30,7 @@ export async function main({ args = process.argv.slice(2), runner = runProcess, 
   if (!result.ok) { console.error(`ERROR validate-all child: ${result.errorMessage ?? result.code}`); return result.code ?? 1; }
   if (benchmark) {
     const validateArgs = ['scripts/validate-performance-budget.mjs', reportPath];
-    if (requiredProfile) validateArgs.push('--require-profile', requiredProfile);
+    if (requiredProfile) validateArgs.push('--require-profile', requiredProfile, '--verify-github');
     const validation = await runner('validate observed performance', process.execPath, validateArgs, { cwd: root, capture: false, timeoutMs: 30_000 });
     if (!validation.ok) { console.error(`ERROR observed performance: ${validation.errorMessage ?? validation.code}`); return validation.code ?? 1; }
     console.log('\nWrote non-source-controlled benchmark evidence under .metrics/.');

@@ -17,6 +17,7 @@ export function parseCandidateArgs(args, env = process.env) {
     tag: null,
     stableTag: null,
     commit: null,
+    workflowSourceCommit: null,
     artifactDir: resolve(root, '.metrics/release-artifacts'),
     outDir: resolve(root, '.metrics/release-candidate'),
     bundleRoot: resolve(root, '.metrics/release-candidate'),
@@ -29,6 +30,7 @@ export function parseCandidateArgs(args, env = process.env) {
     if (arg === '--tag') options.tag = value();
     else if (arg === '--stable-tag') options.stableTag = value();
     else if (arg === '--commit') options.commit = value();
+    else if (arg === '--workflow-source-commit') options.workflowSourceCommit = value();
     else if (arg === '--artifact-dir') options.artifactDir = resolve(root, value());
     else if (arg === '--out-dir') options.outDir = resolve(root, value());
     else if (arg === '--control-bundle-manifest') options.controlBundleManifest = resolve(root, value());
@@ -37,8 +39,11 @@ export function parseCandidateArgs(args, env = process.env) {
     else throw new Error(`unknown argument: ${arg}`);
     index += 1;
   }
-  for (const key of ['tag', 'stableTag', 'commit', 'controlBundleManifest']) {
+  for (const key of ['tag', 'stableTag', 'commit', 'workflowSourceCommit', 'controlBundleManifest']) {
     if (!options[key]) throw new Error(`missing required candidate identity option: ${key}`);
+  }
+  if (!/^[a-f0-9]{40}$/u.test(options.workflowSourceCommit)) {
+    throw new Error('workflow source commit must be a full Git SHA');
   }
   return options;
 }
@@ -51,8 +56,8 @@ export function generateReleaseCandidate({ args = process.argv.slice(2), env = p
   const independentReview = {
     passed: review?.passed === true
       && review.commit === options.commit
-      && review.pullRequestHead === options.commit
-      && review.expectedReviewCommit === options.commit
+      && /^[a-f0-9]{40}$/u.test(review.pullRequestHead ?? '')
+      && review.expectedReviewCommit === review.pullRequestHead
       && Number.isInteger(review.minimumApprovals)
       && review.minimumApprovals >= 1
       && Array.isArray(review.approvalReviewers)

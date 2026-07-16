@@ -1,4 +1,5 @@
 import { dirname } from 'node:path';
+import { validateContractCoherence } from '../../framework/migrate/contract-coherence.mjs';
 import { defaultLayout, readJson, resolveContainedFile } from './internal.mjs';
 
 export const SPEC_ERROR = Object.freeze({
@@ -42,7 +43,7 @@ function predicateInputs(predicate, inputs = []) {
 
 /** @param {{ framework: any, product: any, workflows: any, behaviors: any, adapters: any[] }} bundle @returns {string[]} */
 function validateInvariants(bundle) {
-  const failures = [];
+  const failures = validateContractCoherence(bundle.workflows, bundle.behaviors);
   const workflows = Array.isArray(bundle.workflows?.workflows) ? bundle.workflows.workflows : [];
   const behaviors = Array.isArray(bundle.behaviors?.behaviors) ? bundle.behaviors.behaviors : [];
   const workflowIds = workflows.map((entry) => entry.id);
@@ -56,6 +57,7 @@ function validateInvariants(bundle) {
   const missingBehaviors = [...new Set(workflowIds.filter((id) => !behaviorIds.has(id)))].sort();
   if (missingBehaviors.length > 0) failures.push(`workflows missing behaviors: ${missingBehaviors.join(', ')}`);
   const workflowIdSet = new Set(workflowIds);
+  const workflowById = new Map(workflows.map((entry) => [entry.id, entry]));
   const orphanBehaviors = [...new Set(behaviorIdList.filter((id) => !workflowIdSet.has(id)))].sort();
   if (orphanBehaviors.length > 0) failures.push(`behaviors without workflows: ${orphanBehaviors.join(', ')}`);
   if (typeof bundle.product?.expectedWorkflowCount === 'number' && workflowIds.length !== bundle.product.expectedWorkflowCount) {
@@ -65,6 +67,13 @@ function validateInvariants(bundle) {
     const unknownEntrypoints = bundle.product.primaryEntrypoints.filter((id) => !workflowIdSet.has(id)).sort();
     if (unknownEntrypoints.length > 0) failures.push(`unknown primary entrypoints: ${unknownEntrypoints.join(', ')}`);
   }
+  const canonicalWorkflowIds = workflows.filter((workflow) => !workflow.compatibilityAlias).map((workflow) => workflow.id).sort();
+  const automaticTargets = bundle.product?.automaticRouting?.canonicalTargets;
+  if (!Array.isArray(automaticTargets)) failures.push('product.automaticRouting.canonicalTargets must be an array');
+  else if (JSON.stringify([...automaticTargets].sort()) !== JSON.stringify(canonicalWorkflowIds)) {
+    failures.push('automatic routing targets must equal the canonical workflow inventory');
+  }
+  const automaticTargetSet = new Set(automaticTargets ?? []);
   if (Array.isArray(bundle.product?.stages)) {
     const unknownStages = [...new Set(workflows.map((workflow) => workflow.stage).filter((stage) => !bundle.product.stages.includes(stage)))].sort();
     if (unknownStages.length > 0) failures.push(`workflows use unknown product stages: ${unknownStages.join(', ')}`);
@@ -75,10 +84,12 @@ function validateInvariants(bundle) {
     }
     const behavior = behaviorById.get(workflow.id);
     if (!behavior || !Array.isArray(behavior.inputs)) continue;
-    const behaviorRequired = behavior.inputs.filter((input) => input.required).map((input) => input.name);
-    const workflowRequired = workflow.compatibilityProjection?.requiredInputs ?? workflow.requiredInputs;
-    if (JSON.stringify(behaviorRequired) !== JSON.stringify(workflowRequired)) {
-      failures.push(`${workflow.id}: behavior required inputs differ from workflow policy`);
+    const canonicalBehavior = behaviorById.get(workflow.canonicalSurfaceId);
+    const canonicalInputs = new Map((canonicalBehavior?.inputs ?? []).map((input) => [input.name, input]));
+    for (const [name, value] of Object.entries(workflow.variantPreset ?? {})) {
+      const input = canonicalInputs.get(name);
+      if (!input) failures.push(`${workflow.id}: variant preset ${name} is not a canonical ${workflow.canonicalSurfaceId} input`);
+      else if (Array.isArray(input.exactValues) && !input.exactValues.some((allowed) => Object.is(allowed, value))) failures.push(`${workflow.id}: variant preset ${name} has unsupported value ${JSON.stringify(value)}`);
     }
   }
   for (const behavior of behaviors) {
@@ -87,6 +98,21 @@ function validateInvariants(bundle) {
       const predicate = decision.predicate ?? (typeof decision.when === 'object' ? decision.when : null);
       const unknownInputs = [...new Set(predicateInputs(predicate).filter((input) => !inputNames.has(input)))].sort();
       if (unknownInputs.length > 0) failures.push(`${behavior.id}: decision ${index} predicates reference unknown inputs: ${unknownInputs.join(', ')}`);
+      if (!decision.route) continue;
+      const target = workflowById.get(decision.route);
+      if (!target) failures.push(`${behavior.id}: decision ${index} routes to unknown workflow ${decision.route}`);
+      else if (target.compatibilityAlias) failures.push(`${behavior.id}: decision ${index} routes to compatibility alias ${decision.route}`);
+      else if (!automaticTargetSet.has(decision.route)) failures.push(`${behavior.id}: decision ${index} route ${decision.route} is not automatic-routing eligible`);
+      if (!decision.variantParameters || typeof decision.variantParameters !== 'object' || Array.isArray(decision.variantParameters)) {
+        failures.push(`${behavior.id}: decision ${index} lacks structured variantParameters`);
+      } else if (target) {
+        const targetInputs = new Map((behaviorById.get(target.id)?.inputs ?? []).map((input) => [input.name, input]));
+        for (const [name, value] of Object.entries(decision.variantParameters)) {
+          const input = targetInputs.get(name);
+          if (!input) failures.push(`${behavior.id}: decision ${index} variant ${name} is not a canonical ${target.id} input`);
+          else if (Array.isArray(input.exactValues) && !input.exactValues.some((allowed) => Object.is(allowed, value))) failures.push(`${behavior.id}: decision ${index} variant ${name} has unsupported value ${JSON.stringify(value)}`);
+        }
+      }
     }
   }
   if (!Array.isArray(bundle.product?.adapterDefinitions)) failures.push('product.adapterDefinitions must be an array');

@@ -95,3 +95,24 @@ test('llmf init refuses an adapter-directory symlink without writing outside the
   await assert.rejects(() => readFile(resolve(outside, 'example.json')), { code: 'ENOENT' });
   await assert.rejects(() => readFile(resolve(root, 'framework.json')), { code: 'ENOENT' });
 });
+
+test('llmf repository profiles expose bounded check and drift-only generation entrypoints', async () => {
+  const quick = await invoke(['check', 'quick', '--root', repo]);
+  assert.equal(quick.exitCode, 0, quick.stderr);
+  assert.equal(quick.json.result.profile, 'quick');
+  assert.equal(quick.json.result.passed, true);
+  assert.deepEqual(quick.json.result.tasks.map((entry) => entry.id), ['schemas', 'frontmatter', 'docs', 'hooks']);
+
+  const docs = await invoke(['generate', 'docs', '--root', repo]);
+  assert.equal(docs.exitCode, 0, docs.stderr);
+  assert.equal(docs.json.result.profile, 'docs');
+  assert.equal(docs.json.result.write, false);
+  assert.deepEqual(
+    docs.json.result.tasks.map((entry) => entry.id),
+    ['diagnostics-docs', 'command-docs', 'prompt-surface-report', 'doc-governance'],
+  );
+
+  const unsafe = await invoke(['check', 'quick', '--write', '--root', repo]);
+  assert.equal(unsafe.exitCode, 2);
+  assert.match(unsafe.json.error, /generate/u);
+});

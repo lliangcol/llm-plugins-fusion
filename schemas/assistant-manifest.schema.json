@@ -12,11 +12,12 @@
     "product": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["namespace", "expectedWorkflowCount", "canonicalEntrypoints", "agents", "packs"],
+      "required": ["namespace", "expectedWorkflowCount", "canonicalEntrypoints", "automaticRouting", "agents", "packs"],
       "properties": {
         "namespace": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
         "expectedWorkflowCount": { "type": "integer", "minimum": 1 },
         "canonicalEntrypoints": { "$ref": "#/$defs/uniqueNames" },
+        "automaticRouting": { "$ref": "#/$defs/automaticRouting" },
         "agents": { "$ref": "#/$defs/uniqueNames" },
         "packs": { "$ref": "#/$defs/uniqueNames" }
       }
@@ -43,6 +44,16 @@
     "level": { "enum": ["L1", "L2", "L3", "L4"] },
     "evidenceLevel": { "enum": ["L2", "L3", "L4"] },
     "uniqueNames": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "automaticRouting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "canonicalTargets", "compatibilityAliases"],
+      "properties": {
+        "identity": { "const": "canonical-surface-plus-variant-parameters" },
+        "canonicalTargets": { "$ref": "#/$defs/uniqueNames" },
+        "compatibilityAliases": { "const": "excluded" }
+      }
+    },
     "aliasPolicy": {
       "type": "object",
       "additionalProperties": false,

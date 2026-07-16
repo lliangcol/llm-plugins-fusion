@@ -5,7 +5,9 @@ import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { findSensitiveText, newSensitiveFindings } from '../../runtime/secret-rules.mjs';
+import { inspectProjectHookSettings } from '../../runtime/hook-bootstrap-trust.mjs';
 import {
+  assertArtifactRootsOutsideExecutableSearch,
   configuredArtifactRoots,
   isProtectedHooksPath,
   isProtectedShellControlPath,
@@ -117,11 +119,22 @@ const payload = parsePayload();
 const input = payload.tool_input;
 const projectRoot = resolve(process.env.CLAUDE_PROJECT_DIR || payload.cwd || process.cwd());
 const effectiveCwd = resolve(payload.cwd || projectRoot);
+const projectSettingsTrust = inspectProjectHookSettings(projectRoot);
+if (!projectSettingsTrust.trusted) {
+  block('project settings 在 hook 启动前改变了防护信任边界。', projectSettingsTrust.findings);
+}
+let artifactRoots;
+try {
+  artifactRoots = configuredArtifactRoots();
+  assertArtifactRootsOutsideExecutableSearch({ artifactRoots, cwd: effectiveCwd, projectRoot });
+} catch (error) {
+  block('显式 artifact root 与 hook 可执行文件信任边界冲突。', [`原因: ${error.message}`]);
+}
 const lexicalTarget = resolve(effectiveCwd, input.file_path);
 const protectedTarget = isProtectedHooksPath(lexicalTarget, { projectRoot, pluginRoot });
-const protectedShellControl = isProtectedShellControlPath(lexicalTarget, { projectRoot, pluginRoot });
+const protectedShellControl = isProtectedShellControlPath(lexicalTarget, { projectRoot, pluginRoot, artifactRoots });
 if (protectedShellControl) {
-  block('shell policy control path cannot be modified during an agent session.', [`目标: ${input.file_path}`]);
+  block('agent control path cannot be modified during an agent session.', [`目标: ${input.file_path}`]);
 }
 let pathPolicy;
 try {
@@ -129,7 +142,7 @@ try {
     filePath: input.file_path,
     projectRoot,
     cwd: effectiveCwd,
-    artifactRoots: configuredArtifactRoots(),
+    artifactRoots,
     mustExist: payload.tool_name === 'Edit',
     protectedTarget,
   });

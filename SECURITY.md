@@ -4,21 +4,21 @@
 ## Current Machine-Derived Project Facts
 
 Do not edit this block by hand. It is synchronized by
-`node scripts/sync-doc-facts.mjs --write` from repository domain sources and
-`governance/product-lanes.json`.
+`node scripts/generate-project-state.mjs --write` from repository domain
+sources and `governance/product-lanes.json`.
 
-- Plugin: `nova-plugin@4.0.0`; production plugins: 1; public path: `nova-plugin/`
+- Plugin: `nova-plugin@4.1.0`; production plugins: 1; public path: `nova-plugin/`
 - Runtime: Node.js `>=22`; distributed Bash helpers: `3.2+`
 - Inventory: 21 commands, 6 skills, 6 active agents, 8 capability packs
 - Workflow contract: schema v5, namespace `nova-plugin`, 21 workflows
-- Evaluation datasets: `live-paired` has 168 cases and 1008 planned paired invocations; `real-task-benchmark` has 24 tasks and 432 planned invocations
+- Evaluation datasets: `live-paired` has 168 cases and 2016 planned paired invocations; `real-task-benchmark` has 24 tasks and 432 planned invocations
 - Package scripts: `check` is present; `build` is absent
 - Active product lanes: `workflow-framework`, `single-plugin-delivery`, `release-candidate-promotion`, `live-assistant-evaluation`, `generic-framework-kernel`
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh`, `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh`
-- Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
+- Active PreToolUse launcher: `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh`, `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh`
+- Active PostToolUse launcher: `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh post-write-verify`, `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh post-audit-log`
 <!-- generated:project-state:end -->
 
 ## 支持范围
@@ -65,13 +65,14 @@ tab -> Report a vulnerability）；若该入口对报告者不可用，再使用
 3. **Codex 闭环的安全边界**：`codex-review-fix` 等命令在 SKILL.md 中显式禁止 `git reset --hard`、`git clean -fd`、批量删除等操作。
 4. **供应链**：仓库级脚本尽量使用 Node.js 内置模块与 Bash/PowerShell；CI 持续执行 schema、frontmatter 与 active agent 校验。
 5. **Marketplace metadata 分层**：`trust-level`、`risk-level`、`deprecated`、`last-updated`、maintainer 与 review evidence 保留在 repository-local metadata，不写入 Claude-compatible marketplace manifest。
-6. **Workspace 路径封闭**：Write/Edit guard 同时执行词法与物理路径包含检查，拒绝父路径 symlink/junction、workspace 外目标，以及所有已有目标的 hard link；无法可靠读取 `nlink` 时 fail closed。PostToolUse 对实际结果再次复验。该机制是 guardrail，不是原子 filesystem sandbox，已完成的写入无法由 PostToolUse 回滚。
+6. **Workspace 路径封闭**：Write/Edit guard 同时执行词法与物理路径包含检查，拒绝父路径 symlink/junction、workspace 外目标、project 内任意层级的 `.git` 控制元数据，以及所有已有目标的 hard link；无法可靠读取 `nlink` 时 fail closed。PostToolUse 对实际结果再次复验。该机制是 guardrail，不是原子 filesystem sandbox，已完成的写入无法由 PostToolUse 回滚。
 7. **Bash 语法收敛**：只接受 bare executable；path-qualified executable、未引用 glob/brace/tilde/变量/命令或 process substitution、shell operator 与未登记 argv 均 fail closed。引用后的字面特殊字符仍必须通过 rule-specific validator。
+8. **Hook 启动信任**：Claude Code 在插件代码运行前从宿主 `PATH` 解析 exec-form `bash`，并可能从 project/local settings 应用 `disableAllHooks` 或环境变量。因此可信系统 Bash、不含空/相对/project-owned entry 的 `PATH`，以及已审查且不改变 hook 信任的启动 settings 是显式宿主前置条件；`doctor` / `validate:bootstrap` 失败时不得声称 hook 安全证据。需要强制启动边界时必须使用 managed policy 和 managed-enabled plugin。会话内 `ConfigChange` 阻止 project/local settings 更新生效，写入守卫同时保护 project `bash`/`bash.exe`、任意 `.git` 元数据以及完整的 `hooks/scripts/**` + `runtime/**` 信任闭包。显式 artifact root 必须是专用目录，不能覆盖 PATH、project 祖先或宿主隐藏控制目录。
 
 安全敏感的插件、registry、hook、脚本或 write-capable command 变更应按
-[Security Review Route](./docs/marketplace/security-review-route.md) 执行评审。
+[Security Review Route](docs/reference/security/security-review.md) 执行评审。
 本地审计日志、脱敏边界和 public-safe 数据处理规则见
-[Data Handling And Local Audit Logs](./docs/privacy/data-handling.md)。
+[Data Handling And Local Audit Logs](docs/reference/security/data-handling.md)。
 
 ## 披露策略
 

@@ -5,7 +5,12 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { REQUIRED_NODE_MAJOR, nodeMajorVersion } from './lib/node-version.mjs';
-import { resolveBashCommand } from './lib/bash-command.mjs';
+import { resolveBashCommand, trustedHookBashIdentity } from './lib/bash-command.mjs';
+import {
+  assertArtifactRootsOutsideExecutableSearch,
+  configuredArtifactRoots,
+} from '../nova-plugin/runtime/safe-workspace-path.mjs';
+import { inspectProjectHookSettings } from '../nova-plugin/runtime/hook-bootstrap-trust.mjs';
 import { captureProcess } from './lib/process-runner.mjs';
 import { diagnosticReport, diagnosticResult, loadReasonRegistry, renderDiagnosticReport, writeDiagnosticReport } from './lib/diagnostics.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
@@ -53,22 +58,60 @@ export async function buildDoctorReport() {
   const bash = await commandResult(bashName);
   const bashCapability = bash.ok ? await commandResult(bashName, ['-c', 'set -euo pipefail; values=(); values+=(ok); [[ ${#values[@]} -eq 1 ]]; cat <(printf compatible)']) : { ok: false, detail: 'not available' };
   add({ check: 'Bash', status: bash.ok && bashCapability.ok && bashCapability.detail === 'compatible' ? 'passed' : 'skipped', reasonCode: bash.ok && bashCapability.ok && bashCapability.detail === 'compatible' ? 'CHECK_PASSED' : 'BASH_CAPABILITY_UNAVAILABLE', actual: bash.ok ? bash.detail : 'not available', skippedReason: bash.ok && bashCapability.ok ? undefined : 'Bash-dependent checks cannot run.' });
+  const projectSettingsTrust = inspectProjectHookSettings(root);
+  add({
+    check: 'Hook startup project settings',
+    status: projectSettingsTrust.trusted ? 'passed' : 'failed',
+    reasonCode: projectSettingsTrust.trusted ? 'CHECK_PASSED' : 'HOOK_PROJECT_SETTINGS_UNTRUSTED',
+    actual: projectSettingsTrust.trusted ? 'no startup hook-disable or trust-environment controls' : projectSettingsTrust.reason,
+  });
+  let artifactRoots = [];
+  let artifactRootTrust = { trusted: true, reason: null };
+  try {
+    artifactRoots = configuredArtifactRoots();
+    assertArtifactRootsOutsideExecutableSearch({ artifactRoots, cwd: root, projectRoot: root });
+  } catch (error) {
+    artifactRootTrust = { trusted: false, reason: error.message };
+  }
+  add({
+    check: 'Hook artifact roots',
+    status: artifactRootTrust.trusted ? 'passed' : 'failed',
+    reasonCode: artifactRootTrust.trusted ? 'CHECK_PASSED' : 'HOOK_ARTIFACT_ROOT_UNTRUSTED',
+    actual: artifactRootTrust.trusted ? (artifactRoots.length ? artifactRoots.join(', ') : 'none configured') : artifactRootTrust.reason,
+  });
+  let hookBootstrap;
+  try {
+    hookBootstrap = trustedHookBashIdentity(root, process.env, artifactRoots);
+  } catch (error) {
+    hookBootstrap = { trusted: false, identity: null, reason: error.message };
+  }
+  add({
+    check: 'Hook bootstrap Bash',
+    status: hookBootstrap.trusted ? 'passed' : 'failed',
+    reasonCode: hookBootstrap.trusted ? 'CHECK_PASSED' : 'HOOK_BOOTSTRAP_UNTRUSTED',
+    actual: hookBootstrap.identity?.physical ?? hookBootstrap.reason,
+  });
   const auth = await commandResult('codex', ['login', 'status']);
   add({ check: 'Codex authentication', status: auth.ok ? 'passed' : 'skipped', reasonCode: auth.ok ? 'CHECK_PASSED' : 'OPTIONAL_AUTH_UNAVAILABLE', actual: auth.detail, skippedReason: auth.ok ? undefined : 'Credentialed assistant evidence is optional and separately authorized.' });
 
   let guardedAvailable = false;
-  if (process.env.NOVA_WRITE_GUARD_DISABLED === '1') add({ check: 'Write guard', status: 'warn', reasonCode: 'WRITE_GUARD_DISABLED', actual: 'disabled by environment' });
+  if (process.env.NOVA_WRITE_GUARD_DISABLED === '1') add({ check: 'Write guard', status: 'failed', reasonCode: 'WRITE_GUARD_DISABLED', actual: 'forbidden bypass requested by environment' });
   else {
     const hooks = readJson('nova-plugin/hooks/hooks.json');
     const matcher = hooks.hooks?.PreToolUse?.[0]?.matcher;
     const hook = hooks.hooks?.PreToolUse?.[0]?.hooks?.[0];
-    if (matcher !== 'Write|Edit|NotebookEdit' || hook?.command !== 'bash' || hook?.args?.[0] !== '${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh') add({ check: 'Write guard', status: 'failed', reasonCode: 'WRITE_GUARD_INVALID', actual: 'launcher contract mismatch' });
+    const expectedArgs = ['-p', '${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh'];
+    if (matcher !== 'Write|Edit|NotebookEdit' || hook?.command !== 'bash' || JSON.stringify(hook?.args) !== JSON.stringify(expectedArgs)) add({ check: 'Write guard', status: 'failed', reasonCode: 'WRITE_GUARD_INVALID', actual: 'launcher contract mismatch' });
     else {
       const temp = mkdtempSync(resolve(tmpdir(), 'nova-doctor-links-'));
       let hardLinksSupported = false;
       try { const first = resolve(temp, 'first'); writeFileSync(first, 'test'); linkSync(first, resolve(temp, 'second')); hardLinksSupported = statSync(first).nlink === 2; }
       catch { hardLinksSupported = false; } finally { rmSync(temp, { recursive: true, force: true }); }
-      guardedAvailable = major !== null && major >= REQUIRED_NODE_MAJOR && hardLinksSupported;
+      guardedAvailable = major !== null && major >= REQUIRED_NODE_MAJOR
+        && hardLinksSupported
+        && hookBootstrap.trusted
+        && projectSettingsTrust.trusted
+        && artifactRootTrust.trusted;
       add({ check: 'Write guard', status: guardedAvailable ? 'passed' : 'warn', reasonCode: guardedAvailable ? 'CHECK_PASSED' : 'WRITE_GUARD_CAPABILITY_UNAVAILABLE', actual: guardedAvailable ? 'launcher and nlink semantics verified' : 'platform capability unavailable' });
     }
   }

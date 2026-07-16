@@ -29,7 +29,7 @@ const mutants = [
     from: "    if (identityMismatch) {",
     to: "    if (false) {",
     async test(module) {
-      const result = module.evaluateReleaseCorrections({ mode: 'candidate', stableTag: 'v4.1.0', candidateTag: 'v4.1.0-rc.2', sourceCommit: 'a'.repeat(40), correctionsSha256: 'b'.repeat(64), independentReview: { passed: true }, corrections: [{ id: 'REL-001', status: 'authorized-for-new-candidate', affectedCommits: ['a'.repeat(40)], stableRelease: { tag: 'v4.0.0' }, targetRelease: { stableTag: 'v4.1.0', candidateTag: 'v4.1.0-rc.1', sourceCommit: 'a'.repeat(40) } }] });
+      const result = module.evaluateReleaseCorrections({ mode: 'candidate', stableTag: 'v4.1.0', candidateTag: 'v4.1.0-rc.2', sourceCommit: 'a'.repeat(40), correctionsSha256: 'b'.repeat(64), independentReview: { passed: true }, corrections: [{ id: 'REL-001', status: 'authorized-for-new-candidate', affectedCommits: ['a'.repeat(40)], stableRelease: { tag: 'v4.0.0' }, targetRelease: { stableTag: 'v4.1.0', candidateTag: 'v4.1.0-rc.1' } }] });
       if (result.reasonCode !== 'CORRECTION_IDENTITY_MISMATCH') throw new Error('correction identity mismatch accepted');
     },
   },
@@ -94,7 +94,7 @@ const mutants = [
     from: "  const delta = (left, right) => typeof left === 'number' && typeof right === 'number' ? left - right : null;",
     to: '  const delta = (left, right) => (left ?? 0) - (right ?? 0);',
     async test(module) {
-      const entry = { caseId: 'x', attempt: 1, contractValid: true, routeValid: true, top2RouteValid: true, requiredInputsValid: true, approvalValid: true, zeroProjectWrites: true, adapterStaged: true, adapterLoadObserved: 'unavailable', observedTools: [], allowedReadOnlyTools: [], dangerousTools: [], deniedDangerousTools: [], unknownTools: [], deniedUnknownTools: [], rawArtifactsRemoved: true, processFailure: null, parseFailure: null, inventedSurfaces: [], latencyMs: 1, usageStatus: 'unavailable', usageReasonCode: 'cli-usage-unavailable', totalTokens: null, costUsd: null };
+      const entry = { caseId: 'x', attempt: 1, contractValid: true, routeValid: true, top2RouteValid: true, requiredInputsValid: true, approvalValid: true, zeroProjectWrites: true, adapterStaged: true, adapterLoadObserved: 'unavailable', observedTools: [], allowedReadOnlyTools: [], toolLifecycle: [], attemptedDangerousTools: [], executedDangerousTools: [], deniedOrFailedDangerousTools: [], unknownTools: [], rawArtifactsRemoved: true, processFailure: null, parseFailure: null, inventedSurfaces: [], latencyMs: 1, usageStatus: 'unavailable', usageReasonCode: 'cli-usage-unavailable', totalTokens: null, costUsd: null };
       const report = module.aggregatePaired({ cases: [entry] }, { cases: [{ ...entry, adapterStaged: false, adapterLoadObserved: 'not-applicable', usageStatus: 'reported', usageReasonCode: 'cli-reported-usage', totalTokens: 2, costUsd: 1 }] });
       if (report.pairs[0].tokenDelta !== null || report.pairs[0].costDeltaUsd !== null) throw new Error('unavailable metric coerced to zero');
     },

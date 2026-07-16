@@ -135,6 +135,32 @@ test('validated spec loading rejects cross-domain workflow drift', () => {
   }
 });
 
+test('validated spec loading rejects Contract v6 typed input drift', () => {
+  const root = mkdtempSync(resolve(tmpdir(), 'validated-spec-v6-coherence-'));
+  try {
+    cpSync(fixture, root, { recursive: true });
+    const workflowPath = resolve(root, 'workflows.json');
+    const behaviorPath = resolve(root, 'behaviors.json');
+    const v5 = JSON.parse(readFileSync(workflowPath, 'utf8'));
+    const v1 = JSON.parse(readFileSync(behaviorPath, 'utf8'));
+    const v6 = compilerApi.migrateWorkflowSpec(v5, v1);
+    const v2 = compilerApi.migrateBehaviorSpec(v1);
+    v6.workflows[0].inputs[0].type = 'enum';
+    v6.workflows[0].inputs[0].values = ['invented'];
+    writeFileSync(workflowPath, `${JSON.stringify(v6, null, 2)}\n`);
+    writeFileSync(behaviorPath, `${JSON.stringify(v2, null, 2)}\n`);
+
+    assert.throws(
+      () => validateAndLoadSpecBundle(root, { validateSchema: accept }),
+      (error) => error instanceof SpecBundleError
+        && error.code === SPEC_ERROR.INVARIANT
+        && /typed input type differs from behavior input/u.test(error.details.join('\n')),
+    );
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test('validated spec loading rejects predicate references to undeclared inputs', () => {
   const root = mkdtempSync(resolve(tmpdir(), 'validated-spec-predicate-invariant-'));
   try {

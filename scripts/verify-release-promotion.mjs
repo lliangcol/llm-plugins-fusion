@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /** Verify that stable publication promotes an identical release candidate. */
 
-import { appendFileSync, readFileSync, statSync } from 'node:fs';
+import { appendFileSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { requireOptionValue } from './lib/cli-args.mjs';
@@ -16,11 +16,14 @@ export function parsePromotionArgs(args, env = process.env) {
   const options = {
     stableTag: null,
     expectedCandidateTag: null,
+    repository: env.GITHUB_REPOSITORY ?? null,
     commit: null,
     manifestPath: null,
     corePath: null,
     intentPath: null,
     controlBundleManifest: null,
+    candidateReleaseMetadata: null,
+    observationEvidenceOut: null,
     artifactDir: resolve(root, '.metrics/promotion/artifacts'),
     bundleRoot: resolve(root, '.metrics/promotion'),
     githubOutput: env.GITHUB_OUTPUT ?? null,
@@ -30,24 +33,33 @@ export function parsePromotionArgs(args, env = process.env) {
     const value = () => requireOptionValue(args, index, arg);
     if (arg === '--stable-tag') options.stableTag = value();
     else if (arg === '--candidate-tag') options.expectedCandidateTag = value();
+    else if (arg === '--repository') options.repository = value();
     else if (arg === '--commit') options.commit = value();
     else if (arg === '--manifest') options.manifestPath = resolve(root, value());
     else if (arg === '--candidate-core') options.corePath = resolve(root, value());
     else if (arg === '--promotion-intent') options.intentPath = resolve(root, value());
     else if (arg === '--control-bundle-manifest') options.controlBundleManifest = resolve(root, value());
+    else if (arg === '--candidate-release-metadata') options.candidateReleaseMetadata = resolve(root, value());
+    else if (arg === '--observation-evidence-out') options.observationEvidenceOut = resolve(root, value());
     else if (arg === '--artifact-dir') options.artifactDir = resolve(root, value());
     else if (arg === '--bundle-root') options.bundleRoot = resolve(root, value());
     else if (arg === '--github-output') options.githubOutput = resolve(root, value());
     else throw new Error(`unknown argument: ${arg}`);
     index += 1;
   }
-  for (const key of ['stableTag', 'expectedCandidateTag', 'commit', 'manifestPath', 'corePath', 'intentPath', 'controlBundleManifest']) {
+  for (const key of ['stableTag', 'expectedCandidateTag', 'repository', 'commit', 'manifestPath', 'corePath', 'intentPath', 'controlBundleManifest', 'candidateReleaseMetadata', 'observationEvidenceOut']) {
     if (!options[key]) throw new Error(`missing required promotion identity option: ${key}`);
   }
   return options;
 }
 
-export function verifyPromotion({ args = process.argv.slice(2), env = process.env, correctionSource = loadReleaseCorrections(root) } = {}) {
+export function verifyPromotion({
+  args = process.argv.slice(2),
+  env = process.env,
+  correctionSource = loadReleaseCorrections(root),
+  releaseOperations = JSON.parse(readFileSync(resolve(root, 'governance/release-operations.json'), 'utf8')),
+  now = undefined,
+} = {}) {
   const options = parsePromotionArgs(args, env);
   const envelope = JSON.parse(readFileSync(options.manifestPath, 'utf8'));
   const manifest = JSON.parse(readFileSync(options.corePath, 'utf8'));
@@ -72,15 +84,25 @@ export function verifyPromotion({ args = process.argv.slice(2), env = process.en
   if (intent.stableTag !== options.stableTag || intent.candidateTag !== options.expectedCandidateTag || intent.sourceCommit !== options.commit) {
     throw new Error('explicit promotion identity differs from promotion intent');
   }
-  const result = verifyReleasePromotion({ root, manifest, ...options });
+  const candidateReleaseMetadata = JSON.parse(readFileSync(options.candidateReleaseMetadata, 'utf8'));
+  const result = verifyReleasePromotion({
+    root,
+    manifest,
+    ...options,
+    candidateReleaseMetadata,
+    minimumObservationHours: releaseOperations.candidateObservation?.minimumHours,
+    now,
+  });
   const releasePolicy = evaluateReleaseCorrections({
     mode: 'promote', stableTag: options.stableTag, candidateTag: options.expectedCandidateTag, sourceCommit: options.commit,
     corrections: correctionSource.document.corrections, correctionsSha256: correctionSource.sha256,
-    independentReview: { passed: true }, protectedPublication: { passed: false },
+    independentReview: { passed: true }, candidateVerification: { passed: true }, protectedPublication: { passed: false },
   });
   if (releasePolicy.status === 'BLOCKED_POLICY') assertReleaseReady(releasePolicy);
+  mkdirSync(dirname(options.observationEvidenceOut), { recursive: true });
+  writeFileSync(options.observationEvidenceOut, `${JSON.stringify(result.observation, null, 2)}\n`, 'utf8');
   if (options.githubOutput) {
-    appendFileSync(options.githubOutput, `candidate_tag=${result.candidateTag}\nartifact_digest=${result.artifactDigest}\n`, 'utf8');
+    appendFileSync(options.githubOutput, `candidate_tag=${result.candidateTag}\nartifact_digest=${result.artifactDigest}\ncandidate_release_id=${result.observation.releaseId}\ncandidate_published_at=${result.observation.publishedAt}\ncandidate_observation_sha256=${canonicalSha256(result.observation)}\n`, 'utf8');
   }
   return result;
 }
