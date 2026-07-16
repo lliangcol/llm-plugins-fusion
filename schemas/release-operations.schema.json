@@ -4,10 +4,10 @@
   "title": "Release Operations Governance",
   "type": "object",
   "additionalProperties": false,
-  "required": ["$schema", "schemaVersion", "independentReview", "signing", "recovery", "protectedPublication", "labels"],
+  "required": ["$schema", "schemaVersion", "independentReview", "signing", "recovery", "protectedPublication", "candidateObservation", "labels"],
   "properties": {
     "$schema": { "type": "string" },
-    "schemaVersion": { "const": 2 },
+    "schemaVersion": { "const": 3 },
     "independentReview": { "type": "object" },
     "signing": { "type": "object" },
     "recovery": { "type": "object" },
@@ -19,6 +19,16 @@
         "environment": { "const": "release" },
         "externalApprovalRequired": { "const": true },
         "currentEvidence": { "type": ["object", "null"] }
+      }
+    },
+    "candidateObservation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["minimumHours", "timestampSource", "requirePublishedPrerelease"],
+      "properties": {
+        "minimumHours": { "type": "integer", "minimum": 1 },
+        "timestampSource": { "const": "github-releases-api-published-at" },
+        "requirePublishedPrerelease": { "const": true }
       }
     },
     "labels": { "type": "object" }

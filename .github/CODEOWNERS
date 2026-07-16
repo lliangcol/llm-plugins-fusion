@@ -1,18 +1,22 @@
 # Default review owner
-* @lliangcol
+* @lliangcol @lliang
 
 # Security, release, workflow, and generated-contract boundaries
-/.github/ @lliangcol
-/SECURITY.md @lliangcol
-/schemas/ @lliangcol
-/workflow-specs/ @lliangcol
-/framework/ @lliangcol
-/nova-plugin/hooks/ @lliangcol
-/nova-plugin/runtime/ @lliangcol
-/scripts/build-release-artifacts.mjs @lliangcol
-/scripts/generate-release-evidence.mjs @lliangcol
-/scripts/validate-github-workflows.mjs @lliangcol
-/scripts/validate-pr-governance.mjs @lliangcol
-/scripts/lib/pr-governance.mjs @lliangcol
-/governance/release-reviewers.json @lliangcol
-/schemas/release-reviewers.schema.json @lliangcol
+/.github/ @lliangcol @lliang
+/SECURITY.md @lliangcol @lliang
+/schemas/ @lliangcol @lliang
+/workflow-specs/ @lliangcol @lliang
+/framework/ @lliangcol @lliang
+/nova-plugin/hooks/ @lliangcol @lliang
+/nova-plugin/runtime/ @lliangcol @lliang
+/scripts/build-release-artifacts.mjs @lliangcol @lliang
+/scripts/generate-release-evidence.mjs @lliangcol @lliang
+/scripts/verify-release-promotion.mjs @lliangcol @lliang
+/scripts/lib/release-candidate.mjs @lliangcol @lliang
+/scripts/validate-github-workflows.mjs @lliangcol @lliang
+/scripts/validate-pr-governance.mjs @lliangcol @lliang
+/scripts/lib/pr-governance.mjs @lliangcol @lliang
+/governance/release-reviewers.json @lliangcol @lliang
+/governance/release-operations.json @lliangcol @lliang
+/schemas/release-reviewers.schema.json @lliangcol @lliang
+/schemas/release-operations.schema.json @lliangcol @lliang

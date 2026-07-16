@@ -1,4 +1,5 @@
 import { dirname } from 'node:path';
+import { validateContractCoherence } from '../../framework/migrate/contract-coherence.mjs';
 import { defaultLayout, readJson, resolveContainedFile } from './internal.mjs';
 
 export const SPEC_ERROR = Object.freeze({
@@ -42,7 +43,7 @@ function predicateInputs(predicate, inputs = []) {
 
 /** @param {{ framework: any, product: any, workflows: any, behaviors: any, adapters: any[] }} bundle @returns {string[]} */
 function validateInvariants(bundle) {
-  const failures = [];
+  const failures = validateContractCoherence(bundle.workflows, bundle.behaviors);
   const workflows = Array.isArray(bundle.workflows?.workflows) ? bundle.workflows.workflows : [];
   const behaviors = Array.isArray(bundle.behaviors?.behaviors) ? bundle.behaviors.behaviors : [];
   const workflowIds = workflows.map((entry) => entry.id);
@@ -83,11 +84,6 @@ function validateInvariants(bundle) {
     }
     const behavior = behaviorById.get(workflow.id);
     if (!behavior || !Array.isArray(behavior.inputs)) continue;
-    const behaviorRequired = behavior.inputs.filter((input) => input.required).map((input) => input.name);
-    const workflowRequired = workflow.compatibilityProjection?.requiredInputs ?? workflow.requiredInputs;
-    if (JSON.stringify(behaviorRequired) !== JSON.stringify(workflowRequired)) {
-      failures.push(`${workflow.id}: behavior required inputs differ from workflow policy`);
-    }
     const canonicalBehavior = behaviorById.get(workflow.canonicalSurfaceId);
     const canonicalInputs = new Map((canonicalBehavior?.inputs ?? []).map((input) => [input.name, input]));
     for (const [name, value] of Object.entries(workflow.variantPreset ?? {})) {

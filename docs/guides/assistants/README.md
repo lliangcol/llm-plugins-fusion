@@ -86,16 +86,23 @@ is a consumer-owned workspace outside this public repository checkout. The
 script refuses `--write` targets inside `llm-plugins-fusion`; use dry-run output
 for preview only. Generated files contain placeholders only; fill private facts
 inside that consumer workspace, not in this public repository.
+Write mode checks both the lexical target and the physical path projected from
+its nearest existing ancestor. A symlink or junction cannot redirect an
+outside-looking target into this public repository, and a repository-internal
+link cannot be used to write through to an external consumer directory.
 
-Dry-run output has this shape:
+Dry-run output lists both files that the write mode would create:
 
 ```text
-Dry run. File that would be written:
+Dry run. Files that would be written:
   - <absolute-consumer-workspace>/AGENTS.md
+  - <absolute-consumer-workspace>/.nova/shell-policy.json
 
-Use --write to create the file.
+Use --write to create both files.
 ```
 
 The `java-backend` and `frontend` profiles target `AGENTS.md`. The `workbench`
-profile targets `workbench/README.md`. Treat the displayed path as a preview;
-do not paste a real private workspace path into public issues, PRs, or docs.
+profile targets `workbench/README.md`; all three types also create the reviewed
+command broker policy at `.nova/shell-policy.json`. Treat the displayed paths as
+a preview; do not paste a real private workspace path into public issues, PRs,
+or docs.

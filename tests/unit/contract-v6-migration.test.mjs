@@ -4,6 +4,7 @@ import { resolve } from 'node:path';
 import test from 'node:test';
 import { migrateBehaviorSpec, migrateWorkflowSpec } from '@llm-plugins-fusion/compiler';
 import { compileRuntimeContracts } from '../../framework/compiler/compile-runtime-contracts.mjs';
+import { validateContractCoherence } from '../../framework/migrate/contract-coherence.mjs';
 import { projectV5Compatibility } from '../../framework/compiler/project-v5-compatibility.mjs';
 import { validateStandardSchema } from '../../scripts/lib/schema-engine.mjs';
 import { buildPromptSurfaceReport, validatePromptSurfaceBudgets } from '../../scripts/generate-surface-inventory.mjs';
@@ -101,6 +102,67 @@ test('all workflows compile from v6 and the compatibility projection exactly mat
   assert.equal(JSON.stringify(first), JSON.stringify(second));
   assert.ok(first.every((contract) => contract.schemaVersion === 4 && contract.sourceSchemaVersion === 6));
   assert.ok(first.every((contract) => contract.inputs && contract.effects && contract.authorizationProfile));
+});
+
+test('Contract v6 coherence fails closed for every typed input projection field', () => {
+  const source = read('workflow-specs/workflows.v6.json');
+  const behaviors = read('workflow-specs/behaviors.v2.json');
+  assert.deepEqual(validateContractCoherence(source, behaviors), []);
+
+  const legacyBehaviors = read('workflow-specs/behaviors.json');
+  assert.throws(
+    () => compileRuntimeContracts(source, legacyBehaviors),
+    /workflow schema v6 requires behavior schema v2/u,
+  );
+
+  const cases = [
+    {
+      label: 'input order',
+      pattern: /typed input names or order differ/u,
+      mutate(spec) { spec.workflows.find((workflow) => workflow.id === 'review').inputs.reverse(); },
+    },
+    {
+      label: 'required flag',
+      pattern: /typed input required differs/u,
+      mutate(spec) { spec.workflows.find((workflow) => workflow.id === 'review').inputs[0].required = false; },
+    },
+    {
+      label: 'input type',
+      pattern: /typed input type differs/u,
+      mutate(spec) { spec.workflows.find((workflow) => workflow.id === 'review').inputs[1].type = 'string'; },
+    },
+    {
+      label: 'enum exactValues',
+      pattern: /typed enum values differ from behavior exactValues/u,
+      mutate(spec) { spec.workflows.find((workflow) => workflow.id === 'review').inputs[1].values = ['invented-level']; },
+    },
+    {
+      label: 'path policy',
+      pattern: /typed pathPolicy differs from behavior pathPolicy/u,
+      mutate(spec) { spec.workflows.find((workflow) => workflow.id === 'implement-plan').inputs[0].pathPolicy.root = 'artifact-root'; },
+    },
+    {
+      label: 'approval policy',
+      pattern: /typed approvalPolicy differs from the explicit approval contract/u,
+      mutate(spec) { spec.workflows.find((workflow) => workflow.id === 'implement-plan').inputs[1].approvalPolicy.oneShot = false; },
+    },
+    {
+      label: 'unsupported typed field',
+      pattern: /typed input contains unsupported keys: invented/u,
+      mutate(spec) { spec.workflows.find((workflow) => workflow.id === 'review').inputs[0].invented = true; },
+    },
+    {
+      label: 'compatibility required inputs',
+      pattern: /behavior required inputs differ from workflow policy/u,
+      mutate(spec) { spec.workflows.find((workflow) => workflow.id === 'review').compatibilityProjection.requiredInputs = []; },
+    },
+  ];
+
+  for (const scenario of cases) {
+    const mutated = structuredClone(source);
+    scenario.mutate(mutated);
+    assert.throws(() => compileRuntimeContracts(mutated, behaviors), scenario.pattern, scenario.label);
+  }
 });
 
 test('Contract v6 schemas reject inferred approval arbitrary predicates and output effects', () => {

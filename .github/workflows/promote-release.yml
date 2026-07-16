@@ -30,31 +30,57 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-          ref: ${{ inputs.release-tag }}
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
-        with:
-          node-version: '22'
-          cache: npm
-      - run: npm ci --ignore-scripts
-      - run: node scripts/validate-release-operational-readiness.mjs --mode promote
-      - name: Verify explicit signed tag identity
+          ref: ${{ job.workflow_sha }}
+      - name: Verify explicit signed tag identity before repository code
         id: identity
         env:
           STABLE_TAG: ${{ inputs.release-tag }}
           CANDIDATE_TAG: ${{ inputs.candidate-tag }}
+          EVENT_NAME: ${{ github.event_name }}
+          TRIGGER_REF: ${{ github.ref }}
+          PROMOTION_WORKFLOW_REF: ${{ job.workflow_ref }}
+          PROMOTION_WORKFLOW_COMMIT: ${{ job.workflow_sha }}
         run: |
           set -euo pipefail
-          git fetch origin "refs/tags/${CANDIDATE_TAG}:refs/tags/${CANDIDATE_TAG}"
+          test "${EVENT_NAME}" = repository_dispatch
+          test "${TRIGGER_REF}" = refs/heads/main
+          test "${PROMOTION_WORKFLOW_REF}" = "${GITHUB_REPOSITORY}/.github/workflows/promote-release.yml@refs/heads/main"
+          if [[ ! "${STABLE_TAG}" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::invalid stable release tag: ${STABLE_TAG}" >&2
+            exit 1
+          fi
+          if [[ ! "${CANDIDATE_TAG}" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)-rc\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::invalid candidate release tag: ${CANDIDATE_TAG}" >&2
+            exit 1
+          fi
+          if [[ "${CANDIDATE_TAG%%-rc.*}" != "${STABLE_TAG}" ]]; then
+            echo "::error::candidate tag base must equal stable tag" >&2
+            exit 1
+          fi
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          git merge-base --is-ancestor "${PROMOTION_WORKFLOW_COMMIT}" origin/main
+          git fetch --no-tags origin "refs/tags/${STABLE_TAG}:refs/tags/${STABLE_TAG}"
+          git fetch --no-tags origin "refs/tags/${CANDIDATE_TAG}:refs/tags/${CANDIDATE_TAG}"
+          mkdir -p "${RUNNER_TEMP}/promotion-trust"
+          git show origin/main:.github/release-signers > "${RUNNER_TEMP}/promotion-trust/release-signers"
+          test -s "${RUNNER_TEMP}/promotion-trust/release-signers"
           git config gpg.format ssh
-          git config gpg.ssh.allowedSignersFile .github/release-signers
+          git config gpg.ssh.allowedSignersFile "${RUNNER_TEMP}/promotion-trust/release-signers"
           test "$(git cat-file -t "refs/tags/${STABLE_TAG}")" = tag
           test "$(git cat-file -t "refs/tags/${CANDIDATE_TAG}")" = tag
           git verify-tag "${STABLE_TAG}"
           git verify-tag "${CANDIDATE_TAG}"
           stable_commit="$(git rev-list -n 1 "${STABLE_TAG}")"
           test "${stable_commit}" = "$(git rev-list -n 1 "${CANDIDATE_TAG}")"
-          test "${stable_commit}" = "$(git rev-parse HEAD)"
+          git merge-base --is-ancestor "${stable_commit}" origin/main
+          git checkout --detach "${stable_commit}"
           printf 'commit=%s\n' "${stable_commit}" >> "${GITHUB_OUTPUT}"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: node scripts/validate-release-operational-readiness.mjs --mode promote
       - name: Download and verify exact candidate evidence bundle
         env:
           GH_TOKEN: ${{ github.token }}
@@ -63,13 +89,22 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p .metrics/promotion/download .metrics/promotion/bundle
+          gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${CANDIDATE_TAG}" > .metrics/promotion/candidate-release-metadata.json
           gh release download "${CANDIDATE_TAG}" --dir .metrics/promotion/download --pattern 'nova-plugin-*-evidence-bundle.tar.gz'
           shopt -s nullglob
           bundles=(.metrics/promotion/download/nova-plugin-*-evidence-bundle.tar.gz)
           test "${#bundles[@]}" -eq 1
           bundle="${bundles[0]}"
-          gh attestation verify "${bundle}" --repo "${GITHUB_REPOSITORY}" --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" --source-ref "refs/tags/${CANDIDATE_TAG}" --source-digest "${SOURCE_COMMIT}"
+          gh attestation verify "${bundle}" --repo "${GITHUB_REPOSITORY}" \
+            --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" \
+            --source-ref refs/heads/main --deny-self-hosted-runners
           node scripts/extract-release-bundle.mjs --archive "${bundle}" --out .metrics/promotion/bundle
+          builder_workflow_commit="$(node -e 'const fs=require("fs"); const core=JSON.parse(fs.readFileSync(".metrics/promotion/bundle/candidate-core.json")); const sha=core.candidate?.workflowSourceCommit; if(!/^[a-f0-9]{40}$/.test(sha??"")) process.exit(1); process.stdout.write(sha)')"
+          git merge-base --is-ancestor "${builder_workflow_commit}" origin/main
+          gh attestation verify "${bundle}" --repo "${GITHUB_REPOSITORY}" \
+            --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" \
+            --source-ref refs/heads/main --source-digest "${builder_workflow_commit}" \
+            --signer-digest "${builder_workflow_commit}" --deny-self-hosted-runners
           cp "${bundle}" .metrics/promotion/candidate-evidence-bundle.tar.gz
       - name: Verify candidate envelope, intent, control, evidence, and artifacts
         env:
@@ -78,11 +113,13 @@ jobs:
           SOURCE_COMMIT: ${{ steps.identity.outputs.commit }}
         run: |
           node scripts/verify-release-promotion.mjs \
-            --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --commit "${SOURCE_COMMIT}" \
+            --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --repository "${GITHUB_REPOSITORY}" --commit "${SOURCE_COMMIT}" \
             --manifest .metrics/promotion/bundle/release-candidate.json \
             --candidate-core .metrics/promotion/bundle/candidate-core.json \
             --promotion-intent .metrics/promotion/bundle/promotion-intent.json \
             --control-bundle-manifest .metrics/promotion/bundle/release-control-bundle.manifest.json \
+            --candidate-release-metadata .metrics/promotion/candidate-release-metadata.json \
+            --observation-evidence-out .metrics/promotion/candidate-observation.json \
             --bundle-root .metrics/promotion/bundle --artifact-dir .metrics/promotion/bundle/artifacts
           node scripts/release-orchestrator.mjs --candidate-verification-passed --mode promote --state DRAFT --target-state ASSETS_RECONCILED \
             --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}" \
@@ -106,6 +143,7 @@ jobs:
           test "$(find "${handoff}/publish" -maxdepth 1 -type f | wc -l | tr -d ' ')" -eq 3
           cp .metrics/release/release-notes.md "${handoff}/release-notes.md"
           cp .metrics/promotion/bundle/promotion-intent.json .metrics/promotion/bundle/release-control-bundle.manifest.json "${handoff}/"
+          cp .metrics/promotion/candidate-observation.json "${handoff}/"
           cp .metrics/promotion/events/* "${handoff}/events/"
           cp scripts/reconcile-github-release.mjs scripts/release-orchestrator.mjs "${handoff}/scripts/"
           cp scripts/lib/canonical-json.mjs scripts/lib/cli-args.mjs scripts/lib/release-state-machine.mjs scripts/lib/release-corrections.mjs "${handoff}/scripts/lib/"
@@ -154,6 +192,9 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: verified-promotion-handoff-${{ inputs.release-tag }}

@@ -23,6 +23,24 @@ test('validateHooksConfig accepts the distributed hook shape', () => {
   assert.deepEqual(errors, []);
 });
 
+test('validateHooksConfig requires privileged-mode Bash launchers', () => {
+  const config = validConfig();
+  config.hooks.PreToolUse[1].hooks[0].args.shift();
+  const errors = validateHooksConfig(config, { pluginRootDir });
+  assert(errors.some((error) => /required bash arguments: -p/u.test(error)));
+});
+
+test('validateHooksConfig rejects direct Node post-hook launchers', () => {
+  const config = validConfig();
+  config.hooks.PostToolUse[0].hooks[0] = {
+    ...config.hooks.PostToolUse[0].hooks[0],
+    command: 'node',
+    args: ['${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs'],
+  };
+  const errors = validateHooksConfig(config, { pluginRootDir });
+  assert(errors.some((error) => /PostToolUse\[0\] must use the required command form/u.test(error)));
+});
+
 test('validateHooksConfig rejects missing matcher and invalid timeout', () => {
   const config = validConfig({ timeout: 0 });
   delete config.hooks.PreToolUse[0].matcher;

@@ -17,6 +17,10 @@ test('release control bundle is deterministic and includes transitive control im
   assert.ok(first.manifest.files.some((entry) => entry.path === 'scripts/lib/safe-tar.mjs'));
   assert.ok(first.manifest.files.some((entry) => entry.path === 'scripts/reconcile-github-release.mjs'));
   assert.ok(first.manifest.files.some((entry) => entry.path === 'scripts/verify-stable-install.mjs'));
+  assert.ok(first.manifest.files.some((entry) => entry.path === 'scripts/validate-performance-budget.mjs'));
+  assert.ok(first.manifest.files.some((entry) => entry.path === 'scripts/lib/github-actions-performance-provenance.mjs'));
+  assert.ok(first.manifest.files.some((entry) => entry.path === 'governance/evidence/validation-performance-samples.json'));
+  assert.ok(first.manifest.files.some((entry) => entry.path === 'schemas/validation-performance-samples.schema.json'));
   assert.deepEqual(verifyControlBundle({ bundlePath: first.bundlePath, manifest: first.manifest }), {
     bundleSha256: first.manifest.bundleSha256,
     files: first.manifest.files.length,

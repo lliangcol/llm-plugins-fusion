@@ -22,6 +22,7 @@ test('pure product bundle compiler emits canonical skills and generated aliases 
   assert.deepEqual(compiled.spec.runtimeCompatibility, { 'claude-code': '1' });
   assert.equal('knownGoodClaudeCli' in compiled.spec, false);
   assert.equal(compiled.runtimeContracts.length, 2);
+  assert.equal(compiled.runtimeContracts[0].behaviorContract.schemaVersion, 1);
 });
 
 test('pure product bundle compiler rejects duplicate adapter identities', () => {

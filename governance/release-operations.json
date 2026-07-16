@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/release-operations.schema.json",
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "independentReview": {
     "requiredForCandidate": true,
     "minimumApprovals": 1,
@@ -26,6 +26,11 @@
     "environment": "release",
     "externalApprovalRequired": true,
     "currentEvidence": null
+  },
+  "candidateObservation": {
+    "minimumHours": 168,
+    "timestampSource": "github-releases-api-published-at",
+    "requirePublishedPrerelease": true
   },
   "labels": {
     "source": ".github/labels.yml",

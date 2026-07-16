@@ -724,8 +724,8 @@ function validateReleasePromotionContracts() {
     },
     {
       file: 'docs/operations/releases/validation.md',
-      pattern: /Stable\s+publication is then started manually[\s\S]*signed stable tag[\s\S]*exact candidate tag[\s\S]*pushing a stable tag alone does not publish a release/,
-      label: 'release runbook explicit stable and candidate dispatch boundary',
+      pattern: /Neither candidate nor stable tag\s+pushes trigger a release workflow[\s\S]*Stable publication uses both the\s+signed stable tag and the exact candidate tag/,
+      label: 'release runbook protected-main stable and candidate dispatch boundary',
     },
     {
       file: 'docs/operations/releases/validation.md',
@@ -878,7 +878,7 @@ function validateMaintainerDiagnosticContracts() {
     },
     {
       file: 'docs/operations/maintainers/troubleshooting.md',
-      pattern: /\| Bash hook syntax failure \| `bash -n nova-plugin\/hooks\/scripts\/pre-write-check\.sh`, `bash -n nova-plugin\/hooks\/scripts\/pre-bash-check\.sh`, and `bash -n nova-plugin\/hooks\/scripts\/post-audit-log\.sh` \| Run only where Bash is available; treat Windows no-Bash skips as skipped, not passed\. \|/,
+      pattern: /\| Bash hook syntax failure \| `bash -n nova-plugin\/hooks\/scripts\/pre-write-check\.sh`, `bash -n nova-plugin\/hooks\/scripts\/pre-bash-check\.sh`, `bash -n nova-plugin\/hooks\/scripts\/trusted-node-hook\.sh`, and `bash -n nova-plugin\/hooks\/scripts\/post-audit-log\.sh` \| Run only where Bash is available; treat Windows no-Bash skips as skipped, not passed\. \|/,
       label: 'maintainer troubleshooting hook syntax failure shortcut',
     },
     {

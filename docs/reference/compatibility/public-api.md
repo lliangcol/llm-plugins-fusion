@@ -83,6 +83,12 @@ recommended packs, typed inputs, effects, runtime requirements, permission
 policy, and output contract. Product metadata and the alias-removal gates are
 included so consumers do not need to reconstruct them from prose.
 
+Validated spec loading and runtime compilation fail closed when Contract v6
+typed inputs drift from behavior inputs or the Contract v5 compatibility
+projection. Input name and order, required status, inferred type, enum values,
+path policy, and explicit approval policy must remain coherent before a runtime
+contract is emitted.
+
 `negotiateWorkflowSupport()` from `@llm-plugins-fusion/conformance` provides
 static, fail-closed capability negotiation. It reports `supported`,
 `approval-required`, or `unsupported` from the compiled workflow, declared

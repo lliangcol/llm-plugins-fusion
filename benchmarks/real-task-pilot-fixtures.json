@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 2,
+  "claimBoundary": "Public-safe fixture bundles for the three-task pilot only. This manifest contains no assistant result.",
+  "fixtures": [
+    {
+      "taskId": "task-01-readonly-review",
+      "taskMode": "read-only",
+      "files": ["benchmarks/fixtures/real-task-pilot/retry-helper.js"]
+    },
+    {
+      "taskId": "task-02-strict-security",
+      "taskMode": "read-only",
+      "files": ["benchmarks/fixtures/real-task-pilot/authorization-policy.js"]
+    },
+    {
+      "taskId": "task-03-small-fix",
+      "taskMode": "implementation",
+      "files": [
+        "benchmarks/fixtures/real-task-pilot/null-check.js",
+        "benchmarks/fixtures/real-task-pilot/null-check.test.js"
+      ]
+    }
+  ]
+}

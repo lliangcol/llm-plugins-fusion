@@ -6,6 +6,7 @@ const SUPPORTED_EVENTS = new Set([
   'PostToolUse',
   'PostToolUseFailure',
   'PermissionDenied',
+  'ConfigChange',
   'SessionEnd',
 ]);
 
@@ -40,21 +41,24 @@ function referencedHookScript(hook) {
 
 const REQUIRED_NOVA_EVENTS = new Map([
   ['PreToolUse', [
-    { matcher: 'Write|Edit|NotebookEdit', script: 'hooks/scripts/pre-write-check.sh', command: 'bash', async: false },
-    { matcher: 'Bash', script: 'hooks/scripts/pre-bash-check.sh', command: 'bash', async: false },
+    { matcher: 'Write|Edit|NotebookEdit', script: 'hooks/scripts/pre-write-check.sh', command: 'bash', argsPrefix: ['-p'], async: false },
+    { matcher: 'Bash', script: 'hooks/scripts/pre-bash-check.sh', command: 'bash', argsPrefix: ['-p'], async: false },
   ]],
   ['PostToolUse', [
-    { matcher: 'Write|Edit', script: 'hooks/scripts/post-write-verify.mjs', command: 'node', async: false },
-    { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/post-audit-log.mjs', command: 'node', async: true },
+    { matcher: 'Write|Edit', script: 'hooks/scripts/trusted-node-hook.sh', hookId: 'post-write-verify', command: 'bash', argsPrefix: ['-p'], async: false },
+    { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/trusted-node-hook.sh', hookId: 'post-audit-log', command: 'bash', argsPrefix: ['-p'], async: true },
   ]],
   ['PostToolUseFailure', [
-    { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/post-audit-log.mjs', command: 'node', async: true },
+    { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/trusted-node-hook.sh', hookId: 'post-audit-log', command: 'bash', argsPrefix: ['-p'], async: true },
   ]],
   ['PermissionDenied', [
-    { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/post-audit-log.mjs', command: 'node', async: true },
+    { matcher: 'Write|Edit|NotebookEdit|Bash', script: 'hooks/scripts/trusted-node-hook.sh', hookId: 'post-audit-log', command: 'bash', argsPrefix: ['-p'], async: true },
+  ]],
+  ['ConfigChange', [
+    { matcher: 'project_settings|local_settings', script: 'hooks/scripts/trusted-node-hook.sh', hookId: 'config-change-guard', command: 'bash', argsPrefix: ['-p'], async: false },
   ]],
   ['SessionEnd', [
-    { matcher: '*', script: 'hooks/scripts/audit-compactor.mjs', command: 'node', async: false },
+    { matcher: '*', script: 'hooks/scripts/trusted-node-hook.sh', hookId: 'audit-compactor', command: 'bash', argsPrefix: ['-p'], async: false },
   ]],
 ]);
 
@@ -172,8 +176,13 @@ export function validateNovaHooksPolicy(config) {
       }
       const hook = hooks[0];
       if (hook.command !== expected.command) record(errors, `${event}[${index}] must use the required command form`);
-      if (!Array.isArray(hook.args) || hook.args.length !== 1 || hook.args[0] !== `\${CLAUDE_PLUGIN_ROOT}/${expected.script}`) {
-        record(errors, `${event}[${index}] must pass ${expected.script} as the only ${expected.command} argument`);
+      const expectedArgs = [
+        ...(expected.argsPrefix ?? []),
+        `\${CLAUDE_PLUGIN_ROOT}/${expected.script}`,
+        ...(expected.hookId ? [expected.hookId] : []),
+      ];
+      if (!Array.isArray(hook.args) || JSON.stringify(hook.args) !== JSON.stringify(expectedArgs)) {
+        record(errors, `${event}[${index}] must pass the required ${expected.command} arguments: ${expectedArgs.join(' ')}`);
       }
       if ((hook.async === true) !== expected.async) {
         record(errors, `${event}[${index}] async behavior differs from policy`);

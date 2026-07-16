@@ -2,6 +2,12 @@
   "schemaVersion": 1,
   "claimBoundary": "Fixed public-safe benchmark tasks only. This file contains no measured assistant result.",
   "conditions": ["raw", "wrapper-full", "wrapper-compact"],
+  "pilot": {
+    "taskIds": ["task-01-readonly-review", "task-02-strict-security", "task-03-small-fix"],
+    "fixtureManifest": "benchmarks/real-task-pilot-fixtures.json",
+    "scorer": "benchmarks/real-task-pilot-scorer.json",
+    "recordSchema": "schemas/real-task-benchmark-record.schema.json"
+  },
   "tasks": [
     { "id": "task-01-readonly-review", "language": "en", "category": "review", "prompt": "Review a public retry helper for correctness and concurrency risks without modifying files or invoking shell commands." },
     { "id": "task-02-strict-security", "language": "en", "category": "security", "prompt": "Audit a public authorization fixture for fail-open behavior, privilege escalation, and missing negative tests; remain read-only." },

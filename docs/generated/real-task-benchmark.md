@@ -9,7 +9,17 @@ No live assistant record supplied; metric estimates and confidence intervals are
 - Assistants: claude-code, codex
 - Attempts: 3
 - Planned invocations: 432
-- External gates: Claude and Codex credentials; evaluation budget
+- Pilot tasks: 3
+- Pilot planned invocations: 54
+- Canonical tool actions: read, orchestration, command-execution, project-write, external-tool-call, unknown
+- Raw tool mappings: 15
+- Pilot evidence coverage: 0/54
+- Source commit: Unavailable
+- Measured assistant versions: Unavailable
+- Record evidence independently verified: false
+- Pilot measured: false
+- Full benchmark measured: false
+- External gates: Claude and Codex credentials; evaluation budget; governed artifact-verifying capture and scoring evidence
 
 | Metric | Estimate | Lower 95% | Upper 95% | n |
 | --- | ---: | ---: | ---: | ---: |

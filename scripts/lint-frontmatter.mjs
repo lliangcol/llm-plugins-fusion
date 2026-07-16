@@ -394,9 +394,58 @@ function lintCommandSkillContracts() {
   }
 }
 
+function lintSkillsIndex() {
+  const rel = 'skills/README.md';
+  const src = readFileSync(resolve(root, 'nova-plugin/skills/README.md'), 'utf8').replace(/\r\n/g, '\n');
+  const rows = new Map();
+  const rowPattern = /^\|\s*`([^`]+)`\s*\|\s*`([^`]+)`\s*\|\s*`(\{.*\})`\s*\|\s*([^|]+?)\s*\|$/u;
+  for (const line of src.split('\n')) {
+    const match = line.match(rowPattern);
+    if (!match) continue;
+    const [, commandId, skillName, variantPreset, status] = match;
+    if (rows.has(commandId)) {
+      recordError(rel, `duplicate command mapping for ${commandId}`);
+      continue;
+    }
+    rows.set(commandId, { skillName, variantPreset, status });
+  }
+
+  for (const workflow of workflowSpec.workflows) {
+    const row = rows.get(workflow.id);
+    if (!row) {
+      recordError(rel, `missing command mapping for ${workflow.id}`);
+      continue;
+    }
+    const expectedSkill = `nova-${workflow.canonicalSurfaceId}`;
+    if (row.skillName !== expectedSkill) {
+      recordError(rel, `${workflow.id}: canonical Skill must be ${expectedSkill}, got ${row.skillName}`);
+    }
+    if (!skillContracts.has(row.skillName)) {
+      recordError(rel, `${workflow.id}: referenced Skill does not exist: ${row.skillName}`);
+    }
+    const expectedPreset = JSON.stringify(workflow.variantPreset);
+    if (row.variantPreset !== expectedPreset) {
+      recordError(rel, `${workflow.id}: variant preset must be ${expectedPreset}, got ${row.variantPreset}`);
+    }
+    const expectedStatus = workflow.compatibilityAlias ? 'deprecated compatibility alias' : 'canonical';
+    if (row.status !== expectedStatus) {
+      recordError(rel, `${workflow.id}: status must be ${expectedStatus}, got ${row.status}`);
+    }
+  }
+  for (const commandId of rows.keys()) {
+    if (!workflowById.has(commandId)) recordError(rel, `unknown command mapping ${commandId}`);
+  }
+
+  const referencedSkills = new Set([...src.matchAll(/`(nova-[a-z0-9-]+)`/gu)].map((match) => match[1]));
+  for (const skillName of referencedSkills) {
+    if (!skillContracts.has(skillName)) recordError(rel, `referenced Skill does not exist: ${skillName}`);
+  }
+}
+
 lintCommands();
 lintSkills();
 lintCommandSkillContracts();
+lintSkillsIndex();
 
 if (warnings.length) {
   console.warn('Warnings:');

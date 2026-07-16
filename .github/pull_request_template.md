@@ -75,6 +75,7 @@ Bash hook syntax:
 ```text
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
+bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 

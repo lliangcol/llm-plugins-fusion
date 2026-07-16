@@ -1,56 +1,59 @@
 # nova-plugin Skills Index
 
-This directory provides the six canonical runtime Skills. The 21 files in
-`nova-plugin/commands` are generated wrappers; 15 are deprecated compatibility
-aliases whose preset selects a canonical Skill without copying its behavior.
+This directory provides six canonical runtime Skills. The 21 files in
+`nova-plugin/commands` are generated wrappers. Six canonical commands select
+their same-named Skill directly; 15 deprecated compatibility aliases select a
+canonical Skill plus a fixed variant preset without copying behavior.
 
 Shared policy files live in `nova-plugin/skills/_shared/` and are referenced by
-the command-specific skills for parameter resolution, safety preflight, output
-contracts, artifact policy, and agent routing boundaries.
+the canonical Skills for parameter resolution, safety preflight, output
+contracts, artifact policy, and agent-routing boundaries.
 
-## Commands to Skills Mapping
+## Command to Canonical Skill Mapping
 
-| Command              | Skill name                | Summary                                   | user-invocable | destructive-actions |
-| -------------------- | ------------------------- | ----------------------------------------- | -------------- | ------------------- |
-| `codex-review-fix`   | `nova-codex-review-fix`   | Codex review/fix/verify semi-auto loop    | true           | medium              |
-| `codex-review-only`  | `nova-codex-review-only`  | Codex-driven branch review only           | true           | low                 |
-| `codex-verify-only`  | `nova-codex-verify-only`  | Codex verify against existing review file | true           | low                 |
-| `backend-plan`       | `nova-backend-plan`       | Java/Spring 12-section design plan output | true           | low                 |
-| `explore`            | `nova-explore`            | Unified exploration Hub                   | true           | none                |
-| `explore-lite`       | `nova-explore-lite`       | Observer-mode quick exploration           | true           | none                |
-| `explore-review`     | `nova-explore-review`     | Reviewer-mode exploration                 | true           | none                |
-| `finalize-lite`      | `nova-finalize-lite`      | Minimal close-out summary                 | true           | none                |
-| `finalize-work`      | `nova-finalize-work`      | Full handoff packaging output             | true           | none                |
-| `implement-lite`     | `nova-implement-lite`     | Fast pragmatic implementation             | true           | medium              |
-| `implement-plan`     | `nova-implement-plan`     | Strict approved-plan execution            | true           | medium              |
-| `implement-standard` | `nova-implement-standard` | Controlled standard execution             | true           | medium              |
-| `plan-lite`          | `nova-plan-lite`          | Lightweight planning                      | true           | none                |
-| `plan-review`        | `nova-plan-review`        | Plan critical review                      | true           | none                |
-| `produce-plan`       | `nova-produce-plan`       | Formal plan document generation           | true           | low                 |
-| `review`             | `nova-review`             | Unified review Hub                        | true           | none                |
-| `review-lite`        | `nova-review-lite`        | Lightweight review                        | true           | none                |
-| `review-only`        | `nova-review-only`        | Standard-depth review                     | true           | none                |
-| `review-strict`      | `nova-review-strict`      | Strict exhaustive review                  | true           | none                |
-| `route`              | `nova-route`              | Read-only workflow route selection        | true           | none                |
-| `senior-explore`     | `nova-senior-explore`     | Deep exploration + optional export        | true           | low                 |
+| Command | Canonical Skill | Variant preset | Status |
+| --- | --- | --- | --- |
+| `backend-plan` | `nova-produce-plan` | `{"PLAN_PROFILE":"java-backend"}` | deprecated compatibility alias |
+| `codex-review-fix` | `nova-implement-plan` | `{"EXECUTION_PROFILE":"codex-review-fix"}` | deprecated compatibility alias |
+| `codex-review-only` | `nova-review` | `{"REVIEW_PROFILE":"codex-review-only"}` | deprecated compatibility alias |
+| `codex-verify-only` | `nova-review` | `{"REVIEW_PROFILE":"codex-verify-only"}` | deprecated compatibility alias |
+| `explore` | `nova-explore` | `{}` | canonical |
+| `explore-lite` | `nova-explore` | `{"PERSPECTIVE":"observer","DEPTH":"lite"}` | deprecated compatibility alias |
+| `explore-review` | `nova-explore` | `{"PERSPECTIVE":"reviewer"}` | deprecated compatibility alias |
+| `finalize-lite` | `nova-finalize-work` | `{"DEPTH":"lite"}` | deprecated compatibility alias |
+| `finalize-work` | `nova-finalize-work` | `{}` | canonical |
+| `implement-lite` | `nova-implement-plan` | `{"EXECUTION_PROFILE":"lite"}` | deprecated compatibility alias |
+| `implement-plan` | `nova-implement-plan` | `{}` | canonical |
+| `implement-standard` | `nova-implement-plan` | `{"EXECUTION_PROFILE":"standard"}` | deprecated compatibility alias |
+| `plan-lite` | `nova-produce-plan` | `{"PLAN_PROFILE":"lite"}` | deprecated compatibility alias |
+| `plan-review` | `nova-review` | `{"REVIEW_PROFILE":"plan"}` | deprecated compatibility alias |
+| `produce-plan` | `nova-produce-plan` | `{}` | canonical |
+| `review` | `nova-review` | `{}` | canonical |
+| `review-lite` | `nova-review` | `{"LEVEL":"lite"}` | deprecated compatibility alias |
+| `review-only` | `nova-review` | `{"LEVEL":"standard","MODE":"findings-only"}` | deprecated compatibility alias |
+| `review-strict` | `nova-review` | `{"LEVEL":"strict"}` | deprecated compatibility alias |
+| `route` | `nova-route` | `{}` | canonical |
+| `senior-explore` | `nova-explore` | `{"DEPTH":"deep"}` | deprecated compatibility alias |
 
 ## Recommended Entrypoints
 
-1. Use `nova-codex-review-fix` when you need a review -> fix -> verify closed loop with external Codex scripts.
-2. Use `nova-route` as the read-only first-stage router when the next command, skill, agent, pack, or validation path is unclear.
-3. Use `nova-explore` for unified exploration routing; use `nova-senior-explore` for deep analysis.
-4. Use `nova-review` for unified severity-based routing; use `nova-review-lite` for daily quick checks.
-5. Use `nova-produce-plan` for formal docs; use `nova-backend-plan` for Java/Spring-specific design.
+1. Use `nova-route` when the next workflow, agent, pack, or validation path is unclear.
+2. Use `nova-explore` for observer, reviewer, lite, or deep exploration variants.
+3. Use `nova-produce-plan` for lightweight, formal, or Java-backend planning variants.
+4. Use `nova-review` for lite, standard, strict, plan, and external Codex review variants.
+5. Use `nova-implement-plan` for approved-plan, lite, standard, or Codex review/fix execution variants.
+6. Use `nova-finalize-work` for full or lite handoff variants.
 
 ## Troubleshooting
 
-1. Skills not discovered: verify path `nova-plugin/skills/<skill-name>/SKILL.md` and kebab-case folder names.
-2. Skill not triggered: ensure prompt semantics align with `description` and `argument-hint`.
-3. Hub route mismatch: pass explicit `PERSPECTIVE` for `nova-explore` and `LEVEL` for `nova-review`.
-4. File write failures: ensure output path is valid and writable.
-5. Contract drift: run `node scripts/lint-frontmatter.mjs`; it checks command descriptions, command-to-skill mappings, required skill sections, side-effect safety references, and tool/destructive-action consistency.
+1. Skill not discovered: verify one of the six canonical paths at `nova-plugin/skills/<skill-name>/SKILL.md`.
+2. Alias behavior mismatch: inspect its generated command wrapper and fixed variant preset in the table above.
+3. Hub route mismatch: pass explicit `PERSPECTIVE` for exploration or `LEVEL` for review.
+4. File-write failure: verify the selected canonical Skill permits the requested artifact or project effect.
+5. Contract drift: run `node scripts/lint-frontmatter.mjs`; it checks this index against workflow ownership and the six on-disk Skills.
 
 ## Discovery Notes
 
-- `nova-plugin/.claude-plugin/plugin.json` does not explicitly list skills.
-- By repository convention and Claude Code discovery pattern, skills are placed under `nova-plugin/skills/*/SKILL.md`.
+- `nova-plugin/.claude-plugin/plugin.json` does not explicitly list Skills.
+- By repository convention and Claude Code discovery behavior, canonical Skills live under `nova-plugin/skills/nova-*/SKILL.md`.
+- Deprecated command aliases remain available for 4.x compatibility, but their historical `nova-<command>` names are not separate Skills.
