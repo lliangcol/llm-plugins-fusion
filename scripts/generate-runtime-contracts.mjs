@@ -3,14 +3,23 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { compileRuntimeContracts } from '../framework/compiler/compile-runtime-contracts.mjs';
+import {
+  compileResolvedVariantManifest,
+  compileRuntimeContracts,
+} from '../framework/compiler/compile-runtime-contracts.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 import { loadNovaWorkflowModelV6 } from './lib/workflow-model.mjs';
 
 const root = repoRoot(import.meta.url);
 export function generatedRuntimeContracts() {
   const { spec, behaviorSpec } = loadNovaWorkflowModelV6(root);
-  return compileRuntimeContracts(spec, behaviorSpec).map((contract) => ({ path: `nova-plugin/runtime/contracts/${contract.id}.json`, content: `${JSON.stringify(contract, null, 2)}\n` }));
+  return [
+    ...compileRuntimeContracts(spec, behaviorSpec).map((contract) => ({ path: `nova-plugin/runtime/contracts/${contract.id}.json`, content: `${JSON.stringify(contract, null, 2)}\n` })),
+    {
+      path: 'nova-plugin/runtime/resolved-variant-contracts.json',
+      content: `${JSON.stringify(compileResolvedVariantManifest(spec, behaviorSpec), null, 2)}\n`,
+    },
+  ];
 }
 export function checkOrWrite({ write = false } = {}) {
   const stale = [];

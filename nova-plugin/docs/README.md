@@ -15,14 +15,14 @@ generated block。
 | 命令文档 | [commands/](commands/) | 21 个命令的详细说明与中英文 README |
 | 架构与设计 | [architecture/](architecture/) | 五层架构、command / skill 双轨设计、hooks 设计 |
 | 仓库文档总索引 | [../../docs/README.md](../../docs/README.md) | `docs/` 目录结构、文档清单和维护规则 |
-| Agent routing | [../../docs/agents/ROUTING.md](../../docs/reference/architecture/agent-routing.md) | 当前 6 个 core agents 与 capability packs 路由 |
+| Agent routing | [../../docs/reference/architecture/agent-routing.md](../../docs/reference/architecture/agent-routing.md) | 当前 6 个 core agents 与 capability packs 路由 |
 | Capability packs | [../packs/README.md](../packs/README.md) | 8 个领域能力包与 enhanced / fallback mode |
-| Consumer profiles | [../../docs/consumers/README.md](../../docs/guides/assistants/README.md) | 多项目 consumer profile 契约与脱敏模板 |
-| Cross-tool setup | [../../docs/consumers/README.md](../../docs/guides/assistants/README.md) | Cursor、Cline、Aider、OpenHands、Gemini CLI、OpenCode、Copilot、Codex 等工具消费 nova skills 的入口 |
-| Context-safe workflows | [../../docs/workflows/context-safe-agent-workflows.md](../../docs/guides/workflows/context-safe.md) | 大任务拆分、checkpoint、review/fix/verify 交付闭环 |
-| Thin harness, fat skills | [../../docs/workflows/thin-harness-fat-skills.md](../../docs/reference/architecture/skill-first-projection.md) | 脚本、skill、prompt、pack 和 consumer profile 的沉淀边界 |
-| Prompt templates | [../../docs/prompts/README.md](../../docs/templates/prompts/README.md) | Codex、Claude Code 和通用交付文档 prompt 模板 |
-| Redacted examples | [../../docs/examples/README.md](../../docs/tutorials/README.md) | Java backend / frontend 脱敏 workflow 示例 |
+| Consumer profiles | [../../docs/guides/assistants/README.md](../../docs/guides/assistants/README.md) | 多项目 consumer profile 契约与脱敏模板 |
+| Cross-tool setup | [../../docs/guides/assistants/README.md](../../docs/guides/assistants/README.md) | Cursor、Cline、Aider、OpenHands、Gemini CLI、OpenCode、Copilot、Codex 等工具消费 nova skills 的入口 |
+| Context-safe workflows | [../../docs/guides/workflows/context-safe.md](../../docs/guides/workflows/context-safe.md) | 大任务拆分、checkpoint、review/fix/verify 交付闭环 |
+| Thin harness, fat skills | [../../docs/reference/architecture/skill-first-projection.md](../../docs/reference/architecture/skill-first-projection.md) | 脚本、skill、prompt、pack 和 consumer profile 的沉淀边界 |
+| Prompt templates | [../../docs/templates/prompts/README.md](../../docs/templates/prompts/README.md) | Codex、Claude Code 和通用交付文档 prompt 模板 |
+| Redacted examples | [../../docs/tutorials/README.md](../../docs/tutorials/README.md) | Java backend / frontend 脱敏 workflow 示例 |
 | English overview | [overview/README.en.md](overview/README.en.md) | English project overview |
 
 ## 文档结构
@@ -138,7 +138,11 @@ Core agents use documentation-only capability packs for domain routing. Packs do
 
 ## 维护规则
 
-- 新增、删除、重命名命令时，同步 `nova-plugin/commands/`、`nova-plugin/skills/nova-*/` 和 `nova-plugin/docs/commands/`。
+- 新增、删除、重命名 workflow surface 时，先修改
+  `workflow-specs/workflows.json`、`workflow-specs/behaviors.json` 与对应
+  owned metadata，再运行 typed migration 和 projection generators。
+  新 canonical surface 需要 Skill 容器；兼容别名复用已有 canonical
+  Skill。不要手工编辑生成的 command wrappers 或 Skill contract blocks。
 - 用户可见行为、参数、输出、工具权限或安全边界变化时，同步 guides、命令文档和 `CHANGELOG.md`。
 - Capability pack 或 plugin-aware routing 改动后运行 `node scripts/validate-packs.mjs`。
 - 当前设计文档放在 `architecture/`；临时分析、历史优化记录和非当前状态报告不要放入当前交付文档树。

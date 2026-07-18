@@ -5,10 +5,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolveCompiledVariantContract } from '../framework/compiler/compile-runtime-contracts.mjs';
+import { loadNovaWorkflowModelV6 } from './lib/workflow-model.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
-const spec = readJson('workflow-specs/workflows.json');
+const model = loadNovaWorkflowModelV6(root);
+const spec = model.spec;
 const fixture = readJson('evals/route/cases.json');
 const workflows = new Map(spec.workflows.map((workflow) => [workflow.id, workflow]));
 const canonicalTargets = new Set(readJson('workflow-specs/nova.product.json').automaticRouting.canonicalTargets);
@@ -23,11 +26,14 @@ assert.equal(new Set(fixture.cases.map((entry) => entry.id)).size, fixture.cases
 for (const entry of fixture.cases) {
   assert.match(entry.id, /^[a-z0-9]+(?:-[a-z0-9]+)*$/);
   assert.ok(entry.request.length >= 20, `${entry.id}: request is too small`);
+  assert.equal(entry.commands.length, 1, `${entry.id}: route must select exactly one immediate command`);
+  assert.equal(entry.skills.length, 1, `${entry.id}: route must select exactly one immediate canonical skill`);
+  assert.equal(entry.variantParameters.length, 1, `${entry.id}: route must declare exactly one variant parameter object`);
   assert.equal(entry.commands.length, entry.skills.length, `${entry.id}: command/skill count differs`);
   assert.equal(entry.commands.length, entry.variantParameters.length, `${entry.id}: command/variant count differs`);
-  if (entry.commandAliases) assert.equal(entry.commands.length, entry.commandAliases.length, `${entry.id}: command/alias count differs`);
+  if (entry.commandAliases) assert.equal(entry.commandAliases.length, 1, `${entry.id}: route must declare exactly one resolved command alias`);
   const owners = new Set();
-  const requiredInputs = new Set();
+  const requiredInputs = [];
   const selectedWorkflows = [];
   for (let index = 0; index < entry.commands.length; index += 1) {
     const command = entry.commands[index];
@@ -36,28 +42,36 @@ for (const entry of fixture.cases) {
     assert.equal(workflow.compatibilityAlias, false, `${entry.id}: exact route selects compatibility alias ${command}`);
     assert.ok(canonicalTargets.has(command), `${entry.id}: route ${command} is not automatic-routing eligible`);
     assert.equal(entry.skills[index], `nova-${workflow.canonicalSurfaceId}`, `${entry.id}: command/canonical-skill mapping differs`);
+    const resolved = resolveCompiledVariantContract(spec, model.behaviorSpec, command, entry.variantParameters[index]);
     const aliasId = entry.commandAliases?.[index];
-    const selected = aliasId ? workflows.get(aliasId) : workflow;
-    assert.ok(selected, `${entry.id}: invented optional alias ${aliasId}`);
     if (aliasId) {
-      assert.equal(selected.compatibilityAlias, true, `${entry.id}: optional alias ${aliasId} is not a compatibility alias`);
-      assert.equal(selected.canonicalSurfaceId, command, `${entry.id}: optional alias ${aliasId} maps to another canonical route`);
-      assert.deepEqual(entry.variantParameters[index], selected.variantPreset, `${entry.id}: alias variant parameters differ`);
+      assert.equal(resolved.resolvedWorkflowId, aliasId, `${entry.id}: expected alias differs from resolved variant contract`);
+      assert.equal(resolved.compatibilityAlias, true, `${entry.id}: resolved ${aliasId} is not a compatibility alias`);
+    } else {
+      assert.equal(resolved.resolvedWorkflowId, command, `${entry.id}: unaliased variant must resolve to the canonical contract`);
     }
-    selectedWorkflows.push(selected);
-    for (const owner of selected.ownerAgents) owners.add(owner);
-    for (const input of selected.requiredInputs) requiredInputs.add(input);
+    const resolvedWorkflow = workflows.get(resolved.resolvedWorkflowId);
+    assert.ok(resolvedWorkflow, `${entry.id}: resolved workflow ${resolved.resolvedWorkflowId} is missing`);
+    assert.deepEqual(resolved.contract.inputs, resolvedWorkflow.inputs, `${entry.id}: resolved inputs differ`);
+    assert.deepEqual(resolved.contract.effects, resolvedWorkflow.effects, `${entry.id}: resolved effects differ`);
+    assert.equal(resolved.contract.authorizationProfile, resolvedWorkflow.authorizationProfile, `${entry.id}: resolved authorization differs`);
+    assert.equal(resolved.contract.outputContract, resolvedWorkflow.outputContract, `${entry.id}: resolved output differs`);
+    assert.deepEqual(resolved.contract.runtimeRequirements, resolvedWorkflow.runtimeRequirements ?? {
+      executables: [], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' },
+    }, `${entry.id}: resolved runtime requirements differ`);
+    selectedWorkflows.push(resolved);
+    for (const owner of resolved.contract.ownerAgents) owners.add(owner);
+    for (const input of resolved.contract.requiredInputs) if (!requiredInputs.includes(input)) requiredInputs.push(input);
   }
   for (const agent of entry.coreAgents) {
     assert.ok(agents.has(agent), `${entry.id}: invented agent ${agent}`);
     assert.ok(owners.has(agent), `${entry.id}: ${agent} does not own a selected workflow`);
   }
   for (const pack of entry.packs) assert.ok(packs.has(pack), `${entry.id}: invented pack ${pack}`);
-  assert.deepEqual([...new Set(entry.requiredInputs)], [...requiredInputs], `${entry.id}: required inputs differ`);
+  assert.deepEqual(entry.requiredInputs, requiredInputs, `${entry.id}: resolved required inputs differ`);
   if (entry.zeroWrite) {
-    for (const workflow of selectedWorkflows) {
-      const profile = spec.permissionProfiles[workflow.permissionProfile];
-      assert.equal(profile.permissionPolicy.workspaceWrite, 'denied', `${entry.id}: zero-write route selects ${workflow.id}`);
+    for (const resolved of selectedWorkflows) {
+      assert.equal(resolved.contract.permissionPolicy.workspaceWrite, 'denied', `${entry.id}: zero-write route resolves ${resolved.resolvedWorkflowId}`);
     }
   }
 }

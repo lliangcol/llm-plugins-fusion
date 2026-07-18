@@ -178,7 +178,10 @@ script uses temporary HOME/XDG directories for Claude CLI state. Default PR CI
 should prefer the dry-run path unless the job is explicitly isolated for
 mutation. The manual/scheduled mutating GitHub Actions path is
 `.github/workflows/plugin-install-smoke.yml`; exact-tag release publication is
-also blocked by an isolated install smoke job in `.github/workflows/release.yml`.
+also blocked at the exact-RC stage by the isolated install smoke job in
+`.github/workflows/release-candidate.yml`. Stable
+`.github/workflows/release.yml` only delegates promotion of that already
+verified candidate.
 
 ## Change Boundaries
 

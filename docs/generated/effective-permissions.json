@@ -16,15 +16,16 @@
       "preapprovedTools": [
         "Read",
         "Glob",
-        "Grep",
-        "Write",
-        "Edit"
+        "Grep"
       ],
       "disallowedTools": [
         "NotebookEdit",
         "Bash"
       ],
-      "permissionPromptTools": [],
+      "permissionPromptTools": [
+        "Edit",
+        "Write"
+      ],
       "compatibility": null
     },
     {
@@ -399,15 +400,16 @@
       "preapprovedTools": [
         "Read",
         "Glob",
-        "Grep",
-        "Write",
-        "Edit"
+        "Grep"
       ],
       "disallowedTools": [
         "NotebookEdit",
         "Bash"
       ],
-      "permissionPromptTools": [],
+      "permissionPromptTools": [
+        "Edit",
+        "Write"
+      ],
       "compatibility": null
     },
     {
@@ -421,15 +423,16 @@
       "preapprovedTools": [
         "Read",
         "Glob",
-        "Grep",
-        "Write",
-        "Edit"
+        "Grep"
       ],
       "disallowedTools": [
         "NotebookEdit",
         "Bash"
       ],
-      "permissionPromptTools": [],
+      "permissionPromptTools": [
+        "Edit",
+        "Write"
+      ],
       "compatibility": null
     },
     {
@@ -597,15 +600,16 @@
       "preapprovedTools": [
         "Read",
         "Glob",
-        "Grep",
-        "Write",
-        "Edit"
+        "Grep"
       ],
       "disallowedTools": [
         "NotebookEdit",
         "Bash"
       ],
-      "permissionPromptTools": [],
+      "permissionPromptTools": [
+        "Edit",
+        "Write"
+      ],
       "compatibility": null
     }
   ]

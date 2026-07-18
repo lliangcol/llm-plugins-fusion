@@ -8,7 +8,7 @@
 - Audience: `all-users`; support risk: `low`
 - Inputs: `REQUEST` (required), `PLAN_OUTPUT_PATH` (required), `PLAN_PROFILE`, `ANALYSIS_INPUTS`, `CONSTRAINTS`
 - Output contract: `produce-plan-v2`; authorization: `artifact-write`
-- Effects: `artifact-write`, `workspace-read`, `workspace-write`
+- Effects: `artifact-write`, `workspace-read`
 - Related workflows: `plan-review`, `implement-plan`
 <!-- generated:command-contract:end -->
 

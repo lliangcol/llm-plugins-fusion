@@ -27,8 +27,6 @@
 | `REVIEW_FILE` | Yes | 上一轮 `review.md` 路径 | `.codex/codex-review-fix/latest-artifacts/review.md` |
 | `CHECKS_FILE` | No | 本地 checks 输出文件 | `.codex/codex-review-fix/latest-artifacts/checks.txt` |
 | `BASE` | No | 基线分支 | `main` |
-| `OUTPUT_DIR` | No | verify artifact 输出目录 | `.codex/codex-review-fix/custom` |
-| `INCLUDE_UNTRACKED_CONTENT` | No | 显式允许未跟踪文件内容进入 verify patch，且需通过安全检查 | `true` |
 
 ## 示例
 

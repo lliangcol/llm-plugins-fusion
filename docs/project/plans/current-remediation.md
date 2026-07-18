@@ -1,7 +1,7 @@
 <!-- migrated-from: docs/maintainers/deep-research-remediation-and-documentation-redesign-plan.md -->
 # Current remediation ledger
 
-Status: local-complete; external gates pending
+Status: source-merged; external gates pending
 Date: 2026-07-16
 Scope: current repository state and remaining gates only
 
@@ -41,7 +41,7 @@ release content. Development metadata and changelog now define the exact
 `v4.1.0-rc.1` candidate baseline; no RC or stable tag has been created, and no
 stable publication is authorized by this local remediation.
 
-## Completed locally
+## Completed in source and verified locally
 
 | Work package | Current result | Verification boundary |
 | --- | --- | --- |
@@ -97,12 +97,13 @@ A check is recorded as passed only when it actually ran. Plan mode, dry-run,
 skipped Bash checks, and local deterministic simulation never become live
 assistant, installation, approval, signing, or adoption evidence.
 
-## Autonomous completion state
+## Merged source state
 
 - The source-controlled release, contract, hook, evidence, adoption, and Skill
-  discoverability remediations are implemented on the local branch
-  `fix/4.1.0-pre-rc-fail-closed` without creating a commit, tag, release, or
-  remote configuration change.
+  discoverability remediations were merged into protected `main` by PR #99 at
+  commit `9ef14de`. That merge did not create an RC tag, stable tag, release, or
+  remote protection/configuration change, so the external gates below remain
+  authoritative.
 - The final local gate sequence passed on the completed diff: dependency install
   reported zero vulnerabilities; `ci:quick` passed; unit tests passed 309 with
   one platform-conditional skip; integration passed 125/125; end-to-end passed

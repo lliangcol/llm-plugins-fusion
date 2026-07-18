@@ -44,7 +44,7 @@ lines. Split larger changes, or complete all three fields below.
 ## Release Independence
 
 - [ ] If this changes release, signing, provenance, workflows, or candidate evidence, a reviewer distinct from the PR author and future candidate actor has approved it. Candidate publication will verify this from GitHub review history; this checkbox is not evidence by itself.
-- [ ] Signing-key or recovery changes follow `docs/releases/operator-recovery-and-key-rotation.md` and do not claim a drill or rotation occurred without a run/evidence record.
+- [ ] Signing-key or recovery changes follow `docs/operations/releases/recovery-and-key-rotation.md` and do not claim a drill or rotation occurred without a run/evidence record.
 
 ## Validation Results
 

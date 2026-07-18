@@ -12,5 +12,9 @@ export function loadProductBundle({ root, frameworkPath, productPath, workflowsP
     workflows: readContainedJson(root, workflowsPath),
     behaviors: readContainedJson(root, behaviorsPath),
     adapters: product.adapterDefinitions.map((path) => readContainedJson(adapterBase, path)),
+    provenance: {
+      workflowSource: workflowsPath,
+      behaviorSource: behaviorsPath,
+    },
   };
 }

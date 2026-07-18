@@ -51,9 +51,7 @@
       "allowedTools": [
         "Read",
         "Glob",
-        "Grep",
-        "Write",
-        "Edit"
+        "Grep"
       ],
       "disallowedTools": [
         "NotebookEdit",
@@ -61,7 +59,7 @@
       ],
       "permissionPolicy": {
         "workspaceRead": "preapproved",
-        "workspaceWrite": "preapproved",
+        "workspaceWrite": "prompt",
         "shell": "denied",
         "network": "denied",
         "credentials": "denied",

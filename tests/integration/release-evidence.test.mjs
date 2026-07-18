@@ -11,44 +11,72 @@ import {
   renderReleaseEvidenceMarkdown,
 } from '../../scripts/generate-release-evidence.mjs';
 import {
+  loadRouteInventory,
   routeMaxTurns,
   routeOutputContract,
   routeSystemPromptSha256,
 } from '../../scripts/validate-plugin-route-live.mjs';
+import { validate } from '../../scripts/validate-schemas.mjs';
 
 const coverageSummary = `# tests 80
-# pass 80
+# pass 79
 # fail 0
+# cancelled 0
+# skipped 1
+# todo 0
 # start of coverage report
 # all files | 88.05 | 70.01 | 92.89 |
 `;
 
 const digest = 'a'.repeat(64);
-const commandIds = ['route', 'review', ...Array.from({ length: 19 }, (_, index) => `command-${index}`)];
-const skillNames = ['nova-route', 'nova-review', ...Array.from({ length: 19 }, (_, index) => `nova-skill-${index}`)];
-const installedSkills = [...commandIds, ...skillNames];
+const repositoryRoot = resolve(import.meta.dirname, '../..');
+const permissionSpec = JSON.parse(await readFile(resolve(repositoryRoot, 'nova-plugin/runtime/workflow-permissions.json'), 'utf8'));
+const expectedRouteInventory = loadRouteInventory(resolve(repositoryRoot, 'nova-plugin'), permissionSpec);
+const installedSkills = [...expectedRouteInventory.commandIds, ...expectedRouteInventory.skillNames];
 const projectFileInventory = [{ path: 'README.md', type: 'file', bytes: 1, sha256: digest }];
 const projectDigest = createHash('sha256').update(JSON.stringify(projectFileInventory)).digest('hex');
-const expectedRouteInventory = {
-  commandIds,
-  skillNames,
-  agents: ['reviewer'],
-  packs: ['docs'],
-};
+
+function coverageMetadata(summary = coverageSummary) {
+  return {
+    schemaVersion: 2,
+    command: ['node', '--test', '--experimental-test-coverage'],
+    check: true,
+    gatePassed: true,
+    thresholds: { lines: 85, branches: 70, functions: 90 },
+    actual: { lines: 88.05, branches: 70.01, functions: 92.89 },
+    exitCode: 0,
+    signal: null,
+    startedAt: '2026-07-11T00:00:00.000Z',
+    completedAt: '2026-07-11T00:01:00.000Z',
+    durationMs: 60_000,
+    coverageDir: '.metrics/coverage',
+    v8Dir: '.metrics/coverage/v8',
+    summaryPath: '.metrics/coverage/coverage-summary.txt',
+    summarySha256: createHash('sha256').update(summary).digest('hex'),
+    nodeVersion: 'v22.23.1',
+    testFileCount: 1,
+    rawCoverageFileCount: 1,
+    criticalModuleCount: 0,
+    criticalModulesPassed: 0,
+    expectedSourceCount: 1,
+    loadedSourceCount: 1,
+    missingSourceCount: 0,
+  };
+}
 
 function fixtureInput() {
   return {
     plugin: { version: '2.4.1' },
     coverageSummary,
-    coverageMetadata: { exitCode: 0, node: 'v22.23.1', thresholds: { lines: 85, branches: 60, functions: 90 } },
+    coverageMetadata: coverageMetadata(),
     timings: { schemaVersion: 1, runId: 'test', failed: 0, skipped: 0, gates: [{ id: 'docs.validate', label: 'validate docs', status: 'passed', durationMs: 25 }] },
     install: {
       claudeVersion: '2.1.205 (Claude Code)',
       knownGoodClaudeCli: '2.1.205',
       manifestValidation: { marketplace: true, plugin: true },
-      marketplace: { source: 'owner/repo@v2.4.1', ref: 'v2.4.1' },
+      marketplace: { source: 'owner/repo@v2.4.1', ref: 'v2.4.1', installSourceType: 'local-manifest-remote-exact-ref' },
       plugin: { id: 'nova-plugin@marketplace', version: '2.4.1' },
-      inventory: { count: 42, skills: [...installedSkills] },
+      inventory: { count: expectedRouteInventory.combinedSkillCount, skills: [...installedSkills] },
       inventoryDiff: { matches: true },
       sourceTreeDigest: digest,
       installedTreeDigest: digest,
@@ -96,11 +124,11 @@ function fixture() {
 }
 
 test('release evidence CLI parsing covers flags, values, and rejected arguments', () => {
-  const root = resolve('/tmp', 'release-evidence-args');
-  const options = parseArgs(['--help', '--require-live', '--out-dir', 'output', '--artifact-dir', 'artifacts'], root);
+  const root = process.cwd();
+  const options = parseArgs(['--help', '--require-live', '--out-dir', '.metrics/output', '--artifact-dir', 'artifacts'], root);
   assert.equal(options.help, true);
   assert.equal(options.requireLive, true);
-  assert.equal(options.outDir, resolve(root, 'output'));
+  assert.equal(options.outDir, resolve(root, '.metrics/output'));
   assert.equal(options.artifactDir, resolve(root, 'artifacts'));
   assert.throws(() => parseArgs(['--unknown'], root), /unknown argument/);
 });
@@ -108,7 +136,10 @@ test('release evidence CLI parsing covers flags, values, and rejected arguments'
 test('release evidence aggregates machine facts without raw model output', () => {
   const evidence = fixture();
   assert.equal(evidence.release.pluginVersion, '2.4.1');
-  assert.equal(evidence.install.skillsCount, 42);
+  assert.equal(evidence.install.skillsCount, 27);
+  assert.equal(evidence.runtime.node, 'v22.23.1');
+  assert.equal(evidence.tests.passed, 79);
+  assert.equal(evidence.tests.skipped, 1);
   assert.deepEqual(evidence.install.installedTreeIgnoredPaths, ['.in_use/**']);
   assert.deepEqual(evidence.install.manifestValidation, { marketplace: true, plugin: true });
   assert.equal(evidence.route.projectChanged, false);
@@ -126,7 +157,8 @@ test('release evidence aggregates machine facts without raw model output', () =>
 test('release evidence also accepts interactive Node test summary markers', () => {
   const input = fixtureInput();
   input.coverageSummary = coverageSummary.replaceAll('# ', 'ℹ ');
-  assert.equal(buildReleaseEvidence(input).tests.passed, 80);
+  input.coverageMetadata.summarySha256 = createHash('sha256').update(input.coverageSummary).digest('hex');
+  assert.equal(buildReleaseEvidence(input).tests.passed, 79);
 });
 
 test('release evidence binds an explicit Claude success completion after exit 1', () => {
@@ -141,16 +173,38 @@ test('release evidence binds an explicit Claude success completion after exit 1'
   assert.equal(evidence.route.processCompletion, 'claude-json-success-completed');
 });
 
+test('release evidence requires exact checked coverage metadata and preserves platform skips', () => {
+  assert.doesNotThrow(() => fixture());
+  for (const mutate of [
+    (input) => { delete input.coverageMetadata.nodeVersion; },
+    (input) => { input.coverageMetadata.nodeVersion = 'v20.19.0'; },
+    (input) => { input.coverageMetadata.check = false; },
+    (input) => { input.coverageMetadata.gatePassed = false; },
+    (input) => { input.coverageMetadata.summarySha256 = '0'.repeat(64); },
+    (input) => { input.coverageMetadata.actual.lines = 99; },
+    (input) => { input.coverageMetadata.thresholds.branches = 60; },
+    (input) => { input.coverageMetadata.loadedSourceCount = 0; },
+  ]) {
+    const input = fixtureInput();
+    mutate(input);
+    assert.throws(() => buildReleaseEvidence(input));
+  }
+
+  for (const marker of ['fail', 'cancelled', 'todo']) {
+    const input = fixtureInput();
+    input.coverageSummary = input.coverageSummary.replace(`# ${marker} 0`, `# ${marker} 1`);
+    input.coverageMetadata.summarySha256 = createHash('sha256').update(input.coverageSummary).digest('hex');
+    assert.throws(() => buildReleaseEvidence(input), /complete zero-failure run/u);
+  }
+});
+
 test('release evidence rejects ambiguous route authentication evidence', () => {
+  const input = fixtureInput();
+  input.requireLive = false;
+  input.install = null;
+  input.route.authenticationMode = 'api-key';
   assert.throws(
-    () => buildReleaseEvidence({
-      plugin: { version: '2.4.1' },
-      coverageSummary,
-      coverageMetadata: { exitCode: 0, node: 'v20', thresholds: {} },
-      timings: { failed: 0, skipped: 0, timings: [] },
-      route: { processExitCode: 0, processCompletion: 'zero-exit', processStderrPresent: false, processStderrBytes: 0, processStderrSha256: createHash('sha256').update('').digest('hex'), projectChanged: false, gitStatus: '', authenticationMode: 'api-key', configurationIsolation: 'temporary-home' },
-      checksums: 'abc  file\n',
-    }),
+    () => buildReleaseEvidence(input),
     /does not prove Claude Code OAuth authentication/,
   );
 });
@@ -257,11 +311,26 @@ test('release evidence CLI requires live inputs when requested', async (t) => {
   await writeFile(resolve(root, 'nova-plugin/.claude-plugin/plugin.json'), '{"version":"2.4.1"}\n');
   await writeFile(resolve(root, 'workflow-specs/workflows.json'), '{"knownGoodClaudeCli":"2.1.205"}\n');
   await writeFile(resolve(root, '.metrics/coverage/coverage-summary.txt'), coverageSummary);
-  await writeFile(resolve(root, '.metrics/coverage/metadata.json'), '{"exitCode":0,"node":"v20","thresholds":{}}\n');
+  await writeFile(resolve(root, '.metrics/coverage/metadata.json'), `${JSON.stringify(coverageMetadata(), null, 2)}\n`);
   await writeFile(resolve(root, '.metrics/validation-timings.json'), '{"failed":0,"skipped":0,"timings":[]}\n');
   await writeFile(resolve(root, '.metrics/release-checksums/SHA256SUMS.txt'), 'abc  file\n');
   assert.throws(() => generateReleaseEvidence({ root, args: ['--require-live'] }), /required evidence input is missing/);
 
   const result = generateReleaseEvidence({ root });
   assert.equal(JSON.parse(await readFile(result.jsonPath, 'utf8')).route, null);
+});
+
+test('release evidence schema requires runtime identity and complete test counts', async () => {
+  const schema = JSON.parse(await readFile(resolve(repositoryRoot, 'schemas/release-evidence.schema.json'), 'utf8'));
+  const evidence = fixture();
+  assert.deepEqual(validate(schema, evidence), []);
+  for (const mutate of [
+    (value) => { delete value.runtime.node; },
+    (value) => { delete value.tests.skipped; },
+    (value) => { value.tests.coverage.lines = 101; },
+  ]) {
+    const invalid = structuredClone(evidence);
+    mutate(invalid);
+    assert.notDeepEqual(validate(schema, invalid), []);
+  }
 });

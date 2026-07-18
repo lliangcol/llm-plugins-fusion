@@ -68,12 +68,12 @@ export function migrateBehaviors(spec) {
       output: {
         ...behavior.output,
         fields: [
-          { name: 'Canonical skill', required: true, description: 'One of the six canonical 4.0 skills.' },
-          { name: 'Command alias (optional)', required: true, description: 'Existing generated compatibility wrapper or None.' },
+          { name: 'Canonical skill', required: true, description: 'One of the six product-declared canonical skills.' },
+          { name: 'Command entrypoint', required: true, description: 'Exact direct command for Claude; generic and Codex adapters may execute the resolved contract directly.' },
           { name: 'Variant parameters', required: true, description: 'Exact preset parameters for the selected internal workflow.' },
-          ...behavior.output.fields.filter((field) => !['Command', 'Skill', 'Canonical skill', 'Command alias (optional)', 'Variant parameters'].includes(field.name)),
+          ...behavior.output.fields.filter((field) => !['Command', 'Skill', 'Canonical skill', 'Command alias (optional)', 'Command entrypoint', 'Variant parameters'].includes(field.name)),
         ],
-        order: ['Canonical skill', 'Command alias (optional)', 'Variant parameters', ...behavior.output.order.filter((field) => !['Command', 'Skill', 'Canonical skill', 'Command alias (optional)', 'Variant parameters'].includes(field))],
+        order: ['Canonical skill', 'Command entrypoint', 'Variant parameters', ...behavior.output.order.filter((field) => !['Command', 'Skill', 'Canonical skill', 'Command alias (optional)', 'Command entrypoint', 'Variant parameters'].includes(field))],
       },
       validation: behavior.validation.map((value) => value.replace('commands and skills exist one-to-one', 'the canonical skill, compatibility alias, and preset exist in the generated catalog')),
     }),

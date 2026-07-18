@@ -18,8 +18,21 @@ test('plugin install dry run does not invoke Claude CLI commands', async () => {
 
   assert.equal(result.ok, true);
   assert.match(result.stdout, /Dry run only/);
+  assert.match(result.stdout, /Marketplace source: local-isolated-install/u);
+  assert.equal(result.stdout.includes(repoRoot), false);
   assert.match(result.stdout, /No Claude CLI commands were run/);
   assert.doesNotMatch(result.stdout, /^== claude/m);
+});
+
+test('plugin install help advertises only local marketplace paths', async () => {
+  const result = await runProcess('plugin install help', process.execPath, [
+    'scripts/validate-plugin-install.mjs',
+    '--help',
+  ], { cwd: repoRoot, timeoutMs: 30_000 });
+
+  assert.equal(result.ok, true, result.stderr || result.stdout);
+  assert.match(result.stdout, /--marketplace-source <local-path>/u);
+  assert.doesNotMatch(result.stdout, /(?:path\|)?owner\/repo(?:sitory)?@ref/u);
 });
 
 test('plugin install dry run can preview isolated home mode without mutation', async () => {
@@ -34,8 +47,21 @@ test('plugin install dry run can preview isolated home mode without mutation', a
 
   assert.equal(result.ok, true);
   assert.match(result.stdout, /Isolated home: enabled/);
-  assert.match(result.stdout, /temporary HOME, USERPROFILE, XDG_CONFIG_HOME, XDG_DATA_HOME, and XDG_STATE_HOME/);
+  assert.match(result.stdout, /temporary HOME, USERPROFILE, XDG_CONFIG_HOME, XDG_DATA_HOME, XDG_STATE_HOME, and CLAUDE_CONFIG_DIR/);
   assert.match(result.stdout, /No Claude CLI commands were run/);
+  assert.doesNotMatch(result.stdout, /^== claude/m);
+});
+
+test('plugin install rejects remote marketplace arguments without substituting checkout evidence', async () => {
+  const result = await runProcess('plugin install remote marketplace rejection', process.execPath, [
+    'scripts/validate-plugin-install.mjs',
+    '--dry-run',
+    '--marketplace-source',
+    'owner/repository@v4.0.0',
+  ], { cwd: repoRoot, timeoutMs: 30_000 });
+
+  assert.equal(result.ok, false);
+  assert.match(result.stderr, /must be a local manifest path.*unsupported without a verified source reader/u);
   assert.doesNotMatch(result.stdout, /^== claude/m);
 });
 

@@ -5,7 +5,7 @@
   "trustedUsers": ["lliang"],
   "trustedTeams": [],
   "botIdentities": [],
-  "sensitivePaths": [".github/", "schemas/", "governance/", "scripts/lib/release-", "scripts/release-", "scripts/verify-independent-release-review.mjs", "SECURITY.md"],
+  "sensitivePaths": [".github/", "schemas/", "governance/", "scripts/lib/", "scripts/release-", "scripts/build-candidate-bundle.mjs", "scripts/build-release-artifacts.mjs", "scripts/build-release-control-bundle.mjs", "scripts/extract-release-bundle.mjs", "scripts/generate-release-candidate.mjs", "scripts/generate-release-checksums.mjs", "scripts/generate-release-evidence.mjs", "scripts/prepare-release.mjs", "scripts/reconcile-github-release.mjs", "scripts/release-orchestrator.mjs", "scripts/validate-community-governance.mjs", "scripts/validate-github-workflows.mjs", "scripts/validate-performance-budget.mjs", "scripts/validate-plugin-install.mjs", "scripts/validate-plugin-route-live.mjs", "scripts/validate-pr-governance.mjs", "scripts/validate-release-operational-readiness.mjs", "scripts/validate-release-readiness.mjs", "scripts/verify-independent-release-review.mjs", "scripts/verify-release-promotion.mjs", "scripts/verify-stable-install.mjs", "SECURITY.md"],
   "standardMinimumApprovals": 1,
   "sensitiveMinimumApprovals": 1
 }

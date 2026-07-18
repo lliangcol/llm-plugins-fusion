@@ -23,11 +23,11 @@
 
 ### Required
 
-- 无
+- `ARGUMENTS`: 待审阅内容。示例: `需求文档或方案描述`
 
 ### Optional
 
-- `ARGUMENTS`: 待审阅内容。示例: `需求文档或方案描述`
+- 无
 
 ## 行为准则（Do/Don't）
 

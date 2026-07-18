@@ -43,11 +43,11 @@ and public-safe.
 | --- | --- |
 | `fixtures/demo/` | Public-safe headless demo inputs for route, review, and verification signals. |
 | `fixtures/workflow/invoice-sync/` | Public-safe scenario inputs and approved plan. |
-| `docs/examples/workflow-evaluation.md` | Manual rubric for five primary commands. |
-| `docs/examples/workflow-evaluation-record-template.md` | Human record for output-quality evidence. |
+| `docs/tutorials/workflow-evaluation.md` | Manual rubric for five primary commands. |
+| `docs/templates/evidence/workflow-evaluation.md` | Human record for output-quality evidence. |
 | `scripts/demo-route.mjs`, `scripts/demo-review.mjs` | Deterministic local demos that print expected fixture signals without LLM execution. |
 | `scripts/validate-workflow-fixtures.mjs` | Deterministic fixture integrity and expected-signal check. |
-| `docs/releases/release-validation-runbook.md` | Promotion rule that separates automated fixture checks from manual quality evidence. |
+| `docs/operations/releases/validation.md` | Promotion rule that separates automated fixture checks from manual quality evidence. |
 
 ## Future `.nova/checks` Boundary
 
@@ -77,7 +77,7 @@ knowledge-base content.
 | Exact schema, file presence, fixture signal, generated-output drift | Script or validator |
 | Review judgment, planning quality, handoff quality, skipped-check honesty | Rubric or skill text |
 | Consumer-specific commands, project paths, dashboards, business rules | Consumer project profile or private workbench |
-| Public example inputs and fictional defects | `fixtures/` and `docs/examples/` |
+| Public example inputs and fictional defects | `fixtures/` and `docs/tutorials/` |
 
 Do not add a new runtime or CI layer when a deterministic script plus rubric is
 enough.

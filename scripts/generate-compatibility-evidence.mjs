@@ -21,6 +21,11 @@ const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf
 const minimumLiveCases = 20;
 const minimumLiveAttempts = 3;
 const canaryTtlMs = 14 * 24 * 60 * 60 * 1000;
+export const CURRENT_COMPATIBILITY_EVIDENCE_STATUSES = Object.freeze(['exact', 'carried-forward']);
+
+export function isCurrentCompatibilityEvidenceStatus(status) {
+  return CURRENT_COMPATIBILITY_EVIDENCE_STATUSES.includes(status);
+}
 
 const declarations = Object.freeze({
   'claude-code': { declaredLevel: 'L2', maximumSupportedLevel: 'L4', adapter: 'adapters/claude/manifest.json', scope: 'stable Claude command invocation; hooks and release verification require current evidence' },
@@ -105,7 +110,7 @@ export function buildRegistry() {
     return (evidence.assistants ?? []).map((assistant) => evidenceStatus(path, evidence, assistant));
   });
   const claims = Object.entries(declarations).map(([assistant, declaration]) => {
-    const current = records.filter((record) => record.assistant === assistant && ['exact', 'carried-forward'].includes(record.status)).at(-1) ?? null;
+    const current = records.filter((record) => record.assistant === assistant && isCurrentCompatibilityEvidenceStatus(record.status)).at(-1) ?? null;
     return {
       assistant,
       ...declaration,
@@ -133,7 +138,7 @@ export function buildRegistry() {
       ...support.latestCanary.map((entry) => ({ ...entry, lane: 'latest-canary' })),
     ],
     currentClaims: claims,
-    historicalEvidence: records.filter((record) => !['exact', 'carried-forward'].includes(record.status)),
+    historicalEvidence: records.filter((record) => !isCurrentCompatibilityEvidenceStatus(record.status)),
   };
 }
 

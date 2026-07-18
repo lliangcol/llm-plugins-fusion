@@ -4,6 +4,7 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { commandWrapperContractFailures } from './lib/command-wrapper-contract.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const outputPath = resolve(root, 'evals/surface-ab.json');
@@ -13,11 +14,11 @@ function report() {
   const cases = spec.workflows.map((workflow) => {
     const direct = readFileSync(resolve(root, `nova-plugin/commands/${workflow.id}.md`), 'utf8');
     const canonical = readFileSync(resolve(root, `nova-plugin/${workflow.contractPath}`), 'utf8');
-    if (!direct.includes(`canonical surface \`nova-${workflow.canonicalSurfaceId}\``)) throw new Error(`${workflow.id}: canonical wrapper marker missing`);
+    const wrapperFailures = commandWrapperContractFailures(direct, workflow);
+    if (wrapperFailures.length > 0) throw new Error(`${workflow.id}: ${wrapperFailures.join('; ')}`);
     if (/\bInvoke\b[\s\S]{0,80}\bnova-/.test(direct) || /Skill\(nova-plugin:nova-/.test(direct)) {
       throw new Error(`${workflow.id}: runtime delegation remains`);
     }
-    if (workflow.compatibilityAlias && !direct.includes('Deprecated compatibility alias')) throw new Error(`${workflow.id}: compatibility deprecation notice missing`);
     return {
       id: workflow.id,
       commandWrapper: { bytes: Buffer.byteLength(direct), estimatedTokens: Math.ceil(direct.length / 4), canonicalSurfaceId: workflow.canonicalSurfaceId, variantPreset: workflow.variantPreset, deprecated: workflow.compatibilityAlias },

@@ -223,7 +223,7 @@ high-severity 信息停止后续 workflow。PostToolUse 发生在实际操作之
 spool 和 log 文件使用 `0600`。审计目录已有的父路径组件与最终目录必须是真实目录；
 log、lock owner 与 spool 记录必须是单硬链接普通文件，否则在追加、汇总或删除前失败关闭。日志位置、权限、轮转、
 health 事件、路径哈希与 best-effort redaction 边界见
-[`docs/privacy/data-handling.md`](../../../docs/reference/security/data-handling.md)。
+[`docs/reference/security/data-handling.md`](../../../docs/reference/security/data-handling.md)。
 
 PostToolUse、PostToolUseFailure、PermissionDenied 和 SessionEnd 共用
 `trusted-node-hook.sh`。该 launcher 在任何 Node probe/preload 前拒绝 `BASH_ENV`、

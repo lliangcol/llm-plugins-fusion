@@ -24,7 +24,7 @@
 
 | Parameter   | Required | Description                         | Example                 |
 | ----------- | -------- | ----------------------------------- | ----------------------- |
-| `ARGUMENTS` | No       | Requirement or context description. | `Goals and constraints` |
+| `ARGUMENTS` | Yes      | Requirement or context description. | `Goals and constraints` |
 
 ## Output
 

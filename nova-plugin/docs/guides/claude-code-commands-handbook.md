@@ -101,7 +101,7 @@ Codex 边界：
 
 **输入模板（把 `$ARGUMENTS` 填好）**
 
-- Intent（必填）、Context（建议）、Constraints、Depth、Export path（可选，导出与聊天完全一致）
+- Intent（必填）、Context（必填）、Constraints、Depth（固定为 `deep`，可省略）、Export path（可选，导出与聊天完全一致）
 
 **输出你会得到什么**
 
@@ -134,7 +134,7 @@ CONTEXT:
 - Existing API: /v1/subscription/...
 CONSTRAINTS:
 - Focus on correctness, not performance
-DEPTH: normal
+DEPTH: deep
 ```
 
 ---
@@ -394,7 +394,7 @@ LEVEL=lite / standard (默认) / strict
 | LEVEL | 等价命令 | 评审维度 | 语气 |
 |-------|---------|---------|------|
 | `lite` | `/nova-plugin:review-lite` | 明显问题、高信号风险 | 简洁、快速 |
-| `standard` | `/nova-plugin:review-only` | 7 项标准维度 | 中立、精确 |
+| `standard` + `MODE=findings-only` | `/nova-plugin:review-only` | 标准 findings-only 维度 | 中立、精确 |
 | `strict` | `/nova-plugin:review-strict` | 9 项维度（+API边界、演进风险等） | 批判但建设性 |
 
 **评审维度**
@@ -664,9 +664,9 @@ PLAN_APPROVED: true
 
 ---
 
-### 7.3 Review：`/nova-plugin:review LEVEL=lite` vs `/nova-plugin:review LEVEL=standard` vs `/nova-plugin:review LEVEL=strict`
+### 7.3 Review：`/nova-plugin:review LEVEL=lite` vs `/nova-plugin:review LEVEL=standard MODE=findings-only` vs `/nova-plugin:review LEVEL=strict`
 
-| 对比维度 | `/nova-plugin:review LEVEL=lite` | `/nova-plugin:review LEVEL=standard`               | `/nova-plugin:review LEVEL=strict`       |
+| 对比维度 | `/nova-plugin:review LEVEL=lite` | `/nova-plugin:review LEVEL=standard MODE=findings-only` | `/nova-plugin:review LEVEL=strict`       |
 | -------- | -------------------- | -------------------------------------- | ---------------------------- |
 | 快捷入口 | `/nova-plugin:review-lite`       | `/nova-plugin:review-only`                         | `/nova-plugin:review-strict`             |
 | 深度     | 轻量高信噪比         | 系统化、按严重级别                     | 穷尽式、生产关键假设         |
@@ -764,7 +764,7 @@ CONTEXT:
 - Existing endpoints/data:
 CONSTRAINTS:
 - Based only on provided info
-DEPTH: normal
+DEPTH: deep
 ```
 
 ### 10.2 线上排障（深度）

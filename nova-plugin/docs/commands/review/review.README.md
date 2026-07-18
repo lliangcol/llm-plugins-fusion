@@ -24,8 +24,10 @@
 
 | 参数 | 必填 | 说明 | 示例 |
 | --- | --- | --- | --- |
+| `REVIEW_SCOPE` | Yes | 待评审内容或范围 | `代码片段或实现描述` |
 | `LEVEL` | No | `lite` / `standard` / `strict`，默认 `standard` | `lite` |
-| `ARGUMENTS` | Yes | 待评审内容 | `代码片段或实现描述` |
+| `MODE` | No | `full` / `findings-only`，默认 `full` | `findings-only` |
+| `REVIEW_PROFILE` | No | 通用或兼容评审 profile | `general` |
 
 ## 完整示例
 
@@ -47,5 +49,5 @@
 ## 与相近命令的对比
 
 - `/nova-plugin:review LEVEL=lite` 等价于 `/nova-plugin:review-lite` 轻量快速评审入口。
-- `/nova-plugin:review LEVEL=standard` 等价于 `/nova-plugin:review-only` 标准深度传统入口。
+- `/nova-plugin:review LEVEL=standard MODE=findings-only` 等价于 `/nova-plugin:review-only`；默认的 `LEVEL=standard MODE=full` 不是该别名。
 - `/nova-plugin:review LEVEL=strict` 等价于 `/nova-plugin:review-strict` 严格审计入口。

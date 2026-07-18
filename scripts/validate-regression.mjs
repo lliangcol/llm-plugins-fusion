@@ -853,6 +853,127 @@ test('validate-docs rejects duplicate tool vocabulary prose', () => {
   }
 });
 
+test('validate-docs rejects Skill-first, hook, release-source, and command-table drift', () => {
+  const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-docs-skill-first-regression-'));
+  const fixtureRoot = resolve(tempRoot, 'repo');
+  try {
+    copyRepositoryFixture(fixtureRoot);
+
+    const mutate = (relPath, search, replacement = '') => {
+      const file = resolve(fixtureRoot, relPath);
+      const source = readFileSync(file, 'utf8');
+      assert.ok(source.includes(search), `${relPath} fixture mutation source is missing ${search}`);
+      writeFileSync(file, source.replace(search, replacement), 'utf8');
+    };
+
+    writeFileSync(
+      resolve(fixtureRoot, 'docs/phantom-skill-regression.md'),
+      '# Phantom Skill\n\nnova-plugin/skills/nova-codex-review-only/SKILL.md\n',
+      'utf8',
+    );
+    mutate(
+      'nova-plugin/docs/architecture/dual-track-design.md',
+      '21 个由生成器维护的 command wrappers',
+      '21 command wrappers',
+    );
+    mutate(
+      'docs/templates/evidence/release.md',
+      'bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh:\n',
+    );
+    mutate(
+      'docs/operations/releases/validation.md',
+      '- `package` and `plugin` versions are identical.',
+      '- `plugin`, `marketplace`, and `metadata` versions are identical.',
+    );
+    mutate(
+      'CONTRIBUTING.md',
+      '- 根目录 `package.json` 的 `version`\n',
+    );
+    mutate(
+      'CONTRIBUTING.md',
+      '不调用 Codex。非 Windows 使用系统临时目录；Windows 为保持 Git Bash / `node.exe` 路径兼容会临时使用 `.codex/tmp` 并在正常退出时清理，这些 runtime artifact 不得提交。',
+      '不调用 Codex，也不写 `.codex/`。',
+    );
+    mutate('AGENTS.md', '`.github/workflows/release-candidate.yml`', '`.github/workflows/release.yml`');
+    mutate(
+      'SECURITY.md',
+      '`governance/release-channels.json` 中的 stable channel',
+      '`nova-plugin/.claude-plugin/plugin.json` 中的 development version',
+    );
+    mutate(
+      'SECURITY.md',
+      '- 受影响的已安装/已发布版本（以 stable release channel 和 exact tag 为准）；\n'
+        + '  若报告针对未发布快照，再附 commit 与 plugin manifest version',
+      '- 受影响的插件版本（`nova-plugin/.claude-plugin/plugin.json` 的 `version`）',
+    );
+    mutate(
+      'docs/project/plans/current-remediation.md',
+      'were merged into protected `main`',
+      'were implemented on a local branch without creating a commit',
+    );
+    mutate(
+      'docs/operations/maintainers/troubleshooting.md',
+      'Dependency review fails closed\nwhen the dependency graph is unavailable for a same-repository PR',
+      'Dependency review may skip when\nthe repository dependency graph is unavailable',
+    );
+    mutate(
+      'nova-plugin/docs/guides/commands-reference-guide.md',
+      '/nova-plugin:explore PERSPECTIVE=observer DEPTH=lite',
+      '/nova-plugin:explore PERSPECTIVE=observer DEPTH=lite MODE=wrong',
+    );
+    mutate(
+      'nova-plugin/docs/guides/commands-reference-guide.en.md',
+      '/nova-plugin:explore PERSPECTIVE=observer DEPTH=lite',
+      '/nova-plugin:explore DEPTH=lite PERSPECTIVE=observer',
+    );
+    mutate(
+      'docs/guides/workflows/hardening.md',
+      'existing 21 command names and\n  six canonical Skills',
+      'existing 21 command/skill pairs',
+    );
+
+    const chineseGuidePath = resolve(fixtureRoot, 'nova-plugin/docs/guides/commands-reference-guide.md');
+    const chineseGuide = readFileSync(chineseGuidePath, 'utf8');
+    const comparisonStart = chineseGuide.indexOf('### 命令约束强度对比');
+    assert.notEqual(comparisonStart, -1, 'Chinese command comparison heading must exist');
+    const beforeComparison = chineseGuide.slice(0, comparisonStart);
+    const comparison = chineseGuide.slice(comparisonStart);
+    const driftedComparison = comparison.replace(/^\|[^\r\n]*`\/nova-plugin:codex-review-fix`[^\r\n]*\r?\n/mu, '');
+    const driftedGuide = beforeComparison + driftedComparison;
+    assert.notEqual(driftedGuide, chineseGuide, 'Chinese command-table fixture mutation must apply');
+    writeFileSync(chineseGuidePath, driftedGuide, 'utf8');
+
+    const drifted = spawnSync(process.execPath, [
+      'scripts/validate-docs.mjs',
+      '--root',
+      fixtureRoot,
+    ], {
+      cwd: root,
+      encoding: 'utf8',
+      shell: false,
+    });
+    assert.notEqual(drifted.status, 0, 'validate-docs should reject cross-surface documentation drift');
+    const output = `${drifted.stdout}${drifted.stderr}`;
+    assert.match(output, /references missing canonical Skill/);
+    assert.match(output, /missing current 21-to-6 Skill-first architecture contract/);
+    assert.match(output, /hook syntax checklist is missing bash -n nova-plugin\/hooks\/scripts\/trusted-node-hook\.sh/);
+    assert.match(output, /validation\.md: missing maintenance\/release source contract: `package` and `plugin` versions are identical/);
+    assert.match(output, /missing maintenance\/release source contract: - 根目录 `package\.json` 的 `version`/);
+    assert.match(output, /runtime smoke absolute no-\.codex-write claim is false on Windows/);
+    assert.match(output, /release-candidate\.yml/);
+    assert.match(output, /governance\/release-channels\.json/);
+    assert.match(output, /vulnerability reports must identify the affected installed\/released version/);
+    assert.match(output, /current ledger still describes the merged remediation as uncommitted local work/);
+    assert.match(output, /dependency review is incorrectly described as an unconditional skip/);
+    assert.match(output, /alias explore-lite must document its exact derived preset/);
+    assert.doesNotMatch(output, /commands-reference-guide\.en\.md: command comparison table alias explore-lite/u);
+    assert.match(output, /describes the current 21-command surface as command\/Skill pairs instead of 6 canonical Skills/);
+    assert.match(output, /command comparison table must cover all command ids exactly once; missing=codex-review-fix/);
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
 test('validate-docs enforces the deferred portal implementation boundary', () => {
   const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-docs-portal-boundary-'));
   const fixtureRoot = resolve(tempRoot, 'repo');
@@ -1117,7 +1238,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
         /## 公开贡献边界[\s\S]*?## 提交 Pull Request\r?\n/,
         '## 提交 Pull Request\n',
       ).replace(
-        /`package\.json` 包含 dependency-free 的\s+`lint`、`test` 和 `check` 入口。[\s\S]*?`release:artifacts` 构建。/,
+        /可选使用维护者 npm 便捷入口；[\s\S]*?`release:artifacts` 构建。/,
         '`package.json` 不声明 `check` / `lint` /\n   `test` / `build` 脚本名，避免被 Codex 项目检查脚本重复自动发现。',
       ),
       'utf8',
@@ -1301,11 +1422,15 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     const compatibilityMatrix = readFileSync(compatibilityMatrixPath, 'utf8');
     assert.match(compatibilityMatrix, /Evidence Scope Boundary/);
     assert.match(compatibilityMatrix, /validate-github-workflows/);
+    assert.match(compatibilityMatrix, /npm ci --ignore-scripts/);
     writeFileSync(
       compatibilityMatrixPath,
       compatibilityMatrix.replace(
         /## Evidence Scope Boundary[\s\S]*?## Tooling Prerequisites\r?\n/,
         '## Tooling Prerequisites\n',
+      ).replace(
+        /Node\.js 22\+ and lockfile-pinned development dependencies installed with `npm ci --ignore-scripts`/,
+        'Node.js 22+',
       ).replace(
         /\| GitHub workflow contracts \| Node\.js 20\+ \| `node scripts\/validate-github-workflows\.mjs` \|[\s\S]*?isolated mutating install smoke boundaries\. \|\r?\n/,
         '',
@@ -1704,7 +1829,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       docsIndex.replace(
         /## Public Navigation Boundary[\s\S]*?## Start Here\r?\n/,
         '## Start Here\n',
-      ),
+      ).replace(/^\| \[assets\/\]\(assets\/\).*\r?\n/mu, ''),
       'utf8',
     );
 
@@ -1796,6 +1921,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     assert.match(output, /registry author workflow GitHub workflow validation route/);
     assert.match(output, /compatibility matrix evidence scope boundary/);
     assert.match(output, /compatibility matrix optional tools boundary/);
+    assert.match(output, /compatibility matrix maintainer dependency boundary/);
     assert.match(output, /compatibility matrix GitHub workflow evidence boundary/);
     assert.match(output, /compatibility matrix private evidence boundary/);
     assert.match(output, /contributing public contribution scope boundary/);
@@ -1856,6 +1982,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     assert.match(output, /consumer Copilot setup private config boundary/);
     assert.match(output, /consumer Copilot setup no permission bypass boundary/);
     assert.match(output, /docs index public navigation boundary/);
+    assert.match(output, /canonical directory owners are/);
     assert.match(output, /showcase README private consumer boundary/);
     assert.match(output, /growth metrics no portal automation boundary/);
     assert.match(output, /assets no portal automation boundary/);

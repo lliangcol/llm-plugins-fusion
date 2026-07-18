@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { realpathSync } from 'node:fs';
 import { chmod, link, mkdir, mkdtemp, readFile, readdir, rm, stat, symlink, utimes, writeFile } from 'node:fs/promises';
-import { dirname, join, resolve } from 'node:path';
+import { delimiter, dirname, isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -10,6 +11,37 @@ import { runProcess } from '../../scripts/lib/process-runner.mjs';
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const bashCommand = resolveBashCommand();
+const physicalRepoRoot = realpathSync.native(repoRoot);
+
+function pathInside(root, path) {
+  const value = relative(root, path);
+  return value === '' || (!isAbsolute(value) && value !== '..' && !value.startsWith(`..${sep}`));
+}
+
+const projectFreePath = [...new Set([
+  dirname(process.execPath),
+  ...String(process.env.PATH ?? '').split(delimiter),
+])].filter((entry) => {
+  if (!entry || !isAbsolute(entry)) return false;
+  const lexical = resolve(entry);
+  let physical = lexical;
+  try { physical = realpathSync.native(lexical); } catch { /* missing external entries are harmless */ }
+  return !pathInside(repoRoot, lexical) && !pathInside(physicalRepoRoot, physical);
+}).join(delimiter);
+
+function auditEnvironment(root, label) {
+  const env = {
+    ...process.env,
+    ...(label === 'Bash' ? { PATH: projectFreePath, CLAUDE_PROJECT_DIR: repoRoot } : {}),
+    CLAUDE_PLUGIN_DATA: root,
+  };
+  if (label === 'Bash') {
+    for (const variable of Object.keys(env)) {
+      if (['BASH_ENV', 'ENV', 'NODE_OPTIONS'].includes(variable) || variable.startsWith('BASH_FUNC_')) delete env[variable];
+    }
+  }
+  return env;
+}
 const payload = JSON.stringify({
   hook_event_name: 'PostToolUse',
   session_id: 'session-1',
@@ -141,7 +173,7 @@ for (const [label, command, args] of [
     const before = (await stat(join(root, 'audit.log'))).size;
     const result = await runProcess(`${label} audit rotation`, command, args, {
       cwd: repoRoot,
-      env: { ...process.env, CLAUDE_PLUGIN_DATA: root },
+      env: auditEnvironment(root, label),
       input: payload,
     });
     assert.equal(result.ok, true, result.stderr);
@@ -160,7 +192,7 @@ for (const [label, command, args] of [
     const before = (await stat(join(root, 'audit.log'))).size;
     const result = await runProcess(`${label} audit rotation`, command, args, {
       cwd: repoRoot,
-      env: { ...process.env, CLAUDE_PLUGIN_DATA: root },
+      env: auditEnvironment(root, label),
       input: payload,
     });
     assert.equal(result.ok, true, result.stderr);
@@ -175,7 +207,7 @@ for (const [label, command, args] of [
     t.after(() => rm(root, { recursive: true, force: true }));
     const result = await runProcess(`${label} NotebookEdit audit`, command, args, {
       cwd: repoRoot,
-      env: { ...process.env, CLAUDE_PLUGIN_DATA: root },
+      env: auditEnvironment(root, label),
       input: notebookPayload,
     });
     assert.equal(result.ok, true, result.stderr);

@@ -23,7 +23,7 @@
 | 参数 | 必填 | 说明 | 示例 |
 | --- | --- | --- | --- |
 | `PERSPECTIVE` | No | `observer` 或 `reviewer`，默认 `observer` | `reviewer` |
-| `ARGUMENTS` | No | 待理解的需求、代码路径、日志或问题描述 | `订单退款需求说明` |
+| `ARGUMENTS` | Yes | 待理解的需求、代码路径、日志或问题描述 | `订单退款需求说明` |
 
 ## 输出
 
@@ -56,4 +56,3 @@
 - 不写代码。
 - 不提出解决方案、设计方案或重构建议。
 - 如需更深度探索，使用 `/nova-plugin:senior-explore`。
-

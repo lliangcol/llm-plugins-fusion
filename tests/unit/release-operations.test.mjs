@@ -5,7 +5,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { diffLabels, parseLabelCatalog } from '../../scripts/lib/label-catalog.mjs';
-import { evaluateIndependentReview } from '../../scripts/lib/release-review.mjs';
+import { evaluateIndependentReview, validateReleaseReviewerPolicy } from '../../scripts/lib/release-review.mjs';
 import { syncLabels } from '../../scripts/sync-github-labels.mjs';
 import { main as validateWorkflowContractV5 } from '../../scripts/validate-workflow-contract-v5.mjs';
 import { verifyIndependentReview } from '../../scripts/verify-independent-release-review.mjs';
@@ -25,6 +25,75 @@ test('independent release review excludes untrusted, bot, author, actor, and sup
   assert.deepEqual(result.approvalReviewers, ['other']);
   assert.equal(evaluateIndependentReview({ pullRequestAuthor: 'author', candidateActor: 'actor', trustedReviewers: ['peer'], minimumApprovals: 2, reviews: [{ reviewer: 'peer', state: 'APPROVED', submittedAt: '2026-01-01T00:00:00Z' }] }).passed, false);
   assert.equal(evaluateIndependentReview({ pullRequestAuthor: 'author', candidateActor: 'actor', reviews: [] }).passed, false);
+  assert.equal(evaluateIndependentReview({
+    pullRequestAuthor: 'Owner',
+    candidateActor: '@Publisher',
+    expectedReviewCommit: 'HEAD',
+    trustedReviewers: [' owner '],
+    reviews: [{ reviewer: '@owner', state: 'APPROVED', submittedAt: '2026-01-01T00:00:00Z', commit: 'head' }],
+  }).passed, false);
+  assert.throws(
+    () => evaluateIndependentReview({ pullRequestAuthor: 'author', candidateActor: 'actor', reviews: [], minimumApprovals: 0 }),
+    /minimumApprovals must be an integer of at least 1/u,
+  );
+});
+
+test('release reviewer policy validation rejects approval and shape fail-open values', () => {
+  const policy = {
+    schemaVersion: 1,
+    status: 'configured',
+    trustedUsers: ['peer'],
+    trustedTeams: [],
+    botIdentities: [],
+    sensitivePaths: ['schemas/'],
+    standardMinimumApprovals: 1,
+    sensitiveMinimumApprovals: 2,
+  };
+  assert.equal(validateReleaseReviewerPolicy(policy), policy);
+  for (const mutate of [
+    (value) => { value.standardMinimumApprovals = 0; },
+    (value) => { value.standardMinimumApprovals = -1; },
+    (value) => { value.sensitiveMinimumApprovals = 0; },
+    (value) => { value.sensitiveMinimumApprovals = '2'; },
+    (value) => { value.trustedUsers = 'peer'; },
+    (value) => { value.sensitivePaths = []; },
+    (value) => { value.sensitivePaths = ['../escape']; },
+    (value) => { value.trustedUsers = ['Owner']; },
+    (value) => { value.trustedUsers = ['owner', 'Owner']; },
+  ]) {
+    const invalid = structuredClone(policy);
+    mutate(invalid);
+    assert.throws(() => validateReleaseReviewerPolicy(invalid), /release reviewer/u);
+  }
+});
+
+test('independent review verifier rejects an invalid approval policy before GitHub API reads', async () => {
+  const directory = mkdtempSync(join(tmpdir(), 'nova-invalid-review-policy-'));
+  const reviewers = join(directory, 'reviewers.json');
+  let apiCalls = 0;
+  await import('node:fs/promises').then(({ writeFile }) => writeFile(reviewers, `${JSON.stringify({
+    schemaVersion: 1,
+    status: 'configured',
+    trustedUsers: ['peer'],
+    trustedTeams: [],
+    botIdentities: [],
+    sensitivePaths: ['schemas/'],
+    standardMinimumApprovals: 0,
+    sensitiveMinimumApprovals: 0,
+  })}\n`));
+  try {
+    await assert.rejects(
+      verifyIndependentReview({
+        args: ['--repository', 'owner/repo', '--commit', 'a'.repeat(40), '--candidate-actor', 'actor', '--reviewers', reviewers],
+        env: { GH_TOKEN: 'token' },
+        fetchImpl: async () => { apiCalls += 1; throw new Error('must not fetch'); },
+      }),
+      /standardMinimumApprovals must be an integer of at least 1/u,
+    );
+    assert.equal(apiCalls, 0);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
 
 test('label catalog computes create/update without deletion', () => {
@@ -59,17 +128,19 @@ test('independent review verifier writes current merged-PR evidence', async () =
   const directory = mkdtempSync(join(tmpdir(), 'nova-release-review-'));
   const output = join(directory, 'independent-review.json');
   const reviewers = join(directory, 'reviewers.json');
+  const mergeCommit = 'a'.repeat(40);
   await import('node:fs/promises').then(({ writeFile }) => writeFile(reviewers, `${JSON.stringify({ schemaVersion: 1, status: 'configured', trustedUsers: ['peer'], trustedTeams: [], botIdentities: [], sensitivePaths: ['schemas/'], standardMinimumApprovals: 1, sensitiveMinimumApprovals: 2 })}\n`));
   const fetchImpl = async (url) => {
     const records = url.includes('/reviews?')
-      ? [{ user: { login: 'peer' }, state: 'APPROVED', submitted_at: '2026-07-12T00:01:00Z', commit_id: '1234567890123456789012345678901234567890' }]
+      ? [{ id: 11, user: { login: 'peer', type: 'User' }, state: 'APPROVED', author_association: 'MEMBER', submitted_at: '2026-07-12T00:01:00Z', commit_id: '1234567890123456789012345678901234567890' }]
       : url.includes('/files?') ? [{ filename: 'README.md' }]
-        : [{ number: 42, merged_at: '2026-07-12T00:00:00Z', merge_commit_sha: 'abc123', head: { sha: '1234567890123456789012345678901234567890' }, user: { login: 'author' } }];
+        : url.endsWith('/pulls/42') ? { number: 42, merged_at: '2026-07-12T00:00:00Z', merge_commit_sha: mergeCommit, changed_files: 1, head: { sha: '1234567890123456789012345678901234567890' }, user: { login: 'author' } }
+        : [{ number: 42, merged_at: '2026-07-12T00:00:00Z', merge_commit_sha: mergeCommit, head: { sha: '1234567890123456789012345678901234567890' }, user: { login: 'author' } }];
     return { ok: true, status: 200, json: async () => records };
   };
   try {
     const evidence = await verifyIndependentReview({
-      args: ['--repository', 'owner/repo', '--commit', 'abc123', '--candidate-actor', 'release-bot', '--reviewers', reviewers, '--out', output],
+      args: ['--repository', 'owner/repo', '--commit', mergeCommit, '--candidate-actor', 'release-bot', '--reviewers', reviewers, '--out', output],
       env: { GH_TOKEN: 'token' },
       fetchImpl,
       now: () => new Date('2026-07-12T00:02:00Z'),

@@ -31,6 +31,22 @@
     ],
     "compatibilityAliases": "excluded"
   },
+  "resolvedVariantContract": "../../nova-plugin/runtime/resolved-variant-contracts.json",
+  "commandEntrypoint": {
+    "executionGate": "resolved-workflow-id-must-equal-invoked-command-id",
+    "mismatchAction": "stop-and-invoke-exact-direct-command",
+    "directCommandTemplate": "/nova-plugin:<directCommandId>",
+    "aliasRetirement": {
+      "status": "evidence-gated",
+      "removalRequires": [
+        "real-benchmark-evidence",
+        "native-permission-and-invocation-parity",
+        "plugin-major-release",
+        "governed-release-decision",
+        "migration-documentation"
+      ]
+    }
+  },
   "verificationEntrypoints": [
     "../../scripts/validate-plugin-install.mjs",
     "../../scripts/validate-plugin-route-live.mjs",

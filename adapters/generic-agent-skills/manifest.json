@@ -48,6 +48,7 @@
     "status": "evidence-gated",
     "removalRequires": [
       "real-benchmark-evidence",
+      "native-permission-and-invocation-parity",
       "plugin-major-release",
       "governed-release-decision",
       "migration-documentation"
@@ -73,6 +74,285 @@
     "fallback": "report-unsupported"
   },
   "claimBoundary": "Invocation and enforcement require an assistant-specific adapter and conformance evidence.",
+  "resolvedVariants": [
+    {
+      "canonicalSurfaceId": "produce-plan",
+      "variantParameters": {
+        "PLAN_PROFILE": "java-backend"
+      },
+      "normalizedVariantParameters": {
+        "PLAN_PROFILE": "java-backend"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "backend-plan",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/backend-plan.json"
+    },
+    {
+      "canonicalSurfaceId": "implement-plan",
+      "variantParameters": {
+        "EXECUTION_PROFILE": "codex-review-fix"
+      },
+      "normalizedVariantParameters": {
+        "EXECUTION_PROFILE": "codex-review-fix"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "codex-review-fix",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/codex-review-fix.json"
+    },
+    {
+      "canonicalSurfaceId": "review",
+      "variantParameters": {
+        "REVIEW_PROFILE": "codex-review-only"
+      },
+      "normalizedVariantParameters": {
+        "LEVEL": "standard",
+        "MODE": "full",
+        "REVIEW_PROFILE": "codex-review-only"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "codex-review-only",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/codex-review-only.json"
+    },
+    {
+      "canonicalSurfaceId": "review",
+      "variantParameters": {
+        "REVIEW_PROFILE": "codex-verify-only"
+      },
+      "normalizedVariantParameters": {
+        "LEVEL": "standard",
+        "MODE": "full",
+        "REVIEW_PROFILE": "codex-verify-only"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "codex-verify-only",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/codex-verify-only.json"
+    },
+    {
+      "canonicalSurfaceId": "explore",
+      "variantParameters": {},
+      "normalizedVariantParameters": {
+        "DEPTH": "standard",
+        "PERSPECTIVE": "observer"
+      },
+      "resolutionKind": "canonical-default",
+      "resolvedWorkflowId": "explore",
+      "compatibilityAlias": false,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/explore.json"
+    },
+    {
+      "canonicalSurfaceId": "explore",
+      "variantParameters": {
+        "DEPTH": "lite",
+        "PERSPECTIVE": "observer"
+      },
+      "normalizedVariantParameters": {
+        "DEPTH": "lite",
+        "PERSPECTIVE": "observer"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "explore-lite",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/explore-lite.json"
+    },
+    {
+      "canonicalSurfaceId": "explore",
+      "variantParameters": {
+        "PERSPECTIVE": "reviewer"
+      },
+      "normalizedVariantParameters": {
+        "DEPTH": "standard",
+        "PERSPECTIVE": "reviewer"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "explore-review",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/explore-review.json"
+    },
+    {
+      "canonicalSurfaceId": "finalize-work",
+      "variantParameters": {
+        "DEPTH": "lite"
+      },
+      "normalizedVariantParameters": {
+        "DEPTH": "lite"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "finalize-lite",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/finalize-lite.json"
+    },
+    {
+      "canonicalSurfaceId": "finalize-work",
+      "variantParameters": {},
+      "normalizedVariantParameters": {
+        "DEPTH": "standard"
+      },
+      "resolutionKind": "canonical-default",
+      "resolvedWorkflowId": "finalize-work",
+      "compatibilityAlias": false,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/finalize-work.json"
+    },
+    {
+      "canonicalSurfaceId": "implement-plan",
+      "variantParameters": {
+        "EXECUTION_PROFILE": "lite"
+      },
+      "normalizedVariantParameters": {
+        "EXECUTION_PROFILE": "lite"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "implement-lite",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/implement-lite.json"
+    },
+    {
+      "canonicalSurfaceId": "implement-plan",
+      "variantParameters": {},
+      "normalizedVariantParameters": {},
+      "resolutionKind": "canonical-default",
+      "resolvedWorkflowId": "implement-plan",
+      "compatibilityAlias": false,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/implement-plan.json"
+    },
+    {
+      "canonicalSurfaceId": "implement-plan",
+      "variantParameters": {
+        "EXECUTION_PROFILE": "standard"
+      },
+      "normalizedVariantParameters": {
+        "EXECUTION_PROFILE": "standard"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "implement-standard",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/implement-standard.json"
+    },
+    {
+      "canonicalSurfaceId": "produce-plan",
+      "variantParameters": {
+        "PLAN_PROFILE": "lite"
+      },
+      "normalizedVariantParameters": {
+        "PLAN_PROFILE": "lite"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "plan-lite",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/plan-lite.json"
+    },
+    {
+      "canonicalSurfaceId": "review",
+      "variantParameters": {
+        "REVIEW_PROFILE": "plan"
+      },
+      "normalizedVariantParameters": {
+        "LEVEL": "standard",
+        "MODE": "full",
+        "REVIEW_PROFILE": "plan"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "plan-review",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/plan-review.json"
+    },
+    {
+      "canonicalSurfaceId": "produce-plan",
+      "variantParameters": {},
+      "normalizedVariantParameters": {
+        "PLAN_PROFILE": "general"
+      },
+      "resolutionKind": "canonical-default",
+      "resolvedWorkflowId": "produce-plan",
+      "compatibilityAlias": false,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/produce-plan.json"
+    },
+    {
+      "canonicalSurfaceId": "review",
+      "variantParameters": {},
+      "normalizedVariantParameters": {
+        "LEVEL": "standard",
+        "MODE": "full",
+        "REVIEW_PROFILE": "general"
+      },
+      "resolutionKind": "canonical-default",
+      "resolvedWorkflowId": "review",
+      "compatibilityAlias": false,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/review.json"
+    },
+    {
+      "canonicalSurfaceId": "review",
+      "variantParameters": {
+        "LEVEL": "lite"
+      },
+      "normalizedVariantParameters": {
+        "LEVEL": "lite",
+        "MODE": "full",
+        "REVIEW_PROFILE": "general"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "review-lite",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/review-lite.json"
+    },
+    {
+      "canonicalSurfaceId": "review",
+      "variantParameters": {
+        "LEVEL": "standard",
+        "MODE": "findings-only"
+      },
+      "normalizedVariantParameters": {
+        "LEVEL": "standard",
+        "MODE": "findings-only",
+        "REVIEW_PROFILE": "general"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "review-only",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/review-only.json"
+    },
+    {
+      "canonicalSurfaceId": "review",
+      "variantParameters": {
+        "LEVEL": "strict"
+      },
+      "normalizedVariantParameters": {
+        "LEVEL": "strict",
+        "MODE": "full",
+        "REVIEW_PROFILE": "general"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "review-strict",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/review-strict.json"
+    },
+    {
+      "canonicalSurfaceId": "route",
+      "variantParameters": {},
+      "normalizedVariantParameters": {},
+      "resolutionKind": "canonical-default",
+      "resolvedWorkflowId": "route",
+      "compatibilityAlias": false,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/route.json"
+    },
+    {
+      "canonicalSurfaceId": "explore",
+      "variantParameters": {
+        "DEPTH": "deep"
+      },
+      "normalizedVariantParameters": {
+        "DEPTH": "deep",
+        "PERSPECTIVE": "observer"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "senior-explore",
+      "compatibilityAlias": true,
+      "runtimeContract": "../../nova-plugin/runtime/contracts/senior-explore.json"
+    }
+  ],
   "workflows": [
     {
       "id": "backend-plan",
@@ -121,14 +401,12 @@
       ],
       "effects": [
         "artifact-write",
-        "workspace-read",
-        "workspace-write"
+        "workspace-read"
       ],
       "authorizationProfile": "artifact-write",
       "enforcementRequirements": [
         "enforce:artifact-write",
-        "enforce:workspace-read",
-        "enforce:workspace-write"
+        "enforce:workspace-read"
       ],
       "evidenceRequirements": [
         "authorization-decision",
@@ -136,6 +414,21 @@
         "validation-result"
       ],
       "outputContract": "backend-plan-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "NotebookEdit",
+        "Bash"
+      ],
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "destructiveActions": "low",
+      "commandEntrypoint": {
+        "directCommandId": "backend-plan"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -149,7 +442,7 @@
       },
       "permissionPolicy": {
         "workspaceRead": "preapproved",
-        "workspaceWrite": "preapproved",
+        "workspaceWrite": "prompt",
         "shell": "denied",
         "network": "denied",
         "credentials": "denied",
@@ -233,6 +526,22 @@
         "validation-result"
       ],
       "outputContract": "codex-review-fix-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit"
+      ],
+      "disallowedTools": [
+        "NotebookEdit"
+      ],
+      "modelInvocable": false,
+      "subagentSafe": false,
+      "destructiveActions": "medium",
+      "commandEntrypoint": {
+        "directCommandId": "codex-review-fix"
+      },
       "runtimeRequirements": {
         "executables": [
           {
@@ -337,6 +646,22 @@
         "validation-result"
       ],
       "outputContract": "codex-review-only-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit"
+      ],
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "destructiveActions": "low",
+      "commandEntrypoint": {
+        "directCommandId": "codex-review-only"
+      },
       "runtimeRequirements": {
         "executables": [
           {
@@ -452,6 +777,22 @@
         "validation-result"
       ],
       "outputContract": "codex-verify-only-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit"
+      ],
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "destructiveActions": "low",
+      "commandEntrypoint": {
+        "directCommandId": "codex-verify-only"
+      },
       "runtimeRequirements": {
         "executables": [
           {
@@ -553,6 +894,23 @@
         "validation-result"
       ],
       "outputContract": "exploration-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "commandEntrypoint": {
+        "directCommandId": "explore"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -621,6 +979,23 @@
         "validation-result"
       ],
       "outputContract": "exploration-lite-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "commandEntrypoint": {
+        "directCommandId": "explore-lite"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -691,6 +1066,23 @@
         "validation-result"
       ],
       "outputContract": "exploration-review-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "commandEntrypoint": {
+        "directCommandId": "explore-review"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -760,6 +1152,23 @@
         "validation-result"
       ],
       "outputContract": "finalize-lite-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "commandEntrypoint": {
+        "directCommandId": "finalize-lite"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -839,6 +1248,22 @@
         "validation-result"
       ],
       "outputContract": "finalize-work-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit"
+      ],
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "commandEntrypoint": {
+        "directCommandId": "finalize-work"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -915,6 +1340,22 @@
         "validation-result"
       ],
       "outputContract": "implementation-lite-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit"
+      ],
+      "disallowedTools": [
+        "NotebookEdit"
+      ],
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "destructiveActions": "medium",
+      "commandEntrypoint": {
+        "directCommandId": "implement-lite"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -1015,6 +1456,22 @@
         "validation-result"
       ],
       "outputContract": "implementation-plan-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit"
+      ],
+      "disallowedTools": [
+        "NotebookEdit"
+      ],
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "destructiveActions": "medium",
+      "commandEntrypoint": {
+        "directCommandId": "implement-plan"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -1091,6 +1548,22 @@
         "validation-result"
       ],
       "outputContract": "implementation-standard-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Write",
+        "Edit"
+      ],
+      "disallowedTools": [
+        "NotebookEdit"
+      ],
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "destructiveActions": "medium",
+      "commandEntrypoint": {
+        "directCommandId": "implement-standard"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -1163,6 +1636,23 @@
         "validation-result"
       ],
       "outputContract": "plan-lite-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "commandEntrypoint": {
+        "directCommandId": "plan-lite"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -1241,6 +1731,23 @@
         "validation-result"
       ],
       "outputContract": "plan-review-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "commandEntrypoint": {
+        "directCommandId": "plan-review"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -1331,14 +1838,12 @@
       ],
       "effects": [
         "artifact-write",
-        "workspace-read",
-        "workspace-write"
+        "workspace-read"
       ],
       "authorizationProfile": "artifact-write",
       "enforcementRequirements": [
         "enforce:artifact-write",
-        "enforce:workspace-read",
-        "enforce:workspace-write"
+        "enforce:workspace-read"
       ],
       "evidenceRequirements": [
         "authorization-decision",
@@ -1346,6 +1851,21 @@
         "validation-result"
       ],
       "outputContract": "produce-plan-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "NotebookEdit",
+        "Bash"
+      ],
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "destructiveActions": "low",
+      "commandEntrypoint": {
+        "directCommandId": "produce-plan"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -1359,7 +1879,7 @@
       },
       "permissionPolicy": {
         "workspaceRead": "preapproved",
-        "workspaceWrite": "preapproved",
+        "workspaceWrite": "prompt",
         "shell": "denied",
         "network": "denied",
         "credentials": "denied",
@@ -1444,6 +1964,23 @@
         "validation-result"
       ],
       "outputContract": "review-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "commandEntrypoint": {
+        "directCommandId": "review"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -1511,6 +2048,23 @@
         "validation-result"
       ],
       "outputContract": "review-lite-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "commandEntrypoint": {
+        "directCommandId": "review-lite"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -1582,6 +2136,23 @@
         "validation-result"
       ],
       "outputContract": "review-only-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "commandEntrypoint": {
+        "directCommandId": "review-only"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -1652,6 +2223,23 @@
         "validation-result"
       ],
       "outputContract": "review-strict-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "commandEntrypoint": {
+        "directCommandId": "review-strict"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -1726,6 +2314,23 @@
         "validation-result"
       ],
       "outputContract": "recommended-route-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "Write",
+        "Edit",
+        "NotebookEdit",
+        "Bash"
+      ],
+      "modelInvocable": true,
+      "subagentSafe": true,
+      "destructiveActions": "none",
+      "commandEntrypoint": {
+        "directCommandId": "route"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -1796,8 +2401,6 @@
           "type": "enum",
           "required": false,
           "values": [
-            "quick",
-            "normal",
             "deep"
           ]
         },
@@ -1817,14 +2420,12 @@
       ],
       "effects": [
         "artifact-write",
-        "workspace-read",
-        "workspace-write"
+        "workspace-read"
       ],
       "authorizationProfile": "artifact-write",
       "enforcementRequirements": [
         "enforce:artifact-write",
-        "enforce:workspace-read",
-        "enforce:workspace-write"
+        "enforce:workspace-read"
       ],
       "evidenceRequirements": [
         "authorization-decision",
@@ -1832,6 +2433,21 @@
         "validation-result"
       ],
       "outputContract": "senior-exploration-v2",
+      "allowedTools": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "disallowedTools": [
+        "NotebookEdit",
+        "Bash"
+      ],
+      "modelInvocable": false,
+      "subagentSafe": true,
+      "destructiveActions": "low",
+      "commandEntrypoint": {
+        "directCommandId": "senior-explore"
+      },
       "runtimeRequirements": {
         "executables": [],
         "network": {
@@ -1845,7 +2461,7 @@
       },
       "permissionPolicy": {
         "workspaceRead": "preapproved",
-        "workspaceWrite": "preapproved",
+        "workspaceWrite": "prompt",
         "shell": "denied",
         "network": "denied",
         "credentials": "denied",

@@ -55,7 +55,7 @@ guidance, public validation scripts, and public documentation.
 | Registry source | `.claude-plugin/registry.source.json` |
 | Generated marketplace outputs | `.claude-plugin/marketplace.json`, `.claude-plugin/marketplace.metadata.json`, `docs/marketplace/catalog.md` |
 | Project roadmap | `ROADMAP.md` |
-| Active optimization record | `docs/project-optimization-plan.md` |
+| Active optimization record | `docs/project/plans/current-remediation.md` |
 | Repository docs index | `docs/README.md` |
 | Plugin docs index | `nova-plugin/docs/README.md` |
 | Maintainer shortcuts | `package.json` |
@@ -69,7 +69,7 @@ and update this file after the source is corrected.
 - Skills: 6 files under `nova-plugin/skills/nova-*/SKILL.md`.
 - Active agents: 6 core files under `nova-plugin/agents/*.md`.
 - Capability packs: 8 documentation packs under `nova-plugin/packs/*/README.md`.
-- Main plugin version: `4.0.0`.
+- Current stable plugin version: `4.0.0`.
 - Current stable promotion baseline: exact release tag `v4.0.0`; moving `main`
   is not stable release evidence.
 
@@ -183,7 +183,7 @@ for CI or isolated test-user environments.
   Future rounds should still inspect `git status --short --branch` before
   editing and handle any existing diff first.
 - `docs/README.md`, `CLAUDE.md`, `AGENTS.md`, `README.md`, `ROADMAP.md`, and
-  `docs/project-optimization-plan.md` repeat project-positioning facts. Drift
+  `docs/project/plans/current-remediation.md` repeat project-positioning facts. Drift
   checks are essential when any inventory or release fact changes.
 - Windows local runs may skip Bash-dependent checks. CI/Linux remains the
   authoritative environment for hook shell syntax and Bash runtime smoke.

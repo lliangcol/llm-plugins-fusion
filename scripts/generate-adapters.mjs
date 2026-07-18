@@ -5,6 +5,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { loadNovaWorkflowModelV6 } from './lib/workflow-model.mjs';
+import { compileResolvedVariantManifest } from '../framework/compiler/compile-runtime-contracts.mjs';
+import { resolveVariantWorkflow } from '../framework/core/variant-contracts.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const sourcePath = 'workflow-specs/workflows.v6.json';
@@ -14,7 +16,7 @@ function loadSpec() {
 }
 
 function genericManifest(model) {
-  const { spec, product, adapterById } = model;
+  const { spec, product, adapterById, behaviorSpec } = model;
   const adapter = adapterById.generic;
   const aliasPolicy = product.compatibilityAliasPolicy;
   if (!aliasPolicy) throw new Error('product compatibilityAliasPolicy missing');
@@ -37,8 +39,13 @@ function genericManifest(model) {
     protocolVersions: adapter.protocolVersions,
     contractEnforcement: adapter.contractEnforcement,
     claimBoundary: 'Invocation and enforcement require an assistant-specific adapter and conformance evidence.',
+    resolvedVariants: compileResolvedVariantManifest(spec, behaviorSpec).resolutions.map((entry) => ({
+      ...entry,
+      runtimeContract: `../../nova-plugin/runtime/${entry.runtimeContract}`,
+    })),
     workflows: spec.workflows.map((workflow) => {
       const canonicalSkill = `nova-${workflow.canonicalSurfaceId}`;
+      const profile = spec.permissionProfiles[workflow.authorizationProfile];
       return {
         id: workflow.id,
         canonicalSurfaceId: workflow.canonicalSurfaceId,
@@ -59,6 +66,14 @@ function genericManifest(model) {
         enforcementRequirements: workflow.enforcementRequirements,
         evidenceRequirements: workflow.evidenceRequirements,
         outputContract: workflow.outputContract,
+        allowedTools: profile.allowedTools,
+        disallowedTools: profile.disallowedTools,
+        modelInvocable: workflow.modelInvocable,
+        subagentSafe: workflow.subagentSafe,
+        destructiveActions: workflow.risk,
+        commandEntrypoint: {
+          directCommandId: workflow.id,
+        },
         runtimeRequirements: workflow.runtimeRequirements ?? {
           executables: [],
           network: { need: 'none', purpose: 'none' },
@@ -78,10 +93,8 @@ function codexAgents(model) {
   const routeBehavior = behaviorSpec.behaviors.find((behavior) => behavior.id === 'route');
   if (!routeBehavior) throw new Error('route behavior IR missing');
   const routeRows = routeBehavior.decisionTable.map((entry) => {
-    const alias = spec.workflows.find((workflow) => workflow.compatibilityAlias
-      && workflow.canonicalSurfaceId === entry.route
-      && JSON.stringify(workflow.variantPreset) === JSON.stringify(entry.variantParameters));
-    return `| \`${JSON.stringify(entry.when)}\` | ${entry.route} | \`${JSON.stringify(entry.variantParameters)}\` | ${alias?.id ?? 'None'} | ${entry.action} |`;
+    const resolved = resolveVariantWorkflow(spec.workflows, behaviorSpec, entry.route, entry.variantParameters);
+    return `| \`${JSON.stringify(entry.when)}\` | ${entry.route} | \`${JSON.stringify(entry.variantParameters)}\` | ${resolved.workflow.id} | ${entry.action} |`;
   }).join('\n');
   return `# Generated Codex Workflow Adapter
 
@@ -93,9 +106,9 @@ Codex should treat the referenced \`nova-plugin/skills/nova-*/SKILL.md\` files a
 
 For write-capable workflows, require explicit approval and remain inside the user-provided workspace. Runtime requirements describe what execution needs; permission policy separately describes what may be preapproved, prompted, explicitly authorized, denied, or unsupported. Never interpret a prompted network or credential requirement as implicit authorization. User-scope mutation, external publish, and Git history mutation remain denied unless a consumer repository separately authorizes them.
 
-When routing, prefer the first exact specialized condition below over a broader hub. Select only a canonical workflow from the product automatic-routing inventory and express specialization through the exact structured variant parameters. A compatibility alias is optional direct-invocation information, never the selected route identity. Return the complete ordered set of the matched variant workflow's required input names exactly as UPPER_SNAKE_CASE even when values are present, inferred, or resolved; never return only unresolved inputs or substitute the route workflow's own REQUEST or a prose description.
+When routing, prefer the first exact specialized condition below over a broader hub. Select only a canonical workflow from the product automatic-routing inventory and express specialization through structured variant parameters. Extract only selectors declared in \`nova-plugin/runtime/resolved-variant-contracts.json\`, validate their values, and fill declared selector defaults. Use an exact normalized override when present. A non-exact combination that triggers any alias specialization is conflicting and must stop; only a valid combination that triggers no alias specialization may use the canonical fallback. The complete resolved runtime contract, including an alias contract when selected, is authoritative and no field falls back to canonical prose. Codex and generic adapters may execute that resolved contract directly under their adapter enforcement; the Claude static-frontmatter direct-command gate does not apply. Return the complete ordered set of required inputs exactly as UPPER_SNAKE_CASE even when values are present, inferred, or resolved; never return only unresolved inputs or substitute the canonical route workflow's inputs.
 
-| Routing condition | Canonical workflow | Variant parameters | Optional direct alias | Action |
+| Routing condition | Canonical workflow | Variant parameters | Resolved contract | Action |
 | --- | --- | --- | --- | --- |
 ${routeRows}
 
@@ -108,6 +121,8 @@ ${rows}
 function claudeManifest(model) {
   const { spec, product, adapterById } = model;
   const adapter = adapterById.claude;
+  const aliasPolicy = product.compatibilityAliasPolicy;
+  if (!aliasPolicy) throw new Error('product compatibilityAliasPolicy missing');
   return {
     schemaVersion: 2,
     source: 'workflow-specs/adapters/claude.json',
@@ -117,6 +132,13 @@ function claudeManifest(model) {
     protocolVersions: adapter.protocolVersions,
     contractEnforcement: adapter.contractEnforcement,
     automaticRouting: product.automaticRouting,
+    resolvedVariantContract: '../../nova-plugin/runtime/resolved-variant-contracts.json',
+    commandEntrypoint: {
+      executionGate: 'resolved-workflow-id-must-equal-invoked-command-id',
+      mismatchAction: 'stop-and-invoke-exact-direct-command',
+      directCommandTemplate: `/${product.pluginNamespace}:<directCommandId>`,
+      aliasRetirement: aliasPolicy,
+    },
     verificationEntrypoints: [
       '../../scripts/validate-plugin-install.mjs',
       '../../scripts/validate-plugin-route-live.mjs',

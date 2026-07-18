@@ -8,6 +8,7 @@
 
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { withoutGithubCredentials } from './lib/credential-environment.mjs';
 import { assertNodeVersion } from './lib/node-version.mjs';
 import { runProcess } from './lib/process-runner.mjs';
 
@@ -32,12 +33,14 @@ export function npmInvocation({
 
 export async function main({ platform = process.platform, runner = runProcess, runTestGates = true, env = process.env } = {}) {
   let failed = 0;
-  async function run(label, command, args = []) {
+  const credentialFreeEnv = withoutGithubCredentials(env);
+  async function run(label, command, args = [], childEnv = credentialFreeEnv) {
     console.log(`\n== ${label} ==`);
     const result = await runner(label, command, args, {
       cwd: root,
       capture: false,
       timeoutMs: 180_000,
+      env: childEnv,
     });
     if (!result.ok) {
       const message = result.errorMessage
@@ -57,7 +60,9 @@ export async function main({ platform = process.platform, runner = runProcess, r
     const benchmarkArgs = ['scripts/profile-validation.mjs', '--benchmark'];
     const requiredProfile = env.NOVA_REQUIRED_VALIDATION_PROFILE?.trim();
     if (requiredProfile) benchmarkArgs.push('--require-profile', requiredProfile);
-    await run('benchmark validate all', process.execPath, benchmarkArgs);
+    // The benchmark wrapper alone receives the token for its explicit external
+    // provenance request; it strips credentials before spawning validate-all.
+    await run('benchmark validate all', process.execPath, benchmarkArgs, env);
   }
   await run('generated registry drift check', process.execPath, ['scripts/generate-registry.mjs']);
   await run('git diff --check', 'git', ['diff', '--check']);

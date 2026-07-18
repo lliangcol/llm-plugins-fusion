@@ -24,7 +24,7 @@
 
 | Parameter   | Required | Description         | Example          |
 | ----------- | -------- | ------------------- | ---------------- |
-| `ARGUMENTS` | No       | Scope to summarize. | `Change summary` |
+| `ARGUMENTS` | Yes      | Scope to summarize. | `Change summary` |
 
 ## Output
 

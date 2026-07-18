@@ -20,5 +20,14 @@
     "credentialSources": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
     "enforcementLevels": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } }
   },
-  "allOf": [{ "if": { "properties": { "schemaVersion": { "const": 5 } } }, "then": { "required": ["protocolVersions"], "properties": { "protocolVersions": {} } } }]
+  "allOf": [
+    {
+      "if": { "properties": { "schemaVersion": { "const": 4 } }, "required": ["schemaVersion"] },
+      "then": { "properties": { "protocolVersions": false } }
+    },
+    {
+      "if": { "properties": { "schemaVersion": { "const": 5 } }, "required": ["schemaVersion"] },
+      "then": { "required": ["protocolVersions"] }
+    }
+  ]
 }

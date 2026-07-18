@@ -22,30 +22,34 @@
 
 ## Parameters
 
-| Parameter    | Required | Description                                | Example                     |
-| ------------ | -------- | ------------------------------------------ | --------------------------- |
-| `WORK_SCOPE` | No       | Current completed change scope (implicit). | `Current workspace changes` |
+| Parameter      | Required | Description                            | Example                    |
+| -------------- | -------- | -------------------------------------- | -------------------------- |
+| `WORK_SUMMARY` | Yes      | Completed changes and validation context. | `Docs fixes and checks` |
+| `DEPTH`        | No       | `lite` / `standard`; defaults to standard. | `standard`             |
 
 ## Output
 
-- With Git: commit message + PR description; without Git: local summary + manual steps; must include change/why/limitations/follow-up.
+- The fixed order is `title or commit message`, `change summary`, `validation`, `handoff`, and `out-of-scope follow-up`.
 - Example output structure:
 
 ```text
-Case A (Git): commit message + PR description
-Case B (No Git): local change summary + manual steps
+1. title or commit message
+2. change summary
+3. validation
+4. handoff
+5. out-of-scope follow-up
 ```
 
 ## Full Examples
 
 ```text
 /nova-plugin:finalize-work
-Generate commit message and PR description.
+WORK_SUMMARY="Completed command-doc fixes and docs validation"
 ```
 
 ```text
 /nova-plugin:finalize-work
-No Git project; provide handoff summary.
+WORK_SUMMARY="Completed and validated changes in a non-Git project" DEPTH=lite
 ```
 
 ```text

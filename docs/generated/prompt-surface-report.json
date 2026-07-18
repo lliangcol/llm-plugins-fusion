@@ -18,23 +18,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/backend-plan.md",
-            "bytes": 1173,
-            "tokens": 294,
-            "sha256": "fddb3699ad9b257c731f4442379a286a5bc545a67c8f98cdf0aded9b64730e21"
+            "bytes": 2418,
+            "tokens": 605,
+            "sha256": "1ac4e56029bef41d667885ea14c67ed46614b4da3d314c749e78cf92b4331600"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/backend-plan.json",
-            "bytes": 6190,
-            "tokens": 1548,
-            "sha256": "e71d092bb9aba29802998dd822d9347d340c972744e2fbed3d08ac8fec07f13e"
+            "bytes": 6708,
+            "tokens": 1677,
+            "sha256": "6bb1ef3f500e2097427ba95f52723d6892def66fdaa42dd18008758fdd4c61f8"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-produce-plan/SKILL.md",
-            "bytes": 10352,
-            "tokens": 2580,
-            "sha256": "d9b1f1a9723c2b9d921c389594322f10a79232b7a9a594bac4e9a9560955ea75"
+            "bytes": 12347,
+            "tokens": 3078,
+            "sha256": "69a37994318e52b4f4dfd8c9924e972ec06bbdeeabd34f349c8070a02b6de621"
           },
           {
             "kind": "owner-agent",
@@ -100,8 +100,8 @@
       },
       "aggregate": {
         "files": 7,
-        "bytes": 26023,
-        "tokens": 6501,
+        "bytes": 29781,
+        "tokens": 7439,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -116,23 +116,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/codex-review-fix.md",
-            "bytes": 1192,
-            "tokens": 298,
-            "sha256": "8dd62a8ab5c6d34dacee1de02d46c09c3d801d92cda72f10d997e98cbf1c1436"
+            "bytes": 2452,
+            "tokens": 613,
+            "sha256": "f2a49ebe59e243b4801014db3c11f3ba9f17335e12237b61dea26ac475b9d08a"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/codex-review-fix.json",
-            "bytes": 8787,
-            "tokens": 2197,
-            "sha256": "d090eab301d9c39de667ac0cf69ed597f707fcad8292d3ab4388b64b9461812c"
+            "bytes": 9418,
+            "tokens": 2355,
+            "sha256": "7c5be50a0fc019f839fffd9efd1af6c9eff409b57e45bb5732d8ef2d38e6487e"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-implement-plan/SKILL.md",
-            "bytes": 8005,
-            "tokens": 1995,
-            "sha256": "63cf37ac1ea04a965929072576a16853bbc7e10fa48be2146d5fd9644fb6ac57"
+            "bytes": 10109,
+            "tokens": 2520,
+            "sha256": "72f914d01839c52d4397119c60323ebab3249cfc16cb9859258beb62e43e8daf"
           },
           {
             "kind": "owner-agent",
@@ -186,8 +186,8 @@
       },
       "aggregate": {
         "files": 6,
-        "bytes": 20571,
-        "tokens": 5138,
+        "bytes": 24566,
+        "tokens": 6136,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -202,23 +202,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/codex-review-only.md",
-            "bytes": 1150,
-            "tokens": 288,
-            "sha256": "701d46fb4f114d23e0b6dc99212b04bfe4a0a3cac2605c60044c93bb278e8968"
+            "bytes": 2411,
+            "tokens": 603,
+            "sha256": "7b0a5f0608071c53d0614f013232d21c63a963fdcd524e8eb3d0cae89d0407aa"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/codex-review-only.json",
-            "bytes": 6725,
-            "tokens": 1682,
-            "sha256": "4d807d8e4b7304e9523336268b6b8cfe12bbfa03b2d233af53ce108f25bc6608"
+            "bytes": 7324,
+            "tokens": 1831,
+            "sha256": "b1c583edcf22395aa56f4429bab916d5a34264d1b02e3a6655a1f59e2652d76a"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-review/SKILL.md",
-            "bytes": 8781,
-            "tokens": 2189,
-            "sha256": "a20d2f1128586f9024b6ccecb257325aa9ff690724e2e0a8827967d86217857b"
+            "bytes": 11656,
+            "tokens": 2908,
+            "sha256": "07ae09622b249bc56f8b5270c3e8c6aabd7a62a49580feecf9c11b248d52a0ba"
           },
           {
             "kind": "owner-agent",
@@ -248,8 +248,8 @@
       },
       "aggregate": {
         "files": 4,
-        "bytes": 17502,
-        "tokens": 4371,
+        "bytes": 22237,
+        "tokens": 5554,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -264,23 +264,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/codex-verify-only.md",
-            "bytes": 1151,
-            "tokens": 288,
-            "sha256": "0f4f418e79ca7b1ae40bbda5e2321ca5a22088c29872efa021ab2c3c990a66ba"
+            "bytes": 2412,
+            "tokens": 603,
+            "sha256": "90b7896b74742291c9022c1bfbfd6d9f069f4c1ff60fa64d512352f322d94cfc"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/codex-verify-only.json",
-            "bytes": 7382,
-            "tokens": 1846,
-            "sha256": "46577f65a21b6fcf3ad620ef925ef29e458ec17159cb2f58b72a17cb1727c163"
+            "bytes": 7981,
+            "tokens": 1996,
+            "sha256": "2721de882b62f66464d0750bafb220ded3bf84d9a85ed90f8401c0d687cc965a"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-review/SKILL.md",
-            "bytes": 8781,
-            "tokens": 2189,
-            "sha256": "a20d2f1128586f9024b6ccecb257325aa9ff690724e2e0a8827967d86217857b"
+            "bytes": 11656,
+            "tokens": 2908,
+            "sha256": "07ae09622b249bc56f8b5270c3e8c6aabd7a62a49580feecf9c11b248d52a0ba"
           },
           {
             "kind": "owner-agent",
@@ -310,8 +310,8 @@
       },
       "aggregate": {
         "files": 4,
-        "bytes": 18181,
-        "tokens": 4540,
+        "bytes": 22916,
+        "tokens": 5724,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -326,23 +326,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/explore.md",
-            "bytes": 1038,
-            "tokens": 260,
-            "sha256": "8cafb7f6d41a6a210de56f9f638663a0dd36e387fe38b2720e4845d490fe129b"
+            "bytes": 2247,
+            "tokens": 562,
+            "sha256": "553c8982bf1e8c69b89e0323b1ae28b655dafde75a5bf6926b6369c4aab7e677"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/explore.json",
-            "bytes": 7766,
-            "tokens": 1942,
-            "sha256": "4be0956f1c9ccda8a1f32b2594d9ebc6899d097f2fff0b61122a1cfc53cfb8c7"
+            "bytes": 8315,
+            "tokens": 2079,
+            "sha256": "cd8232e39dbbe068d11deb6e99eaf3c58fd7ff23c9752f38a3442a5fc0df0b14"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-explore/SKILL.md",
-            "bytes": 6766,
-            "tokens": 1687,
-            "sha256": "d36a4579f644de37ffd43f10731e4ff98d616fc03814cea77965f11a318ab404"
+            "bytes": 9358,
+            "tokens": 2333,
+            "sha256": "c18c1b6576ab6c9dc475f2582b6d9c8b672aec3ea92afe63b628a6a02a051706"
           },
           {
             "kind": "owner-agent",
@@ -384,8 +384,8 @@
       },
       "aggregate": {
         "files": 5,
-        "bytes": 17409,
-        "tokens": 4350,
+        "bytes": 21759,
+        "tokens": 5435,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -400,23 +400,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/explore-lite.md",
-            "bytes": 1156,
-            "tokens": 289,
-            "sha256": "950eeb5ebd20b43f48a8861e7a8fb5f4fa80c5e5b37de997165ab39045167a76"
+            "bytes": 2412,
+            "tokens": 603,
+            "sha256": "01a5b2207a1fabe539deeb3d0b604edbfcbb1f9da3c64e083a9f3972abd883bb"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/explore-lite.json",
-            "bytes": 4641,
-            "tokens": 1161,
-            "sha256": "cca278973ba415e024696af3a7fdc2a76a39fad67f68f11aa5ea7ff1034dc91f"
+            "bytes": 5195,
+            "tokens": 1299,
+            "sha256": "f3b2deb3ea9712c6bc873fa52679113a07b2c92f3a92de398e567d2b3d52c278"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-explore/SKILL.md",
-            "bytes": 6766,
-            "tokens": 1687,
-            "sha256": "d36a4579f644de37ffd43f10731e4ff98d616fc03814cea77965f11a318ab404"
+            "bytes": 9358,
+            "tokens": 2333,
+            "sha256": "c18c1b6576ab6c9dc475f2582b6d9c8b672aec3ea92afe63b628a6a02a051706"
           },
           {
             "kind": "owner-agent",
@@ -446,8 +446,8 @@
       },
       "aggregate": {
         "files": 4,
-        "bytes": 13556,
-        "tokens": 3386,
+        "bytes": 17958,
+        "tokens": 4484,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -462,23 +462,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/explore-review.md",
-            "bytes": 1150,
-            "tokens": 288,
-            "sha256": "410cdf8361a4ea6216cbdd05990d7adf0f01ab734bf41504d3d1b5c5b6703ba1"
+            "bytes": 2408,
+            "tokens": 602,
+            "sha256": "c4a9be6a6f5a28459f45facd29059ca11b1d5f975738b64ac36841e95dcac139"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/explore-review.json",
-            "bytes": 4715,
-            "tokens": 1179,
-            "sha256": "e988f53ae9e7a4287e46397c2edcaf87e94e217f16eb396bb7ac7035aa40670f"
+            "bytes": 5271,
+            "tokens": 1318,
+            "sha256": "7a3a4ccc4adb55eb9939c821d4d765ac85fe4d2d66b47790f44af0e55f8c7a1b"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-explore/SKILL.md",
-            "bytes": 6766,
-            "tokens": 1687,
-            "sha256": "d36a4579f644de37ffd43f10731e4ff98d616fc03814cea77965f11a318ab404"
+            "bytes": 9358,
+            "tokens": 2333,
+            "sha256": "c18c1b6576ab6c9dc475f2582b6d9c8b672aec3ea92afe63b628a6a02a051706"
           },
           {
             "kind": "owner-agent",
@@ -532,8 +532,8 @@
       },
       "aggregate": {
         "files": 6,
-        "bytes": 17731,
-        "tokens": 4431,
+        "bytes": 22137,
+        "tokens": 5530,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -548,23 +548,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/finalize-lite.md",
-            "bytes": 1133,
-            "tokens": 284,
-            "sha256": "410c9ce6e34a7e45d40a3fe55120460b0e61c4813f5ca325c9666ecd88888550"
+            "bytes": 2390,
+            "tokens": 598,
+            "sha256": "58ad4af9a41b498e5d590b19ab283e93b8c227cbbecc850087c228ff8a518a90"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/finalize-lite.json",
-            "bytes": 4885,
-            "tokens": 1222,
-            "sha256": "9cf3e82abf1753c9443f7198e8593e7fac1a90532e1fe62fb311cca464084a15"
+            "bytes": 5440,
+            "tokens": 1360,
+            "sha256": "8967360988887dba12bbc1f33dba2a0a3c5c6d1607203015fd68099c4683f865"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-finalize-work/SKILL.md",
-            "bytes": 7526,
-            "tokens": 1872,
-            "sha256": "5078c27dc824e1d077d95485ad2ff5be27e2ce34d51cb68a140275809406d95d"
+            "bytes": 9234,
+            "tokens": 2300,
+            "sha256": "4dd4786afe7dbc12dacc730a83419db3bd91d20faf69c6f6d2e9745013b26016"
           },
           {
             "kind": "owner-agent",
@@ -606,8 +606,8 @@
       },
       "aggregate": {
         "files": 5,
-        "bytes": 16954,
-        "tokens": 4231,
+        "bytes": 20474,
+        "tokens": 5111,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -622,23 +622,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/finalize-work.md",
-            "bytes": 1067,
-            "tokens": 267,
-            "sha256": "adf5cc31c59b7dd9058946d65ee95038ca735af2c5f04200b6e9b7232b6c05b5"
+            "bytes": 2282,
+            "tokens": 571,
+            "sha256": "7fffe9f22fbe5175c90e50a039b47c04ff60ddb021f45a06537876737a1e84a5"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/finalize-work.json",
-            "bytes": 6228,
-            "tokens": 1557,
-            "sha256": "ad9504a383dbef58ef7c238c215dc812d6c7e25b529542f9d0e5ecf2676e29c5"
+            "bytes": 6785,
+            "tokens": 1697,
+            "sha256": "f142be4a3dbdf1153359527a4cd053ac23a46cbf9498f6d28c970822ee1b0d1e"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-finalize-work/SKILL.md",
-            "bytes": 7526,
-            "tokens": 1872,
-            "sha256": "5078c27dc824e1d077d95485ad2ff5be27e2ce34d51cb68a140275809406d95d"
+            "bytes": 9234,
+            "tokens": 2300,
+            "sha256": "4dd4786afe7dbc12dacc730a83419db3bd91d20faf69c6f6d2e9745013b26016"
           },
           {
             "kind": "owner-agent",
@@ -692,8 +692,8 @@
       },
       "aggregate": {
         "files": 6,
-        "bytes": 20744,
-        "tokens": 5178,
+        "bytes": 24224,
+        "tokens": 6050,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -708,23 +708,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/implement-lite.md",
-            "bytes": 1165,
-            "tokens": 292,
-            "sha256": "e9fce4e0520d204050ad51bbbadeb5af2ebcf663d92dd56433afcaf8b6af8d25"
+            "bytes": 2423,
+            "tokens": 606,
+            "sha256": "20ea97f06add2725874ca3784ac16b22761316c1d5fdd61142ec710a24a1c717"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/implement-lite.json",
-            "bytes": 6026,
-            "tokens": 1507,
-            "sha256": "f4e65cbf97bafaa6cd34b40a14ee6ecd9a991106edbd382f2cfe4f01ffac8b83"
+            "bytes": 6647,
+            "tokens": 1662,
+            "sha256": "3b2f6bd0cc686191f0ec7a26b9049f332cdf1fdb4c52c4cae5a76b023ef75967"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-implement-plan/SKILL.md",
-            "bytes": 8005,
-            "tokens": 1995,
-            "sha256": "63cf37ac1ea04a965929072576a16853bbc7e10fa48be2146d5fd9644fb6ac57"
+            "bytes": 10109,
+            "tokens": 2520,
+            "sha256": "72f914d01839c52d4397119c60323ebab3249cfc16cb9859258beb62e43e8daf"
           },
           {
             "kind": "owner-agent",
@@ -754,8 +754,8 @@
       },
       "aggregate": {
         "files": 4,
-        "bytes": 16070,
-        "tokens": 4013,
+        "bytes": 20053,
+        "tokens": 5007,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -770,23 +770,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/implement-plan.md",
-            "bytes": 1097,
-            "tokens": 275,
-            "sha256": "f5a12a32ac6945c349aee72d880c344534a46785f75caafbd4d9e958c851f6bb"
+            "bytes": 2313,
+            "tokens": 579,
+            "sha256": "55912706b27190a0be11477fa609af8de252c3e9bafb65a08dd92530b4c5e99a"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/implement-plan.json",
-            "bytes": 7540,
-            "tokens": 1885,
-            "sha256": "8853cee0e8e7ada35cc3628ae4cee89c3b1cb946496595edd82ac16eab38afe0"
+            "bytes": 8130,
+            "tokens": 2033,
+            "sha256": "551903e494f54ceaa4758f0cb4c4dfdf11d46a136c4c8d2de8ad20a265e21074"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-implement-plan/SKILL.md",
-            "bytes": 8005,
-            "tokens": 1995,
-            "sha256": "63cf37ac1ea04a965929072576a16853bbc7e10fa48be2146d5fd9644fb6ac57"
+            "bytes": 10109,
+            "tokens": 2520,
+            "sha256": "72f914d01839c52d4397119c60323ebab3249cfc16cb9859258beb62e43e8daf"
           },
           {
             "kind": "owner-agent",
@@ -816,8 +816,8 @@
       },
       "aggregate": {
         "files": 4,
-        "bytes": 17516,
-        "tokens": 4374,
+        "bytes": 21426,
+        "tokens": 5351,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -832,23 +832,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/implement-standard.md",
-            "bytes": 1168,
-            "tokens": 292,
-            "sha256": "103c40caadfd8307de6e8a851faa43bf4f257cf93cd0b4315871b1e295abdbf9"
+            "bytes": 2430,
+            "tokens": 608,
+            "sha256": "85dcdb1da16826de735dc2393106fa675cbaf6f14ae55b781251ddee87c8bd5f"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/implement-standard.json",
-            "bytes": 6093,
-            "tokens": 1524,
-            "sha256": "d850b2ee58c91c3c7831073d0fcef5ea740299576b77b93a64462905404c4f15"
+            "bytes": 6711,
+            "tokens": 1678,
+            "sha256": "4524217270b2afdb545d96a35d4e3aa77f24682d02dcb627d34bda559311ff5b"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-implement-plan/SKILL.md",
-            "bytes": 8005,
-            "tokens": 1995,
-            "sha256": "63cf37ac1ea04a965929072576a16853bbc7e10fa48be2146d5fd9644fb6ac57"
+            "bytes": 10109,
+            "tokens": 2520,
+            "sha256": "72f914d01839c52d4397119c60323ebab3249cfc16cb9859258beb62e43e8daf"
           },
           {
             "kind": "owner-agent",
@@ -878,8 +878,8 @@
       },
       "aggregate": {
         "files": 4,
-        "bytes": 16140,
-        "tokens": 4030,
+        "bytes": 20124,
+        "tokens": 5025,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -894,23 +894,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/plan-lite.md",
-            "bytes": 1100,
-            "tokens": 275,
-            "sha256": "93667496a64d367c7ac55a21bce641c22d2f5f9f779a7133a4bc0fde30688d80"
+            "bytes": 2353,
+            "tokens": 589,
+            "sha256": "191c6660762b5655be37c0e90987f671647052364a9860ec6b3ece968e3b849b"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/plan-lite.json",
-            "bytes": 5799,
-            "tokens": 1450,
-            "sha256": "4039db67b263ab6e728ce0aba315248450274de44df1ac28e041d7695346147f"
+            "bytes": 6350,
+            "tokens": 1588,
+            "sha256": "85e33af223420268f33222e308c9d6da7d2f121372b7ff4b34ac43f0203297fb"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-produce-plan/SKILL.md",
-            "bytes": 10352,
-            "tokens": 2580,
-            "sha256": "d9b1f1a9723c2b9d921c389594322f10a79232b7a9a594bac4e9a9560955ea75"
+            "bytes": 12347,
+            "tokens": 3078,
+            "sha256": "69a37994318e52b4f4dfd8c9924e972ec06bbdeeabd34f349c8070a02b6de621"
           },
           {
             "kind": "owner-agent",
@@ -940,8 +940,8 @@
       },
       "aggregate": {
         "files": 4,
-        "bytes": 18150,
-        "tokens": 4530,
+        "bytes": 21949,
+        "tokens": 5480,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -956,23 +956,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/plan-review.md",
-            "bytes": 1131,
-            "tokens": 283,
-            "sha256": "66eeb83f7d093df39492bb571b6da30cd105f76920952fbbce26de5aa48d8f50"
+            "bytes": 2386,
+            "tokens": 597,
+            "sha256": "df3e8cb87be76f306ecb4c3df9b422c6a6386954eeb5965d4b88677a59ca9329"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/plan-review.json",
-            "bytes": 5736,
-            "tokens": 1434,
-            "sha256": "d57e9abe067581f2be02c2655224939ddfd50b88a84529dcf17a909133b49495"
+            "bytes": 6289,
+            "tokens": 1573,
+            "sha256": "cd6d531994ed75602ddefb259ee468169a682230be84144b882308c8f9ee0ec6"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-review/SKILL.md",
-            "bytes": 8781,
-            "tokens": 2189,
-            "sha256": "a20d2f1128586f9024b6ccecb257325aa9ff690724e2e0a8827967d86217857b"
+            "bytes": 11656,
+            "tokens": 2908,
+            "sha256": "07ae09622b249bc56f8b5270c3e8c6aabd7a62a49580feecf9c11b248d52a0ba"
           },
           {
             "kind": "owner-agent",
@@ -1026,8 +1026,8 @@
       },
       "aggregate": {
         "files": 6,
-        "bytes": 21479,
-        "tokens": 5365,
+        "bytes": 26162,
+        "tokens": 6537,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -1042,23 +1042,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/produce-plan.md",
-            "bytes": 1048,
-            "tokens": 262,
-            "sha256": "6082d6bf9077e7fa6241be338304ed5559aac42eb9dce38f34f480cef848b495"
+            "bytes": 2251,
+            "tokens": 563,
+            "sha256": "ed390aabde873c54cb2302fbe884f8bc34f76832698926d5b382a64ed9522356"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/produce-plan.json",
-            "bytes": 7405,
-            "tokens": 1852,
-            "sha256": "66094a62d240c8b52b740c5a9e29c41e4f34f2c7a22b00aca2881bf5137b8d09"
+            "bytes": 7923,
+            "tokens": 1981,
+            "sha256": "ab94db4216358f8c5974bced10f21402a39db185076ae09106cbc6fd275c4698"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-produce-plan/SKILL.md",
-            "bytes": 10352,
-            "tokens": 2580,
-            "sha256": "d9b1f1a9723c2b9d921c389594322f10a79232b7a9a594bac4e9a9560955ea75"
+            "bytes": 12347,
+            "tokens": 3078,
+            "sha256": "69a37994318e52b4f4dfd8c9924e972ec06bbdeeabd34f349c8070a02b6de621"
           },
           {
             "kind": "owner-agent",
@@ -1100,8 +1100,8 @@
       },
       "aggregate": {
         "files": 5,
-        "bytes": 22228,
-        "tokens": 5550,
+        "bytes": 25944,
+        "tokens": 6478,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -1116,23 +1116,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/review.md",
-            "bytes": 1032,
-            "tokens": 258,
-            "sha256": "5f73ab4eb1ecd6d03e7bac743aa5b1c8bb1438ee10f8f5236170ff75162638b2"
+            "bytes": 2240,
+            "tokens": 560,
+            "sha256": "c497644977958b950124b1273a820b4800417e7f3874b70fc20b57cfdfec52a8"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/review.json",
-            "bytes": 10117,
-            "tokens": 2530,
-            "sha256": "a1f2e98433f127411fedaefb25ccd2414ebdc5992ebaa1f6d51b29124d05f6cf"
+            "bytes": 10665,
+            "tokens": 2667,
+            "sha256": "36db74953f1d524c8fb9ceb2508e0535ea63ef84e511dbf66fb42a6d94971aa3"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-review/SKILL.md",
-            "bytes": 8781,
-            "tokens": 2189,
-            "sha256": "a20d2f1128586f9024b6ccecb257325aa9ff690724e2e0a8827967d86217857b"
+            "bytes": 11656,
+            "tokens": 2908,
+            "sha256": "07ae09622b249bc56f8b5270c3e8c6aabd7a62a49580feecf9c11b248d52a0ba"
           },
           {
             "kind": "owner-agent",
@@ -1186,8 +1186,8 @@
       },
       "aggregate": {
         "files": 6,
-        "bytes": 25030,
-        "tokens": 6254,
+        "bytes": 29661,
+        "tokens": 7412,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -1202,23 +1202,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/review-lite.md",
-            "bytes": 1100,
-            "tokens": 275,
-            "sha256": "d7d111d5a3287885884bbdc53dc38383fbedafa9cb9c11b8306744d725539252"
+            "bytes": 2355,
+            "tokens": 589,
+            "sha256": "b9788d641206aee51a2e3562ea36595a142cb8378fd5b9fe4609264a25d10e28"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/review-lite.json",
-            "bytes": 4746,
-            "tokens": 1187,
-            "sha256": "9b9a402d12203955f29ff22b6b049fb488766ab8ae8545dfe5287cc28269fe00"
+            "bytes": 5299,
+            "tokens": 1325,
+            "sha256": "ac816f4759f4ba996f8d92f08e83b3e0b4772dff7a79370ac72bdca06b4b21d2"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-review/SKILL.md",
-            "bytes": 8781,
-            "tokens": 2189,
-            "sha256": "a20d2f1128586f9024b6ccecb257325aa9ff690724e2e0a8827967d86217857b"
+            "bytes": 11656,
+            "tokens": 2908,
+            "sha256": "07ae09622b249bc56f8b5270c3e8c6aabd7a62a49580feecf9c11b248d52a0ba"
           },
           {
             "kind": "owner-agent",
@@ -1248,8 +1248,8 @@
       },
       "aggregate": {
         "files": 4,
-        "bytes": 15473,
-        "tokens": 3863,
+        "bytes": 20156,
+        "tokens": 5034,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -1264,23 +1264,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/review-only.md",
-            "bytes": 1165,
-            "tokens": 292,
-            "sha256": "cd0337a255c94812c90fb67a8992b8835900f5719a7ff237e366d2eedc515214"
+            "bytes": 2420,
+            "tokens": 605,
+            "sha256": "0696c0543ae24976204f6f5fb195fb4cdb3bad82090e6f964f2eb04d3502c73c"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/review-only.json",
-            "bytes": 5688,
-            "tokens": 1422,
-            "sha256": "86ea30ee382a4c5250644b443f1ed6b12e5aaa4e4b1eb1e7d072377cec3f4782"
+            "bytes": 6242,
+            "tokens": 1561,
+            "sha256": "5c66183c1fedabda827c083b1b540a4a18f655dfbe7c5e7f4ee37d2869028ea3"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-review/SKILL.md",
-            "bytes": 8781,
-            "tokens": 2189,
-            "sha256": "a20d2f1128586f9024b6ccecb257325aa9ff690724e2e0a8827967d86217857b"
+            "bytes": 11656,
+            "tokens": 2908,
+            "sha256": "07ae09622b249bc56f8b5270c3e8c6aabd7a62a49580feecf9c11b248d52a0ba"
           },
           {
             "kind": "owner-agent",
@@ -1334,8 +1334,8 @@
       },
       "aggregate": {
         "files": 6,
-        "bytes": 20734,
-        "tokens": 5180,
+        "bytes": 25418,
+        "tokens": 6351,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -1350,23 +1350,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/review-strict.md",
-            "bytes": 1115,
-            "tokens": 279,
-            "sha256": "600d48458b9a352884dba613b8aa75b22706d81e47dc7e5a149aaffd422f863b"
+            "bytes": 2372,
+            "tokens": 593,
+            "sha256": "66090eb214b13f968484767064b68061418beb8c24c9ed71b26c7dcf203ee4a6"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/review-strict.json",
-            "bytes": 5756,
-            "tokens": 1439,
-            "sha256": "d11c3503589e222a8d049b050d2f01aad383dec4aa82a675f8307f9e4383509d"
+            "bytes": 6311,
+            "tokens": 1578,
+            "sha256": "2b55b089eed938bac9b3ac6b05fe9ae94de0c69c4737ef91ebaed6cc03be3488"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-review/SKILL.md",
-            "bytes": 8781,
-            "tokens": 2189,
-            "sha256": "a20d2f1128586f9024b6ccecb257325aa9ff690724e2e0a8827967d86217857b"
+            "bytes": 11656,
+            "tokens": 2908,
+            "sha256": "07ae09622b249bc56f8b5270c3e8c6aabd7a62a49580feecf9c11b248d52a0ba"
           },
           {
             "kind": "owner-agent",
@@ -1420,8 +1420,8 @@
       },
       "aggregate": {
         "files": 6,
-        "bytes": 20752,
-        "tokens": 5184,
+        "bytes": 25439,
+        "tokens": 6356,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -1436,23 +1436,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/route.md",
-            "bytes": 1016,
-            "tokens": 254,
-            "sha256": "e51e29687c731a6086d11f938793745797c69b141c7431695b0bc23c99bc1798"
+            "bytes": 2223,
+            "tokens": 556,
+            "sha256": "6fd028fd19a8441bb986bc678731e7b95c02f31fbb13fe6480f32f48a8afd340"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/route.json",
-            "bytes": 13637,
-            "tokens": 3410,
-            "sha256": "db214c194306e51641a2eff00ac93099517e7124e7a19c5a3ca63ff1f3db886a"
+            "bytes": 14481,
+            "tokens": 3621,
+            "sha256": "dec0bddb400e63fe8dd602481670e72968054a76582ec76e50c59e2c4cecc76a"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-route/SKILL.md",
-            "bytes": 13985,
-            "tokens": 3490,
-            "sha256": "59b1e63a83e0bfb981303120f8c117e333298e33ea81568e6272865003c4da16"
+            "bytes": 13955,
+            "tokens": 3482,
+            "sha256": "80d1cc04b7b0269418c3bc35d4f992c4c46f425c9c46a5a9e4bf6f114008154d"
           },
           {
             "kind": "owner-agent",
@@ -1482,8 +1482,8 @@
       },
       "aggregate": {
         "files": 4,
-        "bytes": 29631,
-        "tokens": 7403,
+        "bytes": 31652,
+        "tokens": 7908,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0
@@ -1498,23 +1498,23 @@
           {
             "kind": "command",
             "path": "nova-plugin/commands/senior-explore.md",
-            "bytes": 1158,
-            "tokens": 290,
-            "sha256": "c93c8208e161991e9a5df888f0e4f26e54b9cea27b39f1f1390b42025179b315"
+            "bytes": 2405,
+            "tokens": 602,
+            "sha256": "14d6eb2b52b9984ce6f7541e28191d9fce960045a33b6770799807fb4d7b8aad"
           },
           {
             "kind": "runtime-contract",
             "path": "nova-plugin/runtime/contracts/senior-explore.json",
-            "bytes": 7744,
-            "tokens": 1936,
-            "sha256": "6e75486b41278a9371a1ce3aa177b4497d8a979aecb074c99cede9c17a3106d4"
+            "bytes": 7795,
+            "tokens": 1949,
+            "sha256": "27b5be87d569708e1b59519dec7b820e68a2055362f0f188022ffdfe40722824"
           },
           {
             "kind": "canonical-skill",
             "path": "nova-plugin/skills/nova-explore/SKILL.md",
-            "bytes": 6766,
-            "tokens": 1687,
-            "sha256": "d36a4579f644de37ffd43f10731e4ff98d616fc03814cea77965f11a318ab404"
+            "bytes": 9358,
+            "tokens": 2333,
+            "sha256": "c18c1b6576ab6c9dc475f2582b6d9c8b672aec3ea92afe63b628a6a02a051706"
           },
           {
             "kind": "owner-agent",
@@ -1556,8 +1556,8 @@
       },
       "aggregate": {
         "files": 5,
-        "bytes": 17413,
-        "tokens": 4350,
+        "bytes": 21303,
+        "tokens": 5321,
         "repeatedParagraphs": 0,
         "duplicateBytes": 0,
         "duplicateRatio": 0

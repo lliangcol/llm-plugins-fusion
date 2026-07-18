@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { main, parseReadinessArgs, validateReleaseReadiness } from '../../scripts/validate-release-readiness.mjs';
@@ -40,4 +40,17 @@ test('release readiness parses evidence and protected-publication flags and keep
     assert.equal(validateReleaseReadiness(args).result.reasonCode, 'CORRECTION_IDENTITY_MISMATCH');
     assert.equal(main(['--mode']), 1);
   } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test('recovery drill evaluates correction readiness only after candidate verification', () => {
+  const workflow = readFileSync(resolve(import.meta.dirname, '../../.github/workflows/release-recovery-drill.yml'), 'utf8');
+  const candidateWorkflow = readFileSync(resolve(import.meta.dirname, '../../.github/workflows/release-candidate.yml'), 'utf8');
+  const verification = workflow.indexOf('node scripts/verify-release-promotion.mjs');
+  const orchestration = workflow.indexOf('node scripts/release-orchestrator.mjs --candidate-verification-passed --mode drill');
+
+  assert.equal(workflow.includes('validate-release-readiness.mjs --require-ready --mode drill'), false);
+  assert.notEqual(verification, -1);
+  assert.notEqual(orchestration, -1);
+  assert.ok(verification < orchestration);
+  assert.match(candidateWorkflow, /validate-release-readiness\.mjs --require-ready --mode candidate/u);
 });

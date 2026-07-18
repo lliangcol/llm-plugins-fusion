@@ -22,7 +22,7 @@
     "contracts/design.md": "0cc5ac3c079f4af378ee6e37be72c27daf0f3f559e5e794c55c706f9e047253e",
     "contracts/verify.md": "06f04f26d8bda8c811b85247da75776ab8de8135a7c8e21e34c3a86fd77c08e5"
   },
-  "compiledArtifactSha256": "c60bcaf12927eb294a907a168f48afc9c5c643aa3554273bda27e542bfecdcd8",
+  "compiledArtifactSha256": "7f4019d3d419feb6ecef9996eb8b12b08ea87b09ecbb1a9a28a6c4316cc2b4ee",
   "gates": {
     "frameworkLoaded": true,
     "productLoaded": true,

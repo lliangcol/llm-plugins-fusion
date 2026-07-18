@@ -14,7 +14,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "backend-plan",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "PLAN_PROFILE": "java-backend"
@@ -32,7 +32,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "backend-plan",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "PLAN_PROFILE": "java-backend"
@@ -50,7 +50,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "backend-plan",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "PLAN_PROFILE": "java-backend"
@@ -68,7 +68,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "backend-plan",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "PLAN_PROFILE": "java-backend"
@@ -86,7 +86,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "backend-plan",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "PLAN_PROFILE": "java-backend"
@@ -104,7 +104,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "backend-plan",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "PLAN_PROFILE": "java-backend"
@@ -122,7 +122,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "backend-plan",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "PLAN_PROFILE": "java-backend"
@@ -140,7 +140,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "backend-plan",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "PLAN_PROFILE": "java-backend"
@@ -1869,7 +1869,7 @@
       ],
       "acceptableRoutes": [],
       "forbiddenRoutes": [
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {},
       "expectedRequiredInputs": [
@@ -1884,7 +1884,7 @@
       ],
       "acceptableRoutes": [],
       "forbiddenRoutes": [
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {},
       "expectedRequiredInputs": [
@@ -1899,7 +1899,7 @@
       ],
       "acceptableRoutes": [],
       "forbiddenRoutes": [
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {},
       "expectedRequiredInputs": [
@@ -1914,7 +1914,7 @@
       ],
       "acceptableRoutes": [],
       "forbiddenRoutes": [
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {},
       "expectedRequiredInputs": [
@@ -1929,7 +1929,7 @@
       ],
       "acceptableRoutes": [],
       "forbiddenRoutes": [
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {},
       "expectedRequiredInputs": [
@@ -1944,7 +1944,7 @@
       ],
       "acceptableRoutes": [],
       "forbiddenRoutes": [
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {},
       "expectedRequiredInputs": [
@@ -1959,7 +1959,7 @@
       ],
       "acceptableRoutes": [],
       "forbiddenRoutes": [
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {},
       "expectedRequiredInputs": [
@@ -1974,7 +1974,7 @@
       ],
       "acceptableRoutes": [],
       "forbiddenRoutes": [
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {},
       "expectedRequiredInputs": [
@@ -2630,7 +2630,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "senior-explore",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "DEPTH": "deep"
@@ -2648,7 +2648,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "senior-explore",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "DEPTH": "deep"
@@ -2666,7 +2666,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "senior-explore",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "DEPTH": "deep"
@@ -2684,7 +2684,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "senior-explore",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "DEPTH": "deep"
@@ -2702,7 +2702,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "senior-explore",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "DEPTH": "deep"
@@ -2720,7 +2720,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "senior-explore",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "DEPTH": "deep"
@@ -2738,7 +2738,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "senior-explore",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "DEPTH": "deep"
@@ -2756,7 +2756,7 @@
       "acceptableRoutes": [],
       "forbiddenRoutes": [
         "senior-explore",
-        "review-only"
+        "implement-lite"
       ],
       "expectedVariantParameters": {
         "DEPTH": "deep"

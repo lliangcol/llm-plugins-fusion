@@ -1,12 +1,13 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdtempSync, realpathSync, rmSync } from 'node:fs';
+import { chmod, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import {
   buildOAuthRouteEnvironment,
+  captureRouteAssistantInvocation,
   loadRouteInventory,
   projectSnapshot,
   routeAllowedTools,
@@ -17,6 +18,8 @@ import {
   routeOutputShape,
   routeSystemPrompt,
   routeValidationFailureCode,
+  resolveDefaultAssistantInvocation,
+  runRouteSmoke,
   successfulRouteResponse,
   validateRouteResult,
 } from '../../scripts/validate-plugin-route-live.mjs';
@@ -37,7 +40,7 @@ test('live route result validator accepts fixed structure and real inventory', a
   const result = `## Recommended Route
 
 - Canonical skill: nova-review
-- Command alias (optional): /nova-plugin:review
+- Command entrypoint: /nova-plugin:review
 - Variant parameters: {}
 - Core agent: reviewer
 - Capability packs: docs
@@ -56,7 +59,7 @@ test('live route result validator enforces command relationships', async () => {
   const inventory = await routeInventory();
   const valid = `## Recommended Route
 - Canonical skill: nova-review
-- Command alias (optional): /nova-plugin:review
+- Command entrypoint: /nova-plugin:review
 - Variant parameters: {}
 - Core agent: reviewer
 - Capability packs: docs
@@ -66,7 +69,7 @@ test('live route result validator enforces command relationships', async () => {
 `;
   assert.throws(
     () => validateRouteResult(valid.replace('nova-review', 'nova-explore'), inventory),
-    /alias-canonical relationship differs/,
+    /entrypoint-canonical relationship differs/,
   );
   assert.throws(
     () => validateRouteResult(valid.replace('reviewer', 'builder'), inventory),
@@ -76,10 +79,10 @@ test('live route result validator enforces command relationships', async () => {
 
 test('live route result validator rejects bare, invented, or incomplete output', async () => {
   const inventory = await routeInventory();
-  assert.throws(() => validateRouteResult('## Recommended Route\n- Command alias \(optional\): /review', inventory), /missing Canonical skill:/);
+  assert.throws(() => validateRouteResult('## Recommended Route\n- Command entrypoint: /review', inventory), /missing Canonical skill:/);
   const invented = `## Recommended Route
 - Canonical skill: invented
-- Command alias (optional): /nova-plugin:invented
+- Command entrypoint: /nova-plugin:invented
 - Variant parameters: {}
 - Core agent: reviewer
 - Capability packs: docs
@@ -91,7 +94,7 @@ test('live route result validator rejects bare, invented, or incomplete output',
 
   const valid = `## Recommended Route
 - Canonical skill: nova-review
-- Command alias (optional): /nova-plugin:review
+- Command entrypoint: /nova-plugin:review
 - Variant parameters: {}
 - Core agent: reviewer
 - Capability packs: docs
@@ -111,6 +114,18 @@ test('live route result validator rejects bare, invented, or incomplete output',
     () => validateRouteResult(valid.replace('- Required inputs: diff', '- Required inputs:'), inventory),
     /value is empty/,
   );
+  assert.throws(
+    () => validateRouteResult(valid.replace('nova-review', 'NOVA-REVIEW'), inventory),
+    /invented skill/,
+  );
+  assert.throws(
+    () => validateRouteResult(valid.replace('nova-review', 'nova-review, nova-review'), inventory),
+    /duplicate identifiers/,
+  );
+  assert.throws(
+    () => validateRouteResult(valid.replace('Variant parameters: {}', 'Variant parameters: None'), inventory),
+    /exact JSON object/,
+  );
 
   for (const [field, value, message] of [
     ['Canonical skill', 'nova-does-not-exist', /invented skill/],
@@ -119,7 +134,7 @@ test('live route result validator rejects bare, invented, or incomplete output',
   ]) {
     const invalid = `## Recommended Route
 - Canonical skill: ${field === 'Canonical skill' ? value : 'nova-review'}
-- Command alias (optional): /nova-plugin:review
+- Command entrypoint: /nova-plugin:review
 - Variant parameters: {}
 - Core agent: ${field === 'Core agent' ? value : 'reviewer'}
 - Capability packs: ${field === 'Capability packs' ? value : 'docs'}
@@ -131,16 +146,19 @@ test('live route result validator rejects bare, invented, or incomplete output',
   }
 });
 
-test('project snapshot detects every worktree file change outside .git', async (t) => {
+test('project snapshot detects worktree and Git control-file changes', async (t) => {
   const project = mkdtempSync(resolve(tmpdir(), 'nova-route-snapshot-'));
   t.after(() => rmSync(project, { recursive: true, force: true }));
   await writeFile(resolve(project, 'README.md'), 'before\n');
+  await mkdir(resolve(project, '.git'));
+  await writeFile(resolve(project, '.git', 'HEAD'), 'ref: refs/heads/main\n');
   const before = projectSnapshot(project);
   await mkdir(resolve(project, 'ignored'), { recursive: true });
   await writeFile(resolve(project, 'ignored', 'side-effect.txt'), 'unexpected\n');
+  await writeFile(resolve(project, '.git', 'HEAD'), 'ref: refs/heads/changed\n');
   const after = projectSnapshot(project);
   assert.notEqual(after.digest, before.digest);
-  assert.deepEqual(after.files.map((entry) => entry.path), ['ignored', 'ignored/side-effect.txt', 'README.md']);
+  assert.deepEqual(after.files.map((entry) => entry.path), ['.git', '.git/HEAD', 'ignored', 'ignored/side-effect.txt', 'README.md']);
 });
 
 test('OAuth route environment requires an unambiguous subscription token', () => {
@@ -169,11 +187,18 @@ test('OAuth route invocation isolates configuration without bare mode', (t) => {
   const isolatedHome = mkdtempSync(resolve(tmpdir(), 'nova-oauth-test-'));
   t.after(() => rmSync(isolatedHome, { recursive: true, force: true }));
   const env = buildOAuthRouteEnvironment(
-    { CLAUDE_CODE_OAUTH_TOKEN: 'oauth-test-token', HOME: '/original' },
+    {
+      CLAUDE_CODE_OAUTH_TOKEN: 'oauth-test-token',
+      HOME: '/original',
+      PATH: dirname(process.execPath),
+      KEEP: 'must-not-pass',
+    },
     isolatedHome,
   );
   assert.equal(env.HOME, isolatedHome);
   assert.equal(env.CLAUDE_CONFIG_DIR, resolve(isolatedHome, '.claude'));
+  assert.equal(env.TMPDIR, resolve(isolatedHome, 'tmp'));
+  assert.equal(env.KEEP, undefined);
   const args = routeInvocationArgs('/installed/nova-plugin');
   assert.equal(args.includes('--bare'), false);
   assert.deepEqual(args.slice(0, 2), ['--plugin-dir', '/installed/nova-plugin']);
@@ -199,11 +224,99 @@ test('OAuth route invocation isolates configuration without bare mode', (t) => {
   assert.ok(args.includes('Write,Edit,NotebookEdit,Bash'));
 });
 
+test('OAuth route environment rejects inherited runtime, model, endpoint, and shell overrides', () => {
+  for (const [name, value] of [
+    ['NODE_OPTIONS', '--require=/tmp/inject.cjs'],
+    ['NODE_PATH', '/tmp/modules'],
+    ['BASH_ENV', '/tmp/startup.sh'],
+    ['ANTHROPIC_MODEL', 'uncontrolled-model'],
+    ['ANTHROPIC_BASE_URL', 'https://uncontrolled.invalid'],
+    ['CLAUDE_CODE_MODEL', 'uncontrolled-model'],
+    ['CLAUDE_CODE_USE_BEDROCK', '1'],
+    ['AWS_ACCESS_KEY_ID', 'competing-access-key'],
+  ]) {
+    assert.throws(
+      () => buildOAuthRouteEnvironment({
+        CLAUDE_CODE_OAUTH_TOKEN: 'oauth-test-token',
+        PATH: dirname(process.execPath),
+        [name]: value,
+      }, '/tmp/nova-oauth-test'),
+      new RegExp(`forbids inherited overrides: ${name}`, 'u'),
+    );
+  }
+});
+
+test('OAuth route invocation uses one fixed assistant command and revalidates it before and after execution', async () => {
+  let identityChecks = 0;
+  const calls = [];
+  const invocation = {
+    command: '/trusted/physical/claude',
+    argsPrefix: ['fixed-prefix'],
+    assertIdentity() { identityChecks += 1; },
+  };
+  const result = await captureRouteAssistantInvocation(
+    invocation,
+    ['--version'],
+    { cwd: '/fixture', env: { PATH: '/untrusted' } },
+    async (label, command, args, options) => {
+      calls.push({ label, command, args, options });
+      return { ok: true, code: 0 };
+    },
+  );
+  assert.equal(result.ok, true);
+  assert.equal(identityChecks, 2);
+  assert.deepEqual(calls, [{
+    label: 'OAuth route smoke',
+    command: '/trusted/physical/claude',
+    args: ['fixed-prefix', '--version'],
+    options: { cwd: '/fixture', env: { PATH: '/untrusted' } },
+  }]);
+
+  let failureChecks = 0;
+  await assert.rejects(
+    captureRouteAssistantInvocation(
+      { ...invocation, assertIdentity() { failureChecks += 1; } },
+      [],
+      {},
+      async () => { throw new Error('simulated capture failure'); },
+    ),
+    /simulated capture failure/u,
+  );
+  assert.equal(failureChecks, 2);
+  await assert.rejects(
+    captureRouteAssistantInvocation({ command: 'claude', argsPrefix: [] }, [], {}),
+    /fixed assistant invocation/u,
+  );
+});
+
+test('standalone route resolver uses the cycle-free shared resolver and pins a Node shebang interpreter', { skip: process.platform === 'win32' }, async (t) => {
+  const fixture = mkdtempSync(resolve(tmpdir(), 'nova-route-default-assistant-'));
+  t.after(() => rmSync(fixture, { recursive: true, force: true }));
+  const trustedBin = resolve(fixture, 'bin');
+  await mkdir(trustedBin);
+  const trustedClaude = resolve(trustedBin, 'claude');
+  await writeFile(trustedClaude, '#!/usr/bin/env node\nconsole.log("fixture");\n');
+  await chmod(trustedClaude, 0o755);
+
+  const invocation = await resolveDefaultAssistantInvocation({ PATH: trustedBin });
+  assert.equal(invocation.command, realpathSync.native(process.execPath));
+  assert.deepEqual(invocation.argsPrefix, [realpathSync.native(trustedClaude)]);
+  assert.equal(invocation.environment.PATH, realpathSync.native(trustedBin));
+  assert.doesNotThrow(() => invocation.assertIdentity());
+});
+
+test('route smoke rejects unsafe evidence output before assistant or OAuth execution', async () => {
+  await assert.rejects(
+    runRouteSmoke({ pluginDir, outPath: 'package.json', env: {} }),
+    /must name a JSON file under/u,
+  );
+});
+
 test('route output shape diagnostics expose structure without response text', () => {
-  const result = `Alternate heading\n- Canonical skill: nova-review\n- Command alias (optional): /nova-plugin:review\nprivate response text`;
+  const result = `Alternate heading\n- Canonical skill: nova-review\n- Command entrypoint: /nova-plugin:review\nprivate response text`;
   const shape = routeOutputShape(result);
   assert.equal(shape.startsWithRequiredHeading, false);
-  assert.deepEqual(shape.requiredFieldsPresent, ['Canonical skill:', 'Command alias (optional):']);
+  assert.deepEqual(shape.requiredFieldsPresent, ['Canonical skill:', 'Command entrypoint:']);
   assert.equal(shape.namespacedCommandCount, 1);
   assert.match(shape.sha256, /^[a-f0-9]{64}$/);
   assert.doesNotMatch(JSON.stringify(shape), /private response text|nova-review/);
@@ -212,7 +325,9 @@ test('route output shape diagnostics expose structure without response text', ()
 test('stable route command executes directly and preserves the strict output boundary', async () => {
   const command = await readFile(resolve(root, 'nova-plugin/commands/route.md'), 'utf8');
   assert.match(command, /canonical skill `\$\{CLAUDE_PLUGIN_ROOT\}\/skills\/nova-route\/SKILL\.md`/);
-  assert.match(command, /execute canonical surface `nova-route`/);
+  assert.match(command, /selector keys declared for `route` in `\$\{CLAUDE_PLUGIN_ROOT\}\/runtime\/resolved-variant-contracts\.json`/);
+  assert.match(command, /complete resolved runtime contract is authoritative/iu);
+  assert.doesNotMatch(command, /selector keys declared for `nova-route`/u);
   assert.doesNotMatch(command, /Skill\(nova-plugin:nova-route\)/);
   const contract = await readFile(resolve(root, 'nova-plugin/skills/nova-route/SKILL.md'), 'utf8');
   assert.ok(contract.includes(routeOutputContract.heading));
@@ -230,7 +345,7 @@ test('route validation diagnostics classify failures without output values', () 
     ['route output invented skill private-value', 'skill-inventory'],
     ['route output invented core agent private-value', 'agent-inventory'],
     ['route output invented capability pack private-value', 'pack-inventory'],
-    ['route output alias-canonical relationship differs', 'alias-canonical-relationship'],
+    ['route output entrypoint-canonical relationship differs', 'entrypoint-canonical-relationship'],
     ['route output command-agent relationship differs', 'command-agent-relationship'],
   ]) assert.equal(routeValidationFailureCode(new Error(message)), code);
 });

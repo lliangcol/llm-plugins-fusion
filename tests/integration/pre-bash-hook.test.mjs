@@ -180,6 +180,28 @@ test('Bash stdin hook rejects executable-specific environment injection', async 
   }
 });
 
+test('Bash stdin hook rejects repository-local Git helpers without executing them', async (t) => {
+  const workspace = await createWorkspace('nova-pre-bash-git-config-helper-');
+  t.after(() => rm(workspace, { recursive: true, force: true }));
+  const cwd = join(workspace, 'packages', 'nested');
+  const marker = join(workspace, 'helper-ran');
+  const helper = join(workspace, 'harmless-helper.sh');
+  await mkdir(join(workspace, '.git'));
+  await writeFile(helper, `#!/bin/sh\nprintf helper > ${JSON.stringify(marker)}\n`);
+  if (process.platform !== 'win32') await chmod(helper, 0o755);
+  await writeFile(join(workspace, '.gitattributes'), '*.txt diff=fixture\n');
+  await writeFile(join(workspace, '.git/config'), `[diff "fixture"]\n\ttextconv = ${helper}\n`);
+  const result = await runHook({
+    command: 'git show HEAD:file.txt',
+    cwd,
+    projectRoot: workspace,
+    sessionId: 'repository-git-config-helper',
+  });
+  assert.equal(result.code, 2);
+  assert.match(result.stderr, /repository-local Git config can invoke a helper via diff\.textconv/u);
+  await assert.rejects(() => readFile(marker), { code: 'ENOENT' });
+});
+
 test('Bash stdin hook accepts only a safely resolved literal cat Git pager', async (t) => {
   const workspace = await createWorkspace('nova-pre-bash-pager-');
   t.after(() => rm(workspace, { recursive: true, force: true }));
@@ -364,7 +386,7 @@ test('privileged-mode launchers reject project Node PATH shadows before executio
   }
 });
 
-test('privileged-mode pre-use launchers do not execute PATH-shadowed bootstrap helpers', { skip: process.platform === 'win32' }, async (t) => {
+test('privileged-mode pre-use launchers reject PATH-shadowed bootstrap helpers without executing them', { skip: process.platform === 'win32' }, async (t) => {
   const workspace = await createWorkspace('nova-pre-bash-launcher-helper-shadow-');
   t.after(() => rm(workspace, { recursive: true, force: true }));
   const cwd = join(workspace, 'packages', 'nested');
@@ -399,7 +421,8 @@ test('privileged-mode pre-use launchers do not execute PATH-shadowed bootstrap h
       },
       input: JSON.stringify(entry.payload),
     });
-    assert.equal(result.ok, true, `${entry.label}: ${result.stderr}`);
+    assert.equal(result.code, 2, `${entry.label}: ${result.stderr}`);
+    assert.match(result.stderr, /trusted Node\.js 22\+ executable outside the project/u);
   }
   for (const marker of markers) await assert.rejects(readFile(marker, 'utf8'), { code: 'ENOENT' });
 });

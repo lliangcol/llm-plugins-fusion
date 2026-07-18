@@ -1,0 +1,396 @@
+{
+  "$schema": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/resolved-variant-contracts.schema.json",
+  "schemaVersion": 1,
+  "identity": "canonical-surface-plus-validated-variant-parameters",
+  "resolutionRule": "exact-normalized-overrides-then-conflict-stop-or-validated-canonical-fallback",
+  "source": "workflow-specs/workflows.v6.json",
+  "behaviorSource": "workflow-specs/behaviors.v2.json",
+  "selectors": {
+    "explore": {
+      "DEPTH": {
+        "exactValues": [
+          "lite",
+          "standard",
+          "deep"
+        ],
+        "default": "standard"
+      },
+      "PERSPECTIVE": {
+        "exactValues": [
+          "observer",
+          "reviewer"
+        ],
+        "default": "observer"
+      }
+    },
+    "finalize-work": {
+      "DEPTH": {
+        "exactValues": [
+          "lite",
+          "standard"
+        ],
+        "default": "standard"
+      }
+    },
+    "implement-plan": {
+      "EXECUTION_PROFILE": {
+        "exactValues": [
+          "lite",
+          "standard",
+          "codex-review-fix"
+        ]
+      }
+    },
+    "produce-plan": {
+      "PLAN_PROFILE": {
+        "exactValues": [
+          "general",
+          "lite",
+          "java-backend"
+        ],
+        "default": "general"
+      }
+    },
+    "review": {
+      "LEVEL": {
+        "exactValues": [
+          "lite",
+          "standard",
+          "strict"
+        ],
+        "default": "standard"
+      },
+      "MODE": {
+        "exactValues": [
+          "full",
+          "findings-only"
+        ],
+        "default": "full"
+      },
+      "REVIEW_PROFILE": {
+        "exactValues": [
+          "general",
+          "plan",
+          "codex-review-only",
+          "codex-verify-only"
+        ],
+        "default": "general"
+      }
+    },
+    "route": {}
+  },
+  "authority": {
+    "rule": "After exact resolution, the complete resolved runtime contract is authoritative; no field falls back to canonical authored guidance.",
+    "fields": [
+      "schemaVersion",
+      "sourceSchemaVersion",
+      "contractVersions",
+      "id",
+      "canonicalSurfaceId",
+      "variantPreset",
+      "compatibilityAlias",
+      "stage",
+      "ownerAgents",
+      "recommendedPacks",
+      "requiredInputs",
+      "inputs",
+      "effects",
+      "authorizationProfile",
+      "enforcementRequirements",
+      "evidenceRequirements",
+      "outputContract",
+      "risk",
+      "allowedTools",
+      "disallowedTools",
+      "modelInvocable",
+      "subagentSafe",
+      "destructiveActions",
+      "commandEntrypoint",
+      "runtimeRequirements",
+      "permissionPolicy",
+      "enforcement",
+      "instructions",
+      "behaviorContract",
+      "claimBoundary"
+    ]
+  },
+  "resolutions": [
+    {
+      "canonicalSurfaceId": "produce-plan",
+      "variantParameters": {
+        "PLAN_PROFILE": "java-backend"
+      },
+      "normalizedVariantParameters": {
+        "PLAN_PROFILE": "java-backend"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "backend-plan",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/backend-plan.json"
+    },
+    {
+      "canonicalSurfaceId": "implement-plan",
+      "variantParameters": {
+        "EXECUTION_PROFILE": "codex-review-fix"
+      },
+      "normalizedVariantParameters": {
+        "EXECUTION_PROFILE": "codex-review-fix"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "codex-review-fix",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/codex-review-fix.json"
+    },
+    {
+      "canonicalSurfaceId": "review",
+      "variantParameters": {
+        "REVIEW_PROFILE": "codex-review-only"
+      },
+      "normalizedVariantParameters": {
+        "LEVEL": "standard",
+        "MODE": "full",
+        "REVIEW_PROFILE": "codex-review-only"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "codex-review-only",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/codex-review-only.json"
+    },
+    {
+      "canonicalSurfaceId": "review",
+      "variantParameters": {
+        "REVIEW_PROFILE": "codex-verify-only"
+      },
+      "normalizedVariantParameters": {
+        "LEVEL": "standard",
+        "MODE": "full",
+        "REVIEW_PROFILE": "codex-verify-only"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "codex-verify-only",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/codex-verify-only.json"
+    },
+    {
+      "canonicalSurfaceId": "explore",
+      "variantParameters": {},
+      "normalizedVariantParameters": {
+        "DEPTH": "standard",
+        "PERSPECTIVE": "observer"
+      },
+      "resolutionKind": "canonical-default",
+      "resolvedWorkflowId": "explore",
+      "compatibilityAlias": false,
+      "runtimeContract": "contracts/explore.json"
+    },
+    {
+      "canonicalSurfaceId": "explore",
+      "variantParameters": {
+        "DEPTH": "lite",
+        "PERSPECTIVE": "observer"
+      },
+      "normalizedVariantParameters": {
+        "DEPTH": "lite",
+        "PERSPECTIVE": "observer"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "explore-lite",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/explore-lite.json"
+    },
+    {
+      "canonicalSurfaceId": "explore",
+      "variantParameters": {
+        "PERSPECTIVE": "reviewer"
+      },
+      "normalizedVariantParameters": {
+        "DEPTH": "standard",
+        "PERSPECTIVE": "reviewer"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "explore-review",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/explore-review.json"
+    },
+    {
+      "canonicalSurfaceId": "finalize-work",
+      "variantParameters": {
+        "DEPTH": "lite"
+      },
+      "normalizedVariantParameters": {
+        "DEPTH": "lite"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "finalize-lite",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/finalize-lite.json"
+    },
+    {
+      "canonicalSurfaceId": "finalize-work",
+      "variantParameters": {},
+      "normalizedVariantParameters": {
+        "DEPTH": "standard"
+      },
+      "resolutionKind": "canonical-default",
+      "resolvedWorkflowId": "finalize-work",
+      "compatibilityAlias": false,
+      "runtimeContract": "contracts/finalize-work.json"
+    },
+    {
+      "canonicalSurfaceId": "implement-plan",
+      "variantParameters": {
+        "EXECUTION_PROFILE": "lite"
+      },
+      "normalizedVariantParameters": {
+        "EXECUTION_PROFILE": "lite"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "implement-lite",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/implement-lite.json"
+    },
+    {
+      "canonicalSurfaceId": "implement-plan",
+      "variantParameters": {},
+      "normalizedVariantParameters": {},
+      "resolutionKind": "canonical-default",
+      "resolvedWorkflowId": "implement-plan",
+      "compatibilityAlias": false,
+      "runtimeContract": "contracts/implement-plan.json"
+    },
+    {
+      "canonicalSurfaceId": "implement-plan",
+      "variantParameters": {
+        "EXECUTION_PROFILE": "standard"
+      },
+      "normalizedVariantParameters": {
+        "EXECUTION_PROFILE": "standard"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "implement-standard",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/implement-standard.json"
+    },
+    {
+      "canonicalSurfaceId": "produce-plan",
+      "variantParameters": {
+        "PLAN_PROFILE": "lite"
+      },
+      "normalizedVariantParameters": {
+        "PLAN_PROFILE": "lite"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "plan-lite",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/plan-lite.json"
+    },
+    {
+      "canonicalSurfaceId": "review",
+      "variantParameters": {
+        "REVIEW_PROFILE": "plan"
+      },
+      "normalizedVariantParameters": {
+        "LEVEL": "standard",
+        "MODE": "full",
+        "REVIEW_PROFILE": "plan"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "plan-review",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/plan-review.json"
+    },
+    {
+      "canonicalSurfaceId": "produce-plan",
+      "variantParameters": {},
+      "normalizedVariantParameters": {
+        "PLAN_PROFILE": "general"
+      },
+      "resolutionKind": "canonical-default",
+      "resolvedWorkflowId": "produce-plan",
+      "compatibilityAlias": false,
+      "runtimeContract": "contracts/produce-plan.json"
+    },
+    {
+      "canonicalSurfaceId": "review",
+      "variantParameters": {},
+      "normalizedVariantParameters": {
+        "LEVEL": "standard",
+        "MODE": "full",
+        "REVIEW_PROFILE": "general"
+      },
+      "resolutionKind": "canonical-default",
+      "resolvedWorkflowId": "review",
+      "compatibilityAlias": false,
+      "runtimeContract": "contracts/review.json"
+    },
+    {
+      "canonicalSurfaceId": "review",
+      "variantParameters": {
+        "LEVEL": "lite"
+      },
+      "normalizedVariantParameters": {
+        "LEVEL": "lite",
+        "MODE": "full",
+        "REVIEW_PROFILE": "general"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "review-lite",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/review-lite.json"
+    },
+    {
+      "canonicalSurfaceId": "review",
+      "variantParameters": {
+        "LEVEL": "standard",
+        "MODE": "findings-only"
+      },
+      "normalizedVariantParameters": {
+        "LEVEL": "standard",
+        "MODE": "findings-only",
+        "REVIEW_PROFILE": "general"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "review-only",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/review-only.json"
+    },
+    {
+      "canonicalSurfaceId": "review",
+      "variantParameters": {
+        "LEVEL": "strict"
+      },
+      "normalizedVariantParameters": {
+        "LEVEL": "strict",
+        "MODE": "full",
+        "REVIEW_PROFILE": "general"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "review-strict",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/review-strict.json"
+    },
+    {
+      "canonicalSurfaceId": "route",
+      "variantParameters": {},
+      "normalizedVariantParameters": {},
+      "resolutionKind": "canonical-default",
+      "resolvedWorkflowId": "route",
+      "compatibilityAlias": false,
+      "runtimeContract": "contracts/route.json"
+    },
+    {
+      "canonicalSurfaceId": "explore",
+      "variantParameters": {
+        "DEPTH": "deep"
+      },
+      "normalizedVariantParameters": {
+        "DEPTH": "deep",
+        "PERSPECTIVE": "observer"
+      },
+      "resolutionKind": "exact-override",
+      "resolvedWorkflowId": "senior-explore",
+      "compatibilityAlias": true,
+      "runtimeContract": "contracts/senior-explore.json"
+    }
+  ]
+}

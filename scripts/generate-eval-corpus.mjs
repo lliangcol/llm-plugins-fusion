@@ -105,6 +105,7 @@ function buildCriticalV5(spec) {
         ...entry,
         expectedRoute: [workflow.canonicalSurfaceId],
         expectedVariantParameters: workflow.variantPreset,
+        expectedRequiredInputs: workflow.compatibilityProjection.requiredInputs,
       };
     }),
   };

@@ -186,6 +186,11 @@ expectContentRegex(
   /Do not add runtime dynamic loading until a later design explicitly introduces it/,
   'plugin-aware routing no runtime dynamic loading boundary',
 );
+expectContentRegex(
+  resolve(packsRoot, 'marketplace', 'README.md'),
+  /development package and plugin versions synchronized within their[\s\S]*stable channel, generated marketplace catalog, and[\s\S]*unreleased development metadata may legitimately be ahead of stable/,
+  'marketplace development and stable version-domain boundary',
+);
 
 if (!existsSync(routingDoc)) {
   record('docs/reference/architecture/agent-routing.md', 'missing plugin-aware routing doc');

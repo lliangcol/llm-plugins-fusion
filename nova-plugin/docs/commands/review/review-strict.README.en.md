@@ -24,7 +24,7 @@
 
 | Parameter   | Required | Description        | Example            |
 | ----------- | -------- | ------------------ | ------------------ |
-| `ARGUMENTS` | No       | Content to review. | `Core module code` |
+| `ARGUMENTS` | Yes      | Content to review. | `Core module code` |
 
 ## Output
 

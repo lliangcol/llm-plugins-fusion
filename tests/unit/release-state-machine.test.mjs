@@ -8,7 +8,11 @@ test('release state machine covers every legal transition exactly once', () => {
   assert.deepEqual(transitions.map((entry) => entry.to), releaseStates.slice(1));
   for (const transition of transitions) assert.equal(assertReleaseTransition(transition.from, transition.to), true);
   assert.throws(() => assertReleaseTransition('DRAFT', 'PROMOTION_READY'), /illegal/);
+  assert.throws(() => assertReleaseTransition('UNKNOWN', 'DRAFT'), /illegal/);
+  assert.throws(() => assertReleaseTransition('DRAFT', 'UNKNOWN'), /illegal/);
   assert.throws(() => planReleaseTransitions('INSTALL_PROVEN', 'DRAFT'), /invalid/);
+  assert.throws(() => planReleaseTransitions('UNKNOWN', 'DRAFT'), /invalid/);
+  assert.deepEqual(planReleaseTransitions('PROMOTION_READY', 'PROMOTION_READY'), []);
 });
 
 test('transition events form a deterministic digest chain', () => {
@@ -27,4 +31,10 @@ test('asset reconciliation reuses identical bytes and quarantines conflicts', ()
   const conflict = reconcileReleaseAssets(expected, [{ name: 'a.tgz', sha256: 'x', bytes: 1 }]);
   assert.equal(conflict.publishable, false);
   assert.equal(conflict.quarantine[0].reason, 'same-name-different-content');
+  const unexpected = reconcileReleaseAssets([], [{ name: 'legacy.zip', sha256: 'z', bytes: 3 }]);
+  assert.deepEqual(unexpected.quarantine, [{
+    actual: { name: 'legacy.zip', sha256: 'z', bytes: 3 },
+    reason: 'unexpected-asset',
+  }]);
+  assert.equal(unexpected.publishable, false);
 });

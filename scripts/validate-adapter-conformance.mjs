@@ -39,6 +39,10 @@ assert.deepEqual(generic.product, {
 });
 assert.deepEqual(generic.aliasPolicy, product.compatibilityAliasPolicy);
 assert.equal(claude.contractEnforcement.effects, 'native-and-hook');
+assert.equal(claude.commandEntrypoint.executionGate, 'resolved-workflow-id-must-equal-invoked-command-id');
+assert.equal(claude.commandEntrypoint.mismatchAction, 'stop-and-invoke-exact-direct-command');
+assert.equal(claude.commandEntrypoint.directCommandTemplate, `/${product.pluginNamespace}:<directCommandId>`);
+assert.deepEqual(claude.commandEntrypoint.aliasRetirement, product.compatibilityAliasPolicy);
 assert.equal(adapterById.codex.contractEnforcement.approval, 'adapter');
 assert.equal(adapterById.generic.contractEnforcement.fallback, 'report-unsupported');
 assert.match(codex, /Never claim Claude hooks or permissions are active in Codex/);
@@ -57,6 +61,7 @@ for (const [index, workflow] of generic.workflows.entries()) {
   assert.ok(Array.isArray(workflow.ownerAgents), `${workflow.id}: owner agents missing`);
   assert.ok(Array.isArray(workflow.recommendedPacks), `${workflow.id}: recommended packs missing`);
   assert.equal(workflow.authorizationProfile.length > 0, true, `${workflow.id}: authorization profile missing`);
+  assert.deepEqual(workflow.commandEntrypoint, { directCommandId: sourceWorkflow.id }, `${workflow.id}: generic runtime entrypoint leaked host policy`);
 }
 
 const fixture = readJson('fixtures/consumer/minimal/expected.json');

@@ -6,19 +6,73 @@
   "additionalProperties": false,
   "required": ["$schema", "schemaVersion", "independentReview", "signing", "recovery", "protectedPublication", "candidateObservation", "labels"],
   "properties": {
-    "$schema": { "type": "string" },
-    "schemaVersion": { "const": 3 },
-    "independentReview": { "type": "object" },
-    "signing": { "type": "object" },
-    "recovery": { "type": "object" },
+    "$schema": { "type": "string", "minLength": 1 },
+    "schemaVersion": { "const": 4 },
+    "independentReview": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requiredForCandidate", "minimumApprovals", "reviewerMustDifferFrom", "evidenceName"],
+      "properties": {
+        "requiredForCandidate": { "const": true },
+        "minimumApprovals": { "type": "integer", "minimum": 1 },
+        "reviewerMustDifferFrom": {
+          "type": "array",
+          "minItems": 2,
+          "uniqueItems": true,
+          "items": { "enum": ["pull-request-author", "candidate-actor"] }
+        },
+        "evidenceName": { "const": "independent-review.json" }
+      }
+    },
+    "signing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowedSignersFile", "minimumActiveSigners", "inventoryReviewedAt", "rotationReviewCadenceDays", "overlapRequired", "lastRotationEvidence", "revocationProcedure", "lostKeyRecoveryProcedure"],
+      "properties": {
+        "allowedSignersFile": { "const": ".github/release-signers" },
+        "minimumActiveSigners": { "type": "integer", "minimum": 1 },
+        "inventoryReviewedAt": { "type": "string", "format": "date" },
+        "rotationReviewCadenceDays": { "type": "integer", "minimum": 1 },
+        "overlapRequired": { "const": true },
+        "lastRotationEvidence": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/evidenceReference" }
+          ]
+        },
+        "revocationProcedure": { "type": "string", "minLength": 1 },
+        "lostKeyRecoveryProcedure": { "type": "string", "minLength": 1 }
+      }
+    },
+    "recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workflow", "drillCadenceDays", "lastSuccessfulDrill"],
+      "properties": {
+        "workflow": { "const": ".github/workflows/release-recovery-drill.yml" },
+        "drillCadenceDays": { "type": "integer", "minimum": 1 },
+        "lastSuccessfulDrill": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/drillEvidence" }
+          ]
+        }
+      }
+    },
     "protectedPublication": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["environment", "externalApprovalRequired", "currentEvidence"],
+      "required": ["environment", "externalApprovalRequired", "evidenceMaxAgeDays", "currentEvidence"],
       "properties": {
         "environment": { "const": "release" },
         "externalApprovalRequired": { "const": true },
-        "currentEvidence": { "type": ["object", "null"] }
+        "evidenceMaxAgeDays": { "type": "integer", "minimum": 1 },
+        "currentEvidence": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/protectedPublicationEvidence" }
+          ]
+        }
       }
     },
     "candidateObservation": {
@@ -31,6 +85,50 @@
         "requirePublishedPrerelease": { "const": true }
       }
     },
-    "labels": { "type": "object" }
+    "labels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "workflow", "mode"],
+      "properties": {
+        "source": { "const": ".github/labels.yml" },
+        "workflow": { "const": ".github/workflows/pr-governance.yml" },
+        "mode": { "const": "create-update-no-delete" }
+      }
+    }
+  },
+  "$defs": {
+    "httpsUrl": { "type": "string", "format": "uri", "pattern": "^https://" },
+    "digest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "commit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+    "evidenceReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "sha256", "recordedAt"],
+      "properties": {
+        "source": { "$ref": "#/$defs/httpsUrl" },
+        "sha256": { "$ref": "#/$defs/digest" },
+        "recordedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "drillEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runUrl", "workflowSha", "completedAt"],
+      "properties": {
+        "runUrl": { "$ref": "#/$defs/httpsUrl" },
+        "workflowSha": { "$ref": "#/$defs/commit" },
+        "completedAt": { "type": "string", "format": "date-time" }
+      }
+    },
+    "protectedPublicationEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["source", "sha256", "verifiedAt"],
+      "properties": {
+        "source": { "$ref": "#/$defs/httpsUrl" },
+        "sha256": { "$ref": "#/$defs/digest" },
+        "verifiedAt": { "type": "string", "format": "date-time" }
+      }
+    }
   }
 }

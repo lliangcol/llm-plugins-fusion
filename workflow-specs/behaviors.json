@@ -85,6 +85,7 @@
           }
         ],
         "order": [
+          "plan artifact",
           "artifact path",
           "executive summary"
         ],
@@ -1195,6 +1196,7 @@
           }
         ],
         "order": [
+          "implemented changes",
           "Changes Summary",
           "Validation",
           "Adjustments"
@@ -1255,7 +1257,6 @@
           "required": false,
           "aliases": [],
           "description": "Canonical implementation or retained compatibility execution profile.",
-          "default": "standard",
           "exactValues": [
             "lite",
             "standard",
@@ -1339,6 +1340,7 @@
           }
         ],
         "order": [
+          "implemented changes",
           "plan-step trace",
           "validation",
           "deviations"
@@ -1464,6 +1466,7 @@
           }
         ],
         "order": [
+          "code updates",
           "Implementation Summary",
           "Validation",
           "Deviations"
@@ -1853,6 +1856,7 @@
           }
         ],
         "order": [
+          "plan artifact",
           "artifact path",
           "executive summary"
         ],
@@ -2549,7 +2553,8 @@
         }
       ],
       "invariants": [
-        "Select only product-declared canonical automatic-routing targets; compatibility command aliases are optional direct-invocation information, never exact route identities.",
+        "Select only product-declared canonical automatic-routing targets; the exact matching direct command entrypoint is required for Claude execution and is never the canonical route identity.",
+        "Emit exactly one immediate next canonical route; later stages may appear only as prose in validation expectations or fallback path and must not add route identities.",
         "Express specialized behavior only through structured variantParameters on the canonical route.",
         "Do not modify files or execute downstream work.",
         "Do not claim validation has run.",
@@ -2572,7 +2577,7 @@
         },
         {
           "id": "select",
-          "action": "Select one next command or the shortest safe sequence."
+          "action": "Select exactly one immediate next canonical route and its matching command entrypoint."
         },
         {
           "id": "verify-surface",
@@ -2593,12 +2598,12 @@
           {
             "name": "Canonical skill",
             "required": true,
-            "description": "One of the six canonical 4.0 skills."
+            "description": "One of the six product-declared canonical skills."
           },
           {
-            "name": "Command alias (optional)",
+            "name": "Command entrypoint",
             "required": true,
-            "description": "Existing generated compatibility wrapper or None."
+            "description": "Exact direct command for Claude; generic and Codex adapters may execute the resolved contract directly."
           },
           {
             "name": "Variant parameters",
@@ -2633,7 +2638,7 @@
         ],
         "order": [
           "Canonical skill",
-          "Command alias (optional)",
+          "Command entrypoint",
           "Variant parameters",
           "Core agent",
           "Capability packs",
@@ -2644,8 +2649,8 @@
         "severityLevels": []
       },
       "validation": [
-        "Confirm the most specific matching canonical route and structured variant parameters were selected.",
-        "Confirm the canonical target is automatic-routing eligible and any optional compatibility alias and preset exist in the generated catalog.",
+        "Confirm exactly one most-specific immediate canonical route and its structured variant parameters were selected.",
+        "Confirm the canonical target is automatic-routing eligible and the exact matching command entrypoint and preset exist in the generated catalog.",
         "Confirm agents and packs exist in the product inventory.",
         "Confirm required inputs exactly equal the complete canonical names and order of the selected workflows even when their values are present, inferred, or resolved.",
         "Confirm the response contains routing only."
@@ -2701,10 +2706,8 @@
             "MODE"
           ],
           "description": "Analysis depth.",
-          "default": "normal",
+          "default": "deep",
           "exactValues": [
-            "quick",
-            "normal",
             "deep"
           ]
         },
@@ -2720,16 +2723,6 @@
         }
       ],
       "decisionTable": [
-        {
-          "when": "DEPTH equals quick.",
-          "predicate": { "op": "input-equals", "input": "DEPTH", "value": "quick" },
-          "action": "Perform surface-level analysis of obvious gaps."
-        },
-        {
-          "when": "DEPTH equals normal.",
-          "predicate": { "op": "input-equals", "input": "DEPTH", "value": "normal" },
-          "action": "Perform standard senior-level analysis."
-        },
         {
           "when": "DEPTH equals deep.",
           "predicate": { "op": "input-equals", "input": "DEPTH", "value": "deep" },
@@ -2800,7 +2793,8 @@
         "order": [
           "Key findings",
           "Open questions",
-          "Potential risks"
+          "Potential risks",
+          "export artifact"
         ],
         "severityLevels": []
       },

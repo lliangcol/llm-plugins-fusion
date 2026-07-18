@@ -153,6 +153,172 @@ nova_physical_directory_path() {
   cd -P -- "$path" >/dev/null 2>&1 && builtin pwd -P
 }
 
+nova_physical_safe_path() {
+  local workspace_root="${1:-}"
+  local workspace_absolute=""
+  local workspace_physical=""
+  local original_path="${PATH-}"
+  local entry=""
+  local entry_absolute=""
+  local entry_physical=""
+  local safe_path=""
+  local saved_dir=""
+  local -a entries=()
+
+  [ -n "$original_path" ] || return 1
+  case ":$original_path:" in
+    *::*) return 1 ;;
+  esac
+
+  if [ -n "$workspace_root" ]; then
+    workspace_absolute="$(nova_absolute_bash_path "$workspace_root")" || return 1
+    saved_dir="$PWD"
+    cd -P -- "$workspace_root" >/dev/null 2>&1 || return 1
+    workspace_physical="$PWD"
+    cd -P -- "$saved_dir" >/dev/null 2>&1 || return 1
+  fi
+
+  IFS=':' read -r -a entries <<< "$original_path"
+  for entry in "${entries[@]}"; do
+    case "$entry" in
+      /*|[A-Za-z]:[\\/]*) ;;
+      *) return 1 ;;
+    esac
+    case "$entry" in
+      *$'\n'*|*$'\r'*) return 1 ;;
+    esac
+    [ -d "$entry" ] || continue
+    entry_absolute="$entry"
+    saved_dir="$PWD"
+    cd -P -- "$entry" >/dev/null 2>&1 || return 1
+    entry_physical="$PWD"
+    cd -P -- "$saved_dir" >/dev/null 2>&1 || return 1
+    if [ -n "$workspace_root" ] && {
+      nova_path_is_within "$workspace_absolute" "$entry_absolute" \
+        || nova_path_is_within "$workspace_physical" "$entry_physical";
+    }; then
+      return 1
+    fi
+    case ":$safe_path:" in
+      *:"$entry_physical":*) ;;
+      *)
+        if [ -n "$safe_path" ]; then
+          safe_path="$safe_path:$entry_physical"
+        else
+          safe_path="$entry_physical"
+        fi
+        ;;
+    esac
+  done
+
+  [ -n "$safe_path" ] || return 1
+  printf '%s\n' "$safe_path"
+}
+
+nova_system_command() {
+  local name="$1"
+  local directory=""
+  local candidate=""
+  local physical=""
+
+  case "$name" in
+    ''|*/*|*\\*) return 1 ;;
+  esac
+  for directory in /usr/bin /bin; do
+    for candidate in "$directory/$name" "$directory/$name.exe"; do
+      [ -f "$candidate" ] && [ -x "$candidate" ] || continue
+      physical="$(nova_physical_executable_path "$candidate")" || continue
+      printf '%s\n' "$physical"
+      return 0
+    done
+  done
+  return 1
+}
+
+nova_trusted_stat_command() {
+  if [ -n "${NOVA_TRUSTED_STAT_BIN:-}" ]; then
+    printf '%s\n' "$NOVA_TRUSTED_STAT_BIN"
+    return 0
+  fi
+  nova_system_command stat
+}
+
+nova_file_identity() {
+  local path="$1"
+  local stat_bin=""
+  local identity=""
+
+  stat_bin="$(nova_trusted_stat_command)" || return 1
+  case "${NOVA_STAT_STYLE:-${OSTYPE:-}}" in
+    bsd|darwin*) identity="$("$stat_bin" -f '%d:%i:%p:%z:%m:%c' "$path" 2>/dev/null)" || return 1 ;;
+    gnu|linux*|msys*|cygwin*) identity="$("$stat_bin" -c '%d:%i:%f:%s:%Y:%Z' "$path" 2>/dev/null)" || return 1 ;;
+    *)
+      if identity="$("$stat_bin" -c '%d:%i:%f:%s:%Y:%Z' "$path" 2>/dev/null)"; then
+        :
+      else
+        identity="$("$stat_bin" -f '%d:%i:%p:%z:%m:%c' "$path" 2>/dev/null)" || return 1
+      fi
+      ;;
+  esac
+  [ -n "$identity" ] || return 1
+  printf '%s\n' "$identity"
+}
+
+nova_file_link_count() {
+  local path="$1"
+  local stat_bin=""
+  local links=""
+
+  stat_bin="$(nova_trusted_stat_command)" || return 1
+  case "${NOVA_STAT_STYLE:-${OSTYPE:-}}" in
+    bsd|darwin*) links="$("$stat_bin" -f '%l' "$path" 2>/dev/null)" || return 1 ;;
+    gnu|linux*|msys*|cygwin*) links="$("$stat_bin" -c '%h' "$path" 2>/dev/null)" || return 1 ;;
+    *)
+      if links="$("$stat_bin" -c '%h' "$path" 2>/dev/null)"; then
+        :
+      else
+        links="$("$stat_bin" -f '%l' "$path" 2>/dev/null)" || return 1
+      fi
+      ;;
+  esac
+  case "$links" in
+    ''|*[!0-9]*) return 1 ;;
+  esac
+  printf '%s\n' "$links"
+}
+
+nova_executable_identity() {
+  local path="$1"
+  [ -f "$path" ] && [ -x "$path" ] || return 1
+  nova_file_identity "$path"
+}
+
+nova_executable_identity_matches() {
+  local path="$1"
+  local expected="$2"
+  local actual=""
+  actual="$(nova_executable_identity "$path")" || return 1
+  [ "$actual" = "$expected" ]
+}
+
+nova_native_executable_format() {
+  local path="$1"
+  local od_bin=""
+  local bytes=""
+
+  od_bin="$(nova_system_command od)" || return 1
+  bytes="$(LC_ALL=C "$od_bin" -An -tx1 -N4 "$path" 2>/dev/null)" || return 1
+  bytes="${bytes//[[:space:]]/}"
+  case "$bytes" in
+    7f454c46|feedface|feedfacf|cefaedfe|cffaedfe|cafebabe|bebafeca|cafebabf|bfbafeca|4d5a*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
 nova_path_is_within() {
   local root="${1%/}"
   local path="$2"
@@ -174,15 +340,18 @@ nova_node_command() {
   local candidate_from_path=""
   local candidate_absolute=""
   local candidate_entry=""
+  local candidate_identity=""
+  local safe_path=""
 
   [ "${NODE_OPTIONS+x}" != "x" ] || return 1
   if [ -n "$workspace_root" ]; then
     workspace_absolute="$(nova_absolute_bash_path "$workspace_root")" || return 1
     workspace_physical="$(nova_physical_directory_path "$workspace_root")" || return 1
   fi
+  safe_path="$(nova_physical_safe_path "$workspace_root")" || return 1
 
   for candidate in node node.exe; do
-    candidate_from_path="$(type -P "$candidate" 2>/dev/null || true)"
+    candidate_from_path="$(PATH="$safe_path" type -P "$candidate" 2>/dev/null || true)"
     [ -n "$candidate_from_path" ] || continue
     candidate_absolute="$(nova_absolute_bash_path "$candidate_from_path")" || return 1
     candidate_entry="$(nova_canonical_path_entry "$candidate_from_path")" || return 1
@@ -194,7 +363,10 @@ nova_node_command() {
     }; then
       return 1
     fi
-    if nova_node_version_supported "$candidate"; then
+    nova_native_executable_format "$candidate" || continue
+    candidate_identity="$(nova_executable_identity "$candidate")" || continue
+    if PATH="$safe_path" nova_node_version_supported "$candidate" \
+      && nova_executable_identity_matches "$candidate" "$candidate_identity"; then
       printf '%s\n' "$candidate"
       return 0
     fi

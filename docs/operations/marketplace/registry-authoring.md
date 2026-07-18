@@ -117,9 +117,11 @@ node scripts/lint-frontmatter.mjs
 node scripts/validate-docs.mjs
 ```
 
-Release-ready command additions also require `README.md`, `CHANGELOG.md`,
-version metadata, and generated marketplace files when the plugin version
-changes.
+Release-ready command additions also require `README.md` and `CHANGELOG.md`.
+When the development/candidate plugin version changes, keep the root
+`package.json` version synchronized. Regenerate marketplace files only when the
+stable distribution source or its registry metadata changes; an unreleased
+plugin version must not overwrite the stable catalog version.
 
 ## Review Flow
 

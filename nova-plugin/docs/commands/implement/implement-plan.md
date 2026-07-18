@@ -28,7 +28,7 @@
 
 ### Optional
 
-- 无
+- `EXECUTION_PROFILE`: 可选执行变体：`lite` / `standard` / `codex-review-fix`。
 
 ## 行为准则（Do/Don't）
 
@@ -51,7 +51,8 @@
 
 ## 输出规范
 
-- 聊天输出包含变更清单、简短实现总结与偏离说明（或明确无偏离）。
+- 固定顺序输出 `implemented changes`、`plan-step trace`、`validation`、`deviations`。
+- `plan-step trace` 必须列明已完成与阻塞步骤；无偏离时 `deviations` 明确写 `None`。
 
 ## 典型示例
 

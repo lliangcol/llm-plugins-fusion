@@ -1,6 +1,6 @@
 ---
 name: nova-implement-plan
-description: Implement strictly from an approved plan. Requires PLAN_INPUT_PATH and PLAN_APPROVED=true before execution.
+description: Implement the resolved execution profile. The default approved-plan profile requires PLAN_INPUT_PATH and PLAN_APPROVED=true.
 license: MIT
 allowed-tools: Read Glob Grep Write Edit
 disallowed-tools: NotebookEdit
@@ -39,10 +39,12 @@ This file is the supporting behavioral contract for `/nova-plugin:implement-plan
 ### Generated Behavior Index
 
 - **Purpose:** Execute an explicitly approved plan step by step with traceability and minimal deviation.
-- **Canonical inputs:** `PLAN_INPUT_PATH`(required aliases=PLAN_PATH); `PLAN_APPROVED`(required aliases=APPROVED exact=true,"true"); `EXECUTION_PROFILE`(optional default="standard" exact="lite","standard","codex-review-fix")
+- **Canonical inputs:** `PLAN_INPUT_PATH`(required aliases=PLAN_PATH); `PLAN_APPROVED`(required aliases=APPROVED exact=true,"true"); `EXECUTION_PROFILE`(optional exact="lite","standard","codex-review-fix")
+- **Resolved variant authority:** `{"EXECUTION_PROFILE":"codex-review-fix"} normalized={"EXECUTION_PROFILE":"codex-review-fix"} -> runtime/contracts/codex-review-fix.json`; `{"EXECUTION_PROFILE":"lite"} normalized={"EXECUTION_PROFILE":"lite"} -> runtime/contracts/implement-lite.json`; `{} normalized={} -> runtime/contracts/implement-plan.json`; `{"EXECUTION_PROFILE":"standard"} normalized={"EXECUTION_PROFILE":"standard"} -> runtime/contracts/implement-standard.json`. Declared selector defaults are applied before matching. An exact normalized override wins; a non-exact combination that triggers an alias specialization stops as conflicting, and only a valid combination that triggers no specialization uses the canonical fallback. The complete resolved runtime contract is authoritative and no field falls back to canonical prose.
+- **Claude static-entrypoint gate:** Native command and Skill frontmatter are static. A matching command wrapper may continue after it has verified that its invoked command id equals `resolvedWorkflowId`; this canonical Skill must not re-resolve or reject that validated wrapper. Only when this canonical Skill is itself the Claude native invoked entrypoint and no validated wrapper gate exists must `resolvedWorkflowId` equal `implement-plan`. Otherwise STOP before tools or side effects and invoke the exact direct command `/nova-plugin:<resolved commandEntrypoint.directCommandId>`; never execute the specialized contract under unmatched canonical frontmatter. Generic and Codex adapters may execute the resolved contract directly under adapter enforcement.
 - **Decision entries:** 2.
 - **Workflow steps:** `validate-approval` → `load-plan` → `execute` → `verify` → `trace`
-- **Output:** mode=`workspace-and-chat`; order=`plan-step trace` → `validation` → `deviations`; severity=none.
+- **Output:** mode=`workspace-and-chat`; order=`implemented changes` → `plan-step trace` → `validation` → `deviations`; severity=none.
 - **Deviation/failure:** mode=`approval-required`; failure order=`status` → `completed plan steps` → `blocked plan step` → `blocker` → `safe next action`.
 - **Full IR:** `runtime/contracts/implement-plan.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
 <!-- END GENERATED BEHAVIOR CONTRACT -->
@@ -53,10 +55,19 @@ Execute approved plan steps with minimal deviation and clear traceability.
 
 ### Inputs
 
-| Parameter         | Required | Default | Notes                  | Example                |
-| ----------------- | -------- | ------- | ---------------------- | ---------------------- |
-| `PLAN_INPUT_PATH` | Yes      | N/A     | Approved plan file     | `docs/plans/refund.md` |
-| `PLAN_APPROVED`   | Yes      | N/A     | Must be exactly `true` | `true`                 |
+Resolve `EXECUTION_PROFILE` first, then use only the required-input set from
+the matched runtime contract:
+
+| Resolved profile | Selector | Required inputs |
+| --- | --- | --- |
+| Approved-plan default | `{}` | `PLAN_INPUT_PATH`, `PLAN_APPROVED` |
+| Lightweight implementation | `{"EXECUTION_PROFILE":"lite"}` | `REQUEST` |
+| Standard implementation | `{"EXECUTION_PROFILE":"standard"}` | `REQUEST` |
+| Codex review/fix loop | `{"EXECUTION_PROFILE":"codex-review-fix"}` | `REVIEW_SCOPE` |
+
+`PLAN_INPUT_PATH` and `PLAN_APPROVED=true` apply only to the default `{}`
+approved-plan contract. They are not requirements of the three specialized
+profiles.
 
 ### Outputs
 
@@ -65,7 +76,7 @@ Execute approved plan steps with minimal deviation and clear traceability.
 
 ### Workflow
 
-1. Validate both required parameters.
+1. Validate both required parameters and `EXECUTION_PROFILE` when supplied.
 2. Read plan as source of truth.
 3. Implement step-by-step within scope.
 4. Run plan-required verification.
@@ -81,6 +92,10 @@ Execute approved plan steps with minimal deviation and clear traceability.
 - Stop on non-trivial deviation; request plan update.
 
 ## Detailed Contract
+
+The approved-plan procedure below applies only to the default `{}` profile.
+Specialized profiles follow their resolved runtime contract and required-input
+set above.
 
 ### CONTROLLED EXECUTION
 

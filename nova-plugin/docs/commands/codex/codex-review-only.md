@@ -22,6 +22,10 @@
 
 ## 输入参数
 
+### Required
+
+- `REVIEW_SCOPE`: 要审查的 Git diff 或仓库范围
+
 ### Optional
 
 - `BASE`: 基线分支
@@ -29,9 +33,10 @@
 
 ## 详细执行步骤
 
-1. 调 `codex-review.sh`
-2. 输出 `review.md` 路径
-3. 简述 `必须修` / `建议修` 摘要
+1. 解析并确认 `REVIEW_SCOPE`
+2. 调 `codex-review.sh`
+3. 输出 `review.md` 路径
+4. 简述 `必须修` / `建议修` 摘要
 
 ## 输出规范
 

@@ -3,6 +3,18 @@
   "executionMode": "targeted-source-mutation",
   "results": [
     {
+      "id": "active-release-hold-ignored",
+      "source": "scripts/lib/release-corrections.mjs",
+      "killed": true,
+      "reason": "active release hold ignored"
+    },
+    {
+      "id": "correction-identity-binding-disabled",
+      "source": "scripts/lib/release-corrections.mjs",
+      "killed": true,
+      "reason": "correction identity mismatch accepted"
+    },
+    {
       "id": "path-containment-always-allow",
       "source": "nova-plugin/runtime/safe-workspace-path.mjs",
       "killed": true,
@@ -34,7 +46,7 @@
     },
     {
       "id": "unavailable-eval-metric-coerced-to-zero",
-      "source": "scripts/evaluate-paired-live.mjs",
+      "source": "scripts/lib/evaluation-evidence.mjs",
       "killed": true,
       "reason": "unavailable metric coerced to zero"
     },
@@ -42,9 +54,9 @@
       "id": "git-injection-argument-check-disabled",
       "source": "nova-plugin/hooks/scripts/pre-bash-check.mjs",
       "killed": true,
-      "reason": "git config injection accepted"
+      "reason": "abbreviated forbidden Git option accepted"
     }
   ],
   "score": 1,
-  "targetScore": 0.8
+  "targetScore": 1
 }

@@ -24,7 +24,7 @@
 
 | Parameter   | Required | Description                               | Example                       |
 | ----------- | -------- | ----------------------------------------- | ----------------------------- |
-| `ARGUMENTS` | No       | Any input context or problem description. | `Requirement summary or logs` |
+| `ARGUMENTS` | Yes      | Any input context or problem description. | `Requirement summary or logs` |
 
 ## Output
 

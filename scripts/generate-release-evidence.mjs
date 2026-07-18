@@ -2,10 +2,10 @@
 /** Aggregate release gates into machine-readable JSON and derived Markdown. */
 
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { parseCoverageSummary } from './lib/coverage-thresholds.mjs';
+import { DEFAULT_COVERAGE_THRESHOLDS, parseCoverageSummary } from './lib/coverage-thresholds.mjs';
 import { requireOptionValue } from './lib/cli-args.mjs';
 import {
   loadRouteInventory,
@@ -15,6 +15,11 @@ import {
   routeOutputContract,
   routeSystemPromptSha256,
 } from './validate-plugin-route-live.mjs';
+import {
+  prepareArtifactOutputPlan,
+  resolveArtifactOutputPath,
+  writeArtifactOutput,
+} from './lib/artifact-output.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
@@ -57,7 +62,10 @@ export function parseArgs(args, root = defaultRoot) {
     if (arg === '--help' || arg === '-h') options.help = true;
     else if (arg === '--require-live') options.requireLive = true;
     else if (valueOptions.has(arg)) {
-      options[valueOptions.get(arg)] = resolve(root, requireOptionValue(args, index, arg));
+      const value = requireOptionValue(args, index, arg);
+      options[valueOptions.get(arg)] = arg === '--out-dir'
+        ? resolveArtifactOutputPath(root, value, 'release evidence output directory')
+        : resolve(root, value);
       index += 1;
     } else throw new Error(`unknown argument: ${arg}`);
   }
@@ -77,7 +85,71 @@ function testCounts(summary) {
     const match = summary.match(new RegExp(`(?:^|\\n)(?:(?:ℹ|#)\\s+)?${label}\\s+(\\d+)`, 'i'));
     return match ? Number.parseInt(match[1], 10) : null;
   };
-  return { tests: value('tests'), passed: value('pass'), failed: value('fail') };
+  return {
+    tests: value('tests'),
+    passed: value('pass'),
+    failed: value('fail'),
+    cancelled: value('cancelled'),
+    skipped: value('skipped'),
+    todo: value('todo'),
+  };
+}
+
+function validateCoverageMetadata(coverageMetadata, coverageSummary, coverage) {
+  if (!coverageMetadata || typeof coverageMetadata !== 'object' || Array.isArray(coverageMetadata)) {
+    throw new Error('coverage metadata must be an object');
+  }
+  if (coverageMetadata.schemaVersion !== 2
+    || coverageMetadata.check !== true
+    || coverageMetadata.gatePassed !== true
+    || coverageMetadata.exitCode !== 0
+    || coverageMetadata.signal !== null) {
+    throw new Error('coverage metadata does not prove a successful checked v2 gate');
+  }
+  if (!/^v22\./u.test(coverageMetadata.nodeVersion ?? '')) {
+    throw new Error('coverage metadata does not prove the governed Node.js 22 runtime');
+  }
+  for (const metric of ['lines', 'branches', 'functions']) {
+    if (coverageMetadata.thresholds?.[metric] !== DEFAULT_COVERAGE_THRESHOLDS[metric]) {
+      throw new Error(`coverage metadata ${metric} threshold differs from the governed baseline`);
+    }
+    if (coverageMetadata.actual?.[metric] !== coverage[metric]) {
+      throw new Error(`coverage metadata ${metric} result differs from the parsed summary`);
+    }
+  }
+  const summarySha256 = createHash('sha256').update(coverageSummary).digest('hex');
+  if (coverageMetadata.summarySha256 !== summarySha256) {
+    throw new Error('coverage metadata summary digest differs from the supplied coverage summary');
+  }
+  if (coverageMetadata.coverageDir !== '.metrics/coverage'
+    || coverageMetadata.v8Dir !== '.metrics/coverage/v8'
+    || coverageMetadata.summaryPath !== '.metrics/coverage/coverage-summary.txt') {
+    throw new Error('coverage metadata paths differ from the governed evidence layout');
+  }
+  const startedAt = new Date(coverageMetadata.startedAt ?? '');
+  const completedAt = new Date(coverageMetadata.completedAt ?? '');
+  if (!Number.isFinite(startedAt.getTime())
+    || !Number.isFinite(completedAt.getTime())
+    || completedAt.getTime() < startedAt.getTime()
+    || !Number.isInteger(coverageMetadata.durationMs)
+    || coverageMetadata.durationMs !== completedAt.getTime() - startedAt.getTime()) {
+    throw new Error('coverage metadata timestamps and duration are inconsistent');
+  }
+  if (!Array.isArray(coverageMetadata.command)
+    || coverageMetadata.command[0] !== 'node'
+    || !coverageMetadata.command.includes('--test')
+    || !coverageMetadata.command.includes('--experimental-test-coverage')) {
+    throw new Error('coverage metadata command does not prove the governed Node test runner');
+  }
+  if (!Number.isInteger(coverageMetadata.testFileCount) || coverageMetadata.testFileCount < 1
+    || !Number.isInteger(coverageMetadata.rawCoverageFileCount) || coverageMetadata.rawCoverageFileCount < 1
+    || !Number.isInteger(coverageMetadata.criticalModuleCount) || coverageMetadata.criticalModuleCount < 0
+    || coverageMetadata.criticalModulesPassed !== coverageMetadata.criticalModuleCount
+    || !Number.isInteger(coverageMetadata.expectedSourceCount) || coverageMetadata.expectedSourceCount < 1
+    || coverageMetadata.loadedSourceCount !== coverageMetadata.expectedSourceCount
+    || coverageMetadata.missingSourceCount !== 0) {
+    throw new Error('coverage metadata does not prove complete tests, critical modules, and source inventory');
+  }
 }
 
 const claudeCompatibilityGateId = 'claude.manifest.static';
@@ -164,16 +236,17 @@ export function buildReleaseEvidence({
   const coverage = parseCoverageSummary(coverageSummary);
   if (!coverage) throw new Error('coverage summary does not contain an all files row');
   const counts = testCounts(coverageSummary);
-  if (coverageMetadata.exitCode !== 0) throw new Error('coverage input reports failure');
+  validateCoverageMetadata(coverageMetadata, coverageSummary, coverage);
   const validationGates = normalizeValidationTimings(timings, install, { requireLive });
-  if (counts.failed !== 0 || counts.tests === null || counts.passed !== counts.tests) {
+  if (Object.values(counts).some((value) => !Number.isInteger(value) || value < 0)
+    || counts.failed !== 0
+    || counts.cancelled !== 0
+    || counts.todo !== 0
+    || counts.passed + counts.skipped !== counts.tests) {
     throw new Error('test summary does not prove a complete zero-failure run');
   }
-  for (const metric of ['lines', 'branches', 'functions']) {
-    const threshold = coverageMetadata.thresholds?.[metric];
-    if (typeof threshold === 'number' && coverage[metric] < threshold) {
-      throw new Error(`coverage ${metric} ${coverage[metric]} is below threshold ${threshold}`);
-    }
+  for (const metric of ['lines', 'branches', 'functions']) if (coverage[metric] < coverageMetadata.thresholds[metric]) {
+    throw new Error(`coverage ${metric} ${coverage[metric]} is below threshold ${coverageMetadata.thresholds[metric]}`);
   }
 
   const commit = env.GITHUB_SHA ?? env.RELEASE_COMMIT ?? 'local-not-recorded';
@@ -191,16 +264,22 @@ export function buildReleaseEvidence({
       throw new Error('install evidence reports validation or inventory drift failure');
     }
     const skills = install.inventory?.skills;
-    if (install.inventory?.count !== 42 || !Array.isArray(skills) || skills.length !== 42 || new Set(skills).size !== 42) {
-      throw new Error('install evidence does not report 42 unique Skills');
+    if (!expectedRouteInventory) throw new Error('install evidence requires the canonical runtime inventory');
+    const expectedSkills = [
+      ...expectedRouteInventory.commandIds,
+      ...expectedRouteInventory.skillNames,
+    ];
+    if (expectedRouteInventory.combinedSkillCount !== expectedSkills.length
+      || new Set(expectedSkills).size !== expectedSkills.length) {
+      throw new Error('canonical runtime inventory count or identities are inconsistent');
     }
-    if (
-      expectedRouteInventory
-      && JSON.stringify([...skills].sort()) !== JSON.stringify([
-        ...expectedRouteInventory.commandIds,
-        ...expectedRouteInventory.skillNames,
-      ].sort())
-    ) {
+    if (install.inventory?.count !== expectedRouteInventory.combinedSkillCount
+      || !Array.isArray(skills)
+      || skills.length !== expectedRouteInventory.combinedSkillCount
+      || new Set(skills).size !== expectedRouteInventory.combinedSkillCount) {
+      throw new Error(`install evidence does not report ${expectedRouteInventory.combinedSkillCount} unique Skills`);
+    }
+    if (JSON.stringify([...skills].sort()) !== JSON.stringify([...expectedSkills].sort())) {
       throw new Error('install evidence Skills differ from the canonical runtime inventory');
     }
     if (!skills.includes('route') || !skills.includes('nova-route')) {
@@ -225,6 +304,9 @@ export function buildReleaseEvidence({
       }
       if (install.marketplace?.ref !== tag || !String(install.marketplace?.source ?? '').endsWith(`@${tag}`)) {
         throw new Error('install evidence is not bound to the exact release tag');
+      }
+      if (install.marketplace?.installSourceType !== 'local-manifest-remote-exact-ref') {
+        throw new Error('install evidence does not prove a local manifest bound to a remote exact plugin ref');
       }
     }
   }
@@ -306,7 +388,8 @@ export function buildReleaseEvidence({
     install
     && tag === expectedTag
     && install.marketplace?.ref === tag
-    && String(install.marketplace?.source ?? '').endsWith(`@${tag}`),
+    && String(install.marketplace?.source ?? '').endsWith(`@${tag}`)
+    && install.marketplace?.installSourceType === 'local-manifest-remote-exact-ref'
   );
 
   return {
@@ -318,7 +401,7 @@ export function buildReleaseEvidence({
       pluginVersion: plugin.version,
     },
     runtime: {
-      node: coverageMetadata.node,
+      node: coverageMetadata.nodeVersion,
       claude: install?.claudeVersion ?? 'not-run',
       knownGoodClaudeCli,
     },
@@ -378,7 +461,7 @@ export function buildReleaseEvidence({
 
 export function renderReleaseEvidenceMarkdown(evidence) {
   const gates = evidence.gates.map((gate) => `| ${gate.id} | ${gate.name} | ${gate.status} | ${gate.durationMs ?? ''} | ${gate.replacementGateId ?? ''} |`).join('\n');
-  return `# Release Evidence\n\nStatus: generated\n\n- Tag: \`${evidence.release.tag}\`\n- Commit: \`${evidence.release.commit}\`\n- Plugin version: \`${evidence.release.pluginVersion}\`\n- Node: \`${evidence.runtime.node}\`\n- Claude CLI: \`${evidence.runtime.claude}\`\n- Tests: ${evidence.tests.passed ?? 'unknown'} passed, ${evidence.tests.failed ?? 'unknown'} failed\n- Coverage: lines ${evidence.tests.coverage.lines}%, branches ${evidence.tests.coverage.branches}%, functions ${evidence.tests.coverage.functions}%\n- Installed Skills: ${evidence.install?.skillsCount ?? 'not run'}\n- OAuth route: ${evidence.route ? 'passed with temporary-home isolation and zero project writes' : 'not run'}\n\n## Gates\n\n| Gate ID | Gate | Status | Duration ms | Replacement gate ID |\n| --- | --- | --- | --- | --- |\n${gates}\n`;
+  return `# Release Evidence\n\nStatus: generated\n\n- Tag: \`${evidence.release.tag}\`\n- Commit: \`${evidence.release.commit}\`\n- Plugin version: \`${evidence.release.pluginVersion}\`\n- Node: \`${evidence.runtime.node}\`\n- Claude CLI: \`${evidence.runtime.claude}\`\n- Tests: ${evidence.tests.passed ?? 'unknown'} passed, ${evidence.tests.skipped ?? 'unknown'} skipped, ${evidence.tests.failed ?? 'unknown'} failed\n- Coverage: lines ${evidence.tests.coverage.lines}%, branches ${evidence.tests.coverage.branches}%, functions ${evidence.tests.coverage.functions}%\n- Installed Skills: ${evidence.install?.skillsCount ?? 'not run'}\n- OAuth route: ${evidence.route ? 'passed with temporary-home isolation and zero project writes' : 'not run'}\n\n## Gates\n\n| Gate ID | Gate | Status | Duration ms | Replacement gate ID |\n| --- | --- | --- | --- | --- |\n${gates}\n`;
 }
 
 /** @param {{root?: string, args?: string[], env?: NodeJS.ProcessEnv, now?: () => Date}} [options] */
@@ -425,11 +508,14 @@ export function generateReleaseEvidence({ root = defaultRoot, args = [], env = p
     expectedRouteInventory,
     knownGoodClaudeCli: knownGoodClaudeCli(root),
   });
-  mkdirSync(options.outDir, { recursive: true });
   const jsonPath = resolve(options.outDir, 'release-evidence.json');
   const markdownPath = resolve(options.outDir, 'release-evidence.md');
-  writeFileSync(jsonPath, `${JSON.stringify(evidence, null, 2)}\n`, 'utf8');
-  writeFileSync(markdownPath, renderReleaseEvidenceMarkdown(evidence), 'utf8');
+  const outputPlan = prepareArtifactOutputPlan(root, [
+    { key: 'json', path: jsonPath, label: 'release evidence JSON output' },
+    { key: 'markdown', path: markdownPath, label: 'release evidence Markdown output' },
+  ], { protectedPaths: artifactPaths });
+  writeArtifactOutput(outputPlan, 'json', `${JSON.stringify(evidence, null, 2)}\n`);
+  writeArtifactOutput(outputPlan, 'markdown', renderReleaseEvidenceMarkdown(evidence));
   return { help: false, evidence, jsonPath, markdownPath };
 }
 

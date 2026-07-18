@@ -54,7 +54,7 @@ Run the security review path when a change touches any of these areas:
 | Registry metadata | `node scripts/generate-registry.mjs --write`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs`, `node scripts/validate-claude-compat.mjs` |
 | Command or skill risk | `node scripts/lint-frontmatter.mjs`, command docs review, shared safety preflight review |
 | Distributed Bash/Codex scripts | `node scripts/validate-runtime-smoke.mjs`, runtime environment artifact review, no committed `.codex/` artifacts |
-| Hooks | `node scripts/validate-hooks.mjs`, `bash -n` for both hook scripts when Bash is available |
+| Hooks | `node scripts/validate-hooks.mjs`; when Bash is available, run `bash -n nova-plugin/hooks/scripts/pre-write-check.sh`, `bash -n nova-plugin/hooks/scripts/pre-bash-check.sh`, `bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh`, and `bash -n nova-plugin/hooks/scripts/post-audit-log.sh` |
 | Documentation | `node scripts/validate-docs.mjs` |
 | Prompt or workflow surface size | `node scripts/validate-surface-budget.mjs` |
 | Broad workflow changes | `node scripts/validate-github-workflows.mjs`, `node scripts/validate-all.mjs`, `node scripts/scan-distribution-risk.mjs`, `git diff --check` |

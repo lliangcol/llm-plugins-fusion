@@ -23,18 +23,18 @@
 
 ### Required
 
-- 无
+- `WORK_SUMMARY`: 已完成变更及验证上下文；当前任务上下文只有在显式确认后才可满足。别名：`WORK_SCOPE`。
 
 ### Optional
 
-- `WORK_SCOPE`: 当前已完成的改动范围（隐含）。示例: `当前工作区改动`
+- `DEPTH`: 交接详细度，`lite` 或 `standard`，默认 `standard`。
 
 ## 行为准则（Do/Don't）
 
 ### Do
 
-- 根据 Git 有无选择输出模式。
-- 包含变更/原因/限制/后续四个必填部分。
+- 只基于已完成工作和实际验证结果生成交接内容。
+- 按契约输出标题或 commit message、变更总结、验证、交接和范围外后续。
 
 ### Don't
 
@@ -43,24 +43,25 @@
 
 ## 详细执行步骤
 
-1. 确认工作冻结。
-2. 判断是否存在 Git 仓库。
-3. 生成对应输出并标注后续工作为范围外。
+1. 解析并确认 `WORK_SUMMARY`，然后冻结工作范围。
+2. 汇总实际完成的变更和验证状态。
+3. 生成交接内容，并把剩余工作明确标为范围外。
 
 ## 输出规范
 
-- 有 Git：commit message + PR 描述；无 Git：本地总结 + 手动步骤。
+- 固定顺序输出 `title or commit message`、`change summary`、`validation`、`handoff`、`out-of-scope follow-up`。
+- Git 可用时 `handoff` 可采用 PR 描述；无 Git 时采用手动交付步骤，但字段不变。
 
 ## 典型示例
 
 ```text
 /nova-plugin:finalize-work
-请生成 commit message 和 PR 描述。
+WORK_SUMMARY="已完成命令文档修复并通过 docs 校验"
 ```
 
 ```text
 /nova-plugin:finalize-work
-无 Git 项目，请给出交接总结。
+WORK_SUMMARY="无 Git 项目中的已完成改动与验证" DEPTH=lite
 ```
 
 ```text
@@ -71,4 +72,4 @@
 ## 常见误用与纠正
 
 - 误用：总结阶段修改代码。纠正：先冻结变更再总结。
-- 误用：缺少必填四部分。纠正：补全变更/原因/限制/后续。
+- 误用：缺少契约字段。纠正：补全标题、变更总结、验证、交接和范围外后续。

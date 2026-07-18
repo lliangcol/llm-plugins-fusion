@@ -39,6 +39,8 @@ This file is the supporting behavioral contract for `/nova-plugin:review` and th
 
 - **Purpose:** Perform evidence-grounded code or design review at the requested depth and output mode without implementation.
 - **Canonical inputs:** `REVIEW_SCOPE`(required aliases=INPUT,SCOPE); `LEVEL`(optional aliases=DEPTH default="standard" exact="lite","standard","strict"); `MODE`(optional default="full" exact="full","findings-only"); `REVIEW_PROFILE`(optional default="general" exact="general","plan","codex-review-only","codex-verify-only")
+- **Resolved variant authority:** `{"REVIEW_PROFILE":"codex-review-only"} normalized={"LEVEL":"standard","MODE":"full","REVIEW_PROFILE":"codex-review-only"} -> runtime/contracts/codex-review-only.json`; `{"REVIEW_PROFILE":"codex-verify-only"} normalized={"LEVEL":"standard","MODE":"full","REVIEW_PROFILE":"codex-verify-only"} -> runtime/contracts/codex-verify-only.json`; `{"REVIEW_PROFILE":"plan"} normalized={"LEVEL":"standard","MODE":"full","REVIEW_PROFILE":"plan"} -> runtime/contracts/plan-review.json`; `{} normalized={"LEVEL":"standard","MODE":"full","REVIEW_PROFILE":"general"} -> runtime/contracts/review.json`; `{"LEVEL":"lite"} normalized={"LEVEL":"lite","MODE":"full","REVIEW_PROFILE":"general"} -> runtime/contracts/review-lite.json`; `{"LEVEL":"standard","MODE":"findings-only"} normalized={"LEVEL":"standard","MODE":"findings-only","REVIEW_PROFILE":"general"} -> runtime/contracts/review-only.json`; `{"LEVEL":"strict"} normalized={"LEVEL":"strict","MODE":"full","REVIEW_PROFILE":"general"} -> runtime/contracts/review-strict.json`. Declared selector defaults are applied before matching. An exact normalized override wins; a non-exact combination that triggers an alias specialization stops as conflicting, and only a valid combination that triggers no specialization uses the canonical fallback. The complete resolved runtime contract is authoritative and no field falls back to canonical prose.
+- **Claude static-entrypoint gate:** Native command and Skill frontmatter are static. A matching command wrapper may continue after it has verified that its invoked command id equals `resolvedWorkflowId`; this canonical Skill must not re-resolve or reject that validated wrapper. Only when this canonical Skill is itself the Claude native invoked entrypoint and no validated wrapper gate exists must `resolvedWorkflowId` equal `review`. Otherwise STOP before tools or side effects and invoke the exact direct command `/nova-plugin:<resolved commandEntrypoint.directCommandId>`; never execute the specialized contract under unmatched canonical frontmatter. Generic and Codex adapters may execute the resolved contract directly under adapter enforcement.
 - **Decision entries:** 7; canonical routes and variants: `review {"REVIEW_PROFILE":"plan"}`, `review {"REVIEW_PROFILE":"codex-review-only"}`, `review {"REVIEW_PROFILE":"codex-verify-only"}`, `review {"MODE":"findings-only"}`, `review {"LEVEL":"lite"}`, `review {"LEVEL":"standard"}`, `review {"LEVEL":"strict"}`.
 - **Workflow steps:** `resolve-scope` → `route` → `inspect` → `emit`
 - **Output:** mode=`chat`; order=`findings` → `impact rationale` → `directional guidance`; severity=`Critical`, `Major`, `Minor`.
@@ -53,11 +55,21 @@ canonical surface, with depth and output shape selected by parameters.
 
 ### Inputs
 
-| Parameter | Required | Default    | Notes                  | Example                 |
-| --------- | -------- | ---------- | ---------------------- | ----------------------- |
-| `LEVEL` | No | `standard` | `lite`, `standard`, or `strict` | `lite` |
-| `MODE` | No | `full` | `full` or `findings-only` | `findings-only` |
-| `REVIEW_SCOPE` | Yes | N/A | Review target content; `INPUT` and `SCOPE` are accepted aliases | `PR diff / module code` |
+Resolve `LEVEL`, `MODE`, and `REVIEW_PROFILE` first, then use the matched
+runtime contract's required-input set:
+
+| Resolved profile | Selector | Required inputs |
+| --- | --- | --- |
+| General review | `{}` | `REVIEW_SCOPE` |
+| Lite review | `{"LEVEL":"lite"}` | `REVIEW_SCOPE` |
+| Findings-only review | `{"LEVEL":"standard","MODE":"findings-only"}` | `REVIEW_SCOPE` |
+| Strict review | `{"LEVEL":"strict"}` | `REVIEW_SCOPE` |
+| Plan review | `{"REVIEW_PROFILE":"plan"}` | `PLAN_INPUT_PATH` |
+| Codex review-only | `{"REVIEW_PROFILE":"codex-review-only"}` | `REVIEW_SCOPE` |
+| Codex verify-only | `{"REVIEW_PROFILE":"codex-verify-only"}` | `REVIEW_FILE` |
+
+`REVIEW_SCOPE` is not a universal requirement: plan review uses
+`PLAN_INPUT_PATH`, while Codex verify-only uses `REVIEW_FILE`.
 
 ### Outputs
 
@@ -68,7 +80,7 @@ canonical surface, with depth and output shape selected by parameters.
 
 ### Workflow
 
-1. Parse scope, `LEVEL`, and `MODE`.
+1. Parse scope, `LEVEL`, `MODE`, and `REVIEW_PROFILE`.
 2. Keep the selected identity as canonical `nova-review`; apply depth and
    output shape as structured parameters.
 3. Emit findings with impact rationale, stopping after findings when
@@ -85,6 +97,10 @@ canonical surface, with depth and output shape selected by parameters.
 - Clearly label facts vs assumptions.
 
 ## Detailed Contract
+
+The detailed review procedure below describes the general `{}` profile.
+Specialized profiles follow their resolved runtime contract and required-input
+set above.
 
 ### CODE REVIEW (NO IMPLEMENTATION)
 
@@ -259,7 +275,12 @@ It only **evaluates and documents issues**.
 - `MODE=findings-only` replaces the output boundary formerly inferred from `review-only`.
 - `/nova-plugin:review-only` remains a direct 4.x compatibility invocation with `LEVEL=standard MODE=findings-only`; automatic routing must not select the alias.
 - `REVIEW_PROFILE=plan` replaces `plan-review`.
-- `REVIEW_PROFILE=codex-review-only|codex-verify-only` uses the retained compatibility assets under `skills/nova-codex-review-fix/` and requires explicit shell, network, and assistant-owned authentication approval.
+- `REVIEW_PROFILE=codex-review-only|codex-verify-only` uses the complete resolved
+  alias runtime contract and retained assets under
+  `skills/nova-codex-review-fix/`. Canonical read-only Skill frontmatter does
+  not authorize that external runtime: the host must separately support and
+  explicitly authorize shell, network, and assistant-owned authentication, or
+  the workflow stops as unsupported.
 
 All review variants remain non-implementation workflows and must not modify project files.
 

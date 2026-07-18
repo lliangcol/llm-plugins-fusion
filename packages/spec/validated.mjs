@@ -1,5 +1,9 @@
 import { dirname } from 'node:path';
+import { validateProductProtocolCoherence } from '../../framework/core/protocol-coherence.mjs';
+import { ownRecordValue } from '../../framework/core/own-record.mjs';
+import { buildVariantResolutionIndex, resolveVariantWorkflow } from '../../framework/core/variant-contracts.mjs';
 import { validateContractCoherence } from '../../framework/migrate/contract-coherence.mjs';
+import { migrateBehaviorSpec, migrateWorkflowSpec } from '../../framework/migrate/v6.mjs';
 import { defaultLayout, readJson, resolveContainedFile } from './internal.mjs';
 
 export const SPEC_ERROR = Object.freeze({
@@ -24,24 +28,54 @@ export class SpecBundleError extends Error {
 
 /** @param {unknown} result @returns {unknown[]} */
 function validationDetails(result) {
+  if (result === true) return [];
   if (result === false) return ['validator returned false'];
   if (Array.isArray(result)) return result;
   if (result && typeof result === 'object') {
-    const record = /** @type {{ valid?: boolean, errors?: unknown[] }} */ (result);
+    const record = /** @type {{ valid?: boolean, errors?: unknown[], then?: unknown }} */ (result);
+    if (typeof record.then === 'function') return ['validator returned an asynchronous result'];
+    if (record.valid === true) {
+      if (record.errors === undefined || (Array.isArray(record.errors) && record.errors.length === 0)) return [];
+      return Array.isArray(record.errors) ? record.errors : ['validator returned valid=true with invalid errors'];
+    }
     if (record.valid === false) return record.errors?.length ? record.errors : ['validator returned valid=false'];
+    return ['validator returned an unsupported object result'];
   }
-  return [];
+  return [`validator returned an unsupported ${result === null ? 'null' : typeof result} result`];
 }
 
-function predicateInputs(predicate, inputs = []) {
-  if (!predicate || typeof predicate !== 'object') return inputs;
-  if (typeof predicate.input === 'string') inputs.push(predicate.input);
-  if (Array.isArray(predicate.args)) for (const child of predicate.args) predicateInputs(child, inputs);
-  if (predicate.arg) predicateInputs(predicate.arg, inputs);
-  return inputs;
+const COMPATIBILITY_ALIAS_REMOVAL_GATES = Object.freeze([
+  'real-benchmark-evidence',
+  'native-permission-and-invocation-parity',
+  'plugin-major-release',
+  'governed-release-decision',
+  'migration-documentation',
+]);
+const PATH_LIKE_INPUT_TYPES = new Set(['path', 'artifact-reference', 'review-reference']);
+const PORTABLE_IDENTITY_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+const INPUT_NAME_PATTERN = /^[A-Z][A-Z0-9_]*$/u;
+
+function invalidInventoryValues(values, predicate) {
+  return values.filter((value) => typeof value !== 'string' || !predicate(value));
 }
 
-/** @param {{ framework: any, product: any, workflows: any, behaviors: any, adapters: any[] }} bundle @returns {string[]} */
+function describeValues(values) {
+  return values.map((value) => JSON.stringify(value) ?? String(value)).join(', ');
+}
+
+function predicateNodes(predicate, nodes = []) {
+  if (!predicate || typeof predicate !== 'object' || Array.isArray(predicate)) return nodes;
+  nodes.push(predicate);
+  if (Array.isArray(predicate.args)) for (const child of predicate.args) predicateNodes(child, nodes);
+  if (predicate.arg) predicateNodes(predicate.arg, nodes);
+  return nodes;
+}
+
+function errorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
+}
+
+/** @param {{ framework: any, product: any, workflows: any, behaviors: any, adapters: any[], provenance?: { workflowSource: string, behaviorSource: string } }} bundle @returns {string[]} */
 function validateInvariants(bundle) {
   const failures = validateContractCoherence(bundle.workflows, bundle.behaviors);
   const workflows = Array.isArray(bundle.workflows?.workflows) ? bundle.workflows.workflows : [];
@@ -68,6 +102,23 @@ function validateInvariants(bundle) {
     if (unknownEntrypoints.length > 0) failures.push(`unknown primary entrypoints: ${unknownEntrypoints.join(', ')}`);
   }
   const canonicalWorkflowIds = workflows.filter((workflow) => !workflow.compatibilityAlias).map((workflow) => workflow.id).sort();
+  if (workflows.some((workflow) => workflow.compatibilityAlias === true)) {
+    const policy = bundle.product?.compatibilityAliasPolicy;
+    if (!policy || typeof policy !== 'object' || Array.isArray(policy)) {
+      failures.push('products with compatibility aliases must declare compatibilityAliasPolicy');
+    } else {
+      if (policy.status !== 'evidence-gated') {
+        failures.push('compatibilityAliasPolicy.status must be evidence-gated');
+      }
+      const removalRequires = Array.isArray(policy.removalRequires)
+        ? [...policy.removalRequires].sort()
+        : null;
+      if (removalRequires === null
+        || JSON.stringify(removalRequires) !== JSON.stringify([...COMPATIBILITY_ALIAS_REMOVAL_GATES].sort())) {
+        failures.push('compatibilityAliasPolicy.removalRequires must declare the complete adapter-neutral retirement gates');
+      }
+    }
+  }
   const automaticTargets = bundle.product?.automaticRouting?.canonicalTargets;
   if (!Array.isArray(automaticTargets)) failures.push('product.automaticRouting.canonicalTargets must be an array');
   else if (JSON.stringify([...automaticTargets].sort()) !== JSON.stringify(canonicalWorkflowIds)) {
@@ -78,9 +129,76 @@ function validateInvariants(bundle) {
     const unknownStages = [...new Set(workflows.map((workflow) => workflow.stage).filter((stage) => !bundle.product.stages.includes(stage)))].sort();
     if (unknownStages.length > 0) failures.push(`workflows use unknown product stages: ${unknownStages.join(', ')}`);
   }
+  const productAgentsList = Array.isArray(bundle.product?.agents) ? bundle.product.agents : [];
+  const productPacksList = Array.isArray(bundle.product?.packs) ? bundle.product.packs : [];
+  const productToolsList = Array.isArray(bundle.product?.tools) ? bundle.product.tools : [];
+  if (!Array.isArray(bundle.product?.agents)) failures.push('product.agents must be an array');
+  else {
+    if (productAgentsList.length === 0) failures.push('product.agents must contain at least one portable identity');
+    const invalidAgents = invalidInventoryValues(productAgentsList, (value) => PORTABLE_IDENTITY_PATTERN.test(value));
+    if (invalidAgents.length > 0) failures.push(`product.agents contains invalid portable identities: ${describeValues(invalidAgents)}`);
+  }
+  if (!Array.isArray(bundle.product?.packs)) failures.push('product.packs must be an array');
+  else {
+    const invalidPacks = invalidInventoryValues(productPacksList, (value) => PORTABLE_IDENTITY_PATTERN.test(value));
+    if (invalidPacks.length > 0) failures.push(`product.packs contains invalid portable identities: ${describeValues(invalidPacks)}`);
+  }
+  if (!Array.isArray(bundle.product?.tools)) failures.push('product.tools must be an array');
+  else {
+    if (productToolsList.length === 0) failures.push('product.tools must contain at least one non-empty identity');
+    const invalidTools = invalidInventoryValues(productToolsList, (value) => value.trim().length > 0);
+    if (invalidTools.length > 0) failures.push(`product.tools contains empty identities: ${describeValues(invalidTools)}`);
+  }
+  const productTools = new Set(productToolsList);
+  const permissionProfiles = bundle.workflows?.permissionProfiles;
+  if (permissionProfiles && typeof permissionProfiles === 'object' && !Array.isArray(permissionProfiles)) {
+    for (const [profileId, profile] of Object.entries(permissionProfiles)) {
+      const allowedTools = Array.isArray(profile?.allowedTools) ? profile.allowedTools : [];
+      const disallowedTools = Array.isArray(profile?.disallowedTools) ? profile.disallowedTools : [];
+      if (!Array.isArray(profile?.allowedTools)) failures.push(`permission profile ${profileId} allowedTools must be an array`);
+      if (!Array.isArray(profile?.disallowedTools)) failures.push(`permission profile ${profileId} disallowedTools must be an array`);
+      const unknownAllowed = [...new Set(allowedTools.filter((tool) => !productTools.has(tool)))].sort();
+      if (unknownAllowed.length > 0) failures.push(`permission profile ${profileId} has unknown allowed product tools: ${unknownAllowed.join(', ')}`);
+      const unknownDisallowed = [...new Set(disallowedTools.filter((tool) => !productTools.has(tool)))].sort();
+      if (unknownDisallowed.length > 0) failures.push(`permission profile ${profileId} has unknown disallowed product tools: ${unknownDisallowed.join(', ')}`);
+      const disallowedToolSet = new Set(disallowedTools);
+      const overlap = [...new Set(allowedTools.filter((tool) => disallowedToolSet.has(tool)))].sort();
+      if (overlap.length > 0) failures.push(`permission profile ${profileId} has overlapping allowed and disallowed tools: ${overlap.join(', ')}`);
+    }
+  }
+  const productAgents = new Set(productAgentsList);
+  const productPacks = new Set(productPacksList);
   for (const workflow of workflows) {
-    if (!bundle.workflows?.permissionProfiles?.[workflow.permissionProfile]) {
+    if (!ownRecordValue(bundle.workflows?.permissionProfiles, workflow.permissionProfile)) {
       failures.push(`${workflow.id}: unknown permission profile ${workflow.permissionProfile}`);
+    }
+    if (!Array.isArray(workflow.ownerAgents)) failures.push(`${workflow.id}: ownerAgents must be an array`);
+    else {
+      if (workflow.ownerAgents.length === 0) failures.push(`${workflow.id}: ownerAgents must contain at least one portable identity`);
+      const invalidAgents = invalidInventoryValues(workflow.ownerAgents, (value) => PORTABLE_IDENTITY_PATTERN.test(value));
+      if (invalidAgents.length > 0) failures.push(`${workflow.id}: ownerAgents contains invalid portable identities: ${describeValues(invalidAgents)}`);
+      const unknownAgents = [...new Set(workflow.ownerAgents.filter((agent) => !productAgents.has(agent)))].sort();
+      if (unknownAgents.length > 0) failures.push(`${workflow.id}: unknown product owner agents: ${unknownAgents.join(', ')}`);
+    }
+    if (!Array.isArray(workflow.recommendedPacks)) failures.push(`${workflow.id}: recommendedPacks must be an array`);
+    else {
+      const invalidPacks = invalidInventoryValues(workflow.recommendedPacks, (value) => PORTABLE_IDENTITY_PATTERN.test(value));
+      if (invalidPacks.length > 0) failures.push(`${workflow.id}: recommendedPacks contains invalid portable identities: ${describeValues(invalidPacks)}`);
+      const unknownPacks = [...new Set(workflow.recommendedPacks.filter((pack) => !productPacks.has(pack)))].sort();
+      if (unknownPacks.length > 0) failures.push(`${workflow.id}: unknown product recommended packs: ${unknownPacks.join(', ')}`);
+    }
+    if (!Array.isArray(workflow.requiredInputs)) failures.push(`${workflow.id}: requiredInputs must be an array`);
+    else {
+      const invalidInputs = invalidInventoryValues(workflow.requiredInputs, (value) => INPUT_NAME_PATTERN.test(value));
+      if (invalidInputs.length > 0) failures.push(`${workflow.id}: requiredInputs contains invalid input identities: ${describeValues(invalidInputs)}`);
+    }
+    const projectedInputs = workflow.compatibilityProjection?.requiredInputs;
+    if (projectedInputs !== undefined) {
+      if (!Array.isArray(projectedInputs)) failures.push(`${workflow.id}: compatibilityProjection.requiredInputs must be an array`);
+      else {
+        const invalidProjectedInputs = invalidInventoryValues(projectedInputs, (value) => INPUT_NAME_PATTERN.test(value));
+        if (invalidProjectedInputs.length > 0) failures.push(`${workflow.id}: compatibilityProjection.requiredInputs contains invalid input identities: ${describeValues(invalidProjectedInputs)}`);
+      }
     }
     const behavior = behaviorById.get(workflow.id);
     if (!behavior || !Array.isArray(behavior.inputs)) continue;
@@ -93,11 +211,27 @@ function validateInvariants(bundle) {
     }
   }
   for (const behavior of behaviors) {
-    const inputNames = new Set((behavior.inputs ?? []).map((input) => input.name));
+    const inputByName = new Map((behavior.inputs ?? []).map((input) => [input.name, input]));
+    const inputNames = new Set(inputByName.keys());
     for (const [index, decision] of (behavior.decisionTable ?? []).entries()) {
       const predicate = decision.predicate ?? (typeof decision.when === 'object' ? decision.when : null);
-      const unknownInputs = [...new Set(predicateInputs(predicate).filter((input) => !inputNames.has(input)))].sort();
+      const nodes = predicateNodes(predicate);
+      const unknownInputs = [...new Set(nodes
+        .map((node) => node.input)
+        .filter((input) => typeof input === 'string' && !inputNames.has(input)))].sort();
       if (unknownInputs.length > 0) failures.push(`${behavior.id}: decision ${index} predicates reference unknown inputs: ${unknownInputs.join(', ')}`);
+      for (const node of nodes) {
+        if (!['path-readable', 'path-writable'].includes(node.op) || !inputNames.has(node.input)) continue;
+        const input = inputByName.get(node.input);
+        if (!PATH_LIKE_INPUT_TYPES.has(input?.type)) {
+          failures.push(`${behavior.id}: decision ${index} ${node.op} input ${node.input} must be path-like`);
+          continue;
+        }
+        const permission = node.op === 'path-readable' ? 'readable' : 'writable';
+        if (input.pathPolicy?.[permission] !== true) {
+          failures.push(`${behavior.id}: decision ${index} ${node.op} input ${node.input} pathPolicy.${permission} must be true`);
+        }
+      }
       if (!decision.route) continue;
       const target = workflowById.get(decision.route);
       if (!target) failures.push(`${behavior.id}: decision ${index} routes to unknown workflow ${decision.route}`);
@@ -105,14 +239,38 @@ function validateInvariants(bundle) {
       else if (!automaticTargetSet.has(decision.route)) failures.push(`${behavior.id}: decision ${index} route ${decision.route} is not automatic-routing eligible`);
       if (!decision.variantParameters || typeof decision.variantParameters !== 'object' || Array.isArray(decision.variantParameters)) {
         failures.push(`${behavior.id}: decision ${index} lacks structured variantParameters`);
-      } else if (target) {
-        const targetInputs = new Map((behaviorById.get(target.id)?.inputs ?? []).map((input) => [input.name, input]));
-        for (const [name, value] of Object.entries(decision.variantParameters)) {
-          const input = targetInputs.get(name);
-          if (!input) failures.push(`${behavior.id}: decision ${index} variant ${name} is not a canonical ${target.id} input`);
-          else if (Array.isArray(input.exactValues) && !input.exactValues.some((allowed) => Object.is(allowed, value))) failures.push(`${behavior.id}: decision ${index} variant ${name} has unsupported value ${JSON.stringify(value)}`);
+      } else if (target && !target.compatibilityAlias) {
+        try {
+          const resolved = resolveVariantWorkflow(
+            workflows,
+            bundle.behaviors,
+            decision.route,
+            decision.variantParameters,
+          );
+          if (resolved.workflow.canonicalSurfaceId !== decision.route) {
+            failures.push(`${behavior.id}: decision ${index} variant parameters resolve outside canonical route ${decision.route}`);
+          }
+        } catch (error) {
+          failures.push(`${behavior.id}: decision ${index} variant parameters do not resolve: ${errorMessage(error)}`);
         }
       }
+    }
+  }
+  try {
+    buildVariantResolutionIndex(workflows, bundle.behaviors);
+  } catch (error) {
+    failures.push(`variant resolution is invalid: ${errorMessage(error)}`);
+  }
+  if (bundle.workflows?.schemaVersion === 5 && bundle.behaviors?.schemaVersion === 1) {
+    try {
+      migrateWorkflowSpec(bundle.workflows, bundle.behaviors);
+    } catch (error) {
+      failures.push(`Contract v5 workflow migration is not ready: ${errorMessage(error)}`);
+    }
+    try {
+      migrateBehaviorSpec(bundle.behaviors);
+    } catch (error) {
+      failures.push(`Contract v1 behavior migration is not ready: ${errorMessage(error)}`);
     }
   }
   if (!Array.isArray(bundle.product?.adapterDefinitions)) failures.push('product.adapterDefinitions must be an array');
@@ -120,6 +278,7 @@ function validateInvariants(bundle) {
   const adapterIds = bundle.adapters.map((adapter) => adapter?.id);
   const duplicateAdapters = adapterIds.filter((id, index) => adapterIds.indexOf(id) !== index);
   if (duplicateAdapters.length > 0) failures.push(`duplicate adapter ids: ${[...new Set(duplicateAdapters)].sort().join(', ')}`);
+  failures.push(...validateProductProtocolCoherence(bundle));
   return failures;
 }
 
@@ -150,8 +309,9 @@ function validateDomain(value, domain, validateSchema) {
 
 /**
  * Load a spec bundle, validate each schema domain, then enforce package-level invariants.
- * The injected validator may throw, return false, return an error array, or return
- * `{ valid: false, errors }`. This keeps the package independent of a specific schema engine.
+ * The injected validator may throw, return a boolean, return an error array, or return
+ * `{ valid, errors }`. Unknown and asynchronous results fail closed so a missing return
+ * cannot silently disable schema validation.
  * @param {string} root
  * @param {{ validateSchema?: (value: unknown, domain: string) => unknown, layout?: typeof defaultLayout }} [options]
  */
@@ -171,6 +331,10 @@ export function validateAndLoadSpecBundle(root, { validateSchema, layout = defau
       workflows: readJson(root, layout.workflowsPath),
       behaviors: readJson(root, layout.behaviorsPath),
       adapters: [],
+      provenance: {
+        workflowSource: layout.workflowsPath,
+        behaviorSource: layout.behaviorsPath,
+      },
     };
   } catch (cause) {
     throw new SpecBundleError('spec bundle layout could not be loaded', {

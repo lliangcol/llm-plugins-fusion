@@ -1,11 +1,13 @@
 import { spawn } from 'node:child_process';
-import { readFileSync, realpathSync, statSync } from 'node:fs';
-import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep } from 'node:path';
+import { lstatSync, readFileSync, realpathSync, statSync } from 'node:fs';
+import { basename, dirname, extname, isAbsolute, join, relative, resolve, sep, win32 } from 'node:path';
 import { sanitizeAuditField } from '../../nova-plugin/runtime/secret-rules.mjs';
+import { assertPortableRelativePath } from './portable-path.mjs';
 
 export const DEFAULT_TIMEOUT_MS = 120_000;
 export const DEFAULT_PROBE_TIMEOUT_MS = 10_000;
 export const DEFAULT_MAX_OUTPUT_BYTES = 1_048_576;
+const WINDOWS_SYSTEM_TASKKILL = String.raw`\\?\GLOBALROOT\SystemRoot\System32\taskkill.exe`;
 
 export function formatCommand(command, args = []) {
   return sanitizeAuditField([command, ...args].join(' '), 500);
@@ -13,6 +15,15 @@ export function formatCommand(command, args = []) {
 
 function regularFile(path) {
   try { return statSync(path).isFile(); } catch { return false; }
+}
+
+function regularNonSymlinkFile(path) {
+  try {
+    const stats = lstatSync(path);
+    return stats.isFile() && !stats.isSymbolicLink();
+  } catch {
+    return false;
+  }
 }
 
 function windowsPathEntries(env) {
@@ -103,16 +114,56 @@ function sanitizedArgs(args) {
   return args.map((arg) => sanitizeAuditField(arg, 300));
 }
 
-export function terminateProcessTree(child, signal = 'SIGTERM', platform = process.platform) {
+/** @param {{trustedSystemDirectory?: string, isRegularFile?: (path: string) => boolean}} [options] */
+export function resolveWindowsTaskkill({ trustedSystemDirectory, isRegularFile = regularNonSymlinkFile } = {}) {
+  let taskkill = WINDOWS_SYSTEM_TASKKILL;
+  if (trustedSystemDirectory !== undefined) {
+    if (typeof trustedSystemDirectory !== 'string' || !/^[A-Za-z]:[\\/]/u.test(trustedSystemDirectory) || trustedSystemDirectory.includes('\0')) {
+      throw new Error('trusted Windows system directory must be an explicit absolute local path');
+    }
+    const root = win32.parse(trustedSystemDirectory).root;
+    const components = trustedSystemDirectory.slice(root.length).split(/[\\/]/u);
+    assertPortableRelativePath(components.join('/'), 'trusted Windows system directory');
+    taskkill = win32.join(trustedSystemDirectory, 'taskkill.exe');
+  }
+  if (!win32.isAbsolute(taskkill) || win32.basename(taskkill).toLowerCase() !== 'taskkill.exe') {
+    throw new Error('trusted Windows taskkill path is invalid');
+  }
+  if (!isRegularFile(taskkill)) throw new Error('trusted Windows taskkill.exe is unavailable');
+  return taskkill;
+}
+
+/**
+ * @param {{pid?: number, kill: (signal?: NodeJS.Signals | number) => boolean}} child
+ * @param {NodeJS.Signals} [signal]
+ * @param {string | {platform?: NodeJS.Platform, trustedTaskkillResolver?: () => string, isRegularFile?: (path: string) => boolean, executor?: (command: string, args: string[], options: {shell: false, windowsHide: true, stdio: 'ignore'}) => {once?: (event: 'error', listener: (error: Error) => void) => void, unref?: () => void}}} [options]
+ */
+export function terminateProcessTree(child, signal = 'SIGTERM', options = {}) {
   if (!child?.pid) return false;
+  const config = /** @type {{platform?: NodeJS.Platform, trustedTaskkillResolver?: () => string, isRegularFile?: (path: string) => boolean, executor?: (command: string, args: string[], options: {shell: false, windowsHide: true, stdio: 'ignore'}) => {once?: (event: 'error', listener: (error: Error) => void) => void, unref?: () => void}}} */ (
+    typeof options === 'string' ? { platform: /** @type {NodeJS.Platform} */ (options) } : options
+  );
+  const platform = config.platform ?? process.platform;
   if (platform === 'win32') {
     try {
-      const killer = spawn('taskkill', ['/PID', String(child.pid), '/T', '/F'], {
+      const fileCheck = config.isRegularFile ?? regularNonSymlinkFile;
+      const taskkill = typeof config.trustedTaskkillResolver === 'function'
+        ? config.trustedTaskkillResolver()
+        : resolveWindowsTaskkill({ isRegularFile: fileCheck });
+      if (!win32.isAbsolute(taskkill) || win32.basename(taskkill).toLowerCase() !== 'taskkill.exe') {
+        throw new Error('trusted taskkill resolver returned an invalid executable path');
+      }
+      if (!fileCheck(taskkill)) throw new Error('trusted taskkill resolver returned an unavailable executable');
+      const executor = config.executor ?? spawn;
+      const killer = executor(taskkill, ['/PID', String(child.pid), '/T', '/F'], {
         shell: false,
         windowsHide: true,
         stdio: 'ignore',
       });
-      killer.unref();
+      killer?.once?.('error', () => {
+        try { child.kill(signal); } catch { /* the original child may already have closed */ }
+      });
+      killer?.unref?.();
       return true;
     } catch {
       return child.kill(signal);
@@ -189,6 +240,7 @@ export function runProcess(label, command, args = [], options = {}) {
     timeoutMs = DEFAULT_TIMEOUT_MS,
     capture = true,
     maxOutputBytes = DEFAULT_MAX_OUTPUT_BYTES,
+    processTreeOptions = {},
   } = options;
 
   const startedAt = Date.now();
@@ -248,9 +300,9 @@ export function runProcess(label, command, args = [], options = {}) {
 
     timer = setTimeout(() => {
       timedOut = true;
-      terminationAttempts.push({ signal: 'SIGTERM', requested: terminateProcessTree(child, 'SIGTERM') });
+      terminationAttempts.push({ signal: 'SIGTERM', requested: terminateProcessTree(child, 'SIGTERM', processTreeOptions) });
       forceKillTimer = setTimeout(() => {
-        terminationAttempts.push({ signal: 'SIGKILL', requested: terminateProcessTree(child, 'SIGKILL') });
+        terminationAttempts.push({ signal: 'SIGKILL', requested: terminateProcessTree(child, 'SIGKILL', processTreeOptions) });
       }, 5_000);
       absoluteWatchdog = setTimeout(() => {
         settle({

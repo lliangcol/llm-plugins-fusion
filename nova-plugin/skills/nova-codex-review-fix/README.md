@@ -1,6 +1,11 @@
 # Nova Codex Review Fix
 
-`nova-codex-review-fix` 是一个面向 Claude Code / Codex 协作场景的半自动闭环能力包，用于把「Codex review -> Claude Code 修复 -> 本地检查 -> Codex verify」沉淀为可复用的 skill + 外部脚本组合。
+`nova-codex-review-fix` 是面向 Claude Code / Codex 协作场景的兼容资源目录，
+用于把「Codex review -> Claude Code 修复 -> 本地检查 -> Codex verify」所需的
+prompt 与 Bash helper 集中维护。它不包含独立 `SKILL.md`；兼容命令
+`/nova-plugin:codex-review-fix` 由 canonical
+`nova-plugin/skills/nova-implement-plan/SKILL.md` 以
+`EXECUTION_PROFILE=codex-review-fix` 驱动。
 
 ## 1. 能力简介
 
@@ -9,7 +14,7 @@
   - Claude Code：fixer / orchestrator
   - Bash 脚本：上下文采集、命令桥接、产物落盘、检查汇总
 - 产物标准化：`review.md`、`verify.md`、diff 工件、检查摘要
-- 适合纳入插件市场型仓库，也便于后续拆成独立 skill 包或正式插件包
+- 作为 `nova-implement-plan` 的 Codex 兼容资源，随当前插件市场入口分发
 
 ## 2. 适用场景
 
@@ -22,7 +27,6 @@
 
 ```text
 nova-plugin/skills/nova-codex-review-fix/
-├── SKILL.md
 ├── README.md
 ├── prompts/
 │   ├── claude-fix.prompt.md
@@ -67,7 +71,7 @@ export CODEX_PROFILE="default"
 
 ## 6. Claude Code 使用方式
 
-推荐通过命令或 skill 触发：
+通过以下兼容命令触发：
 
 ```text
 /nova-plugin:codex-review-fix BASE=main GOAL="修复当前分支直到可合并"
@@ -75,7 +79,7 @@ export CODEX_PROFILE="default"
 /nova-plugin:codex-verify-only REVIEW_FILE=.codex/codex-review-fix/latest-artifacts/review.md CHECKS_FILE=.codex/codex-review-fix/latest-artifacts/checks.txt
 ```
 
-Claude Code 在使用主技能时应遵循：
+Claude Code 在执行 canonical `nova-implement-plan` 的 Codex preset 时应遵循：
 
 1. 调 review 脚本生成报告
 2. 仅读取高置信问题并修复

@@ -22,17 +22,21 @@
 
 ## 参数说明
 
-| 参数        | 必填 | 说明                   | 示例                      |
-| ----------- | ---- | ---------------------- | ------------------------- |
-| `ARGUMENTS` | No   | 明确的计划或步骤说明。 | `Step-by-step tasks list` |
+| 参数          | 必填 | 说明                         | 示例                     |
+| ------------- | ---- | ---------------------------- | ------------------------ |
+| `REQUEST`     | Yes  | 已确认步骤及验收标准。       | `按步骤实现取消订单功能` |
+| `CONSTRAINTS` | No   | 兼容性与范围限制。           | `保持现有接口兼容`       |
 
 ## 输出说明
 
-- 命令未规定固定输出结构；重点是按步骤完成实现。
+- 固定顺序为 `code updates`、`Implementation Summary`、`Validation`、`Deviations`。
 - 示例输出结构：
 
 ```text
-(命令未规定固定输出结构)
+1. code updates
+2. Implementation Summary
+3. Validation
+4. Deviations (or None)
 ```
 
 ## 完整示例

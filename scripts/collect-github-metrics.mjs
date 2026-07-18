@@ -1,9 +1,11 @@
 #!/usr/bin/env node
-import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import process from 'node:process';
 import { requireOptionValue } from './lib/cli-args.mjs';
+import { prepareArtifactOutputPlan, writeArtifactOutput } from './lib/artifact-output.mjs';
+
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 /** @type {{owner: string, repo: string, out: string, starsBefore: number | null}} */
 const defaults = {
@@ -301,9 +303,10 @@ export async function main(dependencies = {}) {
     return 0;
   }
   const { options, snapshot } = result;
-  const outPath = resolve(process.cwd(), options.out);
-  await mkdir(dirname(outPath), { recursive: true });
-  await writeFile(outPath, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8');
+  const plan = prepareArtifactOutputPlan(root, [{
+    key: 'snapshot', path: options.out, label: 'GitHub metrics output',
+  }]);
+  writeArtifactOutput(plan, 'snapshot', `${JSON.stringify(snapshot, null, 2)}\n`);
 
   console.log(`Wrote metrics snapshot to ${options.out}`);
   console.log(
