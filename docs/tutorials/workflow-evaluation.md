@@ -70,3 +70,47 @@ Failure signals observed:
 Validation or checks referenced:
 Notes:
 ```
+
+## Completed Instructional Fixture
+
+> **Instructional fixture data only.** This fictional `invoice-sync` record is
+> not evidence from a live assistant run, a real user workflow, or a release
+> validation. Use the canonical
+> [workflow evaluation record template](../templates/evidence/workflow-evaluation.md)
+> when recording an actual evaluation.
+
+### Run Summary
+
+| Field | Fictional value |
+| --- | --- |
+| Scenario | Correct the ordering of an `invoice-sync` status update without a schema change. |
+| Planned commands | 5 |
+| Executed commands | 4 |
+| Passed | 2 |
+| Failed | 1 |
+| Blocked | 1 |
+| Skipped | 1 |
+| Overall result | Needs follow-up |
+
+The counts reconcile as follows:
+
+- `5 planned = 4 executed + 1 skipped`
+- `4 executed = 2 passed + 1 failed + 1 blocked`
+
+### Command Record
+
+| Command | Outcome | Evidence level | Fictional observation |
+| --- | --- | --- | --- |
+| `/nova-plugin:explore` | Passed | Recorded output reviewed | Facts and ambiguities were separated without proposing an implementation. |
+| `/nova-plugin:produce-plan` | Passed | Recorded output reviewed | The plan preserved the no-schema-change constraint and included validation and rollback. |
+| `/nova-plugin:review` | Failed | Recorded output reviewed | The review identified the ordering bug but did not call out the missing retry test. |
+| `/nova-plugin:implement-plan` | Blocked | Unavailable | The disposable fixture was not reset to its required baseline, so implementation did not start. |
+| `/nova-plugin:finalize-work` | Skipped | Not produced | Finalization was not run because implementation remained blocked. |
+
+### Residual Risk
+
+- Retry behavior remains unevaluated.
+- No implementation or test result exists for this fixture record.
+- The blocked and skipped stages must not be counted as passes.
+- A future evaluation must reset the disposable fixture, execute the remaining
+  stages, and attach its own evidence before supporting a release claim.
