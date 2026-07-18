@@ -4,7 +4,6 @@
 import { createHash } from 'node:crypto';
 import { gzipSync } from 'node:zlib';
 import { lstatSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { treeManifest } from './validate-plugin-install.mjs';
@@ -22,6 +21,7 @@ import {
   readPhysicalFile,
 } from './lib/physical-read-boundary.mjs';
 import { parseTarGzEntries } from './lib/safe-tar.mjs';
+import { gitCommitTimestamp, gitExactTag, gitHead } from './lib/git-source-snapshot.mjs';
 
 assertNodeVersion({ label: 'release artifact build' });
 
@@ -209,11 +209,6 @@ export function verifyArchiveSnapshot(archive, snapshot) {
   return archiveManifest;
 }
 
-function gitValue(root, args) {
-  const result = spawnSync('git', args, { cwd: root, encoding: 'utf8', shell: false });
-  return result.status === 0 ? result.stdout.trim() : 'unknown';
-}
-
 export function npmPackagePurl(name, version) {
   if (name.startsWith('@')) {
     const separator = name.indexOf('/');
@@ -237,7 +232,7 @@ export function npmPackageNameFromLockPath(path) {
 /** @param {{root?: string, outDir?: string, now?: () => Date, env?: NodeJS.ProcessEnv, runtimeNodeVersion?: string}} [options] */
 export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/release-artifacts', now, env = process.env, runtimeNodeVersion = process.version } = {}) {
   const sourceEpoch = Number(env.SOURCE_DATE_EPOCH);
-  const commitTimestamp = gitValue(root, ['show', '-s', '--format=%cI', 'HEAD']);
+  const commitTimestamp = gitCommitTimestamp(root);
   const buildTimestamp = Number.isFinite(sourceEpoch)
     ? new Date(sourceEpoch * 1000)
     : new Date(commitTimestamp === 'unknown' ? 0 : commitTimestamp);
@@ -322,8 +317,8 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
   const runtimeCapabilitiesPath = resolve(outputRoot, 'runtime-capabilities.cdx.json');
   writeFileSync(runtimeCapabilitiesPath, `${JSON.stringify(runtimeCapabilities, null, 2)}\n`, 'utf8');
 
-  const commit = env.RELEASE_COMMIT ?? gitValue(root, ['rev-parse', 'HEAD']);
-  const tag = env.RELEASE_TAG ?? gitValue(root, ['describe', '--tags', '--exact-match', 'HEAD']);
+  const commit = env.RELEASE_COMMIT ?? gitHead(root);
+  const tag = env.RELEASE_TAG ?? gitExactTag(root) ?? 'unknown';
   const startedOn = clock().toISOString();
   const buildRecord = {
     schemaVersion: 1,

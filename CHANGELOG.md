@@ -10,13 +10,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Fixed
-- Completed `llmf generate all` as a 25-task deterministic projection closure
-  (runtime 7, docs 5, release 13), including the prompt-surface report,
+- Removed stale maintainer round logs and superseded baseline figures from the
+  active status and remediation pages, replacing them with current generated
+  facts, directory responsibilities, source-backed implementation boundaries,
+  and durable validation and external-evidence gates. Also removed verified
+  dead imports, parameters, helpers, and an unnecessary Git probe from
+  maintainer tooling without changing exported call shapes. Default JavaScript
+  typechecking now rejects unused locals and parameters, incomplete returns,
+  switch fallthrough, unreachable code, and unused labels.
+- Completed `llmf generate all` as a 26-task deterministic projection closure
+  (runtime 7, docs 5, release 14), including the prompt-surface report,
   platform evidence, workflow-surface evaluation, governed baselines, and
   downstream state/control-plane projections in fail-fast order. Critical
-  mutation now evaluates nine governed real high-risk mutations with
+  mutation now evaluates ten governed real high-risk mutations with
   baseline-prechecked isolated probes and dependency-closed module copies
-  instead of treating manually chosen test outcomes as mutation evidence.
+  instead of treating manually chosen test outcomes as mutation evidence. The
+  release profile also regenerates the digest-bound real-task benchmark so a
+  runner change cannot leave its checked-in projection stale after
+  `llmf generate all --write` reports success.
 - Closed independent-review gaps in route fixtures, Claude approval parsing,
   reusable-workflow handoff dependencies and provenance, release-sensitive
   ownership, product inventory and variant preflight, release evidence
@@ -110,6 +121,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   draft release to the governed title and notes before publication.
 
 ### Security
+- Reduced trusted Git snapshot children to an entirely authored environment:
+  local read controls, a fixed executable-directory `PATH`, and C locale only.
+  Caller-controlled dynamic-loader, shell-startup, Node preload, pager, helper,
+  proxy, credential, and unrelated process variables are no longer inherited.
+- Bound the release-oriented distribution scanner's tracked-file inventory to
+  the same trusted Git executable and authored environment, preventing
+  inherited `GIT_DIR`, `GIT_WORK_TREE`, Git configuration, or a repository PATH
+  shadow from replacing the repository being scanned. Incremental validation
+  selection and active-document stale-narrative checks now use the same trusted
+  tracked, untracked, and changed-path inventory and reject option-shaped
+  comparison revisions.
+- Moved stable-registry projection, compatibility tag resolution, adoption
+  ancestry/tracked-file checks, release-artifact identity defaults, release
+  readiness defaults, and documentation migration reads behind the same
+  identity-checked, configuration-isolated Git object boundary. Exact-tag
+  lookup now distinguishes a valid untagged commit from a missing revision or
+  failed tag inventory instead of collapsing every failure into "no tag".
+- Replaced status-text trust in live evaluation, paired verification, and
+  real-task benchmark evidence with a clean-commit proof that compares HEAD,
+  the exact index manifest, physical worktree bytes, portable index modes,
+  untracked paths, and forbidden hidden index flags. Coverage and regression
+  fixture source inventories now use the same trusted Git boundary.
 - Confined CLI build and migration outputs to regular, non-linked files below
   the product root and made the two migration projections a best-effort
   transactional replacement. Candidate build and promotion now ingest source,

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 /** Apply and verify governed documentation moves while retaining public compatibility stubs. */
-import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { gitHead, gitSnapshotReader } from './lib/git-source-snapshot.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 import { requireSemVer } from './lib/semver.mjs';
 
@@ -145,7 +145,7 @@ export function rewriteRedirectLinks(content, documentPath) {
 }
 
 export function committedSource(path) {
-  return execFileSync('git', ['show', `HEAD:${path}`], { cwd: root, encoding: 'utf8' });
+  return gitSnapshotReader(root, gitHead(root)).readText(path);
 }
 
 function checkEntry(entry) {

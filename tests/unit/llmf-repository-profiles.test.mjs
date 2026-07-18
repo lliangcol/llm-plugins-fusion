@@ -111,6 +111,7 @@ test('llmf repository plans use fixed argv without shell composition', () => {
     'static-contract',
     'adapter-simulation',
     'critical-mutation',
+    'real-task-benchmark',
     'quality-report',
     'project-state',
     'fact-graph',
@@ -118,8 +119,8 @@ test('llmf repository plans use fixed argv without shell composition', () => {
     'task-catalog',
     'control-plane',
   ]);
-  assert.equal(drift.length, 25);
-  for (const baseline of ['static-contract', 'adapter-simulation', 'critical-mutation']) {
+  assert.equal(drift.length, 26);
+  for (const baseline of ['static-contract', 'adapter-simulation', 'critical-mutation', 'real-task-benchmark']) {
     assert.ok(generatorIds.indexOf(baseline) < generatorIds.indexOf('quality-report'), `${baseline} must precede the quality report`);
   }
   assert.equal(write.length, drift.length);

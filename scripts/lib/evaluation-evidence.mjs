@@ -164,7 +164,7 @@ export function classifyToolEvidence({ assistant, condition, permissionDenials =
   };
 }
 
-export function deriveAdapterEvidence({ assistant, condition, adapterStaged, toolEvidence, events = [], claudeLoadSignals = [] }) {
+export function deriveAdapterEvidence({ assistant, condition, adapterStaged, events = [], claudeLoadSignals = [] }) {
   if (condition === 'plugin-disabled') return { adapterStaged: false, adapterLoadObserved: 'not-applicable', adapterLoadReasonCode: 'plugin-disabled', adapterLoadSignals: [] };
   if (!adapterStaged) return { adapterStaged: false, adapterLoadObserved: 'unavailable', adapterLoadReasonCode: 'adapter-not-staged', adapterLoadSignals: [] };
   if (assistant === 'claude-code') {

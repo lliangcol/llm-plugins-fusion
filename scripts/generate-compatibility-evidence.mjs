@@ -2,10 +2,10 @@
 /** Derive current compatibility claims from static adapters and digest-bound evidence. */
 
 import { createHash } from 'node:crypto';
-import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { gitResolveCommit } from './lib/git-source-snapshot.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 
 const root = repoRoot(import.meta.url);
@@ -17,7 +17,6 @@ const matrixEnd = '<!-- generated:assistant-compatibility:end -->';
 
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 const sha256 = (path) => createHash('sha256').update(readFileSync(resolve(root, path))).digest('hex');
-const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false }).stdout?.trim() ?? null;
 const minimumLiveCases = 20;
 const minimumLiveAttempts = 3;
 const canaryTtlMs = 14 * 24 * 60 * 60 * 1000;
@@ -52,9 +51,7 @@ function evidenceStatus(path, evidence, assistant, eligibilityReasons = []) {
   let status = 'historical';
   if (expired) status = 'expired';
   else if (staleReasons.length === 0) {
-    const tagCommit = evidence.releaseTag
-      ? spawnSync('git', ['rev-list', '-n', '1', evidence.releaseTag], { cwd: root, encoding: 'utf8', shell: false }).stdout?.trim()
-      : null;
+    const tagCommit = evidence.releaseTag ? gitResolveCommit(root, evidence.releaseTag) : null;
     status = tagCommit && tagCommit === evidence.baseCommit ? 'exact' : 'carried-forward';
   }
   return {

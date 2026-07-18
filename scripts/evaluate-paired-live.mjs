@@ -1,14 +1,13 @@
 #!/usr/bin/env node
 /** Validate or aggregate enabled/disabled paired live evaluation evidence. */
 
-import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 import { requireOptionValue } from './lib/cli-args.mjs';
 import { assertPublicEvidenceSafe, deriveAdapterEvidence, normalizePublicAssistantVersion, nullableMetricDelta } from './lib/evaluation-evidence.mjs';
 import { deriveEvaluationFacts } from './lib/evaluation-facts.mjs';
-import { assertNoHiddenGitIndexFlags, assertWorktreeMatchesSnapshot, gitHead, gitSnapshotReader, localModuleClosure } from './lib/git-source-snapshot.mjs';
+import { assertCleanGitRepository, assertNoHiddenGitIndexFlags, assertWorktreeMatchesSnapshot, gitHead, gitSnapshotReader, localModuleClosure } from './lib/git-source-snapshot.mjs';
 import { evaluateSemanticCase, governedLiveProfile, liveEvaluationSourcePaths, recomputeLiveSummary, validateLiveEvidenceOutputPath } from './lib/live-evaluation-plan.mjs';
 import { createPhysicalReadBoundary, preparePhysicalFileWrite, readPhysicalFile, writePhysicalFileAtomically } from './lib/physical-read-boundary.mjs';
 import { assertPortableRelativePath } from './lib/portable-path.mjs';
@@ -37,7 +36,6 @@ function expectedAdapterEvidence(entry, assistantId, condition) {
       assistant: assistantId,
       condition,
       adapterStaged: entry.adapterStaged,
-      toolEvidence: {},
       claudeLoadSignals: entry.adapterLoadSignals,
     });
   }
@@ -49,16 +47,20 @@ function expectedAdapterEvidence(entry, assistantId, condition) {
   };
 }
 
-export function assertPairedRepositoryClean(repositoryRoot = root, statusResult = spawnSync(
-  'git',
-  ['status', '--porcelain=v1', '--untracked-files=all'],
-  { cwd: repositoryRoot, encoding: 'utf8', shell: false },
-)) {
-  if (statusResult?.status !== 0) throw new Error('paired E5 verification could not establish repository cleanliness');
-  if (String(statusResult.stdout).trim() !== '') {
-    throw new Error('paired E5 verification requires a clean worktree and index; HEAD plus worktree hybrid verification is forbidden');
+export function assertPairedRepositoryClean(repositoryRoot = root, statusResult = undefined) {
+  if (statusResult !== undefined) {
+    if (statusResult?.status !== 0) throw new Error('paired E5 verification could not establish repository cleanliness');
+    if (String(statusResult.stdout).trim() !== '') {
+      throw new Error('paired E5 verification requires a clean worktree and index; HEAD plus worktree hybrid verification is forbidden');
+    }
+    assertNoHiddenGitIndexFlags(repositoryRoot);
+    return;
   }
-  assertNoHiddenGitIndexFlags(repositoryRoot);
+  try {
+    assertCleanGitRepository(repositoryRoot);
+  } catch (error) {
+    throw new Error('paired E5 verification requires a clean worktree and index proven from physical files; HEAD plus worktree hybrid verification is forbidden', { cause: error });
+  }
 }
 
 export function assertPairedSnapshotRuntime(repositoryRoot, snapshot) {

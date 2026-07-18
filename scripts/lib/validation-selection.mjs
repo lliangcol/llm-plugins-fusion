@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { dirname, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { captureProcess } from './process-runner.mjs';
+import { gitChangedFiles, gitTrackedFiles, gitUntrackedFiles } from './git-source-snapshot.mjs';
 
 const normalize = (value) => value.replaceAll('\\', '/').replace(/^\.\//u, '');
 
@@ -77,21 +77,15 @@ export function selectValidationTasks(definitions, files, { forceFull = false } 
   return { full: false, reason: 'bounded impact selection', selectedIds: definitions.filter((item) => selected.has(item.id)).map((item) => item.id), files: normalizedFiles };
 }
 
-async function gitPaths(root, args) {
-  const result = await captureProcess(`git ${args.join(' ')}`, 'git', args, { cwd: root, timeoutMs: 30_000, maxOutputBytes: 10_485_760 });
-  if (!result.ok) throw new Error(`unable to compute changed files: ${result.errorMessage ?? result.stderr ?? result.code}`);
-  return result.stdout.split(/\r?\n/u).map((line) => normalize(line.trim())).filter(Boolean);
-}
-
 export async function changedFilesSince(root, revision) {
-  const changed = await gitPaths(root, ['diff', '--name-only', '--diff-filter=ACDMRTUXB', revision, '--']);
-  const untracked = await gitPaths(root, ['ls-files', '--others', '--exclude-standard']);
+  const changed = gitChangedFiles(root, revision);
+  const untracked = gitUntrackedFiles(root);
   return [...new Set([...changed, ...untracked])].sort();
 }
 
 export async function trackedAndUntrackedFiles(root) {
-  const tracked = await gitPaths(root, ['ls-files']);
-  const untracked = await gitPaths(root, ['ls-files', '--others', '--exclude-standard']);
+  const tracked = gitTrackedFiles(root);
+  const untracked = gitUntrackedFiles(root);
   return [...new Set([...tracked, ...untracked])].sort();
 }
 

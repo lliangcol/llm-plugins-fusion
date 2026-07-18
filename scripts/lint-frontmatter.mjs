@@ -155,10 +155,6 @@ function sameToolSet(a, b) {
   return true;
 }
 
-function hasHeading(src, heading) {
-  return countHeading(src, heading) > 0;
-}
-
 function countHeading(src, heading) {
   const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return [...src.matchAll(new RegExp(`^##\\s+${escaped}\\s*$`, 'gm'))].length;
@@ -384,7 +380,7 @@ function lintCommandSkillContracts() {
     if (!workflowById.get(commandId)?.canonicalSurfaceId) recordError(command.rel, 'missing canonical surface mapping');
   }
 
-  for (const [skillName, skill] of skillContracts.entries()) {
+  for (const skill of skillContracts.values()) {
     if (!skill.commandId) continue;
     const commandFile = resolve(commandsDir, `${skill.commandId}.md`);
     if (!existsSync(commandFile)) {

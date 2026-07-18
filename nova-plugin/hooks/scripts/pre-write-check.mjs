@@ -19,6 +19,7 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const pluginRoot = resolve(process.env.CLAUDE_PLUGIN_ROOT || resolve(__dir, '..', '..'));
 const MAX_GUARDED_TEXT_BYTES = 10 * 1024 * 1024;
 
+/** @returns {never} */
 function block(message, details = []) {
   console.error(`[nova-plugin] ${message}`);
   for (const detail of details) console.error(`  ${detail}`);
@@ -144,7 +145,6 @@ try {
     cwd: effectiveCwd,
     artifactRoots,
     mustExist: payload.tool_name === 'Edit',
-    protectedTarget,
   });
 } catch (error) {
   block('写入目标不满足 workspace 路径安全策略。', [

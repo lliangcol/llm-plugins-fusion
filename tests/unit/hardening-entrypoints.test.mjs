@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import {
   chmodSync,
   copyFileSync,
@@ -29,7 +30,7 @@ import {
 import { main as orchestratorMain, orchestrateRelease, parseReleaseOrchestratorArgs } from '../../scripts/release-orchestrator.mjs';
 import { buildStableInstallProof, main as stableInstallMain } from '../../scripts/verify-stable-install.mjs';
 import { treeDigest } from '../../scripts/validate-plugin-install.mjs';
-import { distributionRiskSarif } from '../../scripts/scan-distribution-risk.mjs';
+import { distributionRiskSarif, scanDistributionRisk } from '../../scripts/scan-distribution-risk.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 
@@ -403,4 +404,47 @@ test('distribution risk SARIF preserves locations and never embeds matched sourc
   assert.deepEqual(sarif.runs[0].results.map((result) => result.level), ['error', 'warning']);
   assert.equal(sarif.runs[0].results[0].locations[0].physicalLocation.artifactLocation.uri, 'active.md');
   assert.equal(JSON.stringify(sarif).includes('<redacted>'), false);
+});
+
+test('distribution risk inventory ignores inherited Git repository redirects', (t) => {
+  const repository = mkdtempSync(resolve(tmpdir(), 'nova-distribution-source-'));
+  const injected = mkdtempSync(resolve(tmpdir(), 'nova-distribution-injected-'));
+  t.after(() => rmSync(repository, { recursive: true, force: true }));
+  t.after(() => rmSync(injected, { recursive: true, force: true }));
+  for (const rootDir of [repository, injected]) {
+    execFileSync('git', ['init', '--quiet'], { cwd: rootDir });
+    execFileSync('git', ['config', 'user.name', 'Distribution Test'], { cwd: rootDir });
+    execFileSync('git', ['config', 'user.email', 'distribution@example.invalid'], { cwd: rootDir });
+  }
+  writeFileSync(resolve(repository, 'tracked-secret.txt'), `sk-proj-${'a'.repeat(24)}\n`);
+  execFileSync('git', ['add', 'tracked-secret.txt'], { cwd: repository });
+  execFileSync('git', ['commit', '--quiet', '-m', 'tracked secret fixture'], { cwd: repository });
+
+  const keys = ['GIT_DIR', 'GIT_WORK_TREE'];
+  const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+  try {
+    process.env.GIT_DIR = resolve(injected, '.git');
+    process.env.GIT_WORK_TREE = injected;
+    const result = scanDistributionRisk({ rootDir: repository, mode: 'release' });
+    assert.equal(result.errors.some((entry) => entry.path === 'tracked-secret.txt' && entry.label === 'OpenAI API key'), true);
+  } finally {
+    for (const key of keys) {
+      if (previous[key] === undefined) delete process.env[key];
+      else process.env[key] = previous[key];
+    }
+  }
+});
+
+test('distribution risk reloads the tracked inventory for each release scan', (t) => {
+  const repository = mkdtempSync(resolve(tmpdir(), 'nova-distribution-refresh-'));
+  t.after(() => rmSync(repository, { recursive: true, force: true }));
+  execFileSync('git', ['init', '--quiet'], { cwd: repository });
+  writeFileSync(resolve(repository, 'public.txt'), 'public fixture\n');
+  execFileSync('git', ['add', 'public.txt'], { cwd: repository });
+  assert.equal(scanDistributionRisk({ rootDir: repository, mode: 'release' }).errors.length, 0);
+
+  writeFileSync(resolve(repository, 'new-secret.txt'), `sk-proj-${'r'.repeat(24)}\n`);
+  execFileSync('git', ['add', 'new-secret.txt'], { cwd: repository });
+  const refreshed = scanDistributionRisk({ rootDir: repository, mode: 'release' });
+  assert.equal(refreshed.errors.some((entry) => entry.path === 'new-secret.txt' && entry.label === 'OpenAI API key'), true);
 });

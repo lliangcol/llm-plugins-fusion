@@ -2,7 +2,7 @@
 # Validation Index
 
 Status: active
-Date: 2026-07-11
+Date: 2026-07-18
 
 This index maps repository validation surfaces to npm shortcuts and CI checks.
 It is the maintainer-facing inventory for validation coverage. Runtime behavior
@@ -138,16 +138,17 @@ callers and preserving their fixed task sequences in the private `llmf` CLI:
 shell. Every child command uses fixed argv, stops on the first failure, and
 returns normalized JSON task evidence. `migrate:docs` remains separate because
 it changes compatibility paths rather than regenerating an ordinary projection.
-The aggregate owns 25 deterministic generation tasks: runtime has 7
+The aggregate owns 26 deterministic generation tasks: runtime has 7
 (`contract-v6`, `workflow-permissions`, `runtime-contracts`,
 `behavior-surfaces`, `adapters`, `second-product`, and `eval-corpus`); docs has
 5 (`diagnostics-docs`, `command-docs`, `prompt-surface-report`,
-`platform-evidence`, and `doc-governance`); release has 13 (`registry`,
+`platform-evidence`, and `doc-governance`); release has 14 (`registry`,
 `surface-inventory`, `compatibility-evidence`, `workflow-surfaces`,
-`static-contract`, `adapter-simulation`, `critical-mutation`, `quality-report`,
-`project-state`, `fact-graph`, `release-summary`, `task-catalog`, and
-`control-plane`). The release profile therefore covers the governed baselines
-before it regenerates the quality report and downstream state projections.
+`static-contract`, `adapter-simulation`, `critical-mutation`,
+`real-task-benchmark`, `quality-report`, `project-state`, `fact-graph`,
+`release-summary`, `task-catalog`, and `control-plane`). The release profile
+therefore covers every governed deterministic evaluation projection before it
+regenerates the quality report and downstream state projections.
 Identity-bound candidate, checksum, release-evidence, and timing generators stay
 separate because they require explicit inputs and must never guess release data.
 
@@ -160,7 +161,7 @@ in the same change so this 20% control-plane headroom is not consumed.
 | CI check | Source command or workflow | Coverage |
 | --- | --- | --- |
 | Required / Contracts | `.github/workflows/ci.yml` | Schemas, generated drift, docs/frontmatter, adapters, workflow contracts, inventory, agents, and workflow trust checks in one checkout. |
-| Required / Tests | `npm test`, coverage, targeted critical mutation | Unit/integration/e2e, global and critical coverage, and 9 governed real high-risk mutations evaluated by baseline-prechecked isolated probes with dependency-closed module copies; uploads `.metrics/coverage/`. |
+| Required / Tests | `npm test`, coverage, targeted critical mutation | Unit/integration/e2e, global and critical coverage, and 10 governed real high-risk mutations evaluated by baseline-prechecked isolated probes with dependency-closed module copies; uploads `.metrics/coverage/`. |
 | Release readiness | `npm run validate:release-readiness`, `node scripts/validate-release-operational-readiness.mjs --mode <mode>` | Reports policy and external operational blockers separately from ordinary PR integrity; release workflows require ready state before side effects. |
 | Required / Security | hooks, ShellCheck, fault injection, secret/distribution scans | Security guardrails and SARIF evidence in one scoped-permission job. |
 | Required / Platform | Linux Node 22/24, Windows Node 22, macOS Node 22 matrix | Cross-platform contracts, Windows PowerShell/Bash, and macOS system Bash. |

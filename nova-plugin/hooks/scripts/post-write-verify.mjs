@@ -58,7 +58,6 @@ try {
     cwd: effectiveCwd,
     artifactRoots,
     mustExist: true,
-    protectedTarget,
   });
 } catch (error) {
   fail('Actual write target violates workspace containment.', [

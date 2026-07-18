@@ -183,21 +183,20 @@ function resolveTrustedGit(root, environment = process.env) {
   throw new Error('Git is unavailable on the trusted executable path');
 }
 
-function trustedGitEnvironment(invocation, source = process.env) {
-  const environment = {};
-  for (const [key, value] of Object.entries(source)) {
-    if (!key.toUpperCase().startsWith('GIT_')
-      && key.toUpperCase() !== 'PATH'
-      && value !== undefined) environment[key] = value;
-  }
-  // These values are authored here rather than inherited from the caller.
-  environment.GIT_NO_REPLACE_OBJECTS = '1';
-  environment.GIT_OPTIONAL_LOCKS = '0';
-  environment.GIT_TERMINAL_PROMPT = '0';
-  environment.GIT_CONFIG_NOSYSTEM = '1';
-  environment.GIT_CONFIG_GLOBAL = devNull;
-  environment.PATH = invocation.directory;
-  return environment;
+export function trustedGitEnvironment(invocation) {
+  // Do not inherit caller-controlled process, shell, dynamic-loader, pager, or
+  // helper configuration. These source reads need only local Git plumbing, so
+  // every child variable can be authored here.
+  return {
+    GIT_NO_REPLACE_OBJECTS: '1',
+    GIT_OPTIONAL_LOCKS: '0',
+    GIT_TERMINAL_PROMPT: '0',
+    GIT_CONFIG_NOSYSTEM: '1',
+    GIT_CONFIG_GLOBAL: devNull,
+    LANG: 'C',
+    LC_ALL: 'C',
+    PATH: invocation.directory,
+  };
 }
 
 function trustedGit(root, args, {
@@ -249,6 +248,19 @@ function gitOutput(root, args) {
 function validateSourcePath(path) {
   assertPortableRelativePath(path, 'Git source path');
   return path;
+}
+
+function validateSourcePrefix(prefix) {
+  if (prefix === '') return prefix;
+  return validateSourcePath(prefix);
+}
+
+function validateGitRevision(revision, label = 'Git revision') {
+  if (typeof revision !== 'string'
+    || !/^[A-Za-z0-9][A-Za-z0-9._/@{}+~^-]*$/u.test(revision)) {
+    throw new Error(`${label} must be a non-option ref or object expression`);
+  }
+  return revision;
 }
 
 function prefetchSnapshotBuffers(root, commit, paths) {
@@ -339,18 +351,18 @@ function readPhysicalWorktreeFile(root, path) {
 }
 
 function worktreeManifest(root, prefix, cache) {
-  validateSourcePath(prefix);
+  validateSourcePrefix(prefix);
   const cacheKey = `${root.cacheKey}\0worktree\0${prefix}`;
   if (cache.has(cacheKey)) return cache.get(cacheKey);
-  const output = gitOutput(root, [
+  const args = [
     'ls-files',
     '-z',
     '--cached',
     '--others',
     '--exclude-per-directory=.gitignore',
-    '--',
-    prefix,
-  ]);
+  ];
+  if (prefix !== '') args.push('--', prefix);
+  const output = gitOutput(root, args);
   const paths = output.split('\0').filter(Boolean).map(validateSourcePath).sort();
   cache.set(cacheKey, paths);
   return paths;
@@ -389,6 +401,110 @@ export function gitHead(repoRoot) {
   return stdout;
 }
 
+/** Resolve one safe ref or object expression to an exact commit id. */
+export function gitResolveCommit(repoRoot, revision) {
+  const root = captureRepositoryRoot(repoRoot);
+  const value = validateGitRevision(revision);
+  const observed = trustedGit(root, ['rev-parse', '--verify', `${value}^{commit}`]);
+  const stdout = String(observed.stdout ?? '').trim();
+  if (observed.status !== 0 || !/^[a-f0-9]{40}$/u.test(stdout)) {
+    throw new Error(`Git revision could not be resolved to an exact commit: ${value}`);
+  }
+  return stdout;
+}
+
+/** Test commit ancestry without inheriting caller Git configuration. */
+export function gitIsAncestor(repoRoot, ancestor, descendant = 'HEAD') {
+  const root = captureRepositoryRoot(repoRoot);
+  const left = validateGitRevision(ancestor, 'Git ancestor revision');
+  const right = validateGitRevision(descendant, 'Git descendant revision');
+  const observed = trustedGit(root, ['merge-base', '--is-ancestor', left, right]);
+  if (observed.status === 0) return true;
+  if (observed.status === 1) return false;
+  throw new Error(`Git ancestry could not be established: ${String(observed.stderr ?? '').trim() || `${left} -> ${right}`}`);
+}
+
+/** Return the exact tag on a revision, or null when the revision is untagged. */
+export function gitExactTag(repoRoot, revision = 'HEAD') {
+  const root = captureRepositoryRoot(repoRoot);
+  const value = validateGitRevision(revision);
+  const commit = gitResolveCommit(repoRoot, value);
+  const listed = trustedGit(root, ['tag', '--points-at', commit]);
+  if (listed.status !== 0) {
+    throw new Error(`Git exact-tag inventory failed: ${String(listed.stderr ?? '').trim() || commit}`);
+  }
+  const exactTags = String(listed.stdout ?? '').split(/\r?\n/u).filter(Boolean);
+  for (const tag of exactTags) {
+    if (/\0|\r|\n/u.test(tag)) throw new Error('Git exact tag output is malformed');
+  }
+  if (exactTags.length === 0) return null;
+
+  const observed = trustedGit(root, ['describe', '--tags', '--exact-match', commit]);
+  if (observed.status !== 0) {
+    throw new Error(`Git exact tag could not be selected: ${String(observed.stderr ?? '').trim() || commit}`);
+  }
+  const tag = String(observed.stdout ?? '').trim();
+  if (!tag || /[\0\r\n]/u.test(tag) || !exactTags.includes(tag)) {
+    throw new Error('Git exact tag output is malformed');
+  }
+  return tag;
+}
+
+/** Return the committer timestamp for one exact revision. */
+export function gitCommitTimestamp(repoRoot, revision = 'HEAD') {
+  const root = captureRepositoryRoot(repoRoot);
+  const value = validateGitRevision(revision);
+  const observed = trustedGit(root, ['show', '-s', '--format=%cI', value, '--']);
+  const timestamp = String(observed.stdout ?? '').trim();
+  if (observed.status !== 0 || !Number.isFinite(Date.parse(timestamp))) {
+    throw new Error(`Git commit timestamp could not be resolved: ${value}`);
+  }
+  return timestamp;
+}
+
+/**
+ * List tracked index paths without inheriting repository redirects or Git
+ * configuration from the caller.
+ *
+ * @param {string} repoRoot
+ * @param {{deleted?: boolean, pathPrefix?: string | null}} [options]
+ */
+export function gitTrackedFiles(repoRoot, { deleted = false, pathPrefix = null } = {}) {
+  const root = captureRepositoryRoot(repoRoot);
+  const args = ['ls-files', '-z'];
+  if (deleted) args.push('--deleted');
+  if (pathPrefix !== null) args.push('--', validateSourcePath(pathPrefix));
+  const observed = trustedGit(root, args);
+  if (observed.status !== 0) {
+    throw new Error(`Git tracked-file inventory failed: ${String(observed.stderr ?? '').trim() || args.join(' ')}`);
+  }
+  return String(observed.stdout ?? '').split('\0').filter(Boolean).map(validateSourcePath).sort();
+}
+
+/** List untracked, non-ignored worktree paths through the trusted Git boundary. */
+export function gitUntrackedFiles(repoRoot) {
+  const root = captureRepositoryRoot(repoRoot);
+  const observed = trustedGit(root, ['ls-files', '-z', '--others', '--exclude-standard']);
+  if (observed.status !== 0) {
+    throw new Error(`Git untracked-file inventory failed: ${String(observed.stderr ?? '').trim() || 'ls-files --others'}`);
+  }
+  return String(observed.stdout ?? '').split('\0').filter(Boolean).map(validateSourcePath).sort();
+}
+
+/** List paths changed since one non-option Git revision. */
+export function gitChangedFiles(repoRoot, revision) {
+  validateGitRevision(revision, 'Git comparison revision');
+  const root = captureRepositoryRoot(repoRoot);
+  const observed = trustedGit(root, [
+    'diff', '--name-only', '-z', '--diff-filter=ACDMRTUXB', '--no-ext-diff', '--no-textconv',
+    '--ignore-submodules=all', revision, '--',
+  ]);
+  if (observed.status !== 0) {
+    throw new Error(`Git changed-file inventory failed: ${String(observed.stderr ?? '').trim() || revision}`);
+  }
+  return String(observed.stdout ?? '').split('\0').filter(Boolean).map(validateSourcePath).sort();
+}
+
 export function assertNoHiddenGitIndexFlags(repoRoot, observed = undefined) {
   if (observed === undefined) {
     const root = captureRepositoryRoot(repoRoot);
@@ -420,15 +536,87 @@ export function localModuleClosure(entryPath, readText) {
 
 export function assertWorktreeMatchesSnapshot(repoRoot, snapshot, paths, label = 'governed source', {
   worktreeReader = gitWorktreeSourceReader(repoRoot),
+  compareMode = process.platform !== 'win32',
 } = {}) {
   for (const path of paths) {
     const expected = snapshot.readBuffer(path);
     const observed = worktreeReader.readBuffer(path);
     if (!Buffer.from(observed).equals(Buffer.from(expected))
-      || worktreeReader.fileMode(path) !== snapshot.fileMode(path)) {
+      || (compareMode && worktreeReader.fileMode(path) !== snapshot.fileMode(path))) {
       throw new Error(`${label} differs between the physical worktree and the selected Git snapshot: ${path}`);
     }
   }
+}
+
+function headTreeManifest(root, commit) {
+  const output = gitOutput(root, ['ls-tree', '-r', '-z', '--full-tree', commit]);
+  return output.split('\0').filter(Boolean).map((entry) => {
+    const match = entry.match(/^(\d{6}) (blob|commit) ([a-f0-9]+)\t([^\0]+)$/u);
+    if (!match) throw new Error('repository HEAD tree entry is malformed');
+    const [, mode, type, object, path] = match;
+    validateSourcePath(path);
+    if (type !== 'blob' || !['100644', '100755'].includes(mode)) {
+      throw new Error(`repository HEAD contains a symbolic link or non-regular entry: ${path}`);
+    }
+    return `${mode} ${object} 0\t${path}`;
+  }).sort();
+}
+
+function indexManifest(root) {
+  const output = gitOutput(root, ['ls-files', '--stage', '-z']);
+  return output.split('\0').filter(Boolean).map((entry) => {
+    const match = entry.match(/^(\d{6}) ([a-f0-9]+) ([0-3])\t([^\0]+)$/u);
+    if (!match) throw new Error('repository index entry is malformed');
+    const [, mode, object, stage, path] = match;
+    validateSourcePath(path);
+    if (stage !== '0') throw new Error(`repository index contains an unresolved merge entry: ${path}`);
+    if (!['100644', '100755'].includes(mode)) {
+      throw new Error(`repository index contains a symbolic link or non-regular entry: ${path}`);
+    }
+    return `${mode} ${object} ${stage}\t${path}`;
+  }).sort();
+}
+
+function sameManifest(left, right) {
+  return left.length === right.length && left.every((entry, index) => entry === right[index]);
+}
+
+/**
+ * Require HEAD, the index, and physical non-ignored worktree state to describe
+ * one exact commit without trusting caller Git redirects, status filters, or
+ * hidden index flags. Returns the verified commit id.
+ */
+export function assertCleanGitRepository(repoRoot, expectedCommit = undefined) {
+  const initialHead = gitHead(repoRoot);
+  if (expectedCommit !== undefined
+    && (!/^[a-f0-9]{40}$/u.test(expectedCommit) || initialHead !== expectedCommit)) {
+    throw new Error('repository HEAD differs from the expected clean commit');
+  }
+  const commit = expectedCommit ?? initialHead;
+  const root = captureRepositoryRoot(repoRoot);
+  const expectedIndex = headTreeManifest(root, commit);
+  const initialIndex = indexManifest(root);
+  if (!sameManifest(initialIndex, expectedIndex)) {
+    throw new Error('repository index differs from the clean HEAD tree');
+  }
+  assertNoHiddenGitIndexFlags(repoRoot);
+  const initialUntracked = gitUntrackedFiles(repoRoot);
+  if (initialUntracked.length > 0) {
+    throw new Error(`repository has untracked non-ignored worktree paths (${initialUntracked.length})`);
+  }
+
+  const snapshot = gitSnapshotReader(repoRoot, commit);
+  const paths = snapshot.listFiles('');
+  assertWorktreeMatchesSnapshot(repoRoot, snapshot, paths, 'clean repository');
+
+  const finalIndex = indexManifest(root);
+  const finalUntracked = gitUntrackedFiles(repoRoot);
+  if (!sameManifest(finalIndex, initialIndex)
+    || !sameManifest(finalUntracked, initialUntracked)
+    || gitHead(repoRoot) !== commit) {
+    throw new Error('repository state changed while cleanliness was verified');
+  }
+  return commit;
 }
 
 export function gitSnapshotReader(repoRoot, commit) {
@@ -441,10 +629,12 @@ export function gitSnapshotReader(repoRoot, commit) {
   const manifests = new Map();
   const modes = new Map();
   const listFiles = (prefix) => {
-    validateSourcePath(prefix);
+    validateSourcePrefix(prefix);
     const cacheKey = `${root.cacheKey}\0${commit}\0tree\0${prefix}`;
     if (manifests.has(cacheKey)) return [...manifests.get(cacheKey)];
-    const output = gitOutput(root, ['ls-tree', '-r', '-z', commit, '--', prefix]);
+    const args = ['ls-tree', '-r', '-z', commit];
+    if (prefix !== '') args.push('--', prefix);
+    const output = gitOutput(root, args);
     const paths = output.split('\0').filter(Boolean).map((entry) => {
       const match = entry.match(/^(\d{6}) (blob|commit) [a-f0-9]+\t(.+)$/u);
       if (!match) throw new Error(`source snapshot tree entry is malformed under ${prefix}`);
