@@ -2,30 +2,30 @@
 
 Status: generated
 
-Generated from `workflow-specs/workflows.v6.json`. Token values are deterministic size estimates, not assistant tokenizer measurements. Each graph includes the command entrypoint, runtime contract, canonical Skill, owner agents, and recommended capability packs.
+Generated from `workflow-specs/workflows.v6.json` with budgets owned by `governance/complexity-budget.json#/promptSurface`. Token values are deterministic size estimates, not assistant tokenizer measurements. Initial load includes only the command wrapper, resolved runtime contract, and canonical Skill. Owner agents and recommended capability packs are potential references and are not claimed as loaded automatically.
 
-Budgets: at most 16 files, 20000 estimated tokens, and 8% cross-file exact-paragraph duplication per workflow.
+Budgets: initial load at most 8 files and 7000 estimated tokens; potential referenced surface at most 8% cross-file exact-paragraph duplication per workflow.
 
-| Workflow | Files | Bytes | Estimated tokens | Cross-file duplication |
-| --- | ---: | ---: | ---: | ---: |
-| `backend-plan` | 7 | 29781 | 7439 | 0.00% |
-| `codex-review-fix` | 6 | 24566 | 6136 | 0.00% |
-| `codex-review-only` | 4 | 22237 | 5554 | 0.00% |
-| `codex-verify-only` | 4 | 22916 | 5724 | 0.00% |
-| `explore` | 5 | 21759 | 5435 | 0.00% |
-| `explore-lite` | 4 | 17958 | 4484 | 0.00% |
-| `explore-review` | 6 | 22137 | 5530 | 0.00% |
-| `finalize-lite` | 5 | 20474 | 5111 | 0.00% |
-| `finalize-work` | 6 | 24224 | 6050 | 0.00% |
-| `implement-lite` | 4 | 20053 | 5007 | 0.00% |
-| `implement-plan` | 4 | 21426 | 5351 | 0.00% |
-| `implement-standard` | 4 | 20124 | 5025 | 0.00% |
-| `plan-lite` | 4 | 21949 | 5480 | 0.00% |
-| `plan-review` | 6 | 26162 | 6537 | 0.00% |
-| `produce-plan` | 5 | 25944 | 6478 | 0.00% |
-| `review` | 6 | 29661 | 7412 | 0.00% |
-| `review-lite` | 4 | 20156 | 5034 | 0.00% |
-| `review-only` | 6 | 25418 | 6351 | 0.00% |
-| `review-strict` | 6 | 25439 | 6356 | 0.00% |
-| `route` | 4 | 31652 | 7908 | 0.00% |
-| `senior-explore` | 5 | 21303 | 5321 | 0.00% |
+| Workflow | Initial files | Initial tokens | Potential files | Potential tokens | Potential duplication |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `backend-plan` | 3 | 4731 | 7 | 6810 | 0.00% |
+| `codex-review-fix` | 3 | 5493 | 6 | 6141 | 0.00% |
+| `codex-review-only` | 3 | 4710 | 4 | 4922 | 0.00% |
+| `codex-verify-only` | 3 | 4878 | 4 | 5095 | 0.00% |
+| `explore` | 3 | 4970 | 5 | 5431 | 0.00% |
+| `explore-lite` | 3 | 4231 | 4 | 4480 | 0.00% |
+| `explore-review` | 3 | 4256 | 6 | 5533 | 0.00% |
+| `finalize-lite` | 3 | 4257 | 5 | 5110 | 0.00% |
+| `finalize-work` | 3 | 4569 | 6 | 6051 | 0.00% |
+| `implement-lite` | 3 | 4787 | 4 | 5006 | 0.00% |
+| `implement-plan` | 3 | 5131 | 4 | 5350 | 0.00% |
+| `implement-standard` | 3 | 4808 | 4 | 5027 | 0.00% |
+| `plan-lite` | 3 | 4626 | 4 | 4851 | 0.00% |
+| `plan-review` | 3 | 4449 | 6 | 5908 | 0.00% |
+| `produce-plan` | 3 | 4995 | 5 | 5851 | 0.00% |
+| `review` | 3 | 5695 | 6 | 6972 | 0.00% |
+| `review-lite` | 3 | 4192 | 4 | 4404 | 0.00% |
+| `review-only` | 3 | 4444 | 6 | 5721 | 0.00% |
+| `review-strict` | 3 | 4460 | 6 | 5737 | 0.00% |
+| `route` | 3 | 6413 | 4 | 6662 | 0.00% |
+| `senior-explore` | 3 | 4883 | 5 | 5320 | 0.00% |

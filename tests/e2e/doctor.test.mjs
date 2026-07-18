@@ -72,3 +72,19 @@ test('doctor and bootstrap reject the obsolete write-guard bypass', async () => 
     assert.equal(finding?.reasonCode, 'WRITE_GUARD_DISABLED');
   }
 });
+
+test('npm doctor and bootstrap normalize only the lifecycle-injected project bin', { skip: !process.env.npm_execpath }, async () => {
+  for (const [label, script] of [['doctor', 'doctor'], ['bootstrap', 'validate:bootstrap']]) {
+    const result = await runProcess(`npm ${label}`, process.execPath, [process.env.npm_execpath, '--silent', 'run', script, '--', '--json'], {
+      cwd: repoRoot,
+      env: hostHookEnvironment(),
+      timeoutMs: 60_000,
+    });
+    assert.equal(result.code, 0, result.stderr || result.stdout);
+    const report = JSON.parse(result.stdout);
+    const finding = report.results.find((entry) => /Diagnostic invocation PATH|diagnostic-invocation-path/u.test(entry.check));
+    assert.equal(finding?.status, 'warn');
+    assert.equal(finding?.reasonCode, 'NPM_LIFECYCLE_PATH_NORMALIZED');
+    assert.equal(report.results.some((entry) => entry.reasonCode === 'HOOK_BOOTSTRAP_UNTRUSTED'), false);
+  }
+});

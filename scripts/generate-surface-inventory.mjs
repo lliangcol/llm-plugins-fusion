@@ -436,8 +436,20 @@ function promptDuplication(files) {
   return { repeatedParagraphs: repeated.length, duplicateBytes, duplicateRatio: totalBytes ? duplicateBytes / totalBytes : 0 };
 }
 
+function promptAggregate(files) {
+  return {
+    files: files.length,
+    bytes: files.reduce((sum, file) => sum + file.bytes, 0),
+    tokens: files.reduce((sum, file) => sum + file.tokens, 0),
+    ...promptDuplication(files),
+  };
+}
+
 export function buildPromptSurfaceReport(repoRoot = defaultRoot) {
   const { spec } = loadNovaWorkflowModelV6(repoRoot);
+  const complexityBudget = readJson(repoRoot, 'governance/complexity-budget.json');
+  const budgets = complexityBudget.promptSurface;
+  if (!budgets) throw new Error('governance/complexity-budget.json is missing promptSurface budgets');
   const workflows = spec.workflows.map((workflow) => {
     const nodes = [
       { kind: 'command', path: `nova-plugin/commands/${workflow.id}.md` },
@@ -447,7 +459,12 @@ export function buildPromptSurfaceReport(repoRoot = defaultRoot) {
       ...workflow.recommendedPacks.map((id) => ({ kind: 'capability-pack', path: promptPackPath(repoRoot, id) })),
     ];
     const uniqueNodes = [...new Map(nodes.map((node) => [node.path, node])).values()];
-    const files = uniqueNodes.map((node) => ({ ...node, ...promptFileMetrics(repoRoot, node.path) }));
+    const files = uniqueNodes.map((node) => ({
+      ...node,
+      loadPhase: ['command', 'runtime-contract', 'canonical-skill'].includes(node.kind) ? 'initial' : 'potential',
+      ...promptFileMetrics(repoRoot, node.path),
+    }));
+    const initialFiles = files.filter((file) => file.loadPhase === 'initial');
     return {
       id: workflow.id,
       canonicalSurfaceId: workflow.canonicalSurfaceId,
@@ -456,19 +473,16 @@ export function buildPromptSurfaceReport(repoRoot = defaultRoot) {
         nodes: files.map(({ content, ...file }) => file),
         edges: files.slice(1).map((file) => ({ from: `nova-plugin/commands/${workflow.id}.md`, to: file.path, relation: ['runtime-contract', 'canonical-skill'].includes(file.kind) ? `loads-${file.kind}` : `recommended-${file.kind}` })),
       },
-      aggregate: {
-        files: files.length,
-        bytes: files.reduce((sum, file) => sum + file.bytes, 0),
-        tokens: files.reduce((sum, file) => sum + file.tokens, 0),
-        ...promptDuplication(files),
-      },
+      initialLoad: promptAggregate(initialFiles),
+      potentialReferenced: promptAggregate(files),
     };
   });
   return {
-    schemaVersion: 1,
-    source: 'workflow-specs/workflows.v6.json',
+    schemaVersion: 2,
+    source: ['workflow-specs/workflows.v6.json', 'governance/complexity-budget.json#/promptSurface'],
     tokenEstimate: 'ceil(UTF-16 code units / 4) per file; deterministic bloat guard, not tokenizer evidence',
-    budgets: { maximumAggregateTokens: 20_000, maximumAggregateFiles: 16, maximumCrossFileDuplicateRatio: 0.08 },
+    claimBoundary: 'Initial load includes only the command wrapper, resolved runtime contract, and canonical Skill. Owner agents and recommended capability packs are potential references and are not claimed as loaded automatically.',
+    budgets,
     workflowCount: workflows.length,
     workflows,
   };
@@ -478,16 +492,16 @@ export function validatePromptSurfaceBudgets(report) {
   const errors = [];
   if (report.workflowCount !== 21) errors.push(`aggregate prompt graph covers ${report.workflowCount}/21 workflows`);
   for (const workflow of report.workflows) {
-    if (workflow.aggregate.files > report.budgets.maximumAggregateFiles) errors.push(`${workflow.id}: aggregate files ${workflow.aggregate.files} exceeds ${report.budgets.maximumAggregateFiles}`);
-    if (workflow.aggregate.tokens > report.budgets.maximumAggregateTokens) errors.push(`${workflow.id}: aggregate tokens ${workflow.aggregate.tokens} exceeds ${report.budgets.maximumAggregateTokens}`);
-    if (workflow.aggregate.duplicateRatio > report.budgets.maximumCrossFileDuplicateRatio) errors.push(`${workflow.id}: cross-file duplicate ratio ${workflow.aggregate.duplicateRatio.toFixed(3)} exceeds ${report.budgets.maximumCrossFileDuplicateRatio}`);
+    if (workflow.initialLoad.files > report.budgets.maximumInitialLoadFiles) errors.push(`${workflow.id}: initial-load files ${workflow.initialLoad.files} exceeds ${report.budgets.maximumInitialLoadFiles}`);
+    if (workflow.initialLoad.tokens > report.budgets.maximumInitialLoadEstimatedTokens) errors.push(`${workflow.id}: initial-load tokens ${workflow.initialLoad.tokens} exceeds ${report.budgets.maximumInitialLoadEstimatedTokens}`);
+    if (workflow.potentialReferenced.duplicateRatio > report.budgets.maximumPotentialCrossFileDuplicateRatio) errors.push(`${workflow.id}: potential-reference cross-file duplicate ratio ${workflow.potentialReferenced.duplicateRatio.toFixed(3)} exceeds ${report.budgets.maximumPotentialCrossFileDuplicateRatio}`);
   }
   return errors;
 }
 
 function renderPromptSurfaceReport(report) {
-  const rows = report.workflows.map((workflow) => `| \`${workflow.id}\` | ${workflow.aggregate.files} | ${workflow.aggregate.bytes} | ${workflow.aggregate.tokens} | ${(workflow.aggregate.duplicateRatio * 100).toFixed(2)}% |`).join('\n');
-  return `# Aggregate Prompt Surface Report\n\nStatus: generated\n\nGenerated from \`${report.source}\`. Token values are deterministic size estimates, not assistant tokenizer measurements. Each graph includes the command entrypoint, runtime contract, canonical Skill, owner agents, and recommended capability packs.\n\nBudgets: at most ${report.budgets.maximumAggregateFiles} files, ${report.budgets.maximumAggregateTokens} estimated tokens, and ${(report.budgets.maximumCrossFileDuplicateRatio * 100).toFixed(0)}% cross-file exact-paragraph duplication per workflow.\n\n| Workflow | Files | Bytes | Estimated tokens | Cross-file duplication |\n| --- | ---: | ---: | ---: | ---: |\n${rows}\n`;
+  const rows = report.workflows.map((workflow) => `| \`${workflow.id}\` | ${workflow.initialLoad.files} | ${workflow.initialLoad.tokens} | ${workflow.potentialReferenced.files} | ${workflow.potentialReferenced.tokens} | ${(workflow.potentialReferenced.duplicateRatio * 100).toFixed(2)}% |`).join('\n');
+  return `# Aggregate Prompt Surface Report\n\nStatus: generated\n\nGenerated from \`${report.source[0]}\` with budgets owned by \`${report.source[1]}\`. Token values are deterministic size estimates, not assistant tokenizer measurements. ${report.claimBoundary}\n\nBudgets: initial load at most ${report.budgets.maximumInitialLoadFiles} files and ${report.budgets.maximumInitialLoadEstimatedTokens} estimated tokens; potential referenced surface at most ${(report.budgets.maximumPotentialCrossFileDuplicateRatio * 100).toFixed(0)}% cross-file exact-paragraph duplication per workflow.\n\n| Workflow | Initial files | Initial tokens | Potential files | Potential tokens | Potential duplication |\n| --- | ---: | ---: | ---: | ---: | ---: |\n${rows}\n`;
 }
 
 export function checkOrWritePromptSurfaceReport({ repoRoot = defaultRoot, write = false } = {}) {

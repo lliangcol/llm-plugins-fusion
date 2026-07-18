@@ -2,7 +2,7 @@
 id: produce-plan
 stage: plan
 title: /nova-plugin:produce-plan
-description: "Write a formal review-ready plan document to an explicit PLAN_OUTPUT_PATH."
+description: "Write a review-ready plan artifact from explicit intent and constraints without implementing code."
 destructive-actions: low
 allowed-tools: Read Glob Grep
 disallowed-tools: NotebookEdit Bash

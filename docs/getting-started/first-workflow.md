@@ -25,6 +25,8 @@ Minute 1: add the marketplace and install the plugin:
 
 These commands install the exact Stable tag. To test the moving development
 channel, add `lliangcol/llm-plugins-fusion@main` explicitly and treat it as Edge.
+For updating, disabling, re-enabling, uninstalling, and scope-specific recovery,
+continue to the [plugin lifecycle guide](plugin-lifecycle.md).
 
 Minute 2: confirm it is installed:
 

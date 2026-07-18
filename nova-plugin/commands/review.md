@@ -2,7 +2,7 @@
 id: review
 stage: review
 title: /nova-plugin:review
-description: "Unified review entry that routes by LEVEL for lite, standard, or strict review without fixes."
+description: "Perform evidence-grounded code or design review at the requested depth and output mode without implementation."
 destructive-actions: none
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash

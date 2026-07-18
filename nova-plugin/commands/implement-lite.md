@@ -2,7 +2,7 @@
 id: implement-lite
 stage: implement
 title: /nova-plugin:implement-lite
-description: "Make small, bounded implementation changes quickly while respecting existing project conventions."
+description: "Deliver a small bounded implementation with focused validation and no unrelated refactoring."
 destructive-actions: medium
 allowed-tools: Read Glob Grep Write Edit
 disallowed-tools: NotebookEdit

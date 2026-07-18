@@ -2,7 +2,7 @@
 id: plan-review
 stage: plan
 title: /nova-plugin:plan-review
-description: "Critically review an existing plan for decision clarity, assumptions, and execution risk."
+description: "Assess plan decision clarity, assumptions, and execution risk without rewriting the plan."
 destructive-actions: none
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash

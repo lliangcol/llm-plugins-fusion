@@ -5,8 +5,8 @@
   "request": "Update the fictional acme-sample-parser package after reviewing compatibility and security impact, then validate the smallest affected surface.",
   "expected": {
     "nextCommand": "/nova-plugin:review",
-    "stage": "Review",
-    "packs": ["dependencies", "security"],
+    "stage": "review",
+    "packs": ["dependency", "security"],
     "requiredInputs": [
       "manifest and lockfile diff",
       "current and proposed fictional package versions",

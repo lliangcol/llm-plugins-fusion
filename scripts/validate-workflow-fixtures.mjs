@@ -12,6 +12,8 @@ import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
+import { assertDemoFixtureContract, demoFixtureModel } from './lib/demo-fixture-contract.mjs';
+import { loadNovaWorkflowModelV6 } from './lib/workflow-model.mjs';
 
 assertNodeVersion({ label: 'workflow fixture validation' });
 
@@ -19,6 +21,7 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
 const fixtureRoot = 'fixtures/workflow/invoice-sync';
 const demoRoot = 'fixtures/demo';
+const demoModel = demoFixtureModel(loadNovaWorkflowModelV6(root));
 let failed = 0;
 
 function read(relPath) {
@@ -89,14 +92,7 @@ test('headless demo fixtures are deterministic and public-safe', () => {
   ];
 
   for (const fixture of fixtures) {
-    assert.match(fixture.id, /^[a-z0-9-]+$/);
-    assert.ok(['route', 'review', 'verification'].includes(fixture.mode), `${fixture.id} has unexpected mode`);
-    assert.equal(typeof fixture.request, 'string', `${fixture.id} missing request`);
-    assert.ok(fixture.expected && typeof fixture.expected === 'object', `${fixture.id} missing expected object`);
-    assert.ok(Array.isArray(fixture.expected.outputSignals), `${fixture.id} missing outputSignals`);
-    assert.ok(Array.isArray(fixture.expected.failureSignals), `${fixture.id} missing failureSignals`);
-    assert.ok(fixture.expected.outputSignals.length > 0, `${fixture.id} outputSignals empty`);
-    assert.ok(fixture.expected.failureSignals.length > 0, `${fixture.id} failureSignals empty`);
+    assert.equal(assertDemoFixtureContract(fixture, demoModel), true);
     const boundaryText = fixture.boundaries.join(' ');
     assert.match(boundaryText, /fictional public-safe fixture/i);
     assert.match(boundaryText, /does not (?:call|execute)/i);
@@ -113,8 +109,8 @@ test('dependency-update route fixture requires review before implementation', ()
   assert.equal(fixture.id, 'route-dependency-update', `${relPath} has unexpected id`);
   assert.equal(fixture.mode, 'route', `${relPath} must use route mode`);
   assert.equal(fixture.expected?.nextCommand, '/nova-plugin:review', `${relPath} must route to review before implementation`);
-  assert.equal(fixture.expected?.stage, 'Review', `${relPath} must identify the Review stage`);
-  assert.deepEqual(fixture.expected?.packs, ['dependencies', 'security'], `${relPath} must preserve dependency and security review order`);
+  assert.equal(fixture.expected?.stage, 'review', `${relPath} must identify the canonical review stage`);
+  assert.deepEqual(fixture.expected?.packs, ['dependency', 'security'], `${relPath} must preserve dependency and security review order`);
   assert.ok(Array.isArray(fixture.expected?.requiredInputs), `${relPath} missing requiredInputs`);
 
   const orderedSignals = fixture.expected.outputSignals.join(' ');

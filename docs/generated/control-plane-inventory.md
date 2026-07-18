@@ -2,7 +2,7 @@
 
 Generated from package scripts, the runnable validation registry, GitHub workflows, governance sources, generators, and product lanes.
 
-- Package scripts: 80
+- Package scripts: 78
 - Runnable validation tasks: 46
 - GitHub workflows: 10
 - Governance sources: 18

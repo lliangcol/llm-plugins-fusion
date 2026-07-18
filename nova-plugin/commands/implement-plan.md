@@ -2,7 +2,7 @@
 id: implement-plan
 stage: implement
 title: /nova-plugin:implement-plan
-description: "Implement strictly from an approved plan; requires PLAN_INPUT_PATH and PLAN_APPROVED=true."
+description: "Execute an explicitly approved plan step by step with traceability and minimal deviation."
 destructive-actions: medium
 allowed-tools: Read Glob Grep Write Edit
 disallowed-tools: NotebookEdit

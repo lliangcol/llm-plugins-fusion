@@ -2,7 +2,7 @@
 id: finalize-lite
 stage: finalize
 title: /nova-plugin:finalize-lite
-description: "Produce a minimal close-out summary of completed work, rationale, and limitations."
+description: "Provide a short factual closure summary without making new changes or decisions."
 destructive-actions: none
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash

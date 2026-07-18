@@ -1,6 +1,8 @@
 ﻿# 📚 Nova Plugin 命令完全参考手册
 
-> **版本**: 4.0.0 | **最后更新**: 2026-07-12
+<!-- generated:release-channel:start -->
+> **开发版本**: 4.1.0 (`main`，尚未发布) | **稳定版本**: 4.0.0 (`v4.0.0`，发布于 2026-07-12)
+<!-- generated:release-channel:end -->
 >
 > 本手册提供 nova-plugin 所有命令的完整技术参考，包含详细参数说明、场景示例库、工作流模板。
 

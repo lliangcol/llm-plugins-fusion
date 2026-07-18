@@ -152,9 +152,10 @@ regenerates the quality report and downstream state projections.
 Identity-bound candidate, checksum, release-evidence, and timing generators stay
 separate because they require explicit inputs and must never guess release data.
 
-The phase-two operating target is 80 root package scripts beneath the governed
-safety ceiling of 100. Any new root shortcut must remove an existing shortcut
-in the same change so this 20% control-plane headroom is not consumed.
+The phase-two operating ceiling is 78 root package scripts. Direct read-only
+generator and validator commands remain discoverable in the task catalog; they
+do not each require an npm alias. Any new root shortcut must remove an existing
+shortcut in the same change.
 
 ## CI Check Map
 

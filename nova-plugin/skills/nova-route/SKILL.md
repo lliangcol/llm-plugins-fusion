@@ -59,44 +59,14 @@ Choose the next workflow step before work starts. It improves routing for agents
 | `REQUEST` | Yes | N/A | User intent and available execution basis; `INPUT` and `INTENT` are aliases |
 | `DEPTH` | No | `normal` | `brief` or `normal`; `MODE` is an alias |
 
-### Routing Table
+### Route Selection
 
-| Request signal | Command entrypoint | Canonical skill | Variant preset | Core agent | Pack hints |
-| --- | --- | --- | --- | --- | --- |
-| Understand facts, unknowns, or risk only | `/nova-plugin:explore` | `nova-explore` | `{}` | `orchestrator` or `reviewer` | Domain packs from context |
-| Deep investigation or analysis artifact | `/nova-plugin:senior-explore` | `nova-explore` | `{"DEPTH":"deep"}` | `architect` or `reviewer` | Domain packs from context |
-| Write a reviewable plan | `/nova-plugin:produce-plan` | `nova-produce-plan` | `{}` | `architect` | `docs`, plus domain packs |
-| Lightweight task outline | `/nova-plugin:plan-lite` | `nova-produce-plan` | `{"PLAN_PROFILE":"lite"}` | `architect` | Domain packs from context |
-| Review code, plan, or risk | `/nova-plugin:review` | `nova-review` | `{}` | `reviewer` | `security`, `dependency`, `frontend`, `marketplace`, or other domain packs |
-| Implement approved plan | `/nova-plugin:implement-plan` | `nova-implement-plan` | `{}` | `builder` | Domain packs from touched files |
-| Implement explicit steps | `/nova-plugin:implement-standard` | `nova-implement-plan` | `{"EXECUTION_PROFILE":"standard"}` | `builder` | Domain packs from touched files |
-| Small low-risk fix | `/nova-plugin:implement-lite` | `nova-implement-plan` | `{"EXECUTION_PROFILE":"lite"}` | `builder` | Domain packs from touched files |
-| Codex review/fix/verify loop | `/nova-plugin:codex-review-fix` | `nova-implement-plan` | `{"EXECUTION_PROFILE":"codex-review-fix"}` | `reviewer` then `builder` then `verifier` | Domain packs from diff |
-| Delivery summary or handoff | `/nova-plugin:finalize-work` | `nova-finalize-work` | `{}` | `publisher` | `release`, `docs`, `marketplace` when metadata changed |
-
-Specialized and compatibility commands are direct entrypoints, not automatic
-route identities. After selecting a canonical route plus validated variant
-parameters, report the exact matching command entrypoint. Claude must use that
-direct command whenever the resolved workflow differs from the invoked
-canonical wrapper because native frontmatter is static. Generic and Codex
-adapters may execute the resolved contract directly under adapter enforcement.
-Compatibility entrypoints cannot retire until the product-level
-`native-permission-and-invocation-parity` gate and every other governed
-migration gate are satisfied.
-
-| Specialized signal | Command entrypoint | Canonical skill | Variant preset | Core agent | Pack hints |
-| --- | --- | --- | --- | --- |
-| Need only a route recommendation | `/nova-plugin:route` | `nova-route` | `{}` | `orchestrator` | Packs implied by request context |
-| Lightweight fact gathering | `/nova-plugin:explore-lite` | `nova-explore` | `{"PERSPECTIVE":"observer","DEPTH":"lite"}` | `orchestrator` | Domain packs from context |
-| Exploration scoped to review readiness | `/nova-plugin:explore-review` | `nova-explore` | `{"PERSPECTIVE":"reviewer"}` | `reviewer` | `security`, `dependency`, or domain packs |
-| Review an implementation plan before edits | `/nova-plugin:plan-review` | `nova-review` | `{"REVIEW_PROFILE":"plan"}` | `reviewer` | `docs`, `security`, or domain packs |
-| Java/Spring backend plan | `/nova-plugin:backend-plan` | `nova-produce-plan` | `{"PLAN_PROFILE":"java-backend"}` | `architect` | `java`, `security`, `dependency` |
-| Fast review with bounded depth | `/nova-plugin:review-lite` | `nova-review` | `{"LEVEL":"lite"}` | `reviewer` | Domain packs from diff |
-| Review-only artifact or findings | `/nova-plugin:review-only` | `nova-review` | `{"LEVEL":"standard","MODE":"findings-only"}` | `reviewer` | `security`, `dependency`, or domain packs |
-| Strict/high-risk review | `/nova-plugin:review-strict` | `nova-review` | `{"LEVEL":"strict"}` | `reviewer` | `security`, `dependency`, plus domain packs |
-| Codex read-only review artifact | `/nova-plugin:codex-review-only` | `nova-review` | `{"REVIEW_PROFILE":"codex-review-only"}` | `reviewer` | Domain packs from diff |
-| Codex verification of existing review | `/nova-plugin:codex-verify-only` | `nova-review` | `{"REVIEW_PROFILE":"codex-verify-only"}` | `verifier` | Domain packs from review scope |
-| Lightweight closeout | `/nova-plugin:finalize-lite` | `nova-finalize-work` | `{"DEPTH":"lite"}` | `publisher` | `docs` or `release` when relevant |
+Use the generated decision entries above as the complete route table. Select
+one canonical target, validate its variant parameters, and report the exact
+matching direct command. Specialized and compatibility commands are direct
+entrypoints, not extra route identities. Claude redirects when static
+frontmatter differs; generic and Codex adapters may execute the resolved
+contract under adapter enforcement.
 
 ### Output Format
 
@@ -147,23 +117,6 @@ variant-parameter identity.
 - Do not create route artifacts unless a future command explicitly adds a write-capable route variant.
 - Do not run implementation, test, Git, install, network, or external review commands.
 - Do not claim a validation command passed; only name what should be run by the selected downstream workflow.
-
-## Common Rationalizations
-
-| Rationalization | Required Response |
-| --- | --- |
-| "The user asked to implement, so routing is unnecessary." | If the execution basis is missing or ambiguous, recommend the safest next command before implementation. |
-| "No pack exactly matches this domain." | Choose the closest existing pack and state the fallback evidence instead of inventing a new pack. |
-| "This route is obvious, so no required inputs are needed." | Still name the minimum inputs required for the selected downstream command. |
-| "I can include an implementation outline to be helpful." | Keep the output to routing, inputs, validation expectations, and fallback path. |
-
-## Red Flags
-
-- The response includes code edits, plan details, or implementation steps.
-- The response names a command, skill, pack, or agent that does not exist.
-- A write-capable command is recommended without naming approval or execution-basis requirements.
-- Validation is described as already passed.
-- Domain routing creates new pack names instead of using the existing 8-pack set.
 
 ## Verification
 

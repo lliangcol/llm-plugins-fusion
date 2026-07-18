@@ -1168,10 +1168,12 @@ test('assistant manifest schema rejects incomplete alias gates and loose nested 
 test('aggregate prompt load graph covers every workflow and budget regressions fail closed', () => {
   const report = buildPromptSurfaceReport();
   assert.equal(report.workflowCount, 21);
-  assert.ok(report.workflows.every((workflow) => workflow.graph.nodes.length === workflow.aggregate.files));
-  assert.ok(report.workflows.every((workflow) => Number.isFinite(workflow.aggregate.duplicateRatio)));
+  assert.deepEqual(report.source, ['workflow-specs/workflows.v6.json', 'governance/complexity-budget.json#/promptSurface']);
+  assert.ok(report.workflows.every((workflow) => workflow.graph.nodes.length === workflow.potentialReferenced.files));
+  assert.ok(report.workflows.every((workflow) => workflow.potentialReferenced.files >= workflow.initialLoad.files));
+  assert.ok(report.workflows.every((workflow) => Number.isFinite(workflow.potentialReferenced.duplicateRatio)));
   assert.deepEqual(validatePromptSurfaceBudgets(report), []);
   const oversized = structuredClone(report);
-  oversized.workflows[0].aggregate.tokens = oversized.budgets.maximumAggregateTokens + 1;
-  assert.match(validatePromptSurfaceBudgets(oversized)[0], /aggregate tokens/u);
+  oversized.workflows[0].initialLoad.tokens = oversized.budgets.maximumInitialLoadEstimatedTokens + 1;
+  assert.match(validatePromptSurfaceBudgets(oversized)[0], /initial-load tokens/u);
 });

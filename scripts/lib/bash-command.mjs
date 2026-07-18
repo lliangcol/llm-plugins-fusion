@@ -78,6 +78,33 @@ export function projectFreeExecutablePath(projectRoot, {
   return safeEntries.join(delimiter);
 }
 
+function environmentWithPath(env, pathValue) {
+  const normalized = {};
+  for (const [key, value] of Object.entries(env)) {
+    if (key.toUpperCase() !== 'PATH') normalized[key] = value;
+  }
+  normalized.PATH = pathValue;
+  return normalized;
+}
+
+/** Build a probe environment that cannot preload project or caller-authored code. */
+export function projectFreeProbeEnvironment(projectRoot, {
+  env = process.env,
+  nodeExecutable = process.execPath,
+} = {}) {
+  const sanitized = environmentWithPath(
+    env,
+    projectFreeExecutablePath(projectRoot, { env, nodeExecutable }),
+  );
+  const exact = new Set(['BASH_ENV', 'ENV', 'NODE_OPTIONS', 'NODE_PATH', 'RIPGREP_CONFIG_PATH', 'PAGER']);
+  const prefixes = ['BASH_FUNC_', 'DYLD_', 'GIT_', 'LD_'];
+  for (const key of Object.keys(sanitized)) {
+    const normalized = key.toUpperCase();
+    if (exact.has(normalized) || prefixes.some((prefix) => normalized.startsWith(prefix))) delete sanitized[key];
+  }
+  return sanitized;
+}
+
 export function trustedHookBashIdentity(projectRoot, env = process.env, writableRoots = []) {
   const untrustedRoots = [projectRoot, ...writableRoots];
   for (const entry of String(env.PATH ?? '').split(delimiter)) {
@@ -97,6 +124,58 @@ export function trustedHookBashIdentity(projectRoot, env = process.env, writable
     return { trusted: false, identity, reason: 'bash resolves inside an agent-writable root' };
   }
   return { trusted: true, identity, reason: null };
+}
+
+function samePhysicalPath(left, right) {
+  try { return realpathSync.native(left) === realpathSync.native(right); } catch { return resolve(left) === resolve(right); }
+}
+
+function exactNpmLifecycle(projectRoot, env, lifecycleEvent, lifecycleScript) {
+  if (env.npm_command !== 'run'
+    || env.npm_lifecycle_event !== lifecycleEvent
+    || env.npm_lifecycle_script !== lifecycleScript
+    || typeof env.npm_package_json !== 'string'
+    || !isAbsolute(env.npm_package_json)) return false;
+  return samePhysicalPath(env.npm_package_json, resolve(projectRoot, 'package.json'));
+}
+
+/**
+ * Remove only the exact project-local node_modules/.bin entry synthesized by
+ * an exact npm lifecycle invocation. This is diagnostic normalization, not a
+ * claim that the caller's raw PATH is trusted.
+ */
+export function diagnosticHookEnvironment(projectRoot, {
+  env = process.env,
+  lifecycleEvent = '',
+  lifecycleScript = '',
+  writableRoots = [],
+} = {}) {
+  const rawTrust = trustedHookBashIdentity(projectRoot, env, writableRoots);
+  if (rawTrust.trusted) {
+    return { env, trust: rawTrust, normalized: false, removedEntries: [], lifecycleMatched: false };
+  }
+  if (!exactNpmLifecycle(projectRoot, env, lifecycleEvent, lifecycleScript)) {
+    return { env, trust: rawTrust, normalized: false, removedEntries: [], lifecycleMatched: false };
+  }
+
+  const npmBin = resolve(projectRoot, 'node_modules/.bin');
+  const removedEntries = [];
+  const retainedEntries = [];
+  for (const entry of String(env.PATH ?? '').split(delimiter)) {
+    if (entry && isAbsolute(entry) && samePhysicalPath(entry, npmBin)) removedEntries.push(entry);
+    else retainedEntries.push(entry);
+  }
+  if (removedEntries.length === 0) {
+    return { env, trust: rawTrust, normalized: false, removedEntries, lifecycleMatched: true };
+  }
+  const normalizedEnv = environmentWithPath(env, retainedEntries.join(delimiter));
+  return {
+    env: normalizedEnv,
+    trust: trustedHookBashIdentity(projectRoot, normalizedEnv, writableRoots),
+    normalized: true,
+    removedEntries,
+    lifecycleMatched: true,
+  };
 }
 
 export function pathForBash(value, command = resolveBashCommand(), platform = process.platform) {

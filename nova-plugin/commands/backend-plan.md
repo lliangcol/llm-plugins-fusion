@@ -2,7 +2,7 @@
 id: backend-plan
 stage: plan
 title: /nova-plugin:backend-plan
-description: "Generate a Java/Spring backend design plan and write it to an explicit PLAN_OUTPUT_PATH."
+description: "Produce a complete Java and Spring backend design artifact for senior review without implementing code."
 destructive-actions: low
 allowed-tools: Read Glob Grep
 disallowed-tools: NotebookEdit Bash

@@ -3,7 +3,7 @@ import { chmodSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, w
 import { delimiter, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import test from 'node:test';
-import { projectFreeExecutablePath, resolveExecutableOnPath, trustedHookBashIdentity } from '../../scripts/lib/bash-command.mjs';
+import { diagnosticHookEnvironment, projectFreeExecutablePath, projectFreeProbeEnvironment, resolveExecutableOnPath, trustedHookBashIdentity } from '../../scripts/lib/bash-command.mjs';
 
 test('runtime validation PATH removes lexical and physical project entries', { skip: process.platform === 'win32' }, (t) => {
   const fixture = mkdtempSync(resolve(tmpdir(), 'nova-runtime-path-'));
@@ -25,6 +25,42 @@ test('runtime validation PATH removes lexical and physical project entries', { s
   });
 
   assert.deepEqual(path.split(delimiter), [realpathSync.native(externalBin)]);
+});
+
+test('probe environment removes executable preload and helper injection controls', { skip: process.platform === 'win32' }, (t) => {
+  const fixture = mkdtempSync(resolve(tmpdir(), 'nova-probe-env-'));
+  const projectRoot = resolve(fixture, 'project');
+  const externalBin = resolve(fixture, 'bin');
+  mkdirSync(projectRoot);
+  mkdirSync(externalBin);
+  const nodeExecutable = resolve(externalBin, 'node');
+  writeFileSync(nodeExecutable, '#!/bin/sh\nexit 0\n');
+  chmodSync(nodeExecutable, 0o755);
+  t.after(() => rmSync(fixture, { recursive: true, force: true }));
+
+  const environment = projectFreeProbeEnvironment(projectRoot, {
+    nodeExecutable,
+    env: {
+      PATH: externalBin,
+      Path: projectRoot,
+      HOME: fixture,
+      BASH_ENV: 'startup.sh',
+      ENV: 'startup.sh',
+      NODE_OPTIONS: '--require injected.js',
+      NODE_PATH: projectRoot,
+      GIT_CONFIG_PARAMETERS: "'diff.external'='helper'",
+      RIPGREP_CONFIG_PATH: 'rg.conf',
+      DYLD_INSERT_LIBRARIES: 'library.dylib',
+      LD_PRELOAD: 'library.so',
+      'BASH_FUNC_node%%': '() { echo shadow; }',
+    },
+  });
+  assert.equal(environment.HOME, fixture);
+  assert.equal(environment.PATH, realpathSync.native(externalBin));
+  assert.equal(Object.hasOwn(environment, 'Path'), false);
+  for (const key of ['BASH_ENV', 'ENV', 'NODE_OPTIONS', 'NODE_PATH', 'GIT_CONFIG_PARAMETERS', 'RIPGREP_CONFIG_PATH', 'DYLD_INSERT_LIBRARIES', 'LD_PRELOAD', 'BASH_FUNC_node%%']) {
+    assert.equal(Object.hasOwn(environment, key), false, key);
+  }
 });
 
 test('hook bootstrap resolves a physical Bash outside the writable project', { skip: process.platform === 'win32' }, (t) => {
@@ -79,4 +115,59 @@ test('hook bootstrap treats an explicit artifact root as agent-writable', { skip
   const result = trustedHookBashIdentity(projectRoot, { PATH: artifactRoot }, [artifactRoot]);
   assert.equal(result.trusted, false);
   assert.match(result.reason, /agent-writable root/u);
+});
+
+test('diagnostic hook trust removes only the exact npm lifecycle project bin', { skip: process.platform === 'win32' }, (t) => {
+  const fixture = mkdtempSync(resolve(tmpdir(), 'nova-diagnostic-path-'));
+  const projectRoot = resolve(fixture, 'project');
+  const npmBin = resolve(projectRoot, 'node_modules/.bin');
+  const otherProjectBin = resolve(projectRoot, 'other-bin');
+  const trustedBin = resolve(fixture, 'trusted-bin');
+  mkdirSync(npmBin, { recursive: true });
+  mkdirSync(otherProjectBin);
+  mkdirSync(trustedBin);
+  writeFileSync(resolve(projectRoot, 'package.json'), '{}\n');
+  for (const bin of [npmBin, otherProjectBin, trustedBin]) {
+    writeFileSync(resolve(bin, 'bash'), '#!/bin/sh\nexit 0\n');
+    chmodSync(resolve(bin, 'bash'), 0o755);
+  }
+  t.after(() => rmSync(fixture, { recursive: true, force: true }));
+  const lifecycle = {
+    npm_command: 'run',
+    npm_package_json: resolve(projectRoot, 'package.json'),
+    npm_lifecycle_event: 'doctor',
+    npm_lifecycle_script: 'node scripts/doctor.mjs',
+  };
+
+  const normalized = diagnosticHookEnvironment(projectRoot, {
+    env: { ...lifecycle, PATH: `${npmBin}${delimiter}${trustedBin}` },
+    lifecycleEvent: 'doctor',
+    lifecycleScript: 'node scripts/doctor.mjs',
+  });
+  assert.equal(normalized.normalized, true);
+  assert.equal(normalized.trust.trusted, true);
+  assert.deepEqual(normalized.removedEntries, [npmBin]);
+  assert.equal(normalized.trust.identity.physical, realpathSync.native(resolve(trustedBin, 'bash')));
+  assert.equal(Object.hasOwn(normalized.env, 'Path'), false);
+
+  const mismatched = diagnosticHookEnvironment(projectRoot, {
+    env: { ...lifecycle, npm_lifecycle_event: 'other', PATH: `${npmBin}${delimiter}${trustedBin}` },
+    lifecycleEvent: 'doctor',
+    lifecycleScript: 'node scripts/doctor.mjs',
+  });
+  assert.equal(mismatched.normalized, false);
+  assert.equal(mismatched.trust.trusted, false);
+
+  for (const unsafePath of [
+    `${npmBin}${delimiter}${otherProjectBin}${delimiter}${trustedBin}`,
+    `${npmBin}${delimiter}.${delimiter}${trustedBin}`,
+  ]) {
+    const unsafe = diagnosticHookEnvironment(projectRoot, {
+      env: { ...lifecycle, PATH: unsafePath },
+      lifecycleEvent: 'doctor',
+      lifecycleScript: 'node scripts/doctor.mjs',
+    });
+    assert.equal(unsafe.normalized, true);
+    assert.equal(unsafe.trust.trusted, false);
+  }
 });

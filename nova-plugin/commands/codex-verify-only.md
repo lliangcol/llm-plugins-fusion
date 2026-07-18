@@ -2,7 +2,7 @@
 id: codex-verify-only
 stage: review
 title: /nova-plugin:codex-verify-only
-description: "Run Codex verification against an existing review artifact and optional checks output."
+description: "Verify known findings from an existing Codex review without doing new implementation."
 destructive-actions: low
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit

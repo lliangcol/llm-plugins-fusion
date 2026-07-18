@@ -2,7 +2,7 @@
 id: review-lite
 stage: review
 title: /nova-plugin:review-lite
-description: "Run a lightweight review focused on high-signal issues without modifying code."
+description: "Deliver concise daily-review feedback with high signal and bounded depth."
 destructive-actions: none
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash

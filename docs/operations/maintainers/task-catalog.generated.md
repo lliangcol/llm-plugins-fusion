@@ -16,7 +16,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `benchmark` | Tests, coverage, simulations, demos, mutations, and live evaluation. |
 | `maintenance` | Diagnostics, repository administration, and reusable script libraries. |
 
-## Script Inventory (149)
+## Script Inventory (150)
 
 | Category | Script |
 | --- | --- |
@@ -64,6 +64,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `maintenance` | `scripts/lib/coverage-runner.mjs` |
 | `maintenance` | `scripts/lib/coverage-thresholds.mjs` |
 | `maintenance` | `scripts/lib/credential-environment.mjs` |
+| `maintenance` | `scripts/lib/demo-fixture-contract.mjs` |
 | `maintenance` | `scripts/lib/diagnostics.mjs` |
 | `maintenance` | `scripts/lib/eval-dataset.mjs` |
 | `maintenance` | `scripts/lib/evaluation-evidence.mjs` |
@@ -170,7 +171,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `release` | `scripts/verify-release-promotion.mjs` |
 | `release` | `scripts/verify-stable-install.mjs` |
 
-## npm Shortcuts (80)
+## npm Shortcuts (78)
 
 | Category | Shortcut | Command |
 | --- | --- | --- |
@@ -229,10 +230,8 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `validate` | `npm run validate:dependency-audit` | `node scripts/audit-dependencies.mjs` |
 | `validate` | `npm run validate:docs` | `node scripts/validate-docs.mjs` |
 | `validate` | `npm run validate:drift` | `node scripts/generate-registry.mjs` |
-| `validate` | `npm run validate:facts` | `node scripts/generate-fact-graph.mjs` |
 | `validate` | `npm run validate:github-workflows` | `node scripts/validate-github-workflows.mjs` |
 | `validate` | `npm run validate:governance-freshness` | `node scripts/validate-governance-freshness.mjs` |
-| `validate` | `npm run validate:hook-truth` | `node scripts/validate-hooks.mjs` |
 | `validate` | `npm run validate:license-audit` | `node scripts/audit-dependency-licenses.mjs` |
 | `validate` | `npm run validate:maintainer` | `node scripts/validate-maintainer.mjs` |
 | `validate` | `npm run validate:maintainer:evidence` | `node scripts/validate-maintainer.mjs --evidence-only` |

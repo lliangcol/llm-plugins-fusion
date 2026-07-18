@@ -2,7 +2,7 @@
 id: implement-standard
 stage: implement
 title: /nova-plugin:implement-standard
-description: "Execute confirmed implementation steps with controlled scope and validation."
+description: "Execute confirmed implementation steps reliably with controlled scope and validation."
 destructive-actions: medium
 allowed-tools: Read Glob Grep Write Edit
 disallowed-tools: NotebookEdit
