@@ -1006,6 +1006,7 @@ test('llmf repository profiles expose bounded check and drift-only generation en
     'static-contract',
     'adapter-simulation',
     'critical-mutation',
+    'real-task-benchmark',
     'quality-report',
     'project-state',
     'fact-graph',

@@ -9,7 +9,6 @@ import { loadNovaWorkflowModelV6 } from './lib/workflow-model.mjs';
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
 const sourcePath = 'workflow-specs/workflows.v6.json';
-const productPath = 'workflow-specs/nova.product.json';
 const runtimePath = 'nova-plugin/runtime/workflow-permissions.json';
 const routeContractPath = 'nova-plugin/runtime/route-output-contract.json';
 const generatedJson = 'docs/generated/effective-permissions.json';
@@ -170,7 +169,6 @@ function invocation(namespace, workflow, kind) {
 }
 
 export function buildEffectivePermissions(spec) {
-  const primary = new Set(spec.primaryEntrypoints);
   const entries = [];
   for (const workflow of spec.workflows) {
     for (const kind of ['command', ...(!workflow.compatibilityAlias ? ['skill'] : [])]) {

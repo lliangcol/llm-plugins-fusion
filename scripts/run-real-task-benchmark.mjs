@@ -1,12 +1,12 @@
 #!/usr/bin/env node
 /** Plan and aggregate the fixed real-task benchmark without fabricating live evidence. */
-import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, isAbsolute, relative, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { repoRoot } from './lib/repo-root.mjs';
 import { deriveEvaluationFacts } from './lib/evaluation-facts.mjs';
+import { assertCleanGitRepository } from './lib/git-source-snapshot.mjs';
 import { compileStandardSchema, formatAjvErrors } from './lib/schema-engine.mjs';
 
 const root = repoRoot(import.meta.url);
@@ -252,12 +252,7 @@ export function assertBenchmarkRepositoryClean(statusOutput) {
 }
 
 function currentSourceCommit() {
-  const dirty = execFileSync('git', ['status', '--porcelain', '--untracked-files=all'], {
-    cwd: root,
-    encoding: 'utf8',
-  });
-  assertBenchmarkRepositoryClean(dirty);
-  return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8' }).trim();
+  return assertCleanGitRepository(root);
 }
 
 function metrics(records) {

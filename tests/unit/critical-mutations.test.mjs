@@ -12,7 +12,7 @@ import {
 
 test('critical mutation probes kill governed operators without infrastructure errors', async () => {
   const report = await runMutations();
-  assert.equal(report.results.length, 9);
+  assert.equal(report.results.length, 10);
   assert.equal(report.score, 1);
   assert.equal(report.results.every((entry) => entry.killed && typeof entry.reason === 'string'), true);
   assert.doesNotMatch(

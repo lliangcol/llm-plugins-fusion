@@ -18,7 +18,7 @@ import {
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
-export function parseCandidateArgs(args, env = process.env) {
+export function parseCandidateArgs(args, _env = process.env) {
   const options = {
     tag: null,
     stableTag: null,

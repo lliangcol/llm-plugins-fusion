@@ -479,30 +479,6 @@ function lineIndent(line) {
   return line.match(/^ */)?.[0].length ?? 0;
 }
 
-function extractRunScripts(src) {
-  const lines = src.split(/\r?\n/);
-  const scripts = [];
-  for (let index = 0; index < lines.length; index += 1) {
-    const match = lines[index].match(/^(\s*)run:\s*(.*)$/);
-    if (!match) continue;
-    const indent = match[1].length;
-    const marker = match[2].trim();
-    if (marker !== '|' && marker !== '>') {
-      scripts.push(match[2]);
-      continue;
-    }
-    const body = [];
-    for (let bodyIndex = index + 1; bodyIndex < lines.length; bodyIndex += 1) {
-      const line = lines[bodyIndex];
-      if (line.trim() && lineIndent(line) <= indent) break;
-      body.push(line);
-      index = bodyIndex;
-    }
-    scripts.push(body.join('\n'));
-  }
-  return scripts;
-}
-
 function extractYamlBlock(file, src, key, indent, label, searchStart = 0, searchEnd = null) {
   const lines = src.split(/\r?\n/);
   const endIndex = searchEnd ?? lines.length;

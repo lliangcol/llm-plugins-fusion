@@ -96,6 +96,7 @@ const generateProfiles = Object.freeze({
     ['static-contract', 'scripts/evaluate-static-contracts.mjs'],
     ['adapter-simulation', 'scripts/evaluate-adapter-simulation.mjs'],
     ['critical-mutation', 'scripts/run-critical-mutations.mjs'],
+    ['real-task-benchmark', 'scripts/run-real-task-benchmark.mjs'],
     ['quality-report', 'scripts/generate-quality-report.mjs'],
     ['project-state', 'scripts/generate-project-state.mjs'],
     ['fact-graph', 'scripts/generate-fact-graph.mjs'],
@@ -996,7 +997,7 @@ function init(root, outputTransactionOptions = {}) {
   return { files: Object.keys(files).sort() };
 }
 
-export async function runCli(args, io = process, { runner = runProcess, outputTransactionOptions = {} } = {}) {
+export async function runCli(args, _io = process, { runner = runProcess, outputTransactionOptions = {} } = {}) {
   const command = ['--help', '-h'].includes(args[0]) ? 'help' : args[0];
   if (!['help', 'init', 'validate', 'build', 'test', 'eval', 'doctor', 'inspect', 'migrate', 'check', 'generate'].includes(command)) return { exitCode: EXIT.USAGE, output: { ok: false, command: command ?? null, error: 'unknown-command' } };
   try {

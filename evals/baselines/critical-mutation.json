@@ -55,6 +55,12 @@
       "source": "nova-plugin/hooks/scripts/pre-bash-check.mjs",
       "killed": true,
       "reason": "abbreviated forbidden Git option accepted"
+    },
+    {
+      "id": "trusted-git-environment-inheritance-restored",
+      "source": "scripts/lib/git-source-snapshot.mjs",
+      "killed": true,
+      "reason": "caller environment reached trusted Git"
     }
   ],
   "score": 1,

@@ -1,24 +1,28 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { spawnSync } from 'node:child_process';
+import { gitTrackedFiles, gitUntrackedFiles } from './git-source-snapshot.mjs';
 
 function normalize(path) {
   return path.replaceAll('\\', '/');
 }
 
-export function sourceModuleInventory(root, runner = spawnSync, pathExists = existsSync) {
-  const result = runner(
-    'git',
-    ['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '*.mjs'],
-    { cwd: root, encoding: 'buffer', shell: false },
-  );
-  if (result.error || result.status !== 0) {
-    throw new Error(result.error?.message || result.stderr?.toString('utf8') || 'git ls-files failed');
+export function sourceModuleInventory(root, runner = null, pathExists = existsSync) {
+  let paths;
+  if (runner === null) {
+    paths = [...new Set([...gitTrackedFiles(root), ...gitUntrackedFiles(root)])];
+  } else {
+    const result = runner(
+      'git',
+      ['ls-files', '-z', '--cached', '--others', '--exclude-standard', '--', '*.mjs'],
+      { cwd: root, encoding: 'buffer', shell: false },
+    );
+    if (result.error || result.status !== 0) {
+      throw new Error(result.error?.message || result.stderr?.toString('utf8') || 'git ls-files failed');
+    }
+    paths = result.stdout.toString('utf8').split('\0').filter(Boolean);
   }
-  return result.stdout.toString('utf8')
-    .split('\0')
-    .filter((path) => path.endsWith('.mjs') && !path.startsWith('tests/'))
+  return paths.filter((path) => path.endsWith('.mjs') && !path.startsWith('tests/'))
     .filter((path) => pathExists(resolve(root, path)))
     .map(normalize)
     .sort();

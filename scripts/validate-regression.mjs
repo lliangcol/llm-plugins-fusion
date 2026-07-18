@@ -21,10 +21,11 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, dirname, relative, resolve } from 'node:path';
+import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { authorizeBashCommand } from '../nova-plugin/hooks/scripts/pre-bash-check.mjs';
 import { generateRegistryFiles } from './generate-registry.mjs';
+import { gitTrackedFiles, gitUntrackedFiles } from './lib/git-source-snapshot.mjs';
 import { formatFinding, scanDistributionRisk } from './scan-distribution-risk.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -74,14 +75,8 @@ function readGeneratedJson(relPath) {
 }
 
 function copyRepositoryFixture(destination) {
-  const listed = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
-    cwd: root,
-    encoding: 'buffer',
-    shell: false,
-  });
-  assert.equal(listed.status, 0, listed.stderr?.toString('utf8') || 'git ls-files failed');
-
-  for (const relPath of listed.stdout.toString('utf8').split('\0').filter(Boolean)) {
+  const sourcePaths = [...new Set([...gitTrackedFiles(root), ...gitUntrackedFiles(root)])].sort();
+  for (const relPath of sourcePaths) {
     if (COPY_SKIP_ROOTS.has(relPath.split('/')[0])) continue;
     const source = resolve(root, relPath);
     // A tracked path may be deleted in the current worktree before the change
@@ -908,8 +903,8 @@ test('validate-docs rejects Skill-first, hook, release-source, and command-table
     );
     mutate(
       'docs/project/plans/current-remediation.md',
-      'were merged into protected `main`',
-      'were implemented on a local branch without creating a commit',
+      'source-backed behavior, validation boundaries',
+      'source-backed behavior without creating a commit, validation boundaries',
     );
     mutate(
       'docs/operations/maintainers/troubleshooting.md',

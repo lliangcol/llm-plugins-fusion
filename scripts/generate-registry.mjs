@@ -9,9 +9,9 @@
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
 import { dirname, isAbsolute, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gitSnapshotReader } from './lib/git-source-snapshot.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
@@ -266,9 +266,7 @@ export function buildRegistryObjects(root = defaultRoot) {
       }
     }
     const manifestPath = pluginManifestPath(plugins[0].source, root).replace(/^\.\//u, '');
-    const shown = spawnSync('git', ['show', `${releaseChannels.stable.commit}:${manifestPath}`], { cwd: root, encoding: 'utf8', shell: false });
-    if (shown.status !== 0) throw new Error('stable plugin manifest cannot be read from the pinned commit');
-    const stablePlugin = JSON.parse(shown.stdout);
+    const stablePlugin = gitSnapshotReader(root, releaseChannels.stable.commit).readJson(manifestPath);
     if (stablePlugin.version !== releaseChannels.stable.version || stablePlugin.name !== plugins[0].plugin.name) {
       throw new Error('stable release channel does not match the pinned plugin manifest');
     }

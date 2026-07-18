@@ -1,10 +1,10 @@
-import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { resolveContainedFile } from '../../framework/io/safe-json-file.mjs';
 import { canonicalSha256 } from './canonical-json.mjs';
+import { gitIsAncestor, gitResolveCommit, gitTrackedFiles } from './git-source-snapshot.mjs';
 import { compileStandardSchema, formatAjvErrors } from './schema-engine.mjs';
 
 const SHA256_PATTERN = /^[a-f0-9]{64}$/u;
@@ -30,13 +30,7 @@ export function assertPortableAdoptionEvidencePath(value, label = 'adoption evid
 }
 
 function assertTracked(root, path, label) {
-  try {
-    execFileSync('git', ['ls-files', '--error-unmatch', '--', path], {
-      cwd: root,
-      encoding: 'utf8',
-      stdio: ['ignore', 'ignore', 'pipe'],
-    });
-  } catch {
+  if (!gitTrackedFiles(root, { pathPrefix: path }).includes(path)) {
     throw new Error(`${label} must reference a tracked public repository file: ${path}`);
   }
 }
@@ -86,14 +80,8 @@ export function adoptionRecordBindingSha256(record) {
 function assertReachableSourceCommit(root, sourceCommit) {
   if (!/^[a-f0-9]{40}$/u.test(sourceCommit ?? '')) throw new Error('adoption sourceCommit must be 40 lowercase hexadecimal characters');
   try {
-    execFileSync('git', ['cat-file', '-e', `${sourceCommit}^{commit}`], {
-      cwd: root,
-      stdio: ['ignore', 'ignore', 'pipe'],
-    });
-    execFileSync('git', ['merge-base', '--is-ancestor', sourceCommit, 'HEAD'], {
-      cwd: root,
-      stdio: ['ignore', 'ignore', 'pipe'],
-    });
+    if (gitResolveCommit(root, sourceCommit) !== sourceCommit
+      || !gitIsAncestor(root, sourceCommit, 'HEAD')) throw new Error('commit is not an ancestor');
   } catch {
     throw new Error(`adoption sourceCommit must exist and be reachable from repository HEAD: ${sourceCommit}`);
   }

@@ -2,10 +2,10 @@
 /** Validate generated project truth and reject known stale active narratives. */
 
 import { existsSync, readFileSync } from 'node:fs';
-import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { checkOrWriteProjectState, projectFactDocuments, syncDocFacts } from './generate-project-state.mjs';
+import { gitTrackedFiles } from './lib/git-source-snapshot.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 
 const root = repoRoot(import.meta.url);
@@ -30,9 +30,8 @@ export function staleNarrativeFindings(source, path = '<text>') {
 }
 
 export function activeNarrativeDocuments(repoRoot = root) {
-  return execFileSync('git', ['ls-files', '*.md'], { cwd: repoRoot, encoding: 'utf8' })
-    .split(/\r?\n/)
-    .filter(Boolean)
+  return gitTrackedFiles(repoRoot)
+    .filter((path) => path.endsWith('.md'))
     .filter((path) => path !== 'CHANGELOG.md')
     .filter((path) => !path.startsWith('docs/migrations/'))
     .filter((path) => !/^docs\/releases\/\d/.test(path))

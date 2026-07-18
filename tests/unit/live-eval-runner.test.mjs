@@ -477,11 +477,10 @@ test('manifest-bound staging rejects ignored extras, symbolic links, and non-reg
   writeFileSync(resolve(repo, 'source/tracked.txt'), 'hidden worktree change\n');
   const hiddenStatus = execFileSync('git', ['status', '--porcelain'], { cwd: repo, encoding: 'utf8' });
   assert.equal(hiddenStatus, '');
-  const selected = selectLiveSourceReader(repo, { status: 0, stdout: `${head}\n` }, { status: 0, stdout: hiddenStatus });
-  assert.equal(selected.initiallyClean, true);
-  assert.equal(selected.sourceReader.readText('source/tracked.txt'), 'tracked\n');
-  assert.equal(gitWorktreeSourceReader(repo).readText('source/tracked.txt'), 'hidden worktree change\n');
-  assert.equal(selected.sourceReader.fileMode('source/tracked.txt'), 0o644);
+  const selected = selectLiveSourceReader(repo);
+  assert.equal(selected.baseCommit, head);
+  assert.equal(selected.initiallyClean, false);
+  assert.equal(selected.sourceReader.readText('source/tracked.txt'), 'hidden worktree change\n');
   writeFileSync(resolve(repo, 'source/tracked.txt'), 'tracked\n');
   execFileSync('git', ['update-index', '--no-skip-worktree', 'source/tracked.txt'], { cwd: repo });
   const firstTarget = resolve(repo, 'first-target');
@@ -1190,21 +1189,19 @@ test('Codex JSONL parsing rejects malformed or structurally incomplete nonblank 
 });
 
 test('adapter staging, load observation, and contract validity remain independent', () => {
-  const toolEvidence = classifyToolEvidence({ assistant: 'claude-code', condition: 'plugin-enabled', permissionDenials: [{ tool_name: 'Skill' }] });
-  const deniedOnly = deriveAdapterEvidence({ assistant: 'claude-code', condition: 'plugin-enabled', adapterStaged: true, toolEvidence });
+  const deniedOnly = deriveAdapterEvidence({ assistant: 'claude-code', condition: 'plugin-enabled', adapterStaged: true });
   assert.equal(deniedOnly.adapterLoadObserved, 'unavailable');
   const observed = deriveAdapterEvidence({
     assistant: 'claude-code',
     condition: 'plugin-enabled',
     adapterStaged: true,
-    toolEvidence,
     claudeLoadSignals: ['claude-debug:plugin-loaded:nova-plugin', 'claude-debug:plugin-surface-loaded:nova-plugin:skills:6'],
   });
   assert.equal(observed.adapterLoadObserved, 'observed');
-  const codex = deriveAdapterEvidence({ assistant: 'codex', condition: 'plugin-enabled', adapterStaged: true, toolEvidence: classifyToolEvidence({ assistant: 'codex', condition: 'plugin-enabled' }), events: [{ type: 'turn.completed' }] });
+  const codex = deriveAdapterEvidence({ assistant: 'codex', condition: 'plugin-enabled', adapterStaged: true, events: [{ type: 'turn.completed' }] });
   assert.equal(codex.adapterLoadObserved, 'unavailable');
   assert.equal(codex.adapterLoadReasonCode, 'codex-load-event-unavailable');
-  const disabled = deriveAdapterEvidence({ assistant: 'codex', condition: 'plugin-disabled', adapterStaged: true, toolEvidence: codex });
+  const disabled = deriveAdapterEvidence({ assistant: 'codex', condition: 'plugin-disabled', adapterStaged: true });
   assert.equal(disabled.adapterLoadObserved, 'not-applicable');
 });
 
@@ -1227,7 +1224,6 @@ test('Claude debug load evidence is normalized without paths parameters response
     assistant: 'claude-code',
     condition: 'plugin-enabled',
     adapterStaged: true,
-    toolEvidence: classifyToolEvidence({ assistant: 'claude-code', condition: 'plugin-enabled' }),
     claudeLoadSignals: ['claude-debug:plugin-loaded:nova-plugin'],
   });
   assert.equal(incomplete.adapterLoadObserved, 'unavailable');

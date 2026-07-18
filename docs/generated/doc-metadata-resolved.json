@@ -56,15 +56,6 @@
       "generated": false
     },
     {
-      "path": "HANDOFF.md",
-      "audience": "repository-users",
-      "contentType": "reference",
-      "status": "current",
-      "ownerSource": "CLAUDE.md",
-      "sourceOfTruth": "self",
-      "generated": false
-    },
-    {
       "path": "README.md",
       "audience": "repository-users",
       "contentType": "entrypoint",

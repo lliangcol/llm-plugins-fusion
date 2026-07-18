@@ -62,9 +62,16 @@ test('stale active narratives are rejected by semantic rule ids', () => {
 });
 
 test('project state, fact blocks, and generated surface values are current', () => {
-  assert.ok(activeNarrativeDocuments(root).includes('ROADMAP.md'));
-  const result = validateProjectState({ repoRoot: root });
-  assert.equal(result.factBlocks, 8);
-  assert.ok(result.activeDocuments > 50);
-  assert.equal(result.staleNarratives, 0);
+  const previous = process.env.GIT_DIR;
+  try {
+    process.env.GIT_DIR = resolve(root, '.metrics/nonexistent-injected-git-dir');
+    assert.ok(activeNarrativeDocuments(root).includes('ROADMAP.md'));
+    const result = validateProjectState({ repoRoot: root });
+    assert.equal(result.factBlocks, 8);
+    assert.ok(result.activeDocuments > 50);
+    assert.equal(result.staleNarratives, 0);
+  } finally {
+    if (previous === undefined) delete process.env.GIT_DIR;
+    else process.env.GIT_DIR = previous;
+  }
 });

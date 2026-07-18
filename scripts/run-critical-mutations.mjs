@@ -145,6 +145,25 @@ const mutants = [
       return result.allowed ? 'abbreviated forbidden Git option accepted' : null;
     },
   },
+  {
+    id: 'trusted-git-environment-inheritance-restored',
+    source: 'scripts/lib/git-source-snapshot.mjs',
+    dependencies: ['scripts/lib/portable-path.mjs', 'framework/io/portable-path.mjs'],
+    from: "  return {\n    GIT_NO_REPLACE_OBJECTS: '1',",
+    to: "  return {\n    ...process.env,\n    GIT_NO_REPLACE_OBJECTS: '1',",
+    async test(module) {
+      const key = 'NOVA_MUTATION_HOSTILE_ENVIRONMENT';
+      const previous = process.env[key];
+      try {
+        process.env[key] = 'must-not-reach-git';
+        return Object.hasOwn(module.trustedGitEnvironment({ directory: '/trusted/git' }), key)
+          ? 'caller environment reached trusted Git' : null;
+      } finally {
+        if (previous === undefined) delete process.env[key];
+        else process.env[key] = previous;
+      }
+    },
+  },
 ];
 
 function validateProbeReason(mutant, phase, reason) {

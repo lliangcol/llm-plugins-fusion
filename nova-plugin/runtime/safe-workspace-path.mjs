@@ -17,7 +17,6 @@ import path, { basename, delimiter, dirname, isAbsolute, relative, resolve, sep 
  * @property {string} [cwd]
  * @property {string[]} [artifactRoots]
  * @property {boolean} [mustExist]
- * @property {boolean} [protectedTarget]
  */
 
 function comparable(value) {
@@ -328,7 +327,6 @@ export function resolveWorkspaceTarget({
   cwd = projectRoot,
   artifactRoots = [],
   mustExist = false,
-  protectedTarget = false,
 } = {}) {
   if (typeof filePath !== 'string' || filePath.trim() === '') throw new Error('file path must be a non-empty string');
   if (typeof projectRoot !== 'string' || projectRoot.trim() === '') throw new Error('project root is required');

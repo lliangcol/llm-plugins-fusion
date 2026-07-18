@@ -16,11 +16,11 @@ import {
   lstatSync,
   statSync,
 } from 'node:fs';
-import { spawnSync } from 'node:child_process';
 import { basename, dirname, extname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { secretChecks } from '../nova-plugin/runtime/secret-rules.mjs';
 import { writeArtifactFileAtomically } from './lib/artifact-output.mjs';
+import { gitTrackedFiles } from './lib/git-source-snapshot.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
@@ -204,42 +204,27 @@ function isHistorical(rootDir, absPath) {
   return hasPathSegments(rootDir, absPath, historicalSegments);
 }
 
-const trackedFilesByRoot = new Map();
-
-function trackedFiles(rootDir) {
-  if (trackedFilesByRoot.has(rootDir)) return trackedFilesByRoot.get(rootDir);
-  const result = spawnSync('git', ['ls-files', '-z'], {
-    cwd: rootDir,
-    encoding: 'utf8',
-    shell: false,
-  });
-  if (result.error || result.status !== 0) {
-    throw new Error(result.error?.message || result.stderr || 'git ls-files failed');
+function trackedFiles(rootDir, { required = true } = {}) {
+  try {
+    const deletedPaths = new Set(gitTrackedFiles(rootDir, { deleted: true }));
+    return gitTrackedFiles(rootDir).filter((path) => !deletedPaths.has(path));
+  } catch (error) {
+    if (!required && /not a git repository/u.test(error?.message ?? '')) return null;
+    throw error;
   }
-  const deleted = spawnSync('git', ['ls-files', '-z', '--deleted'], {
-    cwd: rootDir,
-    encoding: 'utf8',
-    shell: false,
-  });
-  if (deleted.error || deleted.status !== 0) {
-    throw new Error(deleted.error?.message || deleted.stderr || 'git ls-files --deleted failed');
-  }
-  const deletedPaths = new Set(deleted.stdout.split('\0').filter(Boolean).map((path) => path.replace(/\\/g, '/')));
-  const files = result.stdout.split('\0').filter(Boolean).map((path) => path.replace(/\\/g, '/')).filter((path) => !deletedPaths.has(path));
-  trackedFilesByRoot.set(rootDir, files);
-  return files;
 }
 
-function hasTrackedFilesUnder(rootDir, absPath) {
+function hasTrackedFilesUnder(rootDir, absPath, repositoryFiles) {
+  if (repositoryFiles === null) return false;
   const prefix = `${rel(rootDir, absPath).replace(/\/?$/, '/')}`;
-  return trackedFiles(rootDir).some((path) => path.startsWith(prefix));
+  return repositoryFiles.some((path) => path.startsWith(prefix));
 }
 
-function shouldSkipDir(rootDir, absPath) {
+function shouldSkipDir(rootDir, absPath, repositoryFiles) {
   const name = rel(rootDir, absPath).split('/').at(-1);
   if (alwaysSkipDirs.has(name) || name.startsWith('.runtime-smoke-')) return true;
   if (!generatedSkipDirs.has(name)) return false;
-  return !hasTrackedFilesUnder(rootDir, absPath);
+  return !hasTrackedFilesUnder(rootDir, absPath, repositoryFiles);
 }
 
 function isTextCandidate(absPath, fileName, size, { strict = false } = {}) {
@@ -261,11 +246,11 @@ function isTextCandidate(absPath, fileName, size, { strict = false } = {}) {
   }
 }
 
-function walk(rootDir, dir, files = []) {
+function walk(rootDir, dir, repositoryFiles, files = []) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     const abs = resolve(dir, entry.name);
     if (entry.isDirectory()) {
-      if (!shouldSkipDir(rootDir, abs)) walk(rootDir, abs, files);
+      if (!shouldSkipDir(rootDir, abs, repositoryFiles)) walk(rootDir, abs, repositoryFiles, files);
     } else if (entry.isFile()) {
       files.push(abs);
     }
@@ -344,7 +329,7 @@ function recordFinding({ rootDir, absPath, src, match, label, allowlist, errors,
   }
 }
 
-function recordPathFinding({ rootDir, relPath, label, errors, redacted = '<redacted>' }) {
+function recordPathFinding({ relPath, label, errors, redacted = '<redacted>' }) {
   errors.push({
     path: relPath,
     line: 1,
@@ -359,14 +344,8 @@ export function formatFinding(finding) {
   return `${prefix}${finding.path}:${finding.line} ${finding.label}: ${finding.redacted}`;
 }
 
-function trackedCodexArtifacts(rootDir) {
-  const result = spawnSync('git', ['ls-files', '-z', '--', '.codex'], {
-    cwd: rootDir,
-    encoding: 'utf8',
-    shell: false,
-  });
-  if (result.error || result.status !== 0 || !result.stdout) return [];
-  return result.stdout.split('\0').filter(Boolean).map((path) => path.replace(/\\/g, '/'));
+function trackedCodexArtifacts(repositoryFiles) {
+  return repositoryFiles?.filter((path) => path === '.codex' || path.startsWith('.codex/')) ?? [];
 }
 
 export function scanDistributionRisk(options = {}) {
@@ -377,10 +356,10 @@ export function scanDistributionRisk(options = {}) {
   const readTextFile = options.readTextFile ?? readFileSync;
   const errors = [];
   const warnings = [];
+  const repositoryFiles = trackedFiles(rootDir, { required: mode === 'release' });
 
-  for (const artifact of trackedCodexArtifacts(rootDir)) {
+  for (const artifact of trackedCodexArtifacts(repositoryFiles)) {
     recordPathFinding({
-      rootDir,
       relPath: artifact,
       label: 'tracked Codex runtime artifact',
       errors,
@@ -388,15 +367,14 @@ export function scanDistributionRisk(options = {}) {
   }
 
   const files = mode === 'release'
-    ? trackedFiles(rootDir).map((path) => resolve(rootDir, path))
-    : walk(rootDir, rootDir);
+    ? repositoryFiles.map((path) => resolve(rootDir, path))
+    : walk(rootDir, rootDir, repositoryFiles);
   for (const file of files) {
     let src;
     try {
       const lstat = lstatSync(file);
       if (lstat.isSymbolicLink()) {
         recordPathFinding({
-          rootDir,
           relPath: rel(rootDir, file),
           label: 'tracked symbolic link requires distribution review',
           errors,
@@ -408,7 +386,6 @@ export function scanDistributionRisk(options = {}) {
       if (!isTextCandidate(file, basename(file), stats.size, { strict: mode === 'release' })) continue;
       if (stats.size > MAX_TEXT_FILE_BYTES) {
         recordPathFinding({
-          rootDir,
           relPath: rel(rootDir, file),
           label: `oversized text file (${stats.size} bytes; limit ${MAX_TEXT_FILE_BYTES} bytes)`,
           errors,

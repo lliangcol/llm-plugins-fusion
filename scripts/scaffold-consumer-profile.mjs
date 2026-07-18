@@ -55,6 +55,7 @@ inside the consumer repository or private documentation, not in this public repo
 `;
 }
 
+/** @returns {never} */
 function fail(message) {
   console.error(`ERROR: ${message}`);
   console.error('');

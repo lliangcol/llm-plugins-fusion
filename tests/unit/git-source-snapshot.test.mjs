@@ -10,14 +10,23 @@ import fs, {
   symlinkSync,
   writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { devNull, tmpdir } from 'node:os';
 import { delimiter, resolve } from 'node:path';
 import test from 'node:test';
 import {
+  assertCleanGitRepository,
   assertNoHiddenGitIndexFlags,
+  gitChangedFiles,
+  gitCommitTimestamp,
+  gitExactTag,
   gitHead,
+  gitIsAncestor,
+  gitResolveCommit,
   gitSnapshotReader,
   gitWorktreeSourceReader,
+  gitTrackedFiles,
+  gitUntrackedFiles,
+  trustedGitEnvironment,
 } from '../../scripts/lib/git-source-snapshot.mjs';
 
 function git(root, args, options = {}) {
@@ -39,6 +48,19 @@ function commitAll(root, message) {
   return git(root, ['rev-parse', 'HEAD']);
 }
 
+test('trusted Git environment contains only authored local-read controls', () => {
+  assert.deepEqual(trustedGitEnvironment({ directory: '/trusted/git' }), {
+    GIT_NO_REPLACE_OBJECTS: '1',
+    GIT_OPTIONAL_LOCKS: '0',
+    GIT_TERMINAL_PROMPT: '0',
+    GIT_CONFIG_NOSYSTEM: '1',
+    GIT_CONFIG_GLOBAL: devNull,
+    LANG: 'C',
+    LC_ALL: 'C',
+    PATH: '/trusted/git',
+  });
+});
+
 test('trusted Git reads ignore inherited repository and config injection', (t) => {
   const intended = repository(t, 'nova-git-source-intended-');
   const injected = repository(t, 'nova-git-source-injected-');
@@ -56,14 +78,66 @@ test('trusted Git reads ignore inherited repository and config injection', (t) =
     process.env.GIT_CONFIG_KEY_0 = 'core.worktree';
     process.env.GIT_CONFIG_VALUE_0 = injected;
     assert.equal(gitHead(intended), intendedHead);
+    assert.deepEqual(gitTrackedFiles(intended), ['intended.txt']);
     assert.deepEqual(gitWorktreeSourceReader(intended).listFiles('intended.txt'), ['intended.txt']);
     assert.doesNotThrow(() => assertNoHiddenGitIndexFlags(intended));
+    assert.equal(assertCleanGitRepository(intended), intendedHead);
   } finally {
     for (const key of keys) {
       if (original[key] === undefined) delete process.env[key];
       else process.env[key] = original[key];
     }
   }
+});
+
+test('clean repository proof binds HEAD, index, physical bytes, and untracked inventory', (t) => {
+  const root = repository(t, 'nova-git-source-clean-state-');
+  writeFileSync(resolve(root, '.gitignore'), 'ignored.txt\n');
+  writeFileSync(resolve(root, 'tracked.txt'), 'baseline\n');
+  const head = commitAll(root, 'baseline');
+  writeFileSync(resolve(root, 'ignored.txt'), 'allowed ignored runtime output\n');
+
+  assert.equal(assertCleanGitRepository(root), head);
+  assert.deepEqual(gitWorktreeSourceReader(root).listFiles(''), ['.gitignore', 'tracked.txt']);
+  assert.deepEqual(gitSnapshotReader(root, head).listFiles(''), ['.gitignore', 'tracked.txt']);
+
+  writeFileSync(resolve(root, 'tracked.txt'), 'physical drift\n');
+  assert.throws(() => assertCleanGitRepository(root), /physical worktree/u);
+  writeFileSync(resolve(root, 'tracked.txt'), 'baseline\n');
+
+  writeFileSync(resolve(root, 'tracked.txt'), 'staged drift\n');
+  git(root, ['add', 'tracked.txt']);
+  writeFileSync(resolve(root, 'tracked.txt'), 'baseline\n');
+  assert.throws(() => assertCleanGitRepository(root), /index differs/u);
+  git(root, ['reset', '--quiet', 'HEAD', '--', 'tracked.txt']);
+
+  writeFileSync(resolve(root, 'untracked.txt'), 'untracked\n');
+  assert.throws(() => assertCleanGitRepository(root), /untracked non-ignored/u);
+  rmSync(resolve(root, 'untracked.txt'));
+
+  git(root, ['update-index', '--skip-worktree', 'tracked.txt']);
+  writeFileSync(resolve(root, 'tracked.txt'), 'hidden drift\n');
+  assert.throws(() => assertCleanGitRepository(root), /hidden-index flags|skip-worktree/u);
+});
+
+test('trusted Git inventories report tracked, changed, and untracked paths', (t) => {
+  const root = repository(t, 'nova-git-source-inventory-');
+  writeFileSync(resolve(root, 'tracked.txt'), 'baseline\n');
+  const base = commitAll(root, 'baseline');
+  writeFileSync(resolve(root, 'tracked.txt'), 'changed\n');
+  writeFileSync(resolve(root, 'untracked.txt'), 'untracked\n');
+  assert.deepEqual(gitTrackedFiles(root), ['tracked.txt']);
+  assert.deepEqual(gitChangedFiles(root, base), ['tracked.txt']);
+  assert.deepEqual(gitUntrackedFiles(root), ['untracked.txt']);
+  assert.equal(gitResolveCommit(root, 'HEAD'), base);
+  assert.equal(gitIsAncestor(root, base), true);
+  assert.equal(Number.isFinite(Date.parse(gitCommitTimestamp(root))), true);
+  assert.equal(gitExactTag(root), null);
+  git(root, ['tag', 'v0.0.0-test']);
+  assert.equal(gitExactTag(root), 'v0.0.0-test');
+  assert.throws(() => gitChangedFiles(root, '--ext-diff'), /non-option ref/u);
+  assert.throws(() => gitResolveCommit(root, '--verify'), /non-option ref/u);
+  assert.throws(() => gitExactTag(root, 'missing-ref'), /could not be resolved/u);
 });
 
 test('worktree manifests ignore machine-local excludes and worktree redirects but preserve repository .gitignore', (t) => {

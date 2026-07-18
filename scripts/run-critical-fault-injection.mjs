@@ -2,7 +2,6 @@
 /** Aggregate the fault-injection tests that protect critical runtime boundaries. */
 
 import { spawnSync } from 'node:child_process';
-import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { repoRoot } from './lib/repo-root.mjs';
 

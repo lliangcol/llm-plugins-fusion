@@ -2,7 +2,6 @@
 /** Run public-safe live workflow probes against an exact assistant CLI. */
 
 import { createHash } from 'node:crypto';
-import { spawnSync } from 'node:child_process';
 import { accessSync, closeSync, constants as fsConstants, cpSync, existsSync, fstatSync, lstatSync, mkdirSync, mkdtempSync, openSync, readFileSync, readdirSync, realpathSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
 import { basename, delimiter, dirname, isAbsolute, resolve } from 'node:path';
@@ -13,7 +12,7 @@ import { resolveCompiledVariantContract } from '../framework/compiler/compile-ru
 import { repoRoot } from './lib/repo-root.mjs';
 import { loadNovaWorkflowModelV6FromReader } from './lib/workflow-model.mjs';
 import { assertPublicEvidenceSafe, classifyToolEvidence, deriveAdapterEvidence, normalizeClaudeLoadSignals, normalizePublicAssistantVersion, normalizeUsage } from './lib/evaluation-evidence.mjs';
-import { gitHead, gitSnapshotReader, gitWorktreeSourceReader } from './lib/git-source-snapshot.mjs';
+import { assertCleanGitRepository, gitExactTag, gitHead, gitSnapshotReader, gitWorktreeSourceReader } from './lib/git-source-snapshot.mjs';
 import { buildLiveExecutionPlan, evaluateSemanticCase, governedLiveProfile, LIVE_EXECUTABLE_PROVENANCE_UNVERIFIED, liveEvaluationSourcePaths, recomputeLiveSummary, validateRelativeOutputPath } from './lib/live-evaluation-plan.mjs';
 import { createPhysicalReadBoundary, preparePhysicalFileWrite, readPhysicalFile, writePhysicalFileAtomically } from './lib/physical-read-boundary.mjs';
 import { assertPortableRelativePath } from './lib/portable-path.mjs';
@@ -173,7 +172,6 @@ function assertPrerequisiteAdapterEvidence(path, entry, assistantId, condition) 
         assistant: assistantId,
         condition,
         adapterStaged: entry.adapterStaged,
-        toolEvidence: {},
         claudeLoadSignals: entry.adapterLoadSignals,
       })
     : {
@@ -846,13 +844,16 @@ export function setupHarness(assistant, sandboxRoot, condition, sourceReader) {
   };
 }
 
-export function selectLiveSourceReader(repoRoot, initialCommitResult, initialStatusResult) {
-  const baseCommit = initialCommitResult?.status === 0 && /^[a-f0-9]{40}$/u.test(String(initialCommitResult.stdout).trim())
-    ? String(initialCommitResult.stdout).trim()
-    : null;
-  const initiallyClean = baseCommit !== null
-    && initialStatusResult?.status === 0
-    && String(initialStatusResult.stdout).trim() === '';
+export function selectLiveSourceReader(repoRoot) {
+  let baseCommit = null;
+  let initiallyClean = false;
+  try {
+    baseCommit = gitHead(repoRoot);
+    assertCleanGitRepository(repoRoot, baseCommit);
+    initiallyClean = true;
+  } catch {
+    initiallyClean = false;
+  }
   return {
     baseCommit,
     initiallyClean,
@@ -869,9 +870,7 @@ export async function runLiveEvaluation(options, {
   prerequisiteEvidenceFn = assertLivePrerequisiteEvidence,
   sourceSelectionFn = selectLiveSourceReader,
 } = {}) {
-  const initialCommitResult = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false });
-  const initialStatusResult = spawnSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8', shell: false });
-  const { baseCommit, initiallyClean, sourceReader } = sourceSelectionFn(root, initialCommitResult, initialStatusResult);
+  const { baseCommit, initiallyClean, sourceReader } = sourceSelectionFn(root);
   if (options.profile !== 'pilot' && !initiallyClean) {
     throw new Error(`${options.profile} live evaluation requires a clean worktree so prerequisite evidence and executed semantics bind the same commit source`);
   }
@@ -1000,7 +999,7 @@ export async function runLiveEvaluation(options, {
         const claudeLoadSignals = options.assistant === 'claude-code' && call.debugFile && existsSync(call.debugFile)
           ? normalizeClaudeLoadSignals(readFileSync(call.debugFile, 'utf8'))
           : [];
-        const adapterEvidence = deriveAdapterEvidence({ assistant: options.assistant, condition: options.condition, adapterStaged, toolEvidence, events: codexEvents, claudeLoadSignals });
+        const adapterEvidence = deriveAdapterEvidence({ assistant: options.assistant, condition: options.condition, adapterStaged, events: codexEvents, claudeLoadSignals });
         const after = treeDigest(workspace);
         const zeroProjectWrites = before === after;
         const processFailure = classifyProcessFailure(processResult);
@@ -1039,16 +1038,19 @@ export async function runLiveEvaluation(options, {
   executable.verify?.();
   const summary = recomputeLiveSummary(results, options.attempts, options.assistant, options.condition);
   const adapterPath = options.assistant === 'claude-code' ? 'workflow-specs/adapters/claude.json' : 'adapters/codex/AGENTS.md';
-  const finalCommitResult = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false });
-  const finalStatusResult = spawnSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8', shell: false });
-  const tagResult = spawnSync('git', ['describe', '--tags', '--exact-match', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false });
-  const stableCommit = initialCommitResult.status === 0
-    && finalCommitResult.status === 0
-    && initialCommitResult.stdout.trim() === finalCommitResult.stdout.trim();
-  const clean = initiallyClean
-    && stableCommit
-    && finalStatusResult.status === 0
-    && finalStatusResult.stdout.trim() === '';
+  let clean = false;
+  let releaseTag = null;
+  if (baseCommit !== null) {
+    try {
+      releaseTag = gitExactTag(root, baseCommit);
+      if (initiallyClean) {
+        assertCleanGitRepository(root, baseCommit);
+        clean = true;
+      }
+    } catch {
+      clean = false;
+    }
+  }
   const allAdapterStaged = options.condition === 'plugin-enabled' && results.every((entry) => entry.adapterStaged);
   const loadStatuses = [...new Set(results.map((entry) => entry.adapterLoadObserved))];
   const aggregateLoadStatus = loadStatuses.length === 1 ? loadStatuses[0] : 'unavailable';
@@ -1060,7 +1062,7 @@ export async function runLiveEvaluation(options, {
     workflowSpecSha256: sourceReader.sha256('workflow-specs/workflows.v6.json'),
     sourceDigests: Object.fromEntries(sourcePaths.map((path) => [path, sourceReader.sha256(path)])),
     baseCommit: baseCommit ?? 'unavailable',
-    releaseTag: tagResult.status === 0 ? tagResult.stdout.trim() : null,
+    releaseTag,
     sourceState: clean ? 'clean-commit' : 'working-tree-with-uncommitted-changes; baseCommit does not contain the digest-bound source state',
     condition: options.condition,
     profile: options.profile,
