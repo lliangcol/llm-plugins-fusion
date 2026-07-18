@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "sourceDigests": {
-    "packageScripts": "sha256:826dbdc3cffccbb4e39ba5387a477419cbba6b621683d1a45b62f8261944f4b0",
+    "packageScripts": "sha256:48b129209ea8bd8ee89c9d9b5362d8e85f110b6391fd438beec6bac631ed4280",
     "validationRegistry": "sha256:8ea215e8c2839ff411620d331ed595bf6f823d68cb7975b5cc684142dd79aa41",
     "productLanes": "sha256:c888525caa05c1a9509996ddf9543ea84edec6379fc511a5584c86fbe910ce94"
   },
@@ -389,12 +389,6 @@
       "scope": "maintainer"
     },
     {
-      "name": "validate:facts",
-      "command": "node scripts/generate-fact-graph.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
       "name": "validate:github-workflows",
       "command": "node scripts/validate-github-workflows.mjs",
       "owner": "maintainer task catalog",
@@ -403,12 +397,6 @@
     {
       "name": "validate:governance-freshness",
       "command": "node scripts/validate-governance-freshness.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "validate:hook-truth",
-      "command": "node scripts/validate-hooks.mjs",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },

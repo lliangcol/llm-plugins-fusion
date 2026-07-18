@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { REQUIRED_NODE_MAJOR, nodeMajorVersion } from './lib/node-version.mjs';
-import { resolveBashCommand, trustedHookBashIdentity } from './lib/bash-command.mjs';
+import { diagnosticHookEnvironment, projectFreeProbeEnvironment, resolveBashCommand } from './lib/bash-command.mjs';
 import {
   assertArtifactRootsOutsideExecutableSearch,
   configuredArtifactRoots,
@@ -14,19 +14,15 @@ import { inspectProjectHookSettings } from '../nova-plugin/runtime/hook-bootstra
 import { captureProcess } from './lib/process-runner.mjs';
 import { diagnosticReport, diagnosticResult, loadReasonRegistry, renderDiagnosticReport, writeDiagnosticReport } from './lib/diagnostics.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
+import { gitChangedFiles, gitExactTag, gitUntrackedFiles } from './lib/git-source-snapshot.mjs';
 
 const root = repoRoot(import.meta.url);
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 
-async function commandResult(command, args = ['--version']) {
-  const result = await captureProcess(`doctor ${command}`, command, args, { cwd: root, timeoutMs: 30_000 });
+async function commandResult(command, args = ['--version'], env = process.env) {
+  const result = await captureProcess(`doctor ${command}`, command, args, { cwd: root, env, timeoutMs: 30_000 });
   const output = `${result.stdout ?? ''}${result.stderr ?? ''}`.split(/\r?\n/u).map((line) => line.trim()).find(Boolean);
   return { ok: result.ok, detail: output || result.errorMessage || 'not available' };
-}
-
-async function gitValue(args) {
-  const result = await captureProcess(`git ${args.join(' ')}`, 'git', args, { cwd: root, timeoutMs: 30_000 });
-  return result.ok ? (result.stdout.trim() || null) : null;
 }
 
 export function capabilityLevel({ guardedAvailable, codexAvailable, codexAuthenticated }) {
@@ -44,19 +40,22 @@ export async function buildDoctorReport() {
   const metadata = readJson('.claude-plugin/marketplace.metadata.json');
   const metadataEntry = metadata.plugins?.find((entry) => entry.name === plugin.name);
 
+  let probeEnv = { ...process.env, PATH: '' };
+  try { probeEnv = projectFreeProbeEnvironment(root); } catch { /* required probes fail closed below */ }
+
   const major = nodeMajorVersion();
   add({ check: 'Node.js', status: major !== null && major >= REQUIRED_NODE_MAJOR ? 'passed' : 'failed', reasonCode: major !== null && major >= REQUIRED_NODE_MAJOR ? 'CHECK_PASSED' : 'NODE_VERSION_UNSUPPORTED', expected: `>=${REQUIRED_NODE_MAJOR}`, actual: process.version });
-  const git = await commandResult('git');
+  const git = await commandResult('git', ['--version'], probeEnv);
   add({ check: 'Git', status: git.ok ? 'passed' : 'failed', reasonCode: git.ok ? 'CHECK_PASSED' : 'REQUIRED_TOOL_UNAVAILABLE', actual: git.detail });
   let codexAvailable = false;
   for (const [label, tool] of [['Claude CLI', 'claude'], ['Codex CLI', 'codex'], ['ShellCheck', 'shellcheck'], ['actionlint', 'actionlint']]) {
-    const result = await commandResult(tool);
+    const result = await commandResult(tool, ['--version'], probeEnv);
     if (tool === 'codex') codexAvailable = result.ok;
     add({ check: label, status: result.ok ? 'passed' : 'skipped', reasonCode: result.ok ? 'CHECK_PASSED' : 'OPTIONAL_TOOL_UNAVAILABLE', actual: result.detail, skippedReason: result.ok ? undefined : `${label} is optional for deterministic local checks.` });
   }
-  const bashName = resolveBashCommand();
-  const bash = await commandResult(bashName);
-  const bashCapability = bash.ok ? await commandResult(bashName, ['-c', 'set -euo pipefail; values=(); values+=(ok); [[ ${#values[@]} -eq 1 ]]; cat <(printf compatible)']) : { ok: false, detail: 'not available' };
+  const bashName = resolveBashCommand(process.platform, probeEnv);
+  const bash = await commandResult(bashName, ['--version'], probeEnv);
+  const bashCapability = bash.ok ? await commandResult(bashName, ['-p', '-c', 'set -euo pipefail; values=(); values+=(ok); [[ ${#values[@]} -eq 1 ]]; cat <(printf compatible)'], probeEnv) : { ok: false, detail: 'not available' };
   add({ check: 'Bash', status: bash.ok && bashCapability.ok && bashCapability.detail === 'compatible' ? 'passed' : 'skipped', reasonCode: bash.ok && bashCapability.ok && bashCapability.detail === 'compatible' ? 'CHECK_PASSED' : 'BASH_CAPABILITY_UNAVAILABLE', actual: bash.ok ? bash.detail : 'not available', skippedReason: bash.ok && bashCapability.ok ? undefined : 'Bash-dependent checks cannot run.' });
   const projectSettingsTrust = inspectProjectHookSettings(root);
   add({
@@ -79,19 +78,31 @@ export async function buildDoctorReport() {
     reasonCode: artifactRootTrust.trusted ? 'CHECK_PASSED' : 'HOOK_ARTIFACT_ROOT_UNTRUSTED',
     actual: artifactRootTrust.trusted ? (artifactRoots.length ? artifactRoots.join(', ') : 'none configured') : artifactRootTrust.reason,
   });
-  let hookBootstrap;
+  let hookEnvironment;
   try {
-    hookBootstrap = trustedHookBashIdentity(root, process.env, artifactRoots);
+    hookEnvironment = diagnosticHookEnvironment(root, {
+      env: process.env,
+      lifecycleEvent: 'doctor',
+      lifecycleScript: packageJson.scripts.doctor,
+      writableRoots: artifactRoots,
+    });
   } catch (error) {
-    hookBootstrap = { trusted: false, identity: null, reason: error.message };
+    hookEnvironment = { env: process.env, normalized: false, removedEntries: [], trust: { trusted: false, identity: null, reason: error.message } };
   }
+  const hookBootstrap = hookEnvironment.trust;
+  add({
+    check: 'Diagnostic invocation PATH',
+    status: hookEnvironment.normalized ? 'warn' : (hookBootstrap.trusted ? 'passed' : 'failed'),
+    reasonCode: hookEnvironment.normalized ? 'NPM_LIFECYCLE_PATH_NORMALIZED' : (hookBootstrap.trusted ? 'CHECK_PASSED' : 'HOOK_BOOTSTRAP_UNTRUSTED'),
+    actual: hookEnvironment.normalized ? `removed ${hookEnvironment.removedEntries.join(', ')}` : (hookBootstrap.trusted ? 'raw PATH required no normalization' : hookBootstrap.reason),
+  });
   add({
     check: 'Hook bootstrap Bash',
     status: hookBootstrap.trusted ? 'passed' : 'failed',
     reasonCode: hookBootstrap.trusted ? 'CHECK_PASSED' : 'HOOK_BOOTSTRAP_UNTRUSTED',
     actual: hookBootstrap.identity?.physical ?? hookBootstrap.reason,
   });
-  const auth = await commandResult('codex', ['login', 'status']);
+  const auth = await commandResult('codex', ['login', 'status'], probeEnv);
   add({ check: 'Codex authentication', status: auth.ok ? 'passed' : 'skipped', reasonCode: auth.ok ? 'CHECK_PASSED' : 'OPTIONAL_AUTH_UNAVAILABLE', actual: auth.detail, skippedReason: auth.ok ? undefined : 'Credentialed assistant evidence is optional and separately authorized.' });
 
   let guardedAvailable = false;
@@ -118,11 +129,19 @@ export async function buildDoctorReport() {
 
   add({ check: 'Package/plugin version', status: packageJson.version === plugin.version ? 'passed' : 'failed', reasonCode: packageJson.version === plugin.version ? 'CHECK_PASSED' : 'VERSION_MISMATCH', expected: plugin.version, actual: packageJson.version });
   add({ check: 'Registry metadata date', status: metadataEntry?.['last-updated'] ? 'passed' : 'warn', reasonCode: metadataEntry?.['last-updated'] ? 'CHECK_PASSED' : 'METADATA_MISSING', actual: metadataEntry?.['last-updated'] ?? 'missing' });
-  const worktree = await gitValue(['status', '--short']);
-  add({ check: 'Git working tree', status: worktree ? 'warn' : 'passed', reasonCode: worktree ? 'WORKTREE_DIRTY' : 'CHECK_PASSED', actual: worktree ? 'working tree has changes' : 'clean' });
-  const tag = await gitValue(['describe', '--tags', '--exact-match', 'HEAD']);
-  add({ check: 'Exact release tag', status: tag ? 'passed' : 'warn', reasonCode: tag ? 'CHECK_PASSED' : 'DEVELOPMENT_SNAPSHOT', actual: tag ?? 'none' });
-  const drift = await commandResult(process.execPath, ['scripts/generate-registry.mjs']);
+  try {
+    const worktree = [...gitChangedFiles(root, 'HEAD'), ...gitUntrackedFiles(root)];
+    add({ check: 'Git working tree', status: worktree.length ? 'warn' : 'passed', reasonCode: worktree.length ? 'WORKTREE_DIRTY' : 'CHECK_PASSED', actual: worktree.length ? 'working tree has changes' : 'clean' });
+  } catch (error) {
+    add({ check: 'Git working tree', status: 'failed', reasonCode: 'REQUIRED_TOOL_UNAVAILABLE', actual: error.message });
+  }
+  try {
+    const tag = gitExactTag(root);
+    add({ check: 'Exact release tag', status: tag ? 'passed' : 'warn', reasonCode: tag ? 'CHECK_PASSED' : 'DEVELOPMENT_SNAPSHOT', actual: tag ?? 'none' });
+  } catch (error) {
+    add({ check: 'Exact release tag', status: 'failed', reasonCode: 'REQUIRED_TOOL_UNAVAILABLE', actual: error.message });
+  }
+  const drift = await commandResult(process.execPath, ['scripts/generate-registry.mjs'], probeEnv);
   add({ check: 'Generated registry drift', status: drift.ok ? 'passed' : 'failed', reasonCode: drift.ok ? 'CHECK_PASSED' : 'GENERATED_DRIFT', actual: drift.ok ? 'current' : drift.detail });
   return { report: diagnosticReport(command, results), capability: capabilityLevel({ guardedAvailable, codexAvailable, codexAuthenticated: auth.ok }) };
 }

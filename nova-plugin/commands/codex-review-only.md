@@ -2,7 +2,7 @@
 id: codex-review-only
 stage: review
 title: /nova-plugin:codex-review-only
-description: "Run Codex review only and write a structured review artifact without modifying code."
+description: "Produce an external Codex review artifact without modifying project code."
 destructive-actions: low
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit

@@ -3,11 +3,11 @@
   "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/complexity-budget.schema.json",
   "title": "Control Plane Complexity Budget",
   "type": "object",
-  "required": ["schemaVersion", "maximumPackageScripts", "maximumValidationTasks", "maximumWorkflowFiles", "maximumGovernanceSources", "maximumGenerators", "maximumReleaseYamlLogicLines", "maximumManualCurrentFacts", "maximumGeneratedProjectionLayers", "maximumReleaseStateTransitions"],
+  "required": ["schemaVersion", "maximumPackageScripts", "maximumValidationTasks", "maximumWorkflowFiles", "maximumGovernanceSources", "maximumGenerators", "maximumReleaseYamlLogicLines", "maximumManualCurrentFacts", "maximumGeneratedProjectionLayers", "maximumReleaseStateTransitions", "promptSurface"],
   "additionalProperties": false,
   "properties": {
     "$schema": { "type": "string" },
-    "schemaVersion": { "const": 1 },
+    "schemaVersion": { "const": 2 },
     "maximumPackageScripts": { "type": "integer", "minimum": 1 },
     "maximumValidationTasks": { "type": "integer", "minimum": 1 },
     "maximumWorkflowFiles": { "type": "integer", "minimum": 1 },
@@ -16,6 +16,16 @@
     "maximumReleaseYamlLogicLines": { "type": "integer", "minimum": 1 },
     "maximumManualCurrentFacts": { "const": 0 },
     "maximumGeneratedProjectionLayers": { "type": "integer", "minimum": 1 },
-    "maximumReleaseStateTransitions": { "type": "integer", "minimum": 1 }
+    "maximumReleaseStateTransitions": { "type": "integer", "minimum": 1 },
+    "promptSurface": {
+      "type": "object",
+      "required": ["maximumInitialLoadFiles", "maximumInitialLoadEstimatedTokens", "maximumPotentialCrossFileDuplicateRatio"],
+      "additionalProperties": false,
+      "properties": {
+        "maximumInitialLoadFiles": { "type": "integer", "minimum": 1 },
+        "maximumInitialLoadEstimatedTokens": { "type": "integer", "minimum": 1 },
+        "maximumPotentialCrossFileDuplicateRatio": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    }
   }
 }

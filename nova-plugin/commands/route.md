@@ -2,7 +2,7 @@
 id: route
 stage: explore
 title: /nova-plugin:route
-description: "Recommend the next nova command, skill, core agent, and capability packs for a request."
+description: "Choose the shortest safe next workflow route before execution starts."
 destructive-actions: none
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash

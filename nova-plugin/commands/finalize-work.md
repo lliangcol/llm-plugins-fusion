@@ -2,7 +2,7 @@
 id: finalize-work
 stage: finalize
 title: /nova-plugin:finalize-work
-description: "Finalize completed work with handoff, validation, and commit or PR-ready summary text."
+description: "Package completed work into review-ready handoff text without changing the completed state."
 destructive-actions: none
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit

@@ -5,7 +5,7 @@
   "request": "I need to update public docs, verify links, and summarize validation for a small workflow change.",
   "expected": {
     "nextCommand": "/nova-plugin:explore",
-    "stage": "Explore",
+    "stage": "explore",
     "packs": ["docs"],
     "requiredInputs": [
       "changed documentation paths",

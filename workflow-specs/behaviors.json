@@ -1893,7 +1893,7 @@
             "INPUT",
             "SCOPE"
           ],
-          "description": "Code, design, tests, logs, or diff to review."
+          "description": "Materialized code, design, tests, logs, patch text, or an explicit readable file/path set to review; a semantic label such as current branch or PR is not sufficient by itself."
         },
         {
           "name": "LEVEL",
@@ -2017,10 +2017,13 @@
       "invariants": [
         "Do not modify code or provide implementation patches.",
         "Review only supplied or approved evidence.",
+        "Treat a branch, commit range, PR, or diff label as unresolved until the patch or an explicit readable file/path set is materialized in REVIEW_SCOPE.",
+        "Do not switch to an external Codex review profile unless the user explicitly selects that profile and its runtime approvals are satisfied.",
         "Clearly label facts, inferences, and assumptions."
       ],
       "stopConditions": [
         "REVIEW_SCOPE is unresolved.",
+        "REVIEW_SCOPE names a branch, commit range, PR, or diff but supplies neither materialized patch content nor an explicit readable file/path set.",
         "LEVEL is not an exact allowed value.",
         "MODE is not an exact allowed value.",
         "REVIEW_PROFILE is not an exact allowed value.",
@@ -2029,7 +2032,7 @@
       "workflowSteps": [
         {
           "id": "resolve-scope",
-          "action": "Resolve review scope, exact level, exact mode, and exact review profile."
+          "action": "Resolve materialized review evidence, exact level, exact mode, and exact review profile; request patch text or an explicit readable file/path set when only a semantic branch, commit range, PR, or diff label was provided."
         },
         {
           "id": "route",

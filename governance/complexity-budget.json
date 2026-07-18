@@ -1,7 +1,7 @@
 {
   "$schema": "../schemas/complexity-budget.schema.json",
-  "schemaVersion": 1,
-  "maximumPackageScripts": 80,
+  "schemaVersion": 2,
+  "maximumPackageScripts": 78,
   "maximumValidationTasks": 50,
   "maximumWorkflowFiles": 10,
   "maximumGovernanceSources": 18,
@@ -9,5 +9,10 @@
   "maximumReleaseYamlLogicLines": 250,
   "maximumManualCurrentFacts": 0,
   "maximumGeneratedProjectionLayers": 4,
-  "maximumReleaseStateTransitions": 10
+  "maximumReleaseStateTransitions": 10,
+  "promptSurface": {
+    "maximumInitialLoadFiles": 8,
+    "maximumInitialLoadEstimatedTokens": 7000,
+    "maximumPotentialCrossFileDuplicateRatio": 0.08
+  }
 }

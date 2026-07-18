@@ -2,7 +2,7 @@
 id: explore-review
 stage: explore
 title: /nova-plugin:explore-review
-description: "Review-oriented exploration that surfaces questions and risks without proposing fixes."
+description: "Surface clarity gaps and risk signals using a reviewer perspective without proposing solutions."
 destructive-actions: none
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash

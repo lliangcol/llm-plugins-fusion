@@ -147,6 +147,18 @@ test('generated workflow permission files are current', async () => {
   }
 });
 
+test('command discovery descriptions are generated from behavior purposes without replacing Skill prose', async () => {
+  const behaviors = JSON.parse(await readFile(resolve(root, 'workflow-specs/behaviors.v2.json'), 'utf8'));
+  for (const behavior of behaviors.behaviors) {
+    const source = await readFile(resolve(root, `nova-plugin/commands/${behavior.id}.md`), 'utf8');
+    const match = source.match(/^description:\s*(.+)$/mu);
+    assert.ok(match, `${behavior.id} command is missing a description`);
+    assert.equal(JSON.parse(match[1]), behavior.purpose, `${behavior.id} command description drifted from behavior purpose`);
+  }
+  const skill = await readFile(resolve(root, 'nova-plugin/skills/nova-review/SKILL.md'), 'utf8');
+  assert.match(skill, /^description: Unified canonical review Skill\./mu);
+});
+
 test('artifact writers require a native Write/Edit permission prompt', async () => {
   const spec = JSON.parse(await readFile(
     resolve(root, 'nova-plugin/runtime/workflow-permissions.json'),

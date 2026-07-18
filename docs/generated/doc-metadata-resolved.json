@@ -569,6 +569,15 @@
       "generated": false
     },
     {
+      "path": "docs/getting-started/plugin-lifecycle.md",
+      "audience": "repository-users",
+      "contentType": "reference",
+      "status": "current",
+      "ownerSource": "CLAUDE.md",
+      "sourceOfTruth": "self",
+      "generated": false
+    },
+    {
       "path": "docs/growth/README.md",
       "audience": "repository-users",
       "contentType": "reference",

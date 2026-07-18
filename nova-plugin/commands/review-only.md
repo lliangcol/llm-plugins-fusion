@@ -2,7 +2,7 @@
 id: review-only
 stage: review
 title: /nova-plugin:review-only
-description: "Run a standard-depth review for correctness, failure modes, tests, and maintainability without fixes."
+description: "Perform standard evidence-grounded review and group findings by severity without implementation."
 destructive-actions: none
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash

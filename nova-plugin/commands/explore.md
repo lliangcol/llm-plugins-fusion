@@ -2,7 +2,7 @@
 id: explore
 stage: explore
 title: /nova-plugin:explore
-description: "Unified exploration entry that routes observer or reviewer perspectives without modifying code."
+description: "Align understanding and identify unknowns or risks without proposing solutions."
 destructive-actions: none
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash

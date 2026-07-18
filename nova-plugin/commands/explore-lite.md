@@ -2,7 +2,7 @@
 id: explore-lite
 stage: explore
 title: /nova-plugin:explore-lite
-description: "Quick observer-style exploration for fast understanding alignment without design or implementation."
+description: "Produce concise factual observations, uncertainties, and risks from knowledge gaps."
 destructive-actions: none
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash

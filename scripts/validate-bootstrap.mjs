@@ -5,7 +5,7 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { REQUIRED_NODE_MAJOR, nodeMajorVersion } from './lib/node-version.mjs';
 import { captureProcess } from './lib/process-runner.mjs';
-import { resolveBashCommand, trustedHookBashIdentity } from './lib/bash-command.mjs';
+import { diagnosticHookEnvironment, projectFreeProbeEnvironment, resolveBashCommand } from './lib/bash-command.mjs';
 import {
   assertArtifactRootsOutsideExecutableSearch,
   configuredArtifactRoots,
@@ -16,8 +16,8 @@ import { repoRoot } from './lib/repo-root.mjs';
 
 const root = repoRoot(import.meta.url);
 
-async function processCheck(command, args = ['--version']) {
-  return captureProcess(`bootstrap ${command}`, command, args, { cwd: root, timeoutMs: 30_000 });
+async function processCheck(command, args = ['--version'], env = process.env) {
+  return captureProcess(`bootstrap ${command}`, command, args, { cwd: root, env, timeoutMs: 30_000 });
 }
 
 export async function buildBootstrapReport() {
@@ -29,10 +29,12 @@ export async function buildBootstrapReport() {
   add({ check: 'node-version', status: major !== null && major >= REQUIRED_NODE_MAJOR ? 'passed' : 'failed', reasonCode: major !== null && major >= REQUIRED_NODE_MAJOR ? 'CHECK_PASSED' : 'NODE_VERSION_UNSUPPORTED', expected: `>=${REQUIRED_NODE_MAJOR}`, actual: process.version });
   add({ check: 'package-lock', status: existsSync(resolve(root, 'package-lock.json')) ? 'passed' : 'failed', reasonCode: existsSync(resolve(root, 'package-lock.json')) ? 'CHECK_PASSED' : 'LOCKFILE_MISSING', expected: 'tracked package-lock.json', actual: existsSync(resolve(root, 'package-lock.json')) ? 'present' : 'missing' });
   const packageJson = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'));
+  let probeEnv = { ...process.env, PATH: '' };
+  try { probeEnv = projectFreeProbeEnvironment(root); } catch { /* required probes fail closed below */ }
   let installedAjv = null;
   try { installedAjv = JSON.parse(readFileSync(resolve(root, 'node_modules/ajv/package.json'), 'utf8')).version; } catch { /* reported below */ }
   add({ check: 'locked-toolchain', status: installedAjv === packageJson.devDependencies.ajv ? 'passed' : 'blocked', reasonCode: installedAjv === packageJson.devDependencies.ajv ? 'CHECK_PASSED' : 'TOOLCHAIN_NOT_INSTALLED', expected: `ajv@${packageJson.devDependencies.ajv}`, actual: installedAjv ?? 'not installed' });
-  const bash = await processCheck(resolveBashCommand());
+  const bash = await processCheck(resolveBashCommand(process.platform, probeEnv), ['--version'], probeEnv);
   add({ check: 'bash', status: bash.ok ? 'passed' : 'skipped', reasonCode: bash.ok ? 'CHECK_PASSED' : 'BASH_CAPABILITY_UNAVAILABLE', actual: bash.ok ? (bash.stdout || bash.stderr).split(/\r?\n/u)[0] : 'not available', skippedReason: bash.ok ? undefined : 'Bash-dependent gates require an installed Bash runtime.' });
   const projectSettingsTrust = inspectProjectHookSettings(root);
   add({ check: 'hook-startup-project-settings', status: projectSettingsTrust.trusted ? 'passed' : 'failed', reasonCode: projectSettingsTrust.trusted ? 'CHECK_PASSED' : 'HOOK_PROJECT_SETTINGS_UNTRUSTED', actual: projectSettingsTrust.trusted ? 'no startup hook-disable or trust-environment controls' : projectSettingsTrust.reason });
@@ -45,22 +47,29 @@ export async function buildBootstrapReport() {
     artifactRootTrust = { trusted: false, reason: error.message };
   }
   add({ check: 'hook-artifact-roots', status: artifactRootTrust.trusted ? 'passed' : 'failed', reasonCode: artifactRootTrust.trusted ? 'CHECK_PASSED' : 'HOOK_ARTIFACT_ROOT_UNTRUSTED', actual: artifactRootTrust.trusted ? (artifactRoots.length ? artifactRoots.join(', ') : 'none configured') : artifactRootTrust.reason });
-  let hookBootstrap;
+  let hookEnvironment;
   try {
-    hookBootstrap = trustedHookBashIdentity(root, process.env, artifactRoots);
+    hookEnvironment = diagnosticHookEnvironment(root, {
+      env: process.env,
+      lifecycleEvent: 'validate:bootstrap',
+      lifecycleScript: packageJson.scripts['validate:bootstrap'],
+      writableRoots: artifactRoots,
+    });
   } catch (error) {
-    hookBootstrap = { trusted: false, identity: null, reason: error.message };
+    hookEnvironment = { env: process.env, normalized: false, removedEntries: [], trust: { trusted: false, identity: null, reason: error.message } };
   }
+  const hookBootstrap = hookEnvironment.trust;
+  add({ check: 'diagnostic-invocation-path', status: hookEnvironment.normalized ? 'warn' : (hookBootstrap.trusted ? 'passed' : 'failed'), reasonCode: hookEnvironment.normalized ? 'NPM_LIFECYCLE_PATH_NORMALIZED' : (hookBootstrap.trusted ? 'CHECK_PASSED' : 'HOOK_BOOTSTRAP_UNTRUSTED'), actual: hookEnvironment.normalized ? `removed ${hookEnvironment.removedEntries.join(', ')}` : (hookBootstrap.trusted ? 'raw PATH required no normalization' : hookBootstrap.reason) });
   add({ check: 'hook-bootstrap-bash', status: hookBootstrap.trusted ? 'passed' : 'failed', reasonCode: hookBootstrap.trusted ? 'CHECK_PASSED' : 'HOOK_BOOTSTRAP_UNTRUSTED', actual: hookBootstrap.identity?.physical ?? hookBootstrap.reason });
   add({ check: 'write-guard-bypass', status: process.env.NOVA_WRITE_GUARD_DISABLED === '1' ? 'failed' : 'passed', reasonCode: process.env.NOVA_WRITE_GUARD_DISABLED === '1' ? 'WRITE_GUARD_DISABLED' : 'CHECK_PASSED', actual: process.env.NOVA_WRITE_GUARD_DISABLED === '1' ? 'forbidden bypass requested by environment' : 'not requested' });
   for (const tool of ['claude', 'codex']) {
-    const result = await processCheck(tool);
+    const result = await processCheck(tool, ['--version'], probeEnv);
     add({ check: `${tool}-cli`, status: result.ok ? 'passed' : 'skipped', reasonCode: result.ok ? 'CHECK_PASSED' : 'OPTIONAL_TOOL_UNAVAILABLE', actual: result.ok ? (result.stdout || result.stderr).split(/\r?\n/u)[0] : 'not available', skippedReason: result.ok ? undefined : `${tool} CLI is optional for local deterministic checks.` });
   }
-  const writeGuard = await processCheck(process.execPath, ['scripts/validate-hooks.mjs']);
+  const writeGuard = await processCheck(process.execPath, ['scripts/validate-hooks.mjs'], probeEnv);
   add({ check: 'write-guard', status: writeGuard.ok ? 'passed' : 'failed', reasonCode: writeGuard.ok ? 'CHECK_PASSED' : 'WRITE_GUARD_INVALID', expected: 'governed hook launcher contract', actual: writeGuard.ok ? 'valid' : 'invalid' });
   for (const [check, script] of [['registry-drift', 'scripts/generate-registry.mjs'], ['project-state-drift', 'scripts/generate-project-state.mjs'], ['fact-graph-drift', 'scripts/generate-fact-graph.mjs']]) {
-    const result = await processCheck(process.execPath, [script]);
+    const result = await processCheck(process.execPath, [script], probeEnv);
     add({ check, status: result.ok ? 'passed' : 'failed', reasonCode: result.ok ? 'CHECK_PASSED' : 'GENERATED_DRIFT', actual: result.ok ? 'current' : 'stale' });
   }
   return diagnosticReport(command, results);

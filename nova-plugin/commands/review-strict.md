@@ -2,7 +2,7 @@
 id: review-strict
 stage: review
 title: /nova-plugin:review-strict
-description: "Run exhaustive production-critical review without modifying code."
+description: "Perform exhaustive production-critical review with explicit failure-cost reasoning and no implementation."
 destructive-actions: none
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash

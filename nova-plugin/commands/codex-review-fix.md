@@ -2,7 +2,7 @@
 id: codex-review-fix
 stage: implement
 title: /nova-plugin:codex-review-fix
-description: "Run the Codex review -> fix -> local checks -> verify loop for the current branch."
+description: "Run an external Codex review, fix high-confidence findings, run project checks, and verify closure."
 destructive-actions: medium
 allowed-tools: Read Glob Grep Write Edit
 disallowed-tools: NotebookEdit

@@ -322,6 +322,11 @@
       "disposition": "retain"
     },
     {
+      "path": "docs/getting-started/plugin-lifecycle.md",
+      "target": "docs/getting-started/plugin-lifecycle.md",
+      "disposition": "retain"
+    },
+    {
       "path": "docs/growth/README.md",
       "target": "docs/operations/community/metrics.md",
       "disposition": "move-with-stub"

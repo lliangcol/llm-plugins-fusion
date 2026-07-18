@@ -16,6 +16,7 @@ const generatedMarkdown = 'docs/generated/effective-permissions.md';
 const workflowCatalogJson = 'docs/generated/workflow-catalog.json';
 const workflowCatalogMarkdown = 'docs/generated/workflow-catalog.md';
 const managedFields = new Set([
+  'description',
   'allowed-tools',
   'destructive-actions',
   'disallowed-tools',
@@ -102,12 +103,12 @@ function splitFrontmatter(source, relPath) {
   return { frontmatter: match[1], body: source.slice(match[0].length) };
 }
 
-function removeManagedFields(frontmatter) {
+function removeManagedFields(frontmatter, kind) {
   const lines = frontmatter.split(/\r?\n/);
   const kept = [];
   for (let index = 0; index < lines.length;) {
     const match = /^([A-Za-z][\w-]*)\s*:/.exec(lines[index]);
-    if (!match || !managedFields.has(match[1])) {
+    if (!match || !managedFields.has(match[1]) || (kind === 'skill' && match[1] === 'description')) {
       kept.push(lines[index]);
       index += 1;
       continue;
@@ -126,6 +127,7 @@ function insertAfter(lines, field, additions) {
 
 function managedLines(workflow, kind) {
   const lines = [
+    ...(kind === 'command' ? [`description: ${JSON.stringify(workflow.description)}`] : []),
     ...(kind === 'command' ? [`destructive-actions: ${workflow.destructiveActions}`] : []),
     `allowed-tools: ${workflow.allowedTools.join(' ')}`,
     `disallowed-tools: ${workflow.disallowedTools.join(' ')}`,
@@ -159,8 +161,8 @@ function renderSurface(root, spec, workflow, kind) {
     : `nova-plugin/skills/nova-${workflow.id}/SKILL.md`;
   const source = readFileSync(resolve(root, relPath), 'utf8');
   const { frontmatter, body } = splitFrontmatter(source, relPath);
-  let lines = removeManagedFields(frontmatter);
-  lines = insertAfter(lines, kind === 'command' ? 'description' : 'license', managedLines(workflow, kind));
+  let lines = removeManagedFields(frontmatter, kind);
+  lines = insertAfter(lines, kind === 'command' ? 'title' : 'license', managedLines(workflow, kind));
   return { relPath, content: `---\n${lines.join('\n')}\n---\n${kind === 'command' ? commandBody(spec, workflow) : body}` };
 }
 
@@ -254,6 +256,7 @@ function renderWorkflowCatalog(report) {
 
 export function generateWorkflowPermissionFiles(root = defaultRoot) {
   const canonicalSpec = loadSpec(root);
+  const behaviorDescriptions = new Map(loadNovaWorkflowModelV6(root).behaviors.behaviors.map((entry) => [entry.id, entry.purpose]));
   const product = loadProduct(root);
   const spec = buildRuntimePermissionSpec(canonicalSpec, product);
   const workflowIds = spec.workflows.map((workflow) => workflow.id).sort();
@@ -290,7 +293,9 @@ export function generateWorkflowPermissionFiles(root = defaultRoot) {
     ...canonicalSpec.workflows.flatMap((workflow) => {
       const runtimeWorkflow = spec.workflows.find((entry) => entry.id === workflow.id);
       if (!runtimeWorkflow) throw new Error(`missing runtime workflow ${workflow.id}`);
-      const surfaceWorkflow = { ...workflow, ...runtimeWorkflow };
+      const description = behaviorDescriptions.get(workflow.id);
+      if (!description) throw new Error(`missing behavior purpose for ${workflow.id}`);
+      const surfaceWorkflow = { ...workflow, ...runtimeWorkflow, description };
       return [renderSurface(root, canonicalSpec, surfaceWorkflow, 'command'), ...(!workflow.compatibilityAlias ? [renderSurface(root, canonicalSpec, surfaceWorkflow, 'skill')] : [])];
     }),
     { relPath: routeContractPath, content: `${JSON.stringify(buildRouteContract(canonicalSpec), null, 2)}\n` },

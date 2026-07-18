@@ -188,19 +188,6 @@ function lineNumberAt(src, index) {
   return src.slice(0, index).split(/\r?\n/).length;
 }
 
-function expectRegex(file, pattern, expected, label) {
-  const abs = resolve(root, file);
-  const src = readFileSync(abs, 'utf8');
-  const match = src.match(pattern);
-  if (!match) {
-    recordError(file, `missing ${label}`);
-    return;
-  }
-  if (match[1] !== expected) {
-    recordError(file, `${label} is "${match[1]}", expected "${expected}"`);
-  }
-}
-
 function validateVersionReferences() {
   const plugin = readJson('nova-plugin/.claude-plugin/plugin.json');
   const releaseChannels = readJson('governance/release-channels.json');
@@ -232,6 +219,7 @@ function validateVersionReferences() {
 
   const version = releaseChannels.stable.version;
   const versionPattern = escapeRegExp(version);
+  const developmentVersionPattern = escapeRegExp(plugin.version);
   const updated = metadataEntry['last-updated'];
 
   expectContentRegex('README.md', new RegExp(`version-${versionPattern}-blue\\.svg`), 'version badge');
@@ -248,13 +236,13 @@ function validateVersionReferences() {
   );
   expectContentRegex(
     'nova-plugin/docs/guides/commands-reference-guide.md',
-    new RegExp(`\\*\\*版本\\*\\*:\\s*${versionPattern}`),
-    'command reference version',
+    new RegExp(`\\*\\*开发版本\\*\\*:\\s*${developmentVersionPattern}[\\s\\S]*\\*\\*稳定版本\\*\\*:\\s*${versionPattern}`),
+    'command reference development and stable versions',
   );
   expectContentRegex(
     'nova-plugin/docs/guides/commands-reference-guide.en.md',
-    new RegExp(`\\*\\*Version\\*\\*:\\s*${versionPattern}`),
-    'command reference version',
+    new RegExp(`\\*\\*Development version\\*\\*:\\s*${developmentVersionPattern}[\\s\\S]*\\*\\*Stable version\\*\\*:\\s*${versionPattern}`),
+    'command reference development and stable versions',
   );
   expectContentRegex(
     'docs/project/plans/portal-information-architecture.md',
@@ -272,20 +260,7 @@ function validateVersionReferences() {
     'hooks design current version',
   );
 
-  if (updated) {
-    expectRegex(
-      'nova-plugin/docs/guides/commands-reference-guide.md',
-      /\*\*最后更新\*\*:\s*(\d{4}-\d{2}-\d{2})/,
-      updated,
-      'command reference last-updated date',
-    );
-    expectRegex(
-      'nova-plugin/docs/guides/commands-reference-guide.en.md',
-      /\*\*Last updated\*\*:\s*(\d{4}-\d{2}-\d{2})/,
-      updated,
-      'command reference last-updated date',
-    );
-  } else {
+  if (!updated) {
     recordWarning('.claude-plugin/marketplace.metadata.json', 'nova-plugin has no last-updated field');
   }
 

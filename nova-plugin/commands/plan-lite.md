@@ -2,7 +2,7 @@
 id: plan-lite
 stage: plan
 title: /nova-plugin:plan-lite
-description: "Create a lightweight execution plan without writing code or formal artifacts."
+description: "Create a short execution plan with explicit scope, trade-offs, and risks without writing code."
 destructive-actions: none
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash

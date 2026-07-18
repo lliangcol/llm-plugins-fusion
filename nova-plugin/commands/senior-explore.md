@@ -2,7 +2,7 @@
 id: senior-explore
 stage: explore
 title: /nova-plugin:senior-explore
-description: "Run deep exploration for complex requirements or incidents, optionally writing an analysis artifact."
+description: "Conduct systematic analysis and optionally export an identical evidence-grounded analysis artifact."
 destructive-actions: low
 allowed-tools: Read Glob Grep
 disallowed-tools: NotebookEdit Bash

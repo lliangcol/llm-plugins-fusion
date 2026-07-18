@@ -9,6 +9,8 @@ import { repoRoot } from './lib/repo-root.mjs';
 const root = repoRoot(import.meta.url);
 const start = '<!-- generated:command-contract:start -->';
 const end = '<!-- generated:command-contract:end -->';
+const channelStart = '<!-- generated:release-channel:start -->';
+const channelEnd = '<!-- generated:release-channel:end -->';
 const codexIds = new Set(['codex-review-fix', 'codex-review-only', 'codex-verify-only']);
 const metadata = JSON.parse(readFileSync(resolve(root, 'governance/workflow-docs.json'), 'utf8'));
 const metadataById = new Map(metadata.workflows.map((entry) => [entry.id, entry]));
@@ -32,6 +34,23 @@ function navigation(workflows) {
   const rows = workflows.map((entry) => `| \`${entry.id}\` | ${entry.stage} | \`nova-${entry.canonicalSurfaceId}\` | ${entry.requiredInputs.map((value) => `\`${value}\``).join(', ')} | \`${entry.outputContract}\` |`).join('\n');
   return `# Generated Command Matrix\n\nGenerated from workflow and documentation metadata by \`node scripts/generate-command-docs.mjs --write\`. Do not edit.\n\n| Workflow | Stage | Canonical skill | Required inputs | Output |\n| --- | --- | --- | --- | --- |\n${rows}\n`;
 }
+function renderChannelBlock({ language, developmentVersion, stable }) {
+  const publishedDate = stable.publishedAt.slice(0, 10);
+  const line = language === 'zh'
+    ? `> **开发版本**: ${developmentVersion} (\`main\`，尚未发布) | **稳定版本**: ${stable.version} (\`${stable.tag}\`，发布于 ${publishedDate})`
+    : `> **Development version**: ${developmentVersion} (\`main\`, unreleased) | **Stable version**: ${stable.version} (\`${stable.tag}\`, published ${publishedDate})`;
+  return `${channelStart}\n${line}\n${channelEnd}`;
+}
+function replaceChannelBlock(source, block, language) {
+  const from = source.indexOf(channelStart); const to = source.indexOf(channelEnd);
+  if ((from === -1) !== (to === -1)) throw new Error('command guide has only one release-channel marker');
+  if (from !== -1) return `${source.slice(0, from)}${block}${source.slice(to + channelEnd.length)}`;
+  const legacy = language === 'zh'
+    ? /> \*\*版本\*\*:\s*[^\n]+/u
+    : /> \*\*Version\*\*:\s*[^\n]+/u;
+  if (!legacy.test(source)) throw new Error(`command guide has no managed ${language} release-channel header`);
+  return source.replace(legacy, block);
+}
 export function checkOrWrite({ write = false } = {}) {
   const model = loadNovaWorkflowModelV6(root); const workflows = model.workflows.workflows; const behaviors = new Map(model.behaviors.behaviors.map((entry) => [entry.id, entry]));
   if (metadataById.size !== metadata.workflows.length) throw new Error('workflow documentation metadata contains duplicate ids');
@@ -51,6 +70,16 @@ export function checkOrWrite({ write = false } = {}) {
   }
   const navOutputs = ['docs/generated/command-matrix.md', 'nova-plugin/docs/commands/README.generated.md']; const nav = navigation(workflows);
   for (const path of navOutputs) { const target = resolve(root, path); if (!existsSync(target) || readFileSync(target, 'utf8') !== nav) { if (write) { mkdirSync(dirname(target), { recursive: true }); writeFileSync(target, nav, 'utf8'); } else stale.push(path); } }
+  const plugin = JSON.parse(readFileSync(resolve(root, 'nova-plugin/.claude-plugin/plugin.json'), 'utf8'));
+  const channels = JSON.parse(readFileSync(resolve(root, 'governance/release-channels.json'), 'utf8'));
+  for (const [path, language] of [
+    ['nova-plugin/docs/guides/commands-reference-guide.md', 'zh'],
+    ['nova-plugin/docs/guides/commands-reference-guide.en.md', 'en'],
+  ]) {
+    const target = resolve(root, path); const actual = readFileSync(target, 'utf8');
+    const expected = replaceChannelBlock(actual, renderChannelBlock({ language, developmentVersion: plugin.version, stable: channels.stable }), language);
+    if (actual !== expected) { if (write) writeFileSync(target, expected, 'utf8'); else stale.push(path); }
+  }
   if (stale.length) throw new Error(`${stale.join(', ')} command docs are stale`);
   return { documents: workflows.length * 3, navigation: navOutputs.length };
 }

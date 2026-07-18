@@ -10,6 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Fixed
+- Made headless demo fixtures validate canonical workflow, stage, pack, and
+  namespaced command semantics; hardened doctor/bootstrap probing against
+  project-controlled executable injection while preserving exact npm lifecycle
+  invocation, including one canonical case-insensitive Windows `PATH` key; and
+  added a consumer plugin lifecycle guide plus generated
+  development-versus-stable version headers for both command references.
+- Made ordinary Review fail closed when a semantic branch, PR, commit range, or
+  diff label is not accompanied by materialized patch text or explicit readable
+  paths, and prohibited automatic fallback to an external Codex profile.
+- Moved prompt-surface limits into the governed complexity budget and separated
+  the automatic initial-load claim from owner-agent and capability-pack paths
+  that are only potential references. Compacted the three largest route,
+  review, and backend-plan surfaces below 7000 estimated potential-reference
+  tokens, then tightened the governed initial-load ceiling to 7000.
+- Removed the duplicate `validate:facts` and `validate:hook-truth` npm aliases;
+  their read-only scripts remain governed and discoverable through the task
+  catalog, while the root package-script ceiling is now 78.
 - Removed stale maintainer round logs and superseded baseline figures from the
   active status and remediation pages, replacing them with current generated
   facts, directory responsibilities, source-backed implementation boundaries,

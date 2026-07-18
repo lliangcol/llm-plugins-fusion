@@ -30,6 +30,7 @@ current directory owners or as labels for canonical links.
 | Choose the shortest path by persona or task | [getting-started/README.md](getting-started/README.md) |
 | Run the first `nova-plugin` workflow | [getting-started/first-workflow.md](getting-started/first-workflow.md) |
 | Install for Claude Code | [getting-started/install-claude-code.md](getting-started/install-claude-code.md) |
+| Operate an installed Claude Code plugin | [getting-started/plugin-lifecycle.md](getting-started/plugin-lifecycle.md) |
 | Browse scenario-based examples | [tutorials/README.md](tutorials/README.md) |
 | Adopt the framework in a private project | [guides/assistants/README.md](guides/assistants/README.md) |
 | Build a second product | [guides/framework/second-product.md](guides/framework/second-product.md) |
