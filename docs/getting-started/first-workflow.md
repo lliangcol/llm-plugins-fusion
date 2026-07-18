@@ -63,6 +63,13 @@ These scripts read `fixtures/demo/*.json` and print expected route, review, and
 verification signals. They do not execute slash commands or prove model output
 quality; they only show the public-safe contract a command output should satisfy.
 
+For a side-by-side route comparison, inspect the documentation-maintenance
+fixture in `fixtures/demo/route-basic.json` and the small fictional dependency
+update in `fixtures/demo/route-dependency-update.json`. The dependency example
+requires dependency and security review before implementation, keeps required
+inputs and failure signals explicit, and does not claim package-registry,
+network, Claude, or Codex execution.
+
 ## Five Main Commands
 
 Use the primary workflow path for routine work:
