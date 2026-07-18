@@ -148,7 +148,7 @@ test('trusted Node launcher rejects project Node shadows from absolute, relative
   }
 });
 
-test('trusted Node launcher does not execute PATH-shadowed bootstrap helpers', { skip: process.platform === 'win32' }, async (t) => {
+test('trusted Node launcher rejects PATH-shadowed bootstrap helpers without executing them', { skip: process.platform === 'win32' }, async (t) => {
   const { workspace, cwd } = await fixture(t);
   const bin = join(workspace, 'bin');
   const markers = [];
@@ -173,7 +173,8 @@ test('trusted Node launcher does not execute PATH-shadowed bootstrap helpers', {
       tool_response: { success: true },
     }),
   });
-  assert.equal(result.ok, true, result.stderr);
+  assert.equal(result.code, 2, result.stderr);
+  assert.match(result.stderr, /trusted Node\.js 22\+ executable outside the project/u);
   for (const marker of markers) await assert.rejects(readFile(marker, 'utf8'), { code: 'ENOENT' });
 });
 

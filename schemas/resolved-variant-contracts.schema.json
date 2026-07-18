@@ -1,0 +1,81 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/resolved-variant-contracts.schema.json",
+  "title": "Resolved canonical variant contract index",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schemaVersion", "identity", "resolutionRule", "source", "behaviorSource", "selectors", "authority", "resolutions"],
+  "properties": {
+    "$schema": { "const": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/resolved-variant-contracts.schema.json" },
+    "schemaVersion": { "const": 1 },
+    "identity": { "const": "canonical-surface-plus-validated-variant-parameters" },
+    "resolutionRule": { "const": "exact-normalized-overrides-then-conflict-stop-or-validated-canonical-fallback" },
+    "source": { "type": "string", "minLength": 1 },
+    "behaviorSource": { "type": "string", "minLength": 1 },
+    "selectors": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+      "additionalProperties": {
+        "type": "object",
+        "propertyNames": { "pattern": "^[A-Z][A-Z0-9_]*$" },
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["exactValues"],
+          "properties": {
+            "exactValues": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": { "type": ["string", "boolean", "number", "null"] }
+            },
+            "default": { "type": ["string", "boolean", "number", "null"] }
+          }
+        }
+      }
+    },
+    "authority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rule", "fields"],
+      "properties": {
+        "rule": { "type": "string", "minLength": 1 },
+        "fields": {
+          "type": "array",
+          "minItems": 30,
+          "maxItems": 30,
+          "uniqueItems": true,
+          "items": { "enum": ["schemaVersion", "sourceSchemaVersion", "contractVersions", "id", "canonicalSurfaceId", "variantPreset", "compatibilityAlias", "stage", "ownerAgents", "recommendedPacks", "requiredInputs", "inputs", "effects", "authorizationProfile", "enforcementRequirements", "evidenceRequirements", "outputContract", "risk", "allowedTools", "disallowedTools", "modelInvocable", "subagentSafe", "destructiveActions", "commandEntrypoint", "runtimeRequirements", "permissionPolicy", "enforcement", "instructions", "behaviorContract", "claimBoundary"] }
+        }
+      }
+    },
+    "resolutions": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["canonicalSurfaceId", "variantParameters", "normalizedVariantParameters", "resolutionKind", "resolvedWorkflowId", "compatibilityAlias", "runtimeContract"],
+        "properties": {
+          "canonicalSurfaceId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "variantParameters": {
+            "type": "object",
+            "propertyNames": { "pattern": "^[A-Z][A-Z0-9_]*$" },
+            "additionalProperties": { "type": ["string", "boolean", "number", "null"] }
+          },
+          "normalizedVariantParameters": {
+            "type": "object",
+            "propertyNames": { "pattern": "^[A-Z][A-Z0-9_]*$" },
+            "additionalProperties": { "type": ["string", "boolean", "number", "null"] }
+          },
+          "resolutionKind": { "enum": ["canonical-default", "exact-override", "canonical-fallback"] },
+          "resolvedWorkflowId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+          "compatibilityAlias": { "type": "boolean" },
+          "runtimeContract": { "type": "string", "pattern": "^contracts/[a-z0-9]+(?:-[a-z0-9]+)*\\.json$" }
+        }
+      }
+    }
+  }
+}

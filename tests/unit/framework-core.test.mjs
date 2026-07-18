@@ -5,6 +5,7 @@ import { resolveFromModule } from '../../scripts/lib/repo-root.mjs';
 import { evaluateCapabilityPolicy } from '../../framework/core/capability-policy.mjs';
 import { evidenceFreshness } from '../../framework/core/evidence-registry.mjs';
 import { resolveBehaviorInputs, resolveRequiredInputs } from '../../framework/core/input-resolution.mjs';
+import { normalizeVariantParameters } from '../../framework/core/variant-contracts.mjs';
 import { validateOutputFields } from '../../framework/core/output-validation.mjs';
 import { compileRuntimeContract } from '../../framework/compiler/compile-runtime-contracts.mjs';
 import { compileRuntimeContracts } from '../../framework/compiler/compile-runtime-contracts.mjs';
@@ -29,6 +30,39 @@ test('framework core separates inputs, capability availability, and approvals', 
   assert.deepEqual(evaluateCapabilityPolicy({ workflow: { effects: [undefined] }, permissionPolicy: {}, available: {} }).reasons, ['invalid-workflow-capability-contract']);
   assert.deepEqual(evaluateCapabilityPolicy({ workflow: { effects: [], runtimeRequirements: { executables: [null] } }, permissionPolicy: {}, available: {} }).reasons, ['invalid-workflow-capability-contract']);
   assert.deepEqual(evaluateCapabilityPolicy({ workflow: { effects: [], runtimeRequirements: {} }, permissionPolicy: {}, available: {} }).reasons, ['invalid-workflow-capability-contract']);
+  for (const runtimeRequirements of [
+    { executables: Array(1), network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' } },
+    { executables: Object.assign([], { invented: true }), network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [{ name: '   ', required: true, versionEvidence: 'versioned-evidence' }], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [{ name: '\u0000', required: true, versionEvidence: 'versioned-evidence' }], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [{ name: 'node', required: true, versionEvidence: 'versioned-evidence', invented: true }], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [{ name: 'node', required: true, versionEvidence: 'versioned-evidence' }, { name: 'node', required: false, versionEvidence: 'none' }], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [], network: { need: 'required', purpose: '' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [], network: { need: 'required', purpose: '   ' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [], network: { need: 'required', purpose: '\u0000' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [], network: { need: 'required', purpose: 'lookup', invented: true }, credentials: { need: 'none', source: 'none' } },
+    { executables: [], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none', invented: true } },
+    { executables: [], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' }, invented: true },
+    { executables: [], network: { need: 'none', purpose: 'remote lookup' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'consumer-owned-authentication' } },
+  ]) {
+    assert.deepEqual(
+      evaluateCapabilityPolicy({ workflow: { effects: [], runtimeRequirements }, permissionPolicy: {}, available: {} }).reasons,
+      ['invalid-workflow-capability-contract'],
+    );
+  }
+  for (const name of ['node', 'bash', 'codex', 'pwsh.exe', 'python3.12', 'my_tool', 'c++', 'git-lfs', '7z']) {
+    const runtimeRequirements = {
+      executables: [{ name, required: true, versionEvidence: 'versioned-evidence' }],
+      network: { need: 'none', purpose: 'none' },
+      credentials: { need: 'none', source: 'none' },
+    };
+    assert.equal(
+      evaluateCapabilityPolicy({ workflow: { effects: ['shell'], runtimeRequirements }, permissionPolicy: { shell: 'preapproved' }, available: { shell: 'preapproved' } }).decision,
+      'ready',
+      name,
+    );
+  }
   assert.equal(evaluateCapabilityPolicy({ workflow: { effects: ['workspace-read'] }, permissionPolicy: { workspaceRead: 'preapproved' }, available: Object.create({ workspaceRead: 'preapproved' }) }).decision, 'fallback-unsupported-capability');
 });
 
@@ -40,6 +74,36 @@ test('behavior input resolution handles aliases, defaults, exact values, and con
   assert.deepEqual(resolveBehaviorInputs(behavior, { INPUT: 'work' }), { valid: true, normalizedInputs: { REQUEST: 'work', MODE: 'safe' }, missingRequired: [], invalidExactValues: [] });
   assert.equal(resolveBehaviorInputs(behavior, { REQUEST: 'a', INPUT: 'b' }).invalidExactValues[0].reason, 'conflicting-alias-values');
   assert.equal(resolveBehaviorInputs(behavior, { REQUEST: 'work', MODE: 'unsafe' }).invalidExactValues[0].reason, 'not-an-exact-value');
+
+  const typed = { inputs: [
+    { name: 'FLAG', required: true, aliases: [], description: 'boolean flag', type: 'boolean' },
+    { name: 'PATH', required: true, aliases: [], description: 'path', type: 'path' },
+    { name: 'APPROVED', required: true, aliases: [], description: 'approval', type: 'approval', exactValues: [true, 'true'] },
+  ] };
+  assert.equal(resolveBehaviorInputs(typed, { FLAG: 'false', PATH: 'x', APPROVED: true }).invalidExactValues[0].reason, 'wrong-type');
+  assert.equal(resolveBehaviorInputs(typed, { FLAG: false, PATH: 1, APPROVED: true }).invalidExactValues[0].reason, 'wrong-type');
+  assert.equal(resolveBehaviorInputs(typed, { FLAG: false, PATH: 'x', APPROVED: 'true' }).valid, true);
+
+  const nullable = { inputs: [{ name: 'VALUE', required: true, aliases: ['ALIAS'], description: 'nullable value', exactValues: [null] }] };
+  for (const aliasValue of [Number.NaN, -0, 1n, {}, []]) {
+    const result = resolveBehaviorInputs(nullable, { VALUE: null, ALIAS: aliasValue });
+    assert.equal(result.valid, false);
+    assert.equal(result.invalidExactValues[0].reason, 'conflicting-alias-values');
+  }
+  assert.equal(resolveBehaviorInputs(nullable, { VALUE: 0, ALIAS: -0 }).invalidExactValues[0].reason, 'conflicting-alias-values');
+
+  const prototypeNamed = resolveBehaviorInputs(
+    { inputs: [{ name: '__proto__', required: true, aliases: [], description: 'adversarial direct-call input' }] },
+    Object.fromEntries([['__proto__', 'preserved']]),
+  );
+  assert.equal(prototypeNamed.valid, true);
+  assert.equal(Object.hasOwn(prototypeNamed.normalizedInputs, '__proto__'), true);
+  assert.equal(prototypeNamed.normalizedInputs.__proto__, 'preserved');
+});
+
+test('variant parameters reject non-canonical numeric encodings', () => {
+  assert.throws(() => normalizeVariantParameters({ MODE: -0 }), /must not be negative zero/u);
+  assert.deepEqual(normalizeVariantParameters({ MODE: 0 }), { MODE: 0 });
 });
 
 test('runtime compiler supports a non-Nova, non-Claude three-workflow product fixture', () => {
@@ -48,28 +112,64 @@ test('runtime compiler supports a non-Nova, non-Claude three-workflow product fi
   const contracts = compileRuntimeContracts(loaded.spec, loaded.behaviorSpec);
   assert.equal(contracts.length, 3);
   assert.deepEqual(contracts.map((entry) => entry.stage), ['intake', 'shape', 'assure']);
+  assert.deepEqual(contracts.map((entry) => entry.commandEntrypoint), [
+    { directCommandId: 'triage' },
+    { directCommandId: 'design' },
+    { directCommandId: 'verify' },
+  ]);
   assert.deepEqual(contracts.map((entry) => entry.behaviorContract.guidanceReference), ['../../contracts/triage.md', '../../contracts/design.md', '../../contracts/verify.md']);
+  assert.ok(contracts.every((entry) => entry.behaviorContract.source === 'behaviors.json'));
   assert.deepEqual(contracts.map((entry) => entry.behaviorContract.output.order), [['next step'], ['design'], ['verified', 'skipped', 'residual risk']]);
+  assert.ok(contracts.every((entry) => entry.claimBoundary.includes('referenced authored guidance surface')));
+  assert.ok(contracts.every((entry) => !/\bSkill\b/u.test(entry.claimBoundary)));
   assert.doesNotMatch(JSON.stringify(contracts), /nova|claude|codex/iu);
 });
 
 test('Contract v6 compiler remains product-neutral for the three-workflow fixture', () => {
   const root = resolveFromModule(import.meta.url, '../../fixtures/products/minimal-plugin');
   const loaded = loadWorkflowModel({ root, frameworkPath: 'framework.json', productPath: 'product.json', workflowsPath: 'workflows.json', behaviorsPath: 'behaviors.json' });
+  const protocolVersions = { framework: '5.0.0', workflow: '6.0.0', runtime: '4.0.0', adapter: '3.0.0', compatibilityProjection: '5.0.0' };
   const compiled = compileProductBundle({
-    framework: { ...loaded.framework, schemaVersion: 5, protocolVersions: { framework: '5.0.0', workflow: '6.0.0', runtime: '4.0.0', adapter: '3.0.0', compatibilityProjection: '5.0.0' } },
+    framework: { ...loaded.framework, schemaVersion: 5, protocolVersions },
     product: loaded.product,
     workflows: migrateWorkflowSpec(loaded.workflows, loaded.behaviors),
     behaviors: migrateBehaviorSpec(loaded.behaviors),
-    adapters: loaded.adapters,
+    adapters: loaded.adapters.map((adapter) => ({
+      ...adapter,
+      schemaVersion: 2,
+      protocolVersions: {
+        workflow: protocolVersions.workflow,
+        runtime: protocolVersions.runtime,
+        adapter: protocolVersions.adapter,
+      },
+      contractEnforcement: {
+        inputs: 'advisory',
+        approval: 'advisory',
+        output: 'advisory',
+        effects: 'advisory',
+        fallback: 'report-unsupported',
+      },
+    })),
   });
   assert.equal(compiled.runtimeContracts.length, 3);
   assert.ok(compiled.runtimeContracts.every((contract) => contract.schemaVersion === 4));
+  assert.ok(compiled.runtimeContracts.every((contract) => Object.keys(contract.commandEntrypoint).join(',') === 'directCommandId'));
+  assert.ok(compiled.runtimeContracts.every((contract) => contract.behaviorContract.source === 'caller-provided-behavior-spec'));
+  assert.ok(compiled.runtimeContracts.every((contract) => !/\bSkill\b/u.test(contract.claimBoundary)));
+  assert.equal(compiled.resolvedVariantManifest.source, 'caller-provided-workflow-spec');
+  assert.equal(compiled.resolvedVariantManifest.behaviorSource, 'caller-provided-behavior-spec');
+  assert.equal(compiled.resolvedVariantManifest.authority.rule.includes('canonical authored guidance'), true);
+  assert.doesNotMatch(compiled.resolvedVariantManifest.authority.rule, /nova|claude|codex|\bSkill\b/iu);
   assert.doesNotMatch(JSON.stringify(compiled), /nova|claude|codex/iu);
 });
 
 test('framework output and evidence helpers expose explicit failures', () => {
   assert.deepEqual(validateOutputFields({ route: [] }, ['route', 'fallback']), { valid: false, missing: ['fallback'] });
+  assert.deepEqual(validateOutputFields({}, ['toString']), { valid: false, missing: ['toString'] });
+  assert.deepEqual(validateOutputFields(Object.create({ result: 'inherited' }), ['result']), { valid: false, missing: ['result'] });
+  assert.deepEqual(validateOutputFields({ toString: 'owned' }, ['toString']), { valid: true, missing: [] });
+  assert.throws(() => validateOutputFields({}, /** @type {any} */ (null)), /requiredFields/u);
+  assert.throws(() => validateOutputFields({}, ['result', 'result']), /requiredFields/u);
   assert.deepEqual(evidenceFreshness({ a: 'one', b: 'two' }, (path) => ({ a: 'one', b: 'changed' })[path] ?? null), { current: false, staleReasons: ['b:digest-changed'] });
 });
 
@@ -82,6 +182,7 @@ test('static host negotiation combines adapter enforcement, capabilities, and ap
     }],
     runtimeContracts: [{
       id: 'change',
+      inputs: [],
       effects: ['workspace-read', 'workspace-write'],
       permissionPolicy: { workspaceRead: 'preapproved', workspaceWrite: 'prompt' },
       runtimeRequirements: { executables: [], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' } },
@@ -100,8 +201,68 @@ test('static host negotiation combines adapter enforcement, capabilities, and ap
   assert.deepEqual(negotiateWorkflowSupport(compiled, { workflowId: 'change', adapterId: 'host', available: { ...readable, workspaceWrite: 'preapproved' }, hostEnforcement: { invented: 'adapter' } }).reasons, ['invalid-host-enforcement:invented']);
   assert.deepEqual(negotiateWorkflowSupport(compiled, { workflowId: 'change', adapterId: 'host', available: { ...readable, workspaceWrite: 'preapproved' }, hostEnforcement: { effects: 'native' } }).reasons, ['invalid-enforcement:effects']);
   assert.deepEqual(negotiateWorkflowSupport({ ...compiled, runtimeContracts: [{ ...compiled.runtimeContracts[0], effects: ['invented'] }] }, { workflowId: 'change', adapterId: 'host', available: { ...readable, workspaceWrite: 'preapproved' } }).reasons, ['invalid-workflow-capability-contract']);
+  for (const runtimeRequirements of [
+    { executables: Array(1), network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' } },
+    { executables: Object.assign([], { invented: true }), network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [{ name: 'node', required: true, versionEvidence: 'versioned-evidence', invented: true }], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [{ name: 'node', required: true, versionEvidence: 'versioned-evidence' }, { name: 'node', required: false, versionEvidence: 'none' }], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [], network: { need: 'required', purpose: '' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [], network: { need: 'required', purpose: '   ' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [], network: { need: 'required', purpose: '\u0000' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [], network: { need: 'required', purpose: 'lookup', invented: true }, credentials: { need: 'none', source: 'none' } },
+    { executables: [], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none', invented: true } },
+    { executables: [], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' }, invented: true },
+    { executables: [], network: { need: 'none', purpose: 'remote lookup' }, credentials: { need: 'none', source: 'none' } },
+    { executables: [], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'consumer-owned-authentication' } },
+  ]) {
+    assert.deepEqual(
+      negotiateWorkflowSupport(
+        { ...compiled, runtimeContracts: [{ ...compiled.runtimeContracts[0], runtimeRequirements }] },
+        { workflowId: 'change', adapterId: 'host', available: { ...readable, workspaceWrite: 'preapproved' } },
+      ).reasons,
+      ['invalid-workflow-capability-contract'],
+    );
+  }
   assert.deepEqual(negotiateWorkflowSupport({ ...compiled, adapters: [{ id: 'host', enforcement: 'unsupported' }] }, { workflowId: 'change', adapterId: 'host', available: { ...readable, workspaceWrite: 'preapproved' }, hostEnforcement: { inputs: 'adapter', approval: 'adapter', output: 'adapter', effects: 'adapter' } }).reasons, ['adapter-unsupported']);
   assert.deepEqual(negotiateWorkflowSupport({ ...compiled, adapters: [{ id: 'host', schemaVersion: 2, enforcement: 'adapter' }] }, { workflowId: 'change', adapterId: 'host', available: { ...readable, workspaceWrite: 'preapproved' } }).reasons, ['invalid-adapter-contract-enforcement']);
+
+  const approvalContract = {
+    id: 'approve',
+    inputs: [{ name: 'APPROVED', type: 'approval', required: true }],
+    effects: ['workspace-read'],
+    permissionPolicy: { workspaceRead: 'preapproved' },
+    runtimeRequirements: { executables: [], network: { need: 'none', purpose: 'none' }, credentials: { need: 'none', source: 'none' } },
+  };
+  const noApprovalEnforcement = {
+    id: 'no-approval',
+    enforcement: 'adapter',
+    contractEnforcement: { inputs: 'adapter', approval: 'unsupported', output: 'adapter', effects: 'adapter', fallback: 'fail-closed' },
+  };
+  const approvalBundle = { adapters: [noApprovalEnforcement], runtimeContracts: [approvalContract] };
+  assert.deepEqual(
+    negotiateWorkflowSupport(approvalBundle, { workflowId: 'approve', adapterId: 'no-approval', available: readable }).reasons,
+    ['unenforced:approval'],
+  );
+  approvalContract.inputs[0].required = false;
+  assert.deepEqual(
+    negotiateWorkflowSupport(approvalBundle, { workflowId: 'approve', adapterId: 'no-approval', available: readable }).reasons,
+    ['unenforced:approval'],
+  );
+  const v5Approval = structuredClone(approvalContract);
+  delete v5Approval.inputs;
+  v5Approval.behaviorContract = { inputs: [{ name: 'APPROVED', type: 'approval', required: true }] };
+  assert.deepEqual(
+    negotiateWorkflowSupport({ adapters: [noApprovalEnforcement], runtimeContracts: [v5Approval] }, { workflowId: 'approve', adapterId: 'no-approval', available: readable }).reasons,
+    ['unenforced:approval'],
+  );
+  assert.deepEqual(
+    negotiateWorkflowSupport({ adapters: [noApprovalEnforcement], runtimeContracts: [{ ...approvalContract, inputs: [] }] }, { workflowId: 'approve', adapterId: 'no-approval', available: readable }).reasons,
+    [],
+  );
+  assert.deepEqual(
+    negotiateWorkflowSupport({ adapters: [noApprovalEnforcement], runtimeContracts: [{ ...approvalContract, inputs: 'invalid' }] }, { workflowId: 'approve', adapterId: 'no-approval', available: readable }).reasons,
+    ['invalid-workflow-input-contract'],
+  );
 });
 
 test('runtime compiler emits policy plus a required product-defined behavior reference', () => {
@@ -113,4 +274,12 @@ test('runtime compiler emits policy plus a required product-defined behavior ref
   assert.equal(contract.behaviorContract.guidanceReference, '../../skills/acme-review/SKILL.md');
   assert.equal(contract.behaviorContract.purpose, 'Review scope.');
   assert.equal(contract.behaviorContract.conflictPolicy, 'fail-closed');
+  assert.throws(
+    () => compileRuntimeContract(
+      { schemaVersion: 3, permissionProfiles: {}, assistantEnforcement: { generic: 'advisory' } },
+      { ...workflow, permissionProfile: 'toString' },
+      behavior,
+    ),
+    /unknown permission profile toString/u,
+  );
 });

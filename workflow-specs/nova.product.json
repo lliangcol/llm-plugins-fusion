@@ -10,6 +10,7 @@
     "status": "evidence-gated",
     "removalRequires": [
       "real-benchmark-evidence",
+      "native-permission-and-invocation-parity",
       "plugin-major-release",
       "governed-release-decision",
       "migration-documentation"

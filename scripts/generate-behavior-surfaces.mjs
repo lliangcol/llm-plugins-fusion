@@ -6,12 +6,13 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { repoRoot } from './lib/repo-root.mjs';
 import { loadNovaWorkflowModelV6 } from './lib/workflow-model.mjs';
+import { listVariantResolutions } from '../framework/core/variant-contracts.mjs';
 
 const root = repoRoot(import.meta.url);
 const start = '<!-- BEGIN GENERATED BEHAVIOR CONTRACT -->';
 const end = '<!-- END GENERATED BEHAVIOR CONTRACT -->';
 
-function renderBehavior(behavior) {
+function renderBehavior(behavior, resolutions, { namespace, invokedWorkflowId }) {
   const inputSummary = behavior.inputs.map((input) => {
     const aliases = input.aliases.length ? ` aliases=${input.aliases.join(',')}` : '';
     const fallback = input.default === undefined ? '' : ` default=${JSON.stringify(input.default)}`;
@@ -29,6 +30,8 @@ function renderBehavior(behavior) {
     '',
     `- **Purpose:** ${behavior.purpose}`,
     `- **Canonical inputs:** ${inputSummary}`,
+    `- **Resolved variant authority:** ${resolutions.map(({ workflow, variantParameters, normalizedVariantParameters }) => `\`${JSON.stringify(variantParameters)} normalized=${JSON.stringify(normalizedVariantParameters)} -> runtime/contracts/${workflow.id}.json\``).join('; ')}. Declared selector defaults are applied before matching. An exact normalized override wins; a non-exact combination that triggers an alias specialization stops as conflicting, and only a valid combination that triggers no specialization uses the canonical fallback. The complete resolved runtime contract is authoritative and no field falls back to canonical prose.`,
+    `- **Claude static-entrypoint gate:** Native command and Skill frontmatter are static. A matching command wrapper may continue after it has verified that its invoked command id equals \`resolvedWorkflowId\`; this canonical Skill must not re-resolve or reject that validated wrapper. Only when this canonical Skill is itself the Claude native invoked entrypoint and no validated wrapper gate exists must \`resolvedWorkflowId\` equal \`${invokedWorkflowId}\`. Otherwise STOP before tools or side effects and invoke the exact direct command \`/${namespace}:<resolved commandEntrypoint.directCommandId>\`; never execute the specialized contract under unmatched canonical frontmatter. Generic and Codex adapters may execute the resolved contract directly under adapter enforcement.`,
     `- **Decision entries:** ${behavior.decisionTable.length}${routes.length ? `; canonical routes and variants: ${routes.map((route) => `\`${route}\``).join(', ')}` : ''}.`,
     `- **Workflow steps:** ${behavior.workflowSteps.map((entry) => `\`${entry.id}\``).join(' → ')}`,
     `- **Output:** mode=\`${behavior.output.mode}\`; order=${behavior.output.order.map((field) => `\`${field}\``).join(' → ')}; severity=${behavior.output.severityLevels.length ? behavior.output.severityLevels.map((value) => `\`${value}\``).join(', ') : 'none'}.`,
@@ -42,12 +45,17 @@ function renderBehavior(behavior) {
 export function generatedBehaviorSurfaces() {
   const { spec, behaviorSpec } = loadNovaWorkflowModelV6(root);
   const behaviors = new Map(behaviorSpec.behaviors.map((behavior) => [behavior.id, behavior]));
+  const resolutions = listVariantResolutions(spec.workflows, behaviorSpec);
   return spec.workflows.filter((workflow) => !workflow.compatibilityAlias).map((workflow) => {
     const path = resolve(root, 'nova-plugin', workflow.contractPath);
     const current = readFileSync(path, 'utf8');
     const behavior = behaviors.get(workflow.id);
     if (!behavior) throw new Error(`${workflow.id}: missing behavior IR`);
-    const block = renderBehavior(behavior);
+    const block = renderBehavior(
+      behavior,
+      resolutions.filter(({ workflow: resolved }) => resolved.canonicalSurfaceId === workflow.canonicalSurfaceId),
+      { namespace: spec.pluginNamespace, invokedWorkflowId: workflow.id },
+    );
     let content;
     if (current.includes(start) || current.includes(end)) {
       if (!(current.includes(start) && current.includes(end))) throw new Error(`${workflow.id}: incomplete generated behavior markers`);

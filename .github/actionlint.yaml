@@ -1,0 +1,7 @@
+# GitHub Actions added the reusable-job workflow identity fields after the
+# pinned actionlint 1.7.12 schema. Keep this compatibility exception scoped to
+# the exact supported properties and workflow until actionlint recognizes them.
+paths:
+  .github/workflows/promote-release.yml:
+    ignore:
+      - 'property "workflow_(ref|sha)" is not defined in object type .*status: string'

@@ -22,13 +22,14 @@
 
 ## 输入参数
 
+### Required
+
+- `REVIEW_SCOPE`: 要审查并修复的 Git diff 或仓库范围
+
 ### Optional
 
 - `BASE`: 基线分支，默认自动识别
-- `GOAL`: 本轮修复目标
 - `REVIEW_MODE`: `branch` / `staged` / `full`
-- `OUTPUT_DIR`: 可选，review/verify artifact 输出目录
-- `FIX_SCOPE`: 可选，修复选择策略；不改变脚本行为
 - `INCLUDE_UNTRACKED_CONTENT`: 仅与 `REVIEW_MODE=full` 搭配；显式允许未跟踪文件内容进入 review/verify patch，且需通过大小、二进制、路径和 secret 检查
 
 ## 行为准则（Do/Don't）
@@ -47,12 +48,13 @@
 
 ## 详细执行步骤
 
-1. 运行 `codex-review.sh`
-2. 阅读 `.codex/codex-review-fix/latest-artifacts/review.md`
-3. 修复高置信问题并补测试
-4. 运行 `run-project-checks.sh --all --report-file .codex/codex-review-fix/latest-artifacts/checks.txt`
-5. 运行 `codex-verify.sh --review-file .codex/codex-review-fix/latest-artifacts/review.md --checks-file .codex/codex-review-fix/latest-artifacts/checks.txt`
-6. 输出闭环结论
+1. 解析并确认 `REVIEW_SCOPE`
+2. 运行 `codex-review.sh`
+3. 阅读 `.codex/codex-review-fix/latest-artifacts/review.md`
+4. 修复高置信问题并补测试
+5. 运行 `run-project-checks.sh --all --report-file .codex/codex-review-fix/latest-artifacts/checks.txt`
+6. 运行 `codex-verify.sh --review-file .codex/codex-review-fix/latest-artifacts/review.md --checks-file .codex/codex-review-fix/latest-artifacts/checks.txt`
+7. 输出闭环结论
 
 ## 输出规范
 

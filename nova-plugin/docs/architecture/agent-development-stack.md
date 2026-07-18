@@ -17,10 +17,10 @@ Rules and memory
 
 | Layer | Current files | Responsibility |
 | --- | --- | --- |
-| Memory | [CLAUDE.md](../../../CLAUDE.md), [AGENTS.md](../../../AGENTS.md), [docs/consumers/](../../../docs/consumers/) | Claude guidance source, non-Claude agent adapter, public workflow guidance, and private consumer profile boundaries |
+| Memory | [CLAUDE.md](../../../CLAUDE.md), [AGENTS.md](../../../AGENTS.md), [consumer-profile templates](../../../docs/templates/consumer-profiles/) | Claude guidance source, non-Claude agent adapter, public workflow guidance, and private consumer profile boundaries |
 | Skills | [nova-plugin/skills/](../../skills/), [nova-plugin/skills/_shared/](../../skills/_shared/) | Command behavior, parameter resolution, safety boundaries, outputs, and reusable policy |
 | Guardrails | [nova-plugin/hooks/](../../hooks/), [scripts/](../../../scripts/) | Deterministic checks, audit hooks, schema validation, docs validation, and release evidence |
-| Delegation | [nova-plugin/agents/](../../agents/), [nova-plugin/packs/](../../packs/), [docs/agents/](../../../docs/agents/) | Six core agents, documentation-only capability packs, and enhanced/fallback routing |
+| Delegation | [nova-plugin/agents/](../../agents/), [nova-plugin/packs/](../../packs/), [agent routing](../../../docs/reference/architecture/agent-routing.md) | Six core agents, documentation-only capability packs, and enhanced/fallback routing |
 | Distribution | [.claude-plugin/](../../../.claude-plugin/), [nova-plugin/.claude-plugin/plugin.json](../../.claude-plugin/plugin.json), [docs/marketplace/](../../../docs/marketplace/) | Claude Code marketplace metadata, generated catalog output, and installable plugin packaging |
 
 ## Layer Responsibilities
@@ -32,7 +32,7 @@ it, and where private project facts belong.
 
 - `CLAUDE.md` is the canonical repository guidance for Claude Code and shared
   project facts; `AGENTS.md` is the short Codex / generic-agent adapter.
-- `docs/consumers/` defines public-safe consumer profile contracts and
+- `docs/templates/consumer-profiles/` defines public-safe consumer profile contracts and
   templates.
 - Real consumer profiles must stay in the consumer project's own `AGENTS.md`,
   `CLAUDE.md`, `.claude/`, or private docs.
@@ -115,8 +115,8 @@ layers.
 | --- | --- | --- |
 | Memory and docs | `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/**`, `nova-plugin/docs/**` | `node scripts/validate-docs.mjs` |
 | Skills and commands | `nova-plugin/commands/**`, `nova-plugin/skills/**` | `node scripts/lint-frontmatter.mjs` |
-| Guardrails | `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, distributed Bash scripts | `node scripts/validate-hooks.mjs`, `bash -n nova-plugin/hooks/scripts/pre-write-check.sh`, `bash -n nova-plugin/hooks/scripts/post-audit-log.sh`, plus the changed script's own validation |
-| Delegation | `nova-plugin/agents/**`, `nova-plugin/packs/**`, `docs/agents/**` | `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`, `node scripts/validate-packs.mjs` |
+| Guardrails | `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, distributed Bash scripts | `node scripts/validate-hooks.mjs`, `bash -n nova-plugin/hooks/scripts/pre-write-check.sh`, `bash -n nova-plugin/hooks/scripts/pre-bash-check.sh`, `bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh`, `bash -n nova-plugin/hooks/scripts/post-audit-log.sh`, plus the changed script's own validation |
+| Delegation | `nova-plugin/agents/**`, `nova-plugin/packs/**`, `docs/reference/architecture/agent-routing.md` | `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`, `node scripts/validate-packs.mjs` |
 | Distribution | `.claude-plugin/registry.source.json`, `nova-plugin/.claude-plugin/plugin.json`, generated marketplace outputs | `node scripts/generate-registry.mjs --write`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs`, `node scripts/validate-claude-compat.mjs` |
 
 On Windows without Bash, local Bash-dependent checks may be skipped by

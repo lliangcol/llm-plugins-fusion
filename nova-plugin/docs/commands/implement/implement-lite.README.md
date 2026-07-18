@@ -22,17 +22,21 @@
 
 ## 参数说明
 
-| 参数        | 必填 | 说明                 | 示例       |
-| ----------- | ---- | -------------------- | ---------- |
-| `ARGUMENTS` | No   | 实现目标与约束说明。 | `修复描述` |
+| 参数          | 必填 | 说明                 | 示例               |
+| ------------- | ---- | -------------------- | ------------------ |
+| `REQUEST`     | Yes  | 实现目标与验收标准。 | `修复脱敏并补测试` |
+| `CONSTRAINTS` | No   | 范围与兼容性约束。   | `不改公开 API`     |
 
 ## 输出说明
 
-- 命令未规定固定输出结构；重点是快速完成实现。
+- 固定顺序为 `implemented changes`、`Changes Summary`、`Validation`、`Adjustments`。
 - 示例输出结构：
 
 ```text
-(命令未规定固定输出结构)
+1. implemented changes
+2. Changes Summary
+3. Validation
+4. Adjustments (or None)
 ```
 
 ## 完整示例

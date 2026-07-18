@@ -34,6 +34,16 @@ drill, and protected-environment evidence before stable promotion. Check it
 with `node scripts/validate-release-operational-readiness.mjs --mode promote`.
 Missing configuration is a blocker, never an implicit pass.
 
+Release-operations schema v4 treats these records as security evidence rather
+than truthy placeholders. Signer inventory entries must contain distinct
+principals and structurally valid, type-matching SSH public-key blobs. Rotation
+and protected-environment evidence use an HTTPS `source`, a lowercase SHA-256
+digest, and an RFC 3339 `recordedAt` or `verifiedAt`; recovery-drill evidence
+uses a `github.com` Actions `runUrl`, the exact lowercase 40-character
+`workflowSha`, and `completedAt`. Future, malformed, or cadence-expired records
+fail closed. `protectedPublication.evidenceMaxAgeDays` owns protected-environment
+freshness independently from signer and drill cadence.
+
 1. Create a new signing key outside the repository and protect its private key.
 2. Add the new public key to `.github/release-signers` while retaining the old
    key for an overlap window.
@@ -86,8 +96,10 @@ publication. It:
 5. repeats attestation verification with that exact source and signer digest;
 6. verifies the candidate envelope, promotion intent, control-bundle bytes and
    inventory, commit, source, evidence, build/runtime BOMs, build record, and
-   artifact digests with the normal promotion verifier; and
-7. uploads the recovered evidence as a drill artifact.
+   artifact digests with the normal promotion verifier;
+7. only after that authenticated verification, evaluates the release-correction
+   policy and replays the drill state machine through `PROMOTION_READY`; and
+8. uploads the recovered evidence as a drill artifact.
 
 That attestation proves protected-main workflow provenance. The candidate
 source commit is independently proved by the signed immutable tag; workflow

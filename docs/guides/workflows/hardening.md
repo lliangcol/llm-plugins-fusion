@@ -26,7 +26,7 @@ and release confidence without weakening the repository's permission posture.
 | Control | Repository surface | Reason |
 | --- | --- | --- |
 | First-stage routing | `/nova-plugin:route`, `nova-route`, command docs, routing docs | Keep the first answer to ambiguous work as a read-only route recommendation, not an implementation plan. |
-| Checkpoint artifact contract | `docs/prompts/common/checkpoint-artifact.md`, workbench template, artifact policy | Make long private consumer tasks resumable without depending on chat history. |
+| Checkpoint artifact contract | `docs/templates/prompts/common/checkpoint-artifact.md`, workbench template, artifact policy | Make long private consumer tasks resumable without depending on chat history. |
 | Verification evidence contract | Shared output contracts, Codex verification prompt, workflow docs | Require validation claims to map back to behavior, repository facts, review findings, or change goals. |
 | Prompt-surface budgets | `scripts/validate-surface-budget.mjs`, CI, npm shortcut, release evidence | Keep public command, skill, agent, and pack surfaces small enough to audit. |
 | Distribution-risk expansion | `scripts/scan-distribution-risk.mjs`, regression tests, trust/security docs | Block high-risk blanket permission advice and tracked `.codex/` runtime artifacts from public distribution. |
@@ -36,7 +36,8 @@ and release confidence without weakening the repository's permission posture.
 
 The hardening work should not introduce:
 
-- a broad command family that competes with the existing 21 command/skill pairs;
+- a broad command family that competes with the existing 21 command names and
+  six canonical Skills;
 - a public portal or mature multi-plugin ecosystem claim without implementation
   evidence;
 - default guidance to run with blanket permission bypasses;
@@ -56,7 +57,7 @@ When changing these controls:
 - Preserve canonical skill ownership and generated command/preset projection.
 - Update user-facing docs when command behavior, validation expectations, or
   safety boundaries change.
-- Put reusable private-work resumability prompts under `docs/prompts/`, not in
+- Put reusable private-work resumability prompts under `docs/templates/prompts/`, not in
   consumer-specific docs in this public repository.
 - Keep evidence claims tied to observed behavior, repository facts, review
   findings, or change goals.

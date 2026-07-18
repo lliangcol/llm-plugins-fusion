@@ -22,30 +22,34 @@
 
 ## 参数说明
 
-| 参数         | 必填 | 说明                           | 示例             |
-| ------------ | ---- | ------------------------------ | ---------------- |
-| `WORK_SCOPE` | No   | 当前已完成的改动范围（隐含）。 | `当前工作区改动` |
+| 参数           | 必填 | 说明                             | 示例                 |
+| -------------- | ---- | -------------------------------- | -------------------- |
+| `WORK_SUMMARY` | Yes  | 已完成变更及验证上下文。         | `文档修复及校验结果` |
+| `DEPTH`        | No   | `lite` / `standard`，默认后者。  | `standard`           |
 
 ## 输出说明
 
-- 有 Git：commit message + PR 描述；无 Git：本地总结 + 手动步骤；必须包含变更/原因/限制/后续。
+- 固定顺序为 `title or commit message`、`change summary`、`validation`、`handoff`、`out-of-scope follow-up`。
 - 示例输出结构：
 
 ```text
-Case A (Git): commit message + PR description
-Case B (No Git): local change summary + manual steps
+1. title or commit message
+2. change summary
+3. validation
+4. handoff
+5. out-of-scope follow-up
 ```
 
 ## 完整示例
 
 ```text
 /nova-plugin:finalize-work
-请生成 commit message 和 PR 描述。
+WORK_SUMMARY="已完成命令文档修复并通过 docs 校验"
 ```
 
 ```text
 /nova-plugin:finalize-work
-无 Git 项目，请给出交接总结。
+WORK_SUMMARY="无 Git 项目中的已完成改动与验证" DEPTH=lite
 ```
 
 ```text
@@ -56,7 +60,7 @@ Case B (No Git): local change summary + manual steps
 ## 错误用法/反例
 
 - 总结阶段继续修改代码。
-- 缺少必填四部分。
+- 缺少任一固定输出字段。
 
 ## 与相近命令的对比
 

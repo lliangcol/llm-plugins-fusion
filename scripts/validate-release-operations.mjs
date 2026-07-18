@@ -7,13 +7,16 @@ import { resolve } from 'node:path';
 import { repoRoot } from './lib/repo-root.mjs';
 import { validateAdoptionEvidenceDocument } from './lib/adoption-evidence.mjs';
 import { parseLabelCatalog } from './lib/label-catalog.mjs';
+import { validateReleaseOperationsPolicy, validateReleaseSignerInventory } from './lib/release-operations.mjs';
 
 const root = repoRoot(import.meta.url);
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 const operations = readJson('governance/release-operations.json');
 const adoption = readJson('governance/adoption-evidence.json');
 
-assert.equal(operations.schemaVersion, 3);
+validateReleaseOperationsPolicy(operations);
+
+assert.equal(operations.schemaVersion, 4);
 assert.equal(operations.independentReview.requiredForCandidate, true);
 assert.ok(operations.independentReview.minimumApprovals >= 1);
 assert.deepEqual(operations.independentReview.reviewerMustDifferFrom, ['pull-request-author', 'candidate-actor']);
@@ -26,6 +29,7 @@ assert.equal(operations.candidateObservation.minimumHours, 168);
 assert.equal(operations.candidateObservation.timestampSource, 'github-releases-api-published-at');
 assert.equal(operations.candidateObservation.requirePublishedPrerelease, true);
 const signers = readFileSync(resolve(root, operations.signing.allowedSignersFile), 'utf8').split(/\r?\n/u).map((line) => line.trim()).filter(Boolean);
+validateReleaseSignerInventory(signers);
 assert.ok(signers.length >= operations.signing.minimumActiveSigners);
 assert.equal(new Set(signers).size, signers.length, 'release signer entries must be unique');
 for (const signer of signers) assert.match(signer, /^\S+\s+ssh-(?:ed25519|rsa)\s+\S+/u);

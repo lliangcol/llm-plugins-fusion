@@ -12,8 +12,13 @@ tag or publishing release notes.
 
 ## Version And Tag Rules
 
-- `nova-plugin/.claude-plugin/plugin.json` is the plugin version source of
-  truth.
+- `nova-plugin/.claude-plugin/plugin.json` is the development/candidate plugin
+  base-version source of truth.
+- The root `package.json` repository-tooling version must match the plugin
+  manifest version; `node scripts/validate-regression.mjs` enforces this sync.
+- `governance/release-channels.json` is the stable version/tag/commit source.
+  Stable marketplace outputs and the security support range follow that channel;
+  they may legitimately lag unreleased plugin/package metadata.
 - Candidate tags use `v<plugin-version>-rc.<number>` while the plugin manifest
   keeps the stable base version. Stable tags use `v<plugin-version>`. Candidate
   and stable tags must be signed, immutable, and point to the same commit.
@@ -43,7 +48,11 @@ artifact tests build twice and require byte-for-byte equality.
 
 ## Generated Artifact Rules
 
-- Update `.claude-plugin/registry.source.json` and plugin manifests first.
+- For development/candidate version changes, update the plugin manifest and
+  root `package.json` together.
+- For a governed stable-channel change, update the exact release-channel and
+  registry distribution-source facts, then regenerate stable outputs. Do not
+  copy a moving development version into stable registry metadata.
 - Regenerate derived files with:
 
 ```bash
@@ -84,6 +93,7 @@ When Bash is available, confirm hook syntax checks actually ran:
 ```bash
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
+bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 
@@ -106,8 +116,9 @@ All three privileged workflow entrypoints are `repository_dispatch` events
 resolved from protected `main`. The dispatching identity requires
 `Contents: write`, tags appear only under `client_payload`, and pushing a tag
 does not trigger candidate publication, stable promotion, or recovery. Record
-the run URL and exact `github.workflow_sha` for each dispatch. See the
-[Release validation runbook](validation.md) for the `gh api` examples.
+the run URL and exact caller `github.workflow_sha` for each dispatch; stable
+promotion also records the reusable job's `job.workflow_sha`. See the [Release
+validation runbook](validation.md) for the `gh api` examples.
 
 The release workflow is split by responsibility:
 
@@ -161,12 +172,12 @@ Before tagging, search for:
   from an unattended run that may mutate the operator's user-scope Claude
   plugin installation.
 - For minor releases, whether the five primary commands were manually evaluated
-  with `docs/examples/workflow-evaluation.md` and recorded with
-  `docs/examples/workflow-evaluation-record-template.md`, or why that evidence
+  with `docs/tutorials/workflow-evaluation.md` and recorded with
+  `docs/templates/evidence/workflow-evaluation.md`, or why that evidence
   is not applicable.
 
 `node scripts/validate-docs.mjs` also checks that `SECURITY.md` declares the
-current MINOR support range derived from `plugin.json`, and that active planning
+current MINOR support range derived from the stable channel in `governance/release-channels.json`, and that active planning
 tables do not keep stale `v1.x` future-version labels. It also checks the core
 project positioning, exact-tag promotion wording, and maintainer diagnostic
 warning semantics in active release-facing docs. Historical changelog entries

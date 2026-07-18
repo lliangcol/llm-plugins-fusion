@@ -1,4 +1,6 @@
-export const SEMVER_PATTERN_SOURCE = String.raw`^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$`;
+import { SEMVER_PATTERN_SOURCE } from '../../framework/core/semver.mjs';
+
+export { SEMVER_PATTERN_SOURCE };
 
 const SEMVER_PATTERN = new RegExp(SEMVER_PATTERN_SOURCE);
 

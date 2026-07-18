@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
@@ -49,6 +49,24 @@ test('project checks reports an all-success task accurately', async (t) => {
   });
   assert.equal(result.ok, true, result.stderr);
   assert.match(`${result.stdout}${result.stderr}`, /Summary: selected=1 passed=1 failed=0 mode=test/);
+});
+
+test('project checks publishes its report through the confined atomic output path', async (t) => {
+  const root = await fixtureRepo(t, [['.', `${process.execPath} -e "process.exit(0)"`]]);
+  const relativeReport = '.codex/codex-review-fix/artifacts/checks.txt';
+  const result = await runProcess('atomic report checks', bashCommand, [
+    pathForBash(checksScript, bashCommand),
+    '--test-only',
+    '--report-file',
+    relativeReport,
+  ], {
+    cwd: root,
+    timeoutMs: 60_000,
+  });
+  assert.equal(result.ok, true, result.stderr);
+  const report = await readFile(resolve(root, relativeReport), 'utf8');
+  assert.match(report, /Summary: selected=1 passed=1 failed=0 mode=test/);
+  assert.match(result.stdout, /Summary: selected=1 passed=1 failed=0 mode=test/);
 });
 
 test('project checks reports mixed success and failure counts', async (t) => {

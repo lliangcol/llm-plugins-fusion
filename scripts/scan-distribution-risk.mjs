@@ -14,14 +14,13 @@ import {
   readSync,
   readdirSync,
   lstatSync,
-  mkdirSync,
   statSync,
-  writeFileSync,
 } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { basename, dirname, extname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { secretChecks } from '../nova-plugin/runtime/secret-rules.mjs';
+import { writeArtifactFileAtomically } from './lib/artifact-output.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
@@ -494,9 +493,12 @@ function runCli(args = process.argv.slice(2)) {
   }
   const { errors, warnings } = scanDistributionRisk({ rootDir: defaultRoot, mode });
   if (sarifPath) {
-    const resolvedSarifPath = resolve(defaultRoot, sarifPath);
-    mkdirSync(dirname(resolvedSarifPath), { recursive: true });
-    writeFileSync(resolvedSarifPath, `${JSON.stringify(distributionRiskSarif({ errors, warnings }), null, 2)}\n`, 'utf8');
+    writeArtifactFileAtomically(
+      defaultRoot,
+      sarifPath,
+      `${JSON.stringify(distributionRiskSarif({ errors, warnings }), null, 2)}\n`,
+      { label: 'distribution risk SARIF output' },
+    );
   }
 
   if (warnings.length) {

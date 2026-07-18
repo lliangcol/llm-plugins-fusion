@@ -49,14 +49,19 @@ jobs:
           test "${TRIGGER_REF}" = refs/heads/main
           test "${TRIGGER_COMMIT}" = "${WORKFLOW_SOURCE_COMMIT}"
           test "${WORKFLOW_SOURCE_REF}" = "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml@refs/heads/main"
+          if [[ ! "${CANDIDATE_TAG}" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)-rc\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::invalid candidate release tag: ${CANDIDATE_TAG}" >&2
+            exit 1
+          fi
           git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
           git merge-base --is-ancestor "${WORKFLOW_SOURCE_COMMIT}" origin/main
-          [[ "${CANDIDATE_TAG}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]]
           git fetch --no-tags origin "refs/tags/${CANDIDATE_TAG}:refs/tags/${CANDIDATE_TAG}"
           test "$(git cat-file -t "refs/tags/${CANDIDATE_TAG}")" = tag
           mkdir -p "${RUNNER_TEMP}/candidate-trust"
           git show origin/main:.github/release-signers > "${RUNNER_TEMP}/candidate-trust/release-signers"
           test -s "${RUNNER_TEMP}/candidate-trust/release-signers"
+          git show "${WORKFLOW_SOURCE_COMMIT}:.github/workflows/release-candidate.yml" > "${RUNNER_TEMP}/candidate-trust/release-candidate.yml"
+          test -s "${RUNNER_TEMP}/candidate-trust/release-candidate.yml"
           git config gpg.format ssh
           git config gpg.ssh.allowedSignersFile "${RUNNER_TEMP}/candidate-trust/release-signers"
           git verify-tag "${CANDIDATE_TAG}"
@@ -68,6 +73,47 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
+      - name: Record protected-main candidate workflow provenance
+        env:
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EVENT_NAME: ${{ github.event_name }}
+          CALLER_WORKFLOW_REF: ${{ github.workflow_ref }}
+          CALLER_WORKFLOW_SHA: ${{ github.workflow_sha }}
+          WORKFLOW_FILE: ${{ runner.temp }}/candidate-trust/release-candidate.yml
+          CANDIDATE_TAG: ${{ steps.identity.outputs.candidate-tag }}
+          CANDIDATE_COMMIT: ${{ steps.identity.outputs.source-commit }}
+          WORKFLOW_SOURCE_COMMIT: ${{ steps.identity.outputs.workflow-source-commit }}
+        run: |
+          set -euo pipefail
+          mkdir -p .metrics/candidate-preflight
+          # Preserve JavaScript template literals for Node instead of expanding them in Bash.
+          # shellcheck disable=SC2016
+          node --input-type=module -e '
+            import { createHash } from "node:crypto";
+            import { readFileSync, writeFileSync } from "node:fs";
+            const workflowBytes = readFileSync(process.env.WORKFLOW_FILE);
+            const evidence = {
+              schemaVersion: 1,
+              operation: "release-candidate",
+              repository: process.env.REPOSITORY,
+              githubRunId: process.env.RUN_ID,
+              githubRunAttempt: Number(process.env.RUN_ATTEMPT),
+              githubRunUrl: process.env.RUN_URL,
+              eventName: process.env.EVENT_NAME,
+              callerWorkflowRef: process.env.CALLER_WORKFLOW_REF,
+              callerWorkflowSha: process.env.CALLER_WORKFLOW_SHA,
+              workflow: { path: ".github/workflows/release-candidate.yml", sha256: createHash("sha256").update(workflowBytes).digest("hex") },
+              workflowSourceCommit: process.env.WORKFLOW_SOURCE_COMMIT,
+              candidateTag: process.env.CANDIDATE_TAG,
+              candidateCommit: process.env.CANDIDATE_COMMIT,
+              nodeVersion: process.version,
+              generatedAt: new Date().toISOString(),
+            };
+            writeFileSync(".metrics/candidate-preflight/workflow-provenance.json", `${JSON.stringify(evidence, null, 2)}\n`);
+          '
       - name: Require governed candidate performance profile
         env:
           GH_TOKEN: ${{ github.token }}
@@ -239,6 +285,7 @@ jobs:
           cp .metrics/aggregate/live/inventory.json .metrics/candidate-bundle/evidence/
           cp .metrics/aggregate/live/route-smoke.json .metrics/candidate-bundle/evidence/
           cp .metrics/aggregate/preflight/independent-review.json .metrics/candidate-bundle/evidence/
+          cp .metrics/aggregate/preflight/workflow-provenance.json .metrics/candidate-bundle/evidence/
           node scripts/build-release-control-bundle.mjs
           cp .metrics/release-control/release-control-bundle.* .metrics/candidate-bundle/
           stable_tag="${CANDIDATE_TAG%%-rc.*}"
@@ -248,7 +295,8 @@ jobs:
             --bundle-root .metrics/candidate-bundle --artifact-dir .metrics/candidate-bundle/artifacts --out-dir .metrics/candidate-bundle \
             --evidence .metrics/candidate-bundle/evidence/SHA256SUMS.txt --evidence .metrics/candidate-bundle/evidence/coverage-metadata.json \
             --evidence .metrics/candidate-bundle/evidence/validation-timings.json --evidence .metrics/candidate-bundle/evidence/inventory.json \
-            --evidence .metrics/candidate-bundle/evidence/route-smoke.json --evidence .metrics/candidate-bundle/evidence/independent-review.json
+            --evidence .metrics/candidate-bundle/evidence/route-smoke.json --evidence .metrics/candidate-bundle/evidence/independent-review.json \
+            --evidence .metrics/candidate-bundle/evidence/workflow-provenance.json
           test -f .metrics/candidate-bundle/promotion-intent.json
           node scripts/build-candidate-bundle.mjs --bundle-root .metrics/candidate-bundle --out ".metrics/nova-plugin-${CANDIDATE_TAG#v}-evidence-bundle.tar.gz"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -320,4 +368,5 @@ jobs:
           (cd .metrics/candidate-publish && sha256sum nova-plugin-*.tar.gz | LC_ALL=C sort > SHA256SUMS.txt)
           test "$(find .metrics/candidate-publish -maxdepth 1 -type f | wc -l | tr -d ' ')" -eq 3
           node scripts/reconcile-github-release.mjs --prerelease --tag "${CANDIDATE_TAG}" \
-            --assets-dir .metrics/candidate-publish --notes .metrics/release/release-notes.md
+            --assets-dir .metrics/candidate-publish --notes .metrics/release/release-notes.md \
+            --host github.com --repository "${GITHUB_REPOSITORY}"

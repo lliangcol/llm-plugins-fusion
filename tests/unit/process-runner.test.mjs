@@ -1,14 +1,16 @@
 import assert from 'node:assert/strict';
 import { access, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { join, win32 } from 'node:path';
 import test from 'node:test';
 import {
   commandDetails,
   commandExists,
   formatCommand,
   resolveExecutableInvocation,
+  resolveWindowsTaskkill,
   runProcess,
+  terminateProcessTree,
 } from '../../scripts/lib/process-runner.mjs';
 
 test('runProcess captures stdout, stderr, and exit code', async () => {
@@ -175,4 +177,120 @@ test('Windows bare commands prefer the configured Volta shim over an injected to
   await writeFile(join(voltaBin, 'volta.exe'), 'placeholder');
   const resolved = resolveExecutableInvocation('sample', { platform: 'win32', env: { Path: imageBin, VOLTA_HOME: voltaHome } });
   assert.deepEqual(resolved, { command: join(voltaBin, 'volta.exe'), argsPrefix: ['run', 'sample'], resolutionKind: 'windows-volta-shim' });
+});
+
+test('Windows process-tree termination uses the fixed system namespace without PATH or environment resolution', () => {
+  const expected = String.raw`\\?\GLOBALROOT\SystemRoot\System32\taskkill.exe`;
+  const calls = [];
+  let unrefCalled = false;
+  let fallbackCalled = false;
+  const child = {
+    pid: 4242,
+    kill() { fallbackCalled = true; return true; },
+  };
+  assert.equal(resolveWindowsTaskkill({
+    isRegularFile: (path) => path === expected,
+  }), expected);
+  const explicitlyTrusted = win32.join('C:\\Windows', 'System32', 'taskkill.exe');
+  assert.equal(resolveWindowsTaskkill({
+    trustedSystemDirectory: 'C:\\Windows\\System32',
+    isRegularFile: (path) => path === explicitlyTrusted,
+  }), explicitlyTrusted);
+  const requested = terminateProcessTree(child, 'SIGTERM', {
+    platform: 'win32',
+    isRegularFile: (path) => path === expected,
+    executor(command, args, options) {
+      calls.push({ command, args, options });
+      return { unref() { unrefCalled = true; } };
+    },
+  });
+  assert.equal(requested, true);
+  assert.equal(fallbackCalled, false);
+  assert.equal(unrefCalled, true);
+  assert.deepEqual(calls, [{
+    command: expected,
+    args: ['/PID', '4242', '/T', '/F'],
+    options: { shell: false, windowsHide: true, stdio: 'ignore' },
+  }]);
+});
+
+test('Windows process-tree termination falls back when the fixed system executable is unavailable', () => {
+  let executorCalled = false;
+  const signals = [];
+  const child = { pid: 777, kill(signal) { signals.push(signal); return true; } };
+  const requested = terminateProcessTree(child, 'SIGTERM', {
+    platform: 'win32',
+    isRegularFile: () => false,
+    executor() { executorCalled = true; throw new Error('must not execute'); },
+  });
+  assert.equal(requested, true);
+  assert.equal(executorCalled, false);
+  assert.deepEqual(signals, ['SIGTERM']);
+  assert.throws(
+    () => resolveWindowsTaskkill({ isRegularFile: () => false }),
+    /unavailable/u,
+  );
+  assert.throws(
+    () => resolveWindowsTaskkill({ trustedSystemDirectory: 'C:\\Windows\\bad:name', isRegularFile: () => true }),
+    /non-portable/u,
+  );
+  assert.throws(
+    () => resolveWindowsTaskkill({ trustedSystemDirectory: 'C:\\Windows\\System32', isRegularFile: () => false }),
+    /unavailable/u,
+  );
+});
+
+test('Windows process-tree termination handles an asynchronous taskkill launch failure', () => {
+  const expected = String.raw`\\?\GLOBALROOT\SystemRoot\System32\taskkill.exe`;
+  const signals = [];
+  const child = { pid: 778, kill(signal) { signals.push(signal); return true; } };
+  const requested = terminateProcessTree(child, 'SIGTERM', {
+    platform: 'win32',
+    isRegularFile: (path) => path === expected,
+    executor() {
+      return {
+        once(event, listener) {
+          assert.equal(event, 'error');
+          listener(new Error('simulated launch failure'));
+        },
+        unref() {},
+      };
+    },
+  });
+  assert.equal(requested, true);
+  assert.deepEqual(signals, ['SIGTERM']);
+});
+
+test('runProcess timeout reaches the Windows system taskkill path in a cross-platform simulation', async () => {
+  const expected = String.raw`\\?\GLOBALROOT\SystemRoot\System32\taskkill.exe`;
+  const calls = [];
+  const result = await runProcess('simulated Windows tree timeout', process.execPath, [
+    '-e',
+    'setInterval(() => {}, 1000);',
+  ], {
+    timeoutMs: 30,
+    env: {
+      ...process.env,
+      Path: 'C:\\attacker-bin',
+      PATH: 'C:\\attacker-bin',
+      SystemRoot: 'C:\\attacker-windows',
+      WINDIR: 'C:\\attacker-windows',
+    },
+    processTreeOptions: {
+      platform: 'win32',
+      isRegularFile: (path) => path === expected,
+      executor(command, args, options) {
+        calls.push({ command, args, options });
+        process.kill(Number(args[1]), 'SIGTERM');
+        return { unref() {} };
+      },
+    },
+  });
+  assert.equal(result.timedOut, true);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].command, expected);
+  assert.deepEqual(calls[0].args.slice(0, 1), ['/PID']);
+  assert.match(calls[0].args[1], /^\d+$/u);
+  assert.deepEqual(calls[0].args.slice(2), ['/T', '/F']);
+  assert.deepEqual(calls[0].options, { shell: false, windowsHide: true, stdio: 'ignore' });
 });

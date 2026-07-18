@@ -1,9 +1,31 @@
 import assert from 'node:assert/strict';
-import { chmodSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs';
 import { delimiter, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import test from 'node:test';
-import { resolveExecutableOnPath, trustedHookBashIdentity } from '../../scripts/lib/bash-command.mjs';
+import { projectFreeExecutablePath, resolveExecutableOnPath, trustedHookBashIdentity } from '../../scripts/lib/bash-command.mjs';
+
+test('runtime validation PATH removes lexical and physical project entries', { skip: process.platform === 'win32' }, (t) => {
+  const fixture = mkdtempSync(resolve(tmpdir(), 'nova-runtime-path-'));
+  const projectRoot = resolve(fixture, 'project');
+  const projectBin = resolve(projectRoot, 'node_modules/.bin');
+  const externalBin = resolve(fixture, 'external-bin');
+  const linkedProjectBin = resolve(fixture, 'linked-project-bin');
+  mkdirSync(projectBin, { recursive: true });
+  mkdirSync(externalBin);
+  symlinkSync(projectBin, linkedProjectBin);
+  const nodeExecutable = resolve(externalBin, 'node');
+  writeFileSync(nodeExecutable, '#!/bin/sh\nexit 0\n');
+  chmodSync(nodeExecutable, 0o755);
+  t.after(() => rmSync(fixture, { recursive: true, force: true }));
+
+  const path = projectFreeExecutablePath(projectRoot, {
+    env: { PATH: [projectBin, linkedProjectBin, 'relative-bin', externalBin, externalBin].join(delimiter) },
+    nodeExecutable,
+  });
+
+  assert.deepEqual(path.split(delimiter), [realpathSync.native(externalBin)]);
+});
 
 test('hook bootstrap resolves a physical Bash outside the writable project', { skip: process.platform === 'win32' }, (t) => {
   const projectRoot = mkdtempSync(resolve(tmpdir(), 'nova-hook-bootstrap-project-'));

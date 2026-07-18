@@ -13,15 +13,17 @@
       "required": ["workflow", "runtime", "adapter"],
       "additionalProperties": false,
       "properties": {
-        "workflow": { "type": "string", "pattern": "^[56]\\." },
-        "runtime": { "type": "string", "pattern": "^[34]\\." },
-        "adapter": { "type": "string", "pattern": "^[23]\\." },
-        "framework": { "type": "string", "pattern": "^5\\." },
-        "compatibilityProjection": { "type": "string", "pattern": "^5\\." }
+        "workflow": { "$ref": "#/$defs/semver" },
+        "runtime": { "$ref": "#/$defs/semver" },
+        "adapter": { "$ref": "#/$defs/semver" },
+        "framework": { "$ref": "#/$defs/semver" },
+        "compatibilityProjection": { "$ref": "#/$defs/semver" }
       }
     },
     "permissionProfiles": {
-      "type": "object"
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/permissionProfile" }
     },
     "workflows": {
       "type": "array",
@@ -33,16 +35,16 @@
         "properties": {
           "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
           "stage": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
-          "ownerAgents": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
-          "recommendedPacks": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-          "requiredInputs": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+          "ownerAgents": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" } },
+          "recommendedPacks": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" } },
+          "requiredInputs": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" } },
           "outputContract": { "type": "string", "minLength": 1 },
           "risk": { "enum": ["none", "low", "medium", "high"] },
           "modelInvocable": { "type": "boolean" },
           "subagentSafe": { "type": "boolean" },
           "permissionProfile": { "type": "string" },
           "legacyAlias": { "type": "string" },
-          "contractPath": { "type": "string" },
+          "contractPath": { "$ref": "#/$defs/workflowContractPath" },
           "canonicalSurfaceId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
           "variantPreset": { "type": "object" },
           "compatibilityAlias": { "type": "boolean" },
@@ -56,7 +58,7 @@
                 "name": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" },
                 "type": { "enum": ["string", "enum", "boolean", "path", "artifact-reference", "review-reference", "approval"] },
                 "required": { "type": "boolean" },
-                "values": { "type": "array", "minItems": 1, "uniqueItems": true },
+                "values": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": ["string", "number", "boolean", "null"] } },
                 "pathPolicy": {
                   "type": "object", "additionalProperties": false,
                   "required": ["root", "mustExist", "kind", "readable", "writable", "outsideRoot"],
@@ -74,14 +76,14 @@
               }
             }
           },
-          "effects": { "type": "array", "uniqueItems": true, "items": { "enum": ["workspace-read", "workspace-write", "artifact-write", "shell", "network", "credentials", "user-scope-mutation", "external-publish", "git-history-mutation"] } },
+          "effects": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["workspace-read", "workspace-write", "artifact-write", "shell", "network", "credentials", "user-scope-mutation", "external-publish", "git-history-mutation"] } },
           "authorizationProfile": { "type": "string", "minLength": 1 },
-          "enforcementRequirements": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
-          "evidenceRequirements": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+          "enforcementRequirements": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^enforce:(?:workspace-read|workspace-write|artifact-write|shell|network|credentials|user-scope-mutation|external-publish|git-history-mutation)$" } },
+          "evidenceRequirements": { "type": "array", "minItems": 3, "maxItems": 3, "uniqueItems": true, "items": { "enum": ["authorization-decision", "effects-observed", "validation-result"] } },
           "compatibilityProjection": {
             "type": "object", "additionalProperties": false,
             "required": ["sourceVersion", "permissionProfile", "requiredInputs"],
-            "properties": { "sourceVersion": { "const": 5 }, "permissionProfile": { "type": "string" }, "requiredInputs": { "type": "array", "uniqueItems": true, "items": { "type": "string" } } }
+            "properties": { "sourceVersion": { "const": 5 }, "permissionProfile": { "type": "string" }, "requiredInputs": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]*$" } } }
           },
           "runtimeRequirements": {
             "type": "object",
@@ -96,7 +98,7 @@
                   "additionalProperties": false,
                   "required": ["name", "required", "versionEvidence"],
                   "properties": {
-                    "name": { "type": "string" },
+                    "name": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*$" },
                     "required": { "type": "boolean" },
                     "versionEvidence": { "enum": ["none", "versioned-evidence"] }
                   }
@@ -108,8 +110,12 @@
                 "required": ["need", "purpose"],
                 "properties": {
                   "need": { "enum": ["none", "optional", "required"] },
-                  "purpose": { "type": "string" }
-                }
+                  "purpose": { "type": "string", "minLength": 1, "pattern": "^(?=.*\\S)[^\\u0000-\\u001F\\u007F-\\u009F\\u2028\\u2029]+$" }
+                },
+                "allOf": [
+                  { "if": { "properties": { "need": { "const": "none" } }, "required": ["need"] }, "then": { "properties": { "purpose": { "const": "none" } } } },
+                  { "if": { "properties": { "purpose": { "const": "none" } }, "required": ["purpose"] }, "then": { "properties": { "need": { "const": "none" } } } }
+                ]
               },
               "credentials": {
                 "type": "object",
@@ -118,7 +124,11 @@
                 "properties": {
                   "need": { "enum": ["none", "optional", "required"] },
                   "source": { "enum": ["none", "assistant-owned-authentication", "consumer-owned-authentication"] }
-                }
+                },
+                "allOf": [
+                  { "if": { "properties": { "need": { "const": "none" } }, "required": ["need"] }, "then": { "properties": { "source": { "const": "none" } } } },
+                  { "if": { "properties": { "source": { "const": "none" } }, "required": ["source"] }, "then": { "properties": { "need": { "const": "none" } } } }
+                ]
               }
             }
           }
@@ -126,5 +136,93 @@
       }
     }
   },
-  "allOf": [{ "if": { "properties": { "schemaVersion": { "const": 6 } } }, "then": { "properties": { "contractVersions": { "type": "object", "required": ["workflow", "runtime", "adapter", "framework", "compatibilityProjection"], "properties": { "workflow": {}, "runtime": {}, "adapter": {}, "framework": {}, "compatibilityProjection": {} } }, "workflows": { "type": "array", "items": { "type": "object", "required": ["inputs", "effects", "authorizationProfile", "enforcementRequirements", "evidenceRequirements", "compatibilityProjection"], "properties": { "inputs": {}, "effects": {}, "authorizationProfile": {}, "enforcementRequirements": {}, "evidenceRequirements": {}, "compatibilityProjection": {} } } } } } }]
+  "$defs": {
+    "semver": { "type": "string", "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$" },
+    "workflowContractPath": { "type": "string", "pattern": "^(?!(?:.*\\/)?(?:[cC][oO][nN]|[pP][rR][nN]|[aA][uU][xX]|[nN][uU][lL]|[cC][lL][oO][cC][kK]\\$|[cC][oO][nN][iI][nN]\\$|[cC][oO][nN][oO][uU][tT]\\$|[cC][oO][mM][1-9]|[lL][pP][tT][1-9])(?:[ .]|\\/|$))(?!.*[. ](?:\\/|$))[A-Za-z0-9][A-Za-z0-9._-]*(?:\\/[A-Za-z0-9][A-Za-z0-9._-]*)*$" },
+    "permissionState": { "enum": ["denied", "prompt", "preapproved", "unsupported", "explicit"] },
+    "permissionPolicy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["workspaceRead", "workspaceWrite", "shell", "network", "credentials", "userScopeMutation", "externalPublish", "gitHistoryMutation"],
+      "properties": {
+        "workspaceRead": { "$ref": "#/$defs/permissionState" },
+        "workspaceWrite": { "$ref": "#/$defs/permissionState" },
+        "shell": { "$ref": "#/$defs/permissionState" },
+        "network": { "$ref": "#/$defs/permissionState" },
+        "credentials": { "$ref": "#/$defs/permissionState" },
+        "userScopeMutation": { "$ref": "#/$defs/permissionState" },
+        "externalPublish": { "$ref": "#/$defs/permissionState" },
+        "gitHistoryMutation": { "$ref": "#/$defs/permissionState" }
+      }
+    },
+    "permissionProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["allowedTools", "disallowedTools", "permissionPolicy"],
+      "properties": {
+        "allowedTools": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "disallowedTools": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+        "permissionPolicy": { "$ref": "#/$defs/permissionPolicy" }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "schemaVersion": { "const": 5 } }, "required": ["schemaVersion"] },
+      "then": {
+        "properties": {
+          "contractVersions": {
+            "type": "object",
+            "required": ["workflow", "runtime", "adapter"],
+            "additionalProperties": false,
+            "properties": {
+              "workflow": { "allOf": [{ "$ref": "#/$defs/semver" }, { "type": "string", "pattern": "^5\\." }] },
+              "runtime": { "allOf": [{ "$ref": "#/$defs/semver" }, { "type": "string", "pattern": "^3\\." }] },
+              "adapter": { "allOf": [{ "$ref": "#/$defs/semver" }, { "type": "string", "pattern": "^2\\." }] }
+            }
+          },
+          "workflows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "inputs": false,
+                "effects": false,
+                "authorizationProfile": false,
+                "enforcementRequirements": false,
+                "evidenceRequirements": false,
+                "compatibilityProjection": false
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "schemaVersion": { "const": 6 } }, "required": ["schemaVersion"] },
+      "then": {
+        "properties": {
+          "contractVersions": {
+            "type": "object",
+            "required": ["workflow", "runtime", "adapter", "framework", "compatibilityProjection"],
+            "properties": {
+              "workflow": { "allOf": [{ "$ref": "#/$defs/semver" }, { "type": "string", "pattern": "^6\\." }] },
+              "runtime": { "allOf": [{ "$ref": "#/$defs/semver" }, { "type": "string", "pattern": "^4\\." }] },
+              "adapter": { "allOf": [{ "$ref": "#/$defs/semver" }, { "type": "string", "pattern": "^3\\." }] },
+              "framework": { "allOf": [{ "$ref": "#/$defs/semver" }, { "type": "string", "pattern": "^5\\." }] },
+              "compatibilityProjection": { "allOf": [{ "$ref": "#/$defs/semver" }, { "type": "string", "pattern": "^5\\." }] }
+            }
+          },
+          "workflows": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": ["inputs", "effects", "authorizationProfile", "enforcementRequirements", "evidenceRequirements", "compatibilityProjection"],
+              "properties": { "inputs": {}, "effects": {}, "authorizationProfile": {}, "enforcementRequirements": {}, "evidenceRequirements": {}, "compatibilityProjection": {} }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

@@ -86,10 +86,13 @@ create/update-no-delete job 同步。若你想提议任务，请使用 feature r
    ```bash
    node scripts/validate-all.mjs
    ```
-5. 可选使用维护者 npm 便捷入口；`package.json` 包含 dependency-free 的
-   `lint`、`test` 和 `check` 入口。仓库不使用通用 `build` 名称；发布归档由
+5. 可选使用维护者 npm 便捷入口；这些入口需要先通过
+   `npm ci --ignore-scripts` 安装 lockfile 固定的开发依赖。分发的
+   `nova-plugin` 归档不包含 Node 运行时依赖，但这不代表维护者校验入口
+   dependency-free。仓库不使用通用 `build` 名称；发布归档由
    `release:artifacts` 构建。
    ```bash
+   npm ci --ignore-scripts
    npm run validate
    npm run validate:drift
    npm run validate:docs
@@ -118,8 +121,8 @@ create/update-no-delete job 同步。若你想提议任务，请使用 feature r
 - **Catalog 生成**：`docs/marketplace/catalog.md` 同样由 registry source 生成，不手工编辑。它展示当前插件 entry、maintainer、trust/risk、compatibility evidence 和 review policy 链接。
 - **Registry fixture**：多插件 entry 生成能力由 `fixtures/registry/multi-plugin/` 和 `node scripts/validate-registry-fixtures.mjs` 覆盖，确保未来多 entry 不破坏当前单插件布局。
 - **Claude 兼容性**：官方 marketplace manifest 改动后必须通过 `node scripts/validate-claude-compat.mjs`；若本机存在 Claude CLI，该脚本会运行 `claude plugin validate .` 和 `claude plugin validate nova-plugin`。
-- **Hook 校验**：hook 配置或脚本改动后运行 `node scripts/validate-hooks.mjs`；Bash 可用时还要运行两个 hook 脚本的 `bash -n`。
-- **Runtime smoke**：Codex Bash helper 脚本或其调用方式变更后运行 `node scripts/validate-runtime-smoke.mjs`；它只校验语法、help 输出和安全失败路径，不调用 Codex，也不写 `.codex/`。
+- **Hook 校验**：hook 配置或脚本改动后运行 `node scripts/validate-hooks.mjs`；Bash 可用时还要对 4 个分发 shell 脚本运行 `bash -n`。其中 `post-audit-log.sh` 是 compatibility helper，不是 `hooks.json` 的 active launcher。
+- **Runtime smoke**：Codex Bash helper 脚本或其调用方式变更后运行 `node scripts/validate-runtime-smoke.mjs`；它只校验语法、help 输出和安全失败路径，不调用 Codex。非 Windows 使用系统临时目录；Windows 为保持 Git Bash / `node.exe` 路径兼容会临时使用 `.codex/tmp` 并在正常退出时清理，这些 runtime artifact 不得提交。
 - **分发风险扫描**：发布、文档、模板或 marketplace 变更后运行 `node scripts/scan-distribution-risk.mjs`，确认活跃分发内容不含真实密钥、JWT、npm token、云厂商 key、机器本地路径、私网地址、内部 endpoint、私有 SSH repo URL 或真实 `.env` 值。历史归档发现只能作为 redacted warning 或 `scripts/distribution-risk.allowlist.json` 中的 allowlisted warning。
 - **回归校验**：验证脚本、registry 生成、分发风险扫描或 command/docs drift 规则变更后运行 `node scripts/validate-regression.mjs`。
 - **Surface inventory**：command、skill、agent、pack 或 generated marketplace
@@ -141,13 +144,22 @@ create/update-no-delete job 同步。若你想提议任务，请使用 feature r
 | 新增命令 / skill / agent / capability pack，或能力显著增强 | MINOR | `1.0.x → 1.1.0` |
 | Bug 修复、文档更新、内部重构 | PATCH | `1.0.7 → 1.0.8` |
 
-每次版本变更需要同步：
+开发/候选版本变更需要同步：
+
 - `nova-plugin/.claude-plugin/plugin.json` 的 `version`
-- `.claude-plugin/registry.source.json` 的 `last-updated`
-- 生成后的 `.claude-plugin/marketplace.json` 的 `plugins[].version`
-- 生成后的 `.claude-plugin/marketplace.metadata.json` 的 `plugins[].version`、`last-updated`
-- 生成后的 `docs/marketplace/catalog.md`
-- `CHANGELOG.md` 新增条目
+- 根目录 `package.json` 的 `version`
+- `CHANGELOG.md` 的 Unreleased 或目标 release 条目
+
+稳定分发是独立版本域。只有在 governed stable promotion 时才同步：
+
+- `governance/release-channels.json` 的 stable version/tag/commit
+- `.claude-plugin/registry.source.json` 的 stable distribution source 与 `last-updated`
+- 生成后的 `.claude-plugin/marketplace.json`、
+  `.claude-plugin/marketplace.metadata.json` 和 `docs/marketplace/catalog.md`
+- README 稳定版本事实与 `SECURITY.md` 支持范围
+
+未发布的 plugin/package 版本可以领先 stable channel；不得在完成稳定
+promotion 前把 development version 复制到 marketplace 或安全支持面。
 
 ## 添加或维护 marketplace entry
 
@@ -199,6 +211,8 @@ node scripts/validate-hooks.mjs
 
 # 7. hook Bash 语法校验（需要 Bash）
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
+bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 
 # 8. Codex runtime smoke（需要 Bash，Windows 无 Bash 时 warning-skip）

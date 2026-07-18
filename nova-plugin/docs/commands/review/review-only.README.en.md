@@ -24,7 +24,7 @@
 
 | Parameter   | Required | Description        | Example                                 |
 | ----------- | -------- | ------------------ | --------------------------------------- |
-| `ARGUMENTS` | No       | Content to review. | `Code snippets or implementation notes` |
+| `ARGUMENTS` | Yes      | Content to review. | `Code snippets or implementation notes` |
 
 ## Output
 

@@ -14,13 +14,13 @@
       "id": "git-read-only",
       "type": "git-subcommand",
       "subcommands": ["status", "diff", "show", "log", "rev-parse", "describe", "ls-files"],
-      "forbiddenArguments": ["--output", "--exec", "--ext-diff", "--textconv", "--git-dir", "--work-tree", "--config-env", "-c", "-C"]
+      "forbiddenArguments": ["--output", "--exec", "--ext-diff", "--textconv", "--show-signature", "--help", "-h", "--remerge-diff", "--diff-merges", "--submodule", "--recurse-submodules", "--dirty", "--broken", "--alternate-refs", "--git-dir", "--work-tree", "--config-env", "-c", "-C"]
     },
     {
       "id": "ripgrep-read-only",
       "type": "read-only-executable",
       "executables": ["rg"],
-      "forbiddenArguments": ["--pre", "--pre-glob"]
+      "forbiddenArguments": ["--pre", "--pre-glob", "--hostname-bin", "--follow", "-L"]
     },
     {
       "id": "bash-syntax",

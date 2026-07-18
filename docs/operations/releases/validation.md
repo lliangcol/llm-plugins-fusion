@@ -41,7 +41,7 @@ A snapshot is promotable only when all required evidence exists.
 | Recovery readiness | Manual workflow | The latest approved candidate passes `Release Recovery Drill`; absent drill evidence must be reported as not demonstrated. |
 | Candidate observation | Automated / GitHub | Promotion fetches the exact prerelease through the GitHub Releases API and verifies that server-owned `published_at` is at least 168 hours old. |
 | Tag trust boundary | Automated / GitHub | Candidate and promotion checkouts verify annotated tags with the signer list from protected `origin/main`, bind the selected commit to protected `main`, and do so in the first shell step before repository code executes. |
-| Privileged workflow source | Automated / GitHub | Candidate, stable promotion, and recovery all start through `repository_dispatch` on protected `main`; release evidence records the exact `github.workflow_sha`. |
+| Privileged workflow source | Automated / GitHub | Candidate, stable promotion, and recovery all start through `repository_dispatch` on protected `main`; release evidence records the exact caller `github.workflow_sha`, and stable promotion also records the reusable job's `job.workflow_sha`. Candidate preflight writes `candidate-preflight/workflow-provenance.json`, recovery writes `recovery/workflow-provenance.json`, and the stable promotion handoff writes both caller/called identities, refs, and the run URL to `handoff/workflow-provenance.json`. |
 
 If any required manual gate is missing, describe the target as an unreleased
 development snapshot, not a stable release.
@@ -118,8 +118,8 @@ and validates this exact allow/deny policy instead of treating `dontAsk` as
 sufficient by itself.
 The headless gate also appends a canonical system-level output contract and
 records its contract ID, prompt SHA-256, and maximum turn count in release
-evidence. The supporting contract preserves the same heading and seven-field
-boundary. When validation fails, logs contain only output length, digest, field
+evidence. The supporting contract preserves the same heading and the eight-field boundary.
+When validation fails, logs contain only output length, digest, field
 presence, and namespaced-command count; they do not contain the model response.
 The route evidence compares the complete temporary worktree inventory, including
 file content hashes, symlinks, and directories outside `.git`, before and after
@@ -172,6 +172,7 @@ command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
 "$NODE_BIN" scripts/validate-workflow-fixtures.mjs </dev/null
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
+bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 
@@ -180,17 +181,19 @@ use CI/Linux or CI/Windows Bash evidence before promotion.
 
 ## Version And Generated Output Check
 
-Confirm that the maintainer-visible version fields agree:
+Confirm that each maintainer-visible version domain is internally consistent:
 
 ```bash
 NODE_BIN="${NODE_BIN:-node}"
 command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
-"$NODE_BIN" -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('nova-plugin/.claude-plugin/plugin.json','utf8')); const m=JSON.parse(fs.readFileSync('.claude-plugin/marketplace.json','utf8')); const meta=JSON.parse(fs.readFileSync('.claude-plugin/marketplace.metadata.json','utf8')); console.log({plugin:p.version, marketplace:m.plugins[0].version, metadata:meta.plugins[0].version, lastUpdated:meta.plugins[0]['last-updated']});" </dev/null
+"$NODE_BIN" -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json','utf8')); const p=JSON.parse(fs.readFileSync('nova-plugin/.claude-plugin/plugin.json','utf8')); const channels=JSON.parse(fs.readFileSync('governance/release-channels.json','utf8')); const m=JSON.parse(fs.readFileSync('.claude-plugin/marketplace.json','utf8')); const meta=JSON.parse(fs.readFileSync('.claude-plugin/marketplace.metadata.json','utf8')); console.log({package:pkg.version, plugin:p.version, stableChannel:channels.stable.version, marketplace:m.plugins[0].version, metadata:meta.plugins[0].version, lastUpdated:meta.plugins[0]['last-updated']});" </dev/null
 ```
 
 Required result:
 
-- `plugin`, `marketplace`, and `metadata` versions are identical.
+- `package` and `plugin` versions are identical.
+- `marketplace` and `metadata` versions match `stableChannel`. They may lag the
+  unreleased `package`/`plugin` version.
 - `lastUpdated` matches the release date recorded in `CHANGELOG.md`.
 - `docs/marketplace/catalog.md` was generated from registry source, not hand
   edited.
@@ -259,9 +262,9 @@ generated marketplace outputs, and validation evidence are correct.
 Candidate, stable promotion, and recovery have exactly one privileged entry
 model: `repository_dispatch` evaluated from protected `main`. Candidate and
 stable tags are only `client_payload` inputs. Neither candidate nor stable tag
-pushes trigger a release workflow. Record the run URL and exact
-`github.workflow_sha` for every operation. Stable publication uses both the
-signed stable tag and the exact candidate tag supplied above.
+pushes trigger a release workflow. Record the run URL and exact caller
+`github.workflow_sha` for every operation, plus `job.workflow_sha` for the
+stable promotion reusable job. Stable publication uses both the signed stable tag and the exact candidate tag supplied above.
 
 ```bash
 # Recovery reuses the existing signed candidate tag. Verify it locally first.
@@ -306,6 +309,14 @@ Preview the planned steps without mutation:
 node scripts/validate-plugin-install.mjs --dry-run
 ```
 
+`--marketplace-source` accepts only a local marketplace manifest file or a
+local repository root containing `.claude-plugin/marketplace.json`. Remote
+`owner/repository@ref` marketplace arguments are rejected because this verifier
+does not fetch and independently digest remote marketplace manifests. A local
+manifest may still select a remote plugin only when its source binds an HTTPS
+URL, exact ref, and commit SHA; the resulting evidence records
+`local-manifest-remote-exact-ref`.
+
 Recommended setup for manual fallback or the dedicated smoke workflow:
 
 1. Use GitHub Actions, a disposable OS user, a VM, or a container-like test
@@ -324,8 +335,9 @@ command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
 
 Expected script behavior:
 
-- Runs `claude plugin validate .`.
-- Runs `claude plugin validate nova-plugin`.
+- Validates the selected local marketplace manifest.
+- Verifies the installed tree digest, then validates the physically contained
+  installed plugin source.
 - Adds the local marketplace source.
 - Installs `nova-plugin@llm-plugins-fusion` with `--scope user`.
 - Updates the installed plugin.
@@ -433,8 +445,8 @@ Create or update a release evidence record from
 [release-evidence-template.md](../../templates/evidence/release.md). The record must
 include:
 
-- Release target, commit, exact tag, plugin version, registry `last-updated`,
-  operator, and date.
+- Release target, commit, exact tag, development package/plugin version, stable
+  channel version, registry `last-updated`, operator, and date.
 - Environment summary from `node scripts/validate-all.mjs`.
 - Outputs or summaries for all required checks.
 - Coverage summary path or CI artifact name.

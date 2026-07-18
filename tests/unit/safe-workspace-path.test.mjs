@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { chmod, link, mkdir, mkdtemp, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { chmod, link, mkdir, mkdtemp, readFile, readdir, realpath, rm, symlink, writeFile } from 'node:fs/promises';
 import { delimiter, join, resolve, win32 } from 'node:path';
 import { homedir, tmpdir } from 'node:os';
 import test from 'node:test';
@@ -10,6 +10,7 @@ import {
   isProtectedHooksPath,
   isProtectedShellControlPath,
   protectedShellControlPaths,
+  resolveGitControlDirectories,
   resolveWorkspaceTarget,
 } from '../../nova-plugin/runtime/safe-workspace-path.mjs';
 
@@ -125,19 +126,19 @@ test('artifact roots cannot overlap executable search, broad project ancestors, 
     () => assertArtifactRootsOutsideExecutableSearch({ artifactRoots: [hiddenControl], projectRoot: workspace, env: { PATH: trustedBin } }),
     /security-sensitive control directory/u,
   );
-  let hiddenHomeRoot;
+  const previousHome = process.env.HOME;
+  process.env.HOME = temp;
   try {
-    hiddenHomeRoot = await mkdtemp(join(homedir(), '.nova-artifact-root-'));
-  } catch (error) {
-    if (!['EACCES', 'EPERM'].includes(error?.code)) throw error;
-    t.diagnostic(`hidden-home artifact-root probe unavailable: ${error.code}`);
-  }
-  if (hiddenHomeRoot) {
-    t.after(() => rm(hiddenHomeRoot, { recursive: true, force: true }));
+    assert.equal(homedir(), temp);
+    const hiddenHomeRoot = join(temp, '.hidden');
+    await mkdir(hiddenHomeRoot);
     assert.throws(
       () => assertArtifactRootsOutsideExecutableSearch({ artifactRoots: [hiddenHomeRoot], projectRoot: workspace, env: { PATH: trustedBin } }),
       /hidden user control directory/u,
     );
+  } finally {
+    if (previousHome === undefined) delete process.env.HOME;
+    else process.env.HOME = previousHome;
   }
 
   const controlledGit = join(artifacts, 'controlled-git');
@@ -148,6 +149,89 @@ test('artifact roots cannot overlap executable search, broad project ancestors, 
     () => assertArtifactRootsOutsideExecutableSearch({ artifactRoots: [artifacts], projectRoot: workspace, env: { PATH: `${trustedBin}${delimiter}` }, executableNames: ['git'] }),
     /controls guarded executable/u,
   );
+});
+
+test('Git control resolution protects linked-worktree gitdir and commonDir trees from artifact roots', async (t) => {
+  const { temp, workspace } = await workspaceFixture(t);
+  const commonGitDir = join(temp, 'git-metadata');
+  const worktreeGitDir = join(commonGitDir, 'worktrees/workspace');
+  const objects = join(commonGitDir, 'objects');
+  const trustedBin = join(temp, 'trusted-bin');
+  await Promise.all([
+    mkdir(worktreeGitDir, { recursive: true }),
+    mkdir(objects, { recursive: true }),
+    mkdir(trustedBin),
+  ]);
+  await writeFile(join(workspace, '.git'), 'gitdir: ../git-metadata/worktrees/workspace\n');
+  await writeFile(join(worktreeGitDir, 'commondir'), '../..\n');
+  await writeFile(join(commonGitDir, 'config'), '[core]\n\trepositoryformatversion = 0\n');
+  await writeFile(join(worktreeGitDir, 'config.worktree'), '[core]\n\tbare = false\n');
+
+  const controls = resolveGitControlDirectories(workspace);
+  assert.equal(controls.repositoryRoot, await realpath(workspace));
+  assert.equal(controls.gitDir, await realpath(worktreeGitDir));
+  assert.equal(controls.commonDir, await realpath(commonGitDir));
+  for (const target of [
+    join(worktreeGitDir, 'config.worktree'),
+    join(commonGitDir, 'config'),
+    join(commonGitDir, 'refs/heads/main'),
+  ]) {
+    assert.equal(isProtectedShellControlPath(target, {
+      projectRoot: workspace,
+      pluginRoot: join(workspace, 'nova-plugin'),
+    }), true, target);
+  }
+  for (const artifactRoot of [commonGitDir, worktreeGitDir, objects]) {
+    assert.throws(
+      () => assertArtifactRootsOutsideExecutableSearch({
+        artifactRoots: [artifactRoot],
+        projectRoot: workspace,
+        env: { PATH: trustedBin },
+      }),
+      /artifact root .* overlaps Git control directory/u,
+      artifactRoot,
+    );
+  }
+});
+
+test('Git control resolution treats an entire bare repository as protected metadata', async (t) => {
+  const { temp } = await workspaceFixture(t);
+  const bare = join(temp, 'bare-repository');
+  const trustedBin = join(temp, 'trusted-bin');
+  await Promise.all([
+    mkdir(join(bare, 'objects'), { recursive: true }),
+    mkdir(join(bare, 'refs'), { recursive: true }),
+    mkdir(trustedBin),
+  ]);
+  await writeFile(join(bare, 'HEAD'), 'ref: refs/heads/main\n');
+  await writeFile(join(bare, 'config'), '[core]\n\tbare = true\n');
+
+  const controls = resolveGitControlDirectories(bare);
+  assert.equal(controls.repositoryRoot, await realpath(bare));
+  assert.equal(controls.gitDir, await realpath(bare));
+  assert.equal(controls.commonDir, await realpath(bare));
+  assert.equal(isProtectedShellControlPath(join(bare, 'config'), {
+    projectRoot: bare,
+    pluginRoot: join(temp, 'plugin'),
+  }), true);
+  assert.throws(
+    () => assertArtifactRootsOutsideExecutableSearch({
+      artifactRoots: [join(bare, 'objects')],
+      projectRoot: bare,
+      env: { PATH: trustedBin },
+    }),
+    /artifact root .* overlaps Git control directory/u,
+  );
+});
+
+test('malformed linked-worktree pointers fail closed for protected-path decisions', async (t) => {
+  const { workspace } = await workspaceFixture(t);
+  await writeFile(join(workspace, '.git'), 'gitdir: missing\nextra\n');
+  assert.throws(() => resolveGitControlDirectories(workspace), /repository \.git pointer is invalid/u);
+  assert.equal(isProtectedShellControlPath(join(workspace, 'ordinary.txt'), {
+    projectRoot: workspace,
+    pluginRoot: join(workspace, 'nova-plugin'),
+  }), true);
 });
 
 test('path comparisons handle Windows drive case and sibling prefixes', () => {

@@ -25,11 +25,9 @@
 
 | 参数 | 必填 | 说明 | 示例 |
 | --- | --- | --- | --- |
+| `REVIEW_SCOPE` | Yes | 要审查并修复的 Git diff 或仓库范围 | `当前分支相对 main 的 diff` |
 | `BASE` | No | 基线分支 | `main` |
-| `GOAL` | No | 本轮目标 | `修到可合并` |
 | `REVIEW_MODE` | No | `branch` / `staged` / `full` | `full` |
-| `OUTPUT_DIR` | No | review/verify artifact 输出目录 | `.codex/codex-review-fix/custom` |
-| `FIX_SCOPE` | No | 修复选择策略；不改变脚本行为 | `high-confidence` |
 | `INCLUDE_UNTRACKED_CONTENT` | No | 仅与 `REVIEW_MODE=full` 搭配；显式允许未跟踪文件内容进入 review/verify patch，且必须通过大小、二进制、路径和 secret 检查 | `true` |
 
 ## 资源说明
@@ -42,11 +40,11 @@
 ## 典型示例
 
 ```text
-/nova-plugin:codex-review-fix BASE=main GOAL="修复当前分支直到可合并"
+/nova-plugin:codex-review-fix REVIEW_SCOPE="当前分支相对 main 的 diff；修复到可合并" BASE=main
 ```
 
 ```text
-/nova-plugin:codex-review-fix REVIEW_MODE=staged GOAL="只处理已暂存改动中的高风险问题"
+/nova-plugin:codex-review-fix REVIEW_SCOPE="已暂存改动中的高风险问题" REVIEW_MODE=staged
 ```
 
 ## 相关脚本直接调用

@@ -25,7 +25,6 @@
 | 参数 | 必填 | 说明 | 示例 |
 | --- | --- | --- | --- |
 | `REQUEST` | Yes | 用户请求、任务摘要、issue、diff 上下文或工作流意图 | `修复 CI 失败并补文档` |
-| `CONTEXT` | No | 可选上下文 | `当前分支、计划文件、diff 摘要` |
 | `DEPTH` | No | `normal` / `brief`，默认 `normal` | `brief` |
 
 ## 完整示例
@@ -36,9 +35,13 @@
 ```
 
 ```text
-/nova-plugin:route CONTEXT="Cursor 消费 nova skills"
-用户让我实现一个中等风险功能，但没有批准的 plan。
+/nova-plugin:route REQUEST="在 Cursor 中消费 nova skills；用户让我实现一个中等风险功能，但没有批准的 plan" DEPTH=normal
 ```
+
+## 输出说明
+
+- 固定字段依次为 `Canonical skill`、`Command entrypoint`、`Variant parameters`、`Core agent`、`Capability packs`、`Required inputs`、`Validation expectations`、`Fallback path`。
+- 始终只输出一个立即执行的 route；后续阶段只能写入验证预期或 fallback 说明。
 
 ## 与相近命令的对比
 

@@ -10,6 +10,60 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 ## [Unreleased]
 
 ### Fixed
+- Completed `llmf generate all` as a 25-task deterministic projection closure
+  (runtime 7, docs 5, release 13), including the prompt-surface report,
+  platform evidence, workflow-surface evaluation, governed baselines, and
+  downstream state/control-plane projections in fail-fast order. Critical
+  mutation now evaluates nine governed real high-risk mutations with
+  baseline-prechecked isolated probes and dependency-closed module copies
+  instead of treating manually chosen test outcomes as mutation evidence.
+- Closed independent-review gaps in route fixtures, Claude approval parsing,
+  reusable-workflow handoff dependencies and provenance, release-sensitive
+  ownership, product inventory and variant preflight, release evidence
+  completeness, single-read archive manifests, Windows timeout tree
+  termination, and pre-write tar ancestor topology validation.
+- Added a generated resolved-variant contract index so canonical commands and
+  compatibility aliases resolve one complete authoritative runtime contract.
+  Selector defaults are normalized, exact alias overrides win, partially
+  triggered specializations fail closed, and canonical fallback is limited to
+  valid non-specialized combinations. Contract v6 validation now also keeps
+  effects, authorization, enforcement, evidence, runtime requirements, typed
+  inputs, protocol majors, and behavior effects coherent. Resolved contracts
+  carry native tool and invocation metadata; Claude redirects static-frontmatter
+  mismatches to the exact direct command while generic and Codex adapters may
+  execute the resolved contract directly. Artifact-only writes require a prompt
+  instead of being reported as preapproved.
+- Made route results select exactly one immediate canonical workflow while also
+  emitting the exact Claude command entrypoint. Live evaluation now rejects
+  multiple routes, mismatched specialized entrypoints, and extra or reordered
+  required-input claims instead of normalizing them into a passing result.
+- Made governed live prerequisites schema-valid, source-bound evidence rather
+  than trusted summaries: every exact case-attempt tuple, adapter signal,
+  semantic result, safety count, and source digest is recomputed before use.
+  Claude output now requires the exact heading and ordered eight-field route
+  shape or the exact uppercase approval status, and profile execution is
+  limited to the cases selected by its governed contract.
+- Corrected the public command tables to document every compatibility alias's
+  complete canonical variant preset, removed the stale 21-command/21-Skill
+  pairing claim, and made documentation validation derive both alias presets
+  and the 21-command/six-canonical-Skill boundary from workflow sources.
+- Reconciled active maintainer, release, compatibility, security, and plugin
+  architecture documentation with the current six-Skill projection, four
+  distributed shell scripts, development-versus-stable version domains,
+  exact-RC install smoke ownership, merged remediation state, and fail-closed
+  dependency-review policy.
+- Bound reusable stable promotion to the called job's
+  `job.workflow_ref`/`job.workflow_sha` while separately verifying the caller's
+  `github.workflow_ref`/`github.workflow_sha`; this prevents the promotion
+  bootstrap from mistaking `release.yml` for `promote-release.yml`.
+- Made non-Windows runtime smoke checks use the system temporary directory so
+  managed workspaces with a read-only `.codex/` directory can run the default
+  validation and coverage gates, while retaining the Git-Bash-compatible
+  workspace path on Windows. Validation batch results now also preserve their
+  registry labels instead of printing `undefined`.
+- Unified compatibility evidence generation and validation on the same
+  `exact` / `carried-forward` current-status contract so valid L3/L4 evidence
+  is not rejected as stale by CI.
 - Made validated loading and runtime compilation reject drift between Contract
   v6 typed inputs, behavior inputs, and the v5 compatibility projection.
 - Made candidate and promotion workflows fail closed on an absent or
@@ -44,8 +98,56 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   on protected-main `repository_dispatch` entrypoints, signed locally verified
   tags, payload-only tag inputs, recorded workflow SHAs, and the separate
   workflow-provenance versus signed-source-identity proof boundary.
+- Made candidate and recovery workflows emit their protected-main caller ref,
+  workflow SHA and content digest, run URL, exact tags, and source identity as
+  direct attested provenance artifacts; release documentation validation now
+  rejects a development-manifest claim for the stable security support range.
+- Upgraded release coverage metadata to schema v2 and emit it only after every
+  checked coverage gate succeeds. Candidate evidence now requires seven
+  governed records, verifies an exact ordered ten-entry checksum set, parses
+  and cross-binds every candidate artifact, independently recomputes the
+  protected workflow digest, omits installation paths, and resets an existing
+  draft release to the governed title and notes before publication.
 
 ### Security
+- Confined CLI build and migration outputs to regular, non-linked files below
+  the product root and made the two migration projections a best-effort
+  transactional replacement. Candidate build and promotion now ingest source,
+  artifact, evidence, checksum, control, and metadata inputs only through
+  physical non-linked single-read files and reject undeclared artifact-directory
+  entries. Release, manifest, checksum, and tar paths reject non-portable forms
+  and conservative normalized collisions; tar parsing also rejects ambiguous
+  encodings, root entries, and non-zero file padding, while manifest ordering is
+  independent of host locale.
+- Removed an identity-matched atomic directory publish when its post-rename
+  manifest verification fails, while preserving replacement paths and
+  reporting any cleanup failure instead of leaving an unverified output.
+- Prevented guarded read-only Git commands from reaching repository-configured
+  pagers, fsmonitor, diff/textconv, clean/process filters, signature helpers,
+  and includes. Windows process-tree timeout handling no longer executes
+  `taskkill.exe` from `PATH` or environment-derived system directories; it
+  resolves only the fixed `\\?\GLOBALROOT\SystemRoot\System32\taskkill.exe`
+  binary and falls
+  back to direct child termination when that trusted binary is unavailable or
+  cannot start.
+- Required every governed high-risk mutation probe to pass against the
+  unmodified baseline before being killed by its mutation, and derived a
+  transitive release-trust entrypoint closure that both CODEOWNERS and
+  independent release-review policy must protect. PR governance now also
+  rejects truncated, duplicate, malformed, or sensitive renamed-from
+  changed-file API results before deciding whether current-head sensitive-path
+  approval is required; candidate independent-review evidence applies the same
+  complete-file invariant before selecting the sensitive approval threshold.
+  GitHub identities and commits are now complete and canonical before approval
+  counting, every control-bundle root is included in the explicit release trust
+  boundary, and release-operations schema v4 rejects duplicate principals,
+  malformed SSH blobs, invalid or future dates, placeholder evidence, and stale
+  rotation, drill, or protected-environment evidence.
+- Rejected local POSIX, drive-letter, UNC, backslash, and `file:` path tokens
+  anywhere in public candidate JSON, forced isolated plugin validation to
+  override `CLAUDE_CONFIG_DIR`, and made release artifact verification reject
+  empty or duplicate BOM graphs and artifacts that are not semantically bound
+  to the candidate source and exact-tag installation tree.
 - Bound Bash project policy, session pinning, and PATH-shadow containment to
   `CLAUDE_PROJECT_DIR` while treating a nested event `cwd` only as the effective
   command directory. Privileged-mode launchers now reject inherited startup
@@ -58,6 +160,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
   of producing skipped green jobs, and required generic bundle attestation
   before promotion or recovery extraction followed by exact workflow-digest
   verification after the bounded candidate-core read.
+- Made recovery drills reject malformed or mismatched stable/candidate tag
+  identities before any Git fetch or authenticated GitHub request.
+- Made candidate evidence reject machine-local path tokens in JSON object keys,
+  unexpected promotion evidence kinds, and independent-review thresholds or
+  bot identities that drift from the source-controlled reviewer policy.
+- Made OAuth route smoke use a minimal allowlisted child environment, include
+  Git control files in zero-write snapshots, and require the exact fixed route,
+  variant, agent, and pack selection in both generation and promotion checks.
+- Made release orchestration ingest promotion intent, control, event, and
+  ledger files through physical single-read boundaries, and made ledger-chain
+  verification enforce the complete identity, field, timestamp, and digest
+  structure instead of accepting merely self-consistent hashes.
 - Blocked Write/Edit access to project Git control metadata at every nesting
   level so an agent cannot turn an otherwise read-only brokered Git command
   into external code execution through repository config or hooks.

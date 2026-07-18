@@ -24,7 +24,7 @@
 
 | Parameter   | Required | Description        | Example                           |
 | ----------- | -------- | ------------------ | --------------------------------- |
-| `ARGUMENTS` | No       | Content to review. | `Requirement or approach summary` |
+| `ARGUMENTS` | Yes      | Content to review. | `Requirement or approach summary` |
 
 ## Output
 

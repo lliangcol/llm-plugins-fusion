@@ -26,16 +26,18 @@
 | ----------------- | -------- | -------------------------------- | ----------------------- |
 | `PLAN_INPUT_PATH` | Yes      | Path to the approved plan.       | `docs/plans/feature.md` |
 | `PLAN_APPROVED`   | Yes      | Must be `true` (case-sensitive). | `true`                  |
+| `EXECUTION_PROFILE` | No     | Optional execution variant.      | `standard`              |
 
 ## Output
 
-- Chat output includes implemented changes, a short summary, and deviation notes (or explicit none).
+- The fixed order is `implemented changes`, `plan-step trace`, `validation`, and `deviations`.
 - Example output structure:
 
 ```text
-1. Implemented code changes
-2. Short implementation summary
-3. Deviation notes (or "No deviations from the approved plan")
+1. implemented changes
+2. plan-step trace
+3. validation
+4. deviations (or None)
 ```
 
 ## Full Examples

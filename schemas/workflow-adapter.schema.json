@@ -39,5 +39,28 @@
       }
     }
   },
-  "allOf": [{ "if": { "properties": { "schemaVersion": { "const": 2 } } }, "then": { "required": ["protocolVersions", "contractEnforcement"], "properties": { "protocolVersions": {}, "contractEnforcement": {} } } }]
+  "allOf": [
+    {
+      "if": { "properties": { "schemaVersion": { "const": 1 } }, "required": ["schemaVersion"] },
+      "then": { "properties": { "protocolVersions": false, "contractEnforcement": false } }
+    },
+    {
+      "if": { "properties": { "schemaVersion": { "const": 2 } }, "required": ["schemaVersion"] },
+      "then": { "required": ["protocolVersions", "contractEnforcement"] }
+    },
+    {
+      "oneOf": [
+        { "type": "object", "required": ["declaredLevel", "maximumSupportedLevel", "evidenceRequiredFor"], "properties": { "declaredLevel": { "const": "L1" }, "maximumSupportedLevel": { "const": "L1" }, "evidenceRequiredFor": { "const": [] } } },
+        { "type": "object", "required": ["declaredLevel", "maximumSupportedLevel", "evidenceRequiredFor"], "properties": { "declaredLevel": { "const": "L1" }, "maximumSupportedLevel": { "const": "L2" }, "evidenceRequiredFor": { "const": ["L2"] } } },
+        { "type": "object", "required": ["declaredLevel", "maximumSupportedLevel", "evidenceRequiredFor"], "properties": { "declaredLevel": { "const": "L1" }, "maximumSupportedLevel": { "const": "L3" }, "evidenceRequiredFor": { "const": ["L2", "L3"] } } },
+        { "type": "object", "required": ["declaredLevel", "maximumSupportedLevel", "evidenceRequiredFor"], "properties": { "declaredLevel": { "const": "L1" }, "maximumSupportedLevel": { "const": "L4" }, "evidenceRequiredFor": { "const": ["L2", "L3", "L4"] } } },
+        { "type": "object", "required": ["declaredLevel", "maximumSupportedLevel", "evidenceRequiredFor"], "properties": { "declaredLevel": { "const": "L2" }, "maximumSupportedLevel": { "const": "L2" }, "evidenceRequiredFor": { "const": [] } } },
+        { "type": "object", "required": ["declaredLevel", "maximumSupportedLevel", "evidenceRequiredFor"], "properties": { "declaredLevel": { "const": "L2" }, "maximumSupportedLevel": { "const": "L3" }, "evidenceRequiredFor": { "const": ["L3"] } } },
+        { "type": "object", "required": ["declaredLevel", "maximumSupportedLevel", "evidenceRequiredFor"], "properties": { "declaredLevel": { "const": "L2" }, "maximumSupportedLevel": { "const": "L4" }, "evidenceRequiredFor": { "const": ["L3", "L4"] } } },
+        { "type": "object", "required": ["declaredLevel", "maximumSupportedLevel", "evidenceRequiredFor"], "properties": { "declaredLevel": { "const": "L3" }, "maximumSupportedLevel": { "const": "L3" }, "evidenceRequiredFor": { "const": [] } } },
+        { "type": "object", "required": ["declaredLevel", "maximumSupportedLevel", "evidenceRequiredFor"], "properties": { "declaredLevel": { "const": "L3" }, "maximumSupportedLevel": { "const": "L4" }, "evidenceRequiredFor": { "const": ["L4"] } } },
+        { "type": "object", "required": ["declaredLevel", "maximumSupportedLevel", "evidenceRequiredFor"], "properties": { "declaredLevel": { "const": "L4" }, "maximumSupportedLevel": { "const": "L4" }, "evidenceRequiredFor": { "const": [] } } }
+      ]
+    }
+  ]
 }

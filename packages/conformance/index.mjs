@@ -1,4 +1,5 @@
 import { evaluateCapabilityPolicy, requiredCapabilities } from '../../framework/core/capability-policy.mjs';
+import { behaviorInputType } from '../../framework/core/behavior-input-contract.mjs';
 
 const enforcementDimensions = Object.freeze({
   inputs: new Set(['native', 'adapter', 'advisory', 'unsupported']),
@@ -17,10 +18,23 @@ function defaultContractEnforcement(adapter) {
   return { inputs: 'advisory', approval: 'advisory', output: 'advisory', effects: 'advisory' };
 }
 
-function requiredEnforcementDimensions(contract, available) {
+function workflowInputs(contract) {
+  const typed = Object.hasOwn(contract, 'inputs');
+  const inputs = typed ? contract.inputs : contract.behaviorContract?.inputs;
+  if (!Array.isArray(inputs)) throw new TypeError('workflow inputs must be an array');
+  for (const input of inputs) {
+    if (!input || typeof input !== 'object' || Array.isArray(input)) throw new TypeError('workflow input must be an object');
+    if (typed && input.type === undefined) throw new TypeError('typed workflow input must declare type');
+    behaviorInputType(input);
+  }
+  return inputs;
+}
+
+function requiredEnforcementDimensions(contract, available, inputs) {
   const required = new Set(['inputs', 'output']);
   const capabilities = requiredCapabilities(contract, contract.permissionPolicy);
   if ((contract.effects ?? []).length > 0 || capabilities.length > 0) required.add('effects');
+  if (inputs.some((input) => behaviorInputType(input) === 'approval')) required.add('approval');
   if (capabilities.some((capability) => {
     const authorization = contract.permissionPolicy?.[capability];
     const availability = available[capability];
@@ -81,8 +95,14 @@ export function negotiateWorkflowSupport(compiled, options = {}) {
   const invalidEnforcement = invalidEnforcementReason(enforcement, 'invalid-enforcement');
   if (invalidEnforcement) return { status: 'unsupported', workflowId, adapterId, reasons: [invalidEnforcement], enforcement };
   let unenforced;
+  let inputs;
   try {
-    unenforced = requiredEnforcementDimensions(workflow, available)
+    inputs = workflowInputs(workflow);
+  } catch {
+    return { status: 'unsupported', workflowId, adapterId, reasons: ['invalid-workflow-input-contract'], enforcement };
+  }
+  try {
+    unenforced = requiredEnforcementDimensions(workflow, available, inputs)
       .filter((dimension) => !executableEnforcement.has(enforcement[dimension]))
       .map((dimension) => `unenforced:${dimension}`);
   } catch {

@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import {
   assertArtifactRootsOutsideExecutableSearch,
   configuredArtifactRoots,
+  resolveGitControlDirectories,
 } from '../../runtime/safe-workspace-path.mjs';
 import { inspectProjectHookSettings } from '../../runtime/hook-bootstrap-trust.mjs';
 
@@ -132,6 +133,279 @@ function pathInside(root, path) {
   return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel));
 }
 
+const gitHelperConfigKeys = Object.freeze({
+  core: new Set(['fsmonitor', 'hookspath', 'pager']),
+  diff: new Set(['command', 'external', 'textconv']),
+  extensions: new Set(['partialclone', 'worktreeconfig']),
+  // Worktree comparisons in status, diff, ls-files, and describe dirtiness
+  // checks can apply clean/process filters selected by .gitattributes.
+  filter: new Set(['clean', 'process']),
+  format: new Set(['pretty']),
+  gpg: new Set(['program']),
+  include: '*',
+  includeif: '*',
+  // log.showSignature invokes the signature verifier during an allowed log.
+  log: new Set(['showsignature']),
+  pager: '*',
+  pretty: '*',
+  remote: new Set(['partialclonefilter', 'promisor']),
+  submodule: '*',
+});
+
+function unquotedGitConfigValue(value) {
+  const trimmed = value.trim();
+  if (trimmed.length >= 2 && trimmed.startsWith('"') && trimmed.endsWith('"')) return trimmed.slice(1, -1);
+  return trimmed;
+}
+
+const guardedGitSubcommands = new Set(['status', 'diff', 'show', 'log', 'rev-parse', 'describe', 'ls-files']);
+
+function guardedGitConfigKey(section, key) {
+  const guarded = gitHelperConfigKeys[section];
+  return guarded === '*' || guarded?.has(key) === true;
+}
+
+function gitConfigBoolean(value) {
+  const match = /^\s*"?(1|0|true|false|yes|no|on|off)"?\s*(?:[#;].*)?$/iu.exec(value);
+  if (!match) return null;
+  return /^(?:1|true|yes|on)$/iu.test(match[1]);
+}
+
+function gitConfigEntryCanInvokeHelper(section, key, rawValue, subcommand) {
+  if (!guardedGitConfigKey(section, key)) return false;
+  const value = unquotedGitConfigValue(rawValue);
+  const booleanFalse = gitConfigBoolean(rawValue) === false;
+  if ((section === 'pager' || (section === 'log' && key === 'showsignature')) && booleanFalse) return false;
+  if (section === 'core' && key === 'fsmonitor' && booleanFalse) return false;
+  if (section === 'extensions' && key === 'worktreeconfig') return false;
+  if (section === 'remote' && key === 'promisor' && booleanFalse) return false;
+  if (section !== 'include' && section !== 'includeif' && value === '') return false;
+  if (!guardedGitSubcommands.has(subcommand)) return true;
+  if (section === 'include' || section === 'includeif') return true;
+  if (section === 'extensions' || section === 'remote') return true;
+  if (section === 'submodule') return ['status', 'diff'].includes(subcommand);
+  if (section === 'core' && key === 'hookspath') return ['status', 'diff', 'ls-files'].includes(subcommand);
+  if (section === 'pager') return key === subcommand;
+  if (section === 'core' && key === 'pager') return ['diff', 'show', 'log'].includes(subcommand);
+  if (section === 'core' && key === 'fsmonitor') return ['status', 'diff', 'ls-files'].includes(subcommand);
+  if (section === 'diff' && key === 'textconv') return ['diff', 'show', 'log'].includes(subcommand);
+  if (section === 'diff') return subcommand === 'diff';
+  if (section === 'filter') return ['status', 'diff', 'describe', 'ls-files'].includes(subcommand);
+  if (section === 'format' || section === 'gpg' || section === 'pretty') return ['show', 'log'].includes(subcommand);
+  if (section === 'log') return ['show', 'log'].includes(subcommand);
+  return true;
+}
+
+function gitConfigValueContinues(value) {
+  let quoted = false;
+  let escaped = false;
+  let contentEnd = value.length;
+  for (let index = 0; index < value.length; index += 1) {
+    const character = value[index];
+    if (escaped) { escaped = false; continue; }
+    if (character === '\\') { escaped = true; continue; }
+    if (character === '"') { quoted = !quoted; continue; }
+    if (!quoted && (character === '#' || character === ';')) { contentEnd = index; break; }
+  }
+  return /(?:^|[^\\])(?:\\\\)*\\$/u.test(value.slice(0, contentEnd));
+}
+
+function ripgrepPathCandidates(tokens) {
+  const candidates = [];
+  let literalOperands = false;
+  for (const token of tokens.slice(1)) {
+    if (token === '--') {
+      literalOperands = true;
+      continue;
+    }
+    if (literalOperands || (token !== '-' && !token.startsWith('-'))) {
+      candidates.push(token);
+      continue;
+    }
+    for (const prefix of ['--file=', '--ignore-file=']) {
+      if (token.startsWith(prefix) && token.length > prefix.length) candidates.push(token.slice(prefix.length));
+    }
+    if (/^-f[^-].+/u.test(token)) candidates.push(token.slice(2));
+  }
+  return [...new Set(candidates.filter((candidate) => candidate && candidate !== '-'))];
+}
+
+function ripgrepReadBoundaryFindings(tokens, projectRoot, effectiveCwd) {
+  const findings = [];
+  try {
+    const physicalProjectRoot = realpathSync(projectRoot);
+    const physicalEffectiveCwd = realpathSync(effectiveCwd);
+    for (const candidate of ripgrepPathCandidates(tokens)) {
+      const target = resolve(physicalEffectiveCwd, candidate);
+      if (!pathInside(physicalProjectRoot, target)) {
+        findings.push(`ripgrep read path escapes the project root: ${candidate}`);
+        continue;
+      }
+      const rel = relative(physicalProjectRoot, target);
+      let current = physicalProjectRoot;
+      let exists = true;
+      for (const part of rel.split(/[\\/]/u).filter(Boolean)) {
+        current = resolve(current, part);
+        const stats = lstatSync(current, { throwIfNoEntry: false });
+        if (!stats) {
+          exists = false;
+          break;
+        }
+        if (stats.isSymbolicLink()) {
+          findings.push(`ripgrep read path contains a symlink or junction: ${candidate}`);
+          exists = false;
+          break;
+        }
+      }
+      if (exists && !pathInside(physicalProjectRoot, realpathSync(target))) {
+        findings.push(`ripgrep read path resolves outside the project root: ${candidate}`);
+      }
+    }
+  } catch (error) {
+    findings.push(`ripgrep read paths could not be inspected safely: ${error.message}`);
+  }
+  return findings;
+}
+
+function gitGlobalConfigPaths(env) {
+  const home = env.HOME || (process.platform === 'win32' ? env.USERPROFILE : null);
+  const paths = [];
+  if (home) {
+    if (!isAbsolute(home) && !posix.isAbsolute(home) && !win32.isAbsolute(home)) {
+      throw new Error('HOME must be absolute before guarded Git execution');
+    }
+    paths.push(resolve(home, '.gitconfig'));
+  }
+  const xdg = env.XDG_CONFIG_HOME || (home ? resolve(home, '.config') : null);
+  if (xdg && !isAbsolute(xdg) && !posix.isAbsolute(xdg) && !win32.isAbsolute(xdg)) {
+    throw new Error('XDG_CONFIG_HOME must be absolute before guarded Git execution');
+  }
+  if (xdg) paths.push(resolve(xdg, 'git/config'));
+  return [...new Set(paths)];
+}
+
+function readGitConfigEntries(path) {
+  const before = lstatSync(path, { throwIfNoEntry: false });
+  if (!before) return [];
+  if (!before.isFile() || before.isSymbolicLink() || before.nlink !== 1) {
+    throw new Error('Git config is not a single-link regular physical file');
+  }
+  if (before.size > 1024 * 1024) throw new Error('Git config exceeds the inspection limit');
+  const lines = readFileSync(path, 'utf8').replace(/^\uFEFF/u, '').split(/\r?\n/u);
+  const after = lstatSync(path);
+  if (!after.isFile() || after.isSymbolicLink() || after.nlink !== 1
+    || before.dev !== after.dev || before.ino !== after.ino || before.mode !== after.mode
+    || before.size !== after.size || before.mtimeMs !== after.mtimeMs || before.ctimeMs !== after.ctimeMs) {
+    throw new Error('Git config changed identity while it was inspected');
+  }
+  let section = null;
+  let ignoringContinuation = false;
+  const entries = [];
+  for (const [index, line] of lines.entries()) {
+    if (ignoringContinuation) {
+      ignoringContinuation = gitConfigValueContinues(line);
+      continue;
+    }
+    if (!line.trim() || /^\s*[#;]/u.test(line)) continue;
+    const sectionMatch = /^\s*\[\s*([A-Za-z0-9.-]+)(?:\s+"(?:[^"\\]|\\.)*")?\s*\]\s*(?:[#;].*)?$/u.exec(line);
+    if (sectionMatch) {
+      section = sectionMatch[1].toLowerCase().split('.')[0];
+      continue;
+    }
+    const keyMatch = /^\s*([A-Za-z][A-Za-z0-9-]*)\s*(?:=(.*))?$/u.exec(line);
+    if (!section || !keyMatch) {
+      if (section && gitHelperConfigKeys[section] === undefined) {
+        ignoringContinuation = gitConfigValueContinues(line);
+        continue;
+      }
+      throw new Error(`repository-local Git config cannot be parsed on line ${index + 1}`);
+    }
+    const key = keyMatch[1].toLowerCase();
+    const value = keyMatch[2] ?? 'true';
+    const relevant = guardedGitConfigKey(section, key);
+    if (gitConfigValueContinues(value)) {
+      if (relevant) throw new Error(`repository-local Git config uses a continuation for ${section}.${key} on line ${index + 1}`);
+      ignoringContinuation = true;
+      continue;
+    }
+    if (relevant) entries.push({ section, key, value });
+  }
+  return entries;
+}
+
+function gitWorktreeConfigEnabled(path) {
+  const settings = readGitConfigEntries(path)
+    .filter(({ section, key }) => section === 'extensions' && key === 'worktreeconfig');
+  if (settings.length === 0) return false;
+  const value = settings.at(-1).value;
+  const enabled = gitConfigBoolean(value);
+  if (enabled === null) throw new Error('extensions.worktreeConfig is not a supported boolean value');
+  return enabled;
+}
+
+function helperKeysInGitConfig(path, subcommand) {
+  return readGitConfigEntries(path)
+    .filter(({ section, key, value }) => gitConfigEntryCanInvokeHelper(section, key, value, subcommand))
+    .map(({ section, key }) => `${section}.${key}`);
+}
+
+export function repositoryGitConfigFindings(projectRoot, subcommand = null, {
+  effectiveCwd = projectRoot,
+  env = process.env,
+} = {}) {
+  try {
+    const physicalProjectRoot = realpathSync(projectRoot);
+    const physicalEffectiveCwd = realpathSync(effectiveCwd);
+    if (!pathInside(physicalProjectRoot, physicalEffectiveCwd)) {
+      throw new Error('Git cwd is outside the project root');
+    }
+    const metadata = resolveGitControlDirectories(physicalEffectiveCwd);
+    const repositoryRoot = metadata?.repositoryRoot ?? null;
+    if (repositoryRoot && !pathInside(physicalProjectRoot, repositoryRoot)) {
+      return ['Git would discover repository metadata outside the project root'];
+    }
+    const configPaths = [];
+    if (metadata) {
+      const commonConfig = join(metadata.commonDir, 'config');
+      configPaths.push(commonConfig);
+      if (gitWorktreeConfigEnabled(commonConfig)) configPaths.push(join(metadata.gitDir, 'config.worktree'));
+    }
+    const findings = [
+      ...gitGlobalConfigPaths(env).flatMap((path) => helperKeysInGitConfig(path, subcommand))
+        .map((key) => `user Git config can invoke a helper via ${key}`),
+      ...[...new Set(configPaths)].flatMap((path) => helperKeysInGitConfig(path, subcommand))
+        .map((key) => `repository-local Git config can invoke a helper via ${key}`),
+    ];
+    if (subcommand === null || ['status', 'diff'].includes(subcommand)) {
+      const gitmodules = resolve(repositoryRoot ?? physicalProjectRoot, '.gitmodules');
+      const gitmodulesStats = lstatSync(gitmodules, { throwIfNoEntry: false });
+      if (gitmodulesStats) findings.push('repository submodules can execute nested Git hooks or helpers during status or diff');
+      if (metadata?.commonDir) {
+        const modulesDirectory = join(metadata.commonDir, 'modules');
+        const modulesStats = lstatSync(modulesDirectory, { throwIfNoEntry: false });
+        if (modulesStats) findings.push('initialized repository submodules can execute nested Git hooks or helpers during status or diff');
+      }
+    }
+    if (subcommand === null || ['status', 'diff', 'ls-files'].includes(subcommand)) {
+      if (metadata?.commonDir) {
+        const hooksDirectory = join(metadata.commonDir, 'hooks');
+        const hooksStats = lstatSync(hooksDirectory, { throwIfNoEntry: false });
+        if (hooksStats?.isSymbolicLink() || (hooksStats && !hooksStats.isDirectory())) {
+          findings.push('repository Git hooks directory is not a physical directory');
+        } else if (hooksStats) {
+          const hook = join(hooksDirectory, 'post-index-change');
+          if (lstatSync(hook, { throwIfNoEntry: false })) {
+            findings.push('repository Git hook post-index-change can execute during status or diff');
+          }
+        }
+      }
+    }
+    return findings;
+  } catch (error) {
+    return [`repository-local Git configuration could not be inspected safely: ${error.message}`];
+  }
+}
+
 export function loadProjectPolicy(workspaceRoot, relativePath) {
   const root = realpathSync(workspaceRoot);
   const path = resolve(root, relativePath);
@@ -203,6 +477,14 @@ function pinSessionPolicy({ sessionId, workspaceRoot, basePolicy, projectDigest 
   }
 }
 
+function matchesForbiddenGitArgument(argument, forbidden) {
+  if (argument === forbidden || argument.startsWith(`${forbidden}=`)) return true;
+  if (!forbidden.startsWith('--') || !argument.startsWith('--')) return false;
+  const equals = argument.indexOf('=');
+  const option = equals === -1 ? argument : argument.slice(0, equals);
+  return option.length > 2 && option.length < forbidden.length && forbidden.startsWith(option);
+}
+
 function matchesRule(tokens, rule) {
   const executable = trustedExecutableToken(tokens[0]);
   if (!executable) return false;
@@ -211,10 +493,13 @@ function matchesRule(tokens, rule) {
   }
   if (rule.type === 'git-subcommand') {
     if (executable !== 'git' || !rule.subcommands.includes(tokens[1])) return false;
-    return !tokens.slice(2).some((arg) => rule.forbiddenArguments.some((forbidden) => arg === forbidden || arg.startsWith(`${forbidden}=`)));
+    if (['log', 'show'].includes(tokens[1]) && tokens.slice(2).some((arg) => /%G(?:[A-Za-z?])/u.test(arg))) return false;
+    return !tokens.slice(2).some((arg) => rule.forbiddenArguments
+      .some((forbidden) => matchesForbiddenGitArgument(arg, forbidden)));
   }
   if (rule.type === 'read-only-executable') {
     if (!rule.executables.includes(executable)) return false;
+    if (executable === 'rg' && tokens.slice(1).some((arg) => /^-(?!-)[A-Za-z0-9]*L[A-Za-z0-9]*$/u.test(arg))) return false;
     return !tokens.slice(1).some((arg) => rule.forbiddenArguments.some((forbidden) => arg === forbidden || arg.startsWith(`${forbidden}=`)));
   }
   if (rule.type === 'syntax-check') {
@@ -292,6 +577,12 @@ export function authorizeBashCommand(command, options = {}) {
     if (!pathInside(physicalProjectRoot, physicalEffectiveCwd)) reasons.push('Bash cwd is outside the project root');
   } catch (error) {
     reasons.push(`Bash project root or cwd could not be resolved: ${error.message}`);
+  }
+  if (executable === 'git' && !['--version', '-v'].includes(tokens[1])) {
+    reasons.push(...repositoryGitConfigFindings(projectRoot, tokens[1], { effectiveCwd, env }));
+  }
+  if (executable === 'rg' && !['--version', '-v'].includes(tokens[1])) {
+    reasons.push(...ripgrepReadBoundaryFindings(tokens, projectRoot, effectiveCwd));
   }
   if (reasons.length) return { allowed: false, source: null, ruleId: null, reasons: [...new Set(reasons)] };
 

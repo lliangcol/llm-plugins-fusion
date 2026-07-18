@@ -8,7 +8,7 @@
 - Audience: `advanced-users`; support risk: `low`
 - Inputs: `INTENT` (required), `CONTEXT` (required), `CONSTRAINTS`, `DEPTH`, `EXPORT_PATH`
 - Output contract: `senior-exploration-v2`; authorization: `artifact-write`
-- Effects: `artifact-write`, `workspace-read`, `workspace-write`
+- Effects: `artifact-write`, `workspace-read`
 - Related workflows: `explore`, `produce-plan`
 <!-- generated:command-contract:end -->
 
@@ -24,12 +24,12 @@
 ### Required
 
 - `INTENT`: 分析意图。示例: `Analyze a new feature requirement`
+- `CONTEXT`: 上下文材料。示例: `Logs, code paths`
 
 ### Optional
 
-- `CONTEXT`: 上下文材料。示例: `Logs, code paths`
 - `CONSTRAINTS`: 分析边界与约束。示例: `Only analyze current implementation`
-- `DEPTH`: 分析深度，可选 `quick`、`normal`、`deep`，默认 `normal`。
+- `DEPTH`: 固定为 `deep`，省略时也按 `deep` 执行。
 - `EXPORT_PATH`: 导出路径。示例: `docs/analysis/issue.md`
 
 ## 行为准则（Do/Don't）
@@ -80,4 +80,5 @@ CONTEXT: 只有上下文，没有提供 INTENT
 ## 常见误用与纠正
 
 - 误用：要求给出解决方案或实施步骤。纠正：仅输出分析结果，避免方案与实现。
+- 误用：缺少 `INTENT` 或 `CONTEXT` 仍继续分析。纠正：先补齐两个必填输入。
 - 误用：输出中使用 should/solution/implement。纠正：改用 observed/appears/may indicate 等措辞。

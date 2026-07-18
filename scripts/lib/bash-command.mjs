@@ -1,5 +1,5 @@
 import { accessSync, constants, existsSync, realpathSync, statSync } from 'node:fs';
-import { delimiter, isAbsolute, resolve, sep } from 'node:path';
+import { delimiter, dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 
 export function resolveBashCommand(platform = process.platform, env = process.env) {
   if (platform !== 'win32') return env.NOVA_BASH_BIN || 'bash';
@@ -45,6 +45,37 @@ export function pathIdentityInside(root, candidate) {
     const rootValue = value.toLowerCase();
     return candidateValue === rootValue || candidateValue.startsWith(`${rootValue}${sep}`);
   });
+}
+
+function pathInside(root, candidate) {
+  const value = relative(root, candidate);
+  return value === '' || (!isAbsolute(value) && value !== '..' && !value.startsWith(`..${sep}`));
+}
+
+export function projectFreeExecutablePath(projectRoot, {
+  env = process.env,
+  nodeExecutable = process.execPath,
+} = {}) {
+  const lexicalProjectRoot = resolve(projectRoot);
+  const physicalProjectRoot = realpathSync.native(lexicalProjectRoot);
+  const nodeDirectory = dirname(realpathSync.native(nodeExecutable));
+  const pathValue = process.platform === 'win32' ? (env.Path ?? env.PATH ?? '') : (env.PATH ?? '');
+  const safeEntries = [];
+  for (const entry of [nodeDirectory, ...String(pathValue).split(delimiter)]) {
+    if (!entry || !isAbsolute(entry)) continue;
+    const lexicalEntry = resolve(entry);
+    let physicalEntry;
+    try {
+      physicalEntry = realpathSync.native(lexicalEntry);
+      if (!statSync(physicalEntry).isDirectory()) continue;
+    } catch {
+      continue;
+    }
+    if (pathInside(lexicalProjectRoot, lexicalEntry) || pathInside(physicalProjectRoot, physicalEntry)) continue;
+    if (!safeEntries.includes(physicalEntry)) safeEntries.push(physicalEntry);
+  }
+  if (safeEntries.length === 0) throw new Error('no executable PATH directory remains outside the project');
+  return safeEntries.join(delimiter);
 }
 
 export function trustedHookBashIdentity(projectRoot, env = process.env, writableRoots = []) {

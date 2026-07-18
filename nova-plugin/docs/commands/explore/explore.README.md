@@ -25,7 +25,7 @@
 | 参数 | 必填 | 说明 | 示例 |
 | --- | --- | --- | --- |
 | `PERSPECTIVE` | No | `observer` / `reviewer`，默认 `observer` | `reviewer` |
-| `ARGUMENTS` | No | 任意输入上下文或问题描述 | `需求说明或日志片段` |
+| `ARGUMENTS` | Yes | 任意输入上下文或问题描述 | `需求说明或日志片段` |
 
 ## 完整示例
 
@@ -44,4 +44,3 @@
 - `/nova-plugin:explore-lite` 是轻量观察者视角。
 - `/nova-plugin:explore-review` 是评审者视角。
 - `/nova-plugin:senior-explore` 更深、更系统，并支持导出分析产物。
-

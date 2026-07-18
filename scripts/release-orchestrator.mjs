@@ -1,19 +1,50 @@
 #!/usr/bin/env node
 /** One explicit-identity release state machine for promote, recover, and drill. */
 
-import { randomUUID } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { canonicalSha256 } from './lib/canonical-json.mjs';
 import { appendReleaseLedger, createReleaseLedger, planReleaseTransitions, releaseStates, verifyReleaseLedger } from './lib/release-state-machine.mjs';
 import { requireOptionValue } from './lib/cli-args.mjs';
 import { assertReleaseReady, evaluateReleaseCorrections, loadReleaseCorrections } from './lib/release-corrections.mjs';
+import { createPhysicalReadBoundary, readPhysicalFile } from './lib/physical-read-boundary.mjs';
+import {
+  prepareArtifactOutputPlan,
+  resolveArtifactOutputPath,
+  writeArtifactOutput,
+} from './lib/artifact-output.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 
 function releaseEventPath(eventDir, sequence, transition) {
   return resolve(eventDir, `${String(sequence).padStart(2, '0')}-${transition.replace('->', '-to-').toLowerCase()}.json`);
+}
+
+const releaseIdentityKeys = Object.freeze([
+  'stableTag',
+  'candidateTag',
+  'sourceCommit',
+  'candidateManifestSha256',
+  'controlBundleSha256',
+]);
+
+function assertLedgerIdentity(ledger, identity) {
+  for (const key of releaseIdentityKeys) {
+    if (ledger.identity?.[key] !== identity[key]) {
+      throw new Error(`existing release ledger identity differs for ${key}`);
+    }
+  }
+}
+
+function readPhysicalJson(path, label) {
+  const boundary = createPhysicalReadBoundary(dirname(path), `${label} parent`);
+  const file = readPhysicalFile(boundary, path, label);
+  try {
+    return JSON.parse(file.buffer.toString('utf8'));
+  } catch (error) {
+    throw new Error(`${label} is not valid JSON: ${error.message}`, { cause: error });
+  }
 }
 
 export function parseReleaseOrchestratorArgs(args) {
@@ -32,7 +63,7 @@ export function parseReleaseOrchestratorArgs(args) {
     else if (arg === '--source-commit') options.sourceCommit = value();
     else if (arg === '--promotion-intent') options.promotionIntent = resolve(root, value());
     else if (arg === '--control-bundle') options.controlBundle = resolve(root, value());
-    else if (arg === '--event-dir') options.eventDir = resolve(root, value());
+    else if (arg === '--event-dir') options.eventDir = resolveArtifactOutputPath(root, value(), 'release event directory');
     else if (arg === '--run-id') options.runId = value();
     else throw new Error(`unknown argument: ${arg}`);
     index += 1;
@@ -46,15 +77,15 @@ export function parseReleaseOrchestratorArgs(args) {
 }
 
 export function orchestrateRelease(options, now = () => new Date(), correctionSource = loadReleaseCorrections(root)) {
-  const intentText = readFileSync(options.promotionIntent, 'utf8');
-  const intent = JSON.parse(intentText);
-  const controlText = readFileSync(options.controlBundle, 'utf8');
-  const control = JSON.parse(controlText);
+  const eventDir = resolveArtifactOutputPath(root, options.eventDir, 'release event directory');
+  const intent = readPhysicalJson(options.promotionIntent, 'release promotion intent');
+  const control = readPhysicalJson(options.controlBundle, 'release control bundle manifest');
   if (intent.stableTag !== options.stableTag || intent.candidateTag !== options.candidateTag || intent.sourceCommit !== options.sourceCommit) {
     throw new Error('explicit release identity differs from promotion intent');
   }
   if (intent.controlBundleSha256 !== control.bundleSha256) throw new Error('promotion intent differs from the release control bundle');
   if (intent.correctionsSha256 !== correctionSource.sha256) throw new Error('promotion intent contains stale release correction evidence');
+  const promotionIntentSha256 = canonicalSha256(intent);
   const releasePolicy = evaluateReleaseCorrections({
     mode: options.mode, stableTag: options.stableTag, candidateTag: options.candidateTag, sourceCommit: options.sourceCommit,
     corrections: correctionSource.document.corrections, correctionsSha256: correctionSource.sha256,
@@ -73,25 +104,44 @@ export function orchestrateRelease(options, now = () => new Date(), correctionSo
     candidateManifestSha256: intent.candidateCoreSha256,
     controlBundleSha256: intent.controlBundleSha256,
   };
-  const ledgerPath = resolve(options.eventDir, 'release-ledger.json');
+  const ledgerPath = resolve(eventDir, 'release-ledger.json');
   let ledger;
-  if (options.state === 'DRAFT') {
-    if (existsSync(ledgerPath)) throw new Error('release ledger already exists; refusing duplicate initial transition');
+  if (existsSync(ledgerPath)) {
+    ledger = readPhysicalJson(ledgerPath, 'release ledger');
+    const verified = verifyReleaseLedger(ledger);
+    assertLedgerIdentity(ledger, identity);
+    if (ledger.events.some((record) => record.event?.inputDigests?.promotionIntent !== promotionIntentSha256)) {
+      throw new Error('existing release ledger is bound to a different promotion intent');
+    }
+    if (verified.headState === options.targetState) {
+      const finalEvent = ledger.events.at(-1);
+      if (finalEvent && finalEvent.mode !== options.mode) {
+        throw new Error('existing release target was reached by a different orchestration mode');
+      }
+      return {
+        mode: options.mode,
+        transitions: [],
+        ledgerHeadState: verified.headState,
+        ledgerHeadSha256: verified.headSha256,
+        controlBundle: basename(options.controlBundle),
+        resumed: true,
+      };
+    }
+    if (options.state === 'DRAFT') throw new Error('release ledger already exists; refusing conflicting initial transition');
+    if (verified.headState !== options.state) throw new Error('requested release state differs from prior release ledger head');
+  } else if (options.state === 'DRAFT') {
     ledger = createReleaseLedger(identity);
   } else {
-    if (!existsSync(ledgerPath)) throw new Error('prior release ledger is required for continuation');
-    ledger = JSON.parse(readFileSync(ledgerPath, 'utf8'));
-    const verified = verifyReleaseLedger(ledger);
-    if (verified.headState !== options.state) throw new Error('requested release state differs from prior release ledger head');
+    throw new Error('prior release ledger is required for continuation');
   }
   const existingEventCount = ledger.events.length;
   for (const transition of transitions) {
     const sequence = ledger.events.length + 1;
-    const path = releaseEventPath(options.eventDir, sequence, `${transition.from}->${transition.to}`);
+    const path = releaseEventPath(eventDir, sequence, `${transition.from}->${transition.to}`);
     let createdAt = now().toISOString();
     let existingEvent = null;
     if (!options.dryRun && existsSync(path)) {
-      existingEvent = JSON.parse(readFileSync(path, 'utf8'));
+      existingEvent = readPhysicalJson(path, `release event ${basename(path)}`);
       createdAt = existingEvent.createdAt;
       if (existingEvent.mode !== options.mode) {
         throw new Error(`existing release event mode conflicts with the requested orchestration: ${basename(path)}`);
@@ -103,7 +153,7 @@ export function orchestrateRelease(options, now = () => new Date(), correctionSo
     const next = appendReleaseLedger(ledger, {
       transition,
       identity,
-      inputDigests: { promotionIntent: canonicalSha256(intent) },
+      inputDigests: { promotionIntent: promotionIntentSha256 },
       outputDigests: {},
       runId: existingEvent?.runId ?? options.runId,
       createdAt,
@@ -115,20 +165,24 @@ export function orchestrateRelease(options, now = () => new Date(), correctionSo
     ledger = next;
   }
   if (!options.dryRun) {
-    mkdirSync(options.eventDir, { recursive: true });
-    ledger.events.slice(existingEventCount).forEach(({ event }, index) => {
+    const pendingEvents = ledger.events.slice(existingEventCount).map(({ event }, index) => {
       const sequence = String(existingEventCount + index + 1).padStart(2, '0');
-      const path = releaseEventPath(options.eventDir, sequence, event.transition);
+      const path = releaseEventPath(eventDir, sequence, event.transition);
       const content = `${JSON.stringify(event, null, 2)}\n`;
+      return { key: `event-${sequence}`, path, content, label: `release event ${sequence} output` };
+    });
+    const outputPlan = prepareArtifactOutputPlan(root, [
+      ...pendingEvents.map(({ key, path, label }) => ({ key, path, label })),
+      { key: 'ledger', path: ledgerPath, label: 'release ledger output' },
+    ], { protectedPaths: [options.promotionIntent, options.controlBundle] });
+    for (const { key, path, content } of pendingEvents) {
       if (existsSync(path)) {
         if (readFileSync(path, 'utf8') !== content) throw new Error(`existing release event bytes conflict: ${basename(path)}`);
       } else {
-        writeFileSync(path, content, { flag: 'wx' });
+        writeArtifactOutput(outputPlan, key, content);
       }
-    });
-    const temporaryLedger = `${ledgerPath}.tmp-${process.pid}-${randomUUID()}`;
-    writeFileSync(temporaryLedger, `${JSON.stringify(ledger, null, 2)}\n`, { flag: 'wx' });
-    renameSync(temporaryLedger, ledgerPath);
+    }
+    writeArtifactOutput(outputPlan, 'ledger', `${JSON.stringify(ledger, null, 2)}\n`);
   }
   const appended = ledger.events.slice(existingEventCount);
   return { mode: options.mode, transitions: appended.map(({ event, sha256 }) => ({ transition: event.transition, sha256 })), ledgerHeadState: ledger.headState, ledgerHeadSha256: ledger.headSha256, controlBundle: basename(options.controlBundle) };

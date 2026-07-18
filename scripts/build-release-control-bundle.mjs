@@ -3,16 +3,18 @@
 
 import { createHash } from 'node:crypto';
 import { gzipSync } from 'node:zlib';
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, extname, relative, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { deterministicTar } from './build-release-artifacts.mjs';
+import { createPhysicalReadBoundary, readPhysicalFile } from './lib/physical-read-boundary.mjs';
+import { comparePortablePaths } from './lib/portable-path.mjs';
 import { parseTarGzEntries, SAFE_TAR_LIMITS } from './lib/safe-tar.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const deterministicGzipOptions = /** @type {import('node:zlib').ZlibOptions} */ ({ level: 9, mtime: 0 });
-const roots = [
+export const RELEASE_CONTROL_ROOTS = Object.freeze([
   'scripts/build-candidate-bundle.mjs',
   'scripts/build-release-artifacts.mjs',
   'scripts/extract-release-bundle.mjs',
@@ -22,7 +24,7 @@ const roots = [
   'scripts/verify-stable-install.mjs',
   'scripts/release-orchestrator.mjs',
   'scripts/validate-performance-budget.mjs',
-];
+]);
 const explicit = [
   '.github/release-signers',
   '.github/workflows/ci.yml',
@@ -49,6 +51,8 @@ const explicit = [
   'workflow-specs/nova.product.json',
   'workflow-specs/workflows.json',
   'workflow-specs/behaviors.json',
+  'nova-plugin/runtime/route-output-contract.json',
+  'nova-plugin/runtime/workflow-permissions.json',
   'tests/integration/release-candidate.test.mjs',
   'tests/unit/performance-budget.test.mjs',
   'tests/unit/github-actions-performance-provenance.test.mjs',
@@ -60,24 +64,24 @@ const explicit = [
 
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
 
-export function verifyControlBundle({ bundlePath, manifest }) {
-  if (statSync(bundlePath).size > SAFE_TAR_LIMITS.maxArchiveBytes) {
+export function verifyControlBundle({ bundlePath, manifest, archive: suppliedArchive = null }) {
+  const archive = suppliedArchive ?? readFileSync(bundlePath);
+  if (archive.length > SAFE_TAR_LIMITS.maxArchiveBytes) {
     throw new Error(`release control bundle exceeds ${SAFE_TAR_LIMITS.maxArchiveBytes} bytes`);
   }
-  const archive = readFileSync(bundlePath);
   if (manifest?.schemaVersion !== 1 || !Array.isArray(manifest.files)) throw new Error('release control bundle manifest is invalid');
   if (sha256(archive) !== manifest.bundleSha256) throw new Error('release control bundle digest differs from its manifest');
   const actualFiles = parseTarGzEntries(archive)
     .filter((entry) => entry.type === 'file')
     .map((entry) => ({ path: entry.path, sha256: sha256(entry.content), bytes: entry.content.length }))
-    .sort((left, right) => left.path.localeCompare(right.path));
+    .sort((left, right) => comparePortablePaths(left.path, right.path));
   if (JSON.stringify(actualFiles) !== JSON.stringify(manifest.files)) {
     throw new Error('release control bundle file inventory differs from its manifest');
   }
   return { bundleSha256: manifest.bundleSha256, files: actualFiles.length };
 }
 
-function importClosure(entries) {
+function importClosure(entries, sourceRoot, boundary, sourceFiles) {
   const pending = [...entries];
   const seen = new Set();
   while (pending.length) {
@@ -85,28 +89,37 @@ function importClosure(entries) {
     if (seen.has(rel)) continue;
     seen.add(rel);
     if (extname(rel) !== '.mjs') continue;
-    const source = readFileSync(resolve(root, rel), 'utf8');
+    let sourceFile = sourceFiles.get(rel);
+    if (!sourceFile) {
+      sourceFile = readPhysicalFile(boundary, resolve(sourceRoot, rel), `release control source ${rel}`);
+      sourceFiles.set(rel, sourceFile);
+    }
+    const source = sourceFile.buffer.toString('utf8');
     for (const match of source.matchAll(/from\s+['"](\.\.?\/[^'"]+)['"]/gu)) {
-      const imported = resolve(dirname(resolve(root, rel)), match[1]);
-      const importedRel = relative(root, imported).replaceAll('\\', '/');
+      const imported = resolve(dirname(resolve(sourceRoot, rel)), match[1]);
+      const importedRel = relative(sourceRoot, imported).replaceAll('\\', '/');
       if (importedRel.startsWith('..')) throw new Error(`control import escapes repository: ${rel}`);
       pending.push(importedRel);
     }
   }
-  return [...seen].sort();
+  return [...seen].sort(comparePortablePaths);
 }
 
-export function buildReleaseControlBundle({ outDir = resolve(root, '.metrics/release-control') } = {}) {
-  const paths = [...new Set([...importClosure(roots), ...explicit])].sort();
+export function buildReleaseControlBundle({ outDir = resolve(root, '.metrics/release-control'), sourceRoot = root } = {}) {
+  const boundary = createPhysicalReadBoundary(sourceRoot, 'release control source root');
+  const sourceFiles = new Map();
+  const paths = [...new Set([...importClosure(RELEASE_CONTROL_ROOTS, sourceRoot, boundary, sourceFiles), ...explicit])].sort(comparePortablePaths);
   const staging = mkdtempSync(resolve(tmpdir(), 'nova-release-control-'));
   try {
     const files = paths.map((path) => {
-      const source = resolve(root, path);
       const target = resolve(staging, path);
       mkdirSync(dirname(target), { recursive: true });
-      copyFileSync(source, target);
-      const content = readFileSync(source);
-      return { path, sha256: sha256(content), bytes: content.length };
+      const sourceFile = sourceFiles.get(path)
+        ?? readPhysicalFile(boundary, resolve(sourceRoot, path), `release control source ${path}`);
+      sourceFiles.set(path, sourceFile);
+      writeFileSync(target, sourceFile.buffer, { flag: 'wx', mode: sourceFile.mode });
+      chmodSync(target, sourceFile.mode);
+      return { path, sha256: sourceFile.sha256, bytes: sourceFile.bytes };
     });
     const archive = gzipSync(deterministicTar(staging), deterministicGzipOptions);
     mkdirSync(outDir, { recursive: true });

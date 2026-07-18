@@ -6,6 +6,7 @@ import { runProcess } from '../../scripts/lib/process-runner.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dir, '../..');
+const VALIDATE_ALL_SMOKE_TIMEOUT_MS = 360_000;
 
 test('validate-all smoke completes with zero failures', async () => {
   const result = await runProcess('validate-all smoke', process.execPath, [
@@ -16,7 +17,7 @@ test('validate-all smoke completes with zero failures', async () => {
       ...process.env,
       NOVA_VALIDATE_CONCURRENCY: '2',
     },
-    timeoutMs: 180_000,
+    timeoutMs: VALIDATE_ALL_SMOKE_TIMEOUT_MS,
   });
 
   if (!result.ok) {

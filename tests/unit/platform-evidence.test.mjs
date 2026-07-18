@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { evaluatePlatformCapabilities, validateContainerFallback } from '../../scripts/validate-platform-evidence.mjs';
+import { evaluatePlatformCapabilities, main, validateContainerFallback } from '../../scripts/validate-platform-evidence.mjs';
 
 test('platform capability statuses keep Bash evidence distinct', () => {
   assert.deepEqual(evaluatePlatformCapabilities({ windows: false, hasBash: true, hasPowerShell: false }), { status: 'passed', reasonCode: 'CHECK_PASSED' });
@@ -19,4 +19,23 @@ test('container fallback policy is explicit, digest-pinned, read-only, and fixed
   assert.throws(() => validateContainerFallback({ ...enabled, imageDigest: null }), /digest-pinned/u);
   assert.throws(() => validateContainerFallback({ ...disabled, imageDigest: enabled.imageDigest }), /must not retain/u);
   assert.throws(() => validateContainerFallback({ ...enabled, argv: ['bash', '-c'] }), /argv/u);
+});
+
+test('platform evidence CLI validates the generated matrix and fails closed on unavailable modes', () => {
+  const log = console.log;
+  const error = console.error;
+  const messages = [];
+  console.log = (...values) => messages.push(values.join(' '));
+  console.error = (...values) => messages.push(values.join(' '));
+  try {
+    assert.equal(main([]), 0);
+    assert.equal(main(['--container-fallback']), 1);
+    assert.equal(main(['--unknown']), 1);
+  } finally {
+    console.log = log;
+    console.error = error;
+  }
+  assert.ok(messages.some((message) => message.includes('OK platform evidence matrix')));
+  assert.ok(messages.some((message) => message.includes('container fallback unavailable')));
+  assert.ok(messages.some((message) => message.includes('Usage:')));
 });

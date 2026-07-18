@@ -110,7 +110,7 @@ test('workflow classes retain the native permission contract', async () => {
   );
   assertTools(
     ['backend-plan', 'produce-plan', 'senior-explore'],
-    ['Read', 'Glob', 'Grep', 'Write', 'Edit'],
+    ['Read', 'Glob', 'Grep'],
     ['NotebookEdit', 'Bash'],
     false,
   );
@@ -144,5 +144,26 @@ test('generated workflow permission files are current', async () => {
   for (const generated of generateWorkflowPermissionFiles(root)) {
     const actual = await readFile(resolve(root, generated.relPath), 'utf8');
     assert.equal(actual, generated.content, `${generated.relPath} is stale`);
+  }
+});
+
+test('artifact writers require a native Write/Edit permission prompt', async () => {
+  const spec = JSON.parse(await readFile(
+    resolve(root, 'nova-plugin/runtime/workflow-permissions.json'),
+    'utf8',
+  ));
+  const report = buildEffectivePermissions(spec);
+  for (const id of ['backend-plan', 'produce-plan', 'senior-explore']) {
+    const workflow = spec.workflows.find((entry) => entry.id === id);
+    assert.ok(workflow, `missing workflow ${id}`);
+    assert.equal(workflow.permissionPolicy.workspaceWrite, 'prompt');
+    assert.equal(workflow.allowedTools.includes('Write'), false);
+    assert.equal(workflow.allowedTools.includes('Edit'), false);
+    assert.equal(workflow.disallowedTools.includes('Write'), false);
+    assert.equal(workflow.disallowedTools.includes('Edit'), false);
+
+    const command = report.entries.find((entry) => entry.surface === 'command' && entry.id === id);
+    assert.ok(command, `missing command permission report for ${id}`);
+    assert.deepEqual(command.permissionPromptTools.filter((tool) => ['Write', 'Edit'].includes(tool)), ['Edit', 'Write']);
   }
 });

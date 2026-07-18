@@ -29,9 +29,9 @@ sources and `governance/product-lanes.json`.
 | 上一 MINOR 版本 | ⚠️ 仅高危漏洞 |
 | 更早版本 | ❌ |
 
-支持范围跟随 `nova-plugin/.claude-plugin/plugin.json` 的版本事实源。稳定推广仍
-必须以 exact release tag 为准；release-ready 工作树或 moving `main` 不等同于
-已发布版本。
+安全支持范围跟随 `governance/release-channels.json` 中的 stable channel，
+而不是未发布的 plugin development metadata。稳定推广仍必须以 exact release tag 为准；
+release-ready 工作树或 moving `main` 不等同于已发布版本。
 
 ## 报告漏洞
 
@@ -47,7 +47,8 @@ tab -> Report a vulnerability）；若该入口对报告者不可用，再使用
 
 - 受影响的组件（命令 / skill / agent / schema / hooks / 脚本）
 - 复现步骤或 PoC
-- 受影响的插件版本（`nova-plugin/.claude-plugin/plugin.json` 的 `version`）
+- 受影响的已安装/已发布版本（以 stable release channel 和 exact tag 为准）；
+  若报告针对未发布快照，再附 commit 与 plugin manifest version
 - 建议的缓解方案（可选）
 
 ## 响应时间

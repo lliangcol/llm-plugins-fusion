@@ -73,6 +73,22 @@
   ],
   "outputContract": "codex-review-fix-v2",
   "risk": "medium",
+  "allowedTools": [
+    "Read",
+    "Glob",
+    "Grep",
+    "Write",
+    "Edit"
+  ],
+  "disallowedTools": [
+    "NotebookEdit"
+  ],
+  "modelInvocable": false,
+  "subagentSafe": false,
+  "destructiveActions": "medium",
+  "commandEntrypoint": {
+    "directCommandId": "codex-review-fix"
+  },
   "runtimeRequirements": {
     "executables": [
       {
@@ -120,7 +136,7 @@
     "Stop when a required capability is denied, unsupported, or awaiting approval.",
     "Stay within the project or an explicitly approved artifact root.",
     "Preserve the named output contract and report skipped validation honestly.",
-    "Do not publish externally, mutate user scope, or rewrite Git history."
+    "Execute only declared workflow effects after satisfying their authorization states (credentials:explicit, network:prompt, shell:prompt, workspace-read:preapproved, workspace-write:preapproved); authorization alone never expands effect scope."
   ],
   "behaviorContract": {
     "schemaVersion": 2,
@@ -320,5 +336,5 @@
     },
     "effects": []
   },
-  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR. Workflow-level effects are authoritative; behaviorContract.effects declares the validated empty subset and cannot expand workflow capability scope. The referenced authored guidance surface may add explanatory context but cannot override this contract."
 }

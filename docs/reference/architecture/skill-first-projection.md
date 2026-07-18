@@ -158,9 +158,9 @@ Current project mapping:
 | Fat skills | `nova-plugin/skills/nova-*/SKILL.md` | Put role behavior, procedure, and output contracts here. |
 | Command entrypoints | `nova-plugin/commands/*.md` | Keep command frontmatter and invocation mapping compact. |
 | Role routing | `nova-plugin/agents/` and `nova-plugin/packs/` | Keep agents route-focused; keep packs documentation-only with fallback mode. |
-| Context investment | `docs/workflows/context-safe-agent-workflows.md` | Split large work into units and checkpoints. |
-| Consumer facts | `docs/consumers/` templates | Keep real commands, paths, and business rules in private consumer docs. |
-| Prompt reuse | `docs/prompts/` | Add public-safe templates only when they are broadly reusable. |
+| Context investment | `docs/guides/workflows/context-safe.md` | Split large work into units and checkpoints. |
+| Consumer facts | `docs/templates/consumer-profiles/` | Keep real commands, paths, and business rules in private consumer docs. |
+| Prompt reuse | `docs/templates/prompts/` | Add public-safe templates only when they are broadly reusable. |
 
 ## When To Create A New Skill Or Prompt
 

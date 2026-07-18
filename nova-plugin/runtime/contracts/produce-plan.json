@@ -65,14 +65,12 @@
   ],
   "effects": [
     "artifact-write",
-    "workspace-read",
-    "workspace-write"
+    "workspace-read"
   ],
   "authorizationProfile": "artifact-write",
   "enforcementRequirements": [
     "enforce:artifact-write",
-    "enforce:workspace-read",
-    "enforce:workspace-write"
+    "enforce:workspace-read"
   ],
   "evidenceRequirements": [
     "authorization-decision",
@@ -81,6 +79,21 @@
   ],
   "outputContract": "produce-plan-v2",
   "risk": "low",
+  "allowedTools": [
+    "Read",
+    "Glob",
+    "Grep"
+  ],
+  "disallowedTools": [
+    "NotebookEdit",
+    "Bash"
+  ],
+  "modelInvocable": false,
+  "subagentSafe": true,
+  "destructiveActions": "low",
+  "commandEntrypoint": {
+    "directCommandId": "produce-plan"
+  },
   "runtimeRequirements": {
     "executables": [],
     "network": {
@@ -94,7 +107,7 @@
   },
   "permissionPolicy": {
     "workspaceRead": "preapproved",
-    "workspaceWrite": "preapproved",
+    "workspaceWrite": "prompt",
     "shell": "denied",
     "network": "denied",
     "credentials": "denied",
@@ -112,7 +125,7 @@
     "Stop when a required capability is denied, unsupported, or awaiting approval.",
     "Stay within the project or an explicitly approved artifact root.",
     "Preserve the named output contract and report skipped validation honestly.",
-    "Do not publish externally, mutate user scope, or rewrite Git history."
+    "Execute only declared workflow effects after satisfying their authorization states (artifact-write:prompt, workspace-read:preapproved); authorization alone never expands effect scope."
   ],
   "behaviorContract": {
     "schemaVersion": 2,
@@ -257,6 +270,7 @@
         }
       ],
       "order": [
+        "plan artifact",
         "artifact path",
         "executive summary"
       ],
@@ -283,5 +297,5 @@
     },
     "effects": []
   },
-  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR. Workflow-level effects are authoritative; behaviorContract.effects declares the validated empty subset and cannot expand workflow capability scope. The referenced authored guidance surface may add explanatory context but cannot override this contract."
 }

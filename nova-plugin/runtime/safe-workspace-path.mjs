@@ -3,6 +3,7 @@ import {
   constants,
   existsSync,
   lstatSync,
+  readFileSync,
   realpathSync,
   statSync,
 } from 'node:fs';
@@ -91,6 +92,126 @@ const SENSITIVE_CONTROL_SEGMENTS = new Set([
   '.ssh',
   '.gnupg',
 ]);
+const MAX_GIT_POINTER_BYTES = 4096;
+const MAX_GIT_CONFIG_BYTES = 1024 * 1024;
+
+function sameFilesystemIdentity(left, right) {
+  return left.dev === right.dev && left.ino === right.ino;
+}
+
+function physicalGitDirectory(candidate, label) {
+  const before = lstatSync(candidate, { throwIfNoEntry: false });
+  if (!before?.isDirectory() || before.isSymbolicLink()) {
+    throw new Error(`${label} must be a real directory and not a symlink or junction`);
+  }
+  const physical = realpathSync.native(candidate);
+  const after = lstatSync(candidate);
+  if (!after.isDirectory() || after.isSymbolicLink() || !sameFilesystemIdentity(before, after)
+    || realpathSync.native(candidate) !== physical) {
+    throw new Error(`${label} changed identity while it was resolved`);
+  }
+  return { lexical: resolve(candidate), physical };
+}
+
+function readGitPointer(path, label, pattern) {
+  const before = lstatSync(path, { throwIfNoEntry: false });
+  if (!before?.isFile() || before.isSymbolicLink() || before.nlink !== 1) {
+    throw new Error(`${label} must be a regular non-symlink file with one hard link`);
+  }
+  if (before.size > MAX_GIT_POINTER_BYTES) throw new Error(`${label} exceeds the inspection limit`);
+  const content = readFileSync(path, 'utf8');
+  const after = lstatSync(path);
+  if (!after.isFile() || after.isSymbolicLink() || after.nlink !== 1
+    || !sameFilesystemIdentity(before, after)) {
+    throw new Error(`${label} changed identity while it was read`);
+  }
+  const match = pattern.exec(content);
+  if (!match) throw new Error(`${label} is invalid`);
+  return match[1];
+}
+
+function isBareGitRepositoryRoot(candidate) {
+  const paths = {
+    head: resolve(candidate, 'HEAD'),
+    config: resolve(candidate, 'config'),
+    objects: resolve(candidate, 'objects'),
+    refs: resolve(candidate, 'refs'),
+  };
+  const stats = Object.fromEntries(Object.entries(paths)
+    .map(([key, value]) => [key, lstatSync(value, { throwIfNoEntry: false })]));
+  if (Object.values(stats).some((value) => !value)) return false;
+  if (stats.head.isSymbolicLink() || !stats.head.isFile() || stats.head.nlink !== 1
+    || stats.config.isSymbolicLink() || !stats.config.isFile() || stats.config.nlink !== 1
+    || stats.objects.isSymbolicLink() || !stats.objects.isDirectory()
+    || stats.refs.isSymbolicLink() || !stats.refs.isDirectory()) {
+    throw new Error('bare repository control paths must be physical files and directories');
+  }
+  if (stats.head.size > MAX_GIT_POINTER_BYTES || stats.config.size > MAX_GIT_CONFIG_BYTES) {
+    throw new Error('bare repository control metadata exceeds the inspection limit');
+  }
+  const head = readFileSync(paths.head, 'utf8').trim();
+  if (!/^(?:ref:\s+refs\/[A-Za-z0-9._\/-]+|[a-f0-9]{40}|[a-f0-9]{64})$/u.test(head)
+    || head.includes('..') || head.includes('//')) {
+    throw new Error('bare repository HEAD is invalid');
+  }
+  return true;
+}
+
+/**
+ * Resolve the repository and every Git control root discovered from a starting
+ * directory. The same strict resolver is shared by the write guard and Bash
+ * broker so linked worktrees and bare repositories cannot drift between them.
+ */
+export function resolveGitControlDirectories(start) {
+  let current = physicalGitDirectory(resolve(start), 'Git discovery start').physical;
+  while (true) {
+    const marker = resolve(current, '.git');
+    const markerStats = lstatSync(marker, { throwIfNoEntry: false });
+    if (markerStats || isBareGitRepositoryRoot(current)) {
+      let gitDirectory;
+      if (!markerStats) {
+        gitDirectory = physicalGitDirectory(current, 'bare repository Git directory');
+      } else if (markerStats.isDirectory() && !markerStats.isSymbolicLink()) {
+        gitDirectory = physicalGitDirectory(marker, 'repository .git directory');
+      } else if (markerStats.isFile() && !markerStats.isSymbolicLink()) {
+        const pointer = readGitPointer(
+          marker,
+          'repository .git pointer',
+          /^gitdir: ([^\r\n\0]+)(?:\r?\n)?$/iu,
+        );
+        gitDirectory = physicalGitDirectory(resolve(dirname(marker), pointer), 'repository gitdir');
+      } else {
+        throw new Error('repository .git marker must be a physical file or directory');
+      }
+
+      const commonMarker = resolve(gitDirectory.lexical, 'commondir');
+      const commonStats = lstatSync(commonMarker, { throwIfNoEntry: false });
+      let commonDirectory = gitDirectory;
+      if (commonStats) {
+        const pointer = readGitPointer(
+          commonMarker,
+          'repository commondir pointer',
+          /^([^\r\n\0]+)(?:\r?\n)?$/u,
+        );
+        commonDirectory = physicalGitDirectory(resolve(gitDirectory.lexical, pointer), 'repository common gitdir');
+      }
+      return Object.freeze({
+        repositoryRoot: current,
+        gitDir: gitDirectory.physical,
+        gitDirLexical: gitDirectory.lexical,
+        commonDir: commonDirectory.physical,
+        commonDirLexical: commonDirectory.lexical,
+      });
+    }
+    const parent = dirname(current);
+    if (parent === current) return null;
+    current = parent;
+  }
+}
+
+function pathsOverlap(left, right, platform) {
+  return isPathInside(left, right, { platform }) || isPathInside(right, left, { platform });
+}
 
 function executableNamesForPlatform(name, env, platform) {
   if (platform !== 'win32' || /\.[A-Za-z0-9]+$/u.test(name)) return [name];
@@ -112,7 +233,22 @@ export function assertArtifactRootsOutsideExecutableSearch({
   const roots = artifactRoots.map((entry, index) => canonicalAllowedRoot(entry, `artifact root ${index + 1}`));
   const project = resolve(projectRoot);
   const home = resolve(homedir());
+  const gitControls = resolveGitControlDirectories(project);
+  const gitControlRoots = gitControls
+    ? [...new Set([
+      gitControls.gitDirLexical,
+      gitControls.gitDir,
+      gitControls.commonDirLexical,
+      gitControls.commonDir,
+    ])]
+    : [];
   for (const root of roots) {
+    for (const controlRoot of gitControlRoots) {
+      if (pathsOverlap(root.lexical, controlRoot, platform)
+        || pathsOverlap(root.real, controlRoot, platform)) {
+        throw new Error(`artifact root ${root.lexical} overlaps Git control directory ${controlRoot}`);
+      }
+    }
     if (root.lexical === project) continue;
     if (dirname(root.lexical) === root.lexical) {
       throw new Error(`artifact root must not be a filesystem root: ${root.lexical}`);
@@ -272,8 +408,28 @@ export function isProtectedHooksPath(target, options) {
 
 export function isProtectedShellControlPath(target, options) {
   const targetValue = resolve(target);
+  let physicalTargetValue = targetValue;
+  try {
+    const ancestor = nearestExistingAncestor(targetValue);
+    physicalTargetValue = resolve(realpathSync.native(ancestor), relative(ancestor, targetValue));
+  } catch {
+    // The lexical decision below remains fail-closed for named control paths.
+  }
   const absoluteSegments = targetValue.split(/[\\/]/u).filter(Boolean);
   if (absoluteSegments.some((segment) => segment.toLowerCase() === '.git')) return true;
+  try {
+    const gitControls = resolveGitControlDirectories(options.projectRoot);
+    if (gitControls && [
+      gitControls.gitDirLexical,
+      gitControls.gitDir,
+      gitControls.commonDirLexical,
+      gitControls.commonDir,
+    ].some((root) => comparablePathInside(root, targetValue)
+      || comparablePathInside(root, physicalTargetValue))) return true;
+  } catch {
+    // Malformed or unstable Git metadata invalidates the write trust boundary.
+    return true;
+  }
   if (isPathInside(options.projectRoot, targetValue)) {
     if (['bash', 'bash.exe'].includes(basename(targetValue).toLowerCase())) return true;
   }

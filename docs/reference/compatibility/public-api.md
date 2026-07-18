@@ -71,8 +71,11 @@ workflow-specs/workflows.json
 The 15 compatibility aliases are evidence-gated rather than scheduled for
 date-based removal. Their source policy is
 `workflow-specs/nova.product.json`; removal requires real benchmark evidence,
-a plugin-major release, a governed release decision, and migration
-documentation.
+native permission and invocation parity, a plugin-major release, a governed
+release decision, and migration documentation. The machine-readable gate name
+is `native-permission-and-invocation-parity`; every adapter manifest projects
+the same complete product policy rather than adding host-local retirement
+conditions.
 
 ## Generic Assistant Manifest
 

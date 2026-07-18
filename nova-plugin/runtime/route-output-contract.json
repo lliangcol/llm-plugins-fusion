@@ -1,15 +1,17 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "id": "recommended-route-v2",
   "heading": "## Recommended Route",
+  "resolutionContract": "resolved-variant-contracts.json",
+  "resolutionRule": "Extract only declared selector keys, validate values, apply selector defaults, select an exact normalized override when present, stop on any non-exact alias specialization, otherwise use the canonical fallback, and treat the complete resolved runtime contract as authority.",
   "fields": [
     {
       "id": "canonicalSkill",
       "label": "Canonical skill:"
     },
     {
-      "id": "commandAlias",
-      "label": "Command alias (optional):"
+      "id": "commandEntrypoint",
+      "label": "Command entrypoint:"
     },
     {
       "id": "variantParameters",

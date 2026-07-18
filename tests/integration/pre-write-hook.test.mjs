@@ -171,6 +171,53 @@ test('write guard rejects Git metadata that can change brokered command behavior
   assert.equal(await readFile(config, 'utf8'), '[core]\n\trepositoryformatversion = 0\n');
 });
 
+test('write guard rejects linked-worktree gitdir and commonDir targets, including artifact-root overlap', async (t) => {
+  const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-linked-git-'));
+  t.after(() => rm(temp, { recursive: true, force: true }));
+  const workspace = join(temp, 'workspace');
+  const commonGitDir = join(temp, 'git-metadata');
+  const worktreeGitDir = join(commonGitDir, 'worktrees/workspace');
+  await mkdir(worktreeGitDir, { recursive: true });
+  await mkdir(workspace);
+  await writeFile(join(workspace, '.git'), 'gitdir: ../git-metadata/worktrees/workspace\n');
+  await writeFile(join(worktreeGitDir, 'commondir'), '../..\n');
+  const commonConfig = join(commonGitDir, 'config');
+  const worktreeConfig = join(worktreeGitDir, 'config.worktree');
+  await writeFile(commonConfig, '[core]\n\trepositoryformatversion = 0\n');
+  await writeFile(worktreeConfig, '[core]\n\tbare = false\n');
+
+  for (const target of [commonConfig, worktreeConfig]) {
+    const protectedTarget = await runGuard(writePayload(target, '[core]\n\tbare = false\n'), {
+      projectRoot: workspace,
+    });
+    assert.equal(protectedTarget.code, 2, protectedTarget.stderr);
+    assert.match(protectedTarget.stderr, /agent control path cannot be modified/u);
+  }
+
+  const overlappingArtifact = await runGuard(writePayload(commonConfig, '[core]\n\tbare = false\n'), {
+    projectRoot: workspace,
+    env: { NOVA_EXPLICIT_ARTIFACT_ROOT: commonGitDir },
+  });
+  assert.equal(overlappingArtifact.code, 2, overlappingArtifact.stderr);
+  assert.match(overlappingArtifact.stderr, /artifact root.*Git control directory/u);
+});
+
+test('write guard treats every path in a bare repository as Git control metadata', async (t) => {
+  const bare = await mkdtemp(join(tmpdir(), 'nova-pre-write-bare-git-'));
+  t.after(() => rm(bare, { recursive: true, force: true }));
+  await Promise.all([
+    mkdir(join(bare, 'objects')),
+    mkdir(join(bare, 'refs')),
+  ]);
+  const config = join(bare, 'config');
+  await writeFile(join(bare, 'HEAD'), 'ref: refs/heads/main\n');
+  await writeFile(config, '[core]\n\tbare = true\n');
+
+  const result = await runGuard(writePayload(config, '[core]\n\tbare = false\n'), { projectRoot: bare });
+  assert.equal(result.code, 2, result.stderr);
+  assert.match(result.stderr, /agent control path cannot be modified/u);
+});
+
 test('write guard rejects its complete hook and runtime trust closure with case-folded aliases', async (t) => {
   const temp = await mkdtemp(join(tmpdir(), 'nova-pre-write-trust-closure-'));
   t.after(() => rm(temp, { recursive: true, force: true }));

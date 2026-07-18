@@ -1,5 +1,6 @@
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { writeArtifactFileAtomically } from './artifact-output.mjs';
 
 const defaultRoot = resolve(import.meta.dirname, '../..');
 const precedence = ['passed', 'skipped', 'warn', 'blocked', 'failed'];
@@ -54,8 +55,11 @@ export function renderDiagnosticReport(report) {
   return [`== ${report.command} diagnostics ==`, ...rows, '', `Status: ${report.status}`].join('\n');
 }
 
-export function writeDiagnosticReport(path, report) {
-  const target = resolve(path);
-  mkdirSync(dirname(target), { recursive: true });
-  writeFileSync(target, `${JSON.stringify(report, null, 2)}\n`, 'utf8');
+export function writeDiagnosticReport(path, report, { repositoryRoot = defaultRoot } = {}) {
+  writeArtifactFileAtomically(
+    repositoryRoot,
+    path,
+    `${JSON.stringify(report, null, 2)}\n`,
+    { label: 'diagnostic JSON output' },
+  );
 }

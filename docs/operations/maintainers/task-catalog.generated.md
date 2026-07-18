@@ -16,7 +16,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `benchmark` | Tests, coverage, simulations, demos, mutations, and live evaluation. |
 | `maintenance` | Diagnostics, repository administration, and reusable script libraries. |
 
-## Script Inventory (137)
+## Script Inventory (149)
 
 | Category | Script |
 | --- | --- |
@@ -56,24 +56,34 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `evidence` | `scripts/generate-validation-timing-trend.mjs` |
 | `evidence` | `scripts/generate-workflow-permissions.mjs` |
 | `maintenance` | `scripts/lib/adoption-evidence.mjs` |
+| `maintenance` | `scripts/lib/artifact-output.mjs` |
 | `maintenance` | `scripts/lib/bash-command.mjs` |
 | `maintenance` | `scripts/lib/canonical-json.mjs` |
 | `maintenance` | `scripts/lib/cli-args.mjs` |
+| `maintenance` | `scripts/lib/command-wrapper-contract.mjs` |
 | `maintenance` | `scripts/lib/coverage-runner.mjs` |
 | `maintenance` | `scripts/lib/coverage-thresholds.mjs` |
+| `maintenance` | `scripts/lib/credential-environment.mjs` |
 | `maintenance` | `scripts/lib/diagnostics.mjs` |
 | `maintenance` | `scripts/lib/eval-dataset.mjs` |
 | `maintenance` | `scripts/lib/evaluation-evidence.mjs` |
 | `maintenance` | `scripts/lib/evaluation-facts.mjs` |
+| `maintenance` | `scripts/lib/git-source-snapshot.mjs` |
 | `maintenance` | `scripts/lib/github-actions-performance-provenance.mjs` |
+| `maintenance` | `scripts/lib/github-identity.mjs` |
 | `maintenance` | `scripts/lib/label-catalog.mjs` |
 | `maintenance` | `scripts/lib/live-evaluation-plan.mjs` |
 | `maintenance` | `scripts/lib/migration-cli.mjs` |
 | `maintenance` | `scripts/lib/node-version.mjs` |
+| `maintenance` | `scripts/lib/physical-read-boundary.mjs` |
+| `maintenance` | `scripts/lib/plugin-evidence-output.mjs` |
+| `maintenance` | `scripts/lib/portable-path.mjs` |
 | `maintenance` | `scripts/lib/pr-governance.mjs` |
 | `maintenance` | `scripts/lib/process-runner.mjs` |
 | `maintenance` | `scripts/lib/release-candidate.mjs` |
+| `maintenance` | `scripts/lib/release-checksum-contract.mjs` |
 | `maintenance` | `scripts/lib/release-corrections.mjs` |
+| `maintenance` | `scripts/lib/release-operations.mjs` |
 | `maintenance` | `scripts/lib/release-review.mjs` |
 | `maintenance` | `scripts/lib/release-state-machine.mjs` |
 | `maintenance` | `scripts/lib/repo-root.mjs` |
@@ -81,7 +91,9 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `maintenance` | `scripts/lib/schema-engine.mjs` |
 | `maintenance` | `scripts/lib/semver.mjs` |
 | `maintenance` | `scripts/lib/source-inventory.mjs` |
+| `maintenance` | `scripts/lib/source-tree-staging.mjs` |
 | `maintenance` | `scripts/lib/test-discovery.mjs` |
+| `maintenance` | `scripts/lib/trusted-claude-invocation.mjs` |
 | `maintenance` | `scripts/lib/validate-workflow-model.mjs` |
 | `maintenance` | `scripts/lib/validation-performance-profile.mjs` |
 | `maintenance` | `scripts/lib/validation-selection.mjs` |
@@ -254,8 +266,8 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `registry.fixtures` | `validate` | `scripts/validate-registry-fixtures.mjs` | 3 | `never` |
 | `claude.manifest.static` | `validate` | `scripts/validate-claude-compat.mjs` | 2 | `never` |
 | `frontmatter.lint` | `validate` | `scripts/lint-frontmatter.mjs` | 3 | `never` |
-| `workflow.contracts` | `validate` | `node-batch` | 6 | `never` |
-| `workflow.second-product` | `validate` | `scripts/validate-second-product-fixture.mjs` | 7 | `never` |
+| `workflow.contracts` | `validate` | `node-batch` | 7 | `never` |
+| `workflow.second-product` | `validate` | `scripts/validate-second-product-fixture.mjs` | 8 | `never` |
 | `schemas.differential` | `validate` | `scripts/validate-schema-engine-differential.mjs` | 4 | `never` |
 | `release.operations` | `validate` | `scripts/validate-release-operations.mjs` | 5 | `never` |
 | `governance.freshness` | `validate` | `scripts/validate-governance-freshness.mjs` | 2 | `never` |
@@ -264,7 +276,7 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `control.task.catalog` | `evidence` | `scripts/generate-task-catalog.mjs` | 4 | `never` |
 | `facts.graph` | `evidence` | `scripts/generate-fact-graph.mjs` | 3 | `never` |
 | `platform.file.urls` | `validate` | `scripts/validate-portable-paths.mjs` | 2 | `never` |
-| `workflow.surface.normalization` | `migration` | `scripts/normalize-workflow-surfaces.mjs` | 6 | `never` |
+| `workflow.surface.normalization` | `migration` | `scripts/normalize-workflow-surfaces.mjs` | 7 | `never` |
 | `agents.verify` | `validate` | `agents` | 2 | `never` |
 | `packs.validate` | `validate` | `scripts/validate-packs.mjs` | 1 | `never` |
 | `hooks.policy` | `validate` | `scripts/validate-hooks.mjs` | 4 | `never` |
@@ -276,16 +288,16 @@ This catalog classifies every repository maintenance script and npm shortcut, th
 | `surface.inventory` | `docs` | `scripts/generate-surface-inventory.mjs` | 3 | `content` |
 | `distribution.risk` | `validate` | `scripts/scan-distribution-risk.mjs` | 7 | `content` |
 | `regression.validate` | `validate` | `scripts/validate-regression.mjs` | 7 | `never` |
-| `workflow.fixtures` | `validate` | `scripts/validate-workflow-fixtures.mjs` | 7 | `never` |
-| `workflow.evaluations` | `validate` | `node-batch` | 12 | `never` |
-| `assistant.adapters` | `validate` | `scripts/validate-adapter-conformance.mjs` | 7 | `never` |
+| `workflow.fixtures` | `validate` | `scripts/validate-workflow-fixtures.mjs` | 8 | `never` |
+| `workflow.evaluations` | `validate` | `node-batch` | 13 | `never` |
+| `assistant.adapters` | `validate` | `scripts/validate-adapter-conformance.mjs` | 8 | `never` |
 | `assistant.live.evidence` | `validate` | `scripts/validate-assistant-evidence.mjs` | 3 | `never` |
 | `assistant.compatibility.registry` | `evidence` | `scripts/generate-compatibility-evidence.mjs` | 3 | `never` |
 | `quality.public.report` | `evidence` | `scripts/generate-quality-report.mjs` | 3 | `content` |
 | `community.governance` | `validate` | `scripts/validate-community-governance.mjs` | 5 | `content` |
 | `critical.mutation` | `benchmark` | `scripts/run-critical-mutations.mjs` | 5 | `never` |
 | `docs.validate` | `validate` | `scripts/validate-docs.mjs` | 6 | `content` |
-| `docs.command.generated` | `docs` | `scripts/generate-command-docs.mjs` | 12 | `content` |
+| `docs.command.generated` | `docs` | `scripts/generate-command-docs.mjs` | 13 | `content` |
 | `docs.governance.generated` | `docs` | `scripts/generate-doc-governance.mjs` | 6 | `content` |
 | `docs.migrations` | `migration` | `scripts/migrate-documentation-layout.mjs` | 6 | `content` |
 | `security.dependency-audit` | `evidence` | `scripts/audit-dependencies.mjs` | 6 | `never` |

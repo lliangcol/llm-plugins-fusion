@@ -30,6 +30,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { commandWrapperContractFailures } from './lib/command-wrapper-contract.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -250,11 +251,9 @@ function lintCommands() {
     const workflow = workflowById.get(expectedId);
     if (!workflow) recordError(rel, 'missing canonical workflow spec entry');
     else {
-      if (!src.includes(`canonical surface \`nova-${workflow.canonicalSurfaceId}\``)) recordError(rel, 'missing canonical skill wrapper contract');
       const runtimeContract = `runtime/contracts/${workflow.id}.json`;
-      if (!src.includes(`\${CLAUDE_PLUGIN_ROOT}/${runtimeContract}`)) recordError(rel, `missing compiled runtime contract ${runtimeContract}`);
       if (!existsSync(resolve(root, 'nova-plugin', runtimeContract))) recordError(rel, `compiled runtime contract file missing: ${runtimeContract}`);
-      if (!src.includes(`variant preset \`${JSON.stringify(workflow.variantPreset)}\``)) recordError(rel, 'missing generated variant preset');
+      for (const failure of commandWrapperContractFailures(src, workflow)) recordError(rel, failure);
     }
 
     commandContracts.set(expectedId, {

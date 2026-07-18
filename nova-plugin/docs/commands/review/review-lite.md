@@ -23,11 +23,11 @@
 
 ### Required
 
-- 无
+- `ARGUMENTS`: 待审查的变更或描述。示例: `PR diff`
 
 ### Optional
 
-- `ARGUMENTS`: 待审查的变更或描述。示例: `PR diff`
+- 无
 
 ## 行为准则（Do/Don't）
 

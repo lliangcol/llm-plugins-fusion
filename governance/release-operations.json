@@ -1,6 +1,6 @@
 {
   "$schema": "../schemas/release-operations.schema.json",
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "independentReview": {
     "requiredForCandidate": true,
     "minimumApprovals": 1,
@@ -25,6 +25,7 @@
   "protectedPublication": {
     "environment": "release",
     "externalApprovalRequired": true,
+    "evidenceMaxAgeDays": 90,
     "currentEvidence": null
   },
   "candidateObservation": {

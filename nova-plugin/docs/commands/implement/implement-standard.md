@@ -23,11 +23,11 @@
 
 ### Required
 
-- 无
+- `REQUEST`: 已确认的步骤或执行依据及验收标准。示例: `按步骤实现取消订单功能`
 
 ### Optional
 
-- `ARGUMENTS`: 明确的计划或步骤说明。示例: `Step-by-step tasks list`
+- `CONSTRAINTS`: 兼容性与范围限制。示例: `保持现有接口兼容`
 
 ## 行为准则（Do/Don't）
 
@@ -49,7 +49,8 @@
 
 ## 输出规范
 
-- 命令未规定固定输出结构；重点是按步骤完成实现。
+- 固定顺序输出 `code updates`、`Implementation Summary`、`Validation`、`Deviations`。
+- `Validation` 只能报告实际运行的检查；无偏离时 `Deviations` 明确写 `None`。
 
 ## 典型示例
 

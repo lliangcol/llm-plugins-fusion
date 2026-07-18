@@ -133,8 +133,11 @@ into public artifacts.
 
 ## CodeQL And Dependency Graph
 
-CodeQL runs from `.github/workflows/codeql.yml`. Dependency review may skip when
-the repository dependency graph is unavailable. Enable GitHub Dependency graph,
+CodeQL runs from `.github/workflows/codeql.yml`. Dependency review fails closed
+when the dependency graph is unavailable for a same-repository PR. For a fork
+PR, an unavailable graph is `not_applicable` only when no dependency-bearing
+surface changed; a fork PR that changes such a surface also fails closed and
+requires maintainer security approval. Enable GitHub Dependency graph,
 Dependabot alerts, secret scanning, and code scanning in repository security
 settings before treating platform checks as complete.
 

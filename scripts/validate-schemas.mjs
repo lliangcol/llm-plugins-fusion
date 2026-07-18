@@ -293,6 +293,11 @@ const targets = [
     label: 'nova-plugin/runtime/workflow-permissions.json',
   },
   {
+    schema: loadJson('schemas/resolved-variant-contracts.schema.json'),
+    data: loadJson('nova-plugin/runtime/resolved-variant-contracts.json'),
+    label: 'nova-plugin/runtime/resolved-variant-contracts.json',
+  },
+  {
     schema: loadJson('schemas/product-lanes.schema.json'),
     data: loadJson('governance/product-lanes.json'),
     label: 'governance/product-lanes.json',
@@ -409,10 +414,11 @@ const versionPatterns = [
   targets[0].schema.properties.version.pattern,
   targets[2].schema.properties.plugins.items.properties.version.pattern,
   targets[4].schema.properties.plugins.items.properties.version.pattern,
+  loadJson('schemas/workflow-spec.schema.json').$defs.semver.pattern,
 ];
 if (versionPatterns.some((pattern) => pattern !== SEMVER_PATTERN_SOURCE)) {
   console.error('✗ schema SemVer pattern alignment');
-  console.error('  - plugin and marketplace version schemas must match scripts/lib/semver.mjs');
+  console.error('  - plugin, marketplace, and workflow contract version schemas must match framework/core/semver.mjs');
   process.exit(1);
 }
 console.log('✓ schema SemVer pattern alignment');
@@ -424,6 +430,7 @@ const schemaPaths = [
   'schemas/marketplace.schema.json',
   'schemas/marketplace-metadata.schema.json',
   'schemas/workflow-permissions.schema.json',
+  'schemas/resolved-variant-contracts.schema.json',
   'schemas/workflow-spec.schema.json',
   'schemas/workflow-framework.schema.json',
   'schemas/workflow-behaviors.schema.json',

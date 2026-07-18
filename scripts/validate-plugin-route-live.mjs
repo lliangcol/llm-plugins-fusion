@@ -12,9 +12,19 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { dirname, relative, resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { captureProcess, runProcess } from './lib/process-runner.mjs';
+import {
+  preparePluginEvidenceOutputPlan,
+  validatePluginEvidenceOutputPath,
+  writePluginEvidenceOutput,
+} from './lib/plugin-evidence-output.mjs';
+import {
+  assertTrustedClaudeInvocation,
+  resolveTrustedClaudeInvocation,
+  sanitizeIsolatedExecutablePath,
+} from './lib/trusted-claude-invocation.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -29,7 +39,7 @@ export const routeOutputContract = Object.freeze({
   requiredFields: Object.freeze(routeContractSource.fields.map((field) => field.label)),
   ownerAgents: Object.freeze(Object.fromEntries(Object.entries(routeContractSource.ownerAgents).map(([id, agents]) => [id, Object.freeze(agents)]))),
 });
-export const routeSystemPrompt = `This is an automated installation/invocation/safety smoke for an explicitly invoked /nova-plugin:route command; it is not workflow-quality evidence. Follow the loaded route command and nova-route skill. The final response MUST start with exactly "${routeOutputContract.heading}" and then contain exactly these eight Markdown bullet labels in this order: ${routeOutputContract.requiredFields.join(' ')} Use no preface, alternate heading level, table, renamed field, or closing text. Copy these five lines verbatim: "- Canonical skill: nova-review" "- Command alias (optional): /nova-plugin:review" "- Variant parameters: {}" "- Core agent: reviewer" "- Capability packs: docs". Fill the remaining three values without adding any other lines.`;
+export const routeSystemPrompt = `This is an automated installation/invocation/safety smoke for an explicitly invoked /nova-plugin:route command; it is not workflow-quality evidence. Follow the loaded route command and nova-route skill. The final response MUST start with exactly "${routeOutputContract.heading}" and then contain exactly these eight Markdown bullet labels in this order: ${routeOutputContract.requiredFields.join(' ')} Use no preface, alternate heading level, table, renamed field, or closing text. Copy these five lines verbatim: "- Canonical skill: nova-review" "- Command entrypoint: /nova-plugin:review" "- Variant parameters: {}" "- Core agent: reviewer" "- Capability packs: docs". Fill the remaining three values without adding any other lines.`;
 export const routeSystemPromptSha256 = sha256(routeSystemPrompt);
 export const routeMaxTurns = 8;
 export const routeAllowedTools = Object.freeze([
@@ -38,6 +48,13 @@ export const routeAllowedTools = Object.freeze([
   ...routePermission.allowedTools,
 ]);
 export const routeDisallowedTools = Object.freeze(['Write', 'Edit', 'NotebookEdit', 'Bash']);
+export const routeSmokeExpectedSelection = Object.freeze({
+  commands: Object.freeze(['review']),
+  skills: Object.freeze(['nova-review']),
+  agents: Object.freeze(['reviewer']),
+  packs: Object.freeze(['docs']),
+  variantParameters: Object.freeze({}),
+});
 const competingCredentialVariables = [
   'ANTHROPIC_API_KEY',
   'ANTHROPIC_AUTH_TOKEN',
@@ -54,20 +71,29 @@ function fieldValue(result, label) {
   const escaped = label.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   const match = result.match(new RegExp(`^\\s*(?:[-*]\\s*)?${escaped}\\s*(.+?)\\s*$`, 'mi'));
   if (!match) throw new Error(`route output is missing ${label}`);
-  return match[1].replaceAll('`', '').trim();
+  return match[1].trim();
 }
 
 function validateInventoryField(value, allowedValues, label) {
-  const connectors = new Set(['and', 'or', 'then', 'plus']);
-  const tokens = (value.toLowerCase().match(/[a-z0-9]+(?:-[a-z0-9]+)*/g) ?? [])
-    .filter((token) => !connectors.has(token));
-  if (tokens.length === 0) throw new Error(`route output ${label} is empty`);
+  const tokens = value.split(',').map((token) => token.trim());
+  if (tokens.length === 0 || tokens.some((token) => token === '')) throw new Error(`route output ${label} is empty`);
+  if (tokens.some((token) => !/^[a-z0-9]+(?:-[a-z0-9]+)*$/u.test(token))) {
+    throw new Error(`route output invented ${label}: ${tokens.join(', ')}`);
+  }
+  if (new Set(tokens).size !== tokens.length) throw new Error(`route output ${label} contains duplicate identifiers`);
   const invalid = tokens.filter((token) => !allowedValues.has(token));
   if (invalid.length) throw new Error(`route output invented ${label}: ${[...new Set(invalid)].join(', ')}`);
-  return [...new Set(tokens)].sort();
+  return [...tokens].sort();
 }
 
 export function loadRouteInventory(pluginDir, permissionSpec) {
+  const commandIds = [...permissionSpec.expectedInventory.commandIds];
+  const skillNames = [...permissionSpec.expectedInventory.skillNames];
+  const combinedSkills = [...commandIds, ...skillNames];
+  if (permissionSpec.expectedInventory.combinedSkillCount !== combinedSkills.length
+    || new Set(combinedSkills).size !== combinedSkills.length) {
+    throw new Error('workflow permission inventory count or identities are inconsistent');
+  }
   const agents = readdirSync(resolve(pluginDir, 'agents'), { withFileTypes: true })
     .filter((entry) => entry.isFile() && entry.name.endsWith('.md'))
     .map((entry) => entry.name.slice(0, -3))
@@ -77,8 +103,9 @@ export function loadRouteInventory(pluginDir, permissionSpec) {
     .map((entry) => entry.name)
     .sort();
   return {
-    commandIds: [...permissionSpec.expectedInventory.commandIds],
-    skillNames: [...permissionSpec.expectedInventory.skillNames],
+    combinedSkillCount: permissionSpec.expectedInventory.combinedSkillCount,
+    commandIds,
+    skillNames,
     workflows: permissionSpec.workflows.map((workflow) => ({
       id: workflow.id,
       canonicalSkill: `nova-${workflow.canonicalSurfaceId}`,
@@ -109,16 +136,24 @@ export function validateRouteResult(result, routeInventory) {
     if (!line.slice(prefix.length).trim()) throw new Error(`route output ${field} value is empty`);
   }
   const skillField = fieldValue(result, 'Canonical skill:');
-  const commandField = fieldValue(result, 'Command alias (optional):');
-  fieldValue(result, 'Variant parameters:');
+  const commandField = fieldValue(result, 'Command entrypoint:');
+  const variantField = fieldValue(result, 'Variant parameters:');
   const agentField = fieldValue(result, 'Core agent:');
   const packField = fieldValue(result, 'Capability packs:');
   const allCommandMatches = [...result.matchAll(/\/nova-plugin:([a-z0-9]+(?:-[a-z0-9]+)*)/g)]
     .map((match) => match[1]);
-  const commandMatches = [...commandField.matchAll(/\/nova-plugin:([a-z0-9]+(?:-[a-z0-9]+)*)/g)]
-    .map((match) => match[1]);
-  const aliasOmitted = /^(?:none|n\/a|-|not required)$/iu.test(commandField);
-  if (!aliasOmitted && commandMatches.length === 0) throw new Error('route output command alias did not contain a namespaced nova-plugin command');
+  const commandMatch = /^\/nova-plugin:([a-z0-9]+(?:-[a-z0-9]+)*)$/u.exec(commandField);
+  if (!commandMatch) throw new Error('route output command entrypoint must contain exactly one namespaced nova-plugin command');
+  const commandMatches = [commandMatch[1]];
+  let variantParameters;
+  try {
+    variantParameters = JSON.parse(variantField);
+  } catch {
+    throw new Error('route output Variant parameters must be an exact JSON object');
+  }
+  if (!variantParameters || typeof variantParameters !== 'object' || Array.isArray(variantParameters)) {
+    throw new Error('route output Variant parameters must be an exact JSON object');
+  }
   const commandIds = new Set(routeInventory.commandIds);
   for (const command of allCommandMatches) {
     if (!commandIds.has(command)) throw new Error(`route output invented command ${command}`);
@@ -127,17 +162,13 @@ export function validateRouteResult(result, routeInventory) {
   const agents = validateInventoryField(agentField, new Set(routeInventory.agents), 'core agent');
   const packs = validateInventoryField(packField, new Set(routeInventory.packs), 'capability pack');
   const uniqueCommands = [...new Set(commandMatches)].sort();
-  if (uniqueCommands.length > 1) throw new Error('route output command alias must contain at most one command');
+  if (uniqueCommands.length !== 1) throw new Error('route output command entrypoint must contain exactly one command');
   const workflowById = new Map(routeInventory.workflows.map((workflow) => [workflow.id, workflow]));
-  if (!aliasOmitted) {
-    const expectedSkill = workflowById.get(uniqueCommands[0])?.canonicalSkill;
-    if (skills.length !== 1 || skills[0] !== expectedSkill) {
-      throw new Error(`route output alias-canonical relationship differs: expected ${expectedSkill ?? 'unknown'}`);
-    }
+  const expectedSkill = workflowById.get(uniqueCommands[0])?.canonicalSkill;
+  if (skills.length !== 1 || skills[0] !== expectedSkill) {
+    throw new Error(`route output entrypoint-canonical relationship differs: expected ${expectedSkill ?? 'unknown'}`);
   }
-  const relevantWorkflows = aliasOmitted
-    ? routeInventory.workflows.filter((workflow) => skills.includes(workflow.canonicalSkill))
-    : uniqueCommands.map((command) => workflowById.get(command)).filter(Boolean);
+  const relevantWorkflows = uniqueCommands.map((command) => workflowById.get(command)).filter(Boolean);
   const allowedAgents = new Set(relevantWorkflows.flatMap((workflow) => workflow.ownerAgents));
   const invalidOwners = agents.filter((agent) => !allowedAgents.has(agent));
   if (invalidOwners.length > 0) {
@@ -148,6 +179,7 @@ export function validateRouteResult(result, routeInventory) {
     skills,
     agents,
     packs,
+    variantParameters,
     requiredFields,
   };
 }
@@ -176,7 +208,7 @@ export function routeValidationFailureCode(error) {
   if (message.includes('invented skill')) return 'skill-inventory';
   if (message.includes('invented core agent')) return 'agent-inventory';
   if (message.includes('invented capability pack')) return 'pack-inventory';
-  if (message.includes('alias-canonical relationship')) return 'alias-canonical-relationship';
+  if (message.includes('entrypoint-canonical relationship')) return 'entrypoint-canonical-relationship';
   if (message.includes('command-agent relationship')) return 'command-agent-relationship';
   if (message.includes(' is empty')) return 'empty-inventory-field';
   return 'unknown';
@@ -185,7 +217,6 @@ export function routeValidationFailureCode(error) {
 function snapshotEntries(rootDir, current = rootDir) {
   const entries = [];
   for (const entry of readdirSync(current, { withFileTypes: true })) {
-    if (current === rootDir && entry.name === '.git') continue;
     const absolute = resolve(current, entry.name);
     const relativePath = absolute.slice(rootDir.length + 1).replaceAll('\\', '/');
     if (entry.isDirectory()) {
@@ -210,32 +241,75 @@ export function projectSnapshot(rootDir) {
 }
 
 export function buildOAuthRouteEnvironment(env, isolatedHome) {
-  if (typeof env.CLAUDE_CODE_OAUTH_TOKEN !== 'string' || !env.CLAUDE_CODE_OAUTH_TOKEN.trim()) {
+  if (typeof env.CLAUDE_CODE_OAUTH_TOKEN !== 'string'
+    || !env.CLAUDE_CODE_OAUTH_TOKEN.trim()
+    || env.CLAUDE_CODE_OAUTH_TOKEN !== env.CLAUDE_CODE_OAUTH_TOKEN.trim()) {
     throw new Error('CLAUDE_CODE_OAUTH_TOKEN is required for the OAuth live route gate');
   }
-  const competing = competingCredentialVariables.filter((name) => {
+  const forbiddenExact = new Set([
+    'NODE_OPTIONS', 'NODE_PATH', 'NODE_TLS_REJECT_UNAUTHORIZED',
+    'BASH_ENV', 'ENV', 'CDPATH',
+    'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SESSION_TOKEN', 'AWS_WEB_IDENTITY_TOKEN_FILE',
+    'GOOGLE_APPLICATION_CREDENTIALS',
+    'AZURE_CLIENT_ID', 'AZURE_CLIENT_SECRET', 'AZURE_TENANT_ID',
+    ...competingCredentialVariables,
+  ]);
+  const competing = Object.keys(env).filter((name) => {
     const value = env[name];
-    return typeof value === 'string' && value.trim();
-  });
+    return typeof value === 'string' && value.trim() && (
+      forbiddenExact.has(name)
+      || name.startsWith('BASH_FUNC_')
+      || name.startsWith('ANTHROPIC_')
+      || name.startsWith('CLAUDE_CODE_USE_')
+      || /^(?:CLAUDE|CLAUDE_CODE)_[A-Z0-9_]*(?:MODEL|BASE_URL)(?:_|$)/u.test(name)
+    );
+  }).sort();
   if (competing.length) {
-    throw new Error(`OAuth live route gate forbids competing credentials: ${competing.join(', ')}`);
+    throw new Error(`OAuth live route gate forbids inherited overrides: ${competing.join(', ')}`);
   }
   const configHome = resolve(isolatedHome, '.config');
   const dataHome = resolve(isolatedHome, '.local', 'share');
   const stateHome = resolve(isolatedHome, '.local', 'state');
   const claudeConfigDir = resolve(isolatedHome, '.claude');
-  for (const directory of [configHome, dataHome, stateHome, claudeConfigDir]) {
+  const isolatedTemp = resolve(isolatedHome, 'tmp');
+  for (const directory of [configHome, dataHome, stateHome, claudeConfigDir, isolatedTemp]) {
     mkdirSync(directory, { recursive: true });
   }
-  return {
-    ...env,
+  const pathValue = process.platform === 'win32' ? (env.Path ?? env.PATH) : env.PATH;
+  const safePath = sanitizeIsolatedExecutablePath(pathValue, { workspaceRoot: root });
+  /** @type {Record<string, string>} */
+  const isolatedEnvironment = {
+    CI: '1',
     HOME: isolatedHome,
     USERPROFILE: isolatedHome,
     XDG_CONFIG_HOME: configHome,
     XDG_DATA_HOME: dataHome,
     XDG_STATE_HOME: stateHome,
     CLAUDE_CONFIG_DIR: claudeConfigDir,
+    CLAUDE_CODE_OAUTH_TOKEN: env.CLAUDE_CODE_OAUTH_TOKEN,
+    PATH: safePath,
+    TMPDIR: isolatedTemp,
+    TEMP: isolatedTemp,
+    TMP: isolatedTemp,
+    LANG: 'C.UTF-8',
+    LC_ALL: 'C.UTF-8',
+    NO_COLOR: '1',
+    TZ: 'UTC',
   };
+  for (const name of [
+    'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY', 'ALL_PROXY',
+    'http_proxy', 'https_proxy', 'no_proxy', 'all_proxy',
+    'SSL_CERT_FILE', 'SSL_CERT_DIR', 'NODE_EXTRA_CA_CERTS',
+  ]) {
+    if (typeof env[name] === 'string' && env[name] !== '') isolatedEnvironment[name] = env[name];
+  }
+  if (process.platform === 'win32') {
+    isolatedEnvironment.Path = safePath;
+    for (const name of ['SystemRoot', 'SYSTEMROOT', 'WINDIR', 'COMSPEC', 'PATHEXT']) {
+      if (typeof env[name] === 'string' && env[name] !== '') isolatedEnvironment[name] = env[name];
+    }
+  }
+  return isolatedEnvironment;
 }
 
 export function routeInvocationArgs(pluginDir) {
@@ -308,20 +382,74 @@ async function gitStatus(cwd, env) {
   return result.stdout;
 }
 
+export async function resolveDefaultAssistantInvocation(env) {
+  const pathValue = process.platform === 'win32' ? (env.Path ?? env.PATH) : env.PATH;
+  const safePath = sanitizeIsolatedExecutablePath(pathValue, { workspaceRoot: root });
+  const safeEnvironment = { ...env, PATH: safePath };
+  if (process.platform === 'win32') safeEnvironment.Path = safePath;
+  const pinned = resolveTrustedClaudeInvocation({ env: safeEnvironment, workspaceRoot: root });
+  return Object.freeze({
+    command: pinned.command,
+    argsPrefix: pinned.argsPrefix,
+    environment: safeEnvironment,
+    assertIdentity: () => assertTrustedClaudeInvocation(pinned),
+  });
+}
+
+export async function captureRouteAssistantInvocation(invocation, args, options, captureProcessFn = captureProcess) {
+  if (!invocation || typeof invocation.command !== 'string' || !Array.isArray(invocation.argsPrefix)
+    || typeof invocation.assertIdentity !== 'function') {
+    throw new Error('OAuth route smoke requires one fixed assistant invocation with identity revalidation');
+  }
+  invocation.assertIdentity();
+  try {
+    return await captureProcessFn(
+      'OAuth route smoke',
+      invocation.command,
+      [...invocation.argsPrefix, ...args],
+      options,
+    );
+  } finally {
+    invocation.assertIdentity();
+  }
+}
+
 /**
- * @param {{pluginDir?: string, outPath?: string | null, env?: NodeJS.ProcessEnv, binding?: object | null}} options
+ * @param {{pluginDir?: string, outPath?: string | null, outputPlan?: object | null, env?: NodeJS.ProcessEnv, binding?: object | null, assistantInvocation?: {command: string, argsPrefix: ReadonlyArray<string>, environment?: NodeJS.ProcessEnv, assertIdentity: () => unknown} | null}} options
  */
-export async function runRouteSmoke({ pluginDir, outPath = null, env = process.env, binding = null } = {}) {
+export async function runRouteSmoke({
+  pluginDir,
+  outPath = null,
+  outputPlan = null,
+  env = process.env,
+  binding = null,
+  assistantInvocation = null,
+} = {}) {
   const resolvedPluginDir = resolve(pluginDir ?? '');
   const permissionSpec = JSON.parse(readFileSync(
     resolve(resolvedPluginDir, 'runtime/workflow-permissions.json'),
     'utf8',
   ));
   const routeInventory = loadRouteInventory(resolvedPluginDir, permissionSpec);
+  let evidenceOutputPlan = null;
+  if (outPath) {
+    const portableOut = validatePluginEvidenceOutputPath(outPath, 'route smoke output');
+    evidenceOutputPlan = outputPlan ?? preparePluginEvidenceOutputPlan(root, [
+      { key: 'routeSmokeOut', path: portableOut, label: 'route smoke output' },
+    ]);
+    if (evidenceOutputPlan.outputs?.routeSmokeOut?.path !== portableOut) {
+      throw new Error('route smoke output plan does not match --out');
+    }
+  } else if (outputPlan) {
+    throw new Error('route smoke output plan requires --out');
+  }
   const project = mkdtempSync(resolve(tmpdir(), 'nova-route-live-'));
   const oauthHome = mkdtempSync(resolve(tmpdir(), 'nova-route-oauth-home-'));
   try {
-    const routeEnv = buildOAuthRouteEnvironment(env, oauthHome);
+    const fixedAssistant = assistantInvocation ?? await resolveDefaultAssistantInvocation(env);
+    const routeEnv = buildOAuthRouteEnvironment(fixedAssistant.environment ?? env, oauthHome);
+    const gitEnv = { ...routeEnv };
+    delete gitEnv.CLAUDE_CODE_OAUTH_TOKEN;
     writeFileSync(resolve(project, 'README.md'), '# Route Smoke Fixture\n', 'utf8');
     for (const args of [
       ['init', '-q'],
@@ -330,13 +458,13 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       ['add', 'README.md'],
       ['commit', '-qm', 'fixture'],
     ]) {
-      const result = await runProcess(`git ${args[0]}`, 'git', args, { cwd: project, env: routeEnv, timeoutMs: 30_000 });
+      const result = await runProcess(`git ${args[0]}`, 'git', args, { cwd: project, env: gitEnv, timeoutMs: 30_000 });
       if (!result.ok) throw new Error(`failed to initialize route smoke fixture: ${result.stderr || result.errorMessage}`);
     }
-    const beforeStatus = await gitStatus(project, routeEnv);
+    const beforeStatus = await gitStatus(project, gitEnv);
     const beforeProject = projectSnapshot(project);
     const beforeDigest = sha256(readFileSync(resolve(project, 'README.md')));
-    const invocation = await captureProcess('OAuth route smoke', 'claude', routeInvocationArgs(resolvedPluginDir), {
+    const invocation = await captureRouteAssistantInvocation(fixedAssistant, routeInvocationArgs(resolvedPluginDir), {
       cwd: project,
       env: routeEnv,
       timeoutMs: 300_000,
@@ -351,7 +479,16 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
     } catch (error) {
       throw new Error(`route output failed ${routeValidationFailureCode(error)} validation; outputShape=${JSON.stringify(routeOutputShape(response.result))}`);
     }
-    const afterStatus = await gitStatus(project, routeEnv);
+    for (const field of ['commands', 'skills', 'agents', 'packs']) {
+      if (JSON.stringify(validation[field === 'commands' ? 'commandMatches' : field])
+        !== JSON.stringify(routeSmokeExpectedSelection[field])) {
+        throw new Error(`route output differs from the fixed smoke ${field} selection`);
+      }
+    }
+    if (JSON.stringify(validation.variantParameters) !== JSON.stringify(routeSmokeExpectedSelection.variantParameters)) {
+      throw new Error('route output differs from the fixed smoke variant parameters');
+    }
+    const afterStatus = await gitStatus(project, gitEnv);
     const afterProject = projectSnapshot(project);
     const afterDigest = sha256(readFileSync(resolve(project, 'README.md')));
     if (
@@ -384,6 +521,7 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       skills: validation.skills,
       agents: validation.agents,
       packs: validation.packs,
+      variantParameters: validation.variantParameters,
       projectChanged: false,
       beforeDigest,
       afterDigest,
@@ -394,11 +532,9 @@ export async function runRouteSmoke({ pluginDir, outPath = null, env = process.e
       resultSha256: sha256(response.result),
       evidenceBinding: binding,
     };
-    if (outPath) {
-      const resolvedOut = resolve(root, outPath);
-      mkdirSync(dirname(resolvedOut), { recursive: true });
-      writeFileSync(resolvedOut, `${JSON.stringify(evidence, null, 2)}\n`, 'utf8');
-      console.log(`Wrote route smoke evidence to ${relative(root, resolvedOut).replaceAll('\\', '/')}`);
+    if (evidenceOutputPlan) {
+      writePluginEvidenceOutput(evidenceOutputPlan, 'routeSmokeOut', `${JSON.stringify(evidence, null, 2)}\n`);
+      console.log(`Wrote route smoke evidence to ${evidenceOutputPlan.outputs.routeSmokeOut.path}`);
     }
     console.log(`OK OAuth /nova-plugin:route smoke; projectChanged=false; resultSha256=${evidence.resultSha256}`);
     return evidence;
@@ -413,7 +549,13 @@ async function main(args) {
   let outPath = null;
   for (let index = 0; index < args.length; index += 1) {
     if (args[index] === '--plugin-dir') pluginDir = args[++index];
-    else if (args[index] === '--out') outPath = args[++index];
+    else if (args[index] === '--out') {
+      if (!args[index + 1] || args[index + 1].startsWith('--')) {
+        console.error('ERROR --out requires a path');
+        return 1;
+      }
+      outPath = args[++index];
+    }
     else if (args[index] === '--help' || args[index] === '-h') {
       console.log('Usage: node scripts/validate-plugin-route-live.mjs --plugin-dir <installed-plugin-path> [--out <path>]');
       return 0;

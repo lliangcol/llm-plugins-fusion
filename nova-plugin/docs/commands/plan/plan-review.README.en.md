@@ -24,7 +24,7 @@
 
 | Parameter   | Required | Description                        | Example        |
 | ----------- | -------- | ---------------------------------- | -------------- |
-| `ARGUMENTS` | No       | Plan content or summary to review. | `Plan summary` |
+| `ARGUMENTS` | Yes      | Plan content or summary to review. | `Plan summary` |
 
 ## Output
 

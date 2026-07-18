@@ -93,9 +93,10 @@ ancestor of protected `main`. No repository Node/npm/Bash script may run before
 that trust step.
 
 The dispatching identity must be authorized to create repository dispatches
-with `Contents: write`. Record the resulting run URL and `github.workflow_sha`;
-the workflow SHA proves which protected-main workflow revision handled the
-request.
+with `Contents: write`. Record the resulting run URL and caller
+`github.workflow_sha`; for stable promotion also record the reusable job's
+`job.workflow_sha`. Together they prove which protected-main caller and called
+workflow revisions handled the request.
 
 Artifact attestation workflow provenance is
 `.github/workflows/release-candidate.yml@refs/heads/main` plus the exact

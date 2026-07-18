@@ -4,11 +4,14 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
 import {
+  assertCompleteChangedFiles,
+  assertCompleteReviewRecords,
   evaluatePrGovernance,
-  isSensitivePath,
   LARGE_CHANGE_LIMITS,
   parseCodeOwnerPaths,
+  sensitiveChangedFilePaths,
 } from './lib/pr-governance.mjs';
+import { normalizeCommitIdentity, normalizeGithubLogin } from './lib/github-identity.mjs';
 
 assertNodeVersion({ label: 'PR governance validation' });
 
@@ -76,17 +79,24 @@ export async function validatePullRequestGovernance({
   }
 
   const number = pullRequest.number ?? event?.number;
-  if (!Number.isInteger(number)) throw new Error('pull request number is missing from the event payload');
+  if (!Number.isInteger(number) || number <= 0) throw new Error('pull request number is missing or invalid in the event payload');
+  normalizeGithubLogin(pullRequest.user?.login, 'pull request author');
+  normalizeCommitIdentity(pullRequest.head?.sha, 'pull request head', { fullSha: true });
   const pullUrl = `${apiBase}/repos/${repository}/pulls/${number}`;
   let metrics = pullRequest;
-  if (![metrics.additions, metrics.deletions, metrics.changed_files].every(Number.isFinite)) {
+  if (![metrics.additions, metrics.deletions, metrics.changed_files].every((value) => Number.isInteger(value) && value >= 0)) {
     metrics = await githubJson(pullUrl, { token, fetchImpl });
   }
+  if (![metrics.additions, metrics.deletions, metrics.changed_files].every((value) => Number.isInteger(value) && value >= 0)) {
+    throw new Error('GitHub pull request metrics must contain non-negative integer additions, deletions, and changed_files');
+  }
   const files = await githubPages(`${pullUrl}/files`, { token, fetchImpl });
-  const hasSensitivePath = files.some((file) => isSensitivePath(file?.filename, sensitivePaths));
+  assertCompleteChangedFiles(files, metrics.changed_files);
+  const hasSensitivePath = files.some((file) => sensitiveChangedFilePaths(file, sensitivePaths).length > 0);
   const reviews = hasSensitivePath
     ? await githubPages(`${pullUrl}/reviews`, { token, fetchImpl })
     : [];
+  if (hasSensitivePath) assertCompleteReviewRecords(reviews);
 
   return evaluatePrGovernance({
     body: pullRequest.body,

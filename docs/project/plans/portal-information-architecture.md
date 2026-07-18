@@ -29,7 +29,7 @@ later portal work can be implemented from stable repository contracts.
 | Commands and skills | `nova-plugin/commands/` and `nova-plugin/skills/nova-*/SKILL.md` | Capability summaries and command/skill counts |
 | Command documentation | `nova-plugin/docs/commands/` | Detail links for users evaluating a plugin |
 | Agents and capability packs | `nova-plugin/agents/` and `nova-plugin/packs/` | Routing and capability summaries |
-| Release boundary and compatibility notes | `ROADMAP.md`, `docs/releases/release-hygiene.md`, and `docs/marketplace/multi-plugin-readiness.md` | Version-independent product-lane guidance and release evidence |
+| Release boundary and compatibility notes | `ROADMAP.md`, `docs/operations/releases/hygiene.md`, and `docs/project/plans/multi-plugin-readiness.md` | Version-independent product-lane guidance and release evidence |
 
 Portal implementation code must not become a new source of truth for these
 fields. If generated portal pages are introduced later, they should consume
@@ -69,10 +69,10 @@ For the current repository, these map to Markdown and generated metadata:
 | Home | `README.md` |
 | Catalog | `docs/marketplace/catalog.md`, generated from `.claude-plugin/marketplace.json` plus `.claude-plugin/marketplace.metadata.json` |
 | `nova-plugin` detail | `nova-plugin/docs/README.md` and command docs |
-| Compatibility | `docs/marketplace/compatibility-matrix.md` and `docs/releases/release-hygiene.md` |
-| Contribute | `CONTRIBUTING.md` and `docs/marketplace/registry-author-workflow.md` |
-| Trust | `docs/marketplace/trust-policy.md`, `docs/marketplace/security-review-route.md`, `SECURITY.md`, metadata schema, and marketplace metadata |
-| Roadmap | `ROADMAP.md` and `docs/marketplace/multi-plugin-readiness.md` |
+| Compatibility | `docs/reference/compatibility/marketplace.md` and `docs/operations/releases/hygiene.md` |
+| Contribute | `CONTRIBUTING.md` and `docs/operations/marketplace/registry-authoring.md` |
+| Trust | `docs/reference/security/marketplace-trust.md`, `docs/reference/security/security-review.md`, `SECURITY.md`, metadata schema, and marketplace metadata |
+| Roadmap | `ROADMAP.md` and `docs/project/plans/multi-plugin-readiness.md` |
 
 ## Phase Boundaries
 
@@ -103,7 +103,7 @@ repository layout remains a future major-version candidate requiring separate ev
 
 ## Acceptance Checks
 
-- This document exists under `docs/marketplace/` and is linked from the project
+- This document exists at `docs/project/plans/portal-information-architecture.md` and is linked from the project
   navigation.
 - The current `v4.0.0` single-plugin boundary, its `v2.2.0` introduction, and
   the deferred future multi-plugin boundary are explicitly separated.

@@ -32,6 +32,7 @@ export function buildSecondProductEvidence() {
   assert.equal(loaded.product.expectedWorkflowCount, loaded.spec.workflows.length);
   assert.deepEqual([...new Set(loaded.spec.workflows.map((entry) => entry.stage))], loaded.product.stages);
   assert.deepEqual(loaded.adapters.map((entry) => entry.id), ['mock']);
+  assert.deepEqual(loaded.spec.sourceProvenance, { workflowSource: 'workflows.json', behaviorSource: 'behaviors.json' });
   const bundle = {
     framework: loaded.framework,
     product: loaded.product,
@@ -43,6 +44,7 @@ export function buildSecondProductEvidence() {
   const compiledAgain = compileProductBundle(bundle);
   assert.deepEqual(compiledAgain, compiled, 'compiler output must be deterministic');
   const contracts = compiled.runtimeContracts;
+  assert.ok(contracts.every((contract) => contract.behaviorContract.source === 'caller-provided-behavior-spec'));
   const compiledText = JSON.stringify(compiled);
   assert.doesNotMatch(compiledText, /nova|claude|codex/iu);
   for (const path of ['framework/compiler/compile-product-bundle.mjs', 'framework/compiler/compile-runtime-contracts.mjs']) {

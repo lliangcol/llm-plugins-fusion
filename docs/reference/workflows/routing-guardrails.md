@@ -28,7 +28,7 @@ and they do not replace review, planning, implementation, or release evidence.
 | Guardrail | Primary surface | Purpose | Validation |
 | --- | --- | --- | --- |
 | First-stage routing | `/nova-plugin:route`, `nova-route`, command docs, routing docs | Classify intent before recommending the next command, skill, core agent, packs, required inputs, validation expectations, and fallback path. | `node scripts/lint-frontmatter.mjs`, `node scripts/validate-docs.mjs` |
-| Checkpoint artifacts | `docs/prompts/common/checkpoint-artifact.md`, workbench template, artifact policy | Preserve resumable state for long-running private work without relying on chat history. | `node scripts/validate-docs.mjs` |
+| Checkpoint artifacts | `docs/templates/prompts/common/checkpoint-artifact.md`, workbench template, artifact policy | Preserve resumable state for long-running private work without relying on chat history. | `node scripts/validate-docs.mjs` |
 | Verification evidence mapping | shared output contracts, Codex verification prompt, context-safe workflow docs | Prevent "tests passed" from standing in for behavior, repository fact, review finding, or change-goal evidence. | Review artifact inspection plus focused checks named by the workflow |
 | Prompt-surface budget | `scripts/validate-surface-budget.mjs`, CI, npm shortcut, allowlist | Keep public command, skill, agent, and pack surfaces small enough to audit. | `node scripts/validate-surface-budget.mjs` |
 | Distribution-risk scanning | `scripts/scan-distribution-risk.mjs`, regression tests, trust/security docs | Block private data signals, broad permission-bypass advice, and tracked `.codex/` runtime artifacts from public distribution. | `node scripts/scan-distribution-risk.mjs`, `node scripts/validate-regression.mjs` |
@@ -40,9 +40,9 @@ and they do not replace review, planning, implementation, or release evidence.
 1. classify the request as Explore, Plan, Review, Implement, Finalize, or Codex
    loop;
 2. recommend one next command when possible;
-3. return a short sequence only when the request genuinely spans multiple
-   workflow stages;
-4. name the canonical skill, optional command alias and variant parameters, core agent, capability packs, required inputs,
+3. return exactly one immediate next route; later stages may appear only as
+   prose in validation expectations or fallback guidance;
+4. name the canonical skill, exact command entrypoint and variant parameters, core agent, capability packs, required inputs,
    validation expectations, and fallback path;
 5. avoid implementation details, plan content, test execution, Git operations,
    and artifact writes.

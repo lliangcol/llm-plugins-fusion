@@ -39,6 +39,8 @@ This file is the supporting behavioral contract for `/nova-plugin:explore` and t
 
 - **Purpose:** Align understanding and identify unknowns or risks without proposing solutions.
 - **Canonical inputs:** `INPUT`(required aliases=REQUEST,CONTEXT); `PERSPECTIVE`(optional aliases=MODE default="observer" exact="observer","reviewer"); `DEPTH`(optional default="standard" exact="lite","standard","deep")
+- **Resolved variant authority:** `{} normalized={"DEPTH":"standard","PERSPECTIVE":"observer"} -> runtime/contracts/explore.json`; `{"DEPTH":"lite","PERSPECTIVE":"observer"} normalized={"DEPTH":"lite","PERSPECTIVE":"observer"} -> runtime/contracts/explore-lite.json`; `{"PERSPECTIVE":"reviewer"} normalized={"DEPTH":"standard","PERSPECTIVE":"reviewer"} -> runtime/contracts/explore-review.json`; `{"DEPTH":"deep"} normalized={"DEPTH":"deep","PERSPECTIVE":"observer"} -> runtime/contracts/senior-explore.json`. Declared selector defaults are applied before matching. An exact normalized override wins; a non-exact combination that triggers an alias specialization stops as conflicting, and only a valid combination that triggers no specialization uses the canonical fallback. The complete resolved runtime contract is authoritative and no field falls back to canonical prose.
+- **Claude static-entrypoint gate:** Native command and Skill frontmatter are static. A matching command wrapper may continue after it has verified that its invoked command id equals `resolvedWorkflowId`; this canonical Skill must not re-resolve or reject that validated wrapper. Only when this canonical Skill is itself the Claude native invoked entrypoint and no validated wrapper gate exists must `resolvedWorkflowId` equal `explore`. Otherwise STOP before tools or side effects and invoke the exact direct command `/nova-plugin:<resolved commandEntrypoint.directCommandId>`; never execute the specialized contract under unmatched canonical frontmatter. Generic and Codex adapters may execute the resolved contract directly under adapter enforcement.
 - **Decision entries:** 4; canonical routes and variants: `explore {"PERSPECTIVE":"reviewer"}`, `explore {"PERSPECTIVE":"observer","DEPTH":"lite"}`, `explore {}`, `explore {"DEPTH":"deep"}`.
 - **Workflow steps:** `resolve-input` → `route` → `analyze` → `emit`
 - **Output:** mode=`chat`; order=`observations or what is clear` → `uncertainties or review questions` → `potential risks or risk signals`; severity=none.
@@ -52,25 +54,36 @@ Quickly align understanding and identify unknowns/risks without proposing soluti
 
 ### Inputs
 
-| Parameter     | Required | Default    | Notes                                | Example           |
-| ------------- | -------- | ---------- | ------------------------------------ | ----------------- |
-| `PERSPECTIVE` | No       | `observer` | `observer` or `reviewer`             | `reviewer`        |
-| `INPUT`       | Yes      | N/A        | Requirement, diff, logs, design text | `PR diff text...` |
+Resolve `PERSPECTIVE` and `DEPTH` first, then use the matched runtime
+contract's required-input set:
+
+| Resolved profile | Selector | Required inputs |
+| --- | --- | --- |
+| Standard observer | `{}` | `INPUT` |
+| Lite observer | `{"PERSPECTIVE":"observer","DEPTH":"lite"}` | `INPUT` |
+| Reviewer | `{"PERSPECTIVE":"reviewer"}` | `INPUT` |
+| Deep exploration | `{"DEPTH":"deep"}` | `INTENT`, `CONTEXT` |
+
+`INPUT` is not required by deep exploration; that resolved contract requires
+`INTENT` and `CONTEXT`.
 
 ### Outputs
 
 - `observer`: `Observations / Uncertainties / Potential risks`.
 - `reviewer`: `What is clear / Review questions / Risk signals`.
-- Chat output only.
+- Default, lite, and reviewer profiles return chat output. The resolved
+  `DEPTH=deep` contract may also write the senior-explore artifact when its
+  explicit `EXPORT_PATH` and artifact-write approval are present.
 
 ### Workflow
 
-1. Parse `PERSPECTIVE`.
+1. Parse `PERSPECTIVE` and `DEPTH`.
 2. Hub routing policy:
 
-- `observer` -> `nova-explore-lite`
-- `reviewer` -> `nova-explore-review`
-
+- `PERSPECTIVE=observer DEPTH=standard` -> canonical `nova-explore`
+- `PERSPECTIVE=observer DEPTH=lite` -> resolved `explore-lite` contract
+- `PERSPECTIVE=reviewer DEPTH=standard` -> resolved `explore-review` contract
+- `PERSPECTIVE=observer DEPTH=deep` -> resolved `senior-explore` contract
 3. Emit structured analysis output only.
 
 ### Examples
@@ -84,6 +97,10 @@ Quickly align understanding and identify unknowns/risks without proposing soluti
 - Separate facts from assumptions.
 
 ## Detailed Contract
+
+The quick-exploration procedure below describes the non-deep profiles. Deep
+exploration follows the resolved `senior-explore` runtime contract and its
+`INTENT` plus `CONTEXT` requirements.
 
 ### QUICK EXPLORATION
 
@@ -108,6 +125,16 @@ If not specified, use `observer` perspective.
 
 PERSPECTIVE:
 <PERSPECTIVE>
+
+##### DEPTH (Optional)
+
+- `lite` → Concise fact gathering
+- `standard` (default) → Normal read-only exploration
+- `deep` → Senior analysis artifact contract; requires its resolved inputs and
+  explicit artifact-write approval
+
+DEPTH:
+<DEPTH>
 
 ---
 

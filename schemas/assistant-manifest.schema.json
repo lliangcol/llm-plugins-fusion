@@ -4,7 +4,7 @@
   "title": "Generated assistant workflow manifest",
   "type": "object",
   "additionalProperties": false,
-  "required": ["$schema", "schemaVersion", "source", "product", "aliasPolicy", "maximumSupportedLevel", "declaredLevel", "evidenceRequiredFor", "protocolVersions", "contractEnforcement", "claimBoundary", "workflows"],
+  "required": ["$schema", "schemaVersion", "source", "product", "aliasPolicy", "maximumSupportedLevel", "declaredLevel", "evidenceRequiredFor", "protocolVersions", "contractEnforcement", "claimBoundary", "resolvedVariants", "workflows"],
   "properties": {
     "$schema": { "const": "../../schemas/assistant-manifest.schema.json" },
     "schemaVersion": { "const": 3 },
@@ -38,6 +38,7 @@
     },
     "contractEnforcement": { "$ref": "#/$defs/contractEnforcement" },
     "claimBoundary": { "type": "string", "minLength": 1 },
+    "resolvedVariants": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "$ref": "#/$defs/resolvedVariant" } },
     "workflows": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/workflow" } }
   },
   "$defs": {
@@ -62,10 +63,10 @@
         "status": { "const": "evidence-gated" },
         "removalRequires": {
           "type": "array",
-          "minItems": 4,
-          "maxItems": 4,
+          "minItems": 5,
+          "maxItems": 5,
           "uniqueItems": true,
-          "items": { "enum": ["real-benchmark-evidence", "plugin-major-release", "governed-release-decision", "migration-documentation"] }
+          "items": { "enum": ["real-benchmark-evidence", "native-permission-and-invocation-parity", "plugin-major-release", "governed-release-decision", "migration-documentation"] }
         }
       }
     },
@@ -82,6 +83,28 @@
       }
     },
     "permissionState": { "enum": ["denied", "prompt", "preapproved", "unsupported", "explicit"] },
+    "resolvedVariant": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["canonicalSurfaceId", "variantParameters", "normalizedVariantParameters", "resolutionKind", "resolvedWorkflowId", "compatibilityAlias", "runtimeContract"],
+      "properties": {
+        "canonicalSurfaceId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "variantParameters": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[A-Z][A-Z0-9_]*$" },
+          "additionalProperties": { "type": ["string", "boolean", "number", "null"] }
+        },
+        "normalizedVariantParameters": {
+          "type": "object",
+          "propertyNames": { "pattern": "^[A-Z][A-Z0-9_]*$" },
+          "additionalProperties": { "type": ["string", "boolean", "number", "null"] }
+        },
+        "resolutionKind": { "enum": ["canonical-default", "exact-override", "canonical-fallback"] },
+        "resolvedWorkflowId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
+        "compatibilityAlias": { "type": "boolean" },
+        "runtimeContract": { "type": "string", "pattern": "^\\.\\./\\.\\./nova-plugin/runtime/contracts/[a-z0-9]+(?:-[a-z0-9]+)*\\.json$" }
+      }
+    },
     "permissionPolicy": {
       "type": "object",
       "additionalProperties": false,
@@ -100,7 +123,7 @@
     "workflow": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "canonicalSurfaceId", "canonicalSkill", "variantPreset", "compatibilityAlias", "replacement", "contract", "runtimeContract", "stage", "risk", "ownerAgents", "recommendedPacks", "requiredInputs", "inputs", "effects", "authorizationProfile", "enforcementRequirements", "evidenceRequirements", "outputContract", "runtimeRequirements", "permissionPolicy", "enforcement"],
+      "required": ["id", "canonicalSurfaceId", "canonicalSkill", "variantPreset", "compatibilityAlias", "replacement", "contract", "runtimeContract", "stage", "risk", "ownerAgents", "recommendedPacks", "requiredInputs", "inputs", "effects", "authorizationProfile", "enforcementRequirements", "evidenceRequirements", "outputContract", "allowedTools", "disallowedTools", "modelInvocable", "subagentSafe", "destructiveActions", "commandEntrypoint", "runtimeRequirements", "permissionPolicy", "enforcement"],
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
         "canonicalSurfaceId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" },
@@ -127,6 +150,7 @@
         },
         "effects": {
           "type": "array",
+          "minItems": 1,
           "uniqueItems": true,
           "items": { "enum": ["workspace-read", "workspace-write", "artifact-write", "shell", "network", "credentials", "user-scope-mutation", "external-publish", "git-history-mutation"] }
         },
@@ -134,6 +158,12 @@
         "enforcementRequirements": { "$ref": "#/$defs/uniqueNames" },
         "evidenceRequirements": { "$ref": "#/$defs/uniqueNames" },
         "outputContract": { "type": "string", "minLength": 1 },
+        "allowedTools": { "$ref": "#/$defs/uniqueNames" },
+        "disallowedTools": { "$ref": "#/$defs/uniqueNames" },
+        "modelInvocable": { "type": "boolean" },
+        "subagentSafe": { "type": "boolean" },
+        "destructiveActions": { "enum": ["none", "low", "medium", "high"] },
+        "commandEntrypoint": { "$ref": "#/$defs/commandEntrypoint" },
         "runtimeRequirements": { "$ref": "#/$defs/runtimeRequirements" },
         "permissionPolicy": { "$ref": "#/$defs/permissionPolicy" },
         "enforcement": { "type": "object", "minProperties": 1, "additionalProperties": { "enum": ["native-and-hook", "adapter", "advisory", "unsupported"] } }
@@ -182,6 +212,14 @@
         }
       }
     },
+    "commandEntrypoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["directCommandId"],
+      "properties": {
+        "directCommandId": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }
+      }
+    },
     "runtimeRequirements": {
       "type": "object",
       "additionalProperties": false,
@@ -195,7 +233,7 @@
             "additionalProperties": false,
             "required": ["name", "required", "versionEvidence"],
             "properties": {
-              "name": { "type": "string", "minLength": 1 },
+              "name": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._+-]*$" },
               "required": { "type": "boolean" },
               "versionEvidence": { "enum": ["none", "versioned-evidence"] }
             }
@@ -207,8 +245,12 @@
           "required": ["need", "purpose"],
           "properties": {
             "need": { "enum": ["none", "optional", "required"] },
-            "purpose": { "type": "string" }
-          }
+            "purpose": { "type": "string", "minLength": 1, "pattern": "^(?=.*\\S)[^\\u0000-\\u001F\\u007F-\\u009F\\u2028\\u2029]+$" }
+          },
+          "allOf": [
+            { "if": { "properties": { "need": { "const": "none" } }, "required": ["need"] }, "then": { "properties": { "purpose": { "const": "none" } } } },
+            { "if": { "properties": { "purpose": { "const": "none" } }, "required": ["purpose"] }, "then": { "properties": { "need": { "const": "none" } } } }
+          ]
         },
         "credentials": {
           "type": "object",
@@ -217,7 +259,11 @@
           "properties": {
             "need": { "enum": ["none", "optional", "required"] },
             "source": { "enum": ["none", "assistant-owned-authentication", "consumer-owned-authentication"] }
-          }
+          },
+          "allOf": [
+            { "if": { "properties": { "need": { "const": "none" } }, "required": ["need"] }, "then": { "properties": { "source": { "const": "none" } } } },
+            { "if": { "properties": { "source": { "const": "none" } }, "required": ["source"] }, "then": { "properties": { "need": { "const": "none" } } } }
+          ]
         }
       }
     }

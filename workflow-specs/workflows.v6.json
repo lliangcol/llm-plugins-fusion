@@ -51,9 +51,7 @@
       "allowedTools": [
         "Read",
         "Glob",
-        "Grep",
-        "Write",
-        "Edit"
+        "Grep"
       ],
       "disallowedTools": [
         "NotebookEdit",
@@ -61,7 +59,7 @@
       ],
       "permissionPolicy": {
         "workspaceRead": "preapproved",
-        "workspaceWrite": "preapproved",
+        "workspaceWrite": "prompt",
         "shell": "denied",
         "network": "denied",
         "credentials": "denied",
@@ -187,14 +185,12 @@
       ],
       "effects": [
         "artifact-write",
-        "workspace-read",
-        "workspace-write"
+        "workspace-read"
       ],
       "authorizationProfile": "artifact-write",
       "enforcementRequirements": [
         "enforce:artifact-write",
-        "enforce:workspace-read",
-        "enforce:workspace-write"
+        "enforce:workspace-read"
       ],
       "evidenceRequirements": [
         "authorization-decision",
@@ -1187,14 +1183,12 @@
       ],
       "effects": [
         "artifact-write",
-        "workspace-read",
-        "workspace-write"
+        "workspace-read"
       ],
       "authorizationProfile": "artifact-write",
       "enforcementRequirements": [
         "enforce:artifact-write",
-        "enforce:workspace-read",
-        "enforce:workspace-write"
+        "enforce:workspace-read"
       ],
       "evidenceRequirements": [
         "authorization-decision",
@@ -1545,8 +1539,6 @@
           "type": "enum",
           "required": false,
           "values": [
-            "quick",
-            "normal",
             "deep"
           ]
         },
@@ -1566,14 +1558,12 @@
       ],
       "effects": [
         "artifact-write",
-        "workspace-read",
-        "workspace-write"
+        "workspace-read"
       ],
       "authorizationProfile": "artifact-write",
       "enforcementRequirements": [
         "enforce:artifact-write",
-        "enforce:workspace-read",
-        "enforce:workspace-write"
+        "enforce:workspace-read"
       ],
       "evidenceRequirements": [
         "authorization-decision",
