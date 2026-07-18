@@ -47,6 +47,19 @@ mvn -pl <affected-module> -am verify
 mvn test
 ```
 
+For Gradle consumers, use the project's checked-in wrapper and replace the
+generic module and task placeholders with the real project-approved values:
+
+```bash
+./gradlew :<affected-module>:test --tests '<focused-test-pattern>'
+./gradlew :<affected-module>:check
+./gradlew check
+```
+
+Record each command as `passed`, `skipped`, or `not run` based on actual
+evidence. A missing wrapper, unavailable task, or intentionally deferred broad
+check is not a pass; report the reason and any residual risk explicitly.
+
 Do not publish private Maven profiles, repository addresses, network endpoints,
 runtime flags, or environment-specific invocations in public docs.
 
@@ -64,6 +77,8 @@ runtime flags, or environment-specific invocations in public docs.
   accidentally.
 - Maven module validation: run affected module checks and broader checks when
   cross-module contracts change.
+- Gradle module validation: use the consumer project's real wrapper and tasks;
+  run a focused test plus broader module or repository checks when required.
 - Observability: preserve or add generic logs, metrics, or audit points when
   required by private rules.
 - Rollback plan: identify how the change can be reverted or disabled.
