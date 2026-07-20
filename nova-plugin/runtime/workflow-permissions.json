@@ -1084,11 +1084,12 @@
       "id": "review-only",
       "canonicalSurfaceId": "review",
       "variantPreset": {
-        "LEVEL": "standard"
+        "LEVEL": "standard",
+        "MODE": "findings-only"
       },
       "compatibilityAlias": true,
       "destructiveActions": "none",
-      "modelInvocable": true,
+      "modelInvocable": false,
       "subagentSafe": true,
       "allowedTools": [
         "Read",

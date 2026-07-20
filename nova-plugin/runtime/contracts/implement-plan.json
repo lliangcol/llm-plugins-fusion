@@ -46,6 +46,16 @@
         "oneShot": true,
         "expires": null
       }
+    },
+    {
+      "name": "EXECUTION_PROFILE",
+      "type": "enum",
+      "required": false,
+      "values": [
+        "lite",
+        "standard",
+        "codex-review-fix"
+      ]
     }
   ],
   "effects": [
@@ -135,6 +145,18 @@
           true,
           "true"
         ]
+      },
+      {
+        "name": "EXECUTION_PROFILE",
+        "required": false,
+        "aliases": [],
+        "description": "Canonical implementation or retained compatibility execution profile.",
+        "default": "standard",
+        "exactValues": [
+          "lite",
+          "standard",
+          "codex-review-fix"
+        ]
       }
     ],
     "decisionTable": [
@@ -176,13 +198,14 @@
     "stopConditions": [
       "PLAN_INPUT_PATH is missing or unreadable.",
       "PLAN_APPROVED is not exactly true.",
+      "EXECUTION_PROFILE is not an exact allowed value.",
       "A non-trivial deviation is required.",
       "Permission, dependency, or overlapping-change blockers prevent safe execution."
     ],
     "workflowSteps": [
       {
         "id": "validate-approval",
-        "action": "Validate both required inputs and exact approval."
+        "action": "Validate both required inputs, exact approval, and EXECUTION_PROFILE."
       },
       {
         "id": "load-plan",

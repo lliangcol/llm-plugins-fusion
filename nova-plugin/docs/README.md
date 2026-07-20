@@ -15,14 +15,14 @@ generated block。
 | 命令文档 | [commands/](commands/) | 21 个命令的详细说明与中英文 README |
 | 架构与设计 | [architecture/](architecture/) | 五层架构、command / skill 双轨设计、hooks 设计 |
 | 仓库文档总索引 | [../../docs/README.md](../../docs/README.md) | `docs/` 目录结构、文档清单和维护规则 |
-| Agent routing | [../../docs/agents/ROUTING.md](../../docs/agents/ROUTING.md) | 当前 6 个 core agents 与 capability packs 路由 |
+| Agent routing | [../../docs/agents/ROUTING.md](../../docs/reference/architecture/agent-routing.md) | 当前 6 个 core agents 与 capability packs 路由 |
 | Capability packs | [../packs/README.md](../packs/README.md) | 8 个领域能力包与 enhanced / fallback mode |
-| Consumer profiles | [../../docs/consumers/README.md](../../docs/consumers/README.md) | 多项目 consumer profile 契约与脱敏模板 |
-| Cross-tool setup | [../../docs/consumers/README.md](../../docs/consumers/README.md) | Cursor、Cline、Aider、OpenHands、Gemini CLI、OpenCode、Copilot、Codex 等工具消费 nova skills 的入口 |
-| Context-safe workflows | [../../docs/workflows/context-safe-agent-workflows.md](../../docs/workflows/context-safe-agent-workflows.md) | 大任务拆分、checkpoint、review/fix/verify 交付闭环 |
-| Thin harness, fat skills | [../../docs/workflows/thin-harness-fat-skills.md](../../docs/workflows/thin-harness-fat-skills.md) | 脚本、skill、prompt、pack 和 consumer profile 的沉淀边界 |
-| Prompt templates | [../../docs/prompts/README.md](../../docs/prompts/README.md) | Codex、Claude Code 和通用交付文档 prompt 模板 |
-| Redacted examples | [../../docs/examples/README.md](../../docs/examples/README.md) | Java backend / frontend 脱敏 workflow 示例 |
+| Consumer profiles | [../../docs/consumers/README.md](../../docs/guides/assistants/README.md) | 多项目 consumer profile 契约与脱敏模板 |
+| Cross-tool setup | [../../docs/consumers/README.md](../../docs/guides/assistants/README.md) | Cursor、Cline、Aider、OpenHands、Gemini CLI、OpenCode、Copilot、Codex 等工具消费 nova skills 的入口 |
+| Context-safe workflows | [../../docs/workflows/context-safe-agent-workflows.md](../../docs/guides/workflows/context-safe.md) | 大任务拆分、checkpoint、review/fix/verify 交付闭环 |
+| Thin harness, fat skills | [../../docs/workflows/thin-harness-fat-skills.md](../../docs/reference/architecture/skill-first-projection.md) | 脚本、skill、prompt、pack 和 consumer profile 的沉淀边界 |
+| Prompt templates | [../../docs/prompts/README.md](../../docs/templates/prompts/README.md) | Codex、Claude Code 和通用交付文档 prompt 模板 |
+| Redacted examples | [../../docs/examples/README.md](../../docs/tutorials/README.md) | Java backend / frontend 脱敏 workflow 示例 |
 | English overview | [overview/README.en.md](overview/README.en.md) | English project overview |
 
 ## 文档结构
@@ -106,34 +106,34 @@ Core agents use documentation-only capability packs for domain routing. Packs do
 - [命令使用手册](guides/claude-code-commands-handbook.md)
 - [Command Handbook (English)](guides/claude-code-commands-handbook.en.md)
 - [仓库文档总索引](../../docs/README.md)
-- [Consumer profile templates](../../docs/consumers/README.md)
-- [Cursor setup for nova skills](../../docs/consumers/cursor-setup.md)
-- [Cline setup for nova skills](../../docs/consumers/cline-setup.md)
-- [Aider setup for nova skills](../../docs/consumers/aider-setup.md)
-- [OpenHands setup for nova skills](../../docs/consumers/openhands-setup.md)
-- [Gemini CLI setup for nova skills](../../docs/consumers/gemini-cli-setup.md)
-- [OpenCode setup for nova skills](../../docs/consumers/opencode-setup.md)
-- [Copilot setup for nova skills](../../docs/consumers/copilot-setup.md)
-- [Codex setup for nova skills](../../docs/consumers/codex-setup.md)
-- [Workbench consumer template](../../docs/consumers/workbench-template.md)
-- [Context-safe workflows](../../docs/workflows/context-safe-agent-workflows.md)
-- [Thin harness, fat skills workflow doctrine](../../docs/workflows/thin-harness-fat-skills.md)
-- [Prompt template library](../../docs/prompts/README.md)
-- [Redacted examples](../../docs/examples/README.md)
+- [Consumer profile templates](../../docs/guides/assistants/README.md)
+- [Cursor setup for nova skills](../../docs/guides/assistants/cursor.md)
+- [Cline setup for nova skills](../../docs/guides/assistants/cline.md)
+- [Aider setup for nova skills](../../docs/guides/assistants/aider.md)
+- [OpenHands setup for nova skills](../../docs/guides/assistants/openhands.md)
+- [Gemini CLI setup for nova skills](../../docs/guides/assistants/gemini-cli.md)
+- [OpenCode setup for nova skills](../../docs/guides/assistants/opencode.md)
+- [Copilot setup for nova skills](../../docs/guides/assistants/copilot.md)
+- [Codex setup for nova skills](../../docs/guides/assistants/codex.md)
+- [Workbench consumer template](../../docs/templates/consumer-profiles/workbench.md)
+- [Context-safe workflows](../../docs/guides/workflows/context-safe.md)
+- [Thin harness, fat skills workflow doctrine](../../docs/reference/architecture/skill-first-projection.md)
+- [Prompt template library](../../docs/templates/prompts/README.md)
+- [Redacted examples](../../docs/tutorials/README.md)
 - [Codex 闭环说明](commands/codex/codex-review-fix.README.md)
 - [Agent Development Stack](architecture/agent-development-stack.md)
 - [Skill-first 设计说明](architecture/dual-track-design.md)
 - [Hooks 设计文档](architecture/hooks-design.md)
 - [Capability packs](../packs/README.md)
-- [Core agent routing](../../docs/agents/ROUTING.md)
-- [Plugin-aware routing](../../docs/agents/PLUGIN_AWARE_ROUTING.md)
+- [Core agent routing](../../docs/reference/architecture/agent-routing.md)
+- [Plugin-aware routing](../../docs/reference/architecture/agent-routing.md)
 - [Marketplace catalog](../../docs/marketplace/catalog.md)
-- [Registry author workflow](../../docs/marketplace/registry-author-workflow.md)
-- [multi-plugin readiness evidence](../../docs/marketplace/multi-plugin-readiness.md)
-- [Compatibility matrix](../../docs/marketplace/compatibility-matrix.md)
-- [Trust policy](../../docs/marketplace/trust-policy.md)
-- [Security review route](../../docs/marketplace/security-review-route.md)
-- [Release hygiene](../../docs/releases/release-hygiene.md)
+- [Registry author workflow](../../docs/operations/marketplace/registry-authoring.md)
+- [multi-plugin readiness evidence](../../docs/project/plans/multi-plugin-readiness.md)
+- [Compatibility matrix](../../docs/reference/compatibility/marketplace.md)
+- [Trust policy](../../docs/reference/security/marketplace-trust.md)
+- [Security review route](../../docs/reference/security/security-review.md)
+- [Release hygiene](../../docs/operations/releases/hygiene.md)
 - [English overview](overview/README.en.md)
 
 ## 维护规则

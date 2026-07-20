@@ -35,7 +35,12 @@ for (const entry of dataset.cases) {
     for (const [name, value] of Object.entries(entry.expectedNormalized ?? {})) assert.deepEqual(resolved.normalizedInputs[name], value, `${name} normalized value`);
     if (entry.expectedMissingInput) assert.ok(resolved.missingRequired.includes(entry.expectedMissingInput), `missing ${entry.expectedMissingInput}`);
     if (entry.expectedInvalidInput) assert.ok(resolved.invalidExactValues.some((item) => item.input === entry.expectedInvalidInput), `invalid ${entry.expectedInvalidInput}`);
-    if (entry.expectedDecisionRoute) assert.ok(behavior.decisionTable.some((item) => item.route === entry.expectedDecisionRoute), `decision route ${entry.expectedDecisionRoute}`);
+    if (entry.expectedDecisionRoute) {
+      const decision = behavior.decisionTable.find((item) => item.route === entry.expectedDecisionRoute
+        && (entry.expectedDecisionVariantParameters === undefined
+          || JSON.stringify(item.variantParameters) === JSON.stringify(entry.expectedDecisionVariantParameters)));
+      assert.ok(decision, `decision route ${entry.expectedDecisionRoute} with expected variant parameters`);
+    }
     if (entry.expectedOutputOrder) assert.deepEqual(behavior.output.order, entry.expectedOutputOrder, 'output order');
     if (entry.expectedSeverityLevels) assert.deepEqual(behavior.output.severityLevels, entry.expectedSeverityLevels, 'severity levels');
     if (entry.expectedInvariantContains) assert.ok(contains(behavior.invariants, entry.expectedInvariantContains), `invariant signal ${entry.expectedInvariantContains}`);

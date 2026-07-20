@@ -7,6 +7,7 @@ import { cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, 
 import { homedir, tmpdir } from 'node:os';
 import { basename, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { isDeepStrictEqual } from 'node:util';
 import { captureProcess, commandDetails, resolveExecutableInvocation } from './lib/process-runner.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
@@ -23,7 +24,7 @@ export const MAX_TOTAL_RUNTIME_MS = 900_000;
 const CODEX_DISABLED_FEATURES = ['apps', 'browser_use', 'code_mode_host', 'computer_use', 'image_generation', 'in_app_browser', 'plugins', 'remote_plugin', 'shell_tool', 'workspace_dependencies'];
 
 function usage() {
-  return 'Usage: node scripts/run-live-assistant-evals.mjs --assistant <claude-code|codex> [--profile <critical|full>] [--condition <plugin-enabled|plugin-disabled>] [--executable <path>] [--attempts <governed-value>] [--case <id>] [--output <repository-relative-path>] --max-invocations <positive-integer> [--timeout-ms <positive-integer>] [--max-total-runtime-ms <positive-integer>] [--plan]';
+  return 'Usage: node scripts/run-live-assistant-evals.mjs --assistant <claude-code|codex> [--profile <pilot|critical|full>] [--condition <plugin-enabled|plugin-disabled>] [--executable <path>] [--attempts <governed-value>] [--case <id>] [--output <repository-relative-path>] [--prerequisite-evidence <comma-separated-repository-relative-paths>] --max-invocations <positive-integer> [--timeout-ms <positive-integer>] [--max-total-runtime-ms <positive-integer>] [--plan]';
 }
 
 export function parseArgs(args) {
@@ -34,12 +35,12 @@ export function parseArgs(args) {
     if (seen.has(arg)) throw new Error(`duplicate argument: ${arg}`);
     seen.add(arg);
     if (arg === '--plan') { parsed.plan = true; continue; }
-    if (!['--assistant', '--profile', '--condition', '--executable', '--attempts', '--case', '--output', '--max-invocations', '--timeout-ms', '--max-total-runtime-ms'].includes(arg) || !args[index + 1] || args[index + 1].startsWith('--')) throw new Error(usage());
+    if (!['--assistant', '--profile', '--condition', '--executable', '--attempts', '--case', '--output', '--prerequisite-evidence', '--max-invocations', '--timeout-ms', '--max-total-runtime-ms'].includes(arg) || !args[index + 1] || args[index + 1].startsWith('--')) throw new Error(usage());
     parsed[arg.slice(2)] = args[index + 1];
     index += 1;
   }
   if (!['claude-code', 'codex'].includes(parsed.assistant)) throw new Error(usage());
-  if (!['critical', 'full'].includes(parsed.profile)) throw new Error(usage());
+  if (!['pilot', 'critical', 'full'].includes(parsed.profile)) throw new Error(usage());
   if (!['plugin-enabled', 'plugin-disabled'].includes(parsed.condition)) throw new Error(usage());
   const contract = governedLiveProfile(root, parsed.profile);
   if (parsed.attempts !== undefined && Number(parsed.attempts) !== contract.profile.attempts) throw new Error(`--attempts must match governed ${contract.governedId} attempts (${contract.profile.attempts})`);
@@ -55,7 +56,58 @@ export function parseArgs(args) {
   if (!Number.isInteger(parsed.timeoutMs) || parsed.timeoutMs < 1 || parsed.timeoutMs > MAX_INVOCATION_TIMEOUT_MS) throw new Error(`--timeout-ms must be between 1 and ${MAX_INVOCATION_TIMEOUT_MS}`);
   if (!Number.isInteger(parsed.maxTotalRuntimeMs) || parsed.maxTotalRuntimeMs < 1 || parsed.maxTotalRuntimeMs > MAX_TOTAL_RUNTIME_MS) throw new Error(`--max-total-runtime-ms must be between 1 and ${MAX_TOTAL_RUNTIME_MS}`);
   if (parsed.output !== undefined) validateRelativeOutputPath(parsed.output);
+  parsed.prerequisiteEvidence = parsed['prerequisite-evidence'] === undefined
+    ? []
+    : parsed['prerequisite-evidence'].split(',').map((path) => validateRelativeOutputPath(path.trim())).filter(Boolean);
+  delete parsed['prerequisite-evidence'];
   return parsed;
+}
+
+function sameMembers(actual, expected) {
+  return actual.length === expected.length && [...actual].sort().every((value, index) => value === [...expected].sort()[index]);
+}
+
+export function assertLivePrerequisiteEvidence(options) {
+  const target = governedLiveProfile(root, options.profile);
+  const requiredProfiles = target.profile.prerequisiteProfiles ?? [];
+  if (requiredProfiles.length === 0) {
+    if ((options.prerequisiteEvidence ?? []).length > 0) throw new Error(`${target.governedId} does not accept prerequisite evidence`);
+    return { requiredProfiles: [], records: 0 };
+  }
+  if ((options.prerequisiteEvidence ?? []).length === 0) throw new Error(`${target.governedId} is blocked until --prerequisite-evidence proves ${requiredProfiles.join(' then ')}`);
+  const expectedPairKeys = new Set();
+  const observedPairKeys = new Set();
+  for (const prerequisite of requiredProfiles) {
+    const contract = governedLiveProfile(root, prerequisite);
+    for (const assistant of contract.profile.assistants) {
+      for (const condition of contract.profile.conditions) expectedPairKeys.add(`${prerequisite}:${assistant}:${condition}`);
+    }
+  }
+  for (const path of options.prerequisiteEvidence) {
+    if (!existsSync(resolve(root, path))) throw new Error(`prerequisite evidence is missing: ${path}`);
+    const evidence = readJson(path);
+    if (!requiredProfiles.includes(evidence.profile)) throw new Error(`${path} is not evidence for required profiles ${requiredProfiles.join(', ')}`);
+    const contract = governedLiveProfile(root, evidence.profile);
+    const expectedCases = contract.cases.map((entry) => entry.id);
+    const expectedTotal = expectedCases.length * contract.profile.attempts;
+    const pairKey = `${evidence.profile}:${evidence.assistant?.id}:${evidence.condition}`;
+    if (!expectedPairKeys.has(pairKey)) throw new Error(`${path} has an unexpected assistant or condition slice`);
+    if (observedPairKeys.has(pairKey)) throw new Error(`${path} duplicates prerequisite slice ${pairKey}`);
+    if (evidence.layer !== 'live-assistant' || evidence.datasetId !== contract.profile.datasetId || evidence.datasetVersion !== contract.profile.datasetVersion || evidence.casesPath !== contract.profile.casesPath || evidence.labelsPath !== contract.profile.labelsPath) throw new Error(`${path} semantic dataset identity does not match ${evidence.profile}`);
+    if (evidence.sourceState !== 'clean-commit') throw new Error(`${path} was not captured from a clean commit`);
+    const requiredDigestPaths = ['workflow-specs/nova.product.json', 'workflow-specs/workflows.v6.json', 'workflow-specs/behaviors.v2.json', 'scripts/run-live-assistant-evals.mjs', contract.profile.casesPath, ...(contract.profile.labelsPath ? [contract.profile.labelsPath] : [])];
+    if (requiredDigestPaths.some((sourcePath) => !evidence.sourceDigests?.[sourcePath])) throw new Error(`${path} is missing a required source digest`);
+    for (const [sourcePath, digest] of Object.entries(evidence.sourceDigests ?? {})) {
+      if (!existsSync(resolve(root, sourcePath)) || sha256File(sourcePath) !== digest) throw new Error(`${path} is stale for ${sourcePath}`);
+    }
+    const caseIds = [...new Set((evidence.cases ?? []).map((entry) => entry.caseId))];
+    if (!sameMembers(caseIds, expectedCases) || evidence.summary?.total !== expectedTotal || evidence.summary?.passed !== expectedTotal || evidence.summary?.uniqueCases !== expectedCases.length || evidence.summary?.attemptsPerCase !== contract.profile.attempts) throw new Error(`${path} does not prove the complete passing ${evidence.profile} slice`);
+    if ((evidence.cases ?? []).some((entry) => !entry.contractValid || !entry.zeroProjectWrites || entry.attemptedDangerousTools?.length > 0 || entry.executedDangerousTools?.length > 0 || entry.unknownTools?.length > 0 || !entry.rawArtifactsRemoved)) throw new Error(`${path} violates prerequisite safety or semantic gates`);
+    if (evidence.condition === 'plugin-enabled' && (!evidence.assistant?.adapterStaged || (evidence.assistant.id === 'claude-code' && evidence.assistant.adapterLoadObserved !== 'observed'))) throw new Error(`${path} does not prove plugin-enabled adapter staging and load`);
+    observedPairKeys.add(pairKey);
+  }
+  if (!sameMembers([...observedPairKeys], [...expectedPairKeys])) throw new Error(`prerequisite evidence must provide exactly ${expectedPairKeys.size} governed assistant/condition slices`);
+  return { requiredProfiles, records: observedPairKeys.size };
 }
 
 export function extractJsonOutput(stdout) {
@@ -88,9 +140,10 @@ function jsonOutputSchema() {
   return {
     type: 'object',
     additionalProperties: false,
-    required: ['selectedRoute', 'requiredInputs', 'blocked'],
+    required: ['selectedRoute', 'variantParameters', 'requiredInputs', 'blocked'],
     properties: {
       selectedRoute: { type: 'array', minItems: 1, items: { type: 'string' } },
+      variantParameters: { type: 'object' },
       requiredInputs: { type: 'array', items: { type: 'string' } },
       blocked: { type: 'boolean' },
     },
@@ -98,12 +151,12 @@ function jsonOutputSchema() {
 }
 
 export function codexPrompt(caseSpec, condition) {
-  const schemaOnly = 'Return only the existing output-schema object with selectedRoute, requiredInputs, and blocked. Do not inspect files, call tools, execute a workflow, or modify the environment.';
+  const schemaOnly = 'Return only the existing output-schema object with selectedRoute, variantParameters, requiredInputs, and blocked. Do not inspect files, call tools, execute a workflow, or modify the environment.';
   if (condition === 'plugin-disabled') {
     return `Classify this request using only ordinary general reasoning: ${caseSpec.request}\n${schemaOnly} Use concise generic route labels, list only inputs you would need before proceeding, and set blocked when execution should stop.`;
   }
   const providedInputs = caseSpec.kind === 'approval' ? `\nProvided inputs: ${JSON.stringify(caseSpec.providedInputs ?? {})}` : '';
-  return `A repository workflow adapter has been staged for this isolated workspace. Use that staged workflow contract to classify this request without restating or overriding its routing rules: ${caseSpec.request}${providedInputs}\n${schemaOnly} Select exactly one route from the staged contract. Return the complete ordered set of that route's canonical required input names even when values are present, inferred, or resolved; never return only unresolved inputs. Set blocked when a required input or approval is unresolved.`;
+  return `A repository workflow adapter has been staged for this isolated workspace. Use that staged workflow contract to classify this request without restating or overriding its routing rules: ${caseSpec.request}${providedInputs}\n${schemaOnly} Select exactly one canonical route from the staged automatic-routing contract and return its exact structured variantParameters. A compatibility alias is not a selected route. Return the complete ordered set of the matched variant workflow's required input names even when values are present, inferred, or resolved; never return only unresolved inputs. Set blocked when a required input or approval is unresolved.`;
 }
 
 function claudePrompt(caseSpec, namespace) {
@@ -116,7 +169,7 @@ function invocation({ assistant, executable, executableArgsPrefix, caseSpec, wor
   if (assistant === 'claude-code') {
     const debugFile = resolve(harness, 'claude-debug.log');
     const systemPrompt = condition === 'plugin-enabled'
-      ? `Do not inspect files, execute shell commands, or modify the environment. Return the routing contract's recommendation using fully-qualified /${namespace}:<workflow-id> syntax. Always return the complete ordered set of the selected workflow's canonical required input names even when values are present, inferred, or resolved; never return only unresolved inputs.`
+      ? `Do not inspect files, execute shell commands, or modify the environment. Return the routing contract's canonical recommendation using fully-qualified /${namespace}:<canonical-workflow-id> syntax and include the exact Variant parameters field. A compatibility alias may be optional information but is not the selected route. Always return the complete ordered set of the matched variant workflow's required input names even when values are present, inferred, or resolved; never return only unresolved inputs.`
       : 'Do not inspect files, call tools, execute commands, or modify the environment. Use ordinary general reasoning only and do not claim that any plugin or adapter is loaded.';
     return {
       command: executable,
@@ -173,31 +226,45 @@ function routeFromClaudeText(text, namespace) {
   return [...text.matchAll(new RegExp(`/${namespace}:([a-z0-9]+(?:-[a-z0-9]+)*)`, 'gu'))].map((match) => match[1]);
 }
 
+function variantParametersFromClaudeText(text) {
+  const line = String(text).split(/\r?\n/u).find((entry) => /Variant parameters\s*:/iu.test(entry));
+  if (!line) return {};
+  const value = line.slice(line.indexOf(':') + 1).trim().replace(/^`|`$/gu, '');
+  if (value === '' || value.toLocaleLowerCase('en-US') === 'none') return {};
+  const parsed = JSON.parse(value);
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('Variant parameters must be a JSON object');
+  return parsed;
+}
+
 export function evaluateSemanticCase(caseSpec, output, inventory = []) {
   const selectedRoute = Array.isArray(output.selectedRoute) ? output.selectedRoute : [];
+  const variantParameters = output.variantParameters && typeof output.variantParameters === 'object' && !Array.isArray(output.variantParameters) ? output.variantParameters : null;
   const requiredInputs = Array.isArray(output.requiredInputs) ? output.requiredInputs : [];
   const inventedSurfaces = selectedRoute.filter((id) => inventory.length > 0 && !inventory.includes(id));
   const expectedRoute = caseSpec.expectedRoute?.[0];
   const routeValid = selectedRoute[0] === expectedRoute;
   const top2RouteValid = selectedRoute.slice(0, 2).includes(expectedRoute);
+  const variantParametersValid = variantParameters !== null && isDeepStrictEqual(variantParameters, caseSpec.expectedVariantParameters ?? {});
   const requiredInputsValid = (caseSpec.expectedRequiredInputs ?? []).every((input) => requiredInputs.includes(input));
   const approvalValid = caseSpec.kind !== 'approval' || output.blocked === true;
-  const shapeValid = typeof output.blocked === 'boolean';
-  return { selectedRoute, requiredInputs, routeValid, top2RouteValid, requiredInputsValid, approvalValid, shapeValid, inventedSurfaces, contractValid: routeValid && requiredInputsValid && approvalValid && shapeValid && inventedSurfaces.length === 0 };
+  const shapeValid = typeof output.blocked === 'boolean' && variantParameters !== null;
+  return { selectedRoute, variantParameters: variantParameters ?? {}, requiredInputs, routeValid, top2RouteValid, variantParametersValid, requiredInputsValid, approvalValid, shapeValid, inventedSurfaces, contractValid: routeValid && variantParametersValid && requiredInputsValid && approvalValid && shapeValid && inventedSurfaces.length === 0 };
 }
 
 export const validateLiveCase = evaluateSemanticCase;
 
-function normalizeClaudeOutput(caseSpec, text, namespace) {
+function normalizeClaudeOutput(caseSpec, text, namespace, workflows, automaticTargets) {
   if (caseSpec.kind === 'route') {
-    const selectedRoute = [...new Set(routeFromClaudeText(text, namespace))];
+    const selectedRoute = [...new Set(routeFromClaudeText(text, namespace).filter((route) => automaticTargets.has(route)))];
     const requiredInputs = (caseSpec.expectedRequiredInputs ?? []).filter((input) => text.includes(input));
-    return { selectedRoute, requiredInputs, blocked: false };
+    return { selectedRoute, variantParameters: variantParametersFromClaudeText(text), requiredInputs, blocked: false };
   }
   const missing = caseSpec.expectedRequiredInputs ?? [];
   const requiredInputs = missing.filter((input) => text.includes(input));
   const blockedSignal = /block|missing|required|stop|approval|unresolved|缺少|必填|停止|阻塞/iu.test(text);
-  return { selectedRoute: [caseSpec.workflow], requiredInputs, blocked: blockedSignal };
+  const workflow = workflows.get(caseSpec.workflow);
+  if (!workflow) throw new Error(`unknown direct workflow ${caseSpec.workflow}`);
+  return { selectedRoute: [workflow.canonicalSurfaceId], variantParameters: workflow.variantPreset, requiredInputs, blocked: blockedSignal };
 }
 
 function setupHarness(assistant, sandboxRoot, condition) {
@@ -227,18 +294,21 @@ function setupHarness(assistant, sandboxRoot, condition) {
   return { workspace, harness, pluginDir: condition === 'plugin-enabled' ? resolve(harness, 'nova-plugin') : null, adapterStaged: codexDigestMatches || claudePluginStaged };
 }
 
-export async function runLiveEvaluation(options, { commandDetailsFn = commandDetails, captureProcessFn = captureProcess } = {}) {
+export async function runLiveEvaluation(options, { commandDetailsFn = commandDetails, captureProcessFn = captureProcess, prerequisiteEvidenceFn = assertLivePrerequisiteEvidence } = {}) {
   const plan = buildLiveExecutionPlan(root, options);
+  prerequisiteEvidenceFn(options);
   const requestedExecutable = options.executable ?? (options.assistant === 'claude-code' ? 'claude' : 'codex');
   const executable = resolveExecutableInvocation(requestedExecutable);
   const details = await commandDetailsFn(executable.command, [...executable.argsPrefix, '--version']);
   if (!details.available) throw new Error(`${basename(requestedExecutable)} is unavailable`);
   const contract = governedLiveProfile(root, options.profile);
-  const datasetPath = contract.profile.datasetId === 'critical-live' ? 'evals/critical-live/cases.json' : 'evals/live/cases.json';
+  const datasetPath = contract.profile.casesPath;
   const dataset = readJson(datasetPath);
-  if (options.profile === 'full') dataset.cases = joinLockedLabels(dataset, readJson('evals/live/labels.locked.json'));
+  if (contract.profile.labelsPath) dataset.cases = joinLockedLabels(dataset, readJson(contract.profile.labelsPath));
   const model = loadNovaWorkflowModel(root);
-  const inventory = model.spec.workflows.map((entry) => entry.id);
+  const workflows = new Map(model.spec.workflows.map((entry) => [entry.id, entry]));
+  const inventory = model.product.automaticRouting.canonicalTargets;
+  const automaticTargets = new Set(inventory);
   const selectedCases = options.case ? dataset.cases.filter((entry) => entry.id === options.case) : dataset.cases;
   if (selectedCases.length === 0) throw new Error(`unknown live eval case ${options.case}`);
   if (selectedCases.length * options.attempts !== plan.plannedInvocations) throw new Error('live execution plan drifted after dataset loading');
@@ -258,7 +328,7 @@ export async function runLiveEvaluation(options, { commandDetailsFn = commandDet
           ? { ok: false, code: null, timedOut: true, totalTimedOut: true, ms: 0, stdout: '', stderr: '' }
           : await captureProcessFn(`${options.assistant}:${caseSpec.id}`, call.command, call.args, { cwd: workspace, env: call.env, timeoutMs: Math.min(options.timeoutMs, remainingRuntimeMs), maxOutputBytes: 1024 * 1024 });
         let parsed = null;
-        let validation = { selectedRoute: [], requiredInputs: [], routeValid: false, top2RouteValid: false, requiredInputsValid: false, approvalValid: false, shapeValid: false, inventedSurfaces: [], contractValid: false };
+        let validation = { selectedRoute: [], variantParameters: {}, requiredInputs: [], routeValid: false, top2RouteValid: false, variantParametersValid: false, requiredInputsValid: false, approvalValid: false, shapeValid: false, inventedSurfaces: [], contractValid: false };
         let parseFailure = null;
         let usage = normalizeUsage(null);
         let toolEvidence = classifyToolEvidence({ assistant: options.assistant, condition: options.condition });
@@ -274,7 +344,7 @@ export async function runLiveEvaluation(options, { commandDetailsFn = commandDet
                 totalTokens: claude.envelope.usage?.total_tokens ?? null,
                 costUsd: claude.envelope.total_cost_usd ?? null,
               });
-              validation = evaluateSemanticCase(caseSpec, normalizeClaudeOutput(caseSpec, claude.text, model.product.pluginNamespace), inventory);
+              validation = evaluateSemanticCase(caseSpec, normalizeClaudeOutput(caseSpec, claude.text, model.product.pluginNamespace, workflows, automaticTargets), inventory);
               toolEvidence = classifyToolEvidence({ assistant: options.assistant, condition: options.condition, permissionDenials: claude.envelope.permission_denials ?? [] });
             } else {
               parsed = JSON.parse(readFileSync(call.outputFile, 'utf8'));
@@ -352,13 +422,17 @@ export async function runLiveEvaluation(options, { commandDetailsFn = commandDet
       [adapterPath]: sha256File(adapterPath),
       'scripts/run-live-assistant-evals.mjs': sha256File('scripts/run-live-assistant-evals.mjs'),
       [datasetPath]: sha256File(datasetPath),
-      ...(options.profile === 'full' ? { 'evals/live/labels.locked.json': sha256File('evals/live/labels.locked.json') } : {}),
+      ...(contract.profile.labelsPath ? { [contract.profile.labelsPath]: sha256File(contract.profile.labelsPath) } : {}),
     },
     baseCommit: commitResult.status === 0 ? commitResult.stdout.trim() : 'unavailable',
     releaseTag: tagResult.status === 0 ? tagResult.stdout.trim() : null,
     sourceState: clean ? 'clean-commit' : 'working-tree-with-uncommitted-changes; baseCommit does not contain the digest-bound source state',
     condition: options.condition,
     profile: options.profile,
+    datasetId: contract.profile.datasetId,
+    datasetVersion: contract.profile.datasetVersion,
+    casesPath: contract.profile.casesPath,
+    labelsPath: contract.profile.labelsPath,
     assistant: { id: options.assistant, version: details.detail, executable: basename(requestedExecutable), adapterSha256: sha256File(adapterPath), adapterStaged: allAdapterStaged, adapterLoadObserved: aggregateLoadStatus },
     runtime: {
       adapterLoadPolicy: 'adapter staging, load observation, and semantic contract are independent per-attempt facts',

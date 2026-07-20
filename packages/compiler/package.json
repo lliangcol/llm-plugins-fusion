@@ -1,6 +1,6 @@
 {
   "name": "@llm-plugins-fusion/compiler",
-  "version": "4.0.0",
+  "version": "4.1.0",
   "private": true,
   "license": "MIT",
   "type": "module",
@@ -8,7 +8,7 @@
     ".": "./index.mjs"
   },
   "dependencies": {
-    "@llm-plugins-fusion/spec": "4.0.0"
+    "@llm-plugins-fusion/spec": "4.1.0"
   },
   "engines": {
     "node": ">=22"

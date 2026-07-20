@@ -2,13 +2,13 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
-import { buildInventory } from '../../scripts/generate-control-plane-inventory.mjs';
-import { inventoryBudgetErrors } from '../../scripts/validate-control-plane-complexity.mjs';
+import { buildInventory, inventoryBudgetErrors } from '../../scripts/validate-control-plane-complexity.mjs';
 import { registryMetadata } from '../../scripts/lib/validation-task-registry.mjs';
+import { repositoryProfilePlan } from '../../packages/cli/index.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 const packageJson = JSON.parse(readFileSync(resolve(root, 'package.json'), 'utf8'));
-const registryRunners = new Set(registryMetadata().map((task) => task.runner));
+const registryRunners = new Set(registryMetadata().flatMap((task) => [task.runner, ...(task.components ?? []).map((component) => component.runner)]));
 
 const removedEntrypoints = {
   'eval:dataset-integrity': { replacement: 'eval:route', command: 'node scripts/validate-route-conformance.mjs' },
@@ -16,15 +16,35 @@ const removedEntrypoints = {
   'check:tests': { replacement: 'test', command: 'npm run test:unit && npm run test:integration && npm run test:e2e' },
   'check:coverage': { replacement: 'test:coverage:check', command: 'node scripts/run-test-coverage.mjs --check' },
   'validate:release-channels': { replacement: 'validate:release-truth', command: 'node scripts/validate-release-channel-facts.mjs' },
-  'validate:evaluation-profiles': { replacement: null, command: 'node scripts/generate-evaluation-profiles.mjs' },
+  'validate:evaluation-profiles': { replacement: null, command: 'node scripts/generate-quality-report.mjs' },
   'validate:release-summary': { replacement: null, command: 'node scripts/generate-release-summary.mjs' },
   'validate:tasks': { replacement: null, command: 'node scripts/generate-task-catalog.mjs' },
-  'validate:control-plane': { replacement: null, command: 'node scripts/generate-control-plane-inventory.mjs' },
-  'validate:evidence-levels': { replacement: null, command: 'node scripts/generate-evidence-levels.mjs' },
+  'validate:control-plane': { replacement: null, command: 'node scripts/validate-control-plane-complexity.mjs' },
+  'validate:evidence-levels': { replacement: null, command: 'node scripts/generate-release-summary.mjs' },
   'validate:permissions': { replacement: null, command: 'node scripts/generate-workflow-permissions.mjs' },
   'validate:command-docs': { replacement: null, command: 'node scripts/generate-command-docs.mjs' },
   'validate:doc-governance': { replacement: null, command: 'node scripts/generate-doc-governance.mjs' },
   'validate:doc-migrations': { replacement: null, command: 'node scripts/migrate-documentation-layout.mjs' },
+  'check:truth': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['check', 'full'] },
+  'check:runtime': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['check', 'full'] },
+  'check:compatibility': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['check', 'full'] },
+  'check:docs': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['check', 'quick'] },
+  'check:security': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['check', 'security'] },
+  'check:release': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['check', 'release'] },
+  'generate:evaluation-profiles': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['generate', 'release'] },
+  'generate:release-summary': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['generate', 'release'] },
+  'generate:compatibility-evidence': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['generate', 'release'] },
+  'generate:facts': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['generate', 'release'] },
+  'generate:task-catalog': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['generate', 'release'] },
+  'generate:control-plane': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['generate', 'release'] },
+  'generate:evidence-levels': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['generate', 'release'] },
+  'generate:adapters': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['generate', 'runtime'] },
+  'generate:runtime-contracts': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['generate', 'runtime'] },
+  'generate:behavior-surfaces': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['generate', 'runtime'] },
+  'generate:quality-report': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['generate', 'release'] },
+  'generate:diagnostics-docs': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['generate', 'docs'] },
+  'generate:command-docs': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['generate', 'docs'] },
+  'generate:doc-governance': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['generate', 'docs'] },
 };
 
 function walk(directory, extensions) {
@@ -37,11 +57,17 @@ function walk(directory, extensions) {
   return files;
 }
 
+function npmInvocationPattern(name) {
+  const escaped = name.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&');
+  return new RegExp(`npm run ${escaped}(?![A-Za-z0-9:_-])`, 'u');
+}
+
 test('removed shortcuts resolve to the same retained task or direct read-only command', () => {
   for (const [removed, mapping] of Object.entries(removedEntrypoints)) {
     assert.equal(Object.hasOwn(packageJson.scripts, removed), false, `${removed} must remain removed`);
     if (mapping.replacement) {
       assert.equal(packageJson.scripts[mapping.replacement], mapping.command, `${mapping.replacement} changed underlying task`);
+      if (mapping.profile) assert.ok(repositoryProfilePlan(...mapping.profile).length > 0, `${removed} replacement profile is empty`);
     } else {
       assert.equal(mapping.command.includes('--write'), false, `${removed} replacement must remain read-only`);
       const runner = mapping.command.replace(/^node /u, '');
@@ -68,12 +94,12 @@ test('workflows, docs, and maintenance shell call sites do not invoke removed sh
   for (const path of files) {
     const content = readFileSync(resolve(root, path), 'utf8');
     for (const removed of Object.keys(removedEntrypoints)) {
-      assert.equal(content.includes(`npm run ${removed}`), false, `${path} invokes removed shortcut ${removed}`);
+      assert.doesNotMatch(content, npmInvocationPattern(removed), `${path} invokes removed shortcut ${removed}`);
     }
   }
   for (const [caller, command] of Object.entries(packageJson.scripts)) {
     for (const removed of Object.keys(removedEntrypoints)) {
-      assert.equal(command.includes(`npm run ${removed}`), false, `package script ${caller} invokes removed shortcut ${removed}`);
+      assert.doesNotMatch(command, npmInvocationPattern(removed), `package script ${caller} invokes removed shortcut ${removed}`);
     }
   }
 });
@@ -132,20 +158,19 @@ test('complexity budget rejects any renewed overage in the inventory-backed coun
 });
 
 test('write variants remain explicitly mutating while validation replacements remain read-only', () => {
-  for (const name of [
-    'generate:evaluation-profiles',
-    'generate:release-summary',
-    'generate:task-catalog',
-    'generate:control-plane',
-    'generate:evidence-levels',
-    'generate:command-docs',
-    'generate:doc-governance',
-    'migrate:docs',
-  ]) assert.match(packageJson.scripts[name], / --write$/u, `${name} lost its explicit write mode`);
+  assert.match(packageJson.scripts['migrate:docs'], / --write$/u, 'migrate:docs lost its explicit write mode');
+  for (const profile of ['docs', 'runtime', 'release', 'all']) {
+    const drift = repositoryProfilePlan('generate', profile);
+    const write = repositoryProfilePlan('generate', profile, { write: true });
+    assert.ok(drift.every((entry) => !entry.args.includes('--write')), `${profile} drift mode became mutating`);
+    assert.ok(write.every((entry) => entry.args.at(-1) === '--write'), `${profile} write mode is not explicit`);
+  }
 
   for (const { command } of Object.values(removedEntrypoints)) {
     if (command.startsWith('node scripts/generate-') || command.startsWith('node scripts/migrate-')) {
       assert.equal(command.includes('--write'), false, `${command} must remain the read-only form`);
     }
   }
+
+  assert.equal(Object.keys(packageJson.scripts).length, 80);
 });

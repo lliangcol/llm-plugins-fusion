@@ -2,13 +2,13 @@
 # Growth Metrics
 
 Status: active
-Date: 2026-06-02
+Date: 2026-07-16
 
 This page defines the first-round growth measurement package for
-`llm-plugins-fusion`. It is a local repository deliverable only; GitHub Topics,
-Discussions, social preview uploads, real issue creation, and external posting
-remain maintainer-owned manual actions unless performed through the GitHub UI or
-an authenticated workflow. It is not a public portal, paid marketplace,
+`llm-plugins-fusion`. Repository Topics and bounded contribution issues may be
+managed through an authenticated GitHub workflow; Discussions, social preview
+upload, external posting, user outreach, consent, and private traffic data
+remain maintainer-owned actions. This is not a public portal, paid marketplace,
 automated posting workflow, or owner-only analytics publication surface.
 
 ## Metric Definitions
@@ -87,14 +87,22 @@ Views / clones if available:
 Follow-up:
 ```
 
-## Manual GitHub UI Checklist
+## Current discovery baseline
 
-- Add repository topics that match the README wording, such as Claude Code,
-  workflow plugin, AI engineering workflow, Agent Skills, and validation-aware
-  handoff.
+As of 2026-07-16, the repository has the Topics `claude-code`,
+`ai-coding-assistant`, `agent-workflow`, `developer-tools`, and
+`agent-skills`. Bounded contribution tasks are tracked in issues
+[#94](https://github.com/lliangcol/llm-plugins-fusion/issues/94),
+[#95](https://github.com/lliangcol/llm-plugins-fusion/issues/95), and
+[#96](https://github.com/lliangcol/llm-plugins-fusion/issues/96).
+
+These discovery signals are not adoption evidence. Use the
+[adoption record template](../../templates/evidence/adoption-record.md) only
+after external consent and privacy review.
+
+## Remaining GitHub UI checklist
+
 - Upload `docs/assets/social-preview-1280x640.png` through repository settings.
 - Enable Discussions only if the maintainer is ready to respond.
-- Seed real good-first issues only after the maintainer has concrete tasks and
-  review capacity.
 - Pin or feature a release only after the release exists and its notes are
   consistent with `CHANGELOG.md`.

@@ -25,36 +25,38 @@ knowledge-base content in the consumer-owned workspace.
 
 | Need | Entry |
 | --- | --- |
-| Choose the shortest path by persona or task | [start-here.md](start-here.md) |
-| Get started quickly with `nova-plugin` | [getting-started.md](getting-started.md) |
-| See scenario-based workflow examples | [showcase/README.md](showcase/README.md) |
-| Prepare social preview and demo capture assets | [assets/README.md](assets/README.md) |
-| Track growth metrics and manual promotion channels | [growth/README.md](growth/README.md) |
-| Understand local audit logs and data handling | [privacy/data-handling.md](privacy/data-handling.md) |
+| Choose the shortest path by persona or task | [start-here.md](getting-started/README.md) |
+| Get started quickly with `nova-plugin` | [getting-started.md](getting-started/first-workflow.md) |
+| See scenario-based workflow examples | [showcase/README.md](tutorials/README.md) |
+| Prepare social preview and demo capture assets | [assets/README.md](operations/community/assets.md) |
+| Record a public-safe Java/Spring workflow | [Java/Spring recording guide](operations/community/java-spring-demo.md) |
+| Track growth metrics and manual promotion channels | [growth/README.md](operations/community/metrics.md) |
+| Collect consented external adoption evidence | [Adoption record template](templates/evidence/adoption-record.md) |
+| Understand local audit logs and data handling | [privacy/data-handling.md](reference/security/data-handling.md) |
 | Inspect generated public surface inventory | [generated/surface-inventory.md](generated/surface-inventory.md) |
 | Browse generated task-oriented documentation navigation | [generated/documentation-navigation.md](generated/documentation-navigation.md) |
 | Compare generated workflow command contracts | [generated/command-matrix.md](generated/command-matrix.md) |
-| Adopt `nova-plugin` in a private project | [consumers/README.md](consumers/README.md) |
-| Maintain repository checks and release gates | [maintainers/quickstart.md](maintainers/quickstart.md) |
-| Find the script, npm shortcut, or CI job for a maintenance task | [maintainers/task-catalog.md](maintainers/task-catalog.md) |
-| Understand current compatibility evidence and boundaries | [compatibility/README.md](compatibility/README.md) |
-| Use the framework/compiler and llmf preview | [framework/README.md](framework/README.md) |
-| Understand assistant L1-L4 evidence claims | [compatibility/assistant-levels.md](compatibility/assistant-levels.md) |
-| Inspect reproducible workflow quality evidence | [quality/benchmark.md](quality/benchmark.md) |
+| Adopt `nova-plugin` in a private project | [consumers/README.md](guides/assistants/README.md) |
+| Maintain repository checks and release gates | [maintainers/quickstart.md](operations/maintainers/README.md) |
+| Find the script, npm shortcut, or CI job for a maintenance task | [maintainers/task-catalog.md](operations/maintainers/validation.md) |
+| Understand current compatibility evidence and boundaries | [compatibility/README.md](reference/compatibility/README.md) |
+| Use the framework/compiler and llmf preview | [framework/README.md](reference/architecture/framework.md) |
+| Understand assistant L1-L4 evidence claims | [compatibility/assistant-levels.md](reference/compatibility/assistant-levels.md) |
+| Inspect reproducible workflow quality evidence | [quality/benchmark.md](reference/evaluation/benchmark.md) |
 | Choose a nova command or inspect plugin docs | [../nova-plugin/docs/README.md](../nova-plugin/docs/README.md) |
-| Understand core agents and capability pack routing | [agents/ROUTING.md](agents/ROUTING.md) |
-| Reuse public-safe workflow prompts | [prompts/README.md](prompts/README.md) |
-| Split large agent work into resumable units | [workflows/context-safe-agent-workflows.md](workflows/context-safe-agent-workflows.md) |
-| Review GSD-informed reliability hardening | [workflows/gsd-informed-hardening.md](workflows/gsd-informed-hardening.md) |
-| Maintain routing and validation guardrails | [workflows/routing-validation-guardrails.md](workflows/routing-validation-guardrails.md) |
-| Design source-controlled workflow checks | [workflows/source-controlled-checks.md](workflows/source-controlled-checks.md) |
-| Understand verification evidence standards | [workflows/verification-evidence-contract.md](workflows/verification-evidence-contract.md) |
-| Maintain marketplace registry metadata | [marketplace/registry-author-workflow.md](marketplace/registry-author-workflow.md) |
-| Prepare release or promotion evidence | [releases/release-evidence-template.md](releases/release-evidence-template.md) |
-| Run release validation manually | [releases/release-validation-runbook.md](releases/release-validation-runbook.md) |
-| Operate candidate-to-stable promotion from one checklist | [maintainers/release-runbook.md](maintainers/release-runbook.md) |
-| Review current project optimization work | [project-optimization-plan.md](project-optimization-plan.md) |
-| Resume small-step maintenance rounds | [llm-plugins-fusion-maintenance-status.md](llm-plugins-fusion-maintenance-status.md) |
+| Understand core agents and capability pack routing | [agents/ROUTING.md](reference/architecture/agent-routing.md) |
+| Reuse public-safe workflow prompts | [prompts/README.md](templates/prompts/README.md) |
+| Split large agent work into resumable units | [workflows/context-safe-agent-workflows.md](guides/workflows/context-safe.md) |
+| Review GSD-informed reliability hardening | [workflows/gsd-informed-hardening.md](guides/workflows/hardening.md) |
+| Maintain routing and validation guardrails | [workflows/routing-validation-guardrails.md](reference/workflows/routing-guardrails.md) |
+| Design source-controlled workflow checks | [workflows/source-controlled-checks.md](guides/workflows/source-controlled-checks.md) |
+| Understand verification evidence standards | [workflows/verification-evidence-contract.md](reference/workflows/verification-evidence.md) |
+| Maintain marketplace registry metadata | [marketplace/registry-author-workflow.md](operations/marketplace/registry-authoring.md) |
+| Prepare release or promotion evidence | [releases/release-evidence-template.md](templates/evidence/release.md) |
+| Run release validation manually | [releases/release-validation-runbook.md](operations/releases/validation.md) |
+| Operate candidate-to-stable promotion from one checklist | [maintainers/release-runbook.md](operations/releases/runbook.md) |
+| Review current project optimization work | [project-optimization-plan.md](project/plans/current-remediation.md) |
+| Resume small-step maintenance rounds | [llm-plugins-fusion-maintenance-status.md](operations/maintainers/status.md) |
 
 ## Directory Map
 
@@ -106,48 +108,50 @@ docs/
 
 | Document | Purpose |
 | --- | --- |
-| [assets/README.md](assets/README.md) | Social preview requirements, demo capture storyboard, and privacy boundary. |
+| [assets/README.md](operations/community/assets.md) | Social preview requirements, demo capture storyboard, and privacy boundary. |
+| [operations/community/java-spring-demo.md](operations/community/java-spring-demo.md) | Capture-ready, public-safe Java/Spring workflow recording script and acceptance checklist. |
 
 ### Agents
 
 | Document | Purpose |
 | --- | --- |
-| [agents/ROUTING.md](agents/ROUTING.md) | Current 6-core-agent routing and capability pack hints. |
-| [agents/PLUGIN_AWARE_ROUTING.md](agents/PLUGIN_AWARE_ROUTING.md) | Enhanced/fallback mode and pack activation rules. |
+| [agents/ROUTING.md](reference/architecture/agent-routing.md) | Current 6-core-agent routing and capability pack hints. |
+| [agents/PLUGIN_AWARE_ROUTING.md](reference/architecture/agent-routing.md) | Enhanced/fallback mode and pack activation rules. |
 
 ### Consumers
 
 | Document | Purpose |
 | --- | --- |
-| [consumers/README.md](consumers/README.md) | Local index for consumer profile templates and public/private boundaries. |
-| [consumers/profile-contract.md](consumers/profile-contract.md) | Required fields for public-safe consumer profiles. |
-| [consumers/private-java-backend-template.md](consumers/private-java-backend-template.md) | Redacted Java/Spring backend profile template. |
-| [consumers/frontend-project-template.md](consumers/frontend-project-template.md) | Redacted frontend project profile template. |
-| [consumers/workbench-template.md](consumers/workbench-template.md) | Private workbench structure for requirements, plans, reviews, prompts, and handoffs. |
-| [consumers/cursor-setup.md](consumers/cursor-setup.md) | Cursor setup for consuming nova skills. |
-| [consumers/cline-setup.md](consumers/cline-setup.md) | Cline setup for consuming nova skills. |
-| [consumers/aider-setup.md](consumers/aider-setup.md) | Aider setup for consuming nova skills. |
-| [consumers/openhands-setup.md](consumers/openhands-setup.md) | OpenHands setup for consuming nova skills. |
-| [consumers/gemini-cli-setup.md](consumers/gemini-cli-setup.md) | Gemini CLI setup for consuming nova workflows. |
-| [consumers/opencode-setup.md](consumers/opencode-setup.md) | OpenCode intent-to-skill routing notes. |
-| [consumers/copilot-setup.md](consumers/copilot-setup.md) | GitHub Copilot instruction mapping. |
-| [consumers/codex-setup.md](consumers/codex-setup.md) | Codex setup and Codex loop prerequisites. |
+| [consumers/README.md](guides/assistants/README.md) | Local index for consumer profile templates and public/private boundaries. |
+| [consumers/profile-contract.md](templates/consumer-profiles/contract.md) | Required fields for public-safe consumer profiles. |
+| [consumers/private-java-backend-template.md](templates/consumer-profiles/java-backend.md) | Redacted Java/Spring backend profile template. |
+| [consumers/frontend-project-template.md](templates/consumer-profiles/frontend.md) | Redacted frontend project profile template. |
+| [consumers/workbench-template.md](templates/consumer-profiles/workbench.md) | Private workbench structure for requirements, plans, reviews, prompts, and handoffs. |
+| [consumers/cursor-setup.md](guides/assistants/cursor.md) | Cursor setup for consuming nova skills. |
+| [consumers/cline-setup.md](guides/assistants/cline.md) | Cline setup for consuming nova skills. |
+| [consumers/aider-setup.md](guides/assistants/aider.md) | Aider setup for consuming nova skills. |
+| [consumers/openhands-setup.md](guides/assistants/openhands.md) | OpenHands setup for consuming nova skills. |
+| [consumers/gemini-cli-setup.md](guides/assistants/gemini-cli.md) | Gemini CLI setup for consuming nova workflows. |
+| [consumers/opencode-setup.md](guides/assistants/opencode.md) | OpenCode intent-to-skill routing notes. |
+| [consumers/copilot-setup.md](guides/assistants/copilot.md) | GitHub Copilot instruction mapping. |
+| [consumers/codex-setup.md](guides/assistants/codex.md) | Codex setup and Codex loop prerequisites. |
 
 ### Examples
 
 | Document | Purpose |
 | --- | --- |
-| [examples/README.md](examples/README.md) | Local index for public-safe examples. |
-| [examples/workflow-evaluation.md](examples/workflow-evaluation.md) | Five-stage workflow evaluation examples, fixture validation command, and rubric. |
-| [examples/workflow-evaluation-record-template.md](examples/workflow-evaluation-record-template.md) | Manual evidence record template for workflow-quality checks. |
-| [examples/java-backend/redacted-feature.md](examples/java-backend/redacted-feature.md) | Generic Java/Spring workflow example. |
-| [examples/frontend/basic-feature.md](examples/frontend/basic-feature.md) | Generic frontend workflow example. |
+| [examples/README.md](tutorials/README.md) | Local index for public-safe examples. |
+| [examples/workflow-evaluation.md](tutorials/workflow-evaluation.md) | Five-stage workflow evaluation examples, fixture validation command, and rubric. |
+| [examples/workflow-evaluation-record-template.md](templates/evidence/workflow-evaluation.md) | Manual evidence record template for workflow-quality checks. |
+| [templates/evidence/adoption-record.md](templates/evidence/adoption-record.md) | Consented, redacted, digest-bound external adoption record template. |
+| [examples/java-backend/redacted-feature.md](tutorials/java-backend.md) | Generic Java/Spring workflow example. |
+| [examples/frontend/basic-feature.md](tutorials/frontend.md) | Generic frontend workflow example. |
 
 ### Growth
 
 | Document | Purpose |
 | --- | --- |
-| [growth/README.md](growth/README.md) | Stars, forks, issues, PRs, releases, traffic metrics, collection cadence, and manual channel record. |
+| [growth/README.md](operations/community/metrics.md) | Stars, forks, issues, PRs, releases, traffic metrics, collection cadence, and manual channel record. |
 
 ### Generated
 
@@ -162,99 +166,99 @@ docs/
 
 | Document | Purpose |
 | --- | --- |
-| [compatibility/public-api.md](compatibility/public-api.md) | Stable commands, plugin identifiers, validation CLIs, generated file contracts, and breaking-change triggers. |
-| [compatibility/assistant-levels.md](compatibility/assistant-levels.md) | Evidence definitions for parseable, invocable, enforced, and verified assistant adapters. |
-| [compatibility/contract-semver.md](compatibility/contract-semver.md) | Independent Workflow IR, runtime contract, and adapter contract SemVer ranges and 4.x alias migration policy. |
-| [framework/README.md](framework/README.md) | Framework/compiler evidence, protocol sources, and llmf preview contract. |
-| [framework/second-product.md](framework/second-product.md) | Product-neutral specification, adapter, validation, build, and static eval guide. |
-| [migrations/contract-v6.md](migrations/contract-v6.md) | Deterministic v5 to v6 migration and retained-alias decision. |
+| [compatibility/public-api.md](reference/compatibility/public-api.md) | Stable commands, plugin identifiers, validation CLIs, generated file contracts, and breaking-change triggers. |
+| [compatibility/assistant-levels.md](reference/compatibility/assistant-levels.md) | Evidence definitions for parseable, invocable, enforced, and verified assistant adapters. |
+| [compatibility/contract-semver.md](reference/compatibility/contract-semver.md) | Independent Workflow IR, runtime contract, and adapter contract SemVer ranges and 4.x alias migration policy. |
+| [framework/README.md](reference/architecture/framework.md) | Framework/compiler evidence, protocol sources, and llmf preview contract. |
+| [framework/second-product.md](guides/framework/second-product.md) | Product-neutral specification, adapter, validation, build, and static eval guide. |
+| [migrations/contract-v6.md](project/migrations/contract-v6.md) | Deterministic v5 to v6 migration and retained-alias decision. |
 
 ### Maintainers
 
 | Document | Purpose |
 | --- | --- |
-| [maintainers/quickstart.md](maintainers/quickstart.md) | Maintainer change paths, default checks, timing evidence, and install smoke boundary. |
-| [maintainers/validation-index.md](maintainers/validation-index.md) | Maintainer validation command, CI check, and change-routing inventory. |
-| [maintainers/troubleshooting.md](maintainers/troubleshooting.md) | Common local validation, Bash, Claude CLI, hooks, audit log, and registry drift troubleshooting. |
+| [maintainers/quickstart.md](operations/maintainers/README.md) | Maintainer change paths, default checks, timing evidence, and install smoke boundary. |
+| [maintainers/validation-index.md](operations/maintainers/validation.md) | Maintainer validation command, CI check, and change-routing inventory. |
+| [maintainers/troubleshooting.md](operations/maintainers/troubleshooting.md) | Common local validation, Bash, Claude CLI, hooks, audit log, and registry drift troubleshooting. |
 | [operations/maintainers/diagnostics.md](operations/maintainers/diagnostics.md) | Generated diagnostic reason codes, status semantics, and remediation links. |
-| [maintainers/github-security-settings.md](maintainers/github-security-settings.md) | Branch protection, ruleset, CodeQL, secret scanning, Dependabot, and required-check guidance. |
-| [maintainers/post-remediation-audit.md](maintainers/post-remediation-audit.md) | Current execution plan, post-remediation audit, evidence boundaries, residual risks, and phased ROI roadmap. |
-| [maintainers/comprehensive-audit-remediation-plan.md](maintainers/comprehensive-audit-remediation-plan.md) | Complete remediation plan for the current 13-dimension audit, release hold enforcement, external evidence gates, API hardening, and final acceptance. |
-| [maintainers/deep-research-remediation-and-documentation-redesign-plan.md](maintainers/deep-research-remediation-and-documentation-redesign-plan.md) | Proposed report-wide remediation plan and separate full documentation information-architecture redesign. |
+| [maintainers/github-security-settings.md](operations/maintainers/github-security.md) | Branch protection, ruleset, CodeQL, secret scanning, Dependabot, and required-check guidance. |
+| [maintainers/post-remediation-audit.md](project/plans/current-remediation.md) | Current execution plan, post-remediation audit, evidence boundaries, residual risks, and phased ROI roadmap. |
+| [maintainers/comprehensive-audit-remediation-plan.md](project/plans/current-remediation.md) | Complete remediation plan for the current 13-dimension audit, release hold enforcement, external evidence gates, API hardening, and final acceptance. |
+| [maintainers/deep-research-remediation-and-documentation-redesign-plan.md](project/plans/current-remediation.md) | Proposed report-wide remediation plan and separate full documentation information-architecture redesign. |
 
 ### Marketplace
 
 | Document | Purpose |
 | --- | --- |
 | [marketplace/catalog.md](marketplace/catalog.md) | Generated human-readable marketplace catalog. |
-| [marketplace/registry-author-workflow.md](marketplace/registry-author-workflow.md) | Author workflow for registry and marketplace entry maintenance. |
-| [marketplace/compatibility-matrix.md](marketplace/compatibility-matrix.md) | Compatibility matrix for Claude Code, Codex CLI, Bash, Node.js, and optional tools. |
-| [migrations/2.4.1-command-namespace.md](migrations/2.4.1-command-namespace.md) | 2.4.1 namespaced invocation and 42-item dual-surface migration. |
-| [migrations/3.0.0-adapters-and-direct-commands.md](migrations/3.0.0-adapters-and-direct-commands.md) | Node.js 22, direct command adapters, canonical workflow generation, and compatibility alias migration. |
-| [marketplace/trust-policy.md](marketplace/trust-policy.md) | Trust, risk, deprecation, freshness, maintainer, and review metadata policy. |
-| [marketplace/security-review-route.md](marketplace/security-review-route.md) | Security-sensitive marketplace change review route. |
-| [marketplace/portal-information-architecture.md](marketplace/portal-information-architecture.md) | Deferred public portal information architecture. |
-| [marketplace/multi-plugin-readiness.md](marketplace/multi-plugin-readiness.md) | Version-independent evidence ledger for production multi-plugin activation. |
+| [marketplace/registry-author-workflow.md](operations/marketplace/registry-authoring.md) | Author workflow for registry and marketplace entry maintenance. |
+| [marketplace/compatibility-matrix.md](reference/compatibility/marketplace.md) | Compatibility matrix for Claude Code, Codex CLI, Bash, Node.js, and optional tools. |
+| [migrations/2.4.1-command-namespace.md](project/migrations/2.4.1-command-namespace.md) | 2.4.1 namespaced invocation and 42-item dual-surface migration. |
+| [migrations/3.0.0-adapters-and-direct-commands.md](project/migrations/3.0.0-adapters-and-direct-commands.md) | Node.js 22, direct command adapters, canonical workflow generation, and compatibility alias migration. |
+| [marketplace/trust-policy.md](reference/security/marketplace-trust.md) | Trust, risk, deprecation, freshness, maintainer, and review metadata policy. |
+| [marketplace/security-review-route.md](reference/security/security-review.md) | Security-sensitive marketplace change review route. |
+| [marketplace/portal-information-architecture.md](project/plans/portal-information-architecture.md) | Deferred public portal information architecture. |
+| [marketplace/multi-plugin-readiness.md](project/plans/multi-plugin-readiness.md) | Version-independent evidence ledger for production multi-plugin activation. |
 
 ### Privacy
 
 | Document | Purpose |
 | --- | --- |
-| [privacy/data-handling.md](privacy/data-handling.md) | Local audit log behavior, best-effort redaction boundary, disable switch, and public data handling rules. |
+| [privacy/data-handling.md](reference/security/data-handling.md) | Local audit log behavior, best-effort redaction boundary, disable switch, and public data handling rules. |
 
 ### Prompts
 
 | Document | Purpose |
 | --- | --- |
-| [prompts/README.md](prompts/README.md) | Local index and rules for public-safe prompt templates. |
-| [prompts/codex/context-safe-review.md](prompts/codex/context-safe-review.md) | Codex review prompt for bounded branch or working-tree review. |
-| [prompts/codex/final-verification.md](prompts/codex/final-verification.md) | Codex verification prompt after fixes exist. |
-| [prompts/claude-code/fix-from-review.md](prompts/claude-code/fix-from-review.md) | Claude Code prompt for fixing confirmed review findings. |
-| [prompts/claude-code/subagent-execution.md](prompts/claude-code/subagent-execution.md) | Subagent execution prompt for parallelizable work. |
-| [prompts/claude-code/serial-checkpoint.md](prompts/claude-code/serial-checkpoint.md) | Serial checkpoint prompt when subagents are unavailable or unsuitable. |
-| [prompts/common/checkpoint-artifact.md](prompts/common/checkpoint-artifact.md) | Prompt for writing resumable private workbench checkpoint artifacts. |
-| [prompts/common/delivery-docs.md](prompts/common/delivery-docs.md) | Prompt for API, test, implementation, deployment, and handoff docs. |
-| [prompts/common/html-artifact.md](prompts/common/html-artifact.md) | Prompt for optional HTML reading artifacts. |
-| [prompts/common/skill-harness-audit.md](prompts/common/skill-harness-audit.md) | Prompt for deciding whether a workflow belongs in a script, skill, prompt, pack, or profile. |
-| [prompts/common/workbench-tidy.md](prompts/common/workbench-tidy.md) | Prompt for organizing private workbench artifacts. |
+| [prompts/README.md](templates/prompts/README.md) | Local index and rules for public-safe prompt templates. |
+| [prompts/codex/context-safe-review.md](templates/prompts/codex/context-safe-review.md) | Codex review prompt for bounded branch or working-tree review. |
+| [prompts/codex/final-verification.md](templates/prompts/codex/final-verification.md) | Codex verification prompt after fixes exist. |
+| [prompts/claude-code/fix-from-review.md](templates/prompts/claude-code/fix-from-review.md) | Claude Code prompt for fixing confirmed review findings. |
+| [prompts/claude-code/subagent-execution.md](templates/prompts/claude-code/subagent-execution.md) | Subagent execution prompt for parallelizable work. |
+| [prompts/claude-code/serial-checkpoint.md](templates/prompts/claude-code/serial-checkpoint.md) | Serial checkpoint prompt when subagents are unavailable or unsuitable. |
+| [prompts/common/checkpoint-artifact.md](templates/prompts/common/checkpoint-artifact.md) | Prompt for writing resumable private workbench checkpoint artifacts. |
+| [prompts/common/delivery-docs.md](templates/prompts/common/delivery-docs.md) | Prompt for API, test, implementation, deployment, and handoff docs. |
+| [prompts/common/html-artifact.md](templates/prompts/common/html-artifact.md) | Prompt for optional HTML reading artifacts. |
+| [prompts/common/skill-harness-audit.md](templates/prompts/common/skill-harness-audit.md) | Prompt for deciding whether a workflow belongs in a script, skill, prompt, pack, or profile. |
+| [prompts/common/workbench-tidy.md](templates/prompts/common/workbench-tidy.md) | Prompt for organizing private workbench artifacts. |
 
 ### Releases
 
 | Document | Purpose |
 | --- | --- |
-| [releases/release-evidence-template.md](releases/release-evidence-template.md) | Release or promotion evidence template. |
-| [releases/release-validation-runbook.md](releases/release-validation-runbook.md) | Manual runbook for exact tag, isolated install smoke, workflow evaluation, and promotion decisions. |
-| [releases/3.0.0-notes.md](releases/3.0.0-notes.md) | Prepared release notes and transparent v2.4.1 tag-history disclosure. |
-| [releases/3.0.1-notes.md](releases/3.0.1-notes.md) | Immutable recovery release for the exact SBOM attestation path contract. |
-| [releases/operator-recovery-and-key-rotation.md](releases/operator-recovery-and-key-rotation.md) | Independent candidate review, signing-key rotation, recovery drill, label sync, and adoption-evidence boundaries. |
-| [examples/primary-workflow-transcript.md](examples/primary-workflow-transcript.md) | Exact canonical-input transcript and before/after shape for route plus the five primary workflow stages. |
-| [releases/3.0.0-audit-closure.md](releases/3.0.0-audit-closure.md) | Audit finding closure matrix, intentional hook exception, and remaining external publication gates. |
-| [releases/release-hygiene.md](releases/release-hygiene.md) | Version, tag, generated artifact, and pre-release hygiene rules. |
+| [releases/release-evidence-template.md](templates/evidence/release.md) | Release or promotion evidence template. |
+| [releases/release-validation-runbook.md](operations/releases/validation.md) | Manual runbook for exact tag, isolated install smoke, workflow evaluation, and promotion decisions. |
+| [releases/3.0.0-notes.md](project/release-notes/3.0.0.md) | Prepared release notes and transparent v2.4.1 tag-history disclosure. |
+| [releases/3.0.1-notes.md](project/release-notes/3.0.1.md) | Immutable recovery release for the exact SBOM attestation path contract. |
+| [releases/operator-recovery-and-key-rotation.md](operations/releases/recovery-and-key-rotation.md) | Independent candidate review, signing-key rotation, recovery drill, label sync, and adoption-evidence boundaries. |
+| [examples/primary-workflow-transcript.md](tutorials/first-workflow-transcript.md) | Exact canonical-input transcript and before/after shape for route plus the five primary workflow stages. |
+| [releases/3.0.0-audit-closure.md](project/release-notes/3.0.0.md) | Audit finding closure matrix, intentional hook exception, and remaining external publication gates. |
+| [releases/release-hygiene.md](operations/releases/hygiene.md) | Version, tag, generated artifact, and pre-release hygiene rules. |
 
 ### Showcase
 
 | Document | Purpose |
 | --- | --- |
-| [showcase/README.md](showcase/README.md) | Local index for scenario-based workflow examples. |
-| [showcase/java-backend.md](showcase/java-backend.md) | Java backend workflow showcase with validation and private context boundary. |
-| [showcase/frontend.md](showcase/frontend.md) | Frontend workflow showcase with UI state, accessibility, and screenshot validation boundaries. |
-| [showcase/release-and-docs.md](showcase/release-and-docs.md) | Release and docs workflow showcase with version, generated-file, and validation evidence boundaries. |
+| [showcase/README.md](tutorials/README.md) | Local index for scenario-based workflow examples. |
+| [showcase/java-backend.md](tutorials/java-backend.md) | Java backend workflow showcase with validation and private context boundary. |
+| [showcase/frontend.md](tutorials/frontend.md) | Frontend workflow showcase with UI state, accessibility, and screenshot validation boundaries. |
+| [showcase/release-and-docs.md](tutorials/release-and-docs.md) | Release and docs workflow showcase with version, generated-file, and validation evidence boundaries. |
 
 ### Workflows And Project State
 
 | Document | Purpose |
 | --- | --- |
-| [workflows/context-safe-agent-workflows.md](workflows/context-safe-agent-workflows.md) | Large-task, review, fix, delivery, and checkpoint workflows. |
-| [workflows/gsd-informed-hardening.md](workflows/gsd-informed-hardening.md) | Maintenance note for the GSD-informed routing, checkpoint, evidence, budget, and distribution-risk hardening. |
-| [workflows/routing-validation-guardrails.md](workflows/routing-validation-guardrails.md) | Guardrails for first-stage routing, checkpoint evidence, surface budgets, and distribution-risk scanning. |
-| [workflows/source-controlled-checks.md](workflows/source-controlled-checks.md) | Design note for source-controlled workflow checks and fixture validation boundaries. |
-| [workflows/verification-evidence-contract.md](workflows/verification-evidence-contract.md) | Standards for mapping checks, checkpoints, and handoffs to verified behavior or facts. |
-| [workflows/thin-harness-fat-skills.md](workflows/thin-harness-fat-skills.md) | Placement doctrine for scripts, skills, prompts, packs, and profiles. |
+| [workflows/context-safe-agent-workflows.md](guides/workflows/context-safe.md) | Large-task, review, fix, delivery, and checkpoint workflows. |
+| [workflows/gsd-informed-hardening.md](guides/workflows/hardening.md) | Maintenance note for the GSD-informed routing, checkpoint, evidence, budget, and distribution-risk hardening. |
+| [workflows/routing-validation-guardrails.md](reference/workflows/routing-guardrails.md) | Guardrails for first-stage routing, checkpoint evidence, surface budgets, and distribution-risk scanning. |
+| [workflows/source-controlled-checks.md](guides/workflows/source-controlled-checks.md) | Design note for source-controlled workflow checks and fixture validation boundaries. |
+| [workflows/verification-evidence-contract.md](reference/workflows/verification-evidence.md) | Standards for mapping checks, checkpoints, and handoffs to verified behavior or facts. |
+| [workflows/thin-harness-fat-skills.md](reference/architecture/skill-first-projection.md) | Placement doctrine for scripts, skills, prompts, packs, and profiles. |
 | [reference/architecture/control-plane.md](reference/architecture/control-plane.md) | One-page map of plugin runtime, maintainer control plane, generated projections, and external evidence. |
-| [getting-started.md](getting-started.md) | Install, `/nova-plugin:route`, five primary commands, Codex prerequisites, and common failure handling. |
+| [getting-started.md](getting-started/first-workflow.md) | Install, `/nova-plugin:route`, five primary commands, Codex prerequisites, and common failure handling. |
 | [project/plans/deep-research-engineering-risk-execution-plan.md](project/plans/deep-research-engineering-risk-execution-plan.md) | Locally implemented report-wide engineering-risk plan; external CI, performance-history, and credentialed evidence gates remain active. |
-| [project-optimization-plan.md](project-optimization-plan.md) | Active optimization plan for positioning, reliability, usability, maintenance, and release readiness. |
-| [llm-plugins-fusion-maintenance-status.md](llm-plugins-fusion-maintenance-status.md) | Context-safe maintenance snapshot for small-step optimization rounds. |
+| [project-optimization-plan.md](project/plans/current-remediation.md) | Active optimization plan for positioning, reliability, usability, maintenance, and release readiness. |
+| [llm-plugins-fusion-maintenance-status.md](operations/maintainers/status.md) | Context-safe maintenance snapshot for small-step optimization rounds. |
 
 ## Maintenance Rules
 

@@ -38,6 +38,26 @@
         "standard",
         "strict"
       ]
+    },
+    {
+      "name": "MODE",
+      "type": "enum",
+      "required": false,
+      "values": [
+        "full",
+        "findings-only"
+      ]
+    },
+    {
+      "name": "REVIEW_PROFILE",
+      "type": "enum",
+      "required": false,
+      "values": [
+        "general",
+        "plan",
+        "codex-review-only",
+        "codex-verify-only"
+      ]
     }
   ],
   "effects": [
@@ -92,7 +112,7 @@
     "source": "workflow-specs/behaviors.v2.json",
     "guidanceReference": "../../skills/nova-review/SKILL.md",
     "conflictPolicy": "fail-closed",
-    "purpose": "Route code or design review to the requested depth and emit evidence-grounded findings without implementation.",
+    "purpose": "Perform evidence-grounded code or design review at the requested depth and output mode without implementation.",
     "inputs": [
       {
         "name": "REVIEW_SCOPE",
@@ -116,35 +136,171 @@
           "standard",
           "strict"
         ]
+      },
+      {
+        "name": "MODE",
+        "required": false,
+        "aliases": [],
+        "description": "Review output mode.",
+        "default": "full",
+        "exactValues": [
+          "full",
+          "findings-only"
+        ]
+      },
+      {
+        "name": "REVIEW_PROFILE",
+        "required": false,
+        "aliases": [],
+        "description": "Canonical general review or retained compatibility review profile.",
+        "default": "general",
+        "exactValues": [
+          "general",
+          "plan",
+          "codex-review-only",
+          "codex-verify-only"
+        ]
       }
     ],
     "decisionTable": [
       {
         "when": {
           "op": "input-equals",
-          "input": "LEVEL",
-          "value": "lite"
+          "input": "REVIEW_PROFILE",
+          "value": "plan"
         },
-        "action": "Use concise high-signal review.",
-        "route": "review-lite"
+        "action": "Use plan decision-clarity and execution-risk review behavior.",
+        "route": "review",
+        "variantParameters": {
+          "REVIEW_PROFILE": "plan"
+        }
       },
       {
         "when": {
           "op": "input-equals",
-          "input": "LEVEL",
-          "value": "standard"
+          "input": "REVIEW_PROFILE",
+          "value": "codex-review-only"
         },
-        "action": "Use normal severity-grouped review.",
-        "route": "review-only"
+        "action": "Use the retained read-only external Codex review profile after its explicit runtime approvals.",
+        "route": "review",
+        "variantParameters": {
+          "REVIEW_PROFILE": "codex-review-only"
+        }
       },
       {
         "when": {
           "op": "input-equals",
-          "input": "LEVEL",
-          "value": "strict"
+          "input": "REVIEW_PROFILE",
+          "value": "codex-verify-only"
         },
-        "action": "Use exhaustive failure-cost-aware review.",
-        "route": "review-strict"
+        "action": "Use the retained read-only external Codex verification profile after its explicit runtime approvals.",
+        "route": "review",
+        "variantParameters": {
+          "REVIEW_PROFILE": "codex-verify-only"
+        }
+      },
+      {
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-equals",
+              "input": "REVIEW_PROFILE",
+              "value": "general"
+            },
+            {
+              "op": "input-equals",
+              "input": "MODE",
+              "value": "findings-only"
+            }
+          ]
+        },
+        "action": "Stop after prioritized findings at the resolved review depth.",
+        "route": "review",
+        "variantParameters": {
+          "MODE": "findings-only"
+        }
+      },
+      {
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-equals",
+              "input": "REVIEW_PROFILE",
+              "value": "general"
+            },
+            {
+              "op": "input-equals",
+              "input": "MODE",
+              "value": "full"
+            },
+            {
+              "op": "input-equals",
+              "input": "LEVEL",
+              "value": "lite"
+            }
+          ]
+        },
+        "action": "Use concise high-signal full review.",
+        "route": "review",
+        "variantParameters": {
+          "LEVEL": "lite"
+        }
+      },
+      {
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-equals",
+              "input": "REVIEW_PROFILE",
+              "value": "general"
+            },
+            {
+              "op": "input-equals",
+              "input": "MODE",
+              "value": "full"
+            },
+            {
+              "op": "input-equals",
+              "input": "LEVEL",
+              "value": "standard"
+            }
+          ]
+        },
+        "action": "Use normal severity-grouped full review.",
+        "route": "review",
+        "variantParameters": {
+          "LEVEL": "standard"
+        }
+      },
+      {
+        "when": {
+          "op": "all",
+          "args": [
+            {
+              "op": "input-equals",
+              "input": "REVIEW_PROFILE",
+              "value": "general"
+            },
+            {
+              "op": "input-equals",
+              "input": "MODE",
+              "value": "full"
+            },
+            {
+              "op": "input-equals",
+              "input": "LEVEL",
+              "value": "strict"
+            }
+          ]
+        },
+        "action": "Use exhaustive failure-cost-aware full review.",
+        "route": "review",
+        "variantParameters": {
+          "LEVEL": "strict"
+        }
       }
     ],
     "invariants": [
@@ -155,16 +311,18 @@
     "stopConditions": [
       "REVIEW_SCOPE is unresolved.",
       "LEVEL is not an exact allowed value.",
+      "MODE is not an exact allowed value.",
+      "REVIEW_PROFILE is not an exact allowed value.",
       "The request requires implementation rather than review."
     ],
     "workflowSteps": [
       {
         "id": "resolve-scope",
-        "action": "Resolve review scope and exact level."
+        "action": "Resolve review scope, exact level, exact mode, and exact review profile."
       },
       {
         "id": "route",
-        "action": "Select the matching review workflow."
+        "action": "Apply the matching canonical review parameters."
       },
       {
         "id": "inspect",
@@ -210,7 +368,7 @@
       ]
     },
     "validation": [
-      "Confirm the selected route matches LEVEL.",
+      "Confirm the canonical review parameters match LEVEL, MODE, and REVIEW_PROFILE.",
       "Confirm findings are grounded in reviewed evidence.",
       "Confirm no implementation patch or release decision appears."
     ],

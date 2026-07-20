@@ -7,7 +7,7 @@ import { repoRoot } from './lib/repo-root.mjs';
 import { validationEvidenceDigests } from './lib/validation-performance-profile.mjs';
 
 const root = repoRoot(import.meta.url);
-const policy = JSON.parse(readFileSync(resolve(root, 'governance/validation-performance.json'), 'utf8'));
+const policy = JSON.parse(readFileSync(resolve(root, 'governance/engineering-evidence.json'), 'utf8')).validationPerformance;
 
 export function validatePerformanceReport(report, performancePolicy = policy, { requireProfile = null, currentDigests = validationEvidenceDigests(root) } = {}) {
   if (report?.command !== 'validate-all') throw new Error('performance evidence must be a validate-all diagnostics report');

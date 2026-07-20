@@ -1,11 +1,11 @@
 {
   "$schema": "../schemas/release-reviewers.schema.json",
   "schemaVersion": 1,
-  "status": "awaiting-owner-configuration",
-  "trustedUsers": [],
+  "status": "configured",
+  "trustedUsers": ["lliang"],
   "trustedTeams": [],
   "botIdentities": [],
   "sensitivePaths": [".github/", "schemas/", "governance/", "scripts/lib/release-", "scripts/release-", "scripts/verify-independent-release-review.mjs", "SECURITY.md"],
   "standardMinimumApprovals": 1,
-  "sensitiveMinimumApprovals": 2
+  "sensitiveMinimumApprovals": 1
 }

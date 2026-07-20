@@ -42,7 +42,11 @@ the non-Claude behavior needs to change.
 | Plugin metadata and version | `nova-plugin/.claude-plugin/plugin.json` |
 | Registry-owned marketplace fields | `.claude-plugin/registry.source.json` |
 | Generated marketplace outputs | `.claude-plugin/marketplace.json`, `.claude-plugin/marketplace.metadata.json`, `docs/marketplace/catalog.md` |
-| Commands and skills | `nova-plugin/commands/`, `nova-plugin/skills/` |
+| Workflow behavior authoring | `workflow-specs/workflows.json`, `workflow-specs/behaviors.json` |
+| Product, adapter, and command-doc metadata | `workflow-specs/framework.json`, `workflow-specs/nova.product.json`, `workflow-specs/adapters/`, `governance/workflow-docs.json` |
+| Generated typed workflow projections | `workflow-specs/workflows.v6.json`, `workflow-specs/behaviors.v2.json` |
+| Generated commands and Skill contract blocks | `nova-plugin/commands/`, generated frontmatter and behavior blocks in `nova-plugin/skills/` |
+| Canonical Skill explanatory prose | `nova-plugin/skills/nova-*/SKILL.md` outside generated blocks |
 | Active agents and packs | `nova-plugin/agents/`, `nova-plugin/packs/` |
 | Repository docs index | `docs/README.md` |
 | Plugin docs index | `nova-plugin/docs/README.md` |
@@ -76,13 +80,20 @@ node scripts/generate-registry.mjs --write
 - Do not hand-edit generated marketplace outputs. Edit
   `.claude-plugin/registry.source.json` or
   `nova-plugin/.claude-plugin/plugin.json`, then run the generator.
+- Do not hand-edit `workflow-specs/workflows.v6.json`,
+  `workflow-specs/behaviors.v2.json`, generated command wrappers, generated
+  Skill frontmatter, or generated Skill behavior blocks. Edit the v5/v1
+  workflow sources and owned metadata, run
+  `node scripts/migrate-v6-contracts.mjs --write`, then run the documented
+  projection generators.
 - Preserve the skill-first projection: six canonical skills own behavior and
   all 21 command files are generated wrappers. Fifteen compatibility aliases
   carry only a canonical skill id and variant preset:
 
 ```text
-workflow-specs/workflows.json
-  -> nova-plugin/skills/nova-<canonical-surface>/SKILL.md
+workflow-specs/workflows.json + workflow-specs/behaviors.json
+  -> workflow-specs/workflows.v6.json + workflow-specs/behaviors.v2.json
+  -> nova-plugin/skills/nova-<canonical-surface>/SKILL.md generated block
   -> nova-plugin/commands/<id>.md
 ```
 
@@ -128,6 +139,11 @@ npm run test:e2e
 npm run lint
 npm run ci:quick
 npm run ci:full
+npm run llmf -- check quick
+npm run llmf -- check full
+npm run llmf -- check security
+npm run llmf -- check release
+npm run llmf -- generate all
 npm run validate
 npm run validate:drift
 npm run validate:maintainer

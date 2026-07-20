@@ -18,7 +18,9 @@ function renderBehavior(behavior) {
     const exact = input.exactValues ? ` exact=${input.exactValues.map((value) => JSON.stringify(value)).join(',')}` : '';
     return `\`${input.name}\`(${input.required ? 'required' : 'optional'}${aliases}${fallback}${exact})`;
   }).join('; ');
-  const routes = [...new Set(behavior.decisionTable.map((entry) => entry.route).filter(Boolean))];
+  const routes = [...new Set(behavior.decisionTable
+    .filter((entry) => entry.route)
+    .map((entry) => `${entry.route} ${JSON.stringify(entry.variantParameters)}`))];
   const lines = [
     start,
     '> Generated from `workflow-specs/behaviors.v2.json`. This block is authoritative. Run `node scripts/generate-behavior-surfaces.mjs --write` after changing the IR; if explanatory text below conflicts, fail closed.',
@@ -27,7 +29,7 @@ function renderBehavior(behavior) {
     '',
     `- **Purpose:** ${behavior.purpose}`,
     `- **Canonical inputs:** ${inputSummary}`,
-    `- **Decision entries:** ${behavior.decisionTable.length}${routes.length ? `; exact routes: ${routes.map((route) => `\`${route}\``).join(', ')}` : ''}.`,
+    `- **Decision entries:** ${behavior.decisionTable.length}${routes.length ? `; canonical routes and variants: ${routes.map((route) => `\`${route}\``).join(', ')}` : ''}.`,
     `- **Workflow steps:** ${behavior.workflowSteps.map((entry) => `\`${entry.id}\``).join(' → ')}`,
     `- **Output:** mode=\`${behavior.output.mode}\`; order=${behavior.output.order.map((field) => `\`${field}\``).join(' → ')}; severity=${behavior.output.severityLevels.length ? behavior.output.severityLevels.map((value) => `\`${value}\``).join(', ') : 'none'}.`,
     `- **Deviation/failure:** mode=\`${behavior.deviationPolicy.mode}\`; failure order=${behavior.failureOutput.order.map((field) => `\`${field}\``).join(' → ')}.`,

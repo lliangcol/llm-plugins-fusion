@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "source": {
     "pluginName": "nova-plugin",
-    "pluginVersion": "4.0.0",
+    "pluginVersion": "4.1.0",
     "registrySource": ".claude-plugin/registry.source.json",
     "registryPluginCount": 1
   },
@@ -235,7 +235,8 @@
       "canonicalSkill": "nova-review",
       "compatibilityAlias": true,
       "variantPreset": {
-        "LEVEL": "standard"
+        "LEVEL": "standard",
+        "MODE": "findings-only"
       },
       "runtimeDelegation": false,
       "path": "nova-plugin/commands/review-only.md"
@@ -472,7 +473,7 @@
       "generated": true,
       "pluginCount": 1,
       "pluginVersions": [
-        "nova-plugin@4.0.0"
+        "nova-plugin@4.1.0"
       ]
     },
     {

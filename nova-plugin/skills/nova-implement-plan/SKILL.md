@@ -39,7 +39,7 @@ This file is the supporting behavioral contract for `/nova-plugin:implement-plan
 ### Generated Behavior Index
 
 - **Purpose:** Execute an explicitly approved plan step by step with traceability and minimal deviation.
-- **Canonical inputs:** `PLAN_INPUT_PATH`(required aliases=PLAN_PATH); `PLAN_APPROVED`(required aliases=APPROVED exact=true,"true")
+- **Canonical inputs:** `PLAN_INPUT_PATH`(required aliases=PLAN_PATH); `PLAN_APPROVED`(required aliases=APPROVED exact=true,"true"); `EXECUTION_PROFILE`(optional default="standard" exact="lite","standard","codex-review-fix")
 - **Decision entries:** 2.
 - **Workflow steps:** `validate-approval` → `load-plan` → `execute` → `verify` → `trace`
 - **Output:** mode=`workspace-and-chat`; order=`plan-step trace` → `validation` → `deviations`; severity=none.

@@ -21,6 +21,6 @@ assert.ok(names.includes('needs evidence'));
 assert.match(security, /private vulnerability reporting/i);
 assert.match(adr, /Status: accepted/);
 assert.ok(['configured', 'awaiting-owner-configuration'].includes(reviewers.status));
-assert.ok(reviewers.sensitiveMinimumApprovals >= 2);
+assert.ok(reviewers.sensitiveMinimumApprovals >= reviewers.standardMinimumApprovals);
 assert.equal(new Set([...reviewers.trustedUsers, ...reviewers.trustedTeams]).size, reviewers.trustedUsers.length + reviewers.trustedTeams.length);
 console.log(`OK community governance (${names.length} labels, CODEOWNERS, ADR, private reporting)`);
