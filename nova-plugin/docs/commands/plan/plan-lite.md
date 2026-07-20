@@ -23,11 +23,11 @@
 
 ### Required
 
-- 无
+- `ARGUMENTS`: 需求或上下文描述。示例: `目标与约束说明`
 
 ### Optional
 
-- `ARGUMENTS`: 需求或上下文描述。示例: `目标与约束说明`
+- 无
 
 ## 行为准则（Do/Don't）
 

@@ -17,6 +17,75 @@ const runtimeNeedStates = new Set(['none', 'optional', 'required']);
 const capabilityGrantStates = new Set(['prompt', 'preapproved', 'explicit']);
 const credentialSources = new Set(['none', 'assistant-owned-authentication', 'consumer-owned-authentication']);
 const versionEvidenceStates = new Set(['none', 'versioned-evidence']);
+export const RUNTIME_EXECUTABLE_NAME_PATTERN_SOURCE = String.raw`^[A-Za-z0-9][A-Za-z0-9._+-]*$`;
+export const RUNTIME_NETWORK_PURPOSE_PATTERN_SOURCE = String.raw`^(?=.*\S)[^\u0000-\u001F\u007F-\u009F\u2028\u2029]+$`;
+const executableNamePattern = new RegExp(RUNTIME_EXECUTABLE_NAME_PATTERN_SOURCE, 'u');
+const networkPurposePattern = new RegExp(RUNTIME_NETWORK_PURPOSE_PATTERN_SOURCE, 'u');
+
+function hasExactOwnDataKeys(value, expectedKeys) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  const ownKeys = Reflect.ownKeys(value);
+  if (ownKeys.length !== expectedKeys.length || ownKeys.some((key) => typeof key !== 'string' || !expectedKeys.includes(key))) return false;
+  return expectedKeys.every((key) => {
+    const descriptor = Object.getOwnPropertyDescriptor(value, key);
+    return descriptor?.enumerable === true && Object.hasOwn(descriptor, 'value');
+  });
+}
+
+function isDenseDataArray(value) {
+  if (!Array.isArray(value)) return false;
+  const ownKeys = Reflect.ownKeys(value);
+  if (ownKeys.length !== value.length + 1 || !Object.hasOwn(value, 'length')) return false;
+  for (let index = 0; index < value.length; index += 1) {
+    const descriptor = Object.getOwnPropertyDescriptor(value, String(index));
+    if (descriptor?.enumerable !== true || !Object.hasOwn(descriptor, 'value')) return false;
+  }
+  return ownKeys.every((key) => key === 'length'
+    || (typeof key === 'string' && /^(?:0|[1-9][0-9]*)$/u.test(key) && Number(key) < value.length));
+}
+
+export function isCapabilityGrantState(value) {
+  return capabilityGrantStates.has(value);
+}
+
+/** Validate the shared runtime-requirements structure before any policy decision. */
+export function assertRuntimeRequirements(runtime) {
+  if (runtime === undefined) return;
+  if (!hasExactOwnDataKeys(runtime, ['executables', 'network', 'credentials'])) {
+    throw new TypeError('runtimeRequirements must be an object');
+  }
+  if (!isDenseDataArray(runtime.executables)) throw new TypeError('runtime executables must be an array');
+  if (runtime.executables.some((entry) => (
+    !hasExactOwnDataKeys(entry, ['name', 'required', 'versionEvidence'])
+    || typeof entry.name !== 'string'
+    || !executableNamePattern.test(entry.name)
+    || typeof entry.required !== 'boolean'
+    || !versionEvidenceStates.has(entry.versionEvidence)
+  ))) {
+    throw new TypeError('runtime executable entries are invalid');
+  }
+  const executableNames = runtime.executables.map((entry) => entry.name);
+  if (new Set(executableNames).size !== executableNames.length) {
+    throw new TypeError('runtime executable names must be unique');
+  }
+  const network = runtime.network;
+  if (!hasExactOwnDataKeys(network, ['need', 'purpose'])
+    || !runtimeNeedStates.has(network.need)
+    || typeof network.purpose !== 'string'
+    || !networkPurposePattern.test(network.purpose)) {
+    throw new TypeError('runtime network requirement is invalid');
+  }
+  if ((network.need === 'none') !== (network.purpose === 'none')) {
+    throw new TypeError('network need is none iff purpose is none');
+  }
+  const credentials = runtime.credentials;
+  if (!hasExactOwnDataKeys(credentials, ['need', 'source']) || !runtimeNeedStates.has(credentials.need) || !credentialSources.has(credentials.source)) {
+    throw new TypeError('runtime credentials requirement is invalid');
+  }
+  if ((credentials.need === 'none') !== (credentials.source === 'none')) {
+    throw new TypeError('credential need is none iff source is none');
+  }
+}
 
 function assertCapabilityRequirements(workflow, permissionPolicy) {
   if (!workflow || typeof workflow !== 'object' || Array.isArray(workflow)) {
@@ -31,31 +100,7 @@ function assertCapabilityRequirements(workflow, permissionPolicy) {
       throw new TypeError('workflow effects contain an unknown value');
     }
   }
-  const runtime = workflow.runtimeRequirements;
-  if (runtime === undefined) return;
-  if (!runtime || typeof runtime !== 'object' || Array.isArray(runtime)) {
-    throw new TypeError('runtimeRequirements must be an object');
-  }
-  if (!Array.isArray(runtime.executables)) throw new TypeError('runtime executables must be an array');
-  if (runtime.executables.some((entry) => (
-    !entry
-    || typeof entry !== 'object'
-    || Array.isArray(entry)
-    || typeof entry.name !== 'string'
-    || entry.name.length === 0
-    || typeof entry.required !== 'boolean'
-    || !versionEvidenceStates.has(entry.versionEvidence)
-  ))) {
-    throw new TypeError('runtime executable entries are invalid');
-  }
-  const network = runtime.network;
-  if (!network || typeof network !== 'object' || Array.isArray(network) || !runtimeNeedStates.has(network.need) || typeof network.purpose !== 'string') {
-    throw new TypeError('runtime network requirement is invalid');
-  }
-  const credentials = runtime.credentials;
-  if (!credentials || typeof credentials !== 'object' || Array.isArray(credentials) || !runtimeNeedStates.has(credentials.need) || !credentialSources.has(credentials.source)) {
-    throw new TypeError('runtime credentials requirement is invalid');
-  }
+  assertRuntimeRequirements(workflow.runtimeRequirements);
 }
 
 export function requiredCapabilities(workflow, permissionPolicy = {}) {

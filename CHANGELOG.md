@@ -9,7 +9,238 @@ and this project adheres to [Semantic Versioning](https://semver.org/lang/zh-CN/
 
 ## [Unreleased]
 
-No changes are queued after the `4.1.0` candidate baseline yet.
+### Fixed
+- Made headless demo fixtures validate canonical workflow, stage, pack, and
+  namespaced command semantics; hardened doctor/bootstrap probing against
+  project-controlled executable injection while preserving exact npm lifecycle
+  invocation, including one canonical case-insensitive Windows `PATH` key; and
+  added a consumer plugin lifecycle guide plus generated
+  development-versus-stable version headers for both command references.
+- Made ordinary Review fail closed when a semantic branch, PR, commit range, or
+  diff label is not accompanied by materialized patch text or explicit readable
+  paths, and prohibited automatic fallback to an external Codex profile.
+- Moved prompt-surface limits into the governed complexity budget and separated
+  the automatic initial-load claim from owner-agent and capability-pack paths
+  that are only potential references. Compacted the three largest route,
+  review, and backend-plan surfaces below 7000 estimated potential-reference
+  tokens, then tightened the governed initial-load ceiling to 7000.
+- Removed the duplicate `validate:facts` and `validate:hook-truth` npm aliases;
+  their read-only scripts remain governed and discoverable through the task
+  catalog, while the root package-script ceiling is now 78.
+- Removed stale maintainer round logs and superseded baseline figures from the
+  active status and remediation pages, replacing them with current generated
+  facts, directory responsibilities, source-backed implementation boundaries,
+  and durable validation and external-evidence gates. Also removed verified
+  dead imports, parameters, helpers, and an unnecessary Git probe from
+  maintainer tooling without changing exported call shapes. Default JavaScript
+  typechecking now rejects unused locals and parameters, incomplete returns,
+  switch fallthrough, unreachable code, and unused labels.
+- Completed `llmf generate all` as a 26-task deterministic projection closure
+  (runtime 7, docs 5, release 14), including the prompt-surface report,
+  platform evidence, workflow-surface evaluation, governed baselines, and
+  downstream state/control-plane projections in fail-fast order. Critical
+  mutation now evaluates ten governed real high-risk mutations with
+  baseline-prechecked isolated probes and dependency-closed module copies
+  instead of treating manually chosen test outcomes as mutation evidence. The
+  release profile also regenerates the digest-bound real-task benchmark so a
+  runner change cannot leave its checked-in projection stale after
+  `llmf generate all --write` reports success.
+- Closed independent-review gaps in route fixtures, Claude approval parsing,
+  reusable-workflow handoff dependencies and provenance, release-sensitive
+  ownership, product inventory and variant preflight, release evidence
+  completeness, single-read archive manifests, Windows timeout tree
+  termination, and pre-write tar ancestor topology validation.
+- Added a generated resolved-variant contract index so canonical commands and
+  compatibility aliases resolve one complete authoritative runtime contract.
+  Selector defaults are normalized, exact alias overrides win, partially
+  triggered specializations fail closed, and canonical fallback is limited to
+  valid non-specialized combinations. Contract v6 validation now also keeps
+  effects, authorization, enforcement, evidence, runtime requirements, typed
+  inputs, protocol majors, and behavior effects coherent. Resolved contracts
+  carry native tool and invocation metadata; Claude redirects static-frontmatter
+  mismatches to the exact direct command while generic and Codex adapters may
+  execute the resolved contract directly. Artifact-only writes require a prompt
+  instead of being reported as preapproved.
+- Made route results select exactly one immediate canonical workflow while also
+  emitting the exact Claude command entrypoint. Live evaluation now rejects
+  multiple routes, mismatched specialized entrypoints, and extra or reordered
+  required-input claims instead of normalizing them into a passing result.
+- Made governed live prerequisites schema-valid, source-bound evidence rather
+  than trusted summaries: every exact case-attempt tuple, adapter signal,
+  semantic result, safety count, and source digest is recomputed before use.
+  Claude output now requires the exact heading and ordered eight-field route
+  shape or the exact uppercase approval status, and profile execution is
+  limited to the cases selected by its governed contract.
+- Corrected the public command tables to document every compatibility alias's
+  complete canonical variant preset, removed the stale 21-command/21-Skill
+  pairing claim, and made documentation validation derive both alias presets
+  and the 21-command/six-canonical-Skill boundary from workflow sources.
+- Reconciled active maintainer, release, compatibility, security, and plugin
+  architecture documentation with the current six-Skill projection, four
+  distributed shell scripts, development-versus-stable version domains,
+  exact-RC install smoke ownership, merged remediation state, and fail-closed
+  dependency-review policy.
+- Bound reusable stable promotion to the called job's
+  `job.workflow_ref`/`job.workflow_sha` while separately verifying the caller's
+  `github.workflow_ref`/`github.workflow_sha`; this prevents the promotion
+  bootstrap from mistaking `release.yml` for `promote-release.yml`.
+- Made non-Windows runtime smoke checks use the system temporary directory so
+  managed workspaces with a read-only `.codex/` directory can run the default
+  validation and coverage gates, while retaining the Git-Bash-compatible
+  workspace path on Windows. Validation batch results now also preserve their
+  registry labels instead of printing `undefined`.
+- Unified compatibility evidence generation and validation on the same
+  `exact` / `carried-forward` current-status contract so valid L3/L4 evidence
+  is not rejected as stale by CI.
+- Made validated loading and runtime compilation reject drift between Contract
+  v6 typed inputs, behavior inputs, and the v5 compatibility projection.
+- Made candidate and promotion workflows fail closed on an absent or
+  under-sampled governed performance profile. Candidate preflight now derives
+  count and budget from a schema-valid, content-addressed manifest and uses the
+  GitHub Actions API plus downloaded artifact bytes to corroborate every run
+  attempt, job, source ref, artifact digest, and raw timing report; repository
+  records cannot self-prove provenance. Release workflows also require Node.js
+  22 in every Node/npm job, forbid source-free npm cache setup, and verify
+  signed refs from protected-main signer policy before executing any checked-out
+  repository code, including repository-local Actions.
+- Bound stable promotion to a GitHub Releases API `published_at` observation
+  window of at least 168 hours and retained normalized, digest-bound observation
+  evidence in the promotion handoff.
+- Added a digest-bound three-task real-task pilot contract, strict record
+  validation, canonical consumer-profile scaffolding, source-commit-bound
+  adoption records, and an accurate 21-command to six-Skill index. Complete
+  caller-supplied pilot records remain diagnostic until retained result, score,
+  tool, and write artifacts are independently resolved and recomputed. Pilot
+  tool evidence now maps Claude, Codex, and MCP names into canonical actions,
+  normalizes event lifecycle, and reconciles every aggregate write count with
+  executed event effects.
+- Made repository-local adoption inputs require unique, current,
+  retention-bounded records with complete schema validation, non-reusable tracked evidence paths,
+  globally unique file digests, exact file bytes, reachable source commits, and
+  schema-validated validation/consent attestations that cross-bind the public
+  record fields, claimed signals, artifact digest, and consent scope; generated
+  Java consumer policy now uses the broker-compatible canonical `mvn test`
+  command. These records are explicitly maintainer-attested and cannot unlock
+  `demonstrated` until an independent external provenance verifier is added.
+- Aligned candidate publication, stable promotion, and recovery documentation
+  on protected-main `repository_dispatch` entrypoints, signed locally verified
+  tags, payload-only tag inputs, recorded workflow SHAs, and the separate
+  workflow-provenance versus signed-source-identity proof boundary.
+- Made candidate and recovery workflows emit their protected-main caller ref,
+  workflow SHA and content digest, run URL, exact tags, and source identity as
+  direct attested provenance artifacts; release documentation validation now
+  rejects a development-manifest claim for the stable security support range.
+- Upgraded release coverage metadata to schema v2 and emit it only after every
+  checked coverage gate succeeds. Candidate evidence now requires seven
+  governed records, verifies an exact ordered ten-entry checksum set, parses
+  and cross-binds every candidate artifact, independently recomputes the
+  protected workflow digest, omits installation paths, and resets an existing
+  draft release to the governed title and notes before publication.
+
+### Security
+- Reduced trusted Git snapshot children to an entirely authored environment:
+  local read controls, a fixed executable-directory `PATH`, and C locale only.
+  Caller-controlled dynamic-loader, shell-startup, Node preload, pager, helper,
+  proxy, credential, and unrelated process variables are no longer inherited.
+- Bound the release-oriented distribution scanner's tracked-file inventory to
+  the same trusted Git executable and authored environment, preventing
+  inherited `GIT_DIR`, `GIT_WORK_TREE`, Git configuration, or a repository PATH
+  shadow from replacing the repository being scanned. Incremental validation
+  selection and active-document stale-narrative checks now use the same trusted
+  tracked, untracked, and changed-path inventory and reject option-shaped
+  comparison revisions.
+- Moved stable-registry projection, compatibility tag resolution, adoption
+  ancestry/tracked-file checks, release-artifact identity defaults, release
+  readiness defaults, and documentation migration reads behind the same
+  identity-checked, configuration-isolated Git object boundary. Exact-tag
+  lookup now distinguishes a valid untagged commit from a missing revision or
+  failed tag inventory instead of collapsing every failure into "no tag".
+- Replaced status-text trust in live evaluation, paired verification, and
+  real-task benchmark evidence with a clean-commit proof that compares HEAD,
+  the exact index manifest, physical worktree bytes, portable index modes,
+  untracked paths, and forbidden hidden index flags. Coverage and regression
+  fixture source inventories now use the same trusted Git boundary.
+- Confined CLI build and migration outputs to regular, non-linked files below
+  the product root and made the two migration projections a best-effort
+  transactional replacement. Candidate build and promotion now ingest source,
+  artifact, evidence, checksum, control, and metadata inputs only through
+  physical non-linked single-read files and reject undeclared artifact-directory
+  entries. Release, manifest, checksum, and tar paths reject non-portable forms
+  and conservative normalized collisions; tar parsing also rejects ambiguous
+  encodings, root entries, and non-zero file padding, while manifest ordering is
+  independent of host locale.
+- Removed an identity-matched atomic directory publish when its post-rename
+  manifest verification fails, while preserving replacement paths and
+  reporting any cleanup failure instead of leaving an unverified output.
+- Prevented guarded read-only Git commands from reaching repository-configured
+  pagers, fsmonitor, diff/textconv, clean/process filters, signature helpers,
+  and includes. Windows process-tree timeout handling no longer executes
+  `taskkill.exe` from `PATH` or environment-derived system directories; it
+  resolves only the fixed `\\?\GLOBALROOT\SystemRoot\System32\taskkill.exe`
+  binary and falls
+  back to direct child termination when that trusted binary is unavailable or
+  cannot start.
+- Required every governed high-risk mutation probe to pass against the
+  unmodified baseline before being killed by its mutation, and derived a
+  transitive release-trust entrypoint closure that both CODEOWNERS and
+  independent release-review policy must protect. PR governance now also
+  rejects truncated, duplicate, malformed, or sensitive renamed-from
+  changed-file API results before deciding whether current-head sensitive-path
+  approval is required; candidate independent-review evidence applies the same
+  complete-file invariant before selecting the sensitive approval threshold.
+  GitHub identities and commits are now complete and canonical before approval
+  counting, every control-bundle root is included in the explicit release trust
+  boundary, and release-operations schema v4 rejects duplicate principals,
+  malformed SSH blobs, invalid or future dates, placeholder evidence, and stale
+  rotation, drill, or protected-environment evidence.
+- Rejected local POSIX, drive-letter, UNC, backslash, and `file:` path tokens
+  anywhere in public candidate JSON, forced isolated plugin validation to
+  override `CLAUDE_CONFIG_DIR`, and made release artifact verification reject
+  empty or duplicate BOM graphs and artifacts that are not semantically bound
+  to the candidate source and exact-tag installation tree.
+- Bound Bash project policy, session pinning, and PATH-shadow containment to
+  `CLAUDE_PROJECT_DIR` while treating a nested event `cwd` only as the effective
+  command directory. Privileged-mode launchers now reject inherited startup
+  files and exported command overrides, while PATH resolution skips
+  non-executable candidates and still rejects workspace shadows. Both guarded
+  launchers reject `NODE_OPTIONS` before probing Node, and the Bash broker now
+  rejects Git and ripgrep environment overrides that can execute helpers or
+  replace the reviewed read-only argv semantics.
+- Made stable dispatch payloads fail inside the signed-ref trust step instead
+  of producing skipped green jobs, and required generic bundle attestation
+  before promotion or recovery extraction followed by exact workflow-digest
+  verification after the bounded candidate-core read.
+- Made recovery drills reject malformed or mismatched stable/candidate tag
+  identities before any Git fetch or authenticated GitHub request.
+- Made candidate evidence reject machine-local path tokens in JSON object keys,
+  unexpected promotion evidence kinds, and independent-review thresholds or
+  bot identities that drift from the source-controlled reviewer policy.
+- Made OAuth route smoke use a minimal allowlisted child environment, include
+  Git control files in zero-write snapshots, and require the exact fixed route,
+  variant, agent, and pack selection in both generation and promotion checks.
+- Made release orchestration ingest promotion intent, control, event, and
+  ledger files through physical single-read boundaries, and made ledger-chain
+  verification enforce the complete identity, field, timestamp, and digest
+  structure instead of accepting merely self-consistent hashes.
+- Blocked Write/Edit access to project Git control metadata at every nesting
+  level so an agent cannot turn an otherwise read-only brokered Git command
+  into external code execution through repository config or hooks.
+- Routed every active post-use, failure, permission-denied, and session-end Node
+  hook through one privileged-mode trusted launcher that rejects preload and
+  shell-function inheritance plus project-controlled Node PATH shadows. Audit
+  process identity probes now use a verified fixed system `ps` path instead of
+  PATH lookup.
+- Case-folded hook control paths for case-insensitive volumes, froze project
+  hook-disabling settings and the complete distributed hook/runtime trust
+  closure, removed pre-trust PATH helper lookups, and made diagnostics reject
+  a missing, relative, project-owned, or otherwise untrusted host Bash
+  bootstrap.
+- Added startup project-settings and artifact-root trust preflight, rejected
+  the obsolete environment bypass, excluded broad, hidden-control, and
+  executable-search artifact roots, and blocked project/local ConfigChange
+  activation for the lifetime of an already-guarded session. Existing startup
+  settings remain an explicit host boundary; managed policy is required to
+  enforce that boundary before the first plugin hook.
 
 ## [4.1.0] - 2026-07-16
 

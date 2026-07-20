@@ -9,10 +9,11 @@
  */
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { dirname, posix, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
 import { requireOptionValue } from './lib/cli-args.mjs';
+import { inspectGovernedProfile } from './validate-performance-budget.mjs';
 import { parseDocument } from 'yaml';
 
 assertNodeVersion({ label: 'GitHub workflow validation' });
@@ -29,8 +30,7 @@ function parseRoot(args) {
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === '--help' || arg === '-h') {
-      console.log(usage());
-      process.exit(0);
+      return null;
     }
     if (arg === '--root') {
       const value = requireOptionValue(args, index, '--root');
@@ -38,22 +38,14 @@ function parseRoot(args) {
       index += 1;
       continue;
     }
-    console.error(`ERROR unknown argument: ${arg}`);
-    console.error(usage());
-    process.exit(1);
+    throw new Error(`unknown argument: ${arg}`);
   }
   return selectedRoot;
 }
 
-let root;
-try {
-  root = parseRoot(process.argv.slice(2));
-} catch (error) {
-  console.error(`ERROR ${error.message}`);
-  console.error(usage());
-  process.exit(1);
-}
-const errors = [];
+let root = defaultRoot;
+let errors = [];
+let notices = [];
 const PR_GOVERNANCE_CHECK = 'PR Governance';
 const EXTERNAL_REQUIRED_CHECKS = [
   'Dependency Review',
@@ -97,7 +89,7 @@ const WORKFLOW_CONTRACTS = [
   },
   {
     file: '.github/workflows/release-candidate.yml',
-    permissions: [['contents', 'read'], ['pull-requests', 'read']],
+    permissions: [['actions', 'read'], ['contents', 'read'], ['pull-requests', 'read']],
     label: 'release candidate workflow top-level permissions',
   },
   {
@@ -114,9 +106,336 @@ const WORKFLOW_CONTRACTS = [
 const EXPECTED_WORKFLOW_FILES = WORKFLOW_CONTRACTS
   .map((workflow) => workflow.file)
   .sort();
+const CANDIDATE_PERFORMANCE_PROFILE = 'linux-x64-node22-github-hosted-3-fresh-process-full-uncached';
+const CANDIDATE_PERFORMANCE_PROFILE_ENV = '${{ env.CANDIDATE_PERFORMANCE_PROFILE }}';
+const CANDIDATE_PERFORMANCE_SAMPLE_MANIFEST = 'governance/evidence/validation-performance-samples.json';
+const CANDIDATE_PERFORMANCE_COLLECTION = Object.freeze({
+  repository: 'lliangcol/llm-plugins-fusion',
+  workflowPath: '.github/workflows/ci.yml',
+  workflowRef: 'refs/heads/main',
+  jobName: 'Required / Tests',
+  artifactName: 'validation-timing-trend',
+});
+const RELEASE_RUNTIME_WORKFLOW_FILES = [
+  '.github/workflows/release-candidate.yml',
+  '.github/workflows/promote-release.yml',
+];
 
 function recordError(file, msg) {
   errors.push(`  - ${file}: ${msg}`);
+}
+
+function recordNotice(message) {
+  notices.push(message);
+}
+
+export function releaseRefTrustBoundaryErrors(file, model, {
+  jobId,
+  expectedVerifyTags,
+  trustDirectory,
+  expectedBootstrapRef,
+}) {
+  const findings = [];
+  const steps = model?.jobs?.[jobId]?.steps ?? [];
+  const trustStepIndexes = steps
+    .map((step, index) => [step, index])
+    .filter(([step]) => String(step.run ?? '').includes('git verify-tag'))
+    .map(([, index]) => index);
+  if (trustStepIndexes.length !== 1) {
+    return [`${file}: job "${jobId}" must have exactly one signed-ref trust step before repository code`];
+  }
+  const trustIndex = trustStepIndexes[0];
+  const trustRun = String(steps[trustIndex].run ?? '');
+  const checkoutIndex = steps.findIndex((step) => String(step.uses ?? '').startsWith('actions/checkout@'));
+  const firstRunIndex = steps.findIndex((step) => typeof step.run === 'string');
+  const localActionBeforeTrustIndex = steps
+    .slice(0, trustIndex)
+    .findIndex((step) => String(step.uses ?? '').trim().startsWith('./'));
+  if (checkoutIndex === -1 || checkoutIndex >= trustIndex) {
+    findings.push(`${file}: job "${jobId}" must checkout the selected ref before its signed-ref trust step`);
+  } else if (steps[checkoutIndex]?.with?.ref !== expectedBootstrapRef) {
+    findings.push(`${file}: job "${jobId}" bootstrap checkout must use trusted workflow ref ${expectedBootstrapRef}`);
+  }
+  if (firstRunIndex !== trustIndex) {
+    findings.push(`${file}: job "${jobId}" signed-ref verification must be its first run step`);
+  }
+  if (localActionBeforeTrustIndex !== -1) {
+    findings.push(`${file}: job "${jobId}" must not execute a repository-local action before signed-ref verification`);
+  }
+  const requiredTrustFragments = [
+    'git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main',
+    `git show origin/main:.github/release-signers > "\${RUNNER_TEMP}/${trustDirectory}/release-signers"`,
+    `git config gpg.ssh.allowedSignersFile "\${RUNNER_TEMP}/${trustDirectory}/release-signers"`,
+    'git merge-base --is-ancestor',
+    'git checkout --detach',
+  ];
+  for (const fragment of requiredTrustFragments) {
+    if (!trustRun.includes(fragment)) {
+      findings.push(`${file}: job "${jobId}" signed-ref trust step is missing ${fragment}`);
+    }
+  }
+  const verifyTagCount = trustRun.match(/git verify-tag/gu)?.length ?? 0;
+  if (verifyTagCount !== expectedVerifyTags) {
+    findings.push(`${file}: job "${jobId}" signed-ref trust step must verify exactly ${expectedVerifyTags} tag${expectedVerifyTags === 1 ? '' : 's'}`);
+  }
+  if (trustRun.lastIndexOf('git checkout --detach') < trustRun.lastIndexOf('git verify-tag')) {
+    findings.push(`${file}: job "${jobId}" must verify every signed tag before checking out release source`);
+  }
+  return findings;
+}
+
+export function protectedMainDispatchErrors(file, model, expectedEventType) {
+  const findings = [];
+  const triggers = model?.on ?? {};
+  const triggerNames = Object.keys(triggers).sort();
+  if (JSON.stringify(triggerNames) !== JSON.stringify(['repository_dispatch'])) {
+    findings.push(`${file}: privileged release entrypoint must use only repository_dispatch from the default branch`);
+  }
+  const configuredTypes = triggers?.repository_dispatch?.types;
+  if (!Array.isArray(configuredTypes)
+    || configuredTypes.length !== 1
+    || configuredTypes[0] !== expectedEventType) {
+    findings.push(`${file}: repository_dispatch must require exact event type ${expectedEventType}`);
+  }
+  return findings;
+}
+
+export function releaseCallerFailClosedErrors(file, caller) {
+  if (caller && Object.hasOwn(caller, 'if')) {
+    return [`${file}: stable release caller must not skip malformed repository-dispatch payloads with a job-level if`];
+  }
+  return [];
+}
+
+export function promotionTagIdentityErrors(file, model, jobId = 'verify') {
+  const findings = [];
+  const trustRun = String((model?.jobs?.[jobId]?.steps ?? [])
+    .find((step) => String(step.run ?? '').includes('git verify-tag'))?.run ?? '');
+  const stableGuard = 'if [[ ! "${STABLE_TAG}" =~ ^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$ ]]; then';
+  const candidateGuard = 'if [[ ! "${CANDIDATE_TAG}" =~ ^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)-rc\\.(0|[1-9][0-9]*)$ ]]; then';
+  const baseGuard = 'if [[ "${CANDIDATE_TAG%%-rc.*}" != "${STABLE_TAG}" ]]; then';
+  const guards = [
+    [stableGuard, 'strict stable-tag validation'],
+    [candidateGuard, 'strict candidate-tag validation'],
+    [baseGuard, 'candidate-base equality validation'],
+    ['::error::invalid stable release tag:', 'explicit stable-tag failure'],
+    ['::error::invalid candidate release tag:', 'explicit candidate-tag failure'],
+    ['::error::candidate tag base must equal stable tag', 'explicit candidate-base failure'],
+  ];
+  for (const [fragment, label] of guards) {
+    if (!trustRun.includes(fragment)) findings.push(`${file}: job "${jobId}" trust step is missing ${label}`);
+  }
+  const orderedGuards = [stableGuard, candidateGuard, baseGuard].map((fragment) => trustRun.indexOf(fragment));
+  const firstFetchIndex = trustRun.indexOf('git fetch ');
+  if (firstFetchIndex === -1
+    || orderedGuards.some((index) => index === -1 || index > firstFetchIndex)
+    || !(orderedGuards[0] < orderedGuards[1] && orderedGuards[1] < orderedGuards[2])) {
+    findings.push(`${file}: job "${jobId}" must reject malformed and mismatched tags before any fetch`);
+  }
+  return findings;
+}
+
+export function candidateTagIdentityErrors(file, model, jobId) {
+  const findings = [];
+  const trustRun = String((model?.jobs?.[jobId]?.steps ?? [])
+    .find((step) => String(step.run ?? '').includes('git verify-tag'))?.run ?? '');
+  const guard = 'if [[ ! "${CANDIDATE_TAG}" =~ ^v(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)-rc\\.(0|[1-9][0-9]*)$ ]]; then';
+  const explicitFailure = '::error::invalid candidate release tag:';
+  if (!trustRun.includes(guard)) findings.push(`${file}: job "${jobId}" trust step is missing strict candidate-tag validation`);
+  if (!trustRun.includes(explicitFailure)) findings.push(`${file}: job "${jobId}" trust step is missing explicit candidate-tag failure`);
+  const guardIndex = trustRun.indexOf(guard);
+  const guardEndIndex = guardIndex === -1 ? -1 : trustRun.indexOf('\nfi', guardIndex);
+  const guardBlock = guardEndIndex === -1 ? '' : trustRun.slice(guardIndex, guardEndIndex + 3);
+  if (!/(?:^|\n)\s*exit 1\s*(?:\n|$)/u.test(guardBlock)) {
+    findings.push(`${file}: job "${jobId}" candidate-tag guard must exit nonzero`);
+  }
+  const failureIndex = trustRun.indexOf(explicitFailure);
+  const firstFetchIndex = trustRun.indexOf('git fetch ');
+  if (
+    firstFetchIndex === -1
+    || guardIndex === -1
+    || guardEndIndex === -1
+    || failureIndex === -1
+    || guardIndex > firstFetchIndex
+    || failureIndex > firstFetchIndex
+  ) {
+    findings.push(`${file}: job "${jobId}" must reject malformed candidate tags before any fetch`);
+  }
+  return findings;
+}
+
+function localModuleImports(source) {
+  const imports = new Set();
+  const staticImport = /(?:^|\n)\s*(?:import|export)\s+(?:[^;]*?\s+from\s+)?['"](\.[^'"]+)['"](?:\s+with\s+\{[^}]*\})?\s*;/gu;
+  const dynamicImport = /\bimport\(\s*['"](\.[^'"]+)['"]\s*\)/gu;
+  for (const pattern of [staticImport, dynamicImport]) {
+    for (const match of String(source).matchAll(pattern)) imports.add(match[1]);
+  }
+  return [...imports];
+}
+
+export function promotionHandoffModuleErrors(file, model, {
+  readModule = (modulePath) => readFileSync(resolve(root, modulePath), 'utf8'),
+} = {}) {
+  const findings = [];
+  const verifyRun = (model?.jobs?.verify?.steps ?? []).map((step) => String(step.run ?? '')).join('\n');
+  const copiedModules = new Map();
+  const logicalVerifyRun = verifyRun.replace(/\\\r?\n\s*/gu, ' ');
+  for (const line of logicalVerifyRun.split(/\r?\n/u)) {
+    if (!/^\s*cp\s/u.test(line) || !/\$\{handoff\}\/(?:scripts|framework)/u.test(line)) continue;
+    const destination = /\$\{handoff\}\/((?:scripts|framework)(?:\/[A-Za-z0-9._-]+)*)\/?["']?\s*$/u.exec(line)?.[1];
+    if (!destination) continue;
+    for (const match of line.matchAll(/\b((?:scripts|framework)\/[A-Za-z0-9._/-]+\.mjs)\b/gu)) {
+      copiedModules.set(posix.join(destination, posix.basename(match[1])), match[1]);
+    }
+  }
+  const entrypoints = [];
+  for (const step of model?.jobs?.publish?.steps ?? []) {
+    const run = String(step.run ?? '');
+    const runsFromHandoff = /^\s*cd\s+handoff\s*$/mu.test(run);
+    for (const match of run.matchAll(/\bnode\s+(handoff\/)?(scripts\/[A-Za-z0-9._/-]+\.mjs)\b/gu)) {
+      if (match[1] || runsFromHandoff) entrypoints.push(match[2]);
+    }
+  }
+  if (entrypoints.length === 0) return [`${file}: publish job must execute at least one copied handoff module`];
+
+  const pending = [...new Set(entrypoints)];
+  const inspected = new Set();
+  while (pending.length > 0) {
+    const modulePath = pending.shift();
+    if (inspected.has(modulePath)) continue;
+    inspected.add(modulePath);
+    if (!copiedModules.has(modulePath)) {
+      findings.push(`${file}: immutable publication handoff does not copy required module ${modulePath}`);
+    }
+    let source;
+    try {
+      source = readModule(copiedModules.get(modulePath) ?? modulePath);
+    } catch (error) {
+      findings.push(`${file}: immutable publication handoff module ${modulePath} could not be inspected: ${error.message}`);
+      continue;
+    }
+    for (const specifier of localModuleImports(source)) {
+      const dependency = posix.normalize(posix.join(posix.dirname(modulePath), specifier));
+      if (dependency.startsWith('../') || dependency.startsWith('/')) {
+        findings.push(`${file}: handoff module ${modulePath} imports outside the repository module boundary: ${specifier}`);
+        continue;
+      }
+      if (!copiedModules.has(dependency)) {
+        findings.push(`${file}: immutable publication handoff omits ${dependency}, imported by ${modulePath}`);
+      }
+      if (dependency.endsWith('.mjs')) pending.push(dependency);
+    }
+  }
+  return [...new Set(findings)];
+}
+
+function logicalRunCommands(job) {
+  return (job?.steps ?? []).flatMap((step) => String(step.run ?? '')
+    .replace(/\\\r?\n\s*/gu, ' ')
+    .split(/\r?\n/u)
+    .map((line) => line.trim())
+    .filter(Boolean));
+}
+
+function commandContains(command, ...fragments) {
+  return fragments.every((fragment) => command.includes(fragment));
+}
+
+export function promotionPublicationStateErrors(file, model) {
+  const findings = [];
+  const verifyCommands = logicalRunCommands(model?.jobs?.verify)
+    .filter((command) => command.includes('node scripts/release-orchestrator.mjs'));
+  if (verifyCommands.length !== 1 || !commandContains(
+    verifyCommands[0] ?? '',
+    '--mode promote',
+    '--state DRAFT',
+    '--target-state STABLE_TAG_VERIFIED',
+  )) {
+    findings.push(`${file}: verify must record release state only through the actually verified stable tag`);
+  }
+
+  const publishCommands = logicalRunCommands(model?.jobs?.publish)
+    .filter((command) => command.includes('node scripts/release-orchestrator.mjs')
+      || command.includes('node scripts/reconcile-github-release.mjs'));
+  const [preflight, reconcile, record] = publishCommands;
+  if (publishCommands.length !== 3
+    || !commandContains(preflight ?? '',
+      'node scripts/release-orchestrator.mjs',
+      '--dry-run',
+      '--mode promote',
+      '--state STABLE_TAG_VERIFIED',
+      '--target-state RELEASE_PUBLISHED')
+    || !commandContains(reconcile ?? '', 'node scripts/reconcile-github-release.mjs')
+    || !commandContains(record ?? '',
+      'node scripts/release-orchestrator.mjs',
+      '--mode promote',
+      '--state STABLE_TAG_VERIFIED',
+      '--target-state RELEASE_PUBLISHED')
+    || record.includes('--dry-run')) {
+    findings.push(`${file}: publish must preflight, reconcile GitHub Release, then record draft, asset, and publication states in that order`);
+  }
+  return findings;
+}
+
+export function releaseBundleAttestationOrderErrors(file, model, jobId) {
+  const findings = [];
+  const steps = model?.jobs?.[jobId]?.steps ?? [];
+  const script = steps
+    .map((step, index) => typeof step.run === 'string' ? `\n# step ${index}\n${step.run}` : '')
+    .join('');
+  const attestationIndexes = [...script.matchAll(/gh attestation verify "\$\{bundle\}"/gu)]
+    .map((match) => match.index);
+  const extractMatches = [...script.matchAll(/node scripts\/extract-release-bundle\.mjs/gu)];
+  const extractIndex = extractMatches[0]?.index ?? -1;
+  const coreReadIndex = script.indexOf('builder_workflow_commit=');
+  if (attestationIndexes.length !== 2) {
+    findings.push(`${file}: job "${jobId}" must verify the downloaded bundle exactly twice: generic before extraction and digest-bound after core read`);
+    return findings;
+  }
+  if (extractMatches.length !== 1 || coreReadIndex === -1
+    || !(attestationIndexes[0] < extractIndex
+      && extractIndex < coreReadIndex
+      && coreReadIndex < attestationIndexes[1])) {
+    findings.push(`${file}: job "${jobId}" must order generic attestation, extraction, candidate workflow digest read, and exact attestation`);
+  }
+  const genericStepRun = String(steps.find((step) => String(step.run ?? '')
+    .includes('gh attestation verify "${bundle}"'))?.run ?? '');
+  const genericStepAttestationIndex = genericStepRun.indexOf('gh attestation verify "${bundle}"');
+  const genericStepExtractIndex = genericStepRun.indexOf('node scripts/extract-release-bundle.mjs');
+  const failClosedIndex = genericStepRun.indexOf('set -euo pipefail');
+  const genericCommandRegion = genericStepRun.slice(
+    genericStepAttestationIndex,
+    genericStepExtractIndex === -1 ? genericStepRun.length : genericStepExtractIndex,
+  );
+  if (failClosedIndex === -1 || failClosedIndex > genericStepAttestationIndex
+    || /\|\|\s*(?:true|:)/u.test(genericCommandRegion)) {
+    findings.push(`${file}: job "${jobId}" generic pre-extraction attestation must fail closed before extraction`);
+  }
+  if (/mkdir\s+-p[^\n]*(?:\.metrics\/(?:promotion|recovery)\/bundle|(?:^|\s)bundle(?:\s|$))/u.test(genericStepRun)) {
+    findings.push(`${file}: job "${jobId}" must not pre-create the atomic release bundle extraction target`);
+  }
+  const genericBlock = script.slice(attestationIndexes[0], attestationIndexes[1]);
+  const exactBlock = script.slice(attestationIndexes[1]);
+  for (const fragment of [
+    '--signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml"',
+    '--source-ref refs/heads/main',
+    '--deny-self-hosted-runners',
+  ]) {
+    if (!genericBlock.includes(fragment)) findings.push(`${file}: job "${jobId}" generic pre-extraction attestation is missing ${fragment}`);
+  }
+  if (/--(?:source|signer)-digest/u.test(genericBlock)) {
+    findings.push(`${file}: job "${jobId}" generic pre-extraction attestation must not trust a bundle-owned digest`);
+  }
+  for (const fragment of [
+    '--source-ref refs/heads/main',
+    '--source-digest "${builder_workflow_commit}"',
+    '--signer-digest "${builder_workflow_commit}"',
+    '--deny-self-hosted-runners',
+  ]) {
+    if (!exactBlock.includes(fragment)) findings.push(`${file}: job "${jobId}" exact post-extraction attestation is missing ${fragment}`);
+  }
+  return findings;
 }
 
 function readWorkflow(file) {
@@ -158,30 +477,6 @@ function escapeRegExp(value) {
 
 function lineIndent(line) {
   return line.match(/^ */)?.[0].length ?? 0;
-}
-
-function extractRunScripts(src) {
-  const lines = src.split(/\r?\n/);
-  const scripts = [];
-  for (let index = 0; index < lines.length; index += 1) {
-    const match = lines[index].match(/^(\s*)run:\s*(.*)$/);
-    if (!match) continue;
-    const indent = match[1].length;
-    const marker = match[2].trim();
-    if (marker !== '|' && marker !== '>') {
-      scripts.push(match[2]);
-      continue;
-    }
-    const body = [];
-    for (let bodyIndex = index + 1; bodyIndex < lines.length; bodyIndex += 1) {
-      const line = lines[bodyIndex];
-      if (line.trim() && lineIndent(line) <= indent) break;
-      body.push(line);
-      index = bodyIndex;
-    }
-    scripts.push(body.join('\n'));
-  }
-  return scripts;
 }
 
 function extractYamlBlock(file, src, key, indent, label, searchStart = 0, searchEnd = null) {
@@ -528,6 +823,123 @@ function validateWorkflowInventory() {
   );
 }
 
+function validateCandidatePerformanceContracts(file, model) {
+  const configuredProfile = model?.env?.CANDIDATE_PERFORMANCE_PROFILE;
+  if (configuredProfile !== CANDIDATE_PERFORMANCE_PROFILE) {
+    recordError(file, `candidate workflow must declare exact performance profile ${CANDIDATE_PERFORMANCE_PROFILE} once in top-level env`);
+    return;
+  }
+  const configuredManifest = model?.env?.CANDIDATE_PERFORMANCE_SAMPLE_MANIFEST;
+  if (configuredManifest !== CANDIDATE_PERFORMANCE_SAMPLE_MANIFEST) {
+    recordError(file, `candidate workflow must declare exact performance sample manifest ${CANDIDATE_PERFORMANCE_SAMPLE_MANIFEST} once in top-level env`);
+    return;
+  }
+
+  const validateJob = model?.jobs?.validate;
+  const steps = validateJob?.steps ?? [];
+  const maintainerSteps = steps.filter((step) => String(step.run ?? '').trim() === 'npm run validate:maintainer');
+  if (maintainerSteps.length !== 1) {
+    recordError(file, 'candidate validation must invoke npm run validate:maintainer exactly once');
+    return;
+  }
+
+  const maintainerStep = maintainerSteps[0];
+  if (maintainerStep.env?.NOVA_REQUIRED_VALIDATION_PROFILE !== CANDIDATE_PERFORMANCE_PROFILE_ENV) {
+    recordError(file, 'candidate validation must consume the top-level governed performance profile env');
+    return;
+  }
+  if (maintainerStep.env?.NOVA_RUNNER_CLASS !== 'github-hosted') {
+    recordError(file, 'candidate performance evidence must declare the github-hosted runner class');
+  }
+
+  const preflightSteps = model?.jobs?.preflight?.steps ?? [];
+  const expectedCheck = 'node scripts/validate-performance-budget.mjs --check-profile "${CANDIDATE_PERFORMANCE_PROFILE}" --sample-manifest "${CANDIDATE_PERFORMANCE_SAMPLE_MANIFEST}" --verify-github';
+  const profileCheckIndex = preflightSteps.findIndex((step) => String(step.run ?? '').trim() === expectedCheck);
+  const trustIndex = preflightSteps.findIndex((step) => String(step.run ?? '').includes('git verify-tag'));
+  const reviewIndex = preflightSteps.findIndex((step) => String(step.run ?? '').includes('verify-independent-release-review.mjs'));
+  const allProfileChecks = allSteps(model).filter((step) => String(step.run ?? '').includes('validate-performance-budget.mjs --check-profile'));
+  if (profileCheckIndex === -1 || allProfileChecks.length !== 1) {
+    recordError(file, 'candidate preflight must check the top-level governed performance profile exactly once');
+  } else if (trustIndex === -1 || profileCheckIndex <= trustIndex || reviewIndex === -1 || profileCheckIndex >= reviewIndex) {
+    recordError(file, 'candidate preflight must verify the signed ref, then fail on a missing performance profile before review and archive work');
+  }
+  const profileCheck = profileCheckIndex === -1 ? null : preflightSteps[profileCheckIndex];
+  if (profileCheck?.env?.GH_TOKEN !== '${{ github.token }}') recordError(file, 'candidate performance preflight must authenticate external GitHub Actions provenance with the job token');
+  if (maintainerStep.env?.GH_TOKEN !== '${{ github.token }}') recordError(file, 'candidate observed performance validation must authenticate external GitHub Actions provenance with the job token');
+
+  const policyFile = 'governance/engineering-evidence.json';
+  const policySrc = readRequiredFile(policyFile);
+  if (!policySrc) return;
+  let performancePolicy;
+  try {
+    performancePolicy = JSON.parse(policySrc).validationPerformance;
+  } catch (error) {
+    recordError(policyFile, `invalid performance policy JSON: ${error.message}`);
+    return;
+  }
+  if (performancePolicy?.enforcement !== 'profile-required') {
+    recordError(policyFile, 'candidate performance contract requires profile-required enforcement');
+    return;
+  }
+  if (!Number.isInteger(performancePolicy.minimumStableSamples) || performancePolicy.minimumStableSamples < 1) {
+    recordError(policyFile, 'candidate performance contract requires a positive minimumStableSamples');
+    return;
+  }
+  if (!Array.isArray(performancePolicy.profiles)) {
+    recordError(policyFile, 'candidate performance contract requires a governed profiles array');
+    return;
+  }
+  const matches = performancePolicy.profiles.filter((profile) => profile.id === configuredProfile);
+  if (matches.length > 1) {
+    recordError(policyFile, `candidate performance profile ${configuredProfile} is duplicated`);
+    return;
+  }
+  if (matches.length === 0) {
+    recordNotice(`BLOCKED_EXTERNAL_GATE candidate performance profile ${configuredProfile} has no governed budget; exact-tag candidate preflight will fail closed`);
+    return;
+  }
+  if (JSON.stringify(matches[0].collection) !== JSON.stringify(CANDIDATE_PERFORMANCE_COLLECTION)) {
+    recordError(policyFile, `candidate performance collection must remain ${JSON.stringify(CANDIDATE_PERFORMANCE_COLLECTION)}`);
+    return;
+  }
+  const collectionWorkflowSrc = readRequiredFile(CANDIDATE_PERFORMANCE_COLLECTION.workflowPath);
+  if (!collectionWorkflowSrc) return;
+  const collectionWorkflow = parseWorkflow(CANDIDATE_PERFORMANCE_COLLECTION.workflowPath, collectionWorkflowSrc);
+  const collectionJobs = Object.values(collectionWorkflow?.jobs ?? {}).filter((job) => job?.name === CANDIDATE_PERFORMANCE_COLLECTION.jobName);
+  if (collectionJobs.length !== 1) {
+    recordError(CANDIDATE_PERFORMANCE_COLLECTION.workflowPath, `performance collection workflow must contain exactly one ${CANDIDATE_PERFORMANCE_COLLECTION.jobName} job`);
+    return;
+  }
+  const artifactSteps = (collectionJobs[0].steps ?? []).filter((step) => step?.with?.name === CANDIDATE_PERFORMANCE_COLLECTION.artifactName);
+  const artifactPaths = String(artifactSteps[0]?.with?.path ?? '').split(/\r?\n/u).map((value) => value.trim()).filter(Boolean);
+  if (artifactSteps.length !== 1
+    || artifactSteps[0]?.with?.['if-no-files-found'] !== 'error'
+    || artifactSteps[0]?.with?.['include-hidden-files'] !== true
+    || artifactSteps[0]?.with?.['retention-days'] !== 90
+    || !artifactPaths.includes('.metrics/validation-timings.json')
+    || !artifactPaths.includes('.metrics/validation-timing-trend.json')) {
+    recordError(CANDIDATE_PERFORMANCE_COLLECTION.workflowPath, 'performance collection artifact must fail closed, include hidden .metrics files, retain for 90 days, and contain both the raw validation-timings report and its trend projection');
+    return;
+  }
+  const manifestSrc = readRequiredFile(configuredManifest);
+  if (!manifestSrc) return;
+  let sampleManifest;
+  try {
+    sampleManifest = JSON.parse(manifestSrc);
+  } catch (error) {
+    recordError(configuredManifest, `invalid performance sample manifest JSON: ${error.message}`);
+    return;
+  }
+  try {
+    const { evidence } = inspectGovernedProfile(performancePolicy, configuredProfile, sampleManifest);
+    if (evidence.sampleCount < performancePolicy.minimumStableSamples) {
+      recordNotice(`BLOCKED_EXTERNAL_GATE candidate performance profile ${configuredProfile} has only ${evidence.sampleCount}/${performancePolicy.minimumStableSamples} manifest-bound records; exact-tag candidate preflight will fail closed and any future records still require external GitHub verification`);
+    }
+  } catch (error) {
+    recordError(configuredManifest, `candidate performance sample manifest integrity failed: ${error.message}`);
+  }
+}
+
 function validateWorkflowContracts() {
   for (const workflow of WORKFLOW_CONTRACTS) {
     const src = readWorkflow(workflow.file);
@@ -558,12 +970,14 @@ function validateWorkflowContracts() {
   const releaseSrc = readWorkflow(releaseFile);
   if (releaseSrc) {
     const model = parseWorkflow(releaseFile, releaseSrc);
-    const inputs = model?.on?.workflow_dispatch?.inputs ?? {};
-    if (model?.on?.push) recordError(releaseFile, 'stable release must require explicit promotion intent instead of inferring identity from a push');
-    if (!inputs['stable-tag']?.required || !inputs['candidate-tag']?.required) recordError(releaseFile, 'stable release dispatch must require exact stable and candidate tags');
+    for (const finding of protectedMainDispatchErrors(releaseFile, model, 'promote-release')) errors.push(`  - ${finding}`);
     const caller = model?.jobs?.recover;
+    for (const finding of releaseCallerFailClosedErrors(releaseFile, caller)) errors.push(`  - ${finding}`);
     if (caller?.uses !== './.github/workflows/promote-release.yml') recordError(releaseFile, 'stable release trigger must delegate to promote-release.yml');
-    if (caller?.with?.['release-tag'] !== '${{ inputs.stable-tag }}' || caller?.with?.['candidate-tag'] !== '${{ inputs.candidate-tag }}') recordError(releaseFile, 'stable release caller must pass both explicit identities');
+    if (caller?.with?.['release-tag'] !== '${{ github.event.client_payload.stable_tag }}'
+      || caller?.with?.['candidate-tag'] !== '${{ github.event.client_payload.candidate_tag }}') {
+      recordError(releaseFile, 'stable release caller must pass both repository-dispatch identities');
+    }
     const callerPermissions = caller?.permissions ?? {};
     const expectedCallerPermissions = { contents: 'write', checks: 'read', 'id-token': 'write', attestations: 'write' };
     if (JSON.stringify(callerPermissions) !== JSON.stringify(expectedCallerPermissions)) recordError(releaseFile, 'stable promotion caller scoped permission must be exact');
@@ -574,6 +988,15 @@ function validateWorkflowContracts() {
   const candidateSrc = readWorkflow(candidateFile);
   if (candidateSrc) {
     const model = parseWorkflow(candidateFile, candidateSrc);
+    for (const finding of protectedMainDispatchErrors(candidateFile, model, 'release-candidate')) errors.push(`  - ${finding}`);
+    for (const finding of candidateTagIdentityErrors(candidateFile, model, 'preflight')) errors.push(`  - ${finding}`);
+    for (const finding of releaseRefTrustBoundaryErrors(candidateFile, model, {
+      jobId: 'preflight',
+      expectedVerifyTags: 1,
+      trustDirectory: 'candidate-trust',
+      expectedBootstrapRef: '${{ github.workflow_sha }}',
+    })) errors.push(`  - ${finding}`);
+    validateCandidatePerformanceContracts(candidateFile, model);
     if (!model?.jobs?.['claude-package'] || model.jobs['claude-package'].environment) recordError(candidateFile, 'candidate must verify the mutable CLI package in an unprivileged no-secret job');
     if (allSteps(model?.jobs?.['claude-package'] ? { jobs: { only: model.jobs['claude-package'] } } : {}).some((step) => step.env && Object.keys(step.env).some((key) => /TOKEN|SECRET/u.test(key)))) recordError(candidateFile, 'CLI package verification job must not receive secrets');
     if (!model?.jobs?.live?.needs?.includes?.('claude-package')) recordError(candidateFile, 'secret-bearing live job must consume the verified CLI package artifact');
@@ -581,10 +1004,31 @@ function validateWorkflowContracts() {
     if (!candidateSrc.includes('build-release-control-bundle.mjs') || !candidateSrc.includes('promotion-intent.json') || !candidateSrc.includes('--control-bundle-manifest')) recordError(candidateFile, 'candidate must bind promotion intent and a content-addressed control bundle');
     if (!candidateSrc.includes('build-candidate-bundle.mjs')) recordError(candidateFile, 'candidate bundle must use the deterministic Node archive builder');
     if (!candidateSrc.includes("NOVA_VALIDATE_WRITE_TIMINGS: '1'")) recordError(candidateFile, 'candidate validation must persist machine-readable validation timings');
-    if (!candidateSrc.includes('NOVA_REQUIRED_VALIDATION_PROFILE: linux-x64-node22-github-hosted-3-fresh-process-full-uncached')) recordError(candidateFile, 'candidate validation must require its exact governed performance profile');
     if (!candidateSrc.includes('npm install -g ./cli/claude-code.tgz')) recordError(candidateFile, 'candidate live gate must install the verified Claude package through an explicit local path');
     if (candidateSrc.includes('npm install -g ./cli/claude-code.tgz --ignore-scripts')) recordError(candidateFile, 'candidate live gate must allow the verified Claude package to install its native binary');
-    if (!candidateSrc.includes('marketplace.canary.json') || !candidateSrc.includes('--expected-commit "${GITHUB_SHA}"') || !candidateSrc.includes('--evidence-source "lliangcol/llm-plugins-fusion@${GITHUB_REF_NAME}"')) recordError(candidateFile, 'candidate live gate must bind its temporary marketplace to the exact tag and commit');
+    if (!candidateSrc.includes('marketplace.canary.json')
+      || !candidateSrc.includes('--expected-ref "${CANDIDATE_TAG}"')
+      || !candidateSrc.includes('--expected-commit "${SOURCE_COMMIT}"')
+      || !candidateSrc.includes('--evidence-source "lliangcol/llm-plugins-fusion@${CANDIDATE_TAG}"')) {
+      recordError(candidateFile, 'candidate live gate must bind its temporary marketplace to preflight-verified tag and commit outputs');
+    }
+    for (const required of [
+      'WORKFLOW_SOURCE_COMMIT: ${{ github.workflow_sha }}',
+      'test "${TRIGGER_REF}" = refs/heads/main',
+      'test "${TRIGGER_COMMIT}" = "${WORKFLOW_SOURCE_COMMIT}"',
+      'release-candidate.yml@refs/heads/main',
+      'git show "${WORKFLOW_SOURCE_COMMIT}:.github/workflows/release-candidate.yml"',
+      '.metrics/candidate-preflight/workflow-provenance.json',
+      'callerWorkflowRef: process.env.CALLER_WORKFLOW_REF',
+      'callerWorkflowSha: process.env.CALLER_WORKFLOW_SHA',
+      'workflowSourceCommit: process.env.WORKFLOW_SOURCE_COMMIT',
+      'candidateCommit: process.env.CANDIDATE_COMMIT',
+      'cp .metrics/aggregate/preflight/workflow-provenance.json .metrics/candidate-bundle/evidence/',
+      '--evidence .metrics/candidate-bundle/evidence/workflow-provenance.json',
+      '--workflow-source-commit "${WORKFLOW_SOURCE_COMMIT}"',
+    ]) {
+      if (!candidateSrc.includes(required)) recordError(candidateFile, `candidate protected-main bootstrap is missing ${required}`);
+    }
     if (!candidateSrc.includes('.metrics/nova-plugin-*-evidence-bundle.tar.gz') || !candidateSrc.includes('include-hidden-files: true') || !candidateSrc.includes('if-no-files-found: error')) recordError(candidateFile, 'candidate evidence bundle upload must select explicit hidden files and fail closed when absent');
     if (!candidateSrc.includes('test "$(find .metrics/candidate-publish -maxdepth 1 -type f | wc -l | tr -d \' \')" -eq 3')) recordError(candidateFile, 'candidate publication must expose exactly archive, checksums, and one evidence bundle');
     if (/ANTHROPIC_API_KEY/u.test(candidateSrc)) recordError(candidateFile, 'candidate live gate must not use ANTHROPIC_API_KEY');
@@ -594,12 +1038,42 @@ function validateWorkflowContracts() {
   const promotionSrc = readWorkflow(promotionFile);
   if (promotionSrc) {
     const model = parseWorkflow(promotionFile, promotionSrc);
+    for (const finding of releaseRefTrustBoundaryErrors(promotionFile, model, {
+      jobId: 'verify',
+      expectedVerifyTags: 2,
+      trustDirectory: 'promotion-trust',
+      expectedBootstrapRef: '${{ job.workflow_sha }}',
+    })) errors.push(`  - ${finding}`);
+    for (const finding of promotionTagIdentityErrors(promotionFile, model)) errors.push(`  - ${finding}`);
+    for (const finding of releaseBundleAttestationOrderErrors(promotionFile, model, 'verify')) errors.push(`  - ${finding}`);
+    for (const finding of promotionHandoffModuleErrors(promotionFile, model)) errors.push(`  - ${finding}`);
+    for (const finding of promotionPublicationStateErrors(promotionFile, model)) errors.push(`  - ${finding}`);
     const inputs = model?.on?.workflow_call?.inputs ?? {};
     if (!inputs['release-tag']?.required || !inputs['candidate-tag']?.required) recordError(promotionFile, 'promotion must require exact stable and candidate tags');
     if (/latest matching candidate|tail -n 1|sort -V/u.test(promotionSrc)) recordError(promotionFile, 'promotion must not infer the latest matching candidate');
     if (/Stage reviewed recovery verifier|Restore reviewed recovery verifier|cp scripts\/lib\/release-candidate/u.test(promotionSrc)) recordError(promotionFile, 'promotion must not mix current-main control with immutable release source');
-    for (const required of ['extract-release-bundle.mjs', 'verify-release-promotion.mjs', 'release-orchestrator.mjs', 'reconcile-github-release.mjs', '--candidate-core', '--promotion-intent', '--control-bundle-manifest', '--candidate-verification-passed', 'governance/evidence/*.md']) {
+    for (const required of [
+      'CALLER_WORKFLOW_REF: ${{ github.workflow_ref }}',
+      'CALLER_WORKFLOW_COMMIT: ${{ github.workflow_sha }}',
+      'PROMOTION_WORKFLOW_REF: ${{ job.workflow_ref }}',
+      'PROMOTION_WORKFLOW_COMMIT: ${{ job.workflow_sha }}',
+      'release.yml@refs/heads/main',
+      'promote-release.yml@refs/heads/main',
+      'git merge-base --is-ancestor "${CALLER_WORKFLOW_COMMIT}" origin/main',
+      'git merge-base --is-ancestor "${PROMOTION_WORKFLOW_COMMIT}" origin/main',
+    ]) {
+      if (!promotionSrc.includes(required)) recordError(promotionFile, `promotion protected-main caller/called identity is missing ${required}`);
+    }
+    for (const required of ['extract-release-bundle.mjs', 'verify-release-promotion.mjs', 'release-orchestrator.mjs', 'reconcile-github-release.mjs', '--candidate-core', '--promotion-intent', '--control-bundle-manifest', '--candidate-verification-passed', 'governance/evidence/*.md', 'gh api', 'releases/tags/${CANDIDATE_TAG}', '--repository "${GITHUB_REPOSITORY}"', '--candidate-release-metadata', '--observation-evidence-out', 'candidate-observation.json "${handoff}/"']) {
       if (!promotionSrc.includes(required)) recordError(promotionFile, `promotion is missing state-machine control ${required}`);
+    }
+    for (const required of [
+      '--source-ref refs/heads/main',
+      '--source-digest "${builder_workflow_commit}"',
+      '--signer-digest "${builder_workflow_commit}"',
+      '--deny-self-hosted-runners',
+    ]) {
+      if (!promotionSrc.includes(required)) recordError(promotionFile, `promotion builder provenance verification is missing ${required}`);
     }
     const verifyJob = model?.jobs?.verify;
     const publishJob = model?.jobs?.publish;
@@ -609,13 +1083,63 @@ function validateWorkflowContracts() {
     }
     if (verifyJob?.permissions?.contents !== 'read' || publishJob?.permissions?.contents !== 'write' || Object.keys(publishJob?.permissions ?? {}).length !== 1) recordError(promotionFile, 'verify must be read-only and publish must have only contents write');
     const publishText = JSON.stringify(publishJob ?? {});
-    if (/npm (?:ci|install)|actions\/setup-node|actions\/checkout/u.test(publishText)) recordError(promotionFile, 'publish job must not checkout source or install npm dependencies');
+    if (/npm (?:ci|install)|actions\/checkout/u.test(publishText)) recordError(promotionFile, 'publish job must not checkout source or install npm dependencies');
+    if (!promotionSrc.includes('cd handoff')
+      || !promotionSrc.includes('--promotion-intent promotion-intent.json --control-bundle release-control-bundle.manifest.json')
+      || !promotionSrc.includes('--event-dir events')) {
+      recordError(promotionFile, 'publish handoff tools must execute from the downloaded handoff root with handoff-relative inputs');
+    }
+    if (/release-orchestrator\.mjs[\s\S]{0,700}--promotion-intent handoff\//u.test(promotionSrc)) {
+      recordError(promotionFile, 'copied release orchestrator must not receive a duplicate handoff path prefix');
+    }
     for (const required of ['verified-promotion-handoff-', 'handoff.sha256', 'sha256sum -c', 'actions/upload-artifact@', 'actions/download-artifact@']) {
       if (!promotionSrc.includes(required)) recordError(promotionFile, `promotion digest-bound handoff is missing ${required}`);
+    }
+    for (const required of [
+      'workflow-provenance.json',
+      'runUrl:',
+      'caller:{workflowRef:',
+      'called:{workflowRef:',
+      "await import('./${handoff}/scripts/release-orchestrator.mjs')",
+      "await import('./${handoff}/scripts/reconcile-github-release.mjs')",
+    ]) {
+      if (!promotionSrc.includes(required)) recordError(promotionFile, `promotion handoff provenance or module preflight is missing ${required}`);
     }
     if (!promotionSrc.includes('test "$(find "${handoff}/publish" -maxdepth 1 -type f | wc -l | tr -d \' \')" -eq 3')) recordError(promotionFile, 'stable publication must expose exactly archive, checksums, and one evidence bundle');
     for (const required of ["RELEASE_PROMOTION: '1'", 'CANDIDATE_TAG: ${{ inputs.candidate-tag }}', 'SOURCE_COMMIT: ${{ steps.identity.outputs.commit }}']) {
       if (!promotionSrc.includes(required)) recordError(promotionFile, `promotion release notes are missing exact fact input ${required}`);
+    }
+  }
+
+  const recoveryFile = '.github/workflows/release-recovery-drill.yml';
+  const recoverySrc = readWorkflow(recoveryFile);
+  if (recoverySrc) {
+    const model = parseWorkflow(recoveryFile, recoverySrc);
+    for (const finding of protectedMainDispatchErrors(recoveryFile, model, 'release-recovery-drill')) errors.push(`  - ${finding}`);
+    for (const finding of promotionTagIdentityErrors(recoveryFile, model, 'recover')) errors.push(`  - ${finding}`);
+    for (const finding of releaseRefTrustBoundaryErrors(recoveryFile, model, {
+      jobId: 'recover',
+      expectedVerifyTags: 1,
+      trustDirectory: 'recovery-trust',
+      expectedBootstrapRef: '${{ github.workflow_sha }}',
+    })) errors.push(`  - ${finding}`);
+    for (const finding of releaseBundleAttestationOrderErrors(recoveryFile, model, 'recover')) errors.push(`  - ${finding}`);
+    for (const required of [
+      'release-recovery-drill.yml@refs/heads/main',
+      'git show "${WORKFLOW_SOURCE_COMMIT}:.github/workflows/release-recovery-drill.yml"',
+      '.metrics/recovery/workflow-provenance.json',
+      'callerWorkflowRef: process.env.CALLER_WORKFLOW_REF',
+      'callerWorkflowSha: process.env.CALLER_WORKFLOW_SHA',
+      'workflowSourceCommit: process.env.WORKFLOW_SOURCE_COMMIT',
+      'candidateCommit: process.env.CANDIDATE_COMMIT',
+      '--source-ref refs/heads/main',
+      '--source-digest "${builder_workflow_commit}"',
+      '--signer-digest "${builder_workflow_commit}"',
+      '--deny-self-hosted-runners',
+      '--candidate-release-metadata',
+      '--observation-evidence-out',
+    ]) {
+      if (!recoverySrc.includes(required)) recordError(recoveryFile, `recovery builder provenance verification is missing ${required}`);
     }
   }
 
@@ -649,10 +1173,18 @@ function validateWorkflowContracts() {
   if (!/node scripts\/validate-plugin-install\.mjs --accept-user-scope-mutation --isolated-home/.test(smokeSrc)) {
     recordError(smokeFile, 'plugin install smoke isolation contract requires isolated home mode');
   }
+  const installInvocations = smokeSrc.split(/\r?\n/u)
+    .filter((line) => line.includes('node scripts/validate-plugin-install.mjs --accept-user-scope-mutation'));
+  if (installInvocations.length !== 2
+    || installInvocations.some((line) => !line.includes('--isolated-home --evidence-source local-isolated-install'))) {
+    recordError(smokeFile, 'both plugin install smoke invocations must use the stable local-isolated-install evidence source');
+  }
   if (!/disposable runner/i.test(smokeSrc)) {
     recordError(smokeFile, 'plugin install smoke isolation contract requires disposable runner wording');
   }
-  if (!/GH_REPO:\s*\$\{\{\s*github\.repository\s*\}\}/.test(smokeSrc)) {
+  if (!/GH_REPO:\s*github\.com\/\$\{\{\s*github\.repository\s*\}\}/.test(smokeSrc)
+    || !/GH_HOST:\s*github\.com/.test(smokeSrc)
+    || !/\/usr\/bin\/gh issue (?:list|close|comment|create)/.test(smokeSrc)) {
     recordError(smokeFile, 'plugin install smoke issue reporter must bind GH_REPO outside a Git checkout');
   }
 
@@ -778,6 +1310,82 @@ function validateRequiredCheckContracts() {
   );
 }
 
+export function prGovernanceTrustBoundaryErrors(file, model) {
+  const findings = [];
+  const job = model?.jobs?.governance;
+  const steps = job?.steps ?? [];
+  const checkoutIndexes = steps
+    .map((step, index) => [step, index])
+    .filter(([step]) => String(step.uses ?? '').startsWith('actions/checkout@'));
+  if (checkoutIndexes.length !== 1) {
+    findings.push(`${file}: PR governance must have exactly one checkout so pull-request code cannot replace the trusted validator`);
+  }
+  const [checkout, checkoutIndex] = checkoutIndexes[0] ?? [];
+  if (checkout) {
+    if (checkout.with?.ref !== '${{ github.event.pull_request.base.sha }}') {
+      findings.push(`${file}: PR governance checkout must pin the pull request base SHA`);
+    }
+    if (checkout.with?.path !== 'trusted-governance') {
+      findings.push(`${file}: PR governance checkout must use the independent trusted-governance path`);
+    }
+    if (checkout.with?.['persist-credentials'] !== false) {
+      findings.push(`${file}: PR governance checkout must not persist Git credentials`);
+    }
+    if (Object.hasOwn(checkout, 'if') || checkout['continue-on-error'] === true) {
+      findings.push(`${file}: PR governance trusted checkout must not be conditional or allowed to fail`);
+    }
+  }
+
+  const validatorIndexes = steps
+    .map((step, index) => [step, index])
+    .filter(([step]) => String(step.run ?? '').includes('validate-pr-governance.mjs'));
+  if (validatorIndexes.length !== 1) {
+    findings.push(`${file}: PR governance must invoke exactly one source-owned validator`);
+  }
+  const [validator, validatorIndex] = validatorIndexes[0] ?? [];
+  if (validator) {
+    if (validator.run !== 'node scripts/validate-pr-governance.mjs') {
+      findings.push(`${file}: PR governance must invoke the source-owned validator with fixed argv`);
+    }
+    if (validator['working-directory'] !== 'trusted-governance') {
+      findings.push(`${file}: PR governance validator must execute from the trusted-governance base checkout`);
+    }
+    if (Object.hasOwn(validator, 'if') || validator['continue-on-error'] === true) {
+      findings.push(`${file}: PR governance validator must not be conditional or allowed to fail`);
+    }
+    if (Object.hasOwn(validator, 'shell')) {
+      findings.push(`${file}: PR governance validator must use the hosted runner's standard shell`);
+    }
+  }
+  if (checkoutIndex !== undefined && validatorIndex !== undefined && checkoutIndex >= validatorIndex) {
+    findings.push(`${file}: PR governance must establish the trusted base checkout before invoking its validator`);
+  }
+  const setupNode = steps[1];
+  if (steps.length !== 3 || checkoutIndex !== 0 || validatorIndex !== 2
+    || !String(setupNode?.uses ?? '').startsWith('actions/setup-node@')) {
+    findings.push(`${file}: PR governance must retain the exact trusted checkout, setup-node, validator sequence with no pull-request-controlled mutation step`);
+  }
+  if (setupNode && (JSON.stringify(Object.keys(setupNode.with ?? {}).sort()) !== JSON.stringify(['node-version'])
+    || String(setupNode.with?.['node-version']) !== '22'
+    || Object.hasOwn(setupNode, 'env') || Object.hasOwn(setupNode, 'if')
+    || Object.hasOwn(setupNode, 'shell') || setupNode['continue-on-error'] === true)) {
+    findings.push(`${file}: PR governance setup-node step must not accept execution overrides`);
+  }
+  const validatorEnv = validator?.env ?? {};
+  if (JSON.stringify(Object.keys(validatorEnv).sort()) !== JSON.stringify(['GITHUB_TOKEN'])
+    || validatorEnv.GITHUB_TOKEN !== '${{ github.token }}') {
+    findings.push(`${file}: PR governance validator environment must contain only the event-scoped GITHUB_TOKEN`);
+  }
+  if (Object.keys(model?.env ?? {}).length > 0 || Object.keys(job?.env ?? {}).length > 0
+    || model?.defaults?.run || job?.defaults?.run) {
+    findings.push(`${file}: PR governance must not inherit workflow or job execution overrides`);
+  }
+  if (job?.['continue-on-error'] === true || job?.container || job?.services) {
+    findings.push(`${file}: PR governance job must fail closed on the hosted runner without custom containers or services`);
+  }
+  return findings;
+}
+
 function validatePrGovernanceContracts() {
   const workflowFile = '.github/workflows/pr-governance.yml';
   const workflowSrc = readWorkflow(workflowFile);
@@ -797,11 +1405,9 @@ function validatePrGovernanceContracts() {
     if (job?.name !== PR_GOVERNANCE_CHECK) recordError(workflowFile, `governance job must expose stable check name "${PR_GOVERNANCE_CHECK}"`);
     if (job?.['timeout-minutes'] !== 5) recordError(workflowFile, 'PR governance must retain its five-minute lightweight timeout');
     const steps = job?.steps ?? [];
-    const checkout = steps.find((step) => String(step.uses ?? '').startsWith('actions/checkout@'));
-    if (checkout?.with?.['persist-credentials'] !== false) recordError(workflowFile, 'PR governance checkout must not persist Git credentials');
+    for (const finding of prGovernanceTrustBoundaryErrors(workflowFile, model)) errors.push(`  - ${finding}`);
     const setupNode = steps.find((step) => String(step.uses ?? '').startsWith('actions/setup-node@'));
     if (String(setupNode?.with?.['node-version']) !== '22') recordError(workflowFile, 'PR governance must run on the minimum supported Node 22');
-    if (!steps.some((step) => step.run === 'node scripts/validate-pr-governance.mjs')) recordError(workflowFile, 'PR governance must invoke the source-owned validator with fixed argv');
     if (!String(job?.if ?? '').includes("github.event_name == 'pull_request'") || !String(job?.if ?? '').includes("github.event_name == 'pull_request_review'")) recordError(workflowFile, 'PR governance job must remain isolated to pull-request and review lifecycle events');
   }
 
@@ -815,6 +1421,7 @@ function validatePrGovernanceContracts() {
       if (!template.includes(field)) recordError(templateFile, `large change exception is missing ${field}`);
     }
     if (!template.includes('bash -n nova-plugin/hooks/scripts/pre-bash-check.sh')) recordError(templateFile, 'Bash syntax checklist must include pre-bash-check.sh');
+    if (!template.includes('bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh')) recordError(templateFile, 'Bash syntax checklist must include trusted-node-hook.sh');
   }
 
   const ownersFile = '.github/CODEOWNERS';
@@ -822,6 +1429,30 @@ function validatePrGovernanceContracts() {
   if (owners) {
     for (const path of ['/scripts/validate-github-workflows.mjs', '/scripts/validate-pr-governance.mjs', '/scripts/lib/pr-governance.mjs']) {
       if (!owners.includes(path)) recordError(ownersFile, `PR governance policy surface must have an explicit code owner: ${path}`);
+    }
+
+    const reviewerFile = 'governance/release-reviewers.json';
+    const reviewerSrc = readRequiredFile(reviewerFile);
+    if (reviewerSrc) {
+      try {
+        const reviewerPolicy = JSON.parse(reviewerSrc);
+        const trustedOwners = new Set([
+          ...(reviewerPolicy.trustedUsers ?? []).map((user) => `@${user}`),
+          ...(reviewerPolicy.trustedTeams ?? []).map((team) => `@${team}`),
+        ]);
+        const configuredOwners = new Set(
+          owners
+            .split(/\r?\n/u)
+            .map((line) => line.trim())
+            .filter((line) => line && !line.startsWith('#'))
+            .flatMap((line) => line.split(/\s+/u).slice(1)),
+        );
+        if (reviewerPolicy.status === 'configured' && ![...trustedOwners].some((owner) => configuredOwners.has(owner))) {
+          recordError(ownersFile, `at least one trusted independent reviewer from ${reviewerFile} must be a Code Owner`);
+        }
+      } catch (error) {
+        recordError(reviewerFile, `invalid reviewer policy JSON: ${error.message}`);
+      }
     }
   }
 
@@ -831,6 +1462,7 @@ function validateCiRuntimeEvidenceContracts() {
   const file = '.github/workflows/ci.yml';
   const src = readWorkflow(file);
   if (!src) return;
+  const model = parseWorkflow(file, src);
 
   const coverageLines = extractCiJobLines('tests');
   if (coverageLines) {
@@ -841,7 +1473,11 @@ function validateCiRuntimeEvidenceContracts() {
     if (!/run:\s*npm run test:coverage:check/.test(coverage)) {
       recordError(file, 'Test Coverage must run npm run test:coverage:check');
     }
-    if (!/path:\s*\.metrics\/coverage\//.test(coverage) || !/include-hidden-files:\s*true/.test(coverage)) {
+    const coverageSteps = (model?.jobs?.tests?.steps ?? [])
+      .filter((step) => step?.with?.name === 'test-coverage-evidence');
+    if (coverageSteps.length !== 1
+      || coverageSteps[0]?.with?.path !== '.metrics/coverage/'
+      || coverageSteps[0]?.with?.['include-hidden-files'] !== true) {
       recordError(file, 'Test Coverage artifact must explicitly upload hidden .metrics/coverage content');
     }
   }
@@ -875,28 +1511,115 @@ function validateCiRuntimeEvidenceContracts() {
   if (!/generate-validation-timing-trend\.mjs/.test(src)) recordError(file, 'full CI must produce validation timing trend evidence');
 }
 
+export function npmCacheContractErrors(file, model) {
+  const findings = [];
+  for (const [jobId, job] of Object.entries(model?.jobs ?? {})) {
+    const steps = job?.steps ?? [];
+    for (const [index, step] of steps.entries()) {
+      if (!String(step.uses ?? '').startsWith('actions/setup-node@') || step.with?.cache !== 'npm') continue;
+      const checkoutPrecedesCache = steps
+        .slice(0, index)
+        .some((candidate) => String(candidate.uses ?? '').startsWith('actions/checkout@'));
+      if (!checkoutPrecedesCache) {
+        findings.push(`${file}: job "${jobId}" must checkout a lockfile before enabling setup-node npm cache`);
+      }
+    }
+
+    for (const [index, step] of steps.entries()) {
+      if (!/^npm ci --ignore-scripts(?:\s|$)/u.test(String(step.run ?? '').trim())) continue;
+      const cachedSetupPrecedesInstall = steps
+        .slice(0, index)
+        .some((candidate) => String(candidate.uses ?? '').startsWith('actions/setup-node@') && candidate.with?.cache === 'npm');
+      if (!cachedSetupPrecedesInstall) {
+        findings.push(`${file}: job "${jobId}" setup-node step before npm ci must enable the npm cache`);
+      }
+    }
+  }
+  return findings;
+}
+
+function runUsesNodeOrNpm(run) {
+  return String(run ?? '')
+    .split(/\r?\n/u)
+    .some((line) => /(?:^|[\s;&|($`])(?:node|npm)(?=\s|$)/u.test(line));
+}
+
+export function nodeRuntimeContractErrors(file, model) {
+  const findings = [];
+  for (const [jobId, job] of Object.entries(model?.jobs ?? {})) {
+    const steps = job?.steps ?? [];
+    const firstRuntimeCommand = steps.findIndex((step) => runUsesNodeOrNpm(step.run));
+    if (firstRuntimeCommand === -1) continue;
+
+    const precedingSetups = steps
+      .slice(0, firstRuntimeCommand)
+      .filter((step) => String(step.uses ?? '').startsWith('actions/setup-node@'));
+    if (precedingSetups.length === 0) {
+      findings.push(`${file}: job "${jobId}" must setup Node 22 before executing node or npm`);
+      continue;
+    }
+    if (!precedingSetups.some((step) => String(step.with?.['node-version']) === '22')) {
+      findings.push(`${file}: job "${jobId}" must setup exact Node 22 before executing node or npm`);
+    }
+  }
+  return findings;
+}
+
+function validateReleaseNodeRuntimeContracts() {
+  for (const file of RELEASE_RUNTIME_WORKFLOW_FILES) {
+    const src = readWorkflow(file);
+    if (!src) continue;
+    const model = parseWorkflow(file, src);
+    if (!model) continue;
+    for (const finding of nodeRuntimeContractErrors(file, model)) errors.push(`  - ${finding}`);
+  }
+}
+
 function validateNpmCacheContracts() {
   for (const file of EXPECTED_WORKFLOW_FILES) {
     const src = readWorkflow(file);
     if (!src) continue;
-    const uncachedInstall = /actions\/setup-node@[^\n]+\n\s+with:\n\s+node-version:[^\n]+\n\s+- run: npm ci --ignore-scripts/gu;
-    if (uncachedInstall.test(src)) {
-      recordError(file, 'setup-node steps immediately followed by npm ci must enable the npm cache');
-    }
+    const model = parseWorkflow(file, src);
+    if (!model) continue;
+    for (const finding of npmCacheContractErrors(file, model)) errors.push(`  - ${finding}`);
   }
 }
 
-validateWorkflowInventory();
-validateWorkflowContracts();
-validateRequiredCheckContracts();
-validatePrGovernanceContracts();
-validateCiRuntimeEvidenceContracts();
-validateNpmCacheContracts();
+export function main(args = process.argv.slice(2)) {
+  errors = [];
+  notices = [];
+  try {
+    const selectedRoot = parseRoot(args);
+    if (!selectedRoot) {
+      console.log(usage());
+      return 0;
+    }
+    root = selectedRoot;
+  } catch (error) {
+    console.error(`ERROR ${error.message}`);
+    console.error(usage());
+    return 1;
+  }
 
-if (errors.length) {
-  console.error(`GitHub workflow validation failed (${errors.length} error${errors.length === 1 ? '' : 's'}):`);
-  for (const error of errors) console.error(error);
-  process.exit(1);
+  validateWorkflowInventory();
+  validateWorkflowContracts();
+  validateRequiredCheckContracts();
+  validatePrGovernanceContracts();
+  validateCiRuntimeEvidenceContracts();
+  validateReleaseNodeRuntimeContracts();
+  validateNpmCacheContracts();
+
+  if (errors.length) {
+    console.error(`GitHub workflow validation failed (${errors.length} error${errors.length === 1 ? '' : 's'}):`);
+    for (const error of errors) console.error(error);
+    return 1;
+  }
+
+  console.log('OK GitHub workflow validation passed');
+  for (const notice of notices) console.log(notice);
+  return 0;
 }
 
-console.log('OK GitHub workflow validation passed');
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  process.exitCode = main();
+}

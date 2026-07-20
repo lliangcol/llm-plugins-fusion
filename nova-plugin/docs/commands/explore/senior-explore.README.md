@@ -8,7 +8,7 @@
 - Audience: `advanced-users`; support risk: `low`
 - Inputs: `INTENT` (required), `CONTEXT` (required), `CONSTRAINTS`, `DEPTH`, `EXPORT_PATH`
 - Output contract: `senior-exploration-v2`; authorization: `artifact-write`
-- Effects: `artifact-write`, `workspace-read`, `workspace-write`
+- Effects: `artifact-write`, `workspace-read`
 - Related workflows: `explore`, `produce-plan`
 <!-- generated:command-contract:end -->
 
@@ -25,9 +25,9 @@
 | 参数          | 必填 | 说明                     | 示例                                  |
 | ------------- | ---- | ------------------------ | ------------------------------------- |
 | `INTENT`      | Yes  | 分析意图。               | `Analyze a new feature requirement`   |
-| `CONTEXT`     | No   | 上下文材料。             | `Logs and modules`                    |
+| `CONTEXT`     | Yes  | 上下文材料。             | `Logs and modules`                    |
 | `CONSTRAINTS` | No   | 分析边界与约束。         | `Only analyze current implementation` |
-| `DEPTH`       | No   | `quick` / `normal` / `deep`，默认 `normal`。 | `deep`              |
+| `DEPTH`       | No   | 固定为 `deep`；省略时同样使用 `deep`。 | `deep`              |
 | `EXPORT_PATH` | No   | 导出路径（与聊天一致）。 | `docs/analysis/issue.md`              |
 
 ## 输出说明
@@ -57,6 +57,7 @@ CONTEXT: 需求文档与现有模块概述
 ```text
 /nova-plugin:senior-explore
 INTENT: Investigate a production issue or bug
+CONTEXT: 错误日志与相关模块
 DEPTH: deep
 EXPORT_PATH: docs/analysis/payment-issue.md
 ```

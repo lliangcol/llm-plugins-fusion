@@ -1,5 +1,15 @@
 /** Pure Contract v5/v1 to v6/v2 migration helpers. */
 
+import {
+  CONTRACT_EVIDENCE_REQUIREMENTS,
+  expectedEnforcementRequirements,
+  projectTypedInput,
+  validateBehaviorContractStructure,
+  validateContractCoherence,
+} from './contract-coherence.mjs';
+import { validateBehaviorPredicateInputs } from '../core/behavior-input-contract.mjs';
+import { ownRecordValue } from '../core/own-record.mjs';
+
 const effectNames = {
   workspaceRead: 'workspace-read',
   workspaceWrite: 'workspace-write',
@@ -11,63 +21,24 @@ const effectNames = {
   gitHistoryMutation: 'git-history-mutation',
 };
 
-function validatePredicate(predicate, inputNames, label) {
-  if (!predicate || typeof predicate !== 'object' || Array.isArray(predicate)) throw new Error(`${label}: predicate must be an object`);
-  if (['input-present', 'path-readable', 'path-writable', 'input-equals', 'input-in'].includes(predicate.op)) {
-    if (!inputNames.has(predicate.input)) throw new Error(`${label}: predicate references unknown input ${predicate.input}`);
-    return;
-  }
-  if (['all', 'any'].includes(predicate.op)) {
-    if (!Array.isArray(predicate.args) || predicate.args.length === 0) throw new Error(`${label}: ${predicate.op} predicate requires args`);
-    for (const child of predicate.args) validatePredicate(child, inputNames, label);
-    return;
-  }
-  if (predicate.op === 'not') {
-    validatePredicate(predicate.arg, inputNames, label);
-    return;
-  }
-  if (predicate.op === 'semantic-condition' || predicate.op === 'capability-state') return;
-  throw new Error(`${label}: unsupported predicate op ${predicate.op ?? 'missing'}`);
-}
-
-function inputType(input) {
-  if (input.type) return input.type;
-  if (typeof input.default === 'boolean' || input.exactValues?.every((value) => typeof value === 'boolean')) return 'boolean';
-  if (input.exactValues) return 'enum';
-  return 'string';
-}
-
-function typedInput(input) {
-  const type = inputType(input);
-  const result = { name: input.name, type, required: input.required };
-  if (type === 'enum') result.values = input.exactValues;
-  if (['path', 'artifact-reference', 'review-reference'].includes(type)) {
-    if (!input.pathPolicy) throw new Error(`${input.name}: typed path input requires pathPolicy`);
-    result.pathPolicy = structuredClone(input.pathPolicy);
-  } else if (input.pathPolicy) throw new Error(`${input.name}: pathPolicy requires a path-like input type`);
-  if (type === 'approval') {
-    result.approvalPolicy = {
-      mustBeExplicit: true,
-      mayInfer: false,
-      scope: input.name,
-      oneShot: true,
-      expires: null,
-    };
-  }
-  return result;
-}
-
 export function migrateWorkflowSpec(v5, behaviorSpec) {
   if (v5.schemaVersion !== 5) throw new Error('v5 workflow source is required');
   if (behaviorSpec.schemaVersion !== 1) throw new Error('v1 behavior source is required');
+  if (!Array.isArray(v5.workflows) || v5.workflows.length === 0) throw new Error('v5 workflows must be a non-empty array');
+  if (!Array.isArray(behaviorSpec.behaviors) || behaviorSpec.behaviors.length === 0) throw new Error('v1 behaviors must be a non-empty array');
+  const sourceFailures = validateContractCoherence(v5, behaviorSpec);
+  if (sourceFailures.length > 0) throw new Error(`source Contract v5/v1 is incoherent: ${sourceFailures.join('; ')}`);
+  for (const behavior of behaviorSpec.behaviors) validateBehaviorContractStructure(behavior, 1);
   const behaviors = new Map(behaviorSpec.behaviors.map((entry) => [entry.id, entry]));
   if (behaviors.size !== behaviorSpec.behaviors.length) throw new Error('behavior ids must be unique');
-  const workflowIds = new Set(v5.workflows.map((workflow) => workflow.id));
+  const workflowIdList = v5.workflows.map((workflow) => workflow.id);
+  if (workflowIdList.some((id) => typeof id !== 'string' || id.length === 0)) throw new Error('workflow ids must be non-empty strings');
+  const workflowIds = new Set(workflowIdList);
+  if (workflowIds.size !== workflowIdList.length) throw new Error('workflow ids must be unique');
   const extraBehaviors = [...behaviors.keys()].filter((id) => !workflowIds.has(id)).sort();
   if (extraBehaviors.length > 0) throw new Error(`behaviors without workflows: ${extraBehaviors.join(', ')}`);
-  return {
+  const projected = {
     ...structuredClone(v5),
-    $schema: '../schemas/workflow-spec.schema.json',
     schemaVersion: 6,
     contractVersions: {
       framework: '5.0.0',
@@ -79,21 +50,25 @@ export function migrateWorkflowSpec(v5, behaviorSpec) {
     workflows: v5.workflows.map((workflow) => {
       const behavior = behaviors.get(workflow.id);
       if (!behavior) throw new Error(`missing behavior for ${workflow.id}`);
-      const profile = v5.permissionProfiles[workflow.permissionProfile];
+      const profile = ownRecordValue(v5.permissionProfiles, workflow.permissionProfile);
       if (!profile) throw new Error(`${workflow.id}: missing permission profile ${workflow.permissionProfile}`);
-      const inputs = behavior.inputs.map(typedInput);
+      const inputs = behavior.inputs.map(projectTypedInput);
       const policy = profile.permissionPolicy;
-      const effects = Object.entries(effectNames)
+      const artifactPathWrite = inputs.some((input) => input.pathPolicy?.root === 'artifact-root' && input.pathPolicy.writable);
+      const workspacePathWrite = inputs.some((input) => input.pathPolicy?.root === 'workspace' && input.pathPolicy.writable);
+      const effects = new Set(Object.entries(effectNames)
         .filter(([key]) => policy[key] !== 'denied' && policy[key] !== 'unsupported')
-        .map(([, value]) => value);
-      if (inputs.some((input) => input.pathPolicy?.root === 'artifact-root' && input.pathPolicy.writable)) effects.push('artifact-write');
+        .filter(([key]) => key !== 'workspaceWrite' || !artifactPathWrite || workspacePathWrite)
+        .map(([, value]) => value));
+      if (artifactPathWrite) effects.add('artifact-write');
+      const sortedEffects = [...effects].sort();
       return {
         ...structuredClone(workflow),
         inputs,
-        effects: effects.sort(),
+        effects: sortedEffects,
         authorizationProfile: workflow.permissionProfile,
-        enforcementRequirements: effects.map((effect) => `enforce:${effect}`),
-        evidenceRequirements: ['authorization-decision', 'effects-observed', 'validation-result'],
+        enforcementRequirements: expectedEnforcementRequirements(sortedEffects),
+        evidenceRequirements: [...CONTRACT_EVIDENCE_REQUIREMENTS],
         compatibilityProjection: {
           sourceVersion: 5,
           permissionProfile: workflow.permissionProfile,
@@ -102,6 +77,12 @@ export function migrateWorkflowSpec(v5, behaviorSpec) {
       };
     }),
   };
+  const projectedBehaviors = migrateBehaviorSpec(behaviorSpec);
+  const projectedFailures = validateContractCoherence(projected, projectedBehaviors);
+  if (projectedFailures.length > 0) {
+    throw new Error(`projected Contract v6/v2 is incoherent: ${projectedFailures.join('; ')}`);
+  }
+  return projected;
 }
 
 export function migrateBehaviorSpec(v1) {
@@ -113,15 +94,17 @@ export function migrateBehaviorSpec(v1) {
     ...structuredClone(v1),
     schemaVersion: 2,
     behaviors: v1.behaviors.map((behavior) => {
+      validateBehaviorContractStructure(behavior, 1);
       if (!Array.isArray(behavior.decisionTable) || behavior.decisionTable.length === 0) throw new Error(`${behavior.id}: decisionTable must be a non-empty array`);
-      const inputNames = new Set((behavior.inputs ?? []).map((input) => input.name));
+      const projectedBehavior = structuredClone(behavior);
+      const inputsByName = new Map((projectedBehavior.inputs ?? []).map((input) => [input.name, input]));
       return {
-        ...behavior,
-        decisionTable: behavior.decisionTable.map((decision) => {
+        ...projectedBehavior,
+        decisionTable: projectedBehavior.decisionTable.map((decision) => {
           if (!decision || typeof decision !== 'object' || typeof decision.action !== 'string' || decision.action.length === 0) throw new Error(`${behavior.id}: invalid decision`);
           const { predicate, ...projected } = decision;
           if (!predicate && (typeof decision.when !== 'string' || decision.when.length === 0)) throw new Error(`${behavior.id}: decision.when must be a non-empty string when predicate is absent`);
-          if (predicate) validatePredicate(predicate, inputNames, behavior.id);
+          if (predicate) validateBehaviorPredicateInputs(predicate, inputsByName, behavior.id);
           return {
             ...projected,
             when: predicate ? structuredClone(predicate) : {

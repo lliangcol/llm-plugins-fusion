@@ -26,7 +26,7 @@ succeeds. No plan artifact or approval exists yet.
 ```
 
 Expected shape: `## Recommended Route` plus the eight fixed fields, beginning
-with `Canonical skill`, optional `Command alias`, and `Variant parameters`. `Required
+with `Canonical skill`, `Command entrypoint`, and `Variant parameters`. `Required
 inputs` must use downstream canonical names such as `INPUT`, never prose or an
 alias.
 

@@ -23,11 +23,11 @@
 
 ### Required
 
-- 无
+- `ARGUMENTS`: 待审查内容。示例: `核心模块代码`
 
 ### Optional
 
-- `ARGUMENTS`: 待审查内容。示例: `核心模块代码`
+- 无
 
 ## 行为准则（Do/Don't）
 

@@ -2,10 +2,10 @@
 /** Derive current compatibility claims from static adapters and digest-bound evidence. */
 
 import { createHash } from 'node:crypto';
-import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { gitResolveCommit } from './lib/git-source-snapshot.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 
 const root = repoRoot(import.meta.url);
@@ -17,10 +17,14 @@ const matrixEnd = '<!-- generated:assistant-compatibility:end -->';
 
 const readJson = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
 const sha256 = (path) => createHash('sha256').update(readFileSync(resolve(root, path))).digest('hex');
-const head = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false }).stdout?.trim() ?? null;
 const minimumLiveCases = 20;
 const minimumLiveAttempts = 3;
 const canaryTtlMs = 14 * 24 * 60 * 60 * 1000;
+export const CURRENT_COMPATIBILITY_EVIDENCE_STATUSES = Object.freeze(['exact', 'carried-forward']);
+
+export function isCurrentCompatibilityEvidenceStatus(status) {
+  return CURRENT_COMPATIBILITY_EVIDENCE_STATUSES.includes(status);
+}
 
 const declarations = Object.freeze({
   'claude-code': { declaredLevel: 'L2', maximumSupportedLevel: 'L4', adapter: 'adapters/claude/manifest.json', scope: 'stable Claude command invocation; hooks and release verification require current evidence' },
@@ -47,9 +51,7 @@ function evidenceStatus(path, evidence, assistant, eligibilityReasons = []) {
   let status = 'historical';
   if (expired) status = 'expired';
   else if (staleReasons.length === 0) {
-    const tagCommit = evidence.releaseTag
-      ? spawnSync('git', ['rev-list', '-n', '1', evidence.releaseTag], { cwd: root, encoding: 'utf8', shell: false }).stdout?.trim()
-      : null;
+    const tagCommit = evidence.releaseTag ? gitResolveCommit(root, evidence.releaseTag) : null;
     status = tagCommit && tagCommit === evidence.baseCommit ? 'exact' : 'carried-forward';
   }
   return {
@@ -105,7 +107,7 @@ export function buildRegistry() {
     return (evidence.assistants ?? []).map((assistant) => evidenceStatus(path, evidence, assistant));
   });
   const claims = Object.entries(declarations).map(([assistant, declaration]) => {
-    const current = records.filter((record) => record.assistant === assistant && ['exact', 'carried-forward'].includes(record.status)).at(-1) ?? null;
+    const current = records.filter((record) => record.assistant === assistant && isCurrentCompatibilityEvidenceStatus(record.status)).at(-1) ?? null;
     return {
       assistant,
       ...declaration,
@@ -133,7 +135,7 @@ export function buildRegistry() {
       ...support.latestCanary.map((entry) => ({ ...entry, lane: 'latest-canary' })),
     ],
     currentClaims: claims,
-    historicalEvidence: records.filter((record) => !['exact', 'carried-forward'].includes(record.status)),
+    historicalEvidence: records.filter((record) => !isCurrentCompatibilityEvidenceStatus(record.status)),
   };
 }
 

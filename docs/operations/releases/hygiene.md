@@ -12,8 +12,13 @@ tag or publishing release notes.
 
 ## Version And Tag Rules
 
-- `nova-plugin/.claude-plugin/plugin.json` is the plugin version source of
-  truth.
+- `nova-plugin/.claude-plugin/plugin.json` is the development/candidate plugin
+  base-version source of truth.
+- The root `package.json` repository-tooling version must match the plugin
+  manifest version; `node scripts/validate-regression.mjs` enforces this sync.
+- `governance/release-channels.json` is the stable version/tag/commit source.
+  Stable marketplace outputs and the security support range follow that channel;
+  they may legitimately lag unreleased plugin/package metadata.
 - Candidate tags use `v<plugin-version>-rc.<number>` while the plugin manifest
   keeps the stable base version. Stable tags use `v<plugin-version>`. Candidate
   and stable tags must be signed, immutable, and point to the same commit.
@@ -35,14 +40,19 @@ every required digest and status, and the actual control-bundle archive and
 file inventory before publishing those exact candidate bytes. Deterministic
 artifact tests build twice and require byte-for-byte equality.
 - Release tags must be signed annotated tags created by the designated release
-  actor and verified against `.github/release-signers`.
+  actor with `git tag -s` and locally checked with `git verify-tag` before push;
+  workflows verify them again against `.github/release-signers`.
 - A changelog release section is required before publishing a release.
 - Unreleased local work may stay under `CHANGELOG.md` `Unreleased` until the
   maintainer decides the release version and date.
 
 ## Generated Artifact Rules
 
-- Update `.claude-plugin/registry.source.json` and plugin manifests first.
+- For development/candidate version changes, update the plugin manifest and
+  root `package.json` together.
+- For a governed stable-channel change, update the exact release-channel and
+  registry distribution-source facts, then regenerate stable outputs. Do not
+  copy a moving development version into stable registry metadata.
 - Regenerate derived files with:
 
 ```bash
@@ -83,6 +93,7 @@ When Bash is available, confirm hook syntax checks actually ran:
 ```bash
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
+bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 
@@ -101,20 +112,41 @@ For the full manual sequence, including exact tag creation, isolated install
 smoke cleanup, workflow evaluation recording, and final promotion decisions, use
 [Release validation runbook](validation.md).
 
+All three privileged workflow entrypoints are `repository_dispatch` events
+resolved from protected `main`. The dispatching identity requires
+`Contents: write`, tags appear only under `client_payload`, and pushing a tag
+does not trigger candidate publication, stable promotion, or recovery. Record
+the run URL and exact caller `github.workflow_sha` for each dispatch; stable
+promotion also records the reusable job's `job.workflow_sha`. See the [Release
+validation runbook](validation.md) for the `gh api` examples.
+
 The release workflow is split by responsibility:
 
-1. `.github/workflows/release-candidate.yml` validates a signed RC tag, builds
-   artifacts once, performs exact-tag live validation, and publishes a
-   prerelease candidate manifest.
-2. `.github/workflows/release.yml` is manually dispatched with an exact stable
-   tag and its exact candidate tag, then delegates to
-   `.github/workflows/promote-release.yml`; pushing a stable tag alone does not
-   publish a release.
-3. Promotion downloads the candidate evidence bundle, verifies signed tag, original
+1. `release-candidate` dispatches `.github/workflows/release-candidate.yml` with
+   an exact signed RC tag, recomputes the content-addressed exact-profile
+   performance manifest, corroborates every retained run and raw report with
+   the GitHub Actions API and downloaded artifact, then builds artifacts once,
+   performs exact-tag live validation, and publishes a prerelease candidate
+   manifest. Repository-only records, self-reported counts or budgets, stale or
+   duplicate runs, and mismatched collection identities remain blocked.
+2. `promote-release` dispatches `.github/workflows/release.yml` with the exact
+   signed stable and candidate tags, then delegates to
+   `.github/workflows/promote-release.yml`.
+3. `release-recovery-drill` dispatches
+   `.github/workflows/release-recovery-drill.yml` with the exact signed
+   candidate tag and stable identity, without publication.
+4. Promotion downloads the candidate evidence bundle, verifies signed tag, original
    attestation signer, commit, source, artifact, build/runtime BOMs, build
    record, control bundle, and required evidence, then reconciles a draft,
    downloads every asset for exact verification, and exposes only the plugin
    archive, `SHA256SUMS.txt`, and one comprehensive evidence bundle.
+
+Attestation workflow provenance is the protected
+`.github/workflows/release-candidate.yml@refs/heads/main` identity plus the
+exact `candidate.workflowSourceCommit`. Source identity remains a separate
+proof supplied by the signed immutable candidate and stable tags. A generic
+attestation check must pass before bundle extraction; the exact source/signer
+digest check follows extraction and the bounded candidate-core read.
 
 ## Review Before Release
 
@@ -140,12 +172,12 @@ Before tagging, search for:
   from an unattended run that may mutate the operator's user-scope Claude
   plugin installation.
 - For minor releases, whether the five primary commands were manually evaluated
-  with `docs/examples/workflow-evaluation.md` and recorded with
-  `docs/examples/workflow-evaluation-record-template.md`, or why that evidence
+  with `docs/tutorials/workflow-evaluation.md` and recorded with
+  `docs/templates/evidence/workflow-evaluation.md`, or why that evidence
   is not applicable.
 
 `node scripts/validate-docs.mjs` also checks that `SECURITY.md` declares the
-current MINOR support range derived from `plugin.json`, and that active planning
+current MINOR support range derived from the stable channel in `governance/release-channels.json`, and that active planning
 tables do not keep stale `v1.x` future-version labels. It also checks the core
 project positioning, exact-tag promotion wording, and maintainer diagnostic
 warning semantics in active release-facing docs. Historical changelog entries

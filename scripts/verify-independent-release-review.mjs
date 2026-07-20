@@ -1,12 +1,19 @@
 #!/usr/bin/env node
 /** Require a current merged PR approval independent of author and candidate actor. */
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { requireOptionValue } from './lib/cli-args.mjs';
+import { normalizeCommitIdentity, normalizeGithubLogin } from './lib/github-identity.mjs';
+import { assertCompleteChangedFiles, assertCompleteReviewRecords, sensitiveChangedFilePaths } from './lib/pr-governance.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
-import { evaluateIndependentReview } from './lib/release-review.mjs';
+import { evaluateIndependentReview, validateReleaseReviewerPolicy } from './lib/release-review.mjs';
+import {
+  prepareArtifactOutputPlan,
+  resolveArtifactOutputPath,
+  writeArtifactOutput,
+} from './lib/artifact-output.mjs';
 
 const root = repoRoot(import.meta.url);
 
@@ -20,7 +27,7 @@ function parseArgs(args, env) {
     else if (arg === '--commit') options.commit = value;
     else if (arg === '--candidate-actor') options.candidateActor = value;
     else if (arg === '--reviewers') options.reviewers = resolve(root, value);
-    else if (arg === '--out') options.out = resolve(root, value);
+    else if (arg === '--out') options.out = resolveArtifactOutputPath(root, value, 'independent review output');
     else throw new Error(`unknown argument ${arg}`);
     index += 1;
   }
@@ -48,35 +55,49 @@ async function githubJsonPages(path, options, fetchImpl) {
 export async function verifyIndependentReview({ args = process.argv.slice(2), env = process.env, fetchImpl = fetch, now = () => new Date() } = {}) {
   const options = parseArgs(args, env);
   if (!options.repository || !options.commit || !options.candidateActor || !options.token) throw new Error('repository, commit, candidate actor, and GitHub token are required');
-  const reviewerPolicy = JSON.parse(readFileSync(options.reviewers, 'utf8'));
+  const outputPlan = prepareArtifactOutputPlan(root, [{
+    key: 'review', path: options.out, label: 'independent review output',
+  }], { protectedPaths: [options.reviewers] });
+  const candidateCommit = normalizeCommitIdentity(options.commit, 'candidate commit', { fullSha: true });
+  const candidateActor = normalizeGithubLogin(options.candidateActor, 'candidate actor');
+  const reviewerPolicy = validateReleaseReviewerPolicy(JSON.parse(readFileSync(options.reviewers, 'utf8')));
   if (reviewerPolicy.status !== 'configured' || reviewerPolicy.trustedUsers.length + reviewerPolicy.trustedTeams.length === 0) throw new Error('trusted reviewer identity or team is not configured');
-  const pulls = await githubJsonPages(`/repos/${options.repository}/commits/${options.commit}/pulls`, options, fetchImpl);
-  const pull = pulls.find((entry) => entry.merged_at && entry.merge_commit_sha === options.commit) ?? pulls.find((entry) => entry.merged_at);
+  const pulls = await githubJsonPages(`/repos/${options.repository}/commits/${candidateCommit}/pulls`, options, fetchImpl);
+  const pull = pulls.find((entry) => entry.merged_at && entry.merge_commit_sha === candidateCommit) ?? pulls.find((entry) => entry.merged_at);
   if (!pull) throw new Error('candidate commit is not associated with a merged pull request');
+  const pullDetails = await githubJson(`/repos/${options.repository}/pulls/${pull.number}`, options, fetchImpl);
+  if (pullDetails?.number !== pull.number
+    || !pullDetails.merged_at
+    || pullDetails.merge_commit_sha !== candidateCommit) {
+    throw new Error('merged pull request details do not match the candidate commit association');
+  }
   const reviews = await githubJsonPages(`/repos/${options.repository}/pulls/${pull.number}/reviews`, options, fetchImpl);
-  const pullRequestHead = pull.head?.sha;
-  if (!pullRequestHead) throw new Error('merged pull request is missing its final head commit');
+  assertCompleteReviewRecords(reviews, 'GitHub merged pull request reviews response');
+  const pullRequestHead = normalizeCommitIdentity(pullDetails.head?.sha, 'merged pull request final head', { fullSha: true });
+  const pullRequestAuthor = normalizeGithubLogin(pullDetails.user?.login, 'merged pull request author');
   const teamMembers = [];
   for (const team of reviewerPolicy.trustedTeams) {
     const [organization, slug] = team.split('/');
     const members = await githubJsonPages(`/orgs/${organization}/teams/${slug}/members`, options, fetchImpl);
-    teamMembers.push(...members.map((member) => member.login).filter(Boolean));
+    teamMembers.push(...members.map((member, index) => normalizeGithubLogin(member?.login, `${team} member ${index}`, { allowBot: false })));
   }
   const changedFiles = await githubJsonPages(`/repos/${options.repository}/pulls/${pull.number}/files`, options, fetchImpl);
-  const sensitive = options.sensitive || changedFiles.some((file) => reviewerPolicy.sensitivePaths.some((path) => file.filename === path || file.filename.startsWith(path)));
+  assertCompleteChangedFiles(changedFiles, pullDetails.changed_files, 'GitHub merged pull request files response');
+  const sensitive = options.sensitive || changedFiles.some((file) => sensitiveChangedFilePaths(file, reviewerPolicy.sensitivePaths).length > 0);
   const minimumApprovals = sensitive ? reviewerPolicy.sensitiveMinimumApprovals : reviewerPolicy.standardMinimumApprovals;
   const result = evaluateIndependentReview({
-    pullRequestAuthor: pull.user?.login,
-    candidateActor: options.candidateActor,
+    pullRequestAuthor,
+    candidateActor,
     expectedReviewCommit: pullRequestHead,
     trustedReviewers: [...new Set([...reviewerPolicy.trustedUsers, ...teamMembers])],
     botActors: reviewerPolicy.botIdentities,
     minimumApprovals,
-    reviews: reviews.map((review) => ({ reviewer: review.user?.login, state: review.state, submittedAt: review.submitted_at, commit: review.commit_id })),
+    reviews: reviews.map((review) => ({ id: review.id, reviewer: review.user.login, state: review.state, submittedAt: review.submitted_at, commit: review.commit_id })),
   });
-  const evidence = { schemaVersion: 1, repository: options.repository, commit: options.commit, pullRequest: pull.number, pullRequestHead, sensitive, reviewerPolicyStatus: reviewerPolicy.status, ...result, checkedAt: now().toISOString() };
-  mkdirSync(dirname(options.out), { recursive: true });
-  writeFileSync(options.out, `${JSON.stringify(evidence, null, 2)}\n`, 'utf8');
+  const checkedAt = now();
+  if (!(checkedAt instanceof Date) || !Number.isFinite(checkedAt.getTime())) throw new Error('independent review checkedAt must be a valid date');
+  const evidence = { schemaVersion: 1, repository: options.repository, commit: candidateCommit, pullRequest: pull.number, pullRequestHead, sensitive, reviewerPolicyStatus: reviewerPolicy.status, ...result, checkedAt: checkedAt.toISOString() };
+  writeArtifactOutput(outputPlan, 'review', `${JSON.stringify(evidence, null, 2)}\n`);
   if (!result.passed) throw new Error(`candidate requires ${result.minimumApprovals} independent approval; found ${result.approvalReviewers.length}`);
   return evidence;
 }

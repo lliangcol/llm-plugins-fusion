@@ -24,11 +24,12 @@
     "assistant": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["id", "version", "executable", "adapterSha256", "adapterStaged", "adapterLoadObserved"],
+      "required": ["id", "version", "executable", "executableProvenance", "adapterSha256", "adapterStaged", "adapterLoadObserved"],
       "properties": {
         "id": { "type": "string", "minLength": 1 },
-        "version": { "type": "string", "minLength": 1 },
+        "version": { "type": "string", "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9 ._+@():=-]{0,255}|sha256:[a-f0-9]{64})$" },
         "executable": { "type": "string", "minLength": 1 },
+        "executableProvenance": { "const": "unverified-caller-supplied-executable" },
         "adapterSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
         "adapterStaged": { "type": "boolean" },
         "adapterLoadObserved": { "enum": ["observed", "unavailable", "not-applicable"] }
@@ -84,7 +85,7 @@
           {
             "type": "object",
             "additionalProperties": false,
-            "required": ["caseId", "attempt", "processExit", "processFailure", "timedOut", "latencyMs", "projectDigestBefore", "projectDigestAfter", "zeroProjectWrites", "adapterStaged", "adapterLoadObserved", "adapterLoadReasonCode", "adapterLoadSignals", "observedTools", "allowedReadOnlyTools", "toolLifecycle", "attemptedDangerousTools", "executedDangerousTools", "deniedOrFailedDangerousTools", "unknownTools", "selectedRoute", "variantParameters", "requiredInputs", "routeValid", "top2RouteValid", "variantParametersValid", "requiredInputsValid", "approvalValid", "shapeValid", "inventedSurfaces", "contractValid", "usageStatus", "usageReasonCode", "inputTokens", "outputTokens", "totalTokens", "costUsd", "responseSummary", "parseFailure", "rawOutputSha256", "rawErrorSha256", "rawOutputBytes", "rawErrorBytes", "rawArtifactsRemoved"],
+            "required": ["caseId", "kind", "approvalExpected", "attempt", "processExit", "processFailure", "timedOut", "latencyMs", "projectDigestBefore", "projectDigestAfter", "zeroProjectWrites", "adapterStaged", "adapterLoadObserved", "adapterLoadReasonCode", "adapterLoadSignals", "observedTools", "allowedReadOnlyTools", "toolLifecycle", "attemptedDangerousTools", "executedDangerousTools", "deniedOrFailedDangerousTools", "unknownTools", "selectedRoute", "variantParameters", "requiredInputs", "blocked", "routeValid", "variantParametersValid", "requiredInputsValid", "approvalValid", "shapeValid", "inventedSurfaces", "contractValid", "usageStatus", "usageReasonCode", "inputTokens", "outputTokens", "totalTokens", "costUsd", "responseSummary", "parseFailure", "rawOutputSha256", "rawErrorSha256", "rawOutputBytes", "rawErrorBytes", "rawArtifactsRemoved"],
             "properties": {
               "caseId": { "type": "string", "minLength": 1 },
               "kind": { "type": "string" },
@@ -99,7 +100,7 @@
               "zeroProjectWrites": { "type": "boolean" },
               "adapterStaged": { "type": "boolean" },
               "adapterLoadObserved": { "enum": ["observed", "unavailable", "not-applicable"] },
-              "adapterLoadReasonCode": { "enum": ["plugin-disabled", "adapter-not-staged", "claude-skill-observed", "claude-skill-not-observed", "codex-load-event-unavailable"] },
+              "adapterLoadReasonCode": { "enum": ["plugin-disabled", "adapter-not-staged", "claude-debug-plugin-load-observed", "claude-debug-load-signal-incomplete", "claude-debug-load-signal-unavailable", "codex-load-event-unavailable"] },
               "adapterLoadSignals": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
               "observedTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
               "allowedReadOnlyTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
@@ -122,11 +123,11 @@
               "executedDangerousTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
               "deniedOrFailedDangerousTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
               "unknownTools": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-              "selectedRoute": { "type": "array", "items": { "type": "string" } },
+              "selectedRoute": { "type": "array", "maxItems": 1, "uniqueItems": true, "items": { "type": "string" } },
               "variantParameters": { "type": "object" },
               "requiredInputs": { "type": "array", "items": { "type": "string" } },
+              "blocked": { "type": "boolean" },
               "routeValid": { "type": "boolean" },
-              "top2RouteValid": { "type": "boolean" },
               "variantParametersValid": { "type": "boolean" },
               "requiredInputsValid": { "type": "boolean" },
               "approvalValid": { "type": "boolean" },
@@ -181,16 +182,95 @@
   },
   "allOf": [
     {
-      "if": { "properties": { "layer": { "const": "live-assistant" } }, "required": ["layer"] },
+      "if": { "properties": { "layer": { "const": "static-contract" } }, "required": ["layer"] },
       "then": {
         "properties": {
+          "cases": {
+            "type": "array",
+            "items": { "$ref": "#/properties/cases/items/oneOf/0" }
+          },
+          "summary": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["total", "passed", "inventedSurfaceRate", "mappingValidity", "inputContractValidity"],
+            "properties": {
+              "total": { "$ref": "#/properties/summary/properties/total" },
+              "passed": { "$ref": "#/properties/summary/properties/passed" },
+              "inventedSurfaceRate": { "$ref": "#/properties/summary/properties/inventedSurfaceRate" },
+              "mappingValidity": { "$ref": "#/properties/summary/properties/mappingValidity" },
+              "inputContractValidity": { "$ref": "#/properties/summary/properties/inputContractValidity" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "layer": { "const": "adapter-simulation" } }, "required": ["layer"] },
+      "then": {
+        "properties": {
+          "cases": {
+            "type": "array",
+            "items": { "$ref": "#/properties/cases/items/oneOf/1" }
+          },
+          "summary": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["total", "passed", "fallbackCases", "unsafeContinuation"],
+            "properties": {
+              "total": { "$ref": "#/properties/summary/properties/total" },
+              "passed": { "$ref": "#/properties/summary/properties/passed" },
+              "fallbackCases": { "$ref": "#/properties/summary/properties/fallbackCases" },
+              "unsafeContinuation": { "$ref": "#/properties/summary/properties/unsafeContinuation" }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": { "properties": { "layer": { "const": "live-assistant" } }, "required": ["layer"] },
+      "then": {
+        "required": ["sourceDigests", "baseCommit", "sourceState", "releaseTag", "condition", "profile", "datasetId", "datasetVersion", "casesPath", "labelsPath", "assistant", "runtime", "startedAt", "completedAt"],
+        "properties": {
+          "sourceDigests": {},
+          "baseCommit": {},
+          "sourceState": {},
+          "releaseTag": {},
+          "condition": {},
           "profile": {},
           "datasetId": {},
           "datasetVersion": {},
           "casesPath": {},
-          "labelsPath": {}
-        },
-        "required": ["profile", "datasetId", "datasetVersion", "casesPath", "labelsPath"]
+          "labelsPath": {},
+          "assistant": {},
+          "runtime": {},
+          "startedAt": {},
+          "completedAt": {},
+          "cases": {
+            "type": "array",
+            "items": { "$ref": "#/properties/cases/items/oneOf/2" }
+          },
+          "summary": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["total", "passed", "attemptsPerCase", "uniqueCases", "unexpectedWrites", "attemptedDangerousTools", "executedDangerousTools", "deniedOrFailedDangerousTools", "unknownTools", "inventedSurfaces", "adapterStagingFailures", "adapterLoadObserved", "adapterLoadUnavailable", "rawArtifactCleanupFailures"],
+            "properties": {
+              "total": { "$ref": "#/properties/summary/properties/total" },
+              "passed": { "$ref": "#/properties/summary/properties/passed" },
+              "attemptsPerCase": { "$ref": "#/properties/summary/properties/attemptsPerCase" },
+              "uniqueCases": { "$ref": "#/properties/summary/properties/uniqueCases" },
+              "unexpectedWrites": { "$ref": "#/properties/summary/properties/unexpectedWrites" },
+              "attemptedDangerousTools": { "$ref": "#/properties/summary/properties/attemptedDangerousTools" },
+              "executedDangerousTools": { "$ref": "#/properties/summary/properties/executedDangerousTools" },
+              "deniedOrFailedDangerousTools": { "$ref": "#/properties/summary/properties/deniedOrFailedDangerousTools" },
+              "unknownTools": { "$ref": "#/properties/summary/properties/unknownTools" },
+              "inventedSurfaces": { "$ref": "#/properties/summary/properties/inventedSurfaces" },
+              "adapterStagingFailures": { "$ref": "#/properties/summary/properties/adapterStagingFailures" },
+              "adapterLoadObserved": { "$ref": "#/properties/summary/properties/adapterLoadObserved" },
+              "adapterLoadUnavailable": { "$ref": "#/properties/summary/properties/adapterLoadUnavailable" },
+              "rawArtifactCleanupFailures": { "$ref": "#/properties/summary/properties/rawArtifactCleanupFailures" }
+            }
+          }
+        }
       }
     }
   ]

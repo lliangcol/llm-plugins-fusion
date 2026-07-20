@@ -7,7 +7,7 @@
  */
 
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
-import { basename, dirname, relative, resolve, sep } from 'node:path';
+import { dirname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkOrWritePromptSurfaceReport, validatePromptSurfaceBudgets } from './generate-surface-inventory.mjs';
 

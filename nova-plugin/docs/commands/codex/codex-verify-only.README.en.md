@@ -27,8 +27,6 @@
 | `REVIEW_FILE` | Yes | Previous `review.md` path | `.codex/codex-review-fix/latest-artifacts/review.md` |
 | `CHECKS_FILE` | No | Local checks output file | `.codex/codex-review-fix/latest-artifacts/checks.txt` |
 | `BASE` | No | Base branch | `main` |
-| `OUTPUT_DIR` | No | Verify artifact directory | `.codex/codex-review-fix/custom` |
-| `INCLUDE_UNTRACKED_CONTENT` | No | Explicitly allows guarded untracked file content into the verify patch | `true` |
 
 ## Example
 

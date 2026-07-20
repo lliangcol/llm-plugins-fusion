@@ -25,7 +25,6 @@
 | Parameter | Required | Description | Example |
 | --- | --- | --- | --- |
 | `REQUEST` | Yes | User request, task summary, issue, diff context, or workflow intent | `Fix CI failure and update docs` |
-| `CONTEXT` | No | Optional context | `Current branch, plan file, diff summary` |
 | `DEPTH` | No | `normal` / `brief`; default is `normal` | `brief` |
 
 ## Full Examples
@@ -36,9 +35,13 @@ This task touches README, marketplace metadata, and release evidence. Which nova
 ```
 
 ```text
-/nova-plugin:route CONTEXT="Cursor consuming nova skills"
-The user asked for a medium-risk implementation, but there is no approved plan.
+/nova-plugin:route REQUEST="Use nova skills in Cursor for a medium-risk implementation without an approved plan" DEPTH=normal
 ```
+
+## Output
+
+- The fixed fields, in order, are `Canonical skill`, `Command entrypoint`, `Variant parameters`, `Core agent`, `Capability packs`, `Required inputs`, `Validation expectations`, and `Fallback path`.
+- Always return exactly one immediate route; later stages may appear only in validation expectations or the fallback description.
 
 ## Comparison with Similar Commands
 

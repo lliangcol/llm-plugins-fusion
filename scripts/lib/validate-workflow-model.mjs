@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { loadNovaWorkflowModel } from './workflow-model.mjs';
+import { resolveVariantWorkflow } from '../../framework/core/variant-contracts.mjs';
 
 export function validateCompiledWorkflowModel({ spec, product, framework, adapters, behaviorSpec }) {
   const permissionStates = new Set(framework.permissionStates);
@@ -27,6 +28,16 @@ export function validateCompiledWorkflowModel({ spec, product, framework, adapte
   const compatibilityAliases = spec.workflows.filter((workflow) => workflow.compatibilityAlias);
   if (compatibilityAliases.length > 0) {
     assert.ok(product.compatibilityAliasPolicy, 'products with compatibility aliases must declare compatibilityAliasPolicy');
+    assert.deepEqual(product.compatibilityAliasPolicy, {
+      status: 'evidence-gated',
+      removalRequires: [
+        'real-benchmark-evidence',
+        'native-permission-and-invocation-parity',
+        'plugin-major-release',
+        'governed-release-decision',
+        'migration-documentation',
+      ],
+    }, 'compatibilityAliasPolicy must declare the complete adapter-neutral retirement gates');
   }
   for (const workflow of spec.workflows) {
     assert.equal(ids.has(workflow.id), false, `duplicate workflow ${workflow.id}`);
@@ -70,6 +81,11 @@ export function validateCompiledWorkflowModel({ spec, product, framework, adapte
         const input = targetInputs.get(name);
         assert.ok(input, `${behavior.id}: decision ${index} variant ${name} is not a canonical ${decision.route} input`);
         if (input.exactValues) assert.equal(input.exactValues.some((allowed) => Object.is(allowed, value)), true, `${behavior.id}: decision ${index} variant ${name} has unsupported value ${JSON.stringify(value)}`);
+      }
+      const resolved = resolveVariantWorkflow(spec.workflows, behaviorSpec, decision.route, decision.variantParameters);
+      assert.equal(resolved.workflow.canonicalSurfaceId, decision.route, `${behavior.id}: decision ${index} resolved outside its canonical route`);
+      if (behavior.id === 'route') {
+        assert.notEqual(resolved.resolutionKind, 'canonical-fallback', `route: decision ${index} must resolve a declared alias override or canonical default`);
       }
     }
   }

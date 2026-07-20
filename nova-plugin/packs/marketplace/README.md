@@ -31,7 +31,10 @@ Enhanced capability comes from nova repository scripts and schemas. No external 
 
 1. Identify the metadata source of truth.
 2. Validate official marketplace compatibility separately from repository-local metadata.
-3. Keep version fields synchronized only when a version bump is explicitly selected.
+3. Keep the development package and plugin versions synchronized within their
+   version domain. Keep the stable channel, generated marketplace catalog, and
+   marketplace metadata synchronized only after governed stable publication;
+   unreleased development metadata may legitimately be ahead of stable.
 4. Document compatibility risks and validation results.
 
 ## Verification
@@ -53,5 +56,6 @@ Use schema validators, documented metadata rules, and manual review of JSON sour
 
 - Claude CLI may be unavailable locally.
 - Official marketplace fields and repository-local metadata can be confused.
-- Version fields can drift across files.
+- Version fields can drift within either the development or stable version
+  domain, while expected cross-domain lag can be mistaken for drift.
 - Schema relaxations can accidentally allow invalid public metadata.

@@ -2,11 +2,16 @@
 /** Compare the final installed plugin bytes with the promoted candidate tree. */
 
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { requireOptionValue } from './lib/cli-args.mjs';
 import { treeDigest } from './validate-plugin-install.mjs';
+import {
+  prepareArtifactOutputPlan,
+  resolveArtifactOutputPath,
+  writeArtifactOutput,
+} from './lib/artifact-output.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const sha256 = (value) => createHash('sha256').update(value).digest('hex');
@@ -19,7 +24,7 @@ export function parseStableInstallArgs(args) {
     if (arg === '--candidate-root') options.candidateRoot = resolve(root, value());
     else if (arg === '--installed-root') options.installedRoot = resolve(root, value());
     else if (arg === '--claude-version') options.claudeVersion = value();
-    else if (arg === '--out') options.out = resolve(root, value());
+    else if (arg === '--out') options.out = resolveArtifactOutputPath(root, value(), 'stable install proof output');
     else throw new Error(`unknown argument: ${arg}`);
     index += 1;
   }
@@ -61,9 +66,11 @@ export function main(args = process.argv.slice(2), dependencies = {}) {
   const { channelText } = dependencies;
   try {
     const options = parseStableInstallArgs(args);
+    const outputPlan = prepareArtifactOutputPlan(root, [{
+      key: 'proof', path: options.out, label: 'stable install proof output',
+    }], { protectedRoots: [options.candidateRoot, options.installedRoot] });
     const proof = buildStableInstallProof({ ...options, ...(channelText ? { channelText } : {}) });
-    mkdirSync(dirname(options.out), { recursive: true });
-    writeFileSync(options.out, `${JSON.stringify(proof, null, 2)}\n`, 'utf8');
+    writeArtifactOutput(outputPlan, 'proof', `${JSON.stringify(proof, null, 2)}\n`);
     console.log(`Wrote ${options.out}`);
     return 0;
   } catch (error) {

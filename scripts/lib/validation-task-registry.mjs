@@ -9,7 +9,7 @@ const common = {
 const patterns = {
   core: ['package.json', 'package-lock.json', '.node-version', 'tsconfig.checkjs.json', 'scripts/**/*.mjs', 'framework/**', 'packages/**'],
   schema: ['schemas/**', 'governance/**/*.json', 'workflow-specs/**/*.json', 'fixtures/**/*.json'],
-  workflow: ['workflow-specs/**', 'nova-plugin/commands/**', 'nova-plugin/skills/**', 'nova-plugin/runtime/contracts/**', 'adapters/**', 'evals/**'],
+  workflow: ['workflow-specs/**', 'nova-plugin/commands/**', 'nova-plugin/skills/**', 'nova-plugin/runtime/contracts/**', 'nova-plugin/runtime/resolved-variant-contracts.json', 'adapters/**', 'evals/**'],
   docs: ['**/*.md', 'governance/doc-metadata.json', 'governance/docs-migrations.json', 'governance/workflow-docs.json', 'scripts/generate-*.mjs', 'scripts/validate-docs/**'],
   hooks: ['nova-plugin/hooks/**', 'nova-plugin/runtime/**', 'scripts/validate-hooks.mjs', 'scripts/validate-runtime-smoke.mjs'],
   github: ['.github/**', 'scripts/validate-github-workflows.mjs'],
@@ -77,7 +77,7 @@ export const validationTaskDefinitions = [
   node('platform.evidence', 'validate platform evidence matrix', 'scripts/validate-platform-evidence.mjs', 2, ['governance/engineering-evidence.json', 'schemas/engineering-evidence.schema.json', 'docs/generated/platform-evidence.md', '.github/workflows/ci.yml']),
   dynamic('hooks.syntax', 'hook shell syntax', 'hook-syntax', 2, patterns.hooks, { timeoutMs: 30_000, reasonCodes: ['CHECK_PASSED', 'BASH_CAPABILITY_UNAVAILABLE', 'VALIDATION_FAILED'] }),
 
-  dynamic('runtime.smoke', 'validate runtime smoke', 'runtime-smoke', 3, patterns.hooks, { reasonCodes: ['CHECK_PASSED', 'BASH_CAPABILITY_UNAVAILABLE', 'VALIDATION_FAILED'] }),
+  dynamic('runtime.smoke', 'validate runtime smoke', 'runtime-smoke', 3, patterns.hooks, { timeoutMs: 240_000, reasonCodes: ['CHECK_PASSED', 'BASH_CAPABILITY_UNAVAILABLE', 'VALIDATION_FAILED'] }),
   node('surface.budget', 'validate surface budget', 'scripts/validate-surface-budget.mjs', 3, ['nova-plugin/**', 'scripts/surface-budget.allowlist.json']),
   node('surface.inventory', 'validate surface inventory', 'scripts/generate-surface-inventory.mjs', 3, ['nova-plugin/**', 'docs/**', 'scripts/generate-surface-inventory.mjs'], { cachePolicy: 'content' }),
   node('distribution.risk', 'scan distribution risk', 'scripts/scan-distribution-risk.mjs', 3, ['nova-plugin/**', 'docs/**', 'README.md', 'CLAUDE.md', 'AGENTS.md', 'governance/**', 'scripts/distribution-risk.allowlist.json'], { cachePolicy: 'content' }),
@@ -106,9 +106,9 @@ export const validationTaskDefinitions = [
   node('docs.migrations', 'validate documentation compatibility migrations', 'scripts/migrate-documentation-layout.mjs', 3, patterns.docs, { cachePolicy: 'content' }),
   node('security.dependency-audit', 'validate dependency vulnerability evidence', 'scripts/audit-dependencies.mjs', 3, patterns.dependency),
   node('security.license-audit', 'validate dependency license evidence', 'scripts/audit-dependency-licenses.mjs', 3, patterns.dependency),
-  node('performance.policy', 'validate performance policy', 'scripts/validate-performance-budget.mjs', 3, ['governance/engineering-evidence.json', 'schemas/engineering-evidence.schema.json', 'scripts/validate-performance-budget.mjs']),
+  node('performance.policy', 'validate externally verifiable manifest-backed performance policy', 'scripts/validate-performance-budget.mjs', 3, ['governance/engineering-evidence.json', 'governance/evidence/validation-performance-samples.json', 'schemas/engineering-evidence.schema.json', 'schemas/validation-performance*.schema.json', 'scripts/validate-performance-budget.mjs', 'scripts/lib/canonical-json.mjs', 'scripts/lib/github-actions-performance-provenance.mjs', '.github/workflows/ci.yml']),
   node('docs.tutorials', 'validate executable tutorials', 'scripts/validate-tutorials.mjs', 3, ['docs/tutorials/**', 'fixtures/**', 'scripts/validate-tutorials.mjs']),
-  node('release.summary', 'validate evidence taxonomy and generated release summary', 'scripts/generate-release-summary.mjs', 3, [...patterns.release, 'governance/engineering-evidence.json']),
+  node('release.summary', 'validate evidence taxonomy and generated release summary', 'scripts/generate-release-summary.mjs', 3, [...patterns.release, 'governance/engineering-evidence.json', 'governance/evidence/validation-performance-samples.json']),
 ];
 
 export function registryMetadata() {
@@ -138,7 +138,7 @@ async function dynamicRunners(definition, { root, bashCommand, hasBash }) {
   }
   if (definition.runner.dynamicKind === 'hook-syntax') {
     if (!hasBash) return [{ ...definition, run: async () => process.platform === 'win32' ? skippedResult(definition, 'WARNING hook shell syntax: bash not found; local Bash evidence is skipped') : failedResult(definition, 'bash is required outside Windows') }];
-    return ['pre-write-check.sh', 'pre-bash-check.sh', 'post-audit-log.sh'].map((file) => {
+    return ['pre-write-check.sh', 'pre-bash-check.sh', 'trusted-node-hook.sh', 'post-audit-log.sh'].map((file) => {
       const id = `hooks.syntax.${file.split('.')[0].replaceAll('-', '')}`;
       const label = `hook shell syntax nova-plugin/hooks/scripts/${file}`;
       return { ...definition, id, label, run: async () => ({ ...await run(bashCommand, ['-n', `nova-plugin/hooks/scripts/${file}`], label), id }) };
@@ -166,9 +166,9 @@ export async function createRunnableTasks({ root, bashCommand, hasBash, selected
         ms += result.ms ?? 0;
         stdout.push(`\n== ${step.label} ==\n${result.stdout ?? ''}`);
         if (result.stderr) stderr.push(`\n== ${step.label} ==\n${result.stderr}`);
-        if (!result.ok) return { ...result, id: definition.id, stdout: stdout.join(''), stderr: stderr.join(''), ms };
+        if (!result.ok) return { ...result, id: definition.id, label: definition.label, stdout: stdout.join(''), stderr: stderr.join(''), ms };
       }
-      return { id: definition.id, ok: true, code: 0, signal: null, timedOut: false, stdout: stdout.join(''), stderr: stderr.join(''), ms };
+      return { id: definition.id, label: definition.label, ok: true, code: 0, signal: null, timedOut: false, stdout: stdout.join(''), stderr: stderr.join(''), ms };
     } }];
     else tasks = [{ ...definition, run: async () => {
       const result = await runProcess(definition.label, definition.runner.command, definition.runner.args, { cwd: root, timeoutMs: definition.timeoutMs });

@@ -9,9 +9,9 @@
     "$schema": { "type": "string" },
     "schemaVersion": { "const": 1 },
     "status": { "enum": ["configured", "awaiting-owner-configuration"] },
-    "trustedUsers": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Za-z0-9-]+$" } },
-    "trustedTeams": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[A-Za-z0-9-]+/[A-Za-z0-9_.-]+$" } },
-    "botIdentities": { "type": "array", "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "trustedUsers": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9](?:[a-z0-9-]{0,37}[a-z0-9])?$" } },
+    "trustedTeams": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9](?:[a-z0-9-]{0,37}[a-z0-9])?/[a-z0-9][a-z0-9_.-]*$" } },
+    "botIdentities": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9](?:[a-z0-9-]{0,37}[a-z0-9])?(?:\\[bot\\])?$" } },
     "sensitivePaths": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
     "standardMinimumApprovals": { "type": "integer", "minimum": 1 },
     "sensitiveMinimumApprovals": { "type": "integer", "minimum": 1 }

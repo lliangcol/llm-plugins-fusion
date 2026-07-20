@@ -49,6 +49,6 @@ review.
 
 The 15 compatibility aliases remain retained under the machine-readable policy
 in `workflow-specs/nova.product.json`. Removal requires real benchmark
-evidence, a plugin-major release, a governed release decision, and migration
-documentation; the current benchmark is waiting for external credentials and
-budget.
+evidence, `native-permission-and-invocation-parity`, a plugin-major release, a
+governed release decision, and migration documentation; the current benchmark
+is waiting for external credentials and budget.

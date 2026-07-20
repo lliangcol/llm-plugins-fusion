@@ -19,7 +19,7 @@ surface.
 
 ## Capability Packs
 
-Capability packs are optional routing context, not runtime-loaded agents. See [PLUGIN_AWARE_ROUTING.md](agent-routing.md) for enhanced and fallback behavior.
+Capability packs are optional routing context, not runtime-loaded agents. The routing and fallback behavior is defined in this canonical page.
 
 | Pack | Use For |
 | --- | --- |

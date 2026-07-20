@@ -9,6 +9,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import {
+  chmodSync,
   copyFileSync,
   existsSync,
   mkdirSync,
@@ -16,12 +17,15 @@ import {
   readFileSync,
   readdirSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { basename, dirname, relative, resolve } from 'node:path';
+import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { authorizeBashCommand } from '../nova-plugin/hooks/scripts/pre-bash-check.mjs';
 import { generateRegistryFiles } from './generate-registry.mjs';
+import { gitTrackedFiles, gitUntrackedFiles } from './lib/git-source-snapshot.mjs';
 import { formatFinding, scanDistributionRisk } from './scan-distribution-risk.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
@@ -71,14 +75,8 @@ function readGeneratedJson(relPath) {
 }
 
 function copyRepositoryFixture(destination) {
-  const listed = spawnSync('git', ['ls-files', '-z', '--cached', '--others', '--exclude-standard'], {
-    cwd: root,
-    encoding: 'buffer',
-    shell: false,
-  });
-  assert.equal(listed.status, 0, listed.stderr?.toString('utf8') || 'git ls-files failed');
-
-  for (const relPath of listed.stdout.toString('utf8').split('\0').filter(Boolean)) {
+  const sourcePaths = [...new Set([...gitTrackedFiles(root), ...gitUntrackedFiles(root)])].sort();
+  for (const relPath of sourcePaths) {
     if (COPY_SKIP_ROOTS.has(relPath.split('/')[0])) continue;
     const source = resolve(root, relPath);
     // A tracked path may be deleted in the current worktree before the change
@@ -594,78 +592,61 @@ test('validate-github-workflows enforces least-privilege workflow contracts', ()
     });
     assert.equal(clean.status, 0, clean.stderr || clean.stdout);
 
-    const ciWorkflowPath = resolve(fixtureRoot, '.github/workflows/ci.yml');
-    const ciWorkflow = readFileSync(ciWorkflowPath, 'utf8');
-    assert.match(ciWorkflow, /permissions:\r?\n  contents: read/);
-    writeFileSync(
-      ciWorkflowPath,
-      ciWorkflow
-        .replace(/permissions:\r?\n  contents: read/, 'permissions:\n  contents: write')
-        .replace('pull_request:', 'pull_request_target:')
-        .replace('include-hidden-files: true', 'include-hidden-files: false')
-        .replace('/bin/bash nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh', 'bash nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh'),
-      'utf8',
-    );
+    const expectRejectedMutation = (relativePath, mutate, expectedPatterns) => {
+      const target = resolve(fixtureRoot, relativePath);
+      const original = readFileSync(target, 'utf8');
+      const driftedSource = mutate(original);
+      assert.notEqual(driftedSource, original, `${relativePath} mutation fixture must apply`);
+      try {
+        writeFileSync(target, driftedSource, 'utf8');
+        const drifted = spawnSync(process.execPath, [
+          'scripts/validate-github-workflows.mjs',
+          '--root',
+          fixtureRoot,
+        ], {
+          cwd: root,
+          encoding: 'utf8',
+          shell: false,
+        });
+        assert.notEqual(drifted.status, 0, `validate-github-workflows should reject ${relativePath} drift for ${expectedPatterns[0]}`);
+        const output = `${drifted.stdout}${drifted.stderr}`;
+        for (const pattern of expectedPatterns) assert.match(output, pattern);
+      } finally {
+        writeFileSync(target, original, 'utf8');
+      }
+    };
 
-    const releaseWorkflowPath = resolve(fixtureRoot, '.github/workflows/release.yml');
-    const releaseWorkflow = readFileSync(releaseWorkflowPath, 'utf8');
-    assert.match(releaseWorkflow, /  recover:\r?\n[\s\S]*?    permissions:\r?\n      contents: write/);
-    writeFileSync(
-      releaseWorkflowPath,
-      releaseWorkflow
-        .replace(/    permissions:\r?\n      contents: write\r?\n      checks: read\r?\n      id-token: write\r?\n      attestations: write\r?\n/, ''),
-      'utf8',
-    );
-
-    const promotionWorkflowPath = resolve(fixtureRoot, '.github/workflows/promote-release.yml');
-    const promotionWorkflow = readFileSync(promotionWorkflowPath, 'utf8');
-    writeFileSync(
-      promotionWorkflowPath,
-      promotionWorkflow.replace('set -euo pipefail', 'echo "${{ github.ref_name }}"\n          set -euo pipefail'),
-      'utf8',
-    );
-
-    const pluginInstallSmokePath = resolve(fixtureRoot, '.github/workflows/plugin-install-smoke.yml');
-    const pluginInstallSmoke = readFileSync(pluginInstallSmokePath, 'utf8');
-    assert.match(pluginInstallSmoke, /workflow_dispatch:/);
-    writeFileSync(
-      pluginInstallSmokePath,
-      pluginInstallSmoke.replace('workflow_dispatch:', 'pull_request:'),
-      'utf8',
-    );
-
-    const dependencyReviewPath = resolve(fixtureRoot, '.github/workflows/dependency-review.yml');
-    const dependencyReview = readFileSync(dependencyReviewPath, 'utf8');
-    writeFileSync(
-      dependencyReviewPath,
-      dependencyReview
+    expectRejectedMutation('.github/workflows/ci.yml',
+      (source) => source.replace('pull_request:', 'pull_request_target:'),
+      [/workflow trigger safety contract forbids pull_request_target/]);
+    expectRejectedMutation('.github/workflows/ci.yml',
+      (source) => source.replace(/permissions:\r?\n  contents: read/, 'permissions:\n  contents: write'),
+      [/CI workflow top-level permissions/]);
+    expectRejectedMutation('.github/workflows/ci.yml',
+      (source) => source.replace('include-hidden-files: true', 'include-hidden-files: false'),
+      [/explicitly upload hidden \.metrics\/coverage content/]);
+    expectRejectedMutation('.github/workflows/ci.yml',
+      (source) => source.replace('/bin/bash nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh', 'bash nova-plugin/skills/nova-codex-review-fix/scripts/run-project-checks.sh'),
+      [/platform matrix must exercise the normal project-check path/]);
+    expectRejectedMutation('.github/workflows/release.yml',
+      (source) => source.replace(/    permissions:\r?\n      contents: write\r?\n      checks: read\r?\n      id-token: write\r?\n      attestations: write\r?\n/, ''),
+      [/stable promotion caller scoped permission/]);
+    expectRejectedMutation('.github/workflows/promote-release.yml',
+      (source) => source.replace('set -euo pipefail', 'echo "${{ github.ref_name }}"\n          set -euo pipefail'),
+      [/promotion shell scripts must receive GitHub contexts and step outputs through env/]);
+    expectRejectedMutation('.github/workflows/plugin-install-smoke.yml',
+      (source) => source.replace('workflow_dispatch:', 'pull_request:'),
+      [/plugin install smoke isolation contract/]);
+    expectRejectedMutation('.github/workflows/dependency-review.yml',
+      (source) => source
         .replace('fail-on-severity: high', 'fail-on-severity: moderate')
         .replace('GPL-2.0-or-later, ', '')
         .replace('comment-summary-in-pr: never', 'comment-summary-in-pr: always'),
-      'utf8',
-    );
-
-    const drifted = spawnSync(process.execPath, [
-      'scripts/validate-github-workflows.mjs',
-      '--root',
-      fixtureRoot,
-    ], {
-      cwd: root,
-      encoding: 'utf8',
-      shell: false,
-    });
-    assert.notEqual(drifted.status, 0, 'validate-github-workflows should reject unsafe workflow drift');
-    const output = `${drifted.stdout}${drifted.stderr}`;
-    assert.match(output, /workflow trigger safety contract forbids pull_request_target/);
-    assert.match(output, /CI workflow top-level permissions/);
-    assert.match(output, /stable promotion caller scoped permission/);
-    assert.match(output, /promotion shell scripts must receive GitHub contexts and step outputs through env/);
-    assert.match(output, /plugin install smoke isolation contract/);
-    assert.match(output, /explicitly upload hidden \.metrics\/coverage content/);
-    assert.match(output, /platform matrix must exercise the normal project-check path/);
-    assert.match(output, /dependency review severity must match governance\/dependency-governance\.json/);
-    assert.match(output, /dependency review denied licenses must match governance\/dependency-governance\.json/);
-    assert.match(output, /dependency review summary mode must match governance\/dependency-governance\.json/);
+      [
+        /dependency review severity must match governance\/dependency-governance\.json/,
+        /dependency review denied licenses must match governance\/dependency-governance\.json/,
+        /dependency review summary mode must match governance\/dependency-governance\.json/,
+      ]);
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }
@@ -862,6 +843,127 @@ test('validate-docs rejects duplicate tool vocabulary prose', () => {
     });
     assert.notEqual(drifted.status, 0, 'validate-docs should reject duplicate tool vocabulary prose');
     assert.match(`${drifted.stdout}${drifted.stderr}`, /duplicate Glob in space-separated tool vocabulary/);
+  } finally {
+    rmSync(tempRoot, { recursive: true, force: true });
+  }
+});
+
+test('validate-docs rejects Skill-first, hook, release-source, and command-table drift', () => {
+  const tempRoot = mkdtempSync(resolve(tmpdir(), 'nova-docs-skill-first-regression-'));
+  const fixtureRoot = resolve(tempRoot, 'repo');
+  try {
+    copyRepositoryFixture(fixtureRoot);
+
+    const mutate = (relPath, search, replacement = '') => {
+      const file = resolve(fixtureRoot, relPath);
+      const source = readFileSync(file, 'utf8');
+      assert.ok(source.includes(search), `${relPath} fixture mutation source is missing ${search}`);
+      writeFileSync(file, source.replace(search, replacement), 'utf8');
+    };
+
+    writeFileSync(
+      resolve(fixtureRoot, 'docs/phantom-skill-regression.md'),
+      '# Phantom Skill\n\nnova-plugin/skills/nova-codex-review-only/SKILL.md\n',
+      'utf8',
+    );
+    mutate(
+      'nova-plugin/docs/architecture/dual-track-design.md',
+      '21 个由生成器维护的 command wrappers',
+      '21 command wrappers',
+    );
+    mutate(
+      'docs/templates/evidence/release.md',
+      'bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh:\n',
+    );
+    mutate(
+      'docs/operations/releases/validation.md',
+      '- `package` and `plugin` versions are identical.',
+      '- `plugin`, `marketplace`, and `metadata` versions are identical.',
+    );
+    mutate(
+      'CONTRIBUTING.md',
+      '- 根目录 `package.json` 的 `version`\n',
+    );
+    mutate(
+      'CONTRIBUTING.md',
+      '不调用 Codex。非 Windows 使用系统临时目录；Windows 为保持 Git Bash / `node.exe` 路径兼容会临时使用 `.codex/tmp` 并在正常退出时清理，这些 runtime artifact 不得提交。',
+      '不调用 Codex，也不写 `.codex/`。',
+    );
+    mutate('AGENTS.md', '`.github/workflows/release-candidate.yml`', '`.github/workflows/release.yml`');
+    mutate(
+      'SECURITY.md',
+      '`governance/release-channels.json` 中的 stable channel',
+      '`nova-plugin/.claude-plugin/plugin.json` 中的 development version',
+    );
+    mutate(
+      'SECURITY.md',
+      '- 受影响的已安装/已发布版本（以 stable release channel 和 exact tag 为准）；\n'
+        + '  若报告针对未发布快照，再附 commit 与 plugin manifest version',
+      '- 受影响的插件版本（`nova-plugin/.claude-plugin/plugin.json` 的 `version`）',
+    );
+    mutate(
+      'docs/project/plans/current-remediation.md',
+      'source-backed behavior, validation boundaries',
+      'source-backed behavior without creating a commit, validation boundaries',
+    );
+    mutate(
+      'docs/operations/maintainers/troubleshooting.md',
+      'Dependency review fails closed\nwhen the dependency graph is unavailable for a same-repository PR',
+      'Dependency review may skip when\nthe repository dependency graph is unavailable',
+    );
+    mutate(
+      'nova-plugin/docs/guides/commands-reference-guide.md',
+      '/nova-plugin:explore PERSPECTIVE=observer DEPTH=lite',
+      '/nova-plugin:explore PERSPECTIVE=observer DEPTH=lite MODE=wrong',
+    );
+    mutate(
+      'nova-plugin/docs/guides/commands-reference-guide.en.md',
+      '/nova-plugin:explore PERSPECTIVE=observer DEPTH=lite',
+      '/nova-plugin:explore DEPTH=lite PERSPECTIVE=observer',
+    );
+    mutate(
+      'docs/guides/workflows/hardening.md',
+      'existing 21 command names and\n  six canonical Skills',
+      'existing 21 command/skill pairs',
+    );
+
+    const chineseGuidePath = resolve(fixtureRoot, 'nova-plugin/docs/guides/commands-reference-guide.md');
+    const chineseGuide = readFileSync(chineseGuidePath, 'utf8');
+    const comparisonStart = chineseGuide.indexOf('### 命令约束强度对比');
+    assert.notEqual(comparisonStart, -1, 'Chinese command comparison heading must exist');
+    const beforeComparison = chineseGuide.slice(0, comparisonStart);
+    const comparison = chineseGuide.slice(comparisonStart);
+    const driftedComparison = comparison.replace(/^\|[^\r\n]*`\/nova-plugin:codex-review-fix`[^\r\n]*\r?\n/mu, '');
+    const driftedGuide = beforeComparison + driftedComparison;
+    assert.notEqual(driftedGuide, chineseGuide, 'Chinese command-table fixture mutation must apply');
+    writeFileSync(chineseGuidePath, driftedGuide, 'utf8');
+
+    const drifted = spawnSync(process.execPath, [
+      'scripts/validate-docs.mjs',
+      '--root',
+      fixtureRoot,
+    ], {
+      cwd: root,
+      encoding: 'utf8',
+      shell: false,
+    });
+    assert.notEqual(drifted.status, 0, 'validate-docs should reject cross-surface documentation drift');
+    const output = `${drifted.stdout}${drifted.stderr}`;
+    assert.match(output, /references missing canonical Skill/);
+    assert.match(output, /missing current 21-to-6 Skill-first architecture contract/);
+    assert.match(output, /hook syntax checklist is missing bash -n nova-plugin\/hooks\/scripts\/trusted-node-hook\.sh/);
+    assert.match(output, /validation\.md: missing maintenance\/release source contract: `package` and `plugin` versions are identical/);
+    assert.match(output, /missing maintenance\/release source contract: - 根目录 `package\.json` 的 `version`/);
+    assert.match(output, /runtime smoke absolute no-\.codex-write claim is false on Windows/);
+    assert.match(output, /release-candidate\.yml/);
+    assert.match(output, /governance\/release-channels\.json/);
+    assert.match(output, /vulnerability reports must identify the affected installed\/released version/);
+    assert.match(output, /current ledger still describes the merged remediation as uncommitted local work/);
+    assert.match(output, /dependency review is incorrectly described as an unconditional skip/);
+    assert.match(output, /alias explore-lite must document its exact derived preset/);
+    assert.doesNotMatch(output, /commands-reference-guide\.en\.md: command comparison table alias explore-lite/u);
+    assert.match(output, /describes the current 21-command surface as command\/Skill pairs instead of 6 canonical Skills/);
+    assert.match(output, /command comparison table must cover all command ids exactly once; missing=codex-review-fix/);
   } finally {
     rmSync(tempRoot, { recursive: true, force: true });
   }
@@ -1131,7 +1233,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
         /## 公开贡献边界[\s\S]*?## 提交 Pull Request\r?\n/,
         '## 提交 Pull Request\n',
       ).replace(
-        /`package\.json` 包含 dependency-free 的\s+`lint`、`test` 和 `check` 入口。[\s\S]*?`release:artifacts` 构建。/,
+        /可选使用维护者 npm 便捷入口；[\s\S]*?`release:artifacts` 构建。/,
         '`package.json` 不声明 `check` / `lint` /\n   `test` / `build` 脚本名，避免被 Codex 项目检查脚本重复自动发现。',
       ),
       'utf8',
@@ -1315,11 +1417,15 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     const compatibilityMatrix = readFileSync(compatibilityMatrixPath, 'utf8');
     assert.match(compatibilityMatrix, /Evidence Scope Boundary/);
     assert.match(compatibilityMatrix, /validate-github-workflows/);
+    assert.match(compatibilityMatrix, /npm ci --ignore-scripts/);
     writeFileSync(
       compatibilityMatrixPath,
       compatibilityMatrix.replace(
         /## Evidence Scope Boundary[\s\S]*?## Tooling Prerequisites\r?\n/,
         '## Tooling Prerequisites\n',
+      ).replace(
+        /Node\.js 22\+ and lockfile-pinned development dependencies installed with `npm ci --ignore-scripts`/,
+        'Node.js 22+',
       ).replace(
         /\| GitHub workflow contracts \| Node\.js 20\+ \| `node scripts\/validate-github-workflows\.mjs` \|[\s\S]*?isolated mutating install smoke boundaries\. \|\r?\n/,
         '',
@@ -1718,7 +1824,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
       docsIndex.replace(
         /## Public Navigation Boundary[\s\S]*?## Start Here\r?\n/,
         '## Start Here\n',
-      ),
+      ).replace(/^\| \[assets\/\]\(assets\/\).*\r?\n/mu, ''),
       'utf8',
     );
 
@@ -1810,6 +1916,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     assert.match(output, /registry author workflow GitHub workflow validation route/);
     assert.match(output, /compatibility matrix evidence scope boundary/);
     assert.match(output, /compatibility matrix optional tools boundary/);
+    assert.match(output, /compatibility matrix maintainer dependency boundary/);
     assert.match(output, /compatibility matrix GitHub workflow evidence boundary/);
     assert.match(output, /compatibility matrix private evidence boundary/);
     assert.match(output, /contributing public contribution scope boundary/);
@@ -1870,6 +1977,7 @@ test('validate-docs enforces positioning, maintenance status, release, maintaine
     assert.match(output, /consumer Copilot setup private config boundary/);
     assert.match(output, /consumer Copilot setup no permission bypass boundary/);
     assert.match(output, /docs index public navigation boundary/);
+    assert.match(output, /canonical directory owners are/);
     assert.match(output, /showcase README private consumer boundary/);
     assert.match(output, /growth metrics no portal automation boundary/);
     assert.match(output, /assets no portal automation boundary/);
@@ -1999,6 +2107,144 @@ test('consumer profile scaffold refuses writes inside public repository', () => 
     `${writeAttempt.stdout}${writeAttempt.stderr}`,
     /refusing to write a consumer profile inside the public llm-plugins-fusion repository/,
   );
+});
+
+test('consumer profile scaffold rejects lexical and physical symlink routes into the public repository', () => {
+  const directory = mkdtempSync(resolve(tmpdir(), 'nova-consumer-profile-links-'));
+  const fixtureRoot = resolve(directory, 'llm-plugins-fusion');
+  const externalTarget = resolve(directory, 'external-consumer');
+  const linkType = process.platform === 'win32' ? 'junction' : 'dir';
+  try {
+    mkdirSync(resolve(fixtureRoot, 'scripts/lib'), { recursive: true });
+    mkdirSync(resolve(fixtureRoot, 'docs/templates/consumer-profiles'), { recursive: true });
+    mkdirSync(externalTarget, { recursive: true });
+    copyFileSync(resolve(root, 'scripts/scaffold-consumer-profile.mjs'), resolve(fixtureRoot, 'scripts/scaffold-consumer-profile.mjs'));
+    copyFileSync(resolve(root, 'scripts/lib/cli-args.mjs'), resolve(fixtureRoot, 'scripts/lib/cli-args.mjs'));
+    copyFileSync(
+      resolve(root, 'docs/templates/consumer-profiles/workbench.md'),
+      resolve(fixtureRoot, 'docs/templates/consumer-profiles/workbench.md'),
+    );
+
+    const repositoryLinkOut = resolve(fixtureRoot, 'consumer-link');
+    symlinkSync(externalTarget, repositoryLinkOut, linkType);
+    const lexicalAttempt = spawnSync(process.execPath, [
+      'scripts/scaffold-consumer-profile.mjs',
+      '--type', 'workbench',
+      '--out', repositoryLinkOut,
+      '--write',
+    ], { cwd: fixtureRoot, encoding: 'utf8', shell: false });
+    assert.notEqual(lexicalAttempt.status, 0, 'repository-internal symlink to an external directory must be rejected');
+    assert.match(`${lexicalAttempt.stdout}${lexicalAttempt.stderr}`, /refusing (?:linked consumer output path component|to write a consumer profile inside)/u);
+
+    const externalLinkIn = resolve(directory, 'public-repository-link');
+    symlinkSync(fixtureRoot, externalLinkIn, linkType);
+    const physicalAttempt = spawnSync(process.execPath, [
+      resolve(fixtureRoot, 'scripts/scaffold-consumer-profile.mjs'),
+      '--type', 'workbench',
+      '--out', resolve(externalLinkIn, 'not-yet-created', 'consumer'),
+      '--write',
+    ], { cwd: directory, encoding: 'utf8', shell: false });
+    assert.notEqual(physicalAttempt.status, 0, 'external symlink resolving into the repository must be rejected');
+    assert.match(`${physicalAttempt.stdout}${physicalAttempt.stderr}`, /refusing (?:linked consumer output path component|to write a consumer profile inside)/u);
+
+    if (process.platform !== 'win32') {
+      const danglingOutput = resolve(directory, 'dangling-output');
+      const danglingTarget = resolve(fixtureRoot, 'must-not-be-created.md');
+      mkdirSync(resolve(danglingOutput, 'workbench'), { recursive: true });
+      symlinkSync(danglingTarget, resolve(danglingOutput, 'workbench/README.md'));
+      const danglingAttempt = spawnSync(process.execPath, [
+        resolve(fixtureRoot, 'scripts/scaffold-consumer-profile.mjs'),
+        '--type', 'workbench',
+        '--out', danglingOutput,
+        '--write',
+        '--force',
+      ], { cwd: directory, encoding: 'utf8', shell: false });
+      assert.notEqual(danglingAttempt.status, 0, 'dangling exact-target symlink must be rejected');
+      assert.match(`${danglingAttempt.stdout}${danglingAttempt.stderr}`, /refusing linked consumer output path component/u);
+      assert.equal(existsSync(danglingTarget), false, 'scaffold must not create the dangling symlink target inside the repository');
+    }
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+});
+
+test('consumer profile scaffold writes canonical profile and shell-policy content for every type', () => {
+  const directory = mkdtempSync(resolve(tmpdir(), 'nova-consumer-profile-'));
+  const externalBin = resolve(directory, 'external-bin');
+  mkdirSync(externalBin);
+  for (const executable of ['mvn', 'npm']) {
+    const path = resolve(externalBin, process.platform === 'win32' ? `${executable}.cmd` : executable);
+    writeFileSync(path, process.platform === 'win32' ? '@exit /b 0\r\n' : '#!/bin/sh\nexit 0\n');
+    if (process.platform !== 'win32') chmodSync(path, 0o755);
+  }
+  const cases = [
+    {
+      type: 'java-backend',
+      target: 'AGENTS.md',
+      source: 'docs/templates/consumer-profiles/java-backend.md',
+      heading: '# Private Java Backend Consumer Template',
+      commandId: 'maven-test',
+    },
+    {
+      type: 'frontend',
+      target: 'AGENTS.md',
+      source: 'docs/templates/consumer-profiles/frontend.md',
+      heading: '# Frontend Consumer Template',
+      commandId: 'npm-test',
+    },
+    {
+      type: 'workbench',
+      target: 'workbench/README.md',
+      source: 'docs/templates/consumer-profiles/workbench.md',
+      heading: '# Workbench Consumer Template',
+      commandId: null,
+    },
+  ];
+  try {
+    for (const entry of cases) {
+      const output = resolve(directory, entry.type);
+      const result = spawnSync(process.execPath, [
+        'scripts/scaffold-consumer-profile.mjs',
+        '--type', entry.type,
+        '--out', output,
+        '--write',
+      ], {
+        cwd: root,
+        encoding: 'utf8',
+        shell: false,
+      });
+      assert.equal(result.status, 0, result.stderr || result.stdout);
+
+      const profile = readFileSync(resolve(output, entry.target), 'utf8');
+      assert.match(profile, new RegExp(`Source template: ${entry.source.replaceAll('.', '\\.')}`));
+      assert.match(profile, new RegExp(entry.heading.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')));
+      assert.doesNotMatch(profile, /Documentation moved/u);
+
+      const shellPolicy = JSON.parse(readFileSync(resolve(output, '.nova/shell-policy.json'), 'utf8'));
+      assert.equal(shellPolicy.schemaVersion, 1);
+      assert.deepEqual(
+        shellPolicy.allowCommands.map((command) => command.id),
+        entry.commandId ? [entry.commandId] : [],
+      );
+      for (const command of shellPolicy.allowCommands) {
+        const decision = authorizeBashCommand(command.argv.join(' '), {
+          projectRoot: output,
+          effectiveCwd: output,
+          env: {
+            PATH: externalBin,
+            PATHEXT: process.platform === 'win32' ? '.CMD' : undefined,
+          },
+        });
+        assert.deepEqual(
+          decision,
+          { allowed: true, source: 'project-exact-policy', ruleId: command.id, reasons: [] },
+          `generated ${entry.type} command must be executable through the active Bash broker`,
+        );
+      }
+    }
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
 
 console.log(`Summary: failed=${failed}`);

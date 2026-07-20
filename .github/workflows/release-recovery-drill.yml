@@ -1,27 +1,17 @@
 name: Release Recovery Drill
 
 on:
-  workflow_dispatch:
-    inputs:
-      stable-tag:
-        description: Exact stable tag represented by the candidate
-        required: true
-        type: string
-      candidate-tag:
-        description: Exact signed immutable candidate tag
-        required: true
-        type: string
-      source-commit:
-        description: Exact 40-character candidate source commit
-        required: true
-        type: string
+  repository_dispatch:
+    types: [release-recovery-drill]
+
+run-name: Recovery drill for ${{ github.event.client_payload.candidate_tag }} from protected main
 
 permissions:
   contents: read
   attestations: read
 
 concurrency:
-  group: release-recovery-${{ inputs.candidate-tag }}
+  group: release-recovery-${{ github.event.client_payload.candidate_tag }}
   cancel-in-progress: false
 
 jobs:
@@ -31,47 +21,146 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
-          ref: ${{ inputs.candidate-tag }}
+          ref: ${{ github.workflow_sha }}
           fetch-depth: 0
           persist-credentials: false
+      - name: Verify protected-main workflow and signed candidate before repository code
+        id: identity
+        env:
+          STABLE_TAG: ${{ github.event.client_payload.stable_tag }}
+          CANDIDATE_TAG: ${{ github.event.client_payload.candidate_tag }}
+          EVENT_NAME: ${{ github.event_name }}
+          TRIGGER_REF: ${{ github.ref }}
+          TRIGGER_COMMIT: ${{ github.sha }}
+          WORKFLOW_SOURCE_REF: ${{ github.workflow_ref }}
+          WORKFLOW_SOURCE_COMMIT: ${{ github.workflow_sha }}
+        run: |
+          set -euo pipefail
+          test "${EVENT_NAME}" = repository_dispatch
+          test "${TRIGGER_REF}" = refs/heads/main
+          test "${TRIGGER_COMMIT}" = "${WORKFLOW_SOURCE_COMMIT}"
+          test "${WORKFLOW_SOURCE_REF}" = "${GITHUB_REPOSITORY}/.github/workflows/release-recovery-drill.yml@refs/heads/main"
+          if [[ ! "${STABLE_TAG}" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::invalid stable release tag: ${STABLE_TAG}" >&2
+            exit 1
+          fi
+          if [[ ! "${CANDIDATE_TAG}" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)-rc\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::invalid candidate release tag: ${CANDIDATE_TAG}" >&2
+            exit 1
+          fi
+          if [[ "${CANDIDATE_TAG%%-rc.*}" != "${STABLE_TAG}" ]]; then
+            echo "::error::candidate tag base must equal stable tag" >&2
+            exit 1
+          fi
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          git merge-base --is-ancestor "${WORKFLOW_SOURCE_COMMIT}" origin/main
+          git fetch --no-tags origin "refs/tags/${CANDIDATE_TAG}:refs/tags/${CANDIDATE_TAG}"
+          test "$(git cat-file -t "refs/tags/${CANDIDATE_TAG}")" = tag
+          mkdir -p "${RUNNER_TEMP}/recovery-trust"
+          git show origin/main:.github/release-signers > "${RUNNER_TEMP}/recovery-trust/release-signers"
+          test -s "${RUNNER_TEMP}/recovery-trust/release-signers"
+          git show "${WORKFLOW_SOURCE_COMMIT}:.github/workflows/release-recovery-drill.yml" > "${RUNNER_TEMP}/recovery-trust/release-recovery-drill.yml"
+          test -s "${RUNNER_TEMP}/recovery-trust/release-recovery-drill.yml"
+          git config gpg.format ssh
+          git config gpg.ssh.allowedSignersFile "${RUNNER_TEMP}/recovery-trust/release-signers"
+          git verify-tag "${CANDIDATE_TAG}"
+          source_commit="$(git rev-list -n 1 "${CANDIDATE_TAG}")"
+          git merge-base --is-ancestor "${source_commit}" origin/main
+          git checkout --detach "${source_commit}"
+          printf 'candidate-tag=%s\nsource-commit=%s\n' "${CANDIDATE_TAG}" "${source_commit}" >> "${GITHUB_OUTPUT}"
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
           cache: npm
+      - name: Record protected-main recovery workflow provenance
+        env:
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EVENT_NAME: ${{ github.event_name }}
+          CALLER_WORKFLOW_REF: ${{ github.workflow_ref }}
+          CALLER_WORKFLOW_SHA: ${{ github.workflow_sha }}
+          WORKFLOW_FILE: ${{ runner.temp }}/recovery-trust/release-recovery-drill.yml
+          STABLE_TAG: ${{ github.event.client_payload.stable_tag }}
+          CANDIDATE_TAG: ${{ steps.identity.outputs.candidate-tag }}
+          CANDIDATE_COMMIT: ${{ steps.identity.outputs.source-commit }}
+          WORKFLOW_SOURCE_COMMIT: ${{ github.workflow_sha }}
+        run: |
+          set -euo pipefail
+          mkdir -p .metrics/recovery
+          # Preserve JavaScript template literals for Node instead of expanding them in Bash.
+          # shellcheck disable=SC2016
+          node --input-type=module -e '
+            import { createHash } from "node:crypto";
+            import { readFileSync, writeFileSync } from "node:fs";
+            const workflowBytes = readFileSync(process.env.WORKFLOW_FILE);
+            const evidence = {
+              schemaVersion: 1,
+              operation: "release-recovery-drill",
+              repository: process.env.REPOSITORY,
+              githubRunId: process.env.RUN_ID,
+              githubRunAttempt: Number(process.env.RUN_ATTEMPT),
+              githubRunUrl: process.env.RUN_URL,
+              eventName: process.env.EVENT_NAME,
+              callerWorkflowRef: process.env.CALLER_WORKFLOW_REF,
+              callerWorkflowSha: process.env.CALLER_WORKFLOW_SHA,
+              workflow: { path: ".github/workflows/release-recovery-drill.yml", sha256: createHash("sha256").update(workflowBytes).digest("hex") },
+              workflowSourceCommit: process.env.WORKFLOW_SOURCE_COMMIT,
+              stableTag: process.env.STABLE_TAG,
+              candidateTag: process.env.CANDIDATE_TAG,
+              candidateCommit: process.env.CANDIDATE_COMMIT,
+              nodeVersion: process.version,
+              generatedAt: new Date().toISOString(),
+            };
+            writeFileSync(".metrics/recovery/workflow-provenance.json", `${JSON.stringify(evidence, null, 2)}\n`);
+          '
       - run: npm ci --ignore-scripts
       - run: node scripts/validate-release-operational-readiness.mjs --mode drill
       - name: Authenticate, safely extract, and replay bound control
         env:
           GH_TOKEN: ${{ github.token }}
-          STABLE_TAG: ${{ inputs.stable-tag }}
-          CANDIDATE_TAG: ${{ inputs.candidate-tag }}
-          SOURCE_COMMIT: ${{ inputs.source-commit }}
+          GH_HOST: github.com
+          GH_REPO: github.com/${{ github.repository }}
+          STABLE_TAG: ${{ github.event.client_payload.stable_tag }}
+          CANDIDATE_TAG: ${{ steps.identity.outputs.candidate-tag }}
+          SOURCE_COMMIT: ${{ steps.identity.outputs.source-commit }}
         run: |
           set -euo pipefail
-          git config gpg.format ssh
-          git config gpg.ssh.allowedSignersFile .github/release-signers
-          test "$(git cat-file -t "refs/tags/${CANDIDATE_TAG}")" = tag
-          git verify-tag "${CANDIDATE_TAG}"
-          test "${SOURCE_COMMIT}" = "$(git rev-list -n 1 "${CANDIDATE_TAG}")"
-          node scripts/validate-release-readiness.mjs --require-ready --mode drill \
-            --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}"
-          mkdir -p .metrics/recovery/download .metrics/recovery/bundle
-          gh release download "${CANDIDATE_TAG}" --dir .metrics/recovery/download --pattern 'nova-plugin-*-evidence-bundle.tar.gz'
+          test -x /usr/bin/gh
+          release_token="${GH_TOKEN}"
+          unset GH_TOKEN
+          mkdir -p .metrics/recovery/download
+          GH_TOKEN="${release_token}" /usr/bin/gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${CANDIDATE_TAG}" > .metrics/recovery/candidate-release-metadata.json
+          GH_TOKEN="${release_token}" /usr/bin/gh release download "${CANDIDATE_TAG}" --dir .metrics/recovery/download --pattern 'nova-plugin-*-evidence-bundle.tar.gz'
           shopt -s nullglob
           bundles=(.metrics/recovery/download/nova-plugin-*-evidence-bundle.tar.gz)
           test "${#bundles[@]}" -eq 1
           bundle="${bundles[0]}"
-          gh attestation verify "${bundle}" --repo "${GITHUB_REPOSITORY}" --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" --source-ref "refs/tags/${CANDIDATE_TAG}" --source-digest "${SOURCE_COMMIT}"
+          GH_TOKEN="${release_token}" /usr/bin/gh attestation verify "${bundle}" --repo "${GITHUB_REPOSITORY}" \
+            --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" \
+            --source-ref refs/heads/main --deny-self-hosted-runners
           node scripts/extract-release-bundle.mjs --archive "${bundle}" --out .metrics/recovery/bundle
+          builder_workflow_commit="$(node -e 'const fs=require("fs"); const core=JSON.parse(fs.readFileSync(".metrics/recovery/bundle/candidate-core.json")); const sha=core.candidate?.workflowSourceCommit; if(!/^[a-f0-9]{40}$/.test(sha??"")) process.exit(1); process.stdout.write(sha)')"
+          git merge-base --is-ancestor "${builder_workflow_commit}" origin/main
+          GH_TOKEN="${release_token}" /usr/bin/gh attestation verify "${bundle}" --repo "${GITHUB_REPOSITORY}" \
+            --signer-workflow "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml" \
+            --source-ref refs/heads/main --source-digest "${builder_workflow_commit}" \
+            --signer-digest "${builder_workflow_commit}" --deny-self-hosted-runners
           node scripts/verify-release-promotion.mjs --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --commit "${SOURCE_COMMIT}" \
+            --repository "${GITHUB_REPOSITORY}" \
             --manifest .metrics/recovery/bundle/release-candidate.json --candidate-core .metrics/recovery/bundle/candidate-core.json \
             --promotion-intent .metrics/recovery/bundle/promotion-intent.json --control-bundle-manifest .metrics/recovery/bundle/release-control-bundle.manifest.json \
+            --candidate-release-metadata .metrics/recovery/candidate-release-metadata.json \
+            --observation-evidence-out .metrics/recovery/candidate-observation.json \
             --bundle-root .metrics/recovery/bundle --artifact-dir .metrics/recovery/bundle/artifacts
+          # The orchestrator evaluates release corrections only after the authenticated
+          # candidate bundle has passed the normal promotion verifier.
           node scripts/release-orchestrator.mjs --candidate-verification-passed --mode drill --state DRAFT --target-state PROMOTION_READY \
             --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${SOURCE_COMMIT}" \
             --promotion-intent .metrics/recovery/bundle/promotion-intent.json --control-bundle .metrics/recovery/bundle/release-control-bundle.manifest.json \
             --event-dir .metrics/recovery/events --run-id "${GITHUB_RUN_ID}"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
-          name: release-recovery-drill-${{ inputs.candidate-tag }}
+          name: release-recovery-drill-${{ steps.identity.outputs.candidate-tag }}
           path: .metrics/recovery/

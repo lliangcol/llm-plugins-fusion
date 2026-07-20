@@ -9,7 +9,7 @@ Generated from `workflow-specs/workflows.v6.json` by `node scripts/generate-work
 
 | Invocation | Visibility | Risk | Model invocable | Pre-approved | Disallowed | Permission prompt |
 | --- | --- | --- | --- | --- | --- | --- |
-| `/nova-plugin:backend-plan` | deprecated-alias | low | false | Read, Glob, Grep, Write, Edit | NotebookEdit, Bash | None |
+| `/nova-plugin:backend-plan` | deprecated-alias | low | false | Read, Glob, Grep | NotebookEdit, Bash | Edit, Write |
 | `/nova-plugin:codex-review-fix` | deprecated-alias | medium | false | Read, Glob, Grep, Write, Edit | NotebookEdit | Bash |
 | `/nova-plugin:codex-review-only` | deprecated-alias | low | false | Read, Glob, Grep | Write, Edit, NotebookEdit | Bash |
 | `/nova-plugin:codex-verify-only` | deprecated-alias | low | false | Read, Glob, Grep | Write, Edit, NotebookEdit | Bash |
@@ -26,8 +26,8 @@ Generated from `workflow-specs/workflows.v6.json` by `node scripts/generate-work
 | `/nova-plugin:implement-standard` | deprecated-alias | medium | false | Read, Glob, Grep, Write, Edit | NotebookEdit | Bash |
 | `/nova-plugin:plan-lite` | deprecated-alias | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
 | `/nova-plugin:plan-review` | deprecated-alias | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
-| `/nova-plugin:produce-plan` | primary | low | false | Read, Glob, Grep, Write, Edit | NotebookEdit, Bash | None |
-| `/nova-plugin:nova-produce-plan` | canonical | low | false | Read, Glob, Grep, Write, Edit | NotebookEdit, Bash | None |
+| `/nova-plugin:produce-plan` | primary | low | false | Read, Glob, Grep | NotebookEdit, Bash | Edit, Write |
+| `/nova-plugin:nova-produce-plan` | canonical | low | false | Read, Glob, Grep | NotebookEdit, Bash | Edit, Write |
 | `/nova-plugin:review` | primary | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
 | `/nova-plugin:nova-review` | canonical | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
 | `/nova-plugin:review-lite` | deprecated-alias | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
@@ -35,4 +35,4 @@ Generated from `workflow-specs/workflows.v6.json` by `node scripts/generate-work
 | `/nova-plugin:review-strict` | deprecated-alias | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
 | `/nova-plugin:route` | primary | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
 | `/nova-plugin:nova-route` | canonical | none | true | Read, Glob, Grep | Write, Edit, NotebookEdit, Bash | None |
-| `/nova-plugin:senior-explore` | deprecated-alias | low | false | Read, Glob, Grep, Write, Edit | NotebookEdit, Bash | None |
+| `/nova-plugin:senior-explore` | deprecated-alias | low | false | Read, Glob, Grep | NotebookEdit, Bash | Edit, Write |

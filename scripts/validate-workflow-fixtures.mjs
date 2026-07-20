@@ -12,6 +12,8 @@ import { dirname, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
+import { assertDemoFixtureContract, demoFixtureModel } from './lib/demo-fixture-contract.mjs';
+import { loadNovaWorkflowModelV6 } from './lib/workflow-model.mjs';
 
 assertNodeVersion({ label: 'workflow fixture validation' });
 
@@ -19,6 +21,7 @@ const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
 const fixtureRoot = 'fixtures/workflow/invoice-sync';
 const demoRoot = 'fixtures/demo';
+const demoModel = demoFixtureModel(loadNovaWorkflowModelV6(root));
 let failed = 0;
 
 function read(relPath) {
@@ -26,7 +29,11 @@ function read(relPath) {
 }
 
 function readJson(relPath) {
-  return JSON.parse(read(relPath));
+  try {
+    return JSON.parse(read(relPath));
+  } catch (error) {
+    throw new Error(`malformed JSON fixture ${relPath}: ${error.message}`);
+  }
 }
 
 function assertContainsAll(relPath, fragments) {
@@ -66,6 +73,7 @@ test('fixture files exist', () => {
     `${fixtureRoot}/src/invoice-sync.js`,
     `${fixtureRoot}/test/invoice-sync.test.js`,
     `${demoRoot}/route-basic.json`,
+    `${demoRoot}/route-dependency-update.json`,
     `${demoRoot}/review-signal.json`,
     `${demoRoot}/verification-evidence.json`,
     'docs/tutorials/workflow-evaluation.md',
@@ -78,25 +86,37 @@ test('fixture files exist', () => {
 test('headless demo fixtures are deterministic and public-safe', () => {
   const fixtures = [
     readJson(`${demoRoot}/route-basic.json`),
+    readJson(`${demoRoot}/route-dependency-update.json`),
     readJson(`${demoRoot}/review-signal.json`),
     readJson(`${demoRoot}/verification-evidence.json`),
   ];
 
   for (const fixture of fixtures) {
-    assert.match(fixture.id, /^[a-z0-9-]+$/);
-    assert.ok(['route', 'review', 'verification'].includes(fixture.mode), `${fixture.id} has unexpected mode`);
-    assert.equal(typeof fixture.request, 'string', `${fixture.id} missing request`);
-    assert.ok(fixture.expected && typeof fixture.expected === 'object', `${fixture.id} missing expected object`);
-    assert.ok(Array.isArray(fixture.expected.outputSignals), `${fixture.id} missing outputSignals`);
-    assert.ok(Array.isArray(fixture.expected.failureSignals), `${fixture.id} missing failureSignals`);
-    assert.ok(fixture.expected.outputSignals.length > 0, `${fixture.id} outputSignals empty`);
-    assert.ok(fixture.expected.failureSignals.length > 0, `${fixture.id} failureSignals empty`);
+    assert.equal(assertDemoFixtureContract(fixture, demoModel), true);
     const boundaryText = fixture.boundaries.join(' ');
     assert.match(boundaryText, /fictional public-safe fixture/i);
     assert.match(boundaryText, /does not (?:call|execute)/i);
     assert.match(boundaryText, /private consumer names/i);
     assert.doesNotMatch(JSON.stringify(fixture), /D:\\|https:\/\/[^"\s]*internal|customer|prod|token=/i);
   }
+});
+
+test('dependency-update route fixture requires review before implementation', () => {
+  const relPath = `${demoRoot}/route-dependency-update.json`;
+  assert.equal(existsSync(resolve(root, relPath)), true, `missing dependency-update route fixture: ${relPath}`);
+
+  const fixture = readJson(relPath);
+  assert.equal(fixture.id, 'route-dependency-update', `${relPath} has unexpected id`);
+  assert.equal(fixture.mode, 'route', `${relPath} must use route mode`);
+  assert.equal(fixture.expected?.nextCommand, '/nova-plugin:review', `${relPath} must route to review before implementation`);
+  assert.equal(fixture.expected?.stage, 'review', `${relPath} must identify the canonical review stage`);
+  assert.deepEqual(fixture.expected?.packs, ['dependency', 'security'], `${relPath} must preserve dependency and security review order`);
+  assert.ok(Array.isArray(fixture.expected?.requiredInputs), `${relPath} missing requiredInputs`);
+
+  const orderedSignals = fixture.expected.outputSignals.join(' ');
+  assert.match(orderedSignals, /dependency and security impact before implementation/i, `${relPath} missing review-before-implementation signal`);
+  assert.match(orderedSignals, /skipped or not-run evidence/i, `${relPath} missing explicit evidence-status signal`);
+  assert.match(fixture.expected.failureSignals.join(' '), /starts implementation before dependency and security review/i, `${relPath} missing unsafe-order failure signal`);
 });
 
 test('headless demo docs and scripts stay linked', () => {
@@ -111,6 +131,8 @@ test('headless demo docs and scripts stay linked', () => {
     'npm run demo:route',
     'npm run demo:review',
     'They do not execute slash commands',
+    'route-dependency-update.json',
+    'dependency and security review before implementation',
   ]);
   assertContainsAll('docs/tutorials/README.md', [
     'Headless Demo Fixtures',

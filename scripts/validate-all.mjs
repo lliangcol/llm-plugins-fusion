@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 /** Registry-driven repository validation with fail-closed incremental selection. */
-import { mkdir, writeFile } from 'node:fs/promises';
 import { performance } from 'node:perf_hooks';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,6 +10,7 @@ import { diagnosticReport, diagnosticResult, loadReasonRegistry, writeDiagnostic
 import { createRunnableTasks, registryMetadata, validationTaskDefinitions } from './lib/validation-task-registry.mjs';
 import { changedFilesSince, createValidationCache, expandFileArguments, selectValidationTasks, trackedAndUntrackedFiles } from './lib/validation-selection.mjs';
 import { validationEvidenceDigests, validationProfile } from './lib/validation-performance-profile.mjs';
+import { writeArtifactFileAtomically } from './lib/artifact-output.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const bashCommand = resolveBashCommand();
@@ -154,8 +154,12 @@ export async function main(args = process.argv.slice(2)) {
   console.log(`Observed elapsed=${elapsedWallMs}ms sum=${sumTaskMs}ms mode=${mode} selected=${timings.length} cacheHits=${cacheHitCount}`);
 
   if (options.writeTimings) {
-    await mkdir(resolve(root, '.metrics'), { recursive: true });
-    await writeFile(resolve(root, '.metrics/validation-timings.json'), `${JSON.stringify({ schemaVersion: 2, runId, generatedAt: new Date().toISOString(), failed, skipped, summary, gates: timings }, null, 2)}\n`, 'utf8');
+    writeArtifactFileAtomically(
+      root,
+      '.metrics/validation-timings.json',
+      `${JSON.stringify({ schemaVersion: 2, runId, generatedAt: new Date().toISOString(), failed, skipped, summary, gates: timings }, null, 2)}\n`,
+      { label: 'validation timings output' },
+    );
   }
   if (options.outputJson) {
     const registry = loadReasonRegistry(root);
@@ -166,7 +170,7 @@ export async function main(args = process.argv.slice(2)) {
       skippedReason: timing.status === 'skipped' ? 'The required local runtime was unavailable.' : undefined,
     }, registry));
     const report = { ...diagnosticReport('validate-all', results), schemaVersion: 2, summary };
-    writeDiagnosticReport(resolve(root, options.outputJson), report);
+    writeDiagnosticReport(options.outputJson, report, { repositoryRoot: root });
   }
   console.log(`\nSummary: failed=${failed} skipped=${skipped}`);
   return failed > 0 ? 1 : 0;

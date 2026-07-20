@@ -1,6 +1,8 @@
 ﻿# 📚 Nova Plugin Command Reference (Full)
 
-> **Version**: 4.0.0 | **Last updated**: 2026-07-12
+<!-- generated:release-channel:start -->
+> **Development version**: 4.1.0 (`main`, unreleased) | **Stable version**: 4.0.0 (`v4.0.0`, published 2026-07-12)
+<!-- generated:release-channel:end -->
 >
 > This guide is a complete technical reference for all `nova-plugin` commands, including parameter notes, scenario examples, and workflow templates.
 >
@@ -109,26 +111,26 @@ The diagram shows the core Explore -> Plan -> Review -> Implement -> Finalize fl
 | Stage     | Command               | Constraint | Output                | Writes code? | Notes                                       |
 | --------- | --------------------- | :--------: | --------------------- | :----------: | ------------------------------------------- |
 | Routing   | `/nova-plugin:route`              | 🟡 Medium  | Route recommendation  |      ❌      | Read-only first-stage command / skill / agent / pack / validation routing |
-| Explore   | `/nova-plugin:senior-explore`     | 🔴 Strong  | Analysis output       |      ❌      | Deep analysis                               |
+| Explore   | `/nova-plugin:senior-explore`     | 🔴 Strong  | Analysis output       |      ❌      | = `/nova-plugin:explore DEPTH=deep`                     |
 | Explore   | ⭐`/nova-plugin:explore`          | 🟡 Medium  | Perspective-based     |      ❌      | **Unified command, recommended**            |
-| Explore   | `/nova-plugin:explore-lite`       |  🟢 Weak   | Short analysis        |      ❌      | = `/nova-plugin:explore PERSPECTIVE=observer`           |
+| Explore   | `/nova-plugin:explore-lite`       |  🟢 Weak   | Short analysis        |      ❌      | = `/nova-plugin:explore PERSPECTIVE=observer DEPTH=lite` |
 | Explore   | `/nova-plugin:explore-review`     | 🟡 Medium  | Reviewer-style        |      ❌      | = `/nova-plugin:explore PERSPECTIVE=reviewer`           |
-| Plan      | `/nova-plugin:plan-lite`          | 🟡 Medium  | Plan summary          |      ❌      | -                                           |
+| Plan      | `/nova-plugin:plan-lite`          | 🟡 Medium  | Plan summary          |      ❌      | = `/nova-plugin:produce-plan PLAN_PROFILE=lite`         |
 | Plan      | `/nova-plugin:produce-plan`       | 🔴 Strong  | Plan doc (file)       |      ❌      | Supports profile param                      |
 | Plan      | `/nova-plugin:backend-plan`       | 🔴 Strong  | Backend design (file) |      ❌      | = `/nova-plugin:produce-plan PLAN_PROFILE=java-backend` |
-| Plan      | `/nova-plugin:plan-review`        | 🟡 Medium  | Review output         |      ❌      | -                                           |
+| Plan      | `/nova-plugin:plan-review`        | 🟡 Medium  | Review output         |      ❌      | = `/nova-plugin:review REVIEW_PROFILE=plan`             |
 | Review    | `/nova-plugin:review-lite`        |  🟢 Weak   | Findings bullets      |      ❌      | = `/nova-plugin:review LEVEL=lite`                     |
 | Review    | ⭐`/nova-plugin:review`           |   🟡-🔴    | Critical/Major/Minor  |      ❌      | **Unified command, recommended**            |
-| Review    | `/nova-plugin:review-only`        | 🟡 Medium  | Critical/Major/Minor  |      ❌      | = `/nova-plugin:review LEVEL=standard`                  |
+| Review    | `/nova-plugin:review-only`        | 🟡 Medium  | Critical/Major/Minor  |      ❌      | = `/nova-plugin:review LEVEL=standard MODE=findings-only` |
 | Review    | `/nova-plugin:review-strict`      | 🔴 Strong  | Exhaustive review     |      ❌      | = `/nova-plugin:review LEVEL=strict`                    |
-| Review    | `/nova-plugin:codex-review-only`  | 🟡 Medium  | Review artifact       |      ❌      | Runs Codex review script only               |
-| Review    | `/nova-plugin:codex-verify-only`  | 🟡 Medium  | Verify artifact       |      ❌      | Requires `REVIEW_FILE`                      |
+| Review    | `/nova-plugin:codex-review-only`  | 🟡 Medium  | Review artifact       |      ❌      | = `/nova-plugin:review REVIEW_PROFILE=codex-review-only` |
+| Review    | `/nova-plugin:codex-verify-only`  | 🟡 Medium  | Verify artifact       |      ❌      | = `/nova-plugin:review REVIEW_PROFILE=codex-verify-only`; requires `REVIEW_FILE` |
 | Implement | `/nova-plugin:implement-plan`     | 🔴 Strong  | Implementation output |      ✅      | -                                           |
-| Implement | `/nova-plugin:implement-standard` | 🟡 Medium  | Implementation output |      ✅      | -                                           |
-| Implement | `/nova-plugin:implement-lite`     |  🟢 Weak   | Implementation output |      ✅      | -                                           |
-| Implement | `/nova-plugin:codex-review-fix`   | 🔴 Strong  | Review/fix/verify loop |     ✅      | Bounded high-confidence fixes only          |
-| Finalize | `/nova-plugin:finalize-work` | 🔴 Strong | Delivery artifacts | ❌ |
-| Finalize | `/nova-plugin:finalize-lite` | 🟢 Weak | Minimal summary | ❌ |
+| Implement | `/nova-plugin:implement-standard` | 🟡 Medium  | Implementation output |      ✅      | = `/nova-plugin:implement-plan EXECUTION_PROFILE=standard` |
+| Implement | `/nova-plugin:implement-lite`     |  🟢 Weak   | Implementation output |      ✅      | = `/nova-plugin:implement-plan EXECUTION_PROFILE=lite`  |
+| Implement | `/nova-plugin:codex-review-fix`   | 🔴 Strong  | Review/fix/verify loop |     ✅      | = `/nova-plugin:implement-plan EXECUTION_PROFILE=codex-review-fix` |
+| Finalize | `/nova-plugin:finalize-work` | 🔴 Strong | Delivery artifacts | ❌ | Full closeout |
+| Finalize | `/nova-plugin:finalize-lite` | 🟢 Weak | Minimal summary | ❌ | = `/nova-plugin:finalize-work DEPTH=lite` |
 
 **Total commands**: 21 (18 workflow commands + 3 Codex loop commands)
 **Recommended**: Use ⭐ marked unified commands for simplified workflow
@@ -154,9 +156,9 @@ Forbidden: design proposals, refactors, implementation details, code, architectu
 | Field         | Required | Description                 | Example                               |
 | ------------- | :------: | --------------------------- | ------------------------------------- |
 | `INTENT`      |    ✅    | What you want to analyze    | `Analyze a new feature requirement`   |
-| `CONTEXT`     |    ⚪    | Relevant inputs             | requirements, API drafts, logs, links |
+| `CONTEXT`     |    ✅    | Relevant inputs             | requirements, API drafts, logs, links |
 | `CONSTRAINTS` |    ⚪    | Boundaries                  | `Only analyze current behavior`       |
-| `DEPTH`       |    ⚪    | `quick` / `normal` / `deep` | `deep`                                |
+| `DEPTH`       |    ⚪    | Fixed to `deep`             | `deep` (also the default)             |
 | `EXPORT_PATH` |    ⚪    | Optional export file path   | `docs/analysis/xxx.md`                |
 
 #### 🧩 Output format
@@ -197,7 +199,7 @@ CONTEXT:
 CONSTRAINTS:
 - Only analyze feasibility and risks; do not propose an implementation
 - Do not redesign the whole architecture
-DEPTH: normal
+DEPTH: deep
 ```
 
 <a id="场景-生产问题深度排查"></a>
@@ -702,7 +704,7 @@ High risk      → /nova-plugin:review LEVEL=strict
 Examples:
 
 ```text
-/nova-plugin:codex-review-fix BASE=main GOAL="fix current branch until mergeable"
+/nova-plugin:codex-review-fix REVIEW_SCOPE="current branch diff against main; repair until mergeable" BASE=main
 ```
 
 ```text
@@ -752,7 +754,7 @@ Examples:
 | Command          | Use case         | Depth     |
 | ---------------- | ---------------- | --------- |
 | `/nova-plugin:review LEVEL=lite` / `/nova-plugin:review-lite` | Day-to-day PRs   | 🟢 Light  |
-| `/nova-plugin:review LEVEL=standard` / `/nova-plugin:review-only` | Core paths       | 🟡 Medium |
+| `/nova-plugin:review LEVEL=standard MODE=findings-only` / `/nova-plugin:review-only` | Core-path findings-only review | 🟡 Medium |
 | `/nova-plugin:review LEVEL=strict` / `/nova-plugin:review-strict` | High-risk audits | 🔴 Deep   |
 | `/nova-plugin:codex-review-only` | Branch review artifact | 🟡 Medium |
 | `/nova-plugin:codex-verify-only` | Directed verification | 🟡 Medium |

@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /** Evaluate release corrections separately from ordinary repository integrity. */
 
-import { spawnSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 import { repoRoot } from './lib/repo-root.mjs';
 import { evaluateReleaseCorrections, loadReleaseCorrections } from './lib/release-corrections.mjs';
+import { gitHead } from './lib/git-source-snapshot.mjs';
 import { requireOptionValue } from './lib/cli-args.mjs';
 
 const root = repoRoot(import.meta.url);
@@ -29,9 +29,7 @@ export function parseReadinessArgs(args) {
   options.stableTag ??= `v${version}`;
   options.candidateTag ??= `v${version}-rc.0`;
   if (!options.sourceCommit) {
-    const git = spawnSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', shell: false });
-    if (git.status !== 0) throw new Error('unable to resolve current Git commit for readiness');
-    options.sourceCommit = git.stdout.trim();
+    options.sourceCommit = gitHead(root);
   }
   return options;
 }

@@ -25,6 +25,8 @@ Minute 1: add the marketplace and install the plugin:
 
 These commands install the exact Stable tag. To test the moving development
 channel, add `lliangcol/llm-plugins-fusion@main` explicitly and treat it as Edge.
+For updating, disabling, re-enabling, uninstalling, and scope-specific recovery,
+continue to the [plugin lifecycle guide](plugin-lifecycle.md).
 
 Minute 2: confirm it is installed:
 
@@ -62,6 +64,13 @@ npm run demo:review
 These scripts read `fixtures/demo/*.json` and print expected route, review, and
 verification signals. They do not execute slash commands or prove model output
 quality; they only show the public-safe contract a command output should satisfy.
+
+For a side-by-side route comparison, inspect the documentation-maintenance
+fixture in `fixtures/demo/route-basic.json` and the small fictional dependency
+update in `fixtures/demo/route-dependency-update.json`. The dependency example
+requires dependency and security review before implementation, keeps required
+inputs and failure signals explicit, and does not claim package-registry,
+network, Claude, or Codex execution.
 
 ## Five Main Commands
 

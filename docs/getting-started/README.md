@@ -15,6 +15,7 @@ portal.
 | --- | --- | --- |
 | Understand the workflow without credentials | `npm run demo:route` and `npm run demo:review` | Deterministic public-safe route and review output. |
 | Install the stable Claude Code plugin | [getting-started.md](first-workflow.md) | `nova-plugin` installed from exact tag `v4.0.0`, then `/nova-plugin:route` responds. |
+| Update, disable, re-enable, or uninstall the plugin | [plugin-lifecycle.md](plugin-lifecycle.md) | The installed scope and release channel are explicit before any lifecycle change. |
 | Use the contracts from another assistant | [consumers/README.md](../guides/assistants/README.md) | A consumer-owned profile that does not assume Claude slash-command behavior. |
 | Evaluate compatibility evidence | [compatibility/README.md](../reference/compatibility/README.md) | Declared support, known-good lanes, current evidence, and historical evidence are distinguished. |
 | Make a first contribution | [CONTRIBUTING.md](../../CONTRIBUTING.md#第一次贡献路径) | A small public-safe change with its focused validation evidence. |

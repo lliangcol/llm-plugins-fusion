@@ -23,11 +23,11 @@
 
 ### Required
 
-- 无
+- `REQUEST`: 实现目标与验收标准。示例: `修复手机号脱敏并补测试`
 
 ### Optional
 
-- `ARGUMENTS`: 实现目标与约束说明。示例: `修复描述`
+- `CONSTRAINTS`: 范围与兼容性约束。示例: `不要修改公开 API`
 
 ## 行为准则（Do/Don't）
 
@@ -49,7 +49,8 @@
 
 ## 输出规范
 
-- 命令未规定固定输出结构；重点是快速完成实现。
+- 固定顺序输出 `implemented changes`、`Changes Summary`、`Validation`、`Adjustments`。
+- `Validation` 只能报告实际运行的检查；无调整时 `Adjustments` 明确写 `None`。
 
 ## 典型示例
 

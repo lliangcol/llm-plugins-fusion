@@ -3,7 +3,6 @@ export function projectV5Compatibility(spec) {
   if (spec.schemaVersion === 5) return structuredClone(spec);
   if (spec.schemaVersion !== 6) throw new Error(`unsupported workflow schema version ${spec.schemaVersion}`);
   const projected = structuredClone(spec);
-  projected.$schema = '../schemas/workflow-spec.schema.json';
   projected.schemaVersion = 5;
   projected.contractVersions = { workflow: '5.0.0', runtime: '3.0.0', adapter: '2.0.0' };
   projected.workflows = projected.workflows.map((workflow) => {

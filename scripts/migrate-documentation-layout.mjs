@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /** Apply and verify governed documentation moves while retaining public compatibility stubs. */
-import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname, extname, isAbsolute, relative, resolve, sep } from 'node:path';
+import { pathToFileURL } from 'node:url';
+import { gitHead, gitSnapshotReader } from './lib/git-source-snapshot.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 import { requireSemVer } from './lib/semver.mjs';
 
@@ -27,7 +28,7 @@ const movedMarker = (from) => `<!-- migrated-from: ${from} -->`;
 const mergedMarker = (from) => `<!-- merged-from: ${from} -->`;
 const isMarkdown = (path) => extname(path).toLowerCase() === '.md';
 
-function repositoryPath(path, label) {
+export function repositoryPath(path, label) {
   const absolute = resolve(root, path);
   const normalized = relative(root, absolute);
   if (!normalized || normalized.startsWith(`..${sep}`) || normalized === '..' || isAbsolute(normalized)) {
@@ -62,7 +63,7 @@ function validateRegistry() {
 
 validateRegistry();
 
-function compareStableVersions(left, right) {
+export function compareStableVersions(left, right) {
   for (const key of ['major', 'minor', 'patch']) {
     const delta = Number(left[key]) - Number(right[key]);
     if (delta !== 0) return Math.sign(delta);
@@ -91,7 +92,7 @@ function activeMarkdownFiles() {
   return markdownFiles().filter((path) => !compatibilityPaths.has(path));
 }
 
-function inboundCompatibilityLinks() {
+export function inboundCompatibilityLinks() {
   const findings = [];
   for (const path of activeMarkdownFiles()) {
     const content = readFileSync(resolve(root, path), 'utf8');
@@ -107,7 +108,7 @@ function inboundCompatibilityLinks() {
   return findings;
 }
 
-function rewriteInboundCompatibilityLinks() {
+export function rewriteInboundCompatibilityLinks() {
   for (const path of activeMarkdownFiles()) {
     const target = resolve(root, path);
     const content = readFileSync(target, 'utf8');
@@ -116,10 +117,15 @@ function rewriteInboundCompatibilityLinks() {
   }
 }
 
-function rewriteLinks(content, from, to) {
+function splitLinkHref(href) {
+  const suffixAt = href.search(/[?#]/u);
+  return suffixAt === -1 ? [href, ''] : [href.slice(0, suffixAt), href.slice(suffixAt)];
+}
+
+export function rewriteLinks(content, from, to) {
   return content.replace(/(\]\()([^\s)]+)(\))/gu, (match, open, href, close) => {
     if (/^(?:[a-z]+:|#|\/)/iu.test(href)) return match;
-    const [pathPart, suffix = ''] = href.split(/(?=[?#])/u, 2);
+    const [pathPart, suffix] = splitLinkHref(href);
     if (!pathPart) return match;
     const absolute = resolve(dirname(resolve(root, from)), pathPart);
     const rewritten = relative(dirname(resolve(root, to)), absolute).split(sep).join('/') || '.';
@@ -127,10 +133,10 @@ function rewriteLinks(content, from, to) {
   });
 }
 
-function rewriteRedirectLinks(content, documentPath) {
+export function rewriteRedirectLinks(content, documentPath) {
   return content.replace(/(\]\()([^\s)]+)(\))/gu, (match, open, href, close) => {
     if (/^(?:[a-z]+:|#|\/)/iu.test(href)) return match;
-    const [pathPart, suffix = ''] = href.split(/(?=[?#])/u, 2);
+    const [pathPart, suffix] = splitLinkHref(href);
     const absolute = resolve(dirname(resolve(root, documentPath)), pathPart);
     const repositoryPath = relative(root, absolute).split(sep).join('/');
     const redirected = redirects.get(repositoryPath);
@@ -138,8 +144,8 @@ function rewriteRedirectLinks(content, documentPath) {
   });
 }
 
-function committedSource(path) {
-  return execFileSync('git', ['show', `HEAD:${path}`], { cwd: root, encoding: 'utf8' });
+export function committedSource(path) {
+  return gitSnapshotReader(root, gitHead(root)).readText(path);
 }
 
 function checkEntry(entry) {
@@ -162,7 +168,7 @@ function checkEntry(entry) {
   if (readFileSync(source, 'utf8') !== targetContent) throw new Error(`stale compatibility copy: ${entry.from}`);
 }
 
-function writeEntry(entry) {
+export function writeEntry(entry) {
   const source = repositoryPath(entry.from, 'migration source'); const target = repositoryPath(entry.to, 'migration target');
   if (entry.from === entry.to || entry.disposition === 'retain' || entry.disposition === 'generated') return;
   mkdirSync(dirname(target), { recursive: true });
@@ -196,16 +202,28 @@ function writeEntry(entry) {
   if (!existsSync(source) || readFileSync(source, 'utf8') !== expected) writeFileSync(source, expected, 'utf8');
 }
 
-const write = process.argv.includes('--write');
-if (process.argv.slice(2).some((arg) => arg !== '--write')) throw new Error('Usage: node scripts/migrate-documentation-layout.mjs [--write]');
-if (write) {
-  for (const entry of registry.mappings) writeEntry(entry);
-  rewriteInboundCompatibilityLinks();
+export function main(args = process.argv.slice(2)) {
+  if (args.some((arg) => arg !== '--write')) throw new Error('Usage: node scripts/migrate-documentation-layout.mjs [--write]');
+  const write = args.includes('--write');
+  if (write) {
+    for (const entry of registry.mappings) writeEntry(entry);
+    rewriteInboundCompatibilityLinks();
+  }
+  for (const entry of registry.mappings) checkEntry(entry);
+  const inbound = inboundCompatibilityLinks();
+  if (inbound.length) {
+    const sample = inbound.slice(0, 5).map((item) => `${item.path}: ${item.href}`).join('; ');
+    throw new Error(`${inbound.length} active documentation link(s) still target compatibility paths: ${sample}`);
+  }
+  console.log(`OK documentation migrations (${registry.mappings.length} governed compatibility paths; zero active inbound links; retire no earlier than ${[...new Set(registry.mappings.map((entry) => entry.retireAfterVersion))].join(', ')}${write ? ', written' : ''})`);
+  return 0;
 }
-for (const entry of registry.mappings) checkEntry(entry);
-const inbound = inboundCompatibilityLinks();
-if (inbound.length) {
-  const sample = inbound.slice(0, 5).map((item) => `${item.path}: ${item.href}`).join('; ');
-  throw new Error(`${inbound.length} active documentation link(s) still target compatibility paths: ${sample}`);
+
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try {
+    process.exitCode = main();
+  } catch (error) {
+    console.error(`ERROR ${error.message}`);
+    process.exitCode = 1;
+  }
 }
-console.log(`OK documentation migrations (${registry.mappings.length} governed compatibility paths; zero active inbound links; retire no earlier than ${[...new Set(registry.mappings.map((entry) => entry.retireAfterVersion))].join(', ')}${write ? ', written' : ''})`);

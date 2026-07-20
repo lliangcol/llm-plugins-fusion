@@ -110,7 +110,7 @@ test('workflow classes retain the native permission contract', async () => {
   );
   assertTools(
     ['backend-plan', 'produce-plan', 'senior-explore'],
-    ['Read', 'Glob', 'Grep', 'Write', 'Edit'],
+    ['Read', 'Glob', 'Grep'],
     ['NotebookEdit', 'Bash'],
     false,
   );
@@ -144,5 +144,38 @@ test('generated workflow permission files are current', async () => {
   for (const generated of generateWorkflowPermissionFiles(root)) {
     const actual = await readFile(resolve(root, generated.relPath), 'utf8');
     assert.equal(actual, generated.content, `${generated.relPath} is stale`);
+  }
+});
+
+test('command discovery descriptions are generated from behavior purposes without replacing Skill prose', async () => {
+  const behaviors = JSON.parse(await readFile(resolve(root, 'workflow-specs/behaviors.v2.json'), 'utf8'));
+  for (const behavior of behaviors.behaviors) {
+    const source = await readFile(resolve(root, `nova-plugin/commands/${behavior.id}.md`), 'utf8');
+    const match = source.match(/^description:\s*(.+)$/mu);
+    assert.ok(match, `${behavior.id} command is missing a description`);
+    assert.equal(JSON.parse(match[1]), behavior.purpose, `${behavior.id} command description drifted from behavior purpose`);
+  }
+  const skill = await readFile(resolve(root, 'nova-plugin/skills/nova-review/SKILL.md'), 'utf8');
+  assert.match(skill, /^description: Unified canonical review Skill\./mu);
+});
+
+test('artifact writers require a native Write/Edit permission prompt', async () => {
+  const spec = JSON.parse(await readFile(
+    resolve(root, 'nova-plugin/runtime/workflow-permissions.json'),
+    'utf8',
+  ));
+  const report = buildEffectivePermissions(spec);
+  for (const id of ['backend-plan', 'produce-plan', 'senior-explore']) {
+    const workflow = spec.workflows.find((entry) => entry.id === id);
+    assert.ok(workflow, `missing workflow ${id}`);
+    assert.equal(workflow.permissionPolicy.workspaceWrite, 'prompt');
+    assert.equal(workflow.allowedTools.includes('Write'), false);
+    assert.equal(workflow.allowedTools.includes('Edit'), false);
+    assert.equal(workflow.disallowedTools.includes('Write'), false);
+    assert.equal(workflow.disallowedTools.includes('Edit'), false);
+
+    const command = report.entries.find((entry) => entry.surface === 'command' && entry.id === id);
+    assert.ok(command, `missing command permission report for ${id}`);
+    assert.deepEqual(command.permissionPromptTools.filter((tool) => ['Write', 'Edit'].includes(tool)), ['Edit', 'Write']);
   }
 });

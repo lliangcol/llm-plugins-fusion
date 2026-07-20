@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import test from 'node:test';
 import {
@@ -62,16 +63,66 @@ test('llmf repository plans use fixed argv without shell composition', () => {
   );
   const release = repositoryProfilePlan('check', 'release');
   assert.deepEqual(release.map((entry) => entry.id), ['coverage', 'maintainer-evidence', 'install-preview']);
+  assert.equal(release.find((entry) => entry.id === 'coverage').timeoutMs, 360_000);
+  assert.equal(repositoryProfilePlan('check', 'full')[0].timeoutMs, 300_000);
   const security = repositoryProfilePlan('check', 'security');
   assert.deepEqual(
     security.map((entry) => entry.command),
     [process.execPath, 'shellcheck', 'actionlint', process.execPath, process.execPath],
   );
+  const distributedHookShellInventory = readdirSync(resolve(root, 'nova-plugin/hooks/scripts'), { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.sh'))
+    .map((entry) => `nova-plugin/hooks/scripts/${entry.name}`)
+    .sort();
+  const shellcheck = security.find((entry) => entry.id === 'shellcheck');
+  assert.deepEqual(
+    shellcheck.args
+      .filter((arg) => arg.startsWith('nova-plugin/hooks/scripts/') && arg.endsWith('.sh'))
+      .sort(),
+    distributedHookShellInventory,
+  );
   assert.ok(security.every((entry) => entry.command !== 'npm'));
 
   const drift = repositoryProfilePlan('generate', 'all');
   const write = repositoryProfilePlan('generate', 'all', { write: true });
-  assert.equal(drift.length, 19);
+  const generatorIds = drift.map((entry) => entry.id);
+  assert.deepEqual(repositoryProfilePlan('generate', 'runtime').map((entry) => entry.id), [
+    'contract-v6',
+    'workflow-permissions',
+    'runtime-contracts',
+    'behavior-surfaces',
+    'adapters',
+    'second-product',
+    'eval-corpus',
+  ]);
+  assert.deepEqual(repositoryProfilePlan('generate', 'docs').map((entry) => entry.id), [
+    'diagnostics-docs',
+    'command-docs',
+    'prompt-surface-report',
+    'platform-evidence',
+    'doc-governance',
+  ]);
+  const releaseGeneratorIds = repositoryProfilePlan('generate', 'release').map((entry) => entry.id);
+  assert.deepEqual(releaseGeneratorIds, [
+    'registry',
+    'surface-inventory',
+    'compatibility-evidence',
+    'workflow-surfaces',
+    'static-contract',
+    'adapter-simulation',
+    'critical-mutation',
+    'real-task-benchmark',
+    'quality-report',
+    'project-state',
+    'fact-graph',
+    'release-summary',
+    'task-catalog',
+    'control-plane',
+  ]);
+  assert.equal(drift.length, 26);
+  for (const baseline of ['static-contract', 'adapter-simulation', 'critical-mutation', 'real-task-benchmark']) {
+    assert.ok(generatorIds.indexOf(baseline) < generatorIds.indexOf('quality-report'), `${baseline} must precede the quality report`);
+  }
   assert.equal(write.length, drift.length);
   assert.ok(drift.every((entry) => !entry.args.includes('--write')));
   assert.ok(write.every((entry) => entry.args.at(-1) === '--write'));
@@ -106,4 +157,22 @@ test('llmf repository checks execute sequentially and fail closed with normalize
   assert.equal(failure.output.result.passed, false);
   assert.equal(failure.output.result.tasks.length, 2);
   assert.equal(failure.output.result.tasks[1].stderr, 'failed safely\n');
+
+  const releaseCalls = [];
+  const baselineFailure = await runCli(['generate', 'release', '--root', root], process, {
+    runner: async (id) => {
+      releaseCalls.push(id);
+      return observed({ id, ok: id !== 'adapter-simulation', code: id === 'adapter-simulation' ? 1 : 0 });
+    },
+  });
+  assert.equal(baselineFailure.exitCode, EXIT.VALIDATION);
+  assert.deepEqual(releaseCalls, [
+    'registry',
+    'surface-inventory',
+    'compatibility-evidence',
+    'workflow-surfaces',
+    'static-contract',
+    'adapter-simulation',
+  ]);
+  assert.equal(releaseCalls.includes('quality-report'), false);
 });

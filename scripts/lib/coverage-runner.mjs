@@ -1,4 +1,5 @@
-import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { mkdirSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { requireOptionValue } from './cli-args.mjs';
@@ -15,6 +16,9 @@ import {
   sourceModuleInventory,
 } from './source-inventory.mjs';
 import { relativeTestFiles } from './test-discovery.mjs';
+import { resolveArtifactOutputPath, writeArtifactFileAtomically } from './artifact-output.mjs';
+
+export const COVERAGE_TEST_CONCURRENCY = 4;
 
 export function usage() {
   return `Usage: node scripts/run-test-coverage.mjs [--check] [--coverage-dir <path>]
@@ -35,7 +39,7 @@ export function parseCoverageArgs(args, root) {
   const options = {
     check: false,
     help: false,
-    coverageDir: resolve(root, '.metrics/coverage'),
+    coverageDir: resolveArtifactOutputPath(root, '.metrics/coverage', 'coverage output directory'),
   };
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
@@ -48,7 +52,11 @@ export function parseCoverageArgs(args, root) {
       continue;
     }
     if (arg === '--coverage-dir') {
-      options.coverageDir = resolve(root, requireOptionValue(args, index, '--coverage-dir'));
+      options.coverageDir = resolveArtifactOutputPath(
+        root,
+        requireOptionValue(args, index, '--coverage-dir'),
+        'coverage output directory',
+      );
       index += 1;
       continue;
     }
@@ -58,7 +66,12 @@ export function parseCoverageArgs(args, root) {
 }
 
 export function coverageCommand(testFiles) {
-  return ['--test', '--experimental-test-coverage', ...testFiles];
+  return [
+    '--test',
+    '--experimental-test-coverage',
+    `--test-concurrency=${COVERAGE_TEST_CONCURRENCY}`,
+    ...testFiles,
+  ];
 }
 
 export function prepareCoverageDirectory(
@@ -71,13 +84,18 @@ export function prepareCoverageDirectory(
   return v8Dir;
 }
 
-/** @param {{root: string, args?: string[], env?: NodeJS.ProcessEnv, runner?: typeof spawnSync, now?: () => Date}} options */
+/** @param {{root: string, args?: string[], env?: NodeJS.ProcessEnv, runner?: typeof spawnSync, now?: () => Date, discoverTests?: typeof relativeTestFiles, readText?: typeof readFileSync, listDirectory?: typeof readdirSync, inventorySources?: typeof sourceModuleInventory, inventoryLoadedSources?: typeof loadedSourceModules}} options */
 export function runCoverage({
   root,
   args = [],
   env = process.env,
   runner = spawnSync,
   now = () => new Date(),
+  discoverTests = relativeTestFiles,
+  readText = readFileSync,
+  listDirectory = readdirSync,
+  inventorySources = sourceModuleInventory,
+  inventoryLoadedSources = loadedSourceModules,
 }) {
   let options;
   try {
@@ -91,6 +109,10 @@ export function runCoverage({
     console.log(usage());
     return 0;
   }
+  const metadataPath = resolve(options.coverageDir, 'metadata.json');
+  // A new invocation invalidates any prior promotable record immediately.
+  // Only the successful end of the complete checked gate writes it again.
+  rmSync(metadataPath, { force: true });
 
   let thresholds = null;
   if (options.check) {
@@ -101,7 +123,7 @@ export function runCoverage({
       return 1;
     }
   }
-  const testFiles = relativeTestFiles(root, 'all');
+  const testFiles = discoverTests(root, 'all');
   if (testFiles.length === 0) {
     console.error('ERROR no test files found under tests/');
     return 1;
@@ -109,7 +131,6 @@ export function runCoverage({
 
   const v8Dir = resolve(options.coverageDir, 'v8');
   const summaryPath = resolve(options.coverageDir, 'coverage-summary.txt');
-  const metadataPath = resolve(options.coverageDir, 'metadata.json');
   prepareCoverageDirectory(options.coverageDir);
   const commandArgs = coverageCommand(testFiles);
 
@@ -135,8 +156,8 @@ export function runCoverage({
   if (stdout) process.stdout.write(stdout);
   if (stderr) process.stderr.write(stderr);
 
-  writeFileSync(summaryPath, [
-    `command=${process.execPath} ${commandArgs.join(' ')}`,
+  const summary = [
+    `command=node ${commandArgs.join(' ')}`,
     `check=${options.check}`,
     `thresholds=${thresholds ? JSON.stringify(thresholds) : 'not enforced'}`,
     `exitCode=${result.status ?? 'null'}`,
@@ -144,20 +165,8 @@ export function runCoverage({
     `startedAt=${startedAt}`,
     `completedAt=${completedAt}`,
     '', '--- stdout ---', stdout, '', '--- stderr ---', stderr,
-  ].join('\n'), 'utf8');
-  writeFileSync(metadataPath, `${JSON.stringify({
-    command: [process.execPath, ...commandArgs],
-    check: options.check,
-    thresholds: thresholds ?? [],
-    exitCode: result.status,
-    signal: result.signal,
-    startedAt,
-    completedAt,
-    coverageDir: relative(root, options.coverageDir).replaceAll('\\', '/'),
-    v8Dir: relative(root, v8Dir).replaceAll('\\', '/'),
-    summaryPath: relative(root, summaryPath).replaceAll('\\', '/'),
-    node: process.version,
-  }, null, 2)}\n`, 'utf8');
+  ].join('\n');
+  writeArtifactFileAtomically(root, summaryPath, summary, { label: 'coverage summary output' });
 
   if (result.error) {
     console.error(`ERROR failed to run coverage command: ${result.error.message}`);
@@ -165,6 +174,23 @@ export function runCoverage({
   }
   if (result.status !== 0) return result.status ?? 1;
   if (!options.check) {
+    writeArtifactFileAtomically(root, metadataPath, `${JSON.stringify({
+      schemaVersion: 2,
+      command: ['node', ...commandArgs],
+      check: false,
+      gatePassed: false,
+      exitCode: 0,
+      signal: result.signal ?? null,
+      startedAt,
+      completedAt,
+      durationMs: new Date(completedAt).getTime() - new Date(startedAt).getTime(),
+      coverageDir: relative(root, options.coverageDir).replaceAll('\\', '/'),
+      v8Dir: relative(root, v8Dir).replaceAll('\\', '/'),
+      summaryPath: relative(root, summaryPath).replaceAll('\\', '/'),
+      summarySha256: createHash('sha256').update(summary).digest('hex'),
+      nodeVersion: process.version,
+      testFileCount: testFiles.length,
+    }, null, 2)}\n`, { label: 'coverage metadata output' });
     console.log(`Coverage evidence written to ${relative(root, options.coverageDir)}`);
     return 0;
   }
@@ -182,25 +208,51 @@ export function runCoverage({
     for (const failure of thresholdFailures) console.error(`ERROR ${failure}`);
     return 1;
   }
-  const criticalConfig = JSON.parse(readFileSync(resolve(root, 'governance/engineering-evidence.json'), 'utf8')).criticalCoverage;
+  const criticalConfig = JSON.parse(readText(resolve(root, 'governance/engineering-evidence.json'), 'utf8')).criticalCoverage;
   const criticalFailures = criticalCoverageFailures(parseCoverageFileRows(stdout), criticalConfig.modules);
   if (criticalFailures.length > 0) {
     for (const failure of criticalFailures) console.error(`ERROR ${failure}`);
     return 1;
   }
 
-  const coverageFiles = readdirSync(v8Dir).filter((entry) => entry.endsWith('.json'));
+  const coverageFiles = listDirectory(v8Dir).filter((entry) => entry.endsWith('.json'));
   if (coverageFiles.length === 0) {
     console.error('ERROR NODE_V8_COVERAGE did not produce raw coverage JSON');
     return 1;
   }
-  const expectedSources = sourceModuleInventory(root);
-  const loadedSources = loadedSourceModules(v8Dir, root);
+  const expectedSources = inventorySources(root);
+  const loadedSources = inventoryLoadedSources(v8Dir, root);
   const missingSources = missingCoverageSources(expectedSources, loadedSources);
   if (missingSources.length > 0) {
     for (const source of missingSources) console.error(`ERROR coverage source was not loaded: ${source}`);
     return 1;
   }
+
+  writeArtifactFileAtomically(root, metadataPath, `${JSON.stringify({
+    schemaVersion: 2,
+    command: ['node', ...commandArgs],
+    check: true,
+    gatePassed: true,
+    thresholds,
+    actual,
+    exitCode: 0,
+    signal: result.signal ?? null,
+    startedAt,
+    completedAt,
+    durationMs: new Date(completedAt).getTime() - new Date(startedAt).getTime(),
+    coverageDir: relative(root, options.coverageDir).replaceAll('\\', '/'),
+    v8Dir: relative(root, v8Dir).replaceAll('\\', '/'),
+    summaryPath: relative(root, summaryPath).replaceAll('\\', '/'),
+    summarySha256: createHash('sha256').update(summary).digest('hex'),
+    nodeVersion: process.version,
+    testFileCount: testFiles.length,
+    rawCoverageFileCount: coverageFiles.length,
+    criticalModuleCount: Object.keys(criticalConfig.modules).length,
+    criticalModulesPassed: Object.keys(criticalConfig.modules).length,
+    expectedSourceCount: expectedSources.length,
+    loadedSourceCount: loadedSources.length,
+    missingSourceCount: 0,
+  }, null, 2)}\n`, { label: 'coverage metadata output' });
 
   console.log(`Coverage baseline passed: lines=${actual.lines} branches=${actual.branches} functions=${actual.functions}`);
   console.log(`Critical module coverage passed: ${Object.keys(criticalConfig.modules).length} per-module floors`);

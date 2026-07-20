@@ -33,14 +33,23 @@ test('candidate validation forwards an exact required performance profile', asyn
   const calls = [];
   const profile = 'linux-x64-node22-github-hosted-3-fresh-process-full-uncached';
   const status = await main({
-    env: { ...process.env, NOVA_REQUIRED_VALIDATION_PROFILE: profile },
-    runner: async (label, command, args) => {
-      calls.push({ label, command, args });
+    env: { ...process.env, NOVA_REQUIRED_VALIDATION_PROFILE: profile, GH_TOKEN: 'gh-secret', GITHUB_TOKEN: 'github-secret' },
+    runner: async (label, command, args, options) => {
+      calls.push({ label, command, args, options });
       return { ok: true, code: 0 };
     },
   });
   assert.equal(status, 0);
   assert.deepEqual(calls.find(({ label }) => label === 'benchmark validate all').args, ['scripts/profile-validation.mjs', '--benchmark', '--require-profile', profile]);
+  for (const call of calls) {
+    if (call.label === 'benchmark validate all') {
+      assert.equal(call.options.env.GH_TOKEN, 'gh-secret');
+      assert.equal(call.options.env.GITHUB_TOKEN, 'github-secret');
+    } else {
+      assert.equal(Object.hasOwn(call.options.env, 'GH_TOKEN'), false);
+      assert.equal(Object.hasOwn(call.options.env, 'GITHUB_TOKEN'), false);
+    }
+  }
 });
 
 test('maintainer evidence-only mode reuses prior test evidence without rerunning suites', async () => {

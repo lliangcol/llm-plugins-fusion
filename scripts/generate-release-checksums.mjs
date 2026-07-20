@@ -6,30 +6,34 @@
  */
 
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { assertNodeVersion } from './lib/node-version.mjs';
 import { requireOptionValue } from './lib/cli-args.mjs';
+import {
+  releaseArtifactNames,
+  releaseChecksumPaths,
+  releaseChecksumSourcePaths,
+} from './lib/release-checksum-contract.mjs';
+import {
+  prepareArtifactOutputPlan,
+  resolveArtifactOutputPath,
+  writeArtifactOutput,
+} from './lib/artifact-output.mjs';
 
 assertNodeVersion({ label: 'release checksum generation' });
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
-export const releaseArtifacts = [
-  'nova-plugin/.claude-plugin/plugin.json',
-  '.claude-plugin/marketplace.json',
-  '.claude-plugin/marketplace.canary.json',
-  '.claude-plugin/marketplace.metadata.json',
-  'docs/marketplace/catalog.md',
-];
+export const releaseArtifacts = releaseChecksumSourcePaths;
 
 function usage() {
   return 'Usage: node scripts/generate-release-checksums.mjs [--out <path>]';
 }
 
 export function parseArgs(args, root = defaultRoot) {
-  let out = resolve(root, '.metrics/release-checksums/SHA256SUMS.txt');
+  let out = resolveArtifactOutputPath(root, '.metrics/release-checksums/SHA256SUMS.txt', 'release checksum output');
   for (let index = 0; index < args.length; index += 1) {
     const arg = args[index];
     if (arg === '--help' || arg === '-h') {
@@ -38,7 +42,7 @@ export function parseArgs(args, root = defaultRoot) {
     }
     if (arg === '--out') {
       const value = requireOptionValue(args, index, '--out');
-      out = resolve(root, value);
+      out = resolveArtifactOutputPath(root, value, 'release checksum output');
       index += 1;
       continue;
     }
@@ -56,15 +60,15 @@ export function generateReleaseChecksums({ root = defaultRoot, args = [] } = {})
   const outPath = parseArgs(args, root);
   const generatedDir = resolve(root, '.metrics/release-artifacts');
   const plugin = JSON.parse(readFileSync(resolve(root, 'nova-plugin/.claude-plugin/plugin.json'), 'utf8'));
-  const archiveName = `nova-plugin-${plugin.version}.tar.gz`;
-  const expectedNames = [archiveName, 'artifact-manifest.json', 'build-sbom.cdx.json', 'runtime-capabilities.cdx.json', 'nova-build-record.json'];
+  const expectedNames = releaseArtifactNames(plugin.version);
   const present = new Set(existsSync(generatedDir) ? readdirSync(generatedDir) : []);
   const missing = expectedNames.filter((name) => !present.has(name));
   if (missing.length) throw new Error(`release artifacts missing for ${plugin.version}: ${missing.join(', ')}`);
-  const generatedArtifacts = expectedNames.map((name) => `.metrics/release-artifacts/${name}`);
-  const lines = [...releaseArtifacts, ...generatedArtifacts].map((relPath) => `${checksum(root, relPath)}  ${relPath}`);
-  mkdirSync(dirname(outPath), { recursive: true });
-  writeFileSync(outPath, `${lines.join('\n')}\n`, 'utf8');
+  const lines = releaseChecksumPaths(plugin.version).map((relPath) => `${checksum(root, relPath)}  ${relPath}`);
+  const plan = prepareArtifactOutputPlan(root, [{
+    key: 'checksums', path: outPath, label: 'release checksum output',
+  }], { protectedPaths: releaseChecksumPaths(plugin.version).map((path) => resolve(root, path)) });
+  writeArtifactOutput(plan, 'checksums', `${lines.join('\n')}\n`);
   return { outPath, lines };
 }
 

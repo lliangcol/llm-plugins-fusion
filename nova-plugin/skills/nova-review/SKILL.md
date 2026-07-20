@@ -39,6 +39,8 @@ This file is the supporting behavioral contract for `/nova-plugin:review` and th
 
 - **Purpose:** Perform evidence-grounded code or design review at the requested depth and output mode without implementation.
 - **Canonical inputs:** `REVIEW_SCOPE`(required aliases=INPUT,SCOPE); `LEVEL`(optional aliases=DEPTH default="standard" exact="lite","standard","strict"); `MODE`(optional default="full" exact="full","findings-only"); `REVIEW_PROFILE`(optional default="general" exact="general","plan","codex-review-only","codex-verify-only")
+- **Resolved variant authority:** `{"REVIEW_PROFILE":"codex-review-only"} normalized={"LEVEL":"standard","MODE":"full","REVIEW_PROFILE":"codex-review-only"} -> runtime/contracts/codex-review-only.json`; `{"REVIEW_PROFILE":"codex-verify-only"} normalized={"LEVEL":"standard","MODE":"full","REVIEW_PROFILE":"codex-verify-only"} -> runtime/contracts/codex-verify-only.json`; `{"REVIEW_PROFILE":"plan"} normalized={"LEVEL":"standard","MODE":"full","REVIEW_PROFILE":"plan"} -> runtime/contracts/plan-review.json`; `{} normalized={"LEVEL":"standard","MODE":"full","REVIEW_PROFILE":"general"} -> runtime/contracts/review.json`; `{"LEVEL":"lite"} normalized={"LEVEL":"lite","MODE":"full","REVIEW_PROFILE":"general"} -> runtime/contracts/review-lite.json`; `{"LEVEL":"standard","MODE":"findings-only"} normalized={"LEVEL":"standard","MODE":"findings-only","REVIEW_PROFILE":"general"} -> runtime/contracts/review-only.json`; `{"LEVEL":"strict"} normalized={"LEVEL":"strict","MODE":"full","REVIEW_PROFILE":"general"} -> runtime/contracts/review-strict.json`. Declared selector defaults are applied before matching. An exact normalized override wins; a non-exact combination that triggers an alias specialization stops as conflicting, and only a valid combination that triggers no specialization uses the canonical fallback. The complete resolved runtime contract is authoritative and no field falls back to canonical prose.
+- **Claude static-entrypoint gate:** Native command and Skill frontmatter are static. A matching command wrapper may continue after it has verified that its invoked command id equals `resolvedWorkflowId`; this canonical Skill must not re-resolve or reject that validated wrapper. Only when this canonical Skill is itself the Claude native invoked entrypoint and no validated wrapper gate exists must `resolvedWorkflowId` equal `review`. Otherwise STOP before tools or side effects and invoke the exact direct command `/nova-plugin:<resolved commandEntrypoint.directCommandId>`; never execute the specialized contract under unmatched canonical frontmatter. Generic and Codex adapters may execute the resolved contract directly under adapter enforcement.
 - **Decision entries:** 7; canonical routes and variants: `review {"REVIEW_PROFILE":"plan"}`, `review {"REVIEW_PROFILE":"codex-review-only"}`, `review {"REVIEW_PROFILE":"codex-verify-only"}`, `review {"MODE":"findings-only"}`, `review {"LEVEL":"lite"}`, `review {"LEVEL":"standard"}`, `review {"LEVEL":"strict"}`.
 - **Workflow steps:** `resolve-scope` → `route` → `inspect` → `emit`
 - **Output:** mode=`chat`; order=`findings` → `impact rationale` → `directional guidance`; severity=`Critical`, `Major`, `Minor`.
@@ -53,11 +55,30 @@ canonical surface, with depth and output shape selected by parameters.
 
 ### Inputs
 
-| Parameter | Required | Default    | Notes                  | Example                 |
-| --------- | -------- | ---------- | ---------------------- | ----------------------- |
-| `LEVEL` | No | `standard` | `lite`, `standard`, or `strict` | `lite` |
-| `MODE` | No | `full` | `full` or `findings-only` | `findings-only` |
-| `REVIEW_SCOPE` | Yes | N/A | Review target content; `INPUT` and `SCOPE` are accepted aliases | `PR diff / module code` |
+Resolve `LEVEL`, `MODE`, and `REVIEW_PROFILE` first, then use the matched
+runtime contract's required-input set:
+
+| Resolved profile | Selector | Required inputs |
+| --- | --- | --- |
+| General review | `{}` | `REVIEW_SCOPE` |
+| Lite review | `{"LEVEL":"lite"}` | `REVIEW_SCOPE` |
+| Findings-only review | `{"LEVEL":"standard","MODE":"findings-only"}` | `REVIEW_SCOPE` |
+| Strict review | `{"LEVEL":"strict"}` | `REVIEW_SCOPE` |
+| Plan review | `{"REVIEW_PROFILE":"plan"}` | `PLAN_INPUT_PATH` |
+| Codex review-only | `{"REVIEW_PROFILE":"codex-review-only"}` | `REVIEW_SCOPE` |
+| Codex verify-only | `{"REVIEW_PROFILE":"codex-verify-only"}` | `REVIEW_FILE` |
+
+`REVIEW_SCOPE` is not a universal requirement: plan review uses
+`PLAN_INPUT_PATH`, while Codex verify-only uses `REVIEW_FILE`.
+
+For the general, lite, findings-only, and strict profiles, `REVIEW_SCOPE` must
+materialize the evidence as supplied text or as an explicit readable file/path
+set. A label such as “current branch”, “this PR”, or “the diff against main” is
+not itself review evidence because this Skill has no Bash permission to resolve
+Git state. Stop and request patch text or an explicit readable file/path set.
+Mention the Codex review-only profile only as an optional alternative when the
+user explicitly asks for external Codex review; never switch profiles
+automatically.
 
 ### Outputs
 
@@ -68,7 +89,8 @@ canonical surface, with depth and output shape selected by parameters.
 
 ### Workflow
 
-1. Parse scope, `LEVEL`, and `MODE`.
+1. Parse and materialize scope, `LEVEL`, `MODE`, and `REVIEW_PROFILE`; stop on
+   semantic branch/diff labels that do not include patch text or readable paths.
 2. Keep the selected identity as canonical `nova-review`; apply depth and
    output shape as structured parameters.
 3. Emit findings with impact rationale, stopping after findings when
@@ -84,183 +106,20 @@ canonical surface, with depth and output shape selected by parameters.
 - No implementation patches.
 - Clearly label facts vs assumptions.
 
-## Detailed Contract
-
-### CODE REVIEW (NO IMPLEMENTATION)
-
-You are Claude Code acting as a **senior engineer / tech lead reviewer**.
-
-This command is for **analysis and review only**.
-You MUST NOT write, modify, or propose concrete code changes.
-
----
-
-#### INPUT PARAMETERS
-
-From `$ARGUMENTS`, extract the following:
-
-##### LEVEL (Optional)
-
-Choose the review depth level:
-
-- `lite` → Lightweight PR-style review with concise findings
-- `standard` (default) → Normal code review with Critical/Major/Minor findings
-- `strict` → Exhaustive high-stakes audit for production-critical code
-
-If not specified, use `standard` level.
-
-LEVEL:
-<LEVEL>
-
-##### MODE (Optional)
-
-- `full` (default) → Complete review output at the selected depth
-- `findings-only` → Stop after prioritized findings; do not add implementation
-
-MODE:
-<MODE>
-
-##### REVIEW_SCOPE (Required)
-
-The code, design, or content to review.
-
-REVIEW_SCOPE:
-$ARGUMENTS
-
----
-
-#### EXECUTION RULES
-
-You MUST:
-
-- Review only what is provided
-- Base findings on observable evidence or reasonable inference
-- Clearly distinguish facts from assumptions
-
-You MUST NOT:
-
-- Write or modify code
-- Provide full implementation examples
-- Redesign the system
-- Expand scope beyond the reviewed content
-
----
-
-#### REVIEW DIMENSIONS
-
-Review the input comprehensively for:
-
-##### Lite level:
-
-- Obvious correctness bugs
-- Missing checks or tests likely to matter
-- High-signal maintainability risks
-
-##### Standard level:
-
-- Correctness
-- Overengineering or unnecessary complexity
-- Performance issues
-- Concurrency / thread safety risks
-- Error handling and failure modes
-- Test coverage and test quality
-- Maintainability and long-term readability
-
-##### Additional for strict level:
-
-- API or module boundary clarity
-- Long-term evolution risks
-- Security vulnerabilities
-- Data integrity risks
-- Operational resilience
-
----
-
-#### OUTPUT FORMAT (MANDATORY)
-
-Group all findings by severity:
-
-##### Critical
-
-Issues that may cause:
-
-- Data corruption
-- Security or financial risk
-- Production instability
-- Incorrect business behavior
-
-##### Major
-
-Issues that:
-
-- Significantly affect maintainability, scalability, or correctness
-- May lead to bugs under realistic conditions
-- Increase long-term cost
-- Limit scalability or testability (strict level)
-
-##### Minor
-
-Issues that:
-
-- Affect readability or consistency
-- Represent missed best practices
-- Are low risk but worth addressing
-
-For each finding:
-
-- Clearly describe the issue
-- Explain why it matters
-- Provide **directional improvement suggestions**
-  - Suggestions must be conceptual or directional
-  - NOT code-level implementations
-
----
-
-#### TONE & STYLE
-
-##### Standard level:
-
-- Neutral
-- Precise
-- Review-oriented
-- No persuasive or defensive language
-
-##### Strict level:
-
-- Critical but constructive
-- More detailed justification for each finding
-- Assumes production-critical context
-- Failure-cost aware
-
-Assume the reader is:
-
-- The original author
-- A tech lead
-- Or a future maintainer
-
----
-
-#### NON-GOALS
-
-This command does NOT:
-
-- Approve or reject the change
-- Decide release readiness
-- Replace human code review
-- Implement fixes
-
-It only **evaluates and documents issues**.
-
----
-
-#### 4.0 VARIANT PROFILES
-
-- `LEVEL=lite|standard|strict` selects review depth without changing the canonical surface.
-- `MODE=findings-only` replaces the output boundary formerly inferred from `review-only`.
-- `/nova-plugin:review-only` remains a direct 4.x compatibility invocation with `LEVEL=standard MODE=findings-only`; automatic routing must not select the alias.
-- `REVIEW_PROFILE=plan` replaces `plan-review`.
-- `REVIEW_PROFILE=codex-review-only|codex-verify-only` uses the retained compatibility assets under `skills/nova-codex-review-fix/` and requires explicit shell, network, and assistant-owned authentication approval.
-
-All review variants remain non-implementation workflows and must not modify project files.
-
-#### END OF COMMAND
+## General Review Guidance
+
+Review only materialized evidence in the resolved scope. Stop on semantic Git
+labels without patch text or readable paths. Distinguish evidence, inference,
+and assumptions; do not modify code, redesign, broaden scope, or invoke an
+external Codex profile unless the user explicitly selected it.
+
+Depth expands from high-signal correctness and test gaps (`lite`), through
+complexity, performance, concurrency, failure modes, and maintainability
+(`standard`), to security, integrity, boundaries, evolution, and operational
+resilience (`strict`). Full output groups `Critical`, `Major`, then `Minor` and
+states evidence, impact, and conceptual direction.
+
+`LEVEL=lite` selects the bounded review. `/nova-plugin:review-only` remains the
+direct `LEVEL=standard MODE=findings-only` compatibility entrypoint; automatic routing must not select the alias. Codex profiles require their complete resolved contract plus
+separate shell, network, and authentication approval. Canonical read-only Skill frontmatter does not authorize that external runtime. All variants remain
+non-implementation workflows.

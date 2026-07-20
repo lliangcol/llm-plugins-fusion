@@ -25,7 +25,7 @@
 | Parameter | Required | Description | Example |
 | --- | --- | --- | --- |
 | `PERSPECTIVE` | No | `observer` / `reviewer`; default is `observer` | `reviewer` |
-| `ARGUMENTS` | No | Any input context or problem description | `Requirement summary or logs` |
+| `ARGUMENTS` | Yes | Any input context or problem description | `Requirement summary or logs` |
 
 ## Full Examples
 
@@ -44,4 +44,3 @@ Read this requirement as a reviewer and output only what is clear, review questi
 - `/nova-plugin:explore-lite` is a lightweight observer-style scan.
 - `/nova-plugin:explore-review` is reviewer-oriented exploration.
 - `/nova-plugin:senior-explore` is deeper, more systematic, and can export an analysis artifact.
-

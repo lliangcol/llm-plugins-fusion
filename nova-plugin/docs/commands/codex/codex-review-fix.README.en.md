@@ -25,21 +25,19 @@
 
 | Parameter | Required | Description | Example |
 | --- | --- | --- | --- |
+| `REVIEW_SCOPE` | Yes | Git diff or repository scope to review and repair | `Current branch diff against main` |
 | `BASE` | No | Base branch for review / verify | `main` |
-| `GOAL` | No | Goal for this fix loop | `make branch mergeable` |
 | `REVIEW_MODE` | No | `branch` / `staged` / `full` | `staged` |
-| `OUTPUT_DIR` | No | Review / verify artifact directory | `.codex/codex-review-fix/custom` |
-| `FIX_SCOPE` | No | Fix-selection policy; does not change script behavior | `high-confidence` |
 | `INCLUDE_UNTRACKED_CONTENT` | No | Only with `REVIEW_MODE=full`; explicitly allows guarded untracked file content into review / verify patches | `true` |
 
 ## Examples
 
 ```text
-/nova-plugin:codex-review-fix BASE=main GOAL="fix current branch until mergeable"
+/nova-plugin:codex-review-fix REVIEW_SCOPE="current branch diff against main; repair until mergeable" BASE=main
 ```
 
 ```text
-/nova-plugin:codex-review-fix REVIEW_MODE=staged GOAL="handle only high-risk staged findings"
+/nova-plugin:codex-review-fix REVIEW_SCOPE="high-risk findings in staged changes" REVIEW_MODE=staged
 ```
 
 ## Outputs

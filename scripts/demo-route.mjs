@@ -23,6 +23,7 @@ function appendList(lines, label, values) {
 }
 
 export function renderRouteDemo(fixture) {
+  const stage = fixture.expected.stage.charAt(0).toUpperCase() + fixture.expected.stage.slice(1);
   const lines = [
     `Headless demo fixture: ${fixture.id}`,
     `Mode: ${fixture.mode}`,
@@ -32,7 +33,7 @@ export function renderRouteDemo(fixture) {
     '',
     `Request: ${fixture.request}`,
     `Expected next command: ${fixture.expected.nextCommand}`,
-    `Expected stage: ${fixture.expected.stage}`,
+    `Expected stage: ${stage}`,
   ];
   appendList(lines, 'Expected packs', fixture.expected.packs);
   appendList(lines, 'Required inputs', fixture.expected.requiredInputs);

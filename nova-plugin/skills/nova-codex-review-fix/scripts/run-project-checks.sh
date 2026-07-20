@@ -2,12 +2,58 @@
 
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ "${BASH_ENV+x}" == x || "${ENV+x}" == x ]]; then
+  builtin printf '[ERROR] BASH_ENV/ENV 不能传入 project checks 入口。\n' >&2
+  exit 2
+fi
+if [[ -n "$(builtin compgen -A function 2>/dev/null || true)" ]]; then
+  builtin printf '[ERROR] Project checks 入口拒绝继承 Bash 函数。\n' >&2
+  exit 2
+fi
+if [[ -n "$(builtin compgen -A alias 2>/dev/null || true)" ]]; then
+  builtin printf '[ERROR] Project checks 入口拒绝继承 Bash alias。\n' >&2
+  exit 2
+fi
+if [[ -z "${PATH:-}" || ":${PATH}:" == *::* ]]; then
+  builtin printf '[ERROR] Project checks 入口拒绝空 PATH 组件。\n' >&2
+  exit 2
+fi
+NOVA_BOOTSTRAP_PWD="$(builtin pwd -P)"
+IFS=':' read -r -a NOVA_BOOTSTRAP_PATH_ENTRIES <<< "$PATH"
+for NOVA_BOOTSTRAP_PATH_ENTRY in "${NOVA_BOOTSTRAP_PATH_ENTRIES[@]}"; do
+  case "$NOVA_BOOTSTRAP_PATH_ENTRY" in
+    /*|[A-Za-z]:[\\/]*) ;;
+    *)
+      builtin printf '[ERROR] Project checks 入口拒绝相对 PATH 组件: %s\n' "$NOVA_BOOTSTRAP_PATH_ENTRY" >&2
+      exit 2
+      ;;
+  esac
+  if [[ -d "$NOVA_BOOTSTRAP_PATH_ENTRY" ]]; then
+    NOVA_BOOTSTRAP_PATH_PHYSICAL="$(cd -P -- "$NOVA_BOOTSTRAP_PATH_ENTRY" >/dev/null 2>&1 && builtin pwd -P)" || {
+      builtin printf '[ERROR] Project checks 入口无法验证 PATH 组件: %s\n' "$NOVA_BOOTSTRAP_PATH_ENTRY" >&2
+      exit 2
+    }
+    case "$NOVA_BOOTSTRAP_PATH_PHYSICAL" in
+      "$NOVA_BOOTSTRAP_PWD"|"$NOVA_BOOTSTRAP_PWD"/*)
+        builtin printf '[ERROR] Project checks 入口拒绝当前工作区内 PATH 组件: %s\n' "$NOVA_BOOTSTRAP_PATH_ENTRY" >&2
+        exit 2
+        ;;
+    esac
+  fi
+done
+unset NOVA_BOOTSTRAP_PATH_ENTRIES NOVA_BOOTSTRAP_PATH_ENTRY NOVA_BOOTSTRAP_PATH_PHYSICAL NOVA_BOOTSTRAP_PWD
+SCRIPT_PATH="${BASH_SOURCE[0]}"
+SCRIPT_PARENT="."
+case "$SCRIPT_PATH" in
+  */*) SCRIPT_PARENT="${SCRIPT_PATH%/*}" ;;
+esac
+SCRIPT_DIR="$(cd -P -- "$SCRIPT_PARENT" >/dev/null 2>&1 && builtin pwd -P)"
 # shellcheck source=./codex-common.sh
 source "${SCRIPT_DIR}/codex-common.sh"
 
 MODE="all"
 REPORT_FILE=""
+REPORT_CAPTURE_ACTIVE=false
 declare -a TASK_PHASES=()
 declare -a TASK_LABELS=()
 declare -a TASK_DIRS=()
@@ -17,14 +63,14 @@ declare -a TASK_ARG2=()
 declare -a TASK_ARG3=()
 
 usage() {
-  cat <<'EOF'
+  trusted_cat <<'EOF'
 Usage: run-project-checks.sh [--lint-only | --test-only | --build-only | --all]
 
   --lint-only   仅执行 lint / repo checks
   --test-only   仅执行 test
   --build-only  仅执行 build
   --all         依次执行 repo checks、lint、test、build
-  --report-file 将完整输出写入指定文件
+  --report-file 将完整输出写入 .codex/codex-review-fix/ 下的指定文件
 EOF
 }
 
@@ -65,11 +111,32 @@ done
 
 ensure_git_repo
 ROOT="$(repo_root)"
+# Resolve once in the main shell so runtime reporting and every discovered Node
+# task inherit the same physical executable and expected identity.
+ensure_trusted_node || true
+
+finalize_report_on_exit() {
+  local status=$?
+  trap - EXIT
+  if [[ "$REPORT_CAPTURE_ACTIVE" == true ]]; then
+    exec 1>&7 2>&8
+    exec 7>&- 8>&-
+    REPORT_CAPTURE_ACTIVE=false
+    finish_output_file
+    trusted_cat "$REPORT_FILE"
+  else
+    abort_active_output
+  fi
+  exit "$status"
+}
+trap finalize_report_on_exit EXIT
 
 if [[ -n "$REPORT_FILE" ]]; then
-  REPORT_FILE="$(resolve_output_path "$REPORT_FILE")"
-  mkdir -p "$(dirname "$REPORT_FILE")"
-  exec > >(tee "$REPORT_FILE") 2>&1
+  REPORT_FILE="$(prepare_output_file "$REPORT_FILE")"
+  begin_output_file "$REPORT_FILE"
+  exec 7>&1 8>&2
+  exec 1>&9 2>&1
+  REPORT_CAPTURE_ACTIVE=true
   info "检查输出将写入: ${REPORT_FILE}"
 fi
 
@@ -123,8 +190,13 @@ append_node_task() {
   local label="$1"
   local script="$2"
   local node_bin=""
+  local node_identity=""
   if node_bin="$(node_executable)"; then
-    append_task "lint" "repo ${label}" "${ROOT}" "node-script" "$node_bin" "$script"
+    node_identity="$(nova_executable_identity "$node_bin")" || {
+      append_task "lint" "repo ${label}" "${ROOT}" "missing-node" "$script"
+      return
+    }
+    append_task "lint" "repo ${label}" "${ROOT}" "node-script" "$node_bin" "$script" "$node_identity"
   else
     append_task "lint" "repo ${label}" "${ROOT}" "missing-node" "$script"
   fi
@@ -187,7 +259,7 @@ discover_repo_tasks() {
     append_node_task "validate-docs" "scripts/validate-docs.mjs"
   fi
 
-  if command -v bash >/dev/null 2>&1; then
+  if nova_system_command bash >/dev/null 2>&1; then
     if [[ -f "${ROOT}/nova-plugin/hooks/scripts/pre-write-check.sh" ]]; then
       append_task "lint" "hook syntax pre-write-check" "${ROOT}" "bash-syntax" "nova-plugin/hooks/scripts/pre-write-check.sh"
     fi
@@ -209,7 +281,7 @@ discover_node_tasks() {
     local dir
     local manager
     local display_dir
-    dir="$(dirname "$pkg")"
+    dir="$(path_dirname "$pkg")"
     manager="$(manager_for_dir "$dir")"
     display_dir="${dir#"$ROOT"/}"
     if [[ "$display_dir" == "$dir" ]]; then
@@ -228,7 +300,7 @@ discover_node_tasks() {
     if package_has_script "$dir" "build"; then
       append_task "build" "${display_dir}:build" "$dir" "package-script" "$manager" "build"
     fi
-  done < <(find "${ROOT}" \
+  done < <(trusted_find "${ROOT}" \
     \( -path "*/node_modules" -o -path "*/dist" -o -path "*/build" -o -path "*/target" -o -path "*/.codex" -o -path "*/.cache" -o -path "*/.idea" -o -path "*/.vite" -o -path "*/.vscode" -o -path "*/coverage" -o -path "*/logs" -o -path "*/tmp" -o -path "*/temp" -o -path "*/.runtime-smoke-*" -o -path "*/.next" -o -path "*/.nuxt" -o -path "*/out" \) -prune \
     -o -name package.json -print 2>/dev/null)
 }
@@ -262,13 +334,13 @@ run_task() {
 
   case "$kind" in
     bash-script)
-      bash "$arg1"
+      trusted_bash "$arg1"
       ;;
     bash-syntax)
-      bash -n "$arg1"
+      trusted_bash -n "$arg1"
       ;;
     node-script)
-      "$arg1" "$arg2"
+      trusted_node_invoke "$arg1" "$arg3" "$arg2"
       ;;
     missing-node)
       printf '%s\n' "node is required to run ${arg1}" >&2

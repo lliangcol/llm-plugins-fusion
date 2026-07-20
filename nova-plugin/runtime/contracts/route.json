@@ -50,6 +50,23 @@
   ],
   "outputContract": "recommended-route-v2",
   "risk": "none",
+  "allowedTools": [
+    "Read",
+    "Glob",
+    "Grep"
+  ],
+  "disallowedTools": [
+    "Write",
+    "Edit",
+    "NotebookEdit",
+    "Bash"
+  ],
+  "modelInvocable": true,
+  "subagentSafe": true,
+  "destructiveActions": "none",
+  "commandEntrypoint": {
+    "directCommandId": "route"
+  },
   "runtimeRequirements": {
     "executables": [],
     "network": {
@@ -81,7 +98,7 @@
     "Stop when a required capability is denied, unsupported, or awaiting approval.",
     "Stay within the project or an explicitly approved artifact root.",
     "Preserve the named output contract and report skipped validation honestly.",
-    "Do not publish externally, mutate user scope, or rewrite Git history."
+    "Execute only declared workflow effects after satisfying their authorization states (workspace-read:preapproved); authorization alone never expands effect scope."
   ],
   "behaviorContract": {
     "schemaVersion": 2,
@@ -316,7 +333,8 @@
       }
     ],
     "invariants": [
-      "Select only product-declared canonical automatic-routing targets; compatibility command aliases are optional direct-invocation information, never exact route identities.",
+      "Select only product-declared canonical automatic-routing targets; the exact matching direct command entrypoint is required for Claude execution and is never the canonical route identity.",
+      "Emit exactly one immediate next canonical route; later stages may appear only as prose in validation expectations or fallback path and must not add route identities.",
       "Express specialized behavior only through structured variantParameters on the canonical route.",
       "Do not modify files or execute downstream work.",
       "Do not claim validation has run.",
@@ -339,7 +357,7 @@
       },
       {
         "id": "select",
-        "action": "Select one next command or the shortest safe sequence."
+        "action": "Select exactly one immediate next canonical route and its matching command entrypoint."
       },
       {
         "id": "verify-surface",
@@ -360,12 +378,12 @@
         {
           "name": "Canonical skill",
           "required": true,
-          "description": "One of the six canonical 4.0 skills."
+          "description": "One of the six product-declared canonical skills."
         },
         {
-          "name": "Command alias (optional)",
+          "name": "Command entrypoint",
           "required": true,
-          "description": "Existing generated compatibility wrapper or None."
+          "description": "Exact direct command for Claude; generic and Codex adapters may execute the resolved contract directly."
         },
         {
           "name": "Variant parameters",
@@ -400,7 +418,7 @@
       ],
       "order": [
         "Canonical skill",
-        "Command alias (optional)",
+        "Command entrypoint",
         "Variant parameters",
         "Core agent",
         "Capability packs",
@@ -411,8 +429,8 @@
       "severityLevels": []
     },
     "validation": [
-      "Confirm the most specific matching canonical route and structured variant parameters were selected.",
-      "Confirm the canonical target is automatic-routing eligible and any optional compatibility alias and preset exist in the generated catalog.",
+      "Confirm exactly one most-specific immediate canonical route and its structured variant parameters were selected.",
+      "Confirm the canonical target is automatic-routing eligible and the exact matching command entrypoint and preset exist in the generated catalog.",
       "Confirm agents and packs exist in the product inventory.",
       "Confirm required inputs exactly equal the complete canonical names and order of the selected workflows even when their values are present, inferred, or resolved.",
       "Confirm the response contains routing only."
@@ -433,5 +451,5 @@
     },
     "effects": []
   },
-  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR. Workflow-level effects are authoritative; behaviorContract.effects declares the validated empty subset and cannot expand workflow capability scope. The referenced authored guidance surface may add explanatory context but cannot override this contract."
 }

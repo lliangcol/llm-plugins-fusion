@@ -20,13 +20,22 @@ nova-plugin/skills/nova-finalize-work/SKILL.md
 ```
 
 Use Codex-specific review commands only when the consumer project has the
-required Codex CLI, Bash 3.2+ runtime, and artifact policy:
+required Codex CLI, Bash 3.2+ runtime, and artifact policy. These commands are
+compatibility aliases; they select one of the six canonical Skills with a fixed
+variant preset rather than owning separate Skill files:
 
 ```text
-nova-plugin/skills/nova-codex-review-fix/SKILL.md
-nova-plugin/skills/nova-codex-review-only/SKILL.md
-nova-plugin/skills/nova-codex-verify-only/SKILL.md
+codex-review-fix  -> nova-plugin/skills/nova-implement-plan/SKILL.md
+                     EXECUTION_PROFILE=codex-review-fix
+codex-review-only -> nova-plugin/skills/nova-review/SKILL.md
+                     REVIEW_PROFILE=codex-review-only
+codex-verify-only -> nova-plugin/skills/nova-review/SKILL.md
+                     REVIEW_PROFILE=codex-verify-only
 ```
+
+The shared Codex prompts and Bash helpers remain under
+`nova-plugin/skills/nova-codex-review-fix/` as compatibility resources. That
+directory is not a seventh canonical Skill.
 
 ## Usage Pattern
 

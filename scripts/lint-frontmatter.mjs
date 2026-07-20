@@ -30,6 +30,7 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, dirname, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { commandWrapperContractFailures } from './lib/command-wrapper-contract.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
@@ -154,10 +155,6 @@ function sameToolSet(a, b) {
   return true;
 }
 
-function hasHeading(src, heading) {
-  return countHeading(src, heading) > 0;
-}
-
 function countHeading(src, heading) {
   const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return [...src.matchAll(new RegExp(`^##\\s+${escaped}\\s*$`, 'gm'))].length;
@@ -250,11 +247,9 @@ function lintCommands() {
     const workflow = workflowById.get(expectedId);
     if (!workflow) recordError(rel, 'missing canonical workflow spec entry');
     else {
-      if (!src.includes(`canonical surface \`nova-${workflow.canonicalSurfaceId}\``)) recordError(rel, 'missing canonical skill wrapper contract');
       const runtimeContract = `runtime/contracts/${workflow.id}.json`;
-      if (!src.includes(`\${CLAUDE_PLUGIN_ROOT}/${runtimeContract}`)) recordError(rel, `missing compiled runtime contract ${runtimeContract}`);
       if (!existsSync(resolve(root, 'nova-plugin', runtimeContract))) recordError(rel, `compiled runtime contract file missing: ${runtimeContract}`);
-      if (!src.includes(`variant preset \`${JSON.stringify(workflow.variantPreset)}\``)) recordError(rel, 'missing generated variant preset');
+      for (const failure of commandWrapperContractFailures(src, workflow)) recordError(rel, failure);
     }
 
     commandContracts.set(expectedId, {
@@ -385,7 +380,7 @@ function lintCommandSkillContracts() {
     if (!workflowById.get(commandId)?.canonicalSurfaceId) recordError(command.rel, 'missing canonical surface mapping');
   }
 
-  for (const [skillName, skill] of skillContracts.entries()) {
+  for (const skill of skillContracts.values()) {
     if (!skill.commandId) continue;
     const commandFile = resolve(commandsDir, `${skill.commandId}.md`);
     if (!existsSync(commandFile)) {
@@ -394,9 +389,58 @@ function lintCommandSkillContracts() {
   }
 }
 
+function lintSkillsIndex() {
+  const rel = 'skills/README.md';
+  const src = readFileSync(resolve(root, 'nova-plugin/skills/README.md'), 'utf8').replace(/\r\n/g, '\n');
+  const rows = new Map();
+  const rowPattern = /^\|\s*`([^`]+)`\s*\|\s*`([^`]+)`\s*\|\s*`(\{.*\})`\s*\|\s*([^|]+?)\s*\|$/u;
+  for (const line of src.split('\n')) {
+    const match = line.match(rowPattern);
+    if (!match) continue;
+    const [, commandId, skillName, variantPreset, status] = match;
+    if (rows.has(commandId)) {
+      recordError(rel, `duplicate command mapping for ${commandId}`);
+      continue;
+    }
+    rows.set(commandId, { skillName, variantPreset, status });
+  }
+
+  for (const workflow of workflowSpec.workflows) {
+    const row = rows.get(workflow.id);
+    if (!row) {
+      recordError(rel, `missing command mapping for ${workflow.id}`);
+      continue;
+    }
+    const expectedSkill = `nova-${workflow.canonicalSurfaceId}`;
+    if (row.skillName !== expectedSkill) {
+      recordError(rel, `${workflow.id}: canonical Skill must be ${expectedSkill}, got ${row.skillName}`);
+    }
+    if (!skillContracts.has(row.skillName)) {
+      recordError(rel, `${workflow.id}: referenced Skill does not exist: ${row.skillName}`);
+    }
+    const expectedPreset = JSON.stringify(workflow.variantPreset);
+    if (row.variantPreset !== expectedPreset) {
+      recordError(rel, `${workflow.id}: variant preset must be ${expectedPreset}, got ${row.variantPreset}`);
+    }
+    const expectedStatus = workflow.compatibilityAlias ? 'deprecated compatibility alias' : 'canonical';
+    if (row.status !== expectedStatus) {
+      recordError(rel, `${workflow.id}: status must be ${expectedStatus}, got ${row.status}`);
+    }
+  }
+  for (const commandId of rows.keys()) {
+    if (!workflowById.has(commandId)) recordError(rel, `unknown command mapping ${commandId}`);
+  }
+
+  const referencedSkills = new Set([...src.matchAll(/`(nova-[a-z0-9-]+)`/gu)].map((match) => match[1]));
+  for (const skillName of referencedSkills) {
+    if (!skillContracts.has(skillName)) recordError(rel, `referenced Skill does not exist: ${skillName}`);
+  }
+}
+
 lintCommands();
 lintSkills();
 lintCommandSkillContracts();
+lintSkillsIndex();
 
 if (warnings.length) {
   console.warn('Warnings:');

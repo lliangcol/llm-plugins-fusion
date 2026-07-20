@@ -3,13 +3,25 @@
 
 import { createHash } from 'node:crypto';
 import { gzipSync } from 'node:zlib';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
+import { lstatSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { treeManifest } from './validate-plugin-install.mjs';
 import { assertNodeVersion } from './lib/node-version.mjs';
 import { loadNovaWorkflowModel } from './lib/workflow-model.mjs';
+import {
+  assertPortableRelativePath,
+  comparePortablePaths,
+  portablePathCollisionKey,
+  portableRelativeFromRoot,
+} from './lib/portable-path.mjs';
+import {
+  createPhysicalReadBoundary,
+  readPhysicalDirectory,
+  readPhysicalFile,
+} from './lib/physical-read-boundary.mjs';
+import { parseTarGzEntries } from './lib/safe-tar.mjs';
+import { gitCommitTimestamp, gitExactTag, gitHead } from './lib/git-source-snapshot.mjs';
 
 assertNodeVersion({ label: 'release artifact build' });
 
@@ -31,11 +43,14 @@ function writeOctal(buffer, offset, length, value) {
 }
 
 export function tarPath(path) {
+  const directorySuffix = path.endsWith('/') ? '/' : '';
+  const portablePath = directorySuffix ? path.slice(0, -1) : path;
+  assertPortableRelativePath(portablePath, 'release archive path');
   if (Buffer.byteLength(path) <= 100) return { name: path, prefix: '' };
-  const split = path.lastIndexOf('/');
+  const split = portablePath.lastIndexOf('/');
   if (split <= 0) throw new Error(`release archive path is too long: ${path}`);
-  const prefix = path.slice(0, split);
-  const name = path.slice(split + 1);
+  const prefix = portablePath.slice(0, split);
+  const name = `${portablePath.slice(split + 1)}${directorySuffix}`;
   if (Buffer.byteLength(name) > 100 || Buffer.byteLength(prefix) > 155) {
     throw new Error(`release archive path is too long: ${path}`);
   }
@@ -81,9 +96,117 @@ export function deterministicTar(pluginRoot) {
   return Buffer.concat(chunks);
 }
 
-function gitValue(root, args) {
-  const result = spawnSync('git', args, { cwd: root, encoding: 'utf8', shell: false });
-  return result.status === 0 ? result.stdout.trim() : 'unknown';
+function snapshotManifestEntry(entry) {
+  if (entry.type === 'directory') return { path: entry.path, type: entry.type, mode: entry.mode };
+  return {
+    path: entry.path,
+    type: entry.type,
+    mode: entry.mode,
+    bytes: entry.content.length,
+    sha256: sha256(entry.content),
+  };
+}
+
+function snapshotDirectoryMode(path, label) {
+  const before = lstatSync(path);
+  if (before.isSymbolicLink() || !before.isDirectory()) {
+    throw new Error(`${label} must be a physical directory, not a symlink or junction`);
+  }
+  return {
+    identity: `${before.dev}:${before.ino}`,
+    mode: `040${(before.mode & 0o777).toString(8).padStart(3, '0')}`,
+  };
+}
+
+function capturePluginTreeOnce(pluginRoot, boundary, current = pluginRoot) {
+  const entries = [];
+  const currentLabel = current === pluginRoot
+    ? '.'
+    : portableRelativeFromRoot(pluginRoot, current, 'release plugin directory');
+  const names = readPhysicalDirectory(boundary, current, `release plugin directory ${currentLabel}`);
+  for (const name of names) {
+    const path = resolve(current, name);
+    const relativePath = portableRelativeFromRoot(pluginRoot, path, 'release plugin snapshot path');
+    const stat = lstatSync(path);
+    if (stat.isSymbolicLink()) throw new Error(`release plugin snapshot ${relativePath} must not be a symlink or junction`);
+    if (stat.isDirectory()) {
+      const before = snapshotDirectoryMode(path, `release plugin snapshot ${relativePath}`);
+      readPhysicalDirectory(boundary, path, `release plugin snapshot ${relativePath}`);
+      const after = snapshotDirectoryMode(path, `release plugin snapshot ${relativePath}`);
+      if (before.identity !== after.identity || before.mode !== after.mode) {
+        throw new Error(`release plugin snapshot ${relativePath} changed identity or mode while it was read`);
+      }
+      entries.push({ path: relativePath, type: 'directory', mode: after.mode, content: Buffer.alloc(0) });
+      entries.push(...capturePluginTreeOnce(pluginRoot, boundary, path));
+    } else if (stat.isFile()) {
+      const file = readPhysicalFile(boundary, path, `release plugin snapshot ${relativePath}`);
+      entries.push({
+        path: relativePath,
+        type: 'file',
+        mode: `100${file.mode.toString(8).padStart(3, '0')}`,
+        content: file.buffer,
+      });
+    } else {
+      throw new Error(`release plugin snapshot contains an unsupported entry: ${relativePath}`);
+    }
+  }
+  return entries;
+}
+
+function validateSnapshotPaths(entries) {
+  const collisionKeys = new Map();
+  for (const entry of entries) {
+    assertPortableRelativePath(entry.path, 'release plugin snapshot path');
+    const key = portablePathCollisionKey(entry.path);
+    const existing = collisionKeys.get(key);
+    if (existing && existing !== entry.path) {
+      throw new Error(`release plugin snapshot contains a normalized case collision: ${existing} and ${entry.path}`);
+    }
+    collisionKeys.set(key, entry.path);
+  }
+}
+
+/** Capture a stable, physical, link-free plugin tree once for all release outputs. */
+export function capturePluginTreeSnapshot(pluginRoot) {
+  const boundary = createPhysicalReadBoundary(pluginRoot, 'release plugin root');
+  const first = capturePluginTreeOnce(pluginRoot, boundary).sort((left, right) => comparePortablePaths(left.path, right.path));
+  const second = capturePluginTreeOnce(pluginRoot, boundary).sort((left, right) => comparePortablePaths(left.path, right.path));
+  validateSnapshotPaths(second);
+  const firstManifest = first.map(snapshotManifestEntry);
+  const manifest = second.map(snapshotManifestEntry);
+  if (JSON.stringify(firstManifest) !== JSON.stringify(manifest)) {
+    throw new Error('release plugin tree changed while its protected snapshot was captured');
+  }
+  return { entries: second, manifest };
+}
+
+/** Render an archive exclusively from already-captured bytes. */
+export function deterministicTarFromSnapshot(snapshot) {
+  const chunks = [];
+  for (const entry of snapshot.entries) {
+    chunks.push(tarHeader(entry, entry.content.length));
+    if (entry.content.length > 0) {
+      chunks.push(entry.content);
+      const remainder = entry.content.length % 512;
+      if (remainder) chunks.push(Buffer.alloc(512 - remainder));
+    }
+  }
+  chunks.push(Buffer.alloc(1024));
+  return Buffer.concat(chunks);
+}
+
+/** Reparse the final gzip archive and prove that it contains the captured snapshot exactly. */
+export function verifyArchiveSnapshot(archive, snapshot) {
+  const archiveManifest = parseTarGzEntries(archive).map((entry) => {
+    const mode = `${entry.type === 'directory' ? '040' : '100'}${(entry.mode & 0o777).toString(8).padStart(3, '0')}`;
+    return entry.type === 'directory'
+      ? { path: entry.path, type: entry.type, mode }
+      : { path: entry.path, type: entry.type, mode, bytes: entry.content.length, sha256: sha256(entry.content) };
+  });
+  if (JSON.stringify(archiveManifest) !== JSON.stringify(snapshot.manifest)) {
+    throw new Error('release archive contents differ from the protected plugin snapshot');
+  }
+  return archiveManifest;
 }
 
 export function npmPackagePurl(name, version) {
@@ -106,25 +229,29 @@ export function npmPackageNameFromLockPath(path) {
   return name;
 }
 
-/** @param {{root?: string, outDir?: string, now?: () => Date, env?: NodeJS.ProcessEnv}} [options] */
-export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/release-artifacts', now, env = process.env } = {}) {
+/** @param {{root?: string, outDir?: string, now?: () => Date, env?: NodeJS.ProcessEnv, runtimeNodeVersion?: string}} [options] */
+export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/release-artifacts', now, env = process.env, runtimeNodeVersion = process.version } = {}) {
   const sourceEpoch = Number(env.SOURCE_DATE_EPOCH);
-  const commitTimestamp = gitValue(root, ['show', '-s', '--format=%cI', 'HEAD']);
+  const commitTimestamp = gitCommitTimestamp(root);
   const buildTimestamp = Number.isFinite(sourceEpoch)
     ? new Date(sourceEpoch * 1000)
     : new Date(commitTimestamp === 'unknown' ? 0 : commitTimestamp);
   const clock = now ?? (() => buildTimestamp);
   const pluginRoot = resolve(root, 'nova-plugin');
-  const plugin = JSON.parse(readFileSync(resolve(pluginRoot, '.claude-plugin/plugin.json'), 'utf8'));
+  const pluginSnapshot = capturePluginTreeSnapshot(pluginRoot);
+  const pluginMetadata = pluginSnapshot.entries.find((entry) => entry.path === '.claude-plugin/plugin.json' && entry.type === 'file');
+  if (!pluginMetadata) throw new Error('release plugin snapshot is missing .claude-plugin/plugin.json');
+  const plugin = JSON.parse(pluginMetadata.content.toString('utf8'));
   const { knownGoodClaudeCli } = loadNovaWorkflowModel(root);
   const packageLock = JSON.parse(readFileSync(resolve(root, 'package-lock.json'), 'utf8'));
   const outputRoot = resolve(root, outDir);
   mkdirSync(outputRoot, { recursive: true });
   const archiveName = `nova-plugin-${plugin.version}.tar.gz`;
-  const archive = gzipSync(deterministicTar(pluginRoot), deterministicGzipOptions);
+  const archive = gzipSync(deterministicTarFromSnapshot(pluginSnapshot), deterministicGzipOptions);
+  verifyArchiveSnapshot(archive, pluginSnapshot);
   const archivePath = resolve(outputRoot, archiveName);
   writeFileSync(archivePath, archive);
-  const manifest = treeManifest(pluginRoot);
+  const manifest = pluginSnapshot.manifest;
   const manifestSha256 = sha256(JSON.stringify(manifest));
   const archiveSha256 = sha256(archive);
   const artifactManifest = {
@@ -157,7 +284,13 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
     version: 1,
     metadata: {
       timestamp: clock().toISOString(),
-      component: { type: 'application', name: 'llm-plugins-fusion-build', version: plugin.version, 'bom-ref': `build:llm-plugins-fusion@${plugin.version}` },
+      component: {
+        type: 'application',
+        name: 'llm-plugins-fusion-build',
+        version: plugin.version,
+        'bom-ref': `build:llm-plugins-fusion@${plugin.version}`,
+        hashes: [{ alg: 'SHA-256', content: archiveSha256 }],
+      },
     },
     components: buildComponents,
     dependencies: [
@@ -174,7 +307,7 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
     bomFormat: 'CycloneDX', specVersion: '1.7', version: 1,
     metadata: { timestamp: clock().toISOString(), component: { type: 'application', name: 'nova-plugin', version: plugin.version, 'bom-ref': `pkg:generic/nova-plugin@${plugin.version}`, hashes: [{ alg: 'SHA-256', content: archiveSha256 }] } },
     components: [
-      { type: 'platform', name: 'Node.js', version: '>=22', 'bom-ref': 'runtime:node>=22', properties: [{ name: 'nova:known-good', value: process.version }] },
+      { type: 'platform', name: 'Node.js', version: '>=22', 'bom-ref': 'runtime:node>=22', properties: [{ name: 'nova:known-good', value: runtimeNodeVersion }] },
       { type: 'application', name: 'Bash', version: '>=3.2', 'bom-ref': 'runtime:bash>=3.2' },
       { type: 'application', name: 'Claude Code', version: knownGoodClaudeCli, 'bom-ref': 'host:claude-code' },
       { type: 'application', name: 'Codex', version: env.CODEX_VERSION ?? 'not-release-bound', 'bom-ref': 'external:codex' },
@@ -184,8 +317,8 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
   const runtimeCapabilitiesPath = resolve(outputRoot, 'runtime-capabilities.cdx.json');
   writeFileSync(runtimeCapabilitiesPath, `${JSON.stringify(runtimeCapabilities, null, 2)}\n`, 'utf8');
 
-  const commit = env.RELEASE_COMMIT ?? gitValue(root, ['rev-parse', 'HEAD']);
-  const tag = env.RELEASE_TAG ?? gitValue(root, ['describe', '--tags', '--exact-match', 'HEAD']);
+  const commit = env.RELEASE_COMMIT ?? gitHead(root);
+  const tag = env.RELEASE_TAG ?? gitExactTag(root) ?? 'unknown';
   const startedOn = clock().toISOString();
   const buildRecord = {
     schemaVersion: 1,
@@ -199,7 +332,7 @@ export function buildReleaseArtifacts({ root = defaultRoot, outDir = '.metrics/r
     startedOn,
     finishedOn: clock().toISOString(),
     runnerImage: env.ImageOS ?? env.RUNNER_OS ?? 'local',
-    nodeVersion: process.version,
+    nodeVersion: runtimeNodeVersion,
     actionShas: env.NOVA_ACTION_SHAS ? JSON.parse(env.NOVA_ACTION_SHAS) : {},
     npmTarballIntegrity: env.CLAUDE_NPM_INTEGRITY ?? null,
     artifactManifestSha256: sha256(readFileSync(artifactManifestPath)),

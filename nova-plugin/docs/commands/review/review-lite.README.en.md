@@ -24,7 +24,7 @@
 
 | Parameter   | Required | Description        | Example   |
 | ----------- | -------- | ------------------ | --------- |
-| `ARGUMENTS` | No       | Content to review. | `PR diff` |
+| `ARGUMENTS` | Yes      | Content to review. | `PR diff` |
 
 ## Output
 

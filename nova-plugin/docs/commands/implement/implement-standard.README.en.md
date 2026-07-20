@@ -22,17 +22,21 @@
 
 ## Parameters
 
-| Parameter   | Required | Description                      | Example                   |
-| ----------- | -------- | -------------------------------- | ------------------------- |
-| `ARGUMENTS` | No       | Clear plan or step instructions. | `Step-by-step tasks list` |
+| Parameter     | Required | Description                         | Example                    |
+| ------------- | -------- | ----------------------------------- | -------------------------- |
+| `REQUEST`     | Yes      | Confirmed steps and acceptance criteria. | `Implement order cancellation by the listed steps` |
+| `CONSTRAINTS` | No       | Compatibility and scope boundaries. | `Preserve the existing API` |
 
 ## Output
 
-- No fixed output structure specified; focus on implementing the given steps.
+- The fixed order is `code updates`, `Implementation Summary`, `Validation`, and `Deviations`.
 - Example output structure:
 
 ```text
-(No fixed output structure specified)
+1. code updates
+2. Implementation Summary
+3. Validation
+4. Deviations (or None)
 ```
 
 ## Full Examples

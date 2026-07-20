@@ -1,13 +1,14 @@
 <!-- migrated-from: docs/maintainers/deep-research-remediation-and-documentation-redesign-plan.md -->
 # Current remediation ledger
 
-Status: active
-Date: 2026-07-16
-Scope: current repository state and remaining gates only
+Status: source-merged; external gates pending
+Date: 2026-07-18
+Scope: current implemented state and remaining evidence gates
 
-This ledger replaces accumulated audit transcripts. Completed detail remains in
-Git history, issues, and pull requests; this file records current decisions,
-verified work, residual risk, and the next executable action.
+This ledger replaces accumulated audit transcripts. Completed implementation
+history remains in commits, pull requests, issues, and `CHANGELOG.md`; this page
+keeps only current decisions, source-backed behavior, validation boundaries,
+and the next independently executable gates.
 
 <!-- generated:project-state:start -->
 ## Current Machine-Derived Project Facts
@@ -26,38 +27,34 @@ sources and `governance/product-lanes.json`.
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh`, `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh`
-- Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
+- Active PreToolUse launcher: `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh`, `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh`
+- Active PostToolUse launcher: `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh post-write-verify`, `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh post-audit-log`
 <!-- generated:project-state:end -->
 
 ## Positioning and release boundary
 
-`nova-plugin` is the only production plugin. Public portal work and production multi-plugin directory migration remain deferred. They remain separate,
-independently named product lanes and are not coupled to an already released version number.
+`nova-plugin` is the only production plugin. Public portal work and production multi-plugin directory migration remain
+deferred. They remain separate, independently named product lanes and are not coupled to an already released version number.
 
 Exact `v4.0.0` is the current stable promotion baseline. Moving `main` may
 contain later unreleased maintenance work and must not be promoted as stable
-release content. Development metadata and changelog now define the exact
-`v4.1.0-rc.1` candidate baseline; no RC or stable tag has been created, and no
-stable publication is authorized by this local remediation.
+release content. Development metadata is `4.1.0`; any candidate and stable
+promotion must follow the exact-tag release state machine and produce its own
+current evidence.
 
-## Completed locally
+## Implemented source state
 
-| Work package | Current result | Verification boundary |
-| --- | --- | --- |
-| Authoring source truth | v5/v1 authoring inputs and governance metadata are documented; generated wrappers, v6/v2 IR, runtime contracts, and generated behavior blocks are not hand-edited. | PR 91 plus docs regression checks |
-| Canonical review design | `/nova-plugin:review` is the canonical automatic route; findings-only behavior uses `MODE=findings-only`; `/nova-plugin:review-only` remains direct compatibility only. | ADR, schema, static, simulation, and behavior-golden gates |
-| Dataset versioning | Locked v4 labels remain byte-identical; v5 live and critical datasets carry the new semantics. | immutable digest checks and generated profile validation |
-| Staged live evaluation | Pilot=12, critical=96, full=2016; critical requires current passing pilot evidence and full requires pilot plus critical evidence. | four pilot slice plans completed; no authenticated model call was made |
-| Control plane | npm scripts 80, runnable validation tasks 46, workflows 10, governance sources 18, generators 20. | tightened budgets 80/50/10/18/20 and inventory-backed regression tests |
-| Governance bundles | Dependency policy/audit/license data share one bundle; critical coverage/evidence levels/platform/performance share one bundle. | schema, deterministic audit, generated-doc, and workflow checks |
-| Workflow consolidation | Dependency audit moved into Nightly; label synchronization moved into PR Governance while preserving required check names and permissions. | GitHub workflow validator |
-| User entry surface | README is constrained to 200-250 lines with 90-second installation, real deterministic demo output, one reproducible GIF, five primary entries, and deeper governance links. | documentation and link validation |
-| Discovery and contribution | Five GitHub Topics and three bounded good-first issues are live; a consented adoption-record template and Java/Spring capture guide are available. | GitHub repository state and public-safe docs; adoption remains not demonstrated |
-| Release review policy | `lliang` is the configured real independent reviewer; standard and sensitive paths prospectively require one non-author, non-actor approval. | repository collaborator role plus fail-closed review verifier; no retroactive approval claim |
-| Protected release environment | `release` requires `lliang`, prevents self-review, and accepts deployments only from protected branches. | GitHub environment configuration; no publication approval has been claimed |
-| Candidate operability | Development version is 4.1.0 and correction authorization selects `v4.1.0-rc.1`; commit self-reference and post-candidate source-rewrite cycles were removed while signed-tag, review-head, envelope, and install bindings remain. | schema v3, release unit/integration tests, candidate operational readiness `READY` |
-| Release download surface | Candidate and stable workflows expose exactly the plugin archive, `SHA256SUMS.txt`, and one attested evidence bundle. | workflow validator and digest-bound promotion handoff |
+| Review unit | Current implementation |
+| --- | --- |
+| Workflow ownership | v5/v1 authoring sources and owned product/adapter metadata generate v6/v2 contracts, six canonical Skill behavior blocks, and 21 thin command wrappers. |
+| Routing | `/nova-plugin:route` selects one immediate canonical workflow; `/nova-plugin:review` is the automatic canonical review route and findings-only behavior is a mode, not a second canonical Skill. |
+| Generic framework | Private spec, compiler, conformance, and CLI workspaces validate product manifests, compile deterministic outputs, run repository profiles, and stage multi-file writes transactionally. |
+| Hook trust | Privileged Bash launchers reject startup/preload controls and workspace executable shadows; write targets, policy state, and audit output use physical-path and link checks. |
+| Source and artifact trust | Git-backed reads bind repository and executable identity, isolate Git configuration, and use an authored minimal child environment. Clean-commit evidence compares HEAD, the index manifest, physical tracked bytes and portable modes, untracked paths, and hidden index flags. Release and evidence paths use physical single-read boundaries, portable collision checks, deterministic archives, and verified atomic output transactions. |
+| Release control | Candidate, promotion, recovery, correction, independent-review, performance-provenance, and install-proof contracts are digest-bound and fail closed when exact evidence is absent. Stable promotion delegates from an already verified candidate rather than rebuilding trust from moving `main`. |
+| Evaluation | Static, simulation, behavior-golden, route, live-paired, real-task, compatibility, and public-quality projections distinguish deterministic local evidence from authenticated or external evidence. Missing usage and live results remain unavailable rather than being coerced into success. |
+| Documentation | `docs/` and `nova-plugin/docs/` are indexed by current responsibility. Pre-v5 duplicate-looking paths are governed compatibility stubs with explicit retirement metadata, while generated pages remain projections of canonical sources. |
+| Distribution | `nova-plugin` is dependency-free at runtime; maintainer tooling uses the lockfile-pinned Node.js 22+ development toolchain. Public distribution scans reject secrets, private paths, unexpected links, oversized text, and Codex runtime artifacts. |
 
 ## Validation contract
 
@@ -77,63 +74,71 @@ evidence, GitHub workflow permission, inventory, and required-check contracts.
 `validate-github-workflows` checks GitHub workflow token scope, workflow file
 inventory, required-check docs and print output.
 
-Current local gate sequence:
+The default broad closure is:
 
-~~~bash
+```bash
 npm ci --ignore-scripts
-npm run ci:quick
-npm test
+npm run llmf -- generate all --write
+node scripts/validate-all.mjs
 npm run test:coverage:check
-npm run validate:maintainer
+npm run test:fault-injection
 git diff --check
-~~~
+```
 
-A check is recorded as passed only when it actually ran. Plan mode, dry-run,
-skipped Bash checks, and local deterministic simulation never become live
-assistant, installation, approval, signing, or adoption evidence.
+A check is passed only when it actually runs. Dry runs, warning-skips,
+deterministic simulations, and repository-authored records never become live
+assistant, installation, approval, signing, performance, or adoption evidence.
 
-## Autonomous completion state
+## Audited source baseline
 
-- All derived outputs are current and the complete local gate sequence above
-  passed on 2026-07-16. Coverage passed at lines 89.73%, branches 72.61%, and
-  functions 92.34%; all 160 maintenance modules loaded and all 22 per-module
-  floors passed.
-- The corrected canonical surface inventory was backported to design PR #92.
-- No further source-controlled remediation is planned on this branch. The next
-  repository action is an integration draft PR and the remaining release
-  checklist in issue #54; neither action creates a tag or publishes a release.
+The baseline fetched on 2026-07-18 had local `main` and `origin/main` at
+`9a55d70b95c8ff7f644e841775a6e376760bebca` (PR #101). Before the current
+maintenance diff, `node scripts/validate-all.mjs` completed with
+`failed=0 skipped=0`; `npm run test:coverage:check` passed at 91.91% lines,
+76.88% branches, and 96.29% functions, including all 22 critical-module floors
+and 183/183 maintenance modules. `npm audit --json` reported zero known
+vulnerabilities.
 
-## Human or external gates, deliberately last
+Those numbers identify the reviewed baseline, not permanent future truth. The
+final worktree must be regenerated and revalidated after its last edit; a prior
+green run is never reused after the review surface changes.
 
-| Gate | Required evidence | Why autonomous work stops here |
+## Remaining external gates
+
+| Gate | Required evidence | Local boundary |
 | --- | --- | --- |
-| Claude/Codex pilot | 12 authenticated invocations, all four assistant/condition slices passing, canonical route and required-input recall 3/3, project writes 0 | Requires credentials, budget authorization, and review of real model evidence |
-| Critical and full evals | Pilot evidence before 96 critical calls; pilot plus critical evidence before 2016 full calls | Costly external execution is structurally blocked until prerequisites pass |
-| Independent release review | `lliang` approval bound to the integration PR final reviewed head and resulting merge commit | Configuration is complete, but the implementation actor cannot supply the approval |
-| Signing overlap and recovery | A second usable authorized key, overlap/rotation evidence, and a successful non-publishing recovery drill | The current allowed signer was locally verified; a second private key decision and immutable RC are still required |
-| Protected publication | Approval of the exact candidate/promotion deployment in the configured `release` environment | Environment protection is configured, but approval evidence exists only during a real run |
-| Candidate observation | Publish the governed RC only after review, then observe it for at least seven days without a superseding blocker | Time cannot be simulated or backdated |
-| Adoption | Two consented and redacted external records plus a non-maintainer issue or PR | Users and consent cannot be invented |
-| Public Java/Spring recording | Real, redacted Claude Code run reviewed against the capture checklist | The deterministic GIF is contract evidence, not live assistant evidence |
+| Candidate performance | The governed current GitHub-hosted Node.js 22 profile requires at least 20 unique, digest-bound, API- and artifact-corroborated records and a recomputed budget. | The current manifest is 0/20, so candidate preflight remains blocked. |
+| Authenticated assistant evaluation | Current pilot evidence must precede critical and full Claude/Codex runs; retained results and tool effects must be independently recomputed. | Deterministic plans and simulations do not authorize model calls or claim live quality. |
+| Independent review | A non-author, trusted, current-head approval must bind the sensitive change set and resulting release identity. | Repository-local implementation cannot manufacture independent approval. |
+| Signing and protected publication | Exact candidate/stable tags, authorized signer evidence, protected-environment approval, and immutable release artifacts must agree. | Local validation neither signs nor publishes. |
+| Candidate observation and installation | A published prerelease must remain observed for the governed window and pass isolated exact-tag installation proof before promotion. | Time, GitHub release state, and user-scope install proof are external evidence. |
+| Adoption | Current, consented, redacted external records require independent provenance before a demonstrated claim is allowed. | Templates and maintainer-authored fixtures are not adoption. |
 
-## Dependency and evidence sources
+## Authoritative evidence sources
 
-- Dependency governance: `governance/dependency-governance.json`.
-- Engineering evidence: `governance/engineering-evidence.json`.
-- Evaluation profiles: `governance/evaluation-profiles.json`.
-- Release operations and reviewers: `governance/release-operations.json` and
-  `governance/release-reviewers.json`.
-- Adoption: `governance/adoption-evidence.json`.
-- Current generated state: `governance/project-state.generated.json`.
+- Project lanes and generated facts: `governance/product-lanes.json` and
+  `governance/project-state.generated.json`.
+- Release identity and corrections: `governance/release-channels.json` and
+  `governance/release-corrections.json`.
+- Release operations and reviewer policy: `governance/release-operations.json`
+  and `governance/release-reviewers.json`.
+- Engineering and performance evidence: `governance/engineering-evidence.json`
+  and `governance/evidence/validation-performance-samples.json`.
+- Evaluation and adoption: `governance/evaluation-profiles.json`, `evals/`, and
+  `governance/adoption-evidence.json`.
+- Current machine-generated repository state:
+  `governance/project-state.generated.json`.
 
 ## Exit condition
 
-Local engineering is complete only when all local gates pass on the final diff.
-Release and adoption remain explicitly blocked until their real evidence exists:
+Local engineering is ready only when canonical generation, the full validator,
+coverage, focused fault/mutation tests, final diff checks, and fresh rereview all
+pass on the same final worktree. Release and adoption remain blocked until
+their external evidence exists:
 
-~~~text
-LOCAL_ENGINEERING_READY / RELEASE_BLOCKED / LIVE_AND_ADOPTION_EVIDENCE_PENDING
-~~~
+```text
+LOCAL_ENGINEERING_READY / CANDIDATE_BLOCKED_PERFORMANCE_EVIDENCE / RELEASE_BLOCKED / LIVE_AND_ADOPTION_EVIDENCE_PENDING
+```
 
 Historical migration markers retained for governed compatibility:
 

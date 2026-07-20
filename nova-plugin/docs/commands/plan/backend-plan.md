@@ -8,7 +8,7 @@
 - Audience: `backend-users`; support risk: `low`
 - Inputs: `REQUEST` (required), `PLAN_OUTPUT_PATH` (required)
 - Output contract: `backend-plan-v2`; authorization: `artifact-write`
-- Effects: `artifact-write`, `workspace-read`, `workspace-write`
+- Effects: `artifact-write`, `workspace-read`
 - Related workflows: `produce-plan`, `implement-plan`
 <!-- generated:command-contract:end -->
 
@@ -23,6 +23,7 @@
 
 ### Required
 
+- `REQUEST`: 要解决的问题、目标与约束。示例: `设计订单取消后端方案`
 - `PLAN_OUTPUT_PATH`: 计划文档输出路径。示例: `docs/plans/backend.md`
 
 ### Optional
@@ -43,7 +44,7 @@
 
 ## 详细执行步骤
 
-1. 验证 PLAN_OUTPUT_PATH 是否提供。
+1. 验证 REQUEST 与 PLAN_OUTPUT_PATH 是否提供。
 2. 按指定结构编写完整设计计划并写入文件。
 3. 聊天只输出路径与三条摘要。
 
@@ -55,17 +56,19 @@
 
 ```text
 /nova-plugin:backend-plan
+REQUEST: 设计订单取消的 Java/Spring 后端方案
 PLAN_OUTPUT_PATH: docs/plans/order-backend.md
 ```
 
 ```text
 /nova-plugin:backend-plan
+REQUEST: 设计账户服务的 Java/Spring 后端方案
 PLAN_OUTPUT_PATH: docs/plans/account-service.md
 ```
 
 ```text
 /nova-plugin:backend-plan
-缺少 PLAN_OUTPUT_PATH
+REQUEST: 设计订单后端方案，但缺少 PLAN_OUTPUT_PATH
 ```
 
 ## 常见误用与纠正

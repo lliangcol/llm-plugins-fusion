@@ -7,6 +7,7 @@ import { resolve } from 'node:path';
 import { joinLockedLabels } from './lib/eval-dataset.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 import { loadNovaWorkflowModelV6 } from './lib/workflow-model.mjs';
+import { resolveCompiledVariantContract } from '../framework/compiler/compile-runtime-contracts.mjs';
 
 const root = repoRoot(import.meta.url);
 const read = (path) => JSON.parse(readFileSync(resolve(root, path), 'utf8'));
@@ -14,8 +15,9 @@ const dataset = read('evals/live/v5/cases.json');
 const locked = read('evals/live/v5/labels.locked.json');
 const critical = read('evals/critical-live/v5/cases.json');
 const joined = joinLockedLabels(dataset, locked);
-const workflows = new Map(loadNovaWorkflowModelV6(root).spec.workflows.map((entry) => [entry.id, entry]));
-const canonicalTargets = new Set(loadNovaWorkflowModelV6(root).product.automaticRouting.canonicalTargets);
+const model = loadNovaWorkflowModelV6(root);
+const workflows = new Map(model.spec.workflows.map((entry) => [entry.id, entry]));
+const canonicalTargets = new Set(model.product.automaticRouting.canonicalTargets);
 const snapshotDigests = {
   'evals/live/v4/cases.json': '50dcfcc856523e39c2e122b5984d39ec4b4e11215548ce398726f87e69211e88',
   'evals/live/v4/labels.locked.json': '2660fe263cf2ca1b7fa630ae366ce278abfa5ee23036b6b0e1768abc42baeb3e',
@@ -40,6 +42,8 @@ for (const entry of joined) {
   assert.ok(entry.request.length >= (entry.language === 'zh' ? 24 : 40), `${entry.id}: request must be meaningful`);
   assert.ok(entry.expectedRoute.length === 1 && canonicalTargets.has(entry.expectedRoute[0]), `${entry.id}: preferred route is not canonical`);
   assert.equal(entry.expectedVariantParameters !== null && typeof entry.expectedVariantParameters === 'object' && !Array.isArray(entry.expectedVariantParameters), true, `${entry.id}: structured variant parameters missing`);
+  const resolved = resolveCompiledVariantContract(model.spec, model.behaviorSpec, entry.expectedRoute[0], entry.expectedVariantParameters);
+  assert.deepEqual(entry.expectedRequiredInputs, resolved.contract.requiredInputs, `${entry.id}: locked required inputs differ from resolved contract`);
   assert.ok(entry.acceptableRoutes.every((route) => workflows.has(route)), `${entry.id}: acceptable route invalid`);
   assert.ok(entry.forbiddenRoutes.every((route) => workflows.has(route)), `${entry.id}: forbidden route invalid`);
   assert.equal(entry.expectedRoute.some((route) => entry.forbiddenRoutes.includes(route)), false, `${entry.id}: preferred route is forbidden`);
@@ -48,6 +52,7 @@ for (const entry of joined) {
     assert.ok(direct, `${entry.id}: approval workflow missing`);
     assert.equal(direct.canonicalSurfaceId, entry.expectedRoute[0], `${entry.id}: approval canonical route drift`);
     assert.deepEqual(direct.variantPreset, entry.expectedVariantParameters, `${entry.id}: approval variant parameters drift`);
+    assert.equal(direct.id, resolved.resolvedWorkflowId, `${entry.id}: approval workflow differs from resolved contract`);
   }
   assert.equal(/preferredRoutes|acceptableRoutes|forbiddenRoutes|expectedVariantParameters|expectedRequiredInputs|unsafeSideEffect|inventedSurface/u.test(entry.request), false, `${entry.id}: hidden labels leaked into request`);
 }
@@ -59,6 +64,8 @@ assert.equal(critical.cases.length, 8);
 for (const entry of critical.cases) {
   assert.ok(entry.expectedRoute.length === 1 && canonicalTargets.has(entry.expectedRoute[0]), `${entry.id}: critical route is not canonical`);
   assert.equal(entry.expectedVariantParameters !== null && typeof entry.expectedVariantParameters === 'object' && !Array.isArray(entry.expectedVariantParameters), true, `${entry.id}: critical variant parameters missing`);
+  const resolved = resolveCompiledVariantContract(model.spec, model.behaviorSpec, entry.expectedRoute[0], entry.expectedVariantParameters);
+  assert.deepEqual(entry.expectedRequiredInputs, resolved.contract.requiredInputs, `${entry.id}: critical required inputs differ from resolved contract`);
 }
 for (const [path, expected] of Object.entries(snapshotDigests)) {
   const actual = createHash('sha256').update(readFileSync(resolve(root, path))).digest('hex');

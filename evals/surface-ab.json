@@ -6,8 +6,8 @@
     {
       "id": "backend-plan",
       "commandWrapper": {
-        "bytes": 1173,
-        "estimatedTokens": 294,
+        "bytes": 2433,
+        "estimatedTokens": 609,
         "canonicalSurfaceId": "produce-plan",
         "variantPreset": {
           "PLAN_PROFILE": "java-backend"
@@ -15,16 +15,16 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 10352,
-        "estimatedTokens": 2580,
+        "bytes": 9798,
+        "estimatedTokens": 2445,
         "id": "produce-plan"
       }
     },
     {
       "id": "codex-review-fix",
       "commandWrapper": {
-        "bytes": 1192,
-        "estimatedTokens": 298,
+        "bytes": 2469,
+        "estimatedTokens": 618,
         "canonicalSurfaceId": "implement-plan",
         "variantPreset": {
           "EXECUTION_PROFILE": "codex-review-fix"
@@ -32,16 +32,16 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 8005,
-        "estimatedTokens": 1995,
+        "bytes": 10109,
+        "estimatedTokens": 2520,
         "id": "implement-plan"
       }
     },
     {
       "id": "codex-review-only",
       "commandWrapper": {
-        "bytes": 1150,
-        "estimatedTokens": 288,
+        "bytes": 2400,
+        "estimatedTokens": 600,
         "canonicalSurfaceId": "review",
         "variantPreset": {
           "REVIEW_PROFILE": "codex-review-only"
@@ -49,16 +49,16 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 8781,
-        "estimatedTokens": 2189,
+        "bytes": 9144,
+        "estimatedTokens": 2279,
         "id": "review"
       }
     },
     {
       "id": "codex-verify-only",
       "commandWrapper": {
-        "bytes": 1151,
-        "estimatedTokens": 288,
+        "bytes": 2411,
+        "estimatedTokens": 603,
         "canonicalSurfaceId": "review",
         "variantPreset": {
           "REVIEW_PROFILE": "codex-verify-only"
@@ -66,31 +66,31 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 8781,
-        "estimatedTokens": 2189,
+        "bytes": 9144,
+        "estimatedTokens": 2279,
         "id": "review"
       }
     },
     {
       "id": "explore",
       "commandWrapper": {
-        "bytes": 1038,
-        "estimatedTokens": 260,
+        "bytes": 2231,
+        "estimatedTokens": 558,
         "canonicalSurfaceId": "explore",
         "variantPreset": {},
         "deprecated": false
       },
       "canonicalSkill": {
-        "bytes": 6766,
-        "estimatedTokens": 1687,
+        "bytes": 9358,
+        "estimatedTokens": 2333,
         "id": "explore"
       }
     },
     {
       "id": "explore-lite",
       "commandWrapper": {
-        "bytes": 1156,
-        "estimatedTokens": 289,
+        "bytes": 2396,
+        "estimatedTokens": 599,
         "canonicalSurfaceId": "explore",
         "variantPreset": {
           "PERSPECTIVE": "observer",
@@ -99,16 +99,16 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 6766,
-        "estimatedTokens": 1687,
+        "bytes": 9358,
+        "estimatedTokens": 2333,
         "id": "explore"
       }
     },
     {
       "id": "explore-review",
       "commandWrapper": {
-        "bytes": 1150,
-        "estimatedTokens": 288,
+        "bytes": 2417,
+        "estimatedTokens": 605,
         "canonicalSurfaceId": "explore",
         "variantPreset": {
           "PERSPECTIVE": "reviewer"
@@ -116,16 +116,16 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 6766,
-        "estimatedTokens": 1687,
+        "bytes": 9358,
+        "estimatedTokens": 2333,
         "id": "explore"
       }
     },
     {
       "id": "finalize-lite",
       "commandWrapper": {
-        "bytes": 1133,
-        "estimatedTokens": 284,
+        "bytes": 2388,
+        "estimatedTokens": 597,
         "canonicalSurfaceId": "finalize-work",
         "variantPreset": {
           "DEPTH": "lite"
@@ -133,31 +133,31 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 7526,
-        "estimatedTokens": 1872,
+        "bytes": 9234,
+        "estimatedTokens": 2300,
         "id": "finalize-work"
       }
     },
     {
       "id": "finalize-work",
       "commandWrapper": {
-        "bytes": 1067,
-        "estimatedTokens": 267,
+        "bytes": 2287,
+        "estimatedTokens": 572,
         "canonicalSurfaceId": "finalize-work",
         "variantPreset": {},
         "deprecated": false
       },
       "canonicalSkill": {
-        "bytes": 7526,
-        "estimatedTokens": 1872,
+        "bytes": 9234,
+        "estimatedTokens": 2300,
         "id": "finalize-work"
       }
     },
     {
       "id": "implement-lite",
       "commandWrapper": {
-        "bytes": 1165,
-        "estimatedTokens": 292,
+        "bytes": 2418,
+        "estimatedTokens": 605,
         "canonicalSurfaceId": "implement-plan",
         "variantPreset": {
           "EXECUTION_PROFILE": "lite"
@@ -165,31 +165,31 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 8005,
-        "estimatedTokens": 1995,
+        "bytes": 10109,
+        "estimatedTokens": 2520,
         "id": "implement-plan"
       }
     },
     {
       "id": "implement-plan",
       "commandWrapper": {
-        "bytes": 1097,
-        "estimatedTokens": 275,
+        "bytes": 2312,
+        "estimatedTokens": 578,
         "canonicalSurfaceId": "implement-plan",
         "variantPreset": {},
         "deprecated": false
       },
       "canonicalSkill": {
-        "bytes": 8005,
-        "estimatedTokens": 1995,
+        "bytes": 10109,
+        "estimatedTokens": 2520,
         "id": "implement-plan"
       }
     },
     {
       "id": "implement-standard",
       "commandWrapper": {
-        "bytes": 1168,
-        "estimatedTokens": 292,
+        "bytes": 2439,
+        "estimatedTokens": 610,
         "canonicalSurfaceId": "implement-plan",
         "variantPreset": {
           "EXECUTION_PROFILE": "standard"
@@ -197,16 +197,16 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 8005,
-        "estimatedTokens": 1995,
+        "bytes": 10109,
+        "estimatedTokens": 2520,
         "id": "implement-plan"
       }
     },
     {
       "id": "plan-lite",
       "commandWrapper": {
-        "bytes": 1100,
-        "estimatedTokens": 275,
+        "bytes": 2370,
+        "estimatedTokens": 593,
         "canonicalSurfaceId": "produce-plan",
         "variantPreset": {
           "PLAN_PROFILE": "lite"
@@ -214,16 +214,16 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 10352,
-        "estimatedTokens": 2580,
+        "bytes": 9798,
+        "estimatedTokens": 2445,
         "id": "produce-plan"
       }
     },
     {
       "id": "plan-review",
       "commandWrapper": {
-        "bytes": 1131,
-        "estimatedTokens": 283,
+        "bytes": 2386,
+        "estimatedTokens": 597,
         "canonicalSurfaceId": "review",
         "variantPreset": {
           "REVIEW_PROFILE": "plan"
@@ -231,46 +231,46 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 8781,
-        "estimatedTokens": 2189,
+        "bytes": 9144,
+        "estimatedTokens": 2279,
         "id": "review"
       }
     },
     {
       "id": "produce-plan",
       "commandWrapper": {
-        "bytes": 1048,
-        "estimatedTokens": 262,
+        "bytes": 2275,
+        "estimatedTokens": 569,
         "canonicalSurfaceId": "produce-plan",
         "variantPreset": {},
         "deprecated": false
       },
       "canonicalSkill": {
-        "bytes": 10352,
-        "estimatedTokens": 2580,
+        "bytes": 9798,
+        "estimatedTokens": 2445,
         "id": "produce-plan"
       }
     },
     {
       "id": "review",
       "commandWrapper": {
-        "bytes": 1032,
-        "estimatedTokens": 258,
+        "bytes": 2257,
+        "estimatedTokens": 565,
         "canonicalSurfaceId": "review",
         "variantPreset": {},
         "deprecated": false
       },
       "canonicalSkill": {
-        "bytes": 8781,
-        "estimatedTokens": 2189,
+        "bytes": 9144,
+        "estimatedTokens": 2279,
         "id": "review"
       }
     },
     {
       "id": "review-lite",
       "commandWrapper": {
-        "bytes": 1100,
-        "estimatedTokens": 275,
+        "bytes": 2350,
+        "estimatedTokens": 588,
         "canonicalSurfaceId": "review",
         "variantPreset": {
           "LEVEL": "lite"
@@ -278,16 +278,16 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 8781,
-        "estimatedTokens": 2189,
+        "bytes": 9144,
+        "estimatedTokens": 2279,
         "id": "review"
       }
     },
     {
       "id": "review-only",
       "commandWrapper": {
-        "bytes": 1165,
-        "estimatedTokens": 292,
+        "bytes": 2415,
+        "estimatedTokens": 604,
         "canonicalSurfaceId": "review",
         "variantPreset": {
           "LEVEL": "standard",
@@ -296,16 +296,16 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 8781,
-        "estimatedTokens": 2189,
+        "bytes": 9144,
+        "estimatedTokens": 2279,
         "id": "review"
       }
     },
     {
       "id": "review-strict",
       "commandWrapper": {
-        "bytes": 1115,
-        "estimatedTokens": 279,
+        "bytes": 2412,
+        "estimatedTokens": 603,
         "canonicalSurfaceId": "review",
         "variantPreset": {
           "LEVEL": "strict"
@@ -313,31 +313,31 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 8781,
-        "estimatedTokens": 2189,
+        "bytes": 9144,
+        "estimatedTokens": 2279,
         "id": "review"
       }
     },
     {
       "id": "route",
       "commandWrapper": {
-        "bytes": 1016,
-        "estimatedTokens": 254,
+        "bytes": 2205,
+        "estimatedTokens": 552,
         "canonicalSurfaceId": "route",
         "variantPreset": {},
         "deprecated": false
       },
       "canonicalSkill": {
-        "bytes": 13985,
-        "estimatedTokens": 3490,
+        "bytes": 8987,
+        "estimatedTokens": 2240,
         "id": "route"
       }
     },
     {
       "id": "senior-explore",
       "commandWrapper": {
-        "bytes": 1158,
-        "estimatedTokens": 290,
+        "bytes": 2404,
+        "estimatedTokens": 601,
         "canonicalSurfaceId": "explore",
         "variantPreset": {
           "DEPTH": "deep"
@@ -345,8 +345,8 @@
         "deprecated": true
       },
       "canonicalSkill": {
-        "bytes": 6766,
-        "estimatedTokens": 1687,
+        "bytes": 9358,
+        "estimatedTokens": 2333,
         "id": "explore"
       }
     }

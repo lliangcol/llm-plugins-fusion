@@ -27,8 +27,15 @@ For the step-by-step manual operation sequence, use
 Release or promotion target:
 Commit:
 Exact tag:
-Plugin version:
+Development package/plugin version:
+Stable channel version:
 Registry last-updated:
+GitHub run URL:
+Caller workflow ref:
+Caller github.workflow_sha:
+Called reusable workflow ref (stable promotion or N/A):
+Called job.workflow_sha (stable promotion or N/A):
+Workflow provenance artifact (`candidate-preflight/`, `recovery/`, or `handoff/workflow-provenance.json`):
 Operator:
 Date:
 ```
@@ -68,6 +75,7 @@ isolated install smoke artifact/run:
 git diff --check:
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh:
 bash -n nova-plugin/hooks/scripts/pre-bash-check.sh:
+bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh:
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh:
 Windows CI Node/PowerShell smoke:
 Windows CI Bash smoke:
@@ -85,13 +93,15 @@ CI/Linux or CI/Windows replacement evidence:
 
 If Windows local validation reports skipped checks because Bash is unavailable,
 do not describe hook shell syntax or runtime smoke as locally passed. Promotion
-requires CI/Linux or CI/Windows Bash evidence that both hook `bash -n` checks
+requires CI/Linux or CI/Windows Bash evidence that all four hook `bash -n` checks
 and runtime smoke passed.
 
 ## Release Notes Evidence
 
 ```text
 CHANGELOG section:
+Development package/plugin version sync:
+Stable channel/marketplace/metadata version sync:
 Generated marketplace outputs regenerated:
 Generated marketplace outputs no-drift verification:
 Surface inventory current:

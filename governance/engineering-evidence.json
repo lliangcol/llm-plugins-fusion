@@ -239,10 +239,48 @@
     }
   },
   "validationPerformance": {
-    "schemaVersion": 2,
+    "schemaVersion": 3,
     "enforcement": "profile-required",
     "minimumStableSamples": 20,
-    "profiles": [],
+    "maximumSampleAgeDays": 90,
+    "externalProvenance": {
+      "mode": "github-actions-api-and-artifact",
+      "apiVersion": "2026-03-10",
+      "requiredForEligibility": true
+    },
+    "budgetDerivation": {
+      "method": "p95-plus-headroom",
+      "percentileBasisPoints": 9500,
+      "headroomBasisPoints": 2500,
+      "roundingMs": 1000
+    },
+    "profiles": [
+      {
+        "id": "linux-x64-node22-github-hosted-3-fresh-process-full-uncached",
+        "platform": "linux",
+        "arch": "x64",
+        "nodeMajor": 22,
+        "runnerClass": "github-hosted",
+        "concurrency": 3,
+        "scenario": "fresh-process-full-uncached",
+        "collection": {
+          "repository": "lliangcol/llm-plugins-fusion",
+          "workflowPath": ".github/workflows/ci.yml",
+          "workflowRef": "refs/heads/main",
+          "jobName": "Required / Tests",
+          "artifactName": "validation-timing-trend"
+        },
+        "sampleManifest": {
+          "path": "governance/evidence/validation-performance-samples.json",
+          "canonicalSha256": "56cf83be8e46dab884f5299d5495aa14cd71f9945eae9fa53e7eca5e7537aeb3",
+          "aggregateSha256": "47bbb975e14a8567ea1c3939d6ffe30a022437d0f8fddcac82ef1ee93fa581de"
+        },
+        "budgets": null,
+        "owner": "maintainers",
+        "reason": "The exact profile remains blocked until the manifest contains 20 current records and candidate preflight verifies every run, job, source ref, artifact digest, archive, and raw report against GitHub Actions.",
+        "regressionRisk": "Repository JSON and its digests cannot self-prove provenance. Candidate release requires external API corroboration for every sample in addition to recomputed count, observation, profile, report, aggregate, and budget checks."
+      }
+    ],
     "legacyBudgets": {
       "deprecated": true,
       "validateAllWallMs": 60000,

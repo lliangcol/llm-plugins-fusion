@@ -25,12 +25,13 @@
         "status": { "const": "evidence-gated" },
         "removalRequires": {
           "type": "array",
-          "minItems": 4,
-          "maxItems": 4,
+          "minItems": 5,
+          "maxItems": 5,
           "uniqueItems": true,
           "items": {
             "enum": [
               "real-benchmark-evidence",
+              "native-permission-and-invocation-parity",
               "plugin-major-release",
               "governed-release-decision",
               "migration-documentation"
@@ -55,8 +56,8 @@
       }
     },
     "adapterDefinitions": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
-    "agents": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } },
-    "packs": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
-    "tools": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string" } }
+    "agents": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" } },
+    "packs": { "type": "array", "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" } },
+    "tools": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } }
   }
 }

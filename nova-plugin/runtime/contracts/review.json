@@ -74,6 +74,23 @@
   ],
   "outputContract": "review-v2",
   "risk": "none",
+  "allowedTools": [
+    "Read",
+    "Glob",
+    "Grep"
+  ],
+  "disallowedTools": [
+    "Write",
+    "Edit",
+    "NotebookEdit",
+    "Bash"
+  ],
+  "modelInvocable": true,
+  "subagentSafe": true,
+  "destructiveActions": "none",
+  "commandEntrypoint": {
+    "directCommandId": "review"
+  },
   "runtimeRequirements": {
     "executables": [],
     "network": {
@@ -105,7 +122,7 @@
     "Stop when a required capability is denied, unsupported, or awaiting approval.",
     "Stay within the project or an explicitly approved artifact root.",
     "Preserve the named output contract and report skipped validation honestly.",
-    "Do not publish externally, mutate user scope, or rewrite Git history."
+    "Execute only declared workflow effects after satisfying their authorization states (workspace-read:preapproved); authorization alone never expands effect scope."
   ],
   "behaviorContract": {
     "schemaVersion": 2,
@@ -121,7 +138,7 @@
           "INPUT",
           "SCOPE"
         ],
-        "description": "Code, design, tests, logs, or diff to review."
+        "description": "Materialized code, design, tests, logs, patch text, or an explicit readable file/path set to review; a semantic label such as current branch or PR is not sufficient by itself."
       },
       {
         "name": "LEVEL",
@@ -306,10 +323,13 @@
     "invariants": [
       "Do not modify code or provide implementation patches.",
       "Review only supplied or approved evidence.",
+      "Treat a branch, commit range, PR, or diff label as unresolved until the patch or an explicit readable file/path set is materialized in REVIEW_SCOPE.",
+      "Do not switch to an external Codex review profile unless the user explicitly selects that profile and its runtime approvals are satisfied.",
       "Clearly label facts, inferences, and assumptions."
     ],
     "stopConditions": [
       "REVIEW_SCOPE is unresolved.",
+      "REVIEW_SCOPE names a branch, commit range, PR, or diff but supplies neither materialized patch content nor an explicit readable file/path set.",
       "LEVEL is not an exact allowed value.",
       "MODE is not an exact allowed value.",
       "REVIEW_PROFILE is not an exact allowed value.",
@@ -318,7 +338,7 @@
     "workflowSteps": [
       {
         "id": "resolve-scope",
-        "action": "Resolve review scope, exact level, exact mode, and exact review profile."
+        "action": "Resolve materialized review evidence, exact level, exact mode, and exact review profile; request patch text or an explicit readable file/path set when only a semantic branch, commit range, PR, or diff label was provided."
       },
       {
         "id": "route",
@@ -388,5 +408,5 @@
     },
     "effects": []
   },
-  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR; the Skill contains the same generated contract plus explanatory authored guidance."
+  "claimBoundary": "Behavior-complete machine-readable contract generated from the canonical behavior IR. Workflow-level effects are authoritative; behaviorContract.effects declares the validated empty subset and cannot expand workflow capability scope. The referenced authored guidance surface may add explanatory context but cannot override this contract."
 }

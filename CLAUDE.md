@@ -17,8 +17,8 @@ sources and `governance/product-lanes.json`.
 - Planned product lanes: None
 - Deferred product lanes: `production-multi-plugin-layout`, `public-portal`, `runtime-dynamic-loading`, `broad-domain-command-expansion`
 - Release model: `candidate-and-promotion`
-- Active PreToolUse launcher: `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh`, `bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh`
-- Active PostToolUse launcher: `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs`, `node ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs`
+- Active PreToolUse launcher: `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh`, `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh`
+- Active PostToolUse launcher: `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh post-write-verify`, `bash -p ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh post-audit-log`
 <!-- generated:project-state:end -->
 
 This file provides canonical Claude Code guidance for this repository. Keep
@@ -59,13 +59,13 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 - Shared skill policies: `nova-plugin/skills/_shared/*.md`
 - Current active agent snapshot: 6 core files under `nova-plugin/agents/*.md`; verify with `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`.
 - Capability pack snapshot: 8 documentation packs under `nova-plugin/packs/*/README.md`; validate with `node scripts/validate-packs.mjs`.
-- Consumer profile templates: `docs/consumers/`
-- Redacted workflow examples: `docs/examples/`
-- Prompt template library: `docs/prompts/`
-- Workflow guidance: `docs/workflows/`
+- Consumer profile templates: `docs/templates/consumer-profiles/`
+- Redacted workflow examples: `docs/tutorials/`
+- Prompt template library: `docs/templates/prompts/`
+- Workflow guidance: `docs/guides/workflows/`
 - Repository docs index: `docs/README.md`
-- Project optimization plan: `docs/project-optimization-plan.md`
-- Release evidence template: `docs/releases/release-evidence-template.md`
+- Project optimization plan: `docs/project/plans/current-remediation.md`
+- Release evidence template: `docs/templates/evidence/release.md`
 - Product-lane decisions: `governance/product-lanes.json`
 - Generated project-state aggregate: `governance/project-state.generated.json`
 - Maintainer npm shortcuts: `package.json` (`llmf`, `doctor`, `validate:bootstrap`, `demo:all`, `demo:route`,
@@ -105,12 +105,12 @@ profiles belong in the consumer project's own `AGENTS.md`, `CLAUDE.md`,
 | Command docs | `nova-plugin/docs/commands/` |
 | Active agents | `nova-plugin/agents/` |
 | Capability packs | `nova-plugin/packs/` |
-| Consumer templates | `docs/consumers/` |
-| Examples and workflow evaluation | `docs/examples/` |
-| Prompt templates | `docs/prompts/` |
-| Workflow guidance | `docs/workflows/` |
-| Project optimization record | `docs/project-optimization-plan.md` |
-| Release evidence and hygiene | `docs/releases/` |
+| Consumer templates | `docs/templates/consumer-profiles/` |
+| Examples and workflow evaluation | `docs/tutorials/` |
+| Prompt templates | `docs/templates/prompts/` |
+| Workflow guidance | `docs/guides/workflows/` |
+| Project optimization record | `docs/project/plans/current-remediation.md` |
+| Release evidence and hygiene | `docs/templates/evidence/`, `docs/operations/releases/` |
 | Product-lane decisions | `governance/product-lanes.json` |
 | Dependency policy and evidence | `governance/dependency-governance.json` |
 | Generated project truth | `governance/project-state.generated.json` |
@@ -157,15 +157,16 @@ llm-plugins-fusion/
 |   `-- release.yml
 |-- docs/
 |   |-- README.md
-|   |-- agents/
-|   |-- consumers/
-|   |-- examples/
+|   |-- assets/
 |   |-- generated/
+|   |-- getting-started/
+|   |-- guides/
 |   |-- marketplace/
-|   |-- prompts/
-|   |-- releases/
-|   |-- workflows/
-|   `-- project-optimization-plan.md
+|   |-- operations/
+|   |-- project/
+|   |-- reference/
+|   |-- templates/
+|   `-- tutorials/
 |-- fixtures/registry/multi-plugin/
 |-- nova-plugin/
 |   |-- .claude-plugin/plugin.json
@@ -209,6 +210,7 @@ node scripts/validate-hooks.mjs
 node scripts/validate-github-workflows.mjs
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
+bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 node scripts/validate-runtime-smoke.mjs
 node scripts/validate-surface-budget.mjs
@@ -430,14 +432,26 @@ routing docs, migration notes when relevant, `CLAUDE.md`, and `AGENTS.md`.
   workflow, but cannot roll back the completed write.
 - `PostToolUse`, `PostToolUseFailure`, and `PermissionDenied` also match
   `Write|Edit|NotebookEdit|Bash` and asynchronously invoke
-  `hooks/scripts/post-audit-log.mjs` through exec-form Node.
+  `hooks/scripts/post-audit-log.mjs` through the privileged-mode
+  `hooks/scripts/trusted-node-hook.sh` launcher. `SessionEnd` uses the same
+  launcher for final audit compaction.
 
-Post-use audit hooks use exec-form Node.js 22+ with `CLAUDE_PLUGIN_ROOT`.
-PreToolUse retains a Bash 3.2+ launcher because a missing exec-form Node command
-is non-blocking in the supported Claude runtime; Codex helpers also use Bash. Exit 0
-means that the hook made no blocking decision; it is not a permission grant.
-`NOVA_WRITE_GUARD_DISABLED=1` is an explicit bypass and is not valid release
-evidence.
+Every active Node hook uses an exec-form Bash 3.2+ privileged-mode launcher
+that rejects startup/preload environment controls and resolves a physical
+Node.js 22+ executable outside `CLAUDE_PROJECT_DIR` before startup. A missing
+trusted Node command fails closed. Exit 0 means that the hook made no blocking
+decision; it is not a permission grant.
+Claude Code resolves the initial bare exec-form `bash` and applies startup
+settings before plugin code runs. Treat a trusted system Bash, an absolute
+project-free `PATH`, and reviewed project/local settings without
+`disableAllHooks` or hook-trust environment injection as host prerequisites;
+`doctor` and `validate:bootstrap` verify the current checkout. A managed policy
+with a managed-enabled plugin is required when that startup boundary must be
+organizationally enforced. During the session a blocking `ConfigChange` hook
+freezes project/local settings, while the write guard freezes project
+`bash`/`bash.exe` bootstrap shadows, Git metadata, and the full distributed
+hook/runtime implementation closure. `NOVA_WRITE_GUARD_DISABLED=1` is rejected
+fail closed rather than acting as a bypass.
 
 ## Change Workflows
 
@@ -488,14 +502,25 @@ regenerate marketplace and catalog outputs instead of editing them. Run
 
 ### Modify Plugin Metadata or Version
 
-Version information is synchronized across:
+Development and candidate metadata is one version domain:
 
-- `nova-plugin/.claude-plugin/plugin.json`
-- `.claude-plugin/registry.source.json`
-- generated marketplace outputs and catalog
-- `CHANGELOG.md`
-- `README.md`, `SECURITY.md`, `CLAUDE.md`, and `AGENTS.md` when facts or
-  supported version ranges change
+- `nova-plugin/.claude-plugin/plugin.json` owns the plugin base version.
+- `package.json` for the repository tooling version must match that plugin
+  version.
+- `CHANGELOG.md` records unreleased work and the intended release section.
+
+Stable distribution is a separate version domain:
+
+- `governance/release-channels.json` owns the current stable version, exact tag,
+  and commit.
+- `.claude-plugin/registry.source.json` binds the stable distribution source and
+  `last-updated` metadata.
+- Generated marketplace outputs, catalog, README stable badge/table, and
+  `SECURITY.md` support range follow the stable channel.
+
+It is valid for development plugin/package metadata to be ahead of the stable
+channel. Do not copy an unreleased development version into stable marketplace
+or security-support surfaces before governed promotion.
 
 Versioning follows SemVer:
 
@@ -512,8 +537,9 @@ node scripts/validate-registry-fixtures.mjs
 node scripts/validate-claude-compat.mjs
 ```
 
-Release tags must use `v<plugin-version>` and match
-`nova-plugin/.claude-plugin/plugin.json` exactly.
+Candidate tags use `v<plugin-version>-rc.<number>` and stable tags use
+`v<plugin-version>`; both resolve the exact reviewed candidate commit. Follow
+the governed release runbook rather than treating moving `main` as stable.
 
 ### Modify Agents or Capability Packs
 
@@ -535,7 +561,7 @@ broad workflow, release, metadata, or cross-layer changes.
 | Memory and docs | `AGENTS.md`, `CLAUDE.md`, `README.md`, `docs/**`, `nova-plugin/docs/**` | `node scripts/validate-docs.mjs` |
 | Skills and commands | `nova-plugin/commands/**`, `nova-plugin/skills/**` | `node scripts/lint-frontmatter.mjs` |
 | Guardrails | `.github/workflows/**`, `nova-plugin/hooks/**`, `scripts/validate-*.mjs`, distributed Bash scripts | `node scripts/validate-github-workflows.mjs`, `node scripts/validate-hooks.mjs`, hook `bash -n`, changed script validation, `node scripts/validate-surface-budget.mjs` when prompt surfaces change, `node scripts/generate-surface-inventory.mjs` when public surfaces change, `node scripts/validate-regression.mjs` when validator behavior changes |
-| Delegation | `nova-plugin/agents/**`, `nova-plugin/packs/**`, `docs/agents/**` | `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`, plus `node scripts/validate-packs.mjs` |
+| Delegation | `nova-plugin/agents/**`, `nova-plugin/packs/**`, `docs/reference/architecture/agent-routing.md` | `bash scripts/verify-agents.sh` or `.\scripts\verify-agents.ps1`, plus `node scripts/validate-packs.mjs` |
 | Distribution | `.claude-plugin/registry.source.json`, `nova-plugin/.claude-plugin/plugin.json`, generated marketplace outputs | `node scripts/generate-registry.mjs --write`, `node scripts/validate-schemas.mjs`, `node scripts/validate-registry-fixtures.mjs`, `node scripts/validate-claude-compat.mjs`; `node scripts/validate-plugin-install.mjs` when install smoke is required |
 
 `node scripts/validate-docs.mjs` validates Markdown links and anchors, command

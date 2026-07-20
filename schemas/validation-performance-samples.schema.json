@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/validation-performance-samples.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "schemaVersion", "profile", "collection", "budgetDerivation", "samples", "aggregate", "aggregateSha256"],
+  "properties": {
+    "$schema": { "const": "../../schemas/validation-performance-samples.schema.json" },
+    "schemaVersion": { "const": 1 },
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "platform", "arch", "nodeMajor", "runnerClass", "concurrency", "scenario"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "platform": { "enum": ["windows", "linux", "macos"] },
+        "arch": { "enum": ["x64", "arm64"] },
+        "nodeMajor": { "type": "integer", "minimum": 22 },
+        "runnerClass": { "type": "string", "minLength": 1 },
+        "concurrency": { "type": "integer", "minimum": 1 },
+        "scenario": { "enum": ["fresh-process-full-uncached", "full-cache-warm", "incremental-cache-warm"] }
+      }
+    },
+    "collection": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "workflowPath", "workflowRef", "jobName", "artifactName"],
+      "properties": {
+        "repository": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+        "workflowPath": { "type": "string", "pattern": "^\\.github/workflows/[A-Za-z0-9._-]+\\.ya?ml$" },
+        "workflowRef": { "type": "string", "pattern": "^refs/heads/[A-Za-z0-9._/-]+$" },
+        "jobName": { "type": "string", "minLength": 1 },
+        "artifactName": { "type": "string", "minLength": 1 }
+      }
+    },
+    "budgetDerivation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["method", "percentileBasisPoints", "headroomBasisPoints", "roundingMs"],
+      "properties": {
+        "method": { "const": "p95-plus-headroom" },
+        "percentileBasisPoints": { "const": 9500 },
+        "headroomBasisPoints": { "const": 2500 },
+        "roundingMs": { "const": 1000 }
+      }
+    },
+    "samples": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sampleId", "profile", "sourceCommit", "workflow", "observedAt", "evidence", "metrics"],
+        "properties": {
+          "sampleId": { "type": "string", "pattern": "^github-[1-9][0-9]*-[1-9][0-9]*$" },
+          "profile": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["id", "platform", "arch", "nodeMajor", "runnerClass", "concurrency", "scenario"],
+            "properties": {
+              "id": { "type": "string", "minLength": 1 },
+              "platform": { "enum": ["windows", "linux", "macos"] },
+              "arch": { "enum": ["x64", "arm64"] },
+              "nodeMajor": { "type": "integer", "minimum": 22 },
+              "runnerClass": { "type": "string", "minLength": 1 },
+              "concurrency": { "type": "integer", "minimum": 1 },
+              "scenario": { "enum": ["fresh-process-full-uncached", "full-cache-warm", "incremental-cache-warm"] }
+            }
+          },
+          "sourceCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+          "workflow": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["repository", "path", "ref", "sha", "runId", "runAttempt", "jobName"],
+            "properties": {
+              "repository": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+              "path": { "type": "string", "pattern": "^\\.github/workflows/[A-Za-z0-9._-]+\\.ya?ml$" },
+              "ref": { "type": "string", "pattern": "^refs/heads/[A-Za-z0-9._/-]+$" },
+              "sha": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
+              "runId": { "type": "integer", "minimum": 1 },
+              "runAttempt": { "type": "integer", "minimum": 1 },
+              "jobName": { "type": "string", "minLength": 1 }
+            }
+          },
+          "observedAt": { "type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{3})?Z$" },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["artifactName", "artifactId", "artifactSha256", "reportPath", "reportSha256"],
+            "properties": {
+              "artifactName": { "type": "string", "minLength": 1 },
+              "artifactId": { "type": "integer", "minimum": 1 },
+              "artifactSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+              "reportPath": { "type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))[A-Za-z0-9._/-]+\\.json$" },
+              "reportSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+            }
+          },
+          "metrics": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["elapsedWallMs", "runtimeSmokeMs", "failed", "skipped"],
+            "properties": {
+              "elapsedWallMs": { "type": "integer", "minimum": 0 },
+              "runtimeSmokeMs": { "type": "integer", "minimum": 0 },
+              "failed": { "const": 0 },
+              "skipped": { "const": 0 }
+            }
+          }
+        }
+      }
+    },
+    "aggregate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sampleCount", "observedAtEarliest", "observedAtLatest", "elapsedWallMsP95", "runtimeSmokeMsP95", "derivedBudgets"],
+      "properties": {
+        "sampleCount": { "type": "integer", "minimum": 0 },
+        "observedAtEarliest": { "type": ["string", "null"], "format": "date-time" },
+        "observedAtLatest": { "type": ["string", "null"], "format": "date-time" },
+        "elapsedWallMsP95": { "type": ["integer", "null"], "minimum": 0 },
+        "runtimeSmokeMsP95": { "type": ["integer", "null"], "minimum": 0 },
+        "derivedBudgets": {
+          "type": ["object", "null"],
+          "additionalProperties": false,
+          "required": ["elapsedWallMs", "runtimeSmokeMs"],
+          "properties": {
+            "elapsedWallMs": { "type": "integer", "minimum": 1000 },
+            "runtimeSmokeMs": { "type": "integer", "minimum": 1000 }
+          }
+        }
+      }
+    },
+    "aggregateSha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

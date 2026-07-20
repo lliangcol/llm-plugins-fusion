@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import { RELEASE_CONTROL_ROOTS } from '../../scripts/build-release-control-bundle.mjs';
 import {
   evaluatePrGovernance,
   isLargeChange,
@@ -8,6 +9,7 @@ import {
   LARGE_CHANGE_LIMITS,
   parseCodeOwnerPaths,
   parsePrBody,
+  RELEASE_TRUST_PATHS,
   stripHtmlComments,
 } from '../../scripts/lib/pr-governance.mjs';
 
@@ -32,6 +34,44 @@ The check can block merging when evidence is incomplete.
 - Owner:
 `;
 const SENSITIVE_PATHS = ['.github/', 'scripts/validate-pr-governance.mjs'];
+const HEAD_SHA = 'a'.repeat(40);
+
+test('every release trust helper is explicitly sensitive in CODEOWNERS and release review policy', () => {
+  const codeOwnerPaths = parseCodeOwnerPaths(readFileSync(new URL('../../.github/CODEOWNERS', import.meta.url), 'utf8'));
+  const reviewerPolicy = JSON.parse(readFileSync(new URL('../../governance/release-reviewers.json', import.meta.url), 'utf8'));
+  for (const path of RELEASE_TRUST_PATHS) {
+    assert.equal(isSensitivePath(path, codeOwnerPaths), true, `${path} is missing from CODEOWNERS governance`);
+    assert.equal(isSensitivePath(path, reviewerPolicy.sensitivePaths), true, `${path} is missing from release reviewer governance`);
+  }
+  for (const path of RELEASE_CONTROL_ROOTS) {
+    assert.equal(RELEASE_TRUST_PATHS.includes(path), true, `${path} is missing from the release trust inventory`);
+    assert.equal(isSensitivePath(path, codeOwnerPaths), true, `${path} control root is missing from CODEOWNERS governance`);
+    assert.equal(isSensitivePath(path, reviewerPolicy.sensitivePaths), true, `${path} control root is missing from release reviewer governance`);
+  }
+  for (const helper of [
+    'scripts/lib/physical-read-boundary.mjs',
+    'scripts/lib/portable-path.mjs',
+    'scripts/lib/safe-tar.mjs',
+    'scripts/lib/release-corrections.mjs',
+    'scripts/lib/release-candidate.mjs',
+  ]) {
+    assert.equal(isSensitivePath(helper, codeOwnerPaths), true, `${helper} is missing from CODEOWNERS governance`);
+    assert.equal(isSensitivePath(helper, reviewerPolicy.sensitivePaths), true, `${helper} is missing from release reviewer governance`);
+  }
+
+  const governedEntrypoints = new Set(RELEASE_TRUST_PATHS.filter((path) => !path.endsWith('/')));
+  for (const workflow of [
+    '../../.github/workflows/release-candidate.yml',
+    '../../.github/workflows/release.yml',
+    '../../.github/workflows/promote-release.yml',
+    '../../.github/workflows/release-recovery-drill.yml',
+  ]) {
+    const source = readFileSync(new URL(workflow, import.meta.url), 'utf8');
+    for (const match of source.matchAll(/\bnode\s+(scripts\/[A-Za-z0-9_./-]+\.mjs)\b/gu)) {
+      assert.equal(governedEntrypoints.has(match[1]), true, `${workflow} invokes ungoverned release entrypoint ${match[1]}`);
+    }
+  }
+});
 
 test('PR body parser and required evidence reject blank template sections', () => {
   assert.equal(parsePrBody(COMPLETE_BODY).get('Summary'), 'Add a reviewable governance check.');
@@ -82,28 +122,36 @@ test('sensitive paths require a distinct human approval on the current head', ()
     body: COMPLETE_BODY,
     files: [{ filename: 'scripts/validate-pr-governance.mjs' }],
     author: 'author',
-    headSha: 'abc123',
+    headSha: HEAD_SHA,
     sensitivePaths: SENSITIVE_PATHS,
   };
   const stale = evaluatePrGovernance({
     ...base,
-    reviews: [{ id: 1, state: 'APPROVED', commit_id: 'old', author_association: 'COLLABORATOR', user: { login: 'reviewer', type: 'User' } }],
+    reviews: [{ id: 1, state: 'APPROVED', commit_id: 'b'.repeat(40), author_association: 'COLLABORATOR', user: { login: 'reviewer', type: 'User' } }],
   });
   assert.equal(stale.ok, false);
   assert.match(stale.errors.join('\n'), /current-head approval/u);
 
   const outsider = evaluatePrGovernance({
     ...base,
-    reviews: [{ id: 2, state: 'APPROVED', commit_id: 'abc123', author_association: 'CONTRIBUTOR', user: { login: 'reviewer', type: 'User' } }],
+    reviews: [{ id: 2, state: 'APPROVED', commit_id: HEAD_SHA, author_association: 'CONTRIBUTOR', user: { login: 'reviewer', type: 'User' } }],
   });
   assert.equal(outsider.ok, false);
 
   const approved = evaluatePrGovernance({
     ...base,
     reviews: [
-      { id: 2, state: 'APPROVED', commit_id: 'abc123', author_association: 'COLLABORATOR', user: { login: 'reviewer', type: 'User' } },
-      { id: 3, state: 'COMMENTED', commit_id: 'abc123', author_association: 'COLLABORATOR', user: { login: 'reviewer', type: 'User' } },
+      { id: 2, state: 'APPROVED', commit_id: HEAD_SHA, author_association: 'COLLABORATOR', user: { login: 'reviewer', type: 'User' } },
+      { id: 3, state: 'COMMENTED', commit_id: HEAD_SHA, author_association: 'COLLABORATOR', user: { login: 'reviewer', type: 'User' } },
     ],
   });
   assert.equal(approved.ok, true);
+
+  const renamedSensitive = evaluatePrGovernance({
+    ...base,
+    files: [{ filename: 'docs/retired-workflow.yml', previous_filename: '.github/workflows/ci.yml' }],
+    reviews: [{ id: 4, state: 'APPROVED', commit_id: HEAD_SHA, author_association: 'COLLABORATOR', user: { login: 'reviewer', type: 'User' } }],
+  });
+  assert.equal(renamedSensitive.ok, true);
+  assert.deepEqual(renamedSensitive.sensitiveFiles, ['.github/workflows/ci.yml']);
 });

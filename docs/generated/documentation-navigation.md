@@ -6,6 +6,7 @@ Generated from `governance/doc-metadata.json` by `node scripts/generate-doc-gove
 - [docs/getting-started/README.md](../../docs/getting-started/README.md) — repository-users; reference
 - [docs/getting-started/first-workflow.md](../../docs/getting-started/first-workflow.md) — repository-users; reference
 - [docs/getting-started/install-claude-code.md](../../docs/getting-started/install-claude-code.md) — repository-users; reference
+- [docs/getting-started/plugin-lifecycle.md](../../docs/getting-started/plugin-lifecycle.md) — repository-users; reference
 - [docs/guides/assistants/README.md](../../docs/guides/assistants/README.md) — repository-users; reference
 - [docs/guides/assistants/aider.md](../../docs/guides/assistants/aider.md) — repository-users; reference
 - [docs/guides/assistants/cline.md](../../docs/guides/assistants/cline.md) — repository-users; reference

@@ -2,7 +2,7 @@
 id: review-lite
 stage: review
 title: /nova-plugin:review-lite
-description: "Run a lightweight review focused on high-signal issues without modifying code."
+description: "Deliver concise daily-review feedback with high signal and bounded depth."
 destructive-actions: none
 allowed-tools: Read Glob Grep
 disallowed-tools: Write Edit NotebookEdit Bash
@@ -12,9 +12,9 @@ disable-model-invocation: false
 
 # /nova-plugin:review-lite
 
-**Deprecated compatibility alias:** this wrapper remains for the 4.x migration window.
+**Compatibility direct entrypoint:** Claude requires this wrapper while native permission and invocation metadata remain static.
 
-Load `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/review-lite.json` and canonical skill `${CLAUDE_PLUGIN_ROOT}/skills/nova-review/SKILL.md`, then execute canonical surface `nova-review` with variant preset `{"LEVEL":"lite"}` merged beneath explicit non-conflicting `$ARGUMENTS`. Never copy or override behavior in this wrapper; the runtime contract and canonical skill are authoritative. If they differ, fail closed.
+Start from declared wrapper contract `${CLAUDE_PLUGIN_ROOT}/runtime/contracts/review-lite.json` and merge variant preset `{"LEVEL":"lite"}` beneath explicit non-conflicting `$ARGUMENTS`. From the merged inputs, extract only the selector keys declared for `review` in `${CLAUDE_PLUGIN_ROOT}/runtime/resolved-variant-contracts.json`; ordinary inputs such as requests, approvals, and paths must never enter the resolution key. Validate selector values and apply declared defaults before matching. Use an exact normalized override when present. A non-exact combination that triggers any alias specialization is conflicting and must stop; only a valid combination that triggers no alias specialization may use the canonical fallback. Load the resolved runtime contract and compare its `id` to the invoked command id `review-lite`. Claude native frontmatter is static: if the resolved id differs, STOP before tools or side effects and invoke the exact direct command `/nova-plugin:<resolved commandEntrypoint.directCommandId>`; do not execute another workflow's contract under this wrapper. Continue only when the ids match, then load the canonical skill `${CLAUDE_PLUGIN_ROOT}/skills/nova-review/SKILL.md`. The complete resolved runtime contract is authoritative, including allowedTools, disallowedTools, modelInvocable, subagentSafe, destructiveActions, and commandEntrypoint; no field falls back to canonical Skill prose. Generic and Codex adapters may instead execute the resolved contract directly under their adapter enforcement. If a selector is undeclared, unsupported, conflicting, or resolution is ambiguous, fail closed.
 
 - Stage: review
 - Owner agents: reviewer

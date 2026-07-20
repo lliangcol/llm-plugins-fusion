@@ -8,7 +8,7 @@
 - Audience: `advanced-users`; support risk: `low`
 - Inputs: `INTENT` (required), `CONTEXT` (required), `CONSTRAINTS`, `DEPTH`, `EXPORT_PATH`
 - Output contract: `senior-exploration-v2`; authorization: `artifact-write`
-- Effects: `artifact-write`, `workspace-read`, `workspace-write`
+- Effects: `artifact-write`, `workspace-read`
 - Related workflows: `explore`, `produce-plan`
 <!-- generated:command-contract:end -->
 
@@ -25,9 +25,9 @@
 | Parameter     | Required | Description                          | Example                               |
 | ------------- | -------- | ------------------------------------ | ------------------------------------- |
 | `INTENT`      | Yes      | Analysis intent.                     | `Analyze a new feature requirement`   |
-| `CONTEXT`     | No       | Context materials.                   | `Logs and modules`                    |
+| `CONTEXT`     | Yes      | Context materials.                   | `Logs and modules`                    |
 | `CONSTRAINTS` | No       | Analysis boundaries and constraints. | `Only analyze current implementation` |
-| `DEPTH`       | No       | `quick` / `normal` / `deep`; default `normal`. | `deep`                     |
+| `DEPTH`       | No       | Fixed to `deep`; omission also resolves to `deep`. | `deep`                  |
 | `EXPORT_PATH` | No       | Export path (identical to chat).     | `docs/analysis/issue.md`              |
 
 ## Output
@@ -57,6 +57,7 @@ CONTEXT: Requirement doc and modules
 ```text
 /nova-plugin:senior-explore
 INTENT: Investigate a production issue or bug
+CONTEXT: Error logs and related modules
 DEPTH: deep
 EXPORT_PATH: docs/analysis/payment-issue.md
 ```

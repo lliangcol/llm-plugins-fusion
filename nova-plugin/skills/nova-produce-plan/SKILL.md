@@ -2,7 +2,7 @@
 name: nova-produce-plan
 description: Write a formal plan document to file using general or java-backend profile; design checkpoint only.
 license: MIT
-allowed-tools: Read Glob Grep Write Edit
+allowed-tools: Read Glob Grep
 disallowed-tools: NotebookEdit Bash
 user-invocable: true
 disable-model-invocation: true
@@ -39,9 +39,11 @@ This file is the supporting behavioral contract for `/nova-plugin:produce-plan` 
 
 - **Purpose:** Write a review-ready plan artifact from explicit intent and constraints without implementing code.
 - **Canonical inputs:** `REQUEST`(required aliases=PLAN_INTENT,INPUT); `PLAN_OUTPUT_PATH`(required aliases=OUTPUT_PATH); `PLAN_PROFILE`(optional aliases=PROFILE default="general" exact="general","lite","java-backend"); `ANALYSIS_INPUTS`(optional aliases=EVIDENCE); `CONSTRAINTS`(optional aliases=BOUNDARIES)
+- **Resolved variant authority:** `{"PLAN_PROFILE":"java-backend"} normalized={"PLAN_PROFILE":"java-backend"} -> runtime/contracts/backend-plan.json`; `{"PLAN_PROFILE":"lite"} normalized={"PLAN_PROFILE":"lite"} -> runtime/contracts/plan-lite.json`; `{} normalized={"PLAN_PROFILE":"general"} -> runtime/contracts/produce-plan.json`. Declared selector defaults are applied before matching. An exact normalized override wins; a non-exact combination that triggers an alias specialization stops as conflicting, and only a valid combination that triggers no specialization uses the canonical fallback. The complete resolved runtime contract is authoritative and no field falls back to canonical prose.
+- **Claude static-entrypoint gate:** Native command and Skill frontmatter are static. A matching command wrapper may continue after it has verified that its invoked command id equals `resolvedWorkflowId`; this canonical Skill must not re-resolve or reject that validated wrapper. Only when this canonical Skill is itself the Claude native invoked entrypoint and no validated wrapper gate exists must `resolvedWorkflowId` equal `produce-plan`. Otherwise STOP before tools or side effects and invoke the exact direct command `/nova-plugin:<resolved commandEntrypoint.directCommandId>`; never execute the specialized contract under unmatched canonical frontmatter. Generic and Codex adapters may execute the resolved contract directly under adapter enforcement.
 - **Decision entries:** 2; canonical routes and variants: `produce-plan {"PLAN_PROFILE":"java-backend"}`.
 - **Workflow steps:** `validate-inputs` → `load-evidence` → `select-profile` → `write-plan` → `summarize`
-- **Output:** mode=`artifact`; order=`artifact path` → `executive summary`; severity=none.
+- **Output:** mode=`artifact`; order=`plan artifact` → `artifact path` → `executive summary`; severity=none.
 - **Deviation/failure:** mode=`approval-required`; failure order=`status` → `blocker` → `required input` → `safe next action`.
 - **Full IR:** `runtime/contracts/produce-plan.json#behaviorContract` embeds the complete decision table, invariants, stops, field definitions, validation, and failure contract from the same source. Detailed guidance below may not override it.
 <!-- END GENERATED BEHAVIOR CONTRACT -->
@@ -54,23 +56,26 @@ Generate review-ready design/plan documentation based on intent and constraints.
 
 | Parameter          | Required    | Default   | Notes                       | Example                     |
 | ------------------ | ----------- | --------- | --------------------------- | --------------------------- |
-| `PLAN_OUTPUT_PATH` | Yes         | N/A       | Output file path            | `docs/plans/refund.md`      |
-| `PLAN_INTENT`      | Yes         | N/A       | Goal of this plan           | `Fix callback idempotency`  |
-| `PLAN_PROFILE`     | No          | `general` | `general` or `java-backend` | `java-backend`              |
+| `PLAN_OUTPUT_PATH` | Profile     | N/A       | Required for `general` and `java-backend`; omitted by `lite` | `docs/plans/refund.md` |
+| `REQUEST`          | Yes         | N/A       | Goal of this plan; `PLAN_INTENT` and `INPUT` are aliases | `Fix callback idempotency` |
+| `PLAN_PROFILE`     | No          | `general` | `general`, `lite`, or `java-backend` | `java-backend`      |
 | `ANALYSIS_INPUTS`  | Recommended | N/A       | Prior analysis references   | `docs/analysis/callback.md` |
 | `CONSTRAINTS`      | No          | N/A       | Boundaries                  | `Backward compatible`       |
 
 ### Outputs
 
-- Writes full plan document to path (overwrite allowed, create parent dirs).
-- Chat output only path + executive summary bullets.
+- `general` and `java-backend` write a full plan document to the explicit path
+  and return only that path plus executive-summary bullets in chat.
+- `lite` uses the resolved `plan-lite` chat-only contract and does not require
+  or infer `PLAN_OUTPUT_PATH`.
 
 ### Workflow
 
 1. Validate required fields.
 2. Select profile template.
 3. Produce complete plan with explicit trade-offs.
-4. Write file and return constrained chat summary.
+4. For artifact profiles, write the file and return the constrained chat
+   summary; for `lite`, emit only the resolved chat outline.
 
 ### Examples
 
@@ -82,126 +87,12 @@ Generate review-ready design/plan documentation based on intent and constraints.
 - Design only, no code change.
 - Stop when required fields are missing.
 
-## Detailed Contract
+## Profile Document Structure
 
-### DESIGN CHECKPOINT
-
-You are Claude Code acting as a **senior engineer / tech lead**.
-
-This command produces a **written planning & design document**
-based on prior analysis and explicit intent.
-
-
-#### TASK MODE
-
-PRODUCE A WRITTEN PLAN DOCUMENT
-
-This is a **DESIGN CHECKPOINT**, not an exploration step.
-
-- The output represents a considered technical decision
-- The document is expected to be reviewed by humans
-- Clarity, explicit trade-offs, and traceability matter more than brevity
-
-
-#### REQUIRED INPUT EXTRACTION
-
-From `$ARGUMENTS`, extract the following:
-
-#### 1. Plan Output Path (Required)
-
-PLAN_OUTPUT_PATH:
-<PLAN_OUTPUT_PATH>
-
-If `PLAN_OUTPUT_PATH` is missing:
-
-- STOP immediately
-- Ask the user to explicitly provide it
-- Do NOT infer or guess a path
-
-
-#### 2. Plan Profile (Optional)
-
-Choose the plan document profile/template:
-
-- `general` (default) → Standard 9-section design document
-- `java-backend` → Java/Spring backend with 12 sections (transactions, concurrency, idempotency, observability)
-
-If not specified, use `general` profile.
-
-PLAN_PROFILE:
-<PLAN_PROFILE>
-
-
-#### 3. Plan Intent (Required)
-
-Describe what this plan is intended to achieve.
-
-Examples:
-
-- Implement a specific feature
-- Fix a production issue
-- Refactor or restructure part of the system
-- Introduce a new technical capability
-
-PLAN_INTENT:
-<PLAN_INTENT>
-
-
-#### 4. Input Analysis Artifacts (Strongly Recommended)
-
-Reference one or more prior analysis artifacts
-(e.g. produced by `/nova-plugin:senior-explore`).
-
-ANALYSIS_INPUTS:
-<ANALYSIS_INPUTS>
-
-If no analysis is provided:
-
-- Proceed cautiously
-- Explicitly call out missing analysis as a risk
-
-
-#### 5. Constraints & Decision Boundaries (Optional but Important)
-
-Explicitly list constraints that shape this plan.
-
-Examples:
-
-- Timeline or release constraints
-- Technology stack constraints
-- Backward compatibility requirements
-- Operational or compliance constraints
-
-CONSTRAINTS:
-<CONSTRAINTS>
-
-
-#### PLAN AUTHORING RULES
-
-You MUST:
-
-- Write a complete plan document to `PLAN_OUTPUT_PATH`
-- Overwrite the file if it already exists
-- Create parent directories if missing
-- Base decisions on provided analysis and constraints
-
-You MUST NOT:
-
-- Write or modify production code
-- Leave major decisions implicit
-- Assume unstated requirements or goals
-- Skip alternatives or trade-off discussion
-
-Tone & style:
-
-- Precise, explicit, and review-friendly
-- Prefer clear reasoning over persuasion
-- Avoid vague language such as “simple”, “obvious”, “straightforward”
-
-
-#### REQUIRED PLAN DOCUMENT STRUCTURE
-
-The structure depends on the `PLAN_PROFILE`:
+For `general` and `java-backend`, write a review-ready design checkpoint only
+to the explicit `PLAN_OUTPUT_PATH`; never infer it. Base decisions on supplied
+evidence and constraints, keep alternatives and trade-offs explicit, and do not
+modify production code. `lite` follows its resolved chat-only runtime contract.
 
 
 ##### Profile: general (default)

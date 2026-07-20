@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "sourceDigests": {
-    "packageScripts": "sha256:826dbdc3cffccbb4e39ba5387a477419cbba6b621683d1a45b62f8261944f4b0",
-    "validationRegistry": "sha256:fc26e21db403ceacd3af13c19fe338132e9e874d765c7cde39238f2c9860a653",
+    "packageScripts": "sha256:48b129209ea8bd8ee89c9d9b5362d8e85f110b6391fd438beec6bac631ed4280",
+    "validationRegistry": "sha256:8ea215e8c2839ff411620d331ed595bf6f823d68cb7975b5cc684142dd79aa41",
     "productLanes": "sha256:c888525caa05c1a9509996ddf9543ea84edec6379fc511a5584c86fbe910ce94"
   },
   "boundaries": [
@@ -389,12 +389,6 @@
       "scope": "maintainer"
     },
     {
-      "name": "validate:facts",
-      "command": "node scripts/generate-fact-graph.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
       "name": "validate:github-workflows",
       "command": "node scripts/validate-github-workflows.mjs",
       "owner": "maintainer task catalog",
@@ -403,12 +397,6 @@
     {
       "name": "validate:governance-freshness",
       "command": "node scripts/validate-governance-freshness.mjs",
-      "owner": "maintainer task catalog",
-      "scope": "maintainer"
-    },
-    {
-      "name": "validate:hook-truth",
-      "command": "node scripts/validate-hooks.mjs",
       "owner": "maintainer task catalog",
       "scope": "maintainer"
     },
@@ -780,6 +768,7 @@
         "nova-plugin/commands/**",
         "nova-plugin/skills/**",
         "nova-plugin/runtime/contracts/**",
+        "nova-plugin/runtime/resolved-variant-contracts.json",
         "adapters/**",
         "evals/**"
       ],
@@ -847,6 +836,7 @@
         "nova-plugin/commands/**",
         "nova-plugin/skills/**",
         "nova-plugin/runtime/contracts/**",
+        "nova-plugin/runtime/resolved-variant-contracts.json",
         "adapters/**",
         "evals/**",
         "fixtures/products/**"
@@ -1118,6 +1108,7 @@
         "nova-plugin/commands/**",
         "nova-plugin/skills/**",
         "nova-plugin/runtime/contracts/**",
+        "nova-plugin/runtime/resolved-variant-contracts.json",
         "adapters/**",
         "evals/**"
       ],
@@ -1307,7 +1298,7 @@
       "networkPolicy": "deny",
       "mutationPolicy": "deny",
       "cachePolicy": "never",
-      "timeoutMs": 120000,
+      "timeoutMs": 240000,
       "reasonCodes": [
         "CHECK_PASSED",
         "BASH_CAPABILITY_UNAVAILABLE",
@@ -1472,6 +1463,7 @@
         "nova-plugin/commands/**",
         "nova-plugin/skills/**",
         "nova-plugin/runtime/contracts/**",
+        "nova-plugin/runtime/resolved-variant-contracts.json",
         "adapters/**",
         "evals/**",
         "fixtures/workflow/**"
@@ -1507,6 +1499,7 @@
         "nova-plugin/commands/**",
         "nova-plugin/skills/**",
         "nova-plugin/runtime/contracts/**",
+        "nova-plugin/runtime/resolved-variant-contracts.json",
         "adapters/**",
         "evals/**",
         "tests/**",
@@ -1591,6 +1584,7 @@
         "nova-plugin/commands/**",
         "nova-plugin/skills/**",
         "nova-plugin/runtime/contracts/**",
+        "nova-plugin/runtime/resolved-variant-contracts.json",
         "adapters/**",
         "evals/**"
       ],
@@ -1810,6 +1804,7 @@
         "nova-plugin/commands/**",
         "nova-plugin/skills/**",
         "nova-plugin/runtime/contracts/**",
+        "nova-plugin/runtime/resolved-variant-contracts.json",
         "adapters/**",
         "evals/**"
       ],
@@ -1963,12 +1958,17 @@
         "VALIDATION_FAILED"
       ],
       "id": "performance.policy",
-      "label": "validate performance policy",
+      "label": "validate externally verifiable manifest-backed performance policy",
       "group": 3,
       "inputs": [
         "governance/engineering-evidence.json",
+        "governance/evidence/validation-performance-samples.json",
         "schemas/engineering-evidence.schema.json",
-        "scripts/validate-performance-budget.mjs"
+        "schemas/validation-performance*.schema.json",
+        "scripts/validate-performance-budget.mjs",
+        "scripts/lib/canonical-json.mjs",
+        "scripts/lib/github-actions-performance-provenance.mjs",
+        ".github/workflows/ci.yml"
       ],
       "runner": "scripts/validate-performance-budget.mjs",
       "args": [
@@ -2029,7 +2029,8 @@
         "scripts/*release*.mjs",
         "docs/operations/releases/**",
         "docs/templates/evidence/**",
-        "governance/engineering-evidence.json"
+        "governance/engineering-evidence.json",
+        "governance/evidence/validation-performance-samples.json"
       ],
       "runner": "scripts/generate-release-summary.mjs",
       "args": [

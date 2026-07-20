@@ -29,7 +29,7 @@ jobs:
       - name: Install Claude CLI
         run: npm install -g @anthropic-ai/claude-code@2.1.205
       - name: Validate user-scope install path
-        run: node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home --inventory-out .metrics/plugin-install-smoke/inventory.json
+        run: node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home --evidence-source local-isolated-install --inventory-out .metrics/plugin-install-smoke/inventory.json
       - name: Record smoke context
         if: always()
         run: |
@@ -76,7 +76,7 @@ jobs:
         run: |
           mkdir -p .metrics/plugin-latest-drift
           set -o pipefail
-          node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home --inventory-out .metrics/plugin-latest-drift/inventory.json 2>&1 | tee .metrics/plugin-latest-drift/run.log
+          node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home --evidence-source local-isolated-install --inventory-out .metrics/plugin-latest-drift/inventory.json 2>&1 | tee .metrics/plugin-latest-drift/run.log
       - name: Write sanitized fixed-schema drift report
         if: always()
         env:
@@ -113,14 +113,19 @@ jobs:
       - name: Reconcile compatibility drift issue
         env:
           GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
+          GH_HOST: github.com
+          GH_REPO: github.com/${{ github.repository }}
         run: |
+          set -euo pipefail
+          test -x /usr/bin/gh
+          release_token="${GH_TOKEN}"
+          unset GH_TOKEN
           passed="$(jq -r .passed drift/drift-report.json)"
           title="Claude latest compatibility drift"
-          issue="$(gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')"
+          issue="$(GH_TOKEN="${release_token}" /usr/bin/gh issue list --state open --search "${title} in:title" --json number --jq '.[0].number // empty')"
           if [ "${passed}" = "true" ]; then
-            if [ -n "${issue}" ]; then gh issue close "${issue}" --comment "Compatibility recovered in run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."; fi
+            if [ -n "${issue}" ]; then GH_TOKEN="${release_token}" /usr/bin/gh issue close "${issue}" --comment "Compatibility recovered in run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}."; fi
           else
             body="Scheduled compatibility validation failed in workflow run ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}. Response SLO: 7 days."
-            if [ -n "${issue}" ]; then gh issue comment "${issue}" --body "${body}"; else gh issue create --title "${title}" --body "${body}"; fi
+            if [ -n "${issue}" ]; then GH_TOKEN="${release_token}" /usr/bin/gh issue comment "${issue}" --body "${body}"; else GH_TOKEN="${release_token}" /usr/bin/gh issue create --title "${title}" --body "${body}"; fi
           fi

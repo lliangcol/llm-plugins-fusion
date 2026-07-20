@@ -40,6 +40,8 @@ This file is the supporting behavioral contract for `/nova-plugin:finalize-work`
 
 - **Purpose:** Package completed work into review-ready handoff text without changing the completed state.
 - **Canonical inputs:** `WORK_SUMMARY`(required aliases=WORK_SCOPE); `DEPTH`(optional default="standard" exact="lite","standard")
+- **Resolved variant authority:** `{"DEPTH":"lite"} normalized={"DEPTH":"lite"} -> runtime/contracts/finalize-lite.json`; `{} normalized={"DEPTH":"standard"} -> runtime/contracts/finalize-work.json`. Declared selector defaults are applied before matching. An exact normalized override wins; a non-exact combination that triggers an alias specialization stops as conflicting, and only a valid combination that triggers no specialization uses the canonical fallback. The complete resolved runtime contract is authoritative and no field falls back to canonical prose.
+- **Claude static-entrypoint gate:** Native command and Skill frontmatter are static. A matching command wrapper may continue after it has verified that its invoked command id equals `resolvedWorkflowId`; this canonical Skill must not re-resolve or reject that validated wrapper. Only when this canonical Skill is itself the Claude native invoked entrypoint and no validated wrapper gate exists must `resolvedWorkflowId` equal `finalize-work`. Otherwise STOP before tools or side effects and invoke the exact direct command `/nova-plugin:<resolved commandEntrypoint.directCommandId>`; never execute the specialized contract under unmatched canonical frontmatter. Generic and Codex adapters may execute the resolved contract directly under adapter enforcement.
 - **Decision entries:** 2.
 - **Workflow steps:** `freeze-state` → `detect-mode` → `package` → `verify-sections`
 - **Output:** mode=`chat`; order=`title or commit message` → `change summary` → `validation` → `handoff` → `out-of-scope follow-up`; severity=none.
@@ -53,10 +55,11 @@ Package completed work into review-ready handoff artifacts without new changes.
 
 ### Inputs
 
-| Parameter    | Required | Default         | Notes                           | Example                    |
-| ------------ | -------- | --------------- | ------------------------------- | -------------------------- |
-| `WORK_SCOPE` | Implicit | current context | Changes completed in prior step | `Refund retry fix + tests` |
-| Git presence | Auto     | N/A             | Decide output mode A/B          | `git repository detected`  |
+| Parameter      | Required | Default    | Notes                           | Example                    |
+| -------------- | -------- | ---------- | ------------------------------- | -------------------------- |
+| `WORK_SUMMARY` | Yes      | N/A        | Completed changes and validation context; `WORK_SCOPE` is an alias | `Refund retry fix + tests` |
+| `DEPTH`         | No       | `standard` | `lite` or `standard`            | `lite`                     |
+| Git presence   | Auto     | N/A        | Decide output mode A/B          | `git repository detected`  |
 
 ### Outputs
 
@@ -73,7 +76,7 @@ Package completed work into review-ready handoff artifacts without new changes.
 ### Examples
 
 - Natural trigger: `Use finalize-work to prepare PR description for this feature.`
-- Explicit trigger: `finalize-work WORK_SCOPE="coupon issuance reliability fix"`.
+- Explicit trigger: `finalize-work WORK_SUMMARY="coupon issuance reliability fix" DEPTH=standard`.
 
 ### Safety
 
@@ -95,13 +98,16 @@ No new decisions, no new changes.
 
 #### REQUIRED INPUTS
 
-From `$ARGUMENTS`, infer:
+From `$ARGUMENTS`, resolve:
 
-- `WORK_SCOPE` (implicit)
-  - The set of changes produced in the immediately preceding step
+- `WORK_SUMMARY` (required; `WORK_SCOPE` is an accepted alias)
+  - A factual summary of completed changes and validation evidence
+- `DEPTH` (optional, default `standard`; allowed values `lite` and `standard`)
 - Whether a **Git repository** is present
 
-⚠️ You MUST NOT infer or assume work outside the current execution context.
+Current task context may satisfy `WORK_SUMMARY` only when it explicitly states
+the completed changes and validation. You MUST NOT invent, infer, or assume
+work that is not present in that context.
 
 ---
 

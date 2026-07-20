@@ -1,16 +1,36 @@
 import assert from 'node:assert/strict';
-import { copyFileSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import {
+  chmodSync,
+  copyFileSync,
+  existsSync,
+  linkSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  renameSync,
+  rmSync,
+  symlinkSync,
+  unlinkSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
-import { resolve } from 'node:path';
+import { delimiter, resolve } from 'node:path';
 import test from 'node:test';
 import { main as buildCandidateMain } from '../../scripts/build-candidate-bundle.mjs';
 import { main as extractBundleMain } from '../../scripts/extract-release-bundle.mjs';
 import { migrate, migrateBehaviors } from '../../scripts/migrate-v5-surfaces.mjs';
-import { main as reconcileMain, reconcileGithubRelease } from '../../scripts/reconcile-github-release.mjs';
+import {
+  createGithubReleaseRunner,
+  main as reconcileMain,
+  reconcileGithubRelease,
+  resolveTrustedGithubCli,
+  validateGithubReleaseTarget,
+} from '../../scripts/reconcile-github-release.mjs';
 import { main as orchestratorMain, orchestrateRelease, parseReleaseOrchestratorArgs } from '../../scripts/release-orchestrator.mjs';
 import { buildStableInstallProof, main as stableInstallMain } from '../../scripts/verify-stable-install.mjs';
 import { treeDigest } from '../../scripts/validate-plugin-install.mjs';
-import { distributionRiskSarif } from '../../scripts/scan-distribution-risk.mjs';
+import { distributionRiskSarif, scanDistributionRisk } from '../../scripts/scan-distribution-risk.mjs';
 
 const root = resolve(import.meta.dirname, '../..');
 
@@ -67,7 +87,7 @@ test('release orchestrator consumes exact local intent and control identities in
 });
 
 test('release orchestrator parser covers explicit flags and rejects invalid identities', () => {
-  const base = ['--mode', 'drill', '--state', 'DRAFT', '--target-state', 'PROMOTION_READY', '--stable-tag', 'v4.1.0', '--candidate-tag', 'v4.1.0-rc.1', '--source-commit', 'a'.repeat(40), '--promotion-intent', 'intent.json', '--control-bundle', 'control.json', '--event-dir', 'events', '--run-id', '1'];
+  const base = ['--mode', 'drill', '--state', 'DRAFT', '--target-state', 'PROMOTION_READY', '--stable-tag', 'v4.1.0', '--candidate-tag', 'v4.1.0-rc.1', '--source-commit', 'a'.repeat(40), '--promotion-intent', 'intent.json', '--control-bundle', 'control.json', '--event-dir', '.metrics/events', '--run-id', '1'];
   const parsed = parseReleaseOrchestratorArgs([...base, '--dry-run', '--candidate-verification-passed', '--protected-publication-approved']);
   assert.equal(parsed.dryRun, true);
   assert.equal(parsed.candidateVerificationPassed, true);
@@ -100,13 +120,22 @@ test('GitHub draft reconciliation uploads, verifies, and publishes exact bytes t
       },
     });
     assert.deepEqual(result, { uploaded: ['asset.txt'], reused: [], published: true });
-    assert.equal(calls.some((args) => args[1] === 'edit'), true);
+    const edit = calls.find((args) => args[1] === 'edit');
+    assert.equal(Boolean(edit), true);
+    assert.equal(edit.at(-4), '--notes-file');
+    assert.notEqual(edit.at(-3), notes);
+    assert.match(edit.at(-3), /nova-release-inputs-.*\/notes\/release-notes\.md$/u);
+    assert.deepEqual(edit.slice(-2), ['--title', 'nova-plugin v4.0.0']);
+    assert.equal(existsSync(edit.at(-3)), false);
+    const upload = calls.find((args) => args[1] === 'upload');
+    assert.notEqual(upload.at(-1), resolve(assets, 'asset.txt'));
+    assert.equal(existsSync(upload.at(-1)), false);
     assert.equal(calls.find((args) => args[1] === 'create').includes('--prerelease=false'), true);
     assert.equal(calls.find((args) => args[1] === 'create').includes('--verify-tag'), true);
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
-test('candidate reconciliation preserves prerelease state and refuses a published existing release', () => {
+test('candidate reconciliation preserves prerelease state and resumes only an exact published release', () => {
   const directory = mkdtempSync(resolve(tmpdir(), 'nova-reconcile-prerelease-'));
   try {
     const assets = resolve(directory, 'assets');
@@ -125,13 +154,28 @@ test('candidate reconciliation preserves prerelease state and refuses a publishe
     });
     assert.equal(calls.find((args) => args[1] === 'create').includes('--prerelease=true'), true);
     assert.equal(calls.find((args) => args[1] === 'create').includes('--verify-tag'), true);
-    assert.equal(calls.find((args) => args[1] === 'edit').includes('--prerelease=true'), true);
-    assert.throws(() => reconcileGithubRelease({ tag: 'v4.0.0-rc.1', assetsDir: assets, notes, prerelease: true }, {
+    const edit = calls.find((args) => args[1] === 'edit');
+    assert.equal(edit.includes('--prerelease=true'), true);
+    assert.equal(edit.at(-4), '--notes-file');
+    assert.notEqual(edit.at(-3), notes);
+    assert.deepEqual(edit.slice(-2), ['--title', 'nova-plugin v4.0.0-rc.1']);
+    const resumedCalls = [];
+    const resumed = reconcileGithubRelease({ tag: 'v4.0.0-rc.1', assetsDir: assets, notes, prerelease: true }, {
       ghRun(args) {
-        if (args[1] === 'view') return { status: 0, stdout: '{"isDraft":false}', stderr: '' };
+        resumedCalls.push(args);
+        if (args[1] === 'view') return { status: 0, stdout: JSON.stringify({ isDraft: false, isPrerelease: true, name: 'nova-plugin v4.0.0-rc.1', body: 'notes\n' }), stderr: '' };
+        if (args[1] === 'download') copyFileSync(resolve(assets, 'asset.txt'), resolve(args[args.indexOf('--dir') + 1], 'asset.txt'));
         return { status: 0, stdout: '{}', stderr: '' };
       },
-    }), /not a draft/u);
+    });
+    assert.deepEqual(resumed, { uploaded: [], reused: ['asset.txt'], published: true, resumed: true });
+    assert.equal(resumedCalls.some((args) => ['create', 'upload', 'edit'].includes(args[1])), false);
+    assert.throws(() => reconcileGithubRelease({ tag: 'v4.0.0-rc.1', assetsDir: assets, notes, prerelease: true }, {
+      ghRun(args) {
+        if (args[1] === 'view') return { status: 0, stdout: JSON.stringify({ isDraft: false, isPrerelease: false, name: 'wrong', body: 'wrong' }), stderr: '' };
+        return { status: 0, stdout: '{}', stderr: '' };
+      },
+    }), /metadata differs/u);
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
@@ -162,6 +206,183 @@ test('GitHub draft reconciliation fails closed on lookup and asset-download erro
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });
 
+test('GitHub draft reconciliation rejects linked release inputs and staged input rebinding', { skip: process.platform === 'win32' }, () => {
+  const directory = mkdtempSync(resolve(tmpdir(), 'nova-reconcile-linked-inputs-'));
+  try {
+    const assets = resolve(directory, 'assets');
+    const notes = resolve(directory, 'notes.md');
+    const source = resolve(directory, 'source.txt');
+    mkdirSync(assets);
+    writeFileSync(source, 'secret source\n');
+    writeFileSync(notes, 'notes\n');
+    let calls = 0;
+    const neverRun = () => { calls += 1; return { status: 0, stdout: '{}', stderr: '' }; };
+
+    linkSync(source, resolve(assets, 'asset.txt'));
+    assert.throws(
+      () => reconcileGithubRelease({ tag: 'v4.0.0', assetsDir: assets, notes }, { ghRun: neverRun }),
+      /must not be hard linked/u,
+    );
+    assert.equal(calls, 0);
+    unlinkSync(resolve(assets, 'asset.txt'));
+
+    symlinkSync(source, resolve(assets, 'asset.txt'));
+    assert.throws(
+      () => reconcileGithubRelease({ tag: 'v4.0.0', assetsDir: assets, notes }, { ghRun: neverRun }),
+      /physical regular file|symlink/u,
+    );
+    assert.equal(calls, 0);
+    unlinkSync(resolve(assets, 'asset.txt'));
+    writeFileSync(resolve(assets, 'asset.txt'), 'exact\n');
+
+    const linkedNotes = resolve(directory, 'linked-notes.md');
+    symlinkSync(notes, linkedNotes);
+    assert.throws(
+      () => reconcileGithubRelease({ tag: 'v4.0.0', assetsDir: assets, notes: linkedNotes }, { ghRun: neverRun }),
+      /release notes.*physical regular file|symlink/u,
+    );
+    assert.equal(calls, 0);
+
+    const linkedAssets = resolve(directory, 'linked-assets');
+    symlinkSync(assets, linkedAssets, 'dir');
+    assert.throws(
+      () => reconcileGithubRelease({ tag: 'v4.0.0', assetsDir: linkedAssets, notes }, { ghRun: neverRun }),
+      /release assets directory.*physical directory|symlink/u,
+    );
+    assert.equal(calls, 0);
+
+    let downloadCount = 0;
+    assert.throws(() => reconcileGithubRelease({ tag: 'v4.0.0', assetsDir: assets, notes }, {
+      ghRun(args) {
+        if (args[1] === 'view') return { status: 1, stdout: '', stderr: 'release not found' };
+        if (args[1] === 'download') {
+          downloadCount += 1;
+          return { status: 1, stdout: '', stderr: 'no assets found' };
+        }
+        if (args[1] === 'upload') {
+          const stagedAsset = args.at(-1);
+          renameSync(stagedAsset, `${stagedAsset}.original`);
+          writeFileSync(stagedAsset, 'rebound\n');
+        }
+        return { status: 0, stdout: '{}', stderr: '' };
+      },
+    }), /staged release input.*changed identity or content|changed identity/u);
+    assert.equal(downloadCount, 1);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test('GitHub draft reconciliation rejects ambiguous release identities before invoking gh', () => {
+  const directory = mkdtempSync(resolve(tmpdir(), 'nova-reconcile-tag-contract-'));
+  try {
+    const assets = resolve(directory, 'assets');
+    const notes = resolve(directory, 'notes.md');
+    mkdirSync(assets);
+    writeFileSync(resolve(assets, 'asset.txt'), 'exact\n');
+    writeFileSync(notes, 'notes\n');
+    let called = false;
+    const ghRun = () => { called = true; return { status: 0, stdout: '{}', stderr: '' }; };
+    assert.throws(() => reconcileGithubRelease({ tag: '--help', assetsDir: assets, notes }, { ghRun }), /exact stable SemVer/u);
+    assert.throws(() => reconcileGithubRelease({ tag: 'v4.0.0', assetsDir: assets, notes, prerelease: true }, { ghRun }), /exact candidate SemVer/u);
+    assert.equal(called, false);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test('credentialed GitHub Release execution pins gh, repository, environment, and resource bounds', () => {
+  const directory = mkdtempSync(resolve(tmpdir(), 'nova-reconcile-gh-boundary-'));
+  try {
+    const workspace = resolve(directory, 'workspace');
+    const trustedBin = resolve(directory, 'trusted-bin');
+    mkdirSync(workspace);
+    mkdirSync(trustedBin);
+    const executable = resolve(trustedBin, process.platform === 'win32' ? 'gh.exe' : 'gh');
+    const nativeHeader = process.platform === 'win32'
+      ? Buffer.from('MZ\0\0', 'binary')
+      : Buffer.from([0x7f, 0x45, 0x4c, 0x46]);
+    writeFileSync(executable, Buffer.concat([nativeHeader, Buffer.from('fixture')]));
+    chmodSync(executable, 0o755);
+    const token = 'release-token-fixture';
+    const env = {
+      PATH: trustedBin,
+      GH_TOKEN: token,
+      GH_HOST: 'attacker.invalid',
+      GH_REPO: 'attacker/repository',
+      GH_CONFIG_DIR: resolve(workspace, 'gh-config'),
+      GH_PAGER: 'credential-stealer',
+      PAGER: 'credential-stealer',
+      NODE_OPTIONS: '--require attacker.js',
+      BASH_ENV: resolve(workspace, 'bash-env'),
+      HTTPS_PROXY: 'http://proxy.invalid:8080',
+      SSL_CERT_FILE: resolve(directory, 'corporate-ca.pem'),
+    };
+    let observed;
+    const gh = createGithubReleaseRunner({
+      repository: 'owner/repository',
+      host: 'github.com',
+      cwd: workspace,
+      env,
+      runner(command, args, options) {
+        observed = { command, args, options };
+        return { status: 0, stdout: '{}', stderr: '' };
+      },
+    });
+    assert.equal(gh(['release', 'view', 'v4.1.0']).status, 0);
+    assert.equal(observed.command, resolveTrustedGithubCli({ cwd: workspace, env }).command);
+    assert.deepEqual(observed.args.slice(-2), ['--repo', 'github.com/owner/repository']);
+    assert.equal(observed.options.shell, false);
+    assert.equal(observed.options.timeout, 120_000);
+    assert.equal(observed.options.maxBuffer, 1024 * 1024);
+    assert.equal(observed.options.env.GH_TOKEN, token);
+    assert.equal(observed.options.env.GH_HOST, 'github.com');
+    assert.equal(observed.options.env.GH_REPO, 'github.com/owner/repository');
+    assert.equal(observed.options.env.HTTPS_PROXY, env.HTTPS_PROXY);
+    assert.equal(observed.options.env.SSL_CERT_FILE, env.SSL_CERT_FILE);
+    for (const key of ['GH_CONFIG_DIR', 'GH_PAGER', 'PAGER', 'NODE_OPTIONS', 'BASH_ENV']) {
+      assert.equal(Object.hasOwn(observed.options.env, key), false);
+    }
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
+test('credentialed GitHub Release execution rejects workspace PATH, script shims, target drift, and timeouts', () => {
+  const directory = mkdtempSync(resolve(tmpdir(), 'nova-reconcile-gh-reject-'));
+  try {
+    const workspace = resolve(directory, 'workspace');
+    const trustedBin = resolve(directory, 'trusted-bin');
+    mkdirSync(workspace);
+    mkdirSync(trustedBin);
+    const executable = resolve(trustedBin, process.platform === 'win32' ? 'gh.exe' : 'gh');
+    const nativeHeader = process.platform === 'win32'
+      ? Buffer.from('MZ\0\0', 'binary')
+      : Buffer.from([0x7f, 0x45, 0x4c, 0x46]);
+    writeFileSync(executable, Buffer.concat([nativeHeader, Buffer.from('fixture')]));
+    chmodSync(executable, 0o755);
+    const base = { cwd: workspace, env: { PATH: trustedBin, GH_TOKEN: 'fixture-token' } };
+    for (const path of [`${workspace}${delimiter}${trustedBin}`, `${delimiter}${trustedBin}`, `relative${delimiter}${trustedBin}`]) {
+      assert.throws(() => resolveTrustedGithubCli({ cwd: workspace, env: { PATH: path } }), /PATH must|release workspace/u);
+    }
+    assert.throws(() => validateGithubReleaseTarget('owner/repository', 'attacker.invalid'), /exactly github\.com/u);
+    assert.throws(() => validateGithubReleaseTarget('owner/repository/extra'), /OWNER\/REPO/u);
+
+    writeFileSync(executable, '#!/bin/sh\nexit 0\n');
+    chmodSync(executable, 0o755);
+    assert.throws(() => resolveTrustedGithubCli(base), /native executable/u);
+    writeFileSync(executable, Buffer.concat([nativeHeader, Buffer.from('fixture')]));
+    chmodSync(executable, 0o755);
+
+    const drift = createGithubReleaseRunner({ ...base, repository: 'owner/repository', runner(command) {
+      writeFileSync(command, Buffer.concat([nativeHeader, Buffer.from('changed')]));
+      return { status: 0, stdout: '', stderr: '' };
+    } });
+    assert.throws(() => drift(['release', 'view', 'v4.1.0']), /identity changed during/u);
+
+    writeFileSync(executable, Buffer.concat([nativeHeader, Buffer.from('fixture')]));
+    chmodSync(executable, 0o755);
+    const timeout = createGithubReleaseRunner({ ...base, repository: 'owner/repository', runner() {
+      return { status: null, stdout: '', stderr: '', error: Object.assign(new Error('timed out'), { code: 'ETIMEDOUT' }) };
+    } });
+    assert.throws(() => timeout(['release', 'view', 'v4.1.0']), /timed out/u);
+  } finally { rmSync(directory, { recursive: true, force: true }); }
+});
+
 test('stable install proof compares exact manifest digests and records channel identity', () => {
   const directory = mkdtempSync(resolve(tmpdir(), 'nova-proof-tree-'));
   try {
@@ -183,4 +404,47 @@ test('distribution risk SARIF preserves locations and never embeds matched sourc
   assert.deepEqual(sarif.runs[0].results.map((result) => result.level), ['error', 'warning']);
   assert.equal(sarif.runs[0].results[0].locations[0].physicalLocation.artifactLocation.uri, 'active.md');
   assert.equal(JSON.stringify(sarif).includes('<redacted>'), false);
+});
+
+test('distribution risk inventory ignores inherited Git repository redirects', (t) => {
+  const repository = mkdtempSync(resolve(tmpdir(), 'nova-distribution-source-'));
+  const injected = mkdtempSync(resolve(tmpdir(), 'nova-distribution-injected-'));
+  t.after(() => rmSync(repository, { recursive: true, force: true }));
+  t.after(() => rmSync(injected, { recursive: true, force: true }));
+  for (const rootDir of [repository, injected]) {
+    execFileSync('git', ['init', '--quiet'], { cwd: rootDir });
+    execFileSync('git', ['config', 'user.name', 'Distribution Test'], { cwd: rootDir });
+    execFileSync('git', ['config', 'user.email', 'distribution@example.invalid'], { cwd: rootDir });
+  }
+  writeFileSync(resolve(repository, 'tracked-secret.txt'), `sk-proj-${'a'.repeat(24)}\n`);
+  execFileSync('git', ['add', 'tracked-secret.txt'], { cwd: repository });
+  execFileSync('git', ['commit', '--quiet', '-m', 'tracked secret fixture'], { cwd: repository });
+
+  const keys = ['GIT_DIR', 'GIT_WORK_TREE'];
+  const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+  try {
+    process.env.GIT_DIR = resolve(injected, '.git');
+    process.env.GIT_WORK_TREE = injected;
+    const result = scanDistributionRisk({ rootDir: repository, mode: 'release' });
+    assert.equal(result.errors.some((entry) => entry.path === 'tracked-secret.txt' && entry.label === 'OpenAI API key'), true);
+  } finally {
+    for (const key of keys) {
+      if (previous[key] === undefined) delete process.env[key];
+      else process.env[key] = previous[key];
+    }
+  }
+});
+
+test('distribution risk reloads the tracked inventory for each release scan', (t) => {
+  const repository = mkdtempSync(resolve(tmpdir(), 'nova-distribution-refresh-'));
+  t.after(() => rmSync(repository, { recursive: true, force: true }));
+  execFileSync('git', ['init', '--quiet'], { cwd: repository });
+  writeFileSync(resolve(repository, 'public.txt'), 'public fixture\n');
+  execFileSync('git', ['add', 'public.txt'], { cwd: repository });
+  assert.equal(scanDistributionRisk({ rootDir: repository, mode: 'release' }).errors.length, 0);
+
+  writeFileSync(resolve(repository, 'new-secret.txt'), `sk-proj-${'r'.repeat(24)}\n`);
+  execFileSync('git', ['add', 'new-secret.txt'], { cwd: repository });
+  const refreshed = scanDistributionRisk({ rootDir: repository, mode: 'release' });
+  assert.equal(refreshed.errors.some((entry) => entry.path === 'new-secret.txt' && entry.label === 'OpenAI API key'), true);
 });

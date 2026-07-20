@@ -114,7 +114,7 @@ Codex boundaries:
 
 **Input template (fill `$ARGUMENTS`)**
 
-- Intent (required), Context (recommended), Constraints (optional), Depth (optional), Export path (optional)
+- Intent (required), Context (required), Constraints (optional), Depth (fixed to `deep`; optional), Export path (optional)
 
 **What you get**
 
@@ -148,7 +148,7 @@ CONTEXT:
 - Existing API: /v1/subscription/...
 CONSTRAINTS:
 - Focus on correctness, not performance
-DEPTH: normal
+DEPTH: deep
 ```
 
 ---
@@ -218,9 +218,9 @@ Only output:
 
 ## 4. Category 3: Review (Review only, no code)
 
-### 4.1 `/nova-plugin:review LEVEL=lite` vs `/nova-plugin:review LEVEL=standard` vs `/nova-plugin:review LEVEL=strict`
+### 4.1 `/nova-plugin:review LEVEL=lite` vs `/nova-plugin:review LEVEL=standard MODE=findings-only` vs `/nova-plugin:review LEVEL=strict`
 
-| Dimension | `/nova-plugin:review LEVEL=lite` | `/nova-plugin:review LEVEL=standard`               | `/nova-plugin:review LEVEL=strict`                            |
+| Dimension | `/nova-plugin:review LEVEL=lite` | `/nova-plugin:review LEVEL=standard MODE=findings-only` | `/nova-plugin:review LEVEL=strict`                            |
 | --------- | -------------------- | -------------------------------------- | ------------------------------------------------- |
 | Shortcut  | `/nova-plugin:review-lite`       | `/nova-plugin:review-only`                         | `/nova-plugin:review-strict`                                  |
 | Depth     | light, high signal   | systematic, severity-based             | exhaustive, harsh “audit” style                   |
@@ -342,7 +342,7 @@ CONTEXT:
 - Existing endpoints/data:
 CONSTRAINTS:
 - Based only on provided info
-DEPTH: normal
+DEPTH: deep
 ```
 
 ### 10.2 Incident investigation (deep)

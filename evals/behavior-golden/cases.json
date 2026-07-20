@@ -11,7 +11,7 @@
     { "id": "route-codex-decision", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "Codex review fix verify" }, "expectedDecisionRoute": "implement-plan", "expectedDecisionVariantParameters": { "EXECUTION_PROFILE": "codex-review-fix" } },
     { "id": "route-default-depth", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "triage this" }, "expectedNormalized": { "DEPTH": "normal" } },
     { "id": "route-request-alias", "suite": "route", "workflow": "route", "providedInputs": { "INPUT": "triage this" }, "expectedNormalized": { "REQUEST": "triage this" } },
-    { "id": "route-fixed-output", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "triage this" }, "expectedOutputOrder": ["Canonical skill", "Command alias (optional)", "Variant parameters", "Core agent", "Capability packs", "Required inputs", "Validation expectations", "Fallback path"] },
+    { "id": "route-fixed-output", "suite": "route", "workflow": "route", "providedInputs": { "REQUEST": "triage this" }, "expectedOutputOrder": ["Canonical skill", "Command entrypoint", "Variant parameters", "Core agent", "Capability packs", "Required inputs", "Validation expectations", "Fallback path"] },
 
     { "id": "review-default-level", "suite": "review", "workflow": "review", "providedInputs": { "REVIEW_SCOPE": "diff" }, "expectedNormalized": { "LEVEL": "standard", "MODE": "full" }, "expectedDecisionRoute": "review", "expectedDecisionVariantParameters": { "LEVEL": "standard" } },
     { "id": "review-scope-alias", "suite": "review", "workflow": "review", "providedInputs": { "INPUT": "diff" }, "expectedNormalized": { "REVIEW_SCOPE": "diff" } },
@@ -35,6 +35,6 @@
     { "id": "implement-lite-task-alias", "suite": "implement", "workflow": "implement-lite", "providedInputs": { "TASK": "small fix" }, "expectedNormalized": { "REQUEST": "small fix" } },
     { "id": "implement-lite-scope-stop", "suite": "implement", "workflow": "implement-lite", "providedInputs": { "REQUEST": "large redesign" }, "expectedStopContains": "no longer small or bounded" },
     { "id": "implement-standard-steps-alias", "suite": "implement", "workflow": "implement-standard", "providedInputs": { "STEPS": "A then B" }, "expectedNormalized": { "REQUEST": "A then B" } },
-    { "id": "implement-standard-validation", "suite": "implement", "workflow": "implement-standard", "providedInputs": { "REQUEST": "A then B" }, "expectedOutputOrder": ["Implementation Summary", "Validation", "Deviations"] }
+    { "id": "implement-standard-validation", "suite": "implement", "workflow": "implement-standard", "providedInputs": { "REQUEST": "A then B" }, "expectedOutputOrder": ["code updates", "Implementation Summary", "Validation", "Deviations"] }
   ]
 }

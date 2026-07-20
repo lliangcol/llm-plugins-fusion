@@ -4,7 +4,11 @@
 import assert from 'node:assert/strict';
 import { readFileSync, readdirSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { checkOrWrite, buildRegistry } from './generate-compatibility-evidence.mjs';
+import {
+  buildRegistry,
+  checkOrWrite,
+  isCurrentCompatibilityEvidenceStatus,
+} from './generate-compatibility-evidence.mjs';
 import { assertPublicEvidenceSafe } from './lib/evaluation-evidence.mjs';
 import { repoRoot } from './lib/repo-root.mjs';
 
@@ -51,6 +55,8 @@ for (const name of readdirSync(resolve(root, 'evals/evidence-attempts')).filter(
 checkOrWrite();
 const registry = buildRegistry();
 for (const claim of registry.currentClaims) {
-  if (claim.evidenceStatus !== 'current') assert.equal(['L1', 'L2'].includes(claim.effectiveLevel), true, `${claim.assistant}: stale evidence must not retain L3/L4`);
+  if (!isCurrentCompatibilityEvidenceStatus(claim.evidenceStatus)) {
+    assert.equal(['L1', 'L2'].includes(claim.effectiveLevel), true, `${claim.assistant}: stale evidence must not retain L3/L4`);
+  }
 }
 console.log(`OK assistant evidence registry (${files.length} records, ${registry.historicalEvidence.length} historical observations)`);

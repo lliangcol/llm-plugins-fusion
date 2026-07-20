@@ -22,7 +22,7 @@ Use this policy for analysis, plan, review, verification, and handoff artifacts.
 - Keep generated artifacts deterministic enough for review.
 - For long-running work, prefer a small checkpoint artifact over relying on chat
   history. Use the public template in
-  `docs/prompts/common/checkpoint-artifact.md` and store concrete private facts
+  `docs/templates/prompts/common/checkpoint-artifact.md` and store concrete private facts
   only in the consumer workspace.
 - Do not write artifacts outside the repository unless the user provides the
   absolute path.

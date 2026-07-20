@@ -8,7 +8,7 @@
 - Audience: `backend-users`; support risk: `low`
 - Inputs: `REQUEST` (required), `PLAN_OUTPUT_PATH` (required)
 - Output contract: `backend-plan-v2`; authorization: `artifact-write`
-- Effects: `artifact-write`, `workspace-read`, `workspace-write`
+- Effects: `artifact-write`, `workspace-read`
 - Related workflows: `produce-plan`, `implement-plan`
 <!-- generated:command-contract:end -->
 
@@ -24,6 +24,7 @@
 
 | Parameter          | Required | Description                | Example                 |
 | ------------------ | -------- | -------------------------- | ----------------------- |
+| `REQUEST`          | Yes      | Problem, goals, and constraints. | `Design order cancellation` |
 | `PLAN_OUTPUT_PATH` | Yes      | Plan document output path. | `docs/plans/backend.md` |
 
 ## Output
@@ -51,17 +52,19 @@ Plan document structure:
 
 ```text
 /nova-plugin:backend-plan
+REQUEST: Design the Java/Spring backend for order cancellation
 PLAN_OUTPUT_PATH: docs/plans/order-backend.md
 ```
 
 ```text
 /nova-plugin:backend-plan
+REQUEST: Design the Java/Spring backend for the account service
 PLAN_OUTPUT_PATH: docs/plans/account-service.md
 ```
 
 ```text
 /nova-plugin:backend-plan
-Missing PLAN_OUTPUT_PATH
+REQUEST: Design an order backend, but PLAN_OUTPUT_PATH is missing
 ```
 
 ## Incorrect Usage / Anti-patterns

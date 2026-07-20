@@ -70,11 +70,11 @@ other coding assistants.
 
 | Scenario | Entry | What it demonstrates |
 | --- | --- | --- |
-| Java backend | [docs/showcase/java-backend.md](../../../docs/tutorials/java-backend.md) | Turning a vague backend task into explore, plan, review, implement, and finalize evidence. |
-| Frontend | [docs/showcase/frontend.md](../../../docs/tutorials/frontend.md) | Converting UI work into component, state, accessibility, and screenshot validation boundaries. |
-| Release and docs | [docs/showcase/release-and-docs.md](../../../docs/tutorials/release-and-docs.md) | Handling release notes, docs sync, validation evidence, and residual risk. |
+| Java backend | [Java backend tutorial](../../../docs/tutorials/java-backend.md) | Turning a vague backend task into explore, plan, review, implement, and finalize evidence. |
+| Frontend | [Frontend tutorial](../../../docs/tutorials/frontend.md) | Converting UI work into component, state, accessibility, and screenshot validation boundaries. |
+| Release and docs | [Release and docs tutorial](../../../docs/tutorials/release-and-docs.md) | Handling release notes, docs sync, validation evidence, and residual risk. |
 
-Demo capture guidance lives in [docs/assets/README.md](../../../docs/operations/community/assets.md). Growth metric definitions live in [docs/growth/README.md](../../../docs/operations/community/metrics.md).
+Demo capture guidance lives in [community asset guidance](../../../docs/operations/community/assets.md). Growth metric definitions live in [community metrics](../../../docs/operations/community/metrics.md).
 
 ## Security And Trust
 
@@ -87,7 +87,7 @@ Demo capture guidance lives in [docs/assets/README.md](../../../docs/operations/
 
 <table>
 <tr>
-<td><strong>Plugin version</strong></td>
+<td><strong>Stable plugin version</strong></td>
 <td>4.0.0</td>
 </tr>
 <tr>
@@ -171,7 +171,7 @@ If you are not sure which command should start:
 /nova-plugin:route This task touches docs, versioning, and install validation; recommend the next nova workflow step
 ```
 
-Private consumer projects should maintain their own project-local profile before running the workflow. The public contract is in [docs/consumers/](../../../docs/guides/assistants/README.md).
+Private consumer projects should maintain their own project-local profile before running the workflow. The public contract is in the [assistant adoption guide](../../../docs/guides/assistants/README.md).
 
 ### Default Workflow
 
@@ -252,7 +252,7 @@ Capability packs: `java`, `security`, `dependency`, `docs`, `release`, `marketpl
 
 | Layer | Current sources | Maintenance focus |
 | --- | --- | --- |
-| Memory | `CLAUDE.md`, `AGENTS.md`, `docs/consumers/` | Claude guidance source, non-Claude agent adapter, consumer profile boundaries, public/private information separation |
+| Memory | `CLAUDE.md`, `AGENTS.md`, `docs/templates/consumer-profiles/` | Claude guidance source, non-Claude agent adapter, consumer profile boundaries, public/private information separation |
 | Skills | `nova-plugin/skills/`, `nova-plugin/commands/` | Six canonical behavior skills, generated command wrappers, variant presets, safety boundaries, and output contracts |
 | Guardrails | `nova-plugin/hooks/`, `scripts/validate-*.mjs` | Deterministic hooks, schema, frontmatter, docs, and release validation |
 | Delegation | `nova-plugin/agents/`, `nova-plugin/packs/` | 6 core agents, 8 capability packs, enhanced / fallback routing |
@@ -276,14 +276,16 @@ llm-plugins-fusion/
 |   `-- hooks/                        # Claude Code hook config and scripts
 |-- docs/
 |   |-- README.md                     # repository-level documentation index
-|   |-- agents/                       # core agent routing, plugin-aware routing, and migration manifest
-|   |-- consumers/                    # consumer profile contract and redacted templates
-|   |-- examples/                     # redacted Java backend / frontend workflow examples
-|   |-- marketplace/                  # catalog, author workflow, compatibility, trust, and review docs
-|   |-- prompts/                      # public-safe copyable prompt templates
-|   |-- releases/                     # release decisions, runbook, and hygiene docs
-|   |-- workflows/                    # context-safe agent workflow guidance
-|   `-- project-optimization-plan.md   # current project optimization plan
+|   |-- assets/                       # media referenced by maintained public docs
+|   |-- generated/                    # generated inventories, matrices, and reports
+|   |-- getting-started/              # first-run and installation paths
+|   |-- guides/                       # task-oriented assistant, framework, and workflow guides
+|   |-- marketplace/                  # generated marketplace catalog
+|   |-- operations/                   # community, maintainer, marketplace, and release operations
+|   |-- project/                      # decisions, migrations, plans, and release notes
+|   |-- reference/                    # architecture, compatibility, evaluation, security, and workflow contracts
+|   |-- templates/                    # consumer profiles, evidence records, and prompts
+|   `-- tutorials/                    # public-safe examples and walkthroughs
 |-- fixtures/                         # registry multi-entry fixture
 |-- schemas/                          # registry source / marketplace / metadata / plugin schemas
 |-- scripts/                          # local and CI validation scripts
@@ -344,8 +346,10 @@ llm-plugins-fusion/
 
 Version and registry sources:
 
-- `nova-plugin/.claude-plugin/plugin.json`: plugin metadata and version source
-- `.claude-plugin/registry.source.json`: registry, marketplace display fields, and trust/risk/maintainer/evidence metadata source
+- `nova-plugin/.claude-plugin/plugin.json`: development/candidate plugin metadata and base-version source
+- `package.json`: repository-tooling version; it must match the plugin manifest
+- `governance/release-channels.json`: stable version, exact tag, and commit source
+- `.claude-plugin/registry.source.json`: stable distribution source plus registry, marketplace display, and trust/risk/maintainer/evidence metadata
 - `.claude-plugin/marketplace.json`: generated Claude marketplace manifest
 - `.claude-plugin/marketplace.metadata.json`: generated repository-local metadata
 - `docs/marketplace/catalog.md`: generated Markdown catalog
@@ -416,6 +420,8 @@ Hook shell syntax checks require Bash:
 
 ```bash
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
+bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
+bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 

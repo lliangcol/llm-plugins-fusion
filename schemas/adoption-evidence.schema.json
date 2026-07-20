@@ -1,14 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/adoption-evidence.schema.json",
-  "title": "Privacy-preserving Adoption Evidence",
+  "title": "Privacy-preserving Maintainer-attested Adoption Evidence",
   "type": "object",
   "additionalProperties": false,
   "required": ["$schema", "schemaVersion", "status", "records", "minimumForDemonstrated", "collectionPolicy", "claimBoundary"],
   "properties": {
     "$schema": { "type": "string" },
-    "schemaVersion": { "const": 2 },
-    "status": { "enum": ["not-demonstrated", "demonstrated"] },
+    "schemaVersion": { "const": 3 },
+    "status": { "description": "The repository validator rejects demonstrated until an independent external provenance verifier is configured.", "enum": ["not-demonstrated", "demonstrated"] },
     "minimumForDemonstrated": { "type": "integer", "minimum": 2 },
     "claimBoundary": { "type": "string", "minLength": 1 },
     "collectionPolicy": {
@@ -25,23 +25,34 @@
     },
     "records": {
       "type": "array",
+      "uniqueItems": true,
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["recordId", "consumerClass", "assistant", "signals", "sourceDigest", "validationEvidence", "consentEvidence", "privacyReview", "observedAt", "expiresAt"],
+        "required": ["recordId", "consumerClass", "assistant", "signals", "sourceCommit", "sourceDigest", "validationEvidence", "validationEvidenceSha256", "consentEvidence", "consentEvidenceSha256", "privacyReview", "observedAt", "expiresAt"],
         "properties": {
           "recordId": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
           "consumerClass": { "type": "string", "minLength": 1 },
           "assistant": { "type": "string", "minLength": 1 },
           "signals": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["installation", "activation", "successful-workflow", "maintenance-commitment"] } },
+          "sourceCommit": { "type": "string", "pattern": "^[a-f0-9]{40}$" },
           "sourceDigest": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-          "validationEvidence": { "type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$" },
-          "consentEvidence": { "type": "string", "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$)).+$" },
+          "validationEvidence": { "$ref": "#/$defs/repositoryEvidencePath" },
+          "validationEvidenceSha256": { "$ref": "#/$defs/sha256" },
+          "consentEvidence": { "$ref": "#/$defs/repositoryEvidencePath" },
+          "consentEvidenceSha256": { "$ref": "#/$defs/sha256" },
           "privacyReview": { "const": "passed" },
           "observedAt": { "type": "string", "format": "date-time" },
           "expiresAt": { "type": "string", "format": "date-time" }
         }
       }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "repositoryEvidencePath": {
+      "type": "string",
+      "pattern": "^(?!/)(?!.*\\\\)(?!.*(?:^|/)\\.\\.?(?:/|$))(?![A-Za-z][A-Za-z0-9+.-]*:)[A-Za-z0-9._-]+(?:/[A-Za-z0-9._-]+)*$"
     }
   },
   "allOf": [{

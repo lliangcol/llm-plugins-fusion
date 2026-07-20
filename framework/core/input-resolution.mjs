@@ -1,4 +1,7 @@
 /** Generic required-input resolution shared by adapters and simulations. */
+import { isDeepStrictEqual } from 'node:util';
+import { behaviorInputValueIssue } from './behavior-input-contract.mjs';
+
 export function resolveRequiredInputs(requiredInputs, providedInputs) {
   const provided = providedInputs instanceof Map
     ? new Set(providedInputs.keys())
@@ -16,7 +19,7 @@ export function resolveBehaviorInputs(behavior, providedInputs = {}) {
     const candidates = [input.name, ...input.aliases].filter((name) => Object.hasOwn(providedInputs, name));
     if (candidates.length > 1) {
       const values = candidates.map((name) => providedInputs[name]);
-      if (new Set(values.map((value) => JSON.stringify(value))).size > 1) {
+      if (values.slice(1).some((value) => !isDeepStrictEqual(value, values[0]))) {
         invalidExactValues.push({ input: input.name, reason: 'conflicting-alias-values', providedBy: candidates });
         continue;
       }
@@ -26,11 +29,17 @@ export function resolveBehaviorInputs(behavior, providedInputs = {}) {
       if (input.required) missingRequired.push(input.name);
       continue;
     }
-    if (input.exactValues && !input.exactValues.some((allowed) => Object.is(allowed, value))) {
-      invalidExactValues.push({ input: input.name, reason: 'not-an-exact-value', value, allowed: input.exactValues });
+    const issue = behaviorInputValueIssue(input, value);
+    if (issue) {
+      invalidExactValues.push({ input: input.name, ...issue, value });
       continue;
     }
-    normalizedInputs[input.name] = value;
+    Object.defineProperty(normalizedInputs, input.name, {
+      configurable: true,
+      enumerable: true,
+      value,
+      writable: true,
+    });
   }
 
   return {

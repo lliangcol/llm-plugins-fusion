@@ -1,16 +1,22 @@
 name: Release Candidate
 
 on:
-  push:
-    tags:
-      - 'v*.*.*-rc.*'
+  repository_dispatch:
+    types: [release-candidate]
+
+run-name: Release candidate ${{ github.event.client_payload.candidate_tag }} from protected main
 
 permissions:
+  actions: read
   contents: read
   pull-requests: read
 
+env:
+  CANDIDATE_PERFORMANCE_PROFILE: linux-x64-node22-github-hosted-3-fresh-process-full-uncached
+  CANDIDATE_PERFORMANCE_SAMPLE_MANIFEST: governance/evidence/validation-performance-samples.json
+
 concurrency:
-  group: release-candidate-${{ github.ref }}
+  group: release-candidate-${{ github.event.client_payload.candidate_tag }}
   cancel-in-progress: false
 
 jobs:
@@ -18,24 +24,108 @@ jobs:
     name: Trusted Candidate Ref
     runs-on: ubuntu-24.04
     timeout-minutes: 10
+    outputs:
+      candidate-tag: ${{ steps.identity.outputs.candidate-tag }}
+      source-commit: ${{ steps.identity.outputs.source-commit }}
+      workflow-source-commit: ${{ steps.identity.outputs.workflow-source-commit }}
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
+          ref: ${{ github.workflow_sha }}
           fetch-depth: 0
           persist-credentials: false
-      - name: Verify signed candidate tag and independent review
+      - name: Verify signed candidate tag before repository code
+        id: identity
         env:
-          GH_TOKEN: ${{ github.token }}
-          CANDIDATE_TAG: ${{ github.ref_name }}
-          SOURCE_COMMIT: ${{ github.sha }}
+          CANDIDATE_TAG: ${{ github.event.client_payload.candidate_tag }}
+          EVENT_NAME: ${{ github.event_name }}
+          TRIGGER_REF: ${{ github.ref }}
+          TRIGGER_COMMIT: ${{ github.sha }}
+          WORKFLOW_SOURCE_REF: ${{ github.workflow_ref }}
+          WORKFLOW_SOURCE_COMMIT: ${{ github.workflow_sha }}
         run: |
           set -euo pipefail
+          test "${EVENT_NAME}" = repository_dispatch
+          test "${TRIGGER_REF}" = refs/heads/main
+          test "${TRIGGER_COMMIT}" = "${WORKFLOW_SOURCE_COMMIT}"
+          test "${WORKFLOW_SOURCE_REF}" = "${GITHUB_REPOSITORY}/.github/workflows/release-candidate.yml@refs/heads/main"
+          if [[ ! "${CANDIDATE_TAG}" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)-rc\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::invalid candidate release tag: ${CANDIDATE_TAG}" >&2
+            exit 1
+          fi
+          git fetch --no-tags origin refs/heads/main:refs/remotes/origin/main
+          git merge-base --is-ancestor "${WORKFLOW_SOURCE_COMMIT}" origin/main
+          git fetch --no-tags origin "refs/tags/${CANDIDATE_TAG}:refs/tags/${CANDIDATE_TAG}"
           test "$(git cat-file -t "refs/tags/${CANDIDATE_TAG}")" = tag
+          mkdir -p "${RUNNER_TEMP}/candidate-trust"
+          git show origin/main:.github/release-signers > "${RUNNER_TEMP}/candidate-trust/release-signers"
+          test -s "${RUNNER_TEMP}/candidate-trust/release-signers"
+          git show "${WORKFLOW_SOURCE_COMMIT}:.github/workflows/release-candidate.yml" > "${RUNNER_TEMP}/candidate-trust/release-candidate.yml"
+          test -s "${RUNNER_TEMP}/candidate-trust/release-candidate.yml"
           git config gpg.format ssh
-          git config gpg.ssh.allowedSignersFile .github/release-signers
+          git config gpg.ssh.allowedSignersFile "${RUNNER_TEMP}/candidate-trust/release-signers"
           git verify-tag "${CANDIDATE_TAG}"
-          test "$(git rev-list -n 1 "${CANDIDATE_TAG}")" = "${SOURCE_COMMIT}"
-          node scripts/verify-independent-release-review.mjs --out .metrics/candidate-preflight/independent-review.json
+          source_commit="$(git rev-list -n 1 "${CANDIDATE_TAG}")"
+          git merge-base --is-ancestor "${source_commit}" origin/main
+          git checkout --detach "${source_commit}"
+          printf 'candidate-tag=%s\nsource-commit=%s\nworkflow-source-commit=%s\n' \
+            "${CANDIDATE_TAG}" "${source_commit}" "${WORKFLOW_SOURCE_COMMIT}" >> "${GITHUB_OUTPUT}"
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
+      - name: Record protected-main candidate workflow provenance
+        env:
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          EVENT_NAME: ${{ github.event_name }}
+          CALLER_WORKFLOW_REF: ${{ github.workflow_ref }}
+          CALLER_WORKFLOW_SHA: ${{ github.workflow_sha }}
+          WORKFLOW_FILE: ${{ runner.temp }}/candidate-trust/release-candidate.yml
+          CANDIDATE_TAG: ${{ steps.identity.outputs.candidate-tag }}
+          CANDIDATE_COMMIT: ${{ steps.identity.outputs.source-commit }}
+          WORKFLOW_SOURCE_COMMIT: ${{ steps.identity.outputs.workflow-source-commit }}
+        run: |
+          set -euo pipefail
+          mkdir -p .metrics/candidate-preflight
+          # Preserve JavaScript template literals for Node instead of expanding them in Bash.
+          # shellcheck disable=SC2016
+          node --input-type=module -e '
+            import { createHash } from "node:crypto";
+            import { readFileSync, writeFileSync } from "node:fs";
+            const workflowBytes = readFileSync(process.env.WORKFLOW_FILE);
+            const evidence = {
+              schemaVersion: 1,
+              operation: "release-candidate",
+              repository: process.env.REPOSITORY,
+              githubRunId: process.env.RUN_ID,
+              githubRunAttempt: Number(process.env.RUN_ATTEMPT),
+              githubRunUrl: process.env.RUN_URL,
+              eventName: process.env.EVENT_NAME,
+              callerWorkflowRef: process.env.CALLER_WORKFLOW_REF,
+              callerWorkflowSha: process.env.CALLER_WORKFLOW_SHA,
+              workflow: { path: ".github/workflows/release-candidate.yml", sha256: createHash("sha256").update(workflowBytes).digest("hex") },
+              workflowSourceCommit: process.env.WORKFLOW_SOURCE_COMMIT,
+              candidateTag: process.env.CANDIDATE_TAG,
+              candidateCommit: process.env.CANDIDATE_COMMIT,
+              nodeVersion: process.version,
+              generatedAt: new Date().toISOString(),
+            };
+            writeFileSync(".metrics/candidate-preflight/workflow-provenance.json", `${JSON.stringify(evidence, null, 2)}\n`);
+          '
+      - name: Require governed candidate performance profile
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/validate-performance-budget.mjs --check-profile "${CANDIDATE_PERFORMANCE_PROFILE}" --sample-manifest "${CANDIDATE_PERFORMANCE_SAMPLE_MANIFEST}" --verify-github
+      - name: Verify independent review and candidate readiness
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CANDIDATE_TAG: ${{ steps.identity.outputs.candidate-tag }}
+          SOURCE_COMMIT: ${{ steps.identity.outputs.source-commit }}
+        run: |
+          set -euo pipefail
+          node scripts/verify-independent-release-review.mjs --commit "${SOURCE_COMMIT}" --out .metrics/candidate-preflight/independent-review.json
           node scripts/validate-release-operational-readiness.mjs --mode candidate
           stable_tag="${CANDIDATE_TAG%%-rc.*}"
           node scripts/validate-release-readiness.mjs --require-ready --mode candidate \
@@ -56,6 +146,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
+          ref: ${{ needs.preflight.outputs.source-commit }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
@@ -65,14 +156,15 @@ jobs:
       - run: npm ci --ignore-scripts
       - run: npm run validate:maintainer
         env:
+          GH_TOKEN: ${{ github.token }}
           NOVA_VALIDATE_WRITE_TIMINGS: '1'
           NOVA_RUNNER_CLASS: github-hosted
-          NOVA_REQUIRED_VALIDATION_PROFILE: linux-x64-node22-github-hosted-3-fresh-process-full-uncached
+          NOVA_REQUIRED_VALIDATION_PROFILE: ${{ env.CANDIDATE_PERFORMANCE_PROFILE }}
       - run: npm run test:coverage:check
       - run: npm run release:artifacts
         env:
-          RELEASE_TAG: ${{ github.ref_name }}
-          RELEASE_COMMIT: ${{ github.sha }}
+          RELEASE_TAG: ${{ needs.preflight.outputs.candidate-tag }}
+          RELEASE_COMMIT: ${{ needs.preflight.outputs.source-commit }}
       - run: node scripts/generate-release-checksums.mjs
       - name: Collect validation evidence
         run: |
@@ -97,7 +189,6 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
-          cache: npm
       - name: Download and verify exact package integrity and inventory
         env:
           CLAUDE_VERSION: '2.1.205'
@@ -129,20 +220,28 @@ jobs:
         with:
           name: verified-claude-package
           path: cli
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
       - name: Prepare clean source and verified CLI
+        env:
+          CANDIDATE_TAG: ${{ needs.preflight.outputs.candidate-tag }}
+          SOURCE_COMMIT: ${{ needs.preflight.outputs.source-commit }}
         run: |
           mkdir candidate-source
           tar -xzf source/candidate-source.tar.gz -C candidate-source
-          node -e 'const fs=require("fs"); const p="candidate-source/.claude-plugin/marketplace.json"; const m=JSON.parse(fs.readFileSync("candidate-source/.claude-plugin/marketplace.canary.json")); m.name=m.name.replace(/-canary$/,""); for(const plugin of m.plugins){plugin.source.ref=process.env.GITHUB_REF_NAME; plugin.source.sha=process.env.GITHUB_SHA;} fs.writeFileSync(p,JSON.stringify(m,null,2)+"\n")'
+          node -e 'const fs=require("fs"); const p="candidate-source/.claude-plugin/marketplace.json"; const m=JSON.parse(fs.readFileSync("candidate-source/.claude-plugin/marketplace.canary.json")); m.name=m.name.replace(/-canary$/,""); for(const plugin of m.plugins){plugin.source.ref=process.env.CANDIDATE_TAG; plugin.source.sha=process.env.SOURCE_COMMIT;} fs.writeFileSync(p,JSON.stringify(m,null,2)+"\n")'
           npm install -g ./cli/claude-code.tgz
       - name: Validate exact candidate install and critical route safety
         working-directory: candidate-source
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          CANDIDATE_TAG: ${{ needs.preflight.outputs.candidate-tag }}
+          SOURCE_COMMIT: ${{ needs.preflight.outputs.source-commit }}
         run: |
           node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home \
-            --marketplace-source . --expected-ref "${GITHUB_REF_NAME}" --expected-commit "${GITHUB_SHA}" \
-            --evidence-source "lliangcol/llm-plugins-fusion@${GITHUB_REF_NAME}" \
+            --marketplace-source . --expected-ref "${CANDIDATE_TAG}" --expected-commit "${SOURCE_COMMIT}" \
+            --evidence-source "lliangcol/llm-plugins-fusion@${CANDIDATE_TAG}" \
             --inventory-out .metrics/candidate-live/inventory.json --route-smoke-out .metrics/candidate-live/route-smoke.json
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
@@ -157,6 +256,7 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
+          ref: ${{ needs.preflight.outputs.source-commit }}
           fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
@@ -172,8 +272,9 @@ jobs:
         with: { name: candidate-preflight, path: .metrics/aggregate/preflight }
       - name: Build bound candidate bundle
         env:
-          CANDIDATE_TAG: ${{ github.ref_name }}
-          SOURCE_COMMIT: ${{ github.sha }}
+          CANDIDATE_TAG: ${{ needs.preflight.outputs.candidate-tag }}
+          SOURCE_COMMIT: ${{ needs.preflight.outputs.source-commit }}
+          WORKFLOW_SOURCE_COMMIT: ${{ needs.preflight.outputs.workflow-source-commit }}
         run: |
           set -euo pipefail
           mkdir -p .metrics/candidate-bundle/artifacts .metrics/candidate-bundle/evidence
@@ -184,15 +285,18 @@ jobs:
           cp .metrics/aggregate/live/inventory.json .metrics/candidate-bundle/evidence/
           cp .metrics/aggregate/live/route-smoke.json .metrics/candidate-bundle/evidence/
           cp .metrics/aggregate/preflight/independent-review.json .metrics/candidate-bundle/evidence/
+          cp .metrics/aggregate/preflight/workflow-provenance.json .metrics/candidate-bundle/evidence/
           node scripts/build-release-control-bundle.mjs
           cp .metrics/release-control/release-control-bundle.* .metrics/candidate-bundle/
           stable_tag="${CANDIDATE_TAG%%-rc.*}"
           node scripts/generate-release-candidate.mjs --tag "${CANDIDATE_TAG}" --stable-tag "${stable_tag}" --commit "${SOURCE_COMMIT}" \
+            --workflow-source-commit "${WORKFLOW_SOURCE_COMMIT}" \
             --control-bundle-manifest .metrics/release-control/release-control-bundle.manifest.json \
             --bundle-root .metrics/candidate-bundle --artifact-dir .metrics/candidate-bundle/artifacts --out-dir .metrics/candidate-bundle \
             --evidence .metrics/candidate-bundle/evidence/SHA256SUMS.txt --evidence .metrics/candidate-bundle/evidence/coverage-metadata.json \
             --evidence .metrics/candidate-bundle/evidence/validation-timings.json --evidence .metrics/candidate-bundle/evidence/inventory.json \
-            --evidence .metrics/candidate-bundle/evidence/route-smoke.json --evidence .metrics/candidate-bundle/evidence/independent-review.json
+            --evidence .metrics/candidate-bundle/evidence/route-smoke.json --evidence .metrics/candidate-bundle/evidence/independent-review.json \
+            --evidence .metrics/candidate-bundle/evidence/workflow-provenance.json
           test -f .metrics/candidate-bundle/promotion-intent.json
           node scripts/build-candidate-bundle.mjs --bundle-root .metrics/candidate-bundle --out ".metrics/nova-plugin-${CANDIDATE_TAG#v}-evidence-bundle.tar.gz"
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
@@ -206,7 +310,7 @@ jobs:
 
   publish:
     name: Publish Immutable Prerelease Candidate
-    needs: assemble
+    needs: [preflight, assemble]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     environment: release
@@ -217,14 +321,18 @@ jobs:
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
+          ref: ${{ needs.preflight.outputs.source-commit }}
           fetch-depth: 0
           persist-credentials: false
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '22'
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with: { name: candidate-bundle, path: .metrics }
       - name: Prepare candidate notes and exact artifact paths
         id: files
         env:
-          RELEASE_TAG: ${{ github.ref_name }}
+          RELEASE_TAG: ${{ needs.preflight.outputs.candidate-tag }}
           RELEASE_CANDIDATE: '1'
         run: |
           set -euo pipefail
@@ -251,7 +359,7 @@ jobs:
       - name: Reconcile three public candidate assets and publish immutable prerelease
         env:
           GH_TOKEN: ${{ github.token }}
-          CANDIDATE_TAG: ${{ github.ref_name }}
+          CANDIDATE_TAG: ${{ needs.preflight.outputs.candidate-tag }}
         run: |
           set -euo pipefail
           mkdir .metrics/candidate-publish
@@ -260,4 +368,5 @@ jobs:
           (cd .metrics/candidate-publish && sha256sum nova-plugin-*.tar.gz | LC_ALL=C sort > SHA256SUMS.txt)
           test "$(find .metrics/candidate-publish -maxdepth 1 -type f | wc -l | tr -d ' ')" -eq 3
           node scripts/reconcile-github-release.mjs --prerelease --tag "${CANDIDATE_TAG}" \
-            --assets-dir .metrics/candidate-publish --notes .metrics/release/release-notes.md
+            --assets-dir .metrics/candidate-publish --notes .metrics/release/release-notes.md \
+            --host github.com --repository "${GITHUB_REPOSITORY}"

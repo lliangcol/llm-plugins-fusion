@@ -23,11 +23,11 @@
 
 ### Required
 
-- 无
+- `ARGUMENTS`: 总结范围说明。示例: `本次变更内容`
 
 ### Optional
 
-- `ARGUMENTS`: 总结范围说明。示例: `本次变更内容`
+- 无
 
 ## 行为准则（Do/Don't）
 

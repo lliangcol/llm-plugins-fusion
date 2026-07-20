@@ -145,10 +145,8 @@
       "validate:dependency-audit",
       "validate:docs",
       "validate:drift",
-      "validate:facts",
       "validate:github-workflows",
       "validate:governance-freshness",
-      "validate:hook-truth",
       "validate:license-audit",
       "validate:maintainer",
       "validate:maintainer:evidence",
@@ -218,6 +216,7 @@
         "matcher": "Write|Edit|NotebookEdit",
         "command": "bash",
         "args": [
+          "-p",
           "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-write-check.sh"
         ],
         "async": false
@@ -226,6 +225,7 @@
         "matcher": "Bash",
         "command": "bash",
         "args": [
+          "-p",
           "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/pre-bash-check.sh"
         ],
         "async": false
@@ -234,17 +234,21 @@
     "PostToolUse": [
       {
         "matcher": "Write|Edit",
-        "command": "node",
+        "command": "bash",
         "args": [
-          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-write-verify.mjs"
+          "-p",
+          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh",
+          "post-write-verify"
         ],
         "async": false
       },
       {
         "matcher": "Write|Edit|NotebookEdit|Bash",
-        "command": "node",
+        "command": "bash",
         "args": [
-          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs"
+          "-p",
+          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh",
+          "post-audit-log"
         ],
         "async": true
       }
@@ -252,9 +256,11 @@
     "PostToolUseFailure": [
       {
         "matcher": "Write|Edit|NotebookEdit|Bash",
-        "command": "node",
+        "command": "bash",
         "args": [
-          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs"
+          "-p",
+          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh",
+          "post-audit-log"
         ],
         "async": true
       }
@@ -262,19 +268,35 @@
     "PermissionDenied": [
       {
         "matcher": "Write|Edit|NotebookEdit|Bash",
-        "command": "node",
+        "command": "bash",
         "args": [
-          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/post-audit-log.mjs"
+          "-p",
+          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh",
+          "post-audit-log"
         ],
         "async": true
+      }
+    ],
+    "ConfigChange": [
+      {
+        "matcher": "project_settings|local_settings",
+        "command": "bash",
+        "args": [
+          "-p",
+          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh",
+          "config-change-guard"
+        ],
+        "async": false
       }
     ],
     "SessionEnd": [
       {
         "matcher": "*",
-        "command": "node",
+        "command": "bash",
         "args": [
-          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/audit-compactor.mjs"
+          "-p",
+          "${CLAUDE_PLUGIN_ROOT}/hooks/scripts/trusted-node-hook.sh",
+          "audit-compactor"
         ],
         "async": false
       }
@@ -286,27 +308,27 @@
     "exactTagInstallGate": true
   },
   "sourceDigests": {
-    "package.json": "5a7a5312855a58770911ad286f322fce39dbb405cbbadbddd001f89780334b46",
+    "package.json": "3422422f0f452f31354cbc746c66d0e8675718b0fdc7a65a4ab1e11d53d83700",
     "nova-plugin/.claude-plugin/plugin.json": "33b1ddccbe33d8b55eec22ca32f6e5510878e68dbd1c8373a4ac0d4847e834b9",
-    "workflow-specs/workflows.json": "2b0732ebb2c19c3857bac6d2fde2990a67f6ddebf6d9b00a1e4bf9257b004d9a",
-    "workflow-specs/nova.product.json": "260295a802c59ae9f38419386286af1d946f34be2d3356cbb1cd70c221898670",
+    "workflow-specs/workflows.json": "bf389845d17e4c3ef3aa2573fe6da27e5dbbfdaeb60af0af7fcf4549e5460ea1",
+    "workflow-specs/nova.product.json": "bb89f094bcc8729d164f3cf253e3d05b43f51fb13266db676a1f35f0a8112f55",
     "workflow-specs/framework.json": "e691a6496a158e120712f601a04e6cb971e639e740af5c26030f2903d14b2d5b",
-    "workflow-specs/behaviors.json": "6773289af26d99e791e7b40ec881ea0330d2302c882610ffd80866dbcd9afc71",
+    "workflow-specs/behaviors.json": "0d1c4edee9db8191629477ef524545a286ff3be1e6cc5137bcc81ead2729748e",
     "workflow-specs/adapters/claude.json": "8adf0089a12a10b672c8ac960df24536650aef03542399815725d2018e867065",
     "workflow-specs/adapters/codex.json": "64d7d5750f5dfce4384d22f90fae5f6b5443ba22748bef7d944d3fddc5698e44",
     "workflow-specs/adapters/generic.json": "8881cf695b931f345a570a7973ff1982973a7b7bd96a7a7a3d91c203a3daf2de",
-    "docs/generated/surface-inventory.json": "99053d88446b09cad31c39bc8eb4a01eefdced128ee52f3de577c29121caca7a",
+    "docs/generated/surface-inventory.json": "ced9c5ceb48656e8c1acde0c9f4dc662cf99f5d26fc6931b2787f0b649f13c9a",
     "governance/product-lanes.json": "c888525caa05c1a9509996ddf9543ea84edec6379fc511a5584c86fbe910ce94",
-    "governance/release-operations.json": "be55935a16d6a36db9f4a1003411f6211f076b9663776b5c142d9c3f4db5c1ab",
-    "governance/adoption-evidence.json": "7439bbae52926fee5ce78ab562ac16260db37de5875c3b5bbc2a375f88cbd776",
+    "governance/release-operations.json": "0b084701e6ab10973f545842b532af0e9869c73c945667578eab451fe47f37b7",
+    "governance/adoption-evidence.json": "2b9011a955351a46c8b784efeb85604238b87d3454af0677b41380d7015a12e8",
     "governance/evidence-governance.json": "e1a6067fe49520f3bc1804643c824d18da8aaced425dd3305d98c1c1505d0556",
     "governance/evaluation-profiles.json": "bb827a4670a333472ded68e736570b221c4e322a08fbd0278d579cb018e159b2",
     "evals/live/v5/cases.json": "27e01a4ba8f98644a4e4ebd7ca95e0bb45567c90b35fdf457c39ca4965374b7c",
-    "evals/live/v5/labels.locked.json": "4916ff96064f3f56d6cebedab3396b0fdee8e09cc219b5a7bd04213e9bb9aa36",
-    "evals/critical-live/v5/cases.json": "8c0e290956febd2f9eea7115f3b1d9fd48d17b1bf4a6d6d86c0c9816dd4d9df6",
-    "benchmarks/real-tasks.json": "4898ff8433c3ab39a45d8ce016cf954f53147b858798fcef5cb5bf85b65bcfe5",
-    "nova-plugin/hooks/hooks.json": "aefa00ccba719be989caa22f310697a167a229eb99e78049aecd8675b0f2547a",
-    "nova-plugin/runtime/shell-command-policy.json": "bbcb123c8f075afd89cbe81d434184811523d29efe415489fd91a100be9cae1d",
+    "evals/live/v5/labels.locked.json": "4ce90ad5c9c4ba3d3cf6e1d32a9b685e58faf44c801520441f3d9b3e0dc3b4a4",
+    "evals/critical-live/v5/cases.json": "a09a3f1fbb3b03ed8e7a3790353e1c85ea57ffc105beafaf5ef044f8c92f023d",
+    "benchmarks/real-tasks.json": "dd46ccea6120e1e648ae3e6602ac5dcf37f71aa187266aea71bc219a0852a2fa",
+    "nova-plugin/hooks/hooks.json": "f0b044464c2546bee2cc18332be7baafa84367ab0300d876f383c38a5436cfa6",
+    "nova-plugin/runtime/shell-command-policy.json": "0d6a3ee43f9e5be02b9e45b2847759b669c72e7921dca83cdd9226dc85be5e74",
     ".nova/shell-policy.json": "b03b4ad3452bd13f95f14823b2a0e695d8de6f46f11b5b2d434d91f285d1279d"
   }
 }

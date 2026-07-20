@@ -1,33 +1,34 @@
 #!/usr/bin/env node
 /**
- * Initialize a public-safe consumer profile from docs/consumers templates.
+ * Initialize a public-safe consumer profile from canonical docs/templates sources.
  *
  * Dry-run is the default. Use --write to create files.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, isAbsolute, relative, resolve } from 'node:path';
+import { existsSync, lstatSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs';
+import { basename, dirname, isAbsolute, parse, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { requireOptionValue } from './lib/cli-args.mjs';
 
 const __dir = dirname(fileURLToPath(import.meta.url));
 const root = resolve(__dir, '..');
+const physicalRoot = realpathSync.native(root);
 
 const TYPES = {
   'java-backend': {
-    source: 'docs/consumers/private-java-backend-template.md',
+    source: 'docs/templates/consumer-profiles/java-backend.md',
     target: 'AGENTS.md',
     title: 'Java Backend Consumer Profile',
-    shellCommands: [{ id: 'maven-test', argv: ['./mvnw', 'test'], purpose: 'Run the reviewed Maven test entrypoint.' }],
+    shellCommands: [{ id: 'maven-test', argv: ['mvn', 'test'], purpose: 'Run the reviewed Maven test entrypoint.' }],
   },
   frontend: {
-    source: 'docs/consumers/frontend-project-template.md',
+    source: 'docs/templates/consumer-profiles/frontend.md',
     target: 'AGENTS.md',
     title: 'Frontend Consumer Profile',
     shellCommands: [{ id: 'npm-test', argv: ['npm', 'test'], purpose: 'Run the reviewed frontend test entrypoint.' }],
   },
   workbench: {
-    source: 'docs/consumers/workbench-template.md',
+    source: 'docs/templates/consumer-profiles/workbench.md',
     target: 'workbench/README.md',
     title: 'Workbench Consumer Profile',
     shellCommands: [],
@@ -46,7 +47,7 @@ Options:
   --type <type>   java-backend, frontend, or workbench.
   --out <dir>     Output directory for the consumer-owned profile.
   --write         Write files. Without this flag the command is a dry-run.
-  --force         Overwrite the target file when used with --write.
+  --force         Overwrite both generated files when used with --write.
   --help          Show this help.
 
 The generated file keeps placeholders generic. Fill private project facts only
@@ -54,6 +55,7 @@ inside the consumer repository or private documentation, not in this public repo
 `;
 }
 
+/** @returns {never} */
 function fail(message) {
   console.error(`ERROR: ${message}`);
   console.error('');
@@ -104,9 +106,76 @@ function targetPath(outDir, target) {
   return resolve(outDir, target);
 }
 
-function isInsideRepository(path) {
-  const rel = relative(root, path);
-  return rel === '' || (!rel.startsWith('..') && !isAbsolute(rel));
+function pathInside(base, target) {
+  const rel = relative(base, target);
+  return rel === '' || (rel !== '..' && !rel.startsWith(`..${sep}`) && !isAbsolute(rel));
+}
+
+function resolveThroughNearestExistingAncestor(path) {
+  let ancestor = resolve(path);
+  const missing = [];
+  while (!existsSync(ancestor)) {
+    const parent = dirname(ancestor);
+    if (parent === ancestor) throw new Error(`no existing ancestor for output path: ${path}`);
+    missing.unshift(basename(ancestor));
+    ancestor = parent;
+  }
+  return resolve(realpathSync.native(ancestor), ...missing);
+}
+
+function pathTraversesPhysicalRepository(path) {
+  const absolute = resolve(path);
+  const filesystemRoot = parse(absolute).root;
+  let current = filesystemRoot;
+  for (const component of relative(filesystemRoot, absolute).split(sep).filter(Boolean)) {
+    current = resolve(current, component);
+    if (!existsSync(current)) break;
+    if (pathInside(physicalRoot, realpathSync.native(current))) return true;
+  }
+  return false;
+}
+
+function assertNoCallerOwnedSymlinkComponents(path) {
+  const absolute = resolve(path);
+  const filesystemRoot = parse(absolute).root;
+  let current = filesystemRoot;
+  for (const component of relative(filesystemRoot, absolute).split(sep).filter(Boolean)) {
+    const next = resolve(current, component);
+    const stats = lstatSync(next, { throwIfNoEntry: false });
+    if (!stats) break;
+    if (stats.isSymbolicLink()) {
+      // macOS commonly exposes /var and /tmp as root-level aliases. Normalize
+      // that platform boundary, but reject links in caller-owned path segments.
+      if (current !== filesystemRoot) fail(`refusing linked consumer output path component: ${next}`);
+      current = realpathSync.native(next);
+      continue;
+    }
+    current = next;
+  }
+}
+
+function assertConsumerTargetsOutsideRepository(paths) {
+  for (const path of paths) {
+    const lexical = resolve(path);
+    assertNoCallerOwnedSymlinkComponents(lexical);
+    const physical = resolveThroughNearestExistingAncestor(lexical);
+    if (pathInside(root, lexical)
+      || pathInside(physicalRoot, physical)
+      || pathTraversesPhysicalRepository(lexical)) {
+      fail(
+        'refusing to write a consumer profile inside the public llm-plugins-fusion repository; '
+        + 'choose a consumer-owned workspace outside this checkout',
+      );
+    }
+  }
+}
+
+function assertExistingTargetIsDirectFile(path) {
+  if (!existsSync(path)) return;
+  const stats = lstatSync(path);
+  if (stats.isSymbolicLink() || !stats.isFile() || stats.nlink !== 1) {
+    fail(`refusing to overwrite a linked or non-regular output file: ${path}`);
+  }
 }
 
 function buildContent(typeConfig) {
@@ -151,26 +220,26 @@ function main(argv) {
   const shellPolicyContent = buildShellPolicyContent(config);
 
   if (!options.write) {
-    console.log('Dry run. File that would be written:');
+    console.log('Dry run. Files that would be written:');
     console.log(`  - ${outputPath}`);
     console.log(`  - ${shellPolicyPath}`);
     console.log('');
-    console.log('Use --write to create the file.');
+    console.log('Use --write to create both files.');
     return 0;
   }
 
-  if (isInsideRepository(outputPath) || isInsideRepository(shellPolicyPath)) {
-    fail(
-      'refusing to write a consumer profile inside the public llm-plugins-fusion repository; '
-      + 'choose a consumer-owned workspace outside this checkout',
-    );
-  }
+  assertConsumerTargetsOutsideRepository([outputPath, shellPolicyPath]);
 
   for (const path of [outputPath, shellPolicyPath]) if (existsSync(path) && !options.force) fail(`refusing to overwrite existing file: ${path}`);
+  for (const path of [outputPath, shellPolicyPath]) assertExistingTargetIsDirectFile(path);
 
   mkdirSync(dirname(outputPath), { recursive: true });
-  writeFileSync(outputPath, content, 'utf8');
   mkdirSync(dirname(shellPolicyPath), { recursive: true });
+  // Re-resolve after directory creation to detect a linked nearest ancestor
+  // introduced while the output directories were being prepared.
+  assertConsumerTargetsOutsideRepository([outputPath, shellPolicyPath]);
+  for (const path of [outputPath, shellPolicyPath]) assertExistingTargetIsDirectFile(path);
+  writeFileSync(outputPath, content, 'utf8');
   writeFileSync(shellPolicyPath, shellPolicyContent, 'utf8');
   console.log(`Wrote ${outputPath}`);
   console.log(`Wrote ${shellPolicyPath}`);

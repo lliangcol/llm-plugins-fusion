@@ -188,19 +188,6 @@ function lineNumberAt(src, index) {
   return src.slice(0, index).split(/\r?\n/).length;
 }
 
-function expectRegex(file, pattern, expected, label) {
-  const abs = resolve(root, file);
-  const src = readFileSync(abs, 'utf8');
-  const match = src.match(pattern);
-  if (!match) {
-    recordError(file, `missing ${label}`);
-    return;
-  }
-  if (match[1] !== expected) {
-    recordError(file, `${label} is "${match[1]}", expected "${expected}"`);
-  }
-}
-
 function validateVersionReferences() {
   const plugin = readJson('nova-plugin/.claude-plugin/plugin.json');
   const releaseChannels = readJson('governance/release-channels.json');
@@ -232,6 +219,7 @@ function validateVersionReferences() {
 
   const version = releaseChannels.stable.version;
   const versionPattern = escapeRegExp(version);
+  const developmentVersionPattern = escapeRegExp(plugin.version);
   const updated = metadataEntry['last-updated'];
 
   expectContentRegex('README.md', new RegExp(`version-${versionPattern}-blue\\.svg`), 'version badge');
@@ -248,13 +236,13 @@ function validateVersionReferences() {
   );
   expectContentRegex(
     'nova-plugin/docs/guides/commands-reference-guide.md',
-    new RegExp(`\\*\\*版本\\*\\*:\\s*${versionPattern}`),
-    'command reference version',
+    new RegExp(`\\*\\*开发版本\\*\\*:\\s*${developmentVersionPattern}[\\s\\S]*\\*\\*稳定版本\\*\\*:\\s*${versionPattern}`),
+    'command reference development and stable versions',
   );
   expectContentRegex(
     'nova-plugin/docs/guides/commands-reference-guide.en.md',
-    new RegExp(`\\*\\*Version\\*\\*:\\s*${versionPattern}`),
-    'command reference version',
+    new RegExp(`\\*\\*Development version\\*\\*:\\s*${developmentVersionPattern}[\\s\\S]*\\*\\*Stable version\\*\\*:\\s*${versionPattern}`),
+    'command reference development and stable versions',
   );
   expectContentRegex(
     'docs/project/plans/portal-information-architecture.md',
@@ -272,20 +260,7 @@ function validateVersionReferences() {
     'hooks design current version',
   );
 
-  if (updated) {
-    expectRegex(
-      'nova-plugin/docs/guides/commands-reference-guide.md',
-      /\*\*最后更新\*\*:\s*(\d{4}-\d{2}-\d{2})/,
-      updated,
-      'command reference last-updated date',
-    );
-    expectRegex(
-      'nova-plugin/docs/guides/commands-reference-guide.en.md',
-      /\*\*Last updated\*\*:\s*(\d{4}-\d{2}-\d{2})/,
-      updated,
-      'command reference last-updated date',
-    );
-  } else {
+  if (!updated) {
     recordWarning('.claude-plugin/marketplace.metadata.json', 'nova-plugin has no last-updated field');
   }
 
@@ -486,7 +461,7 @@ function validateInventoryFacts() {
     },
     {
       file: 'nova-plugin/docs/architecture/dual-track-design.md',
-      pattern: /避免参数、安全和输出规则在 (\d+) 个 (?:canonical )?skill 中漂移/,
+      pattern: /但只有 (\d+) 个\s+canonical Skills/,
       values: [skillCount],
       label: 'dual-track skill count',
     },
@@ -668,7 +643,7 @@ function validateReleasePromotionContracts() {
     },
     {
       file: 'SECURITY.md',
-      pattern: /稳定推广仍\s+必须以 exact release tag 为准[\s\S]*moving `main` 不等同于\s+已发布版本/,
+      pattern: /稳定推广仍\s*必须以 exact release tag 为准[\s\S]*moving `main` 不等同于\s*已发布版本/,
       label: 'SECURITY exact release tag promotion boundary',
     },
     {
@@ -724,8 +699,8 @@ function validateReleasePromotionContracts() {
     },
     {
       file: 'docs/operations/releases/validation.md',
-      pattern: /Stable\s+publication is then started manually[\s\S]*signed stable tag[\s\S]*exact candidate tag[\s\S]*pushing a stable tag alone does not publish a release/,
-      label: 'release runbook explicit stable and candidate dispatch boundary',
+      pattern: /Neither candidate nor stable tag\s+pushes trigger a release workflow[\s\S]*Stable publication uses both the\s+signed stable tag and the exact candidate tag/,
+      label: 'release runbook protected-main stable and candidate dispatch boundary',
     },
     {
       file: 'docs/operations/releases/validation.md',
@@ -878,7 +853,7 @@ function validateMaintainerDiagnosticContracts() {
     },
     {
       file: 'docs/operations/maintainers/troubleshooting.md',
-      pattern: /\| Bash hook syntax failure \| `bash -n nova-plugin\/hooks\/scripts\/pre-write-check\.sh`, `bash -n nova-plugin\/hooks\/scripts\/pre-bash-check\.sh`, and `bash -n nova-plugin\/hooks\/scripts\/post-audit-log\.sh` \| Run only where Bash is available; treat Windows no-Bash skips as skipped, not passed\. \|/,
+      pattern: /\| Bash hook syntax failure \| `bash -n nova-plugin\/hooks\/scripts\/pre-write-check\.sh`, `bash -n nova-plugin\/hooks\/scripts\/pre-bash-check\.sh`, `bash -n nova-plugin\/hooks\/scripts\/trusted-node-hook\.sh`, and `bash -n nova-plugin\/hooks\/scripts\/post-audit-log\.sh` \| Run only where Bash is available; treat Windows no-Bash skips as skipped, not passed\. \|/,
       label: 'maintainer troubleshooting hook syntax failure shortcut',
     },
     {
@@ -1036,6 +1011,11 @@ function validateMarketplaceContracts() {
     },
     {
       file: 'docs/reference/compatibility/marketplace.md',
+      pattern: /Repository validation \| Node\.js 22\+ and lockfile-pinned development dependencies installed with `npm ci --ignore-scripts` \|[\s\S]*The distributed `nova-plugin` archive has no Node runtime dependencies; maintainer validation still uses the locked Ajv and TypeScript development toolchain/,
+      label: 'compatibility matrix maintainer dependency boundary',
+    },
+    {
+      file: 'docs/reference/compatibility/marketplace.md',
       pattern: /GitHub workflow contracts \| Node\.js 22\+ \| `node scripts\/validate-github-workflows\.mjs`[\s\S]*least-privilege workflow token scope,[\s\S]*`\.github\/workflows\/` inventory,[\s\S]*required-check docs\/read-only print output synchronization,[\s\S]*isolated mutating install smoke boundaries[\s\S]*GitHub workflow evidence should include `node scripts\/validate-github-workflows\.mjs`[\s\S]*CI\/release workflows,[\s\S]*workflow inventory,[\s\S]*required-check guidance/,
       label: 'compatibility matrix GitHub workflow evidence boundary',
     },
@@ -1075,7 +1055,7 @@ function validateContributionContracts() {
     },
     {
       file: 'CONTRIBUTING.md',
-      pattern: /`package\.json` 包含 dependency-free 的\s+`lint`、`test` 和 `check` 入口[\s\S]*不使用通用 `build` 名称[\s\S]*`release:artifacts` 构建/,
+      pattern: /维护者 npm 便捷入口[\s\S]*`npm ci --ignore-scripts` 安装 lockfile 固定的开发依赖[\s\S]*分发的\s+`nova-plugin` 归档不包含 Node 运行时依赖[\s\S]*不代表维护者校验入口\s+dependency-free[\s\S]*不使用通用 `build` 名称[\s\S]*`release:artifacts` 构建/,
       label: 'contributing npm shortcut facts',
     },
     {
@@ -1173,13 +1153,13 @@ function validateDocsIndexContracts() {
   const checks = [
     {
       file: 'docs/README.md',
-      pattern: /## Public Navigation Boundary[\s\S]*`docs\/showcase\/` and `docs\/examples\/` are public-safe navigation aids,[\s\S]*not a\s+public portal or real consumer case-study library/,
+      pattern: /## Public Navigation Boundary[\s\S]*`docs\/tutorials\/` and `docs\/templates\/` are public-safe learning and reuse[\s\S]*not a public portal or real consumer case-study library/,
       label: 'docs index public navigation boundary',
     },
     {
       file: 'docs/README.md',
-      pattern: /Showcase pages explain\s+reusable scenario workflows; examples provide redacted fixtures, rubrics, and\s+templates/,
-      label: 'docs index showcase examples distinction',
+      pattern: /Tutorials\s+explain reusable scenario workflows; templates provide redacted fixtures,[\s\S]*rubrics, prompts, profiles, and evidence records/,
+      label: 'docs index tutorials templates distinction',
     },
     {
       file: 'docs/README.md',
@@ -1193,18 +1173,23 @@ function validateDocsIndexContracts() {
     },
     {
       file: 'docs/README.md',
-      pattern: /\|-- privacy\/\s+# local audit log and public data handling boundaries/,
-      label: 'docs index privacy directory map',
+      pattern: /\|-- reference\/\s+# architecture, compatibility, evaluation, security, and workflow contracts/,
+      label: 'docs index canonical reference directory map',
     },
     {
       file: 'docs/README.md',
-      pattern: /\[privacy\/\]\(privacy\/\)[\s\S]*Local audit log behavior, redaction boundary, and public data handling rules/,
-      label: 'docs index privacy responsibility',
+      pattern: /\[reference\/\]\(reference\/\)[\s\S]*including local audit-log data handling/,
+      label: 'docs index canonical reference responsibility',
     },
     {
       file: 'docs/README.md',
-      pattern: /### Privacy[\s\S]*\[privacy\/data-handling\.md\]\(reference\/security\/data-handling\.md\)[\s\S]*Local audit log behavior, best-effort redaction boundary, disable switch, and public data handling rules/,
-      label: 'docs index privacy current document',
+      pattern: /\[reference\/security\/data-handling\.md\]\(reference\/security\/data-handling\.md\)/,
+      label: 'docs index canonical data handling link label',
+    },
+    {
+      file: 'docs/README.md',
+      pattern: /## Compatibility Stubs[\s\S]*`governance\/docs-migrations\.json`[\s\S]*Do not add maintained\s+content, new inbound links, or directory ownership claims/,
+      label: 'docs index compatibility stub boundary',
     },
   ];
 
@@ -1262,7 +1247,7 @@ function validateDataHandlingContracts() {
     },
     {
       file: 'nova-plugin/docs/architecture/hooks-design.md',
-      pattern: /PreToolUse[\s\S]*runtime\/secret-rules\.mjs[\s\S]*PostToolUse[\s\S]*docs\/privacy\/data-handling\.md/,
+      pattern: /PreToolUse[\s\S]*runtime\/secret-rules\.mjs[\s\S]*PostToolUse[\s\S]*docs\/reference\/security\/data-handling\.md/,
       label: 'hooks design shared secret rules and data handling route',
     },
   ];
@@ -1867,6 +1852,9 @@ function validateEvaluationFactContracts() {
 validateLinksAndCommandDocs({
   root,
   CODEX_COMMAND_IDS,
+  HISTORY_SEGMENTS,
+  hasPathSegments,
+  isArchivePath,
   lineNumberAt,
   markdownAnchorsByFile,
   recordError,

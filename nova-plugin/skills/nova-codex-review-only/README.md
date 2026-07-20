@@ -1,6 +1,10 @@
 # Nova Codex Review Only
 
-`nova-codex-review-only` 是 `nova-codex-review-fix` 闭环的「只 review」变体，只驱动 Codex 生成结构化审查报告，不做任何代码修改。
+`nova-codex-review-only` 是 `nova-codex-review-fix` 闭环的「只 review」
+兼容资源说明，只驱动 Codex 生成结构化审查报告，不做任何代码修改。
+该目录不包含独立 `SKILL.md`；兼容命令由 canonical
+`nova-plugin/skills/nova-review/SKILL.md` 以
+`REVIEW_PROFILE=codex-review-only` 驱动。
 
 ## 1. 能力简介
 
@@ -16,7 +20,7 @@
 
 ## 3. 目录与脚本复用
 
-本 skill 本身不包含脚本，复用 `nova-codex-review-fix` 的脚本与 prompt：
+本兼容资源目录不包含脚本，复用 `nova-codex-review-fix` 的脚本与 prompt：
 
 ```text
 nova-plugin/skills/
@@ -25,7 +29,6 @@ nova-plugin/skills/
 │   ├── scripts/codex-review.sh
 │   └── prompts/codex-review.prompt.md
 └── nova-codex-review-only/
-    ├── SKILL.md
     └── README.md   ← 本文件
 ```
 
@@ -88,6 +91,6 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/nova-codex-review-fix/scripts/codex-review.sh
 
 | 命令 | 行为 |
 |---|---|
-| `/nova-plugin:codex-review-only` | 仅 review（本 skill） |
+| `/nova-plugin:codex-review-only` | 仅 review（`nova-review` 的兼容 preset） |
 | `/nova-plugin:codex-verify-only` | 基于已有 `review.md` 做 verify |
 | `/nova-plugin:codex-review-fix` | review → fix → checks → verify 完整闭环 |

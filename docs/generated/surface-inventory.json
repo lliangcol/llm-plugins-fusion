@@ -346,9 +346,7 @@
       "allowedTools": [
         "Read",
         "Glob",
-        "Grep",
-        "Write",
-        "Edit"
+        "Grep"
       ],
       "disallowedTools": [
         "NotebookEdit",

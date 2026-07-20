@@ -4,7 +4,7 @@
   "title": "Summarize verification evidence for a public-safe fixture",
   "request": "Summarize what changed, which checks ran, what was skipped, and what risk remains.",
   "expected": {
-    "command": "/finalize-work",
+    "command": "/nova-plugin:finalize-work",
     "changedFiles": [
       "fixtures/workflow/example/handler.js",
       "fixtures/workflow/example/handler.test.js"

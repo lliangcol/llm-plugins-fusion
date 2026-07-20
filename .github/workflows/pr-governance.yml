@@ -30,13 +30,17 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - name: Check out trusted base governance validator
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
         with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: trusted-governance
           persist-credentials: false
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
       - name: Validate PR description, review budget, and sensitive-path approval
+        working-directory: trusted-governance
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/validate-pr-governance.mjs

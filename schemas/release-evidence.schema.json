@@ -8,13 +8,47 @@
   "properties": {
     "schemaVersion": { "const": 1 },
     "generatedAt": { "type": "string", "format": "date-time" },
-    "release": { "type": "object" },
-    "runtime": { "type": "object" },
-    "tests": { "type": "object" },
+    "release": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "tag", "pluginVersion"],
+      "properties": {
+        "commit": { "type": "string", "minLength": 1 },
+        "tag": { "type": "string", "minLength": 1 },
+        "pluginVersion": { "type": "string", "minLength": 1 }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["node", "claude", "knownGoodClaudeCli"],
+      "properties": {
+        "node": { "type": "string", "pattern": "^v22\\.[0-9]+\\.[0-9]+" },
+        "claude": { "type": "string", "minLength": 1 },
+        "knownGoodClaudeCli": { "type": "string", "minLength": 1 }
+      }
+    },
+    "tests": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["tests", "passed", "failed", "cancelled", "skipped", "todo", "exitCode", "coverage", "thresholds"],
+      "properties": {
+        "tests": { "type": "integer", "minimum": 0 },
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "const": 0 },
+        "cancelled": { "const": 0 },
+        "skipped": { "type": "integer", "minimum": 0 },
+        "todo": { "const": 0 },
+        "exitCode": { "const": 0 },
+        "coverage": { "$ref": "#/definitions/coveragePercentages" },
+        "thresholds": { "$ref": "#/definitions/coveragePercentages" }
+      }
+    },
     "gates": {
       "type": "array",
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "required": ["id", "name", "status"],
         "properties": {
           "id": { "type": "string", "minLength": 1 },
@@ -25,18 +59,51 @@
         }
       }
     },
-    "install": { "type": ["object", "null"] },
+    "install": {
+      "anyOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["source"],
+          "properties": {
+            "source": {
+              "type": "object",
+              "required": ["installSourceType"],
+              "properties": {
+                "installSourceType": {
+                  "type": "string",
+                  "enum": ["local-manifest-local-plugin-bytes", "local-manifest-remote-exact-ref"]
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
     "route": { "type": ["object", "null"] },
     "checksums": { "type": "array" },
     "artifacts": {
       "type": "array",
       "items": {
         "type": "object",
+        "additionalProperties": false,
         "required": ["path", "sha256"],
         "properties": {
           "path": { "type": "string" },
           "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
         }
+      }
+    }
+  },
+  "definitions": {
+    "coveragePercentages": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["lines", "branches", "functions"],
+      "properties": {
+        "lines": { "type": "number", "minimum": 0, "maximum": 100 },
+        "branches": { "type": "number", "minimum": 0, "maximum": 100 },
+        "functions": { "type": "number", "minimum": 0, "maximum": 100 }
       }
     }
   }

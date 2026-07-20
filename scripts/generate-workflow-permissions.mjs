@@ -9,7 +9,6 @@ import { loadNovaWorkflowModelV6 } from './lib/workflow-model.mjs';
 const __dir = dirname(fileURLToPath(import.meta.url));
 const defaultRoot = resolve(__dir, '..');
 const sourcePath = 'workflow-specs/workflows.v6.json';
-const productPath = 'workflow-specs/nova.product.json';
 const runtimePath = 'nova-plugin/runtime/workflow-permissions.json';
 const routeContractPath = 'nova-plugin/runtime/route-output-contract.json';
 const generatedJson = 'docs/generated/effective-permissions.json';
@@ -17,6 +16,7 @@ const generatedMarkdown = 'docs/generated/effective-permissions.md';
 const workflowCatalogJson = 'docs/generated/workflow-catalog.json';
 const workflowCatalogMarkdown = 'docs/generated/workflow-catalog.md';
 const managedFields = new Set([
+  'description',
   'allowed-tools',
   'destructive-actions',
   'disallowed-tools',
@@ -103,12 +103,12 @@ function splitFrontmatter(source, relPath) {
   return { frontmatter: match[1], body: source.slice(match[0].length) };
 }
 
-function removeManagedFields(frontmatter) {
+function removeManagedFields(frontmatter, kind) {
   const lines = frontmatter.split(/\r?\n/);
   const kept = [];
   for (let index = 0; index < lines.length;) {
     const match = /^([A-Za-z][\w-]*)\s*:/.exec(lines[index]);
-    if (!match || !managedFields.has(match[1])) {
+    if (!match || !managedFields.has(match[1]) || (kind === 'skill' && match[1] === 'description')) {
       kept.push(lines[index]);
       index += 1;
       continue;
@@ -127,6 +127,7 @@ function insertAfter(lines, field, additions) {
 
 function managedLines(workflow, kind) {
   const lines = [
+    ...(kind === 'command' ? [`description: ${JSON.stringify(workflow.description)}`] : []),
     ...(kind === 'command' ? [`destructive-actions: ${workflow.destructiveActions}`] : []),
     `allowed-tools: ${workflow.allowedTools.join(' ')}`,
     `disallowed-tools: ${workflow.disallowedTools.join(' ')}`,
@@ -151,7 +152,7 @@ function managedLines(workflow, kind) {
 function commandBody(spec, workflow) {
   const requiredInputs = workflow.requiredInputs.length ? workflow.requiredInputs.map((input) => `\`${input}\``).join(', ') : 'None';
   const preset = Object.keys(workflow.variantPreset).length ? JSON.stringify(workflow.variantPreset) : '{}';
-  return `\n# /${spec.pluginNamespace}:${workflow.id}\n\n${workflow.compatibilityAlias ? '**Deprecated compatibility alias:** this wrapper remains for the 4.x migration window.' : 'Canonical command wrapper.'}\n\nLoad \`\${CLAUDE_PLUGIN_ROOT}/runtime/contracts/${workflow.id}.json\` and canonical skill \`\${CLAUDE_PLUGIN_ROOT}/${workflow.contractPath}\`, then execute canonical surface \`nova-${workflow.canonicalSurfaceId}\` with variant preset \`${preset}\` merged beneath explicit non-conflicting \`$ARGUMENTS\`. Never copy or override behavior in this wrapper; the runtime contract and canonical skill are authoritative. If they differ, fail closed.\n\n- Stage: ${workflow.stage}\n- Owner agents: ${workflow.ownerAgents.join(', ')}\n- Required inputs: ${requiredInputs}\n- Output contract: \`${workflow.outputContract}\`\n- Risk: ${workflow.risk}\n- Recommended packs: ${workflow.recommendedPacks.join(', ') || 'None'}\n\nIf required input, approval, capability, or safety state is unresolved, stop before side effects.\n`;
+  return `\n# /${spec.pluginNamespace}:${workflow.id}\n\n${workflow.compatibilityAlias ? '**Compatibility direct entrypoint:** Claude requires this wrapper while native permission and invocation metadata remain static.' : 'Canonical command wrapper.'}\n\nStart from declared wrapper contract \`\${CLAUDE_PLUGIN_ROOT}/runtime/contracts/${workflow.id}.json\` and merge variant preset \`${preset}\` beneath explicit non-conflicting \`$ARGUMENTS\`. From the merged inputs, extract only the selector keys declared for \`${workflow.canonicalSurfaceId}\` in \`\${CLAUDE_PLUGIN_ROOT}/runtime/resolved-variant-contracts.json\`; ordinary inputs such as requests, approvals, and paths must never enter the resolution key. Validate selector values and apply declared defaults before matching. Use an exact normalized override when present. A non-exact combination that triggers any alias specialization is conflicting and must stop; only a valid combination that triggers no alias specialization may use the canonical fallback. Load the resolved runtime contract and compare its \`id\` to the invoked command id \`${workflow.id}\`. Claude native frontmatter is static: if the resolved id differs, STOP before tools or side effects and invoke the exact direct command \`/${spec.pluginNamespace}:<resolved commandEntrypoint.directCommandId>\`; do not execute another workflow's contract under this wrapper. Continue only when the ids match, then load the canonical skill \`\${CLAUDE_PLUGIN_ROOT}/${workflow.contractPath}\`. The complete resolved runtime contract is authoritative, including allowedTools, disallowedTools, modelInvocable, subagentSafe, destructiveActions, and commandEntrypoint; no field falls back to canonical Skill prose. Generic and Codex adapters may instead execute the resolved contract directly under their adapter enforcement. If a selector is undeclared, unsupported, conflicting, or resolution is ambiguous, fail closed.\n\n- Stage: ${workflow.stage}\n- Owner agents: ${workflow.ownerAgents.join(', ')}\n- Required inputs: ${requiredInputs}\n- Output contract: \`${workflow.outputContract}\`\n- Risk: ${workflow.risk}\n- Recommended packs: ${workflow.recommendedPacks.join(', ') || 'None'}\n\nIf required input, approval, capability, or safety state is unresolved, stop before side effects.\n`;
 }
 
 function renderSurface(root, spec, workflow, kind) {
@@ -160,8 +161,8 @@ function renderSurface(root, spec, workflow, kind) {
     : `nova-plugin/skills/nova-${workflow.id}/SKILL.md`;
   const source = readFileSync(resolve(root, relPath), 'utf8');
   const { frontmatter, body } = splitFrontmatter(source, relPath);
-  let lines = removeManagedFields(frontmatter);
-  lines = insertAfter(lines, kind === 'command' ? 'description' : 'license', managedLines(workflow, kind));
+  let lines = removeManagedFields(frontmatter, kind);
+  lines = insertAfter(lines, kind === 'command' ? 'title' : 'license', managedLines(workflow, kind));
   return { relPath, content: `---\n${lines.join('\n')}\n---\n${kind === 'command' ? commandBody(spec, workflow) : body}` };
 }
 
@@ -170,7 +171,6 @@ function invocation(namespace, workflow, kind) {
 }
 
 export function buildEffectivePermissions(spec) {
-  const primary = new Set(spec.primaryEntrypoints);
   const entries = [];
   for (const workflow of spec.workflows) {
     for (const kind of ['command', ...(!workflow.compatibilityAlias ? ['skill'] : [])]) {
@@ -208,12 +208,14 @@ function renderMarkdown(report) {
 
 function buildRouteContract(spec) {
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
     id: spec.workflows.find((workflow) => workflow.id === 'route')?.outputContract ?? 'recommended-route-v2',
     heading: '## Recommended Route',
+    resolutionContract: 'resolved-variant-contracts.json',
+    resolutionRule: 'Extract only declared selector keys, validate values, apply selector defaults, select an exact normalized override when present, stop on any non-exact alias specialization, otherwise use the canonical fallback, and treat the complete resolved runtime contract as authority.',
     fields: [
       { id: 'canonicalSkill', label: 'Canonical skill:' },
-      { id: 'commandAlias', label: 'Command alias (optional):' },
+      { id: 'commandEntrypoint', label: 'Command entrypoint:' },
       { id: 'variantParameters', label: 'Variant parameters:' },
       { id: 'coreAgent', label: 'Core agent:' },
       { id: 'capabilityPacks', label: 'Capability packs:' },
@@ -254,6 +256,7 @@ function renderWorkflowCatalog(report) {
 
 export function generateWorkflowPermissionFiles(root = defaultRoot) {
   const canonicalSpec = loadSpec(root);
+  const behaviorDescriptions = new Map(loadNovaWorkflowModelV6(root).behaviors.behaviors.map((entry) => [entry.id, entry.purpose]));
   const product = loadProduct(root);
   const spec = buildRuntimePermissionSpec(canonicalSpec, product);
   const workflowIds = spec.workflows.map((workflow) => workflow.id).sort();
@@ -290,7 +293,9 @@ export function generateWorkflowPermissionFiles(root = defaultRoot) {
     ...canonicalSpec.workflows.flatMap((workflow) => {
       const runtimeWorkflow = spec.workflows.find((entry) => entry.id === workflow.id);
       if (!runtimeWorkflow) throw new Error(`missing runtime workflow ${workflow.id}`);
-      const surfaceWorkflow = { ...workflow, ...runtimeWorkflow };
+      const description = behaviorDescriptions.get(workflow.id);
+      if (!description) throw new Error(`missing behavior purpose for ${workflow.id}`);
+      const surfaceWorkflow = { ...workflow, ...runtimeWorkflow, description };
       return [renderSurface(root, canonicalSpec, surfaceWorkflow, 'command'), ...(!workflow.compatibilityAlias ? [renderSurface(root, canonicalSpec, surfaceWorkflow, 'skill')] : [])];
     }),
     { relPath: routeContractPath, content: `${JSON.stringify(buildRouteContract(canonicalSpec), null, 2)}\n` },

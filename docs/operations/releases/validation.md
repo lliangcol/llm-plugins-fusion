@@ -27,6 +27,7 @@ A snapshot is promotable only when all required evidence exists.
 | Formatting | Automated | `git diff --check` passes. |
 | Prompt-surface budget | Automated | `node scripts/validate-surface-budget.mjs` passes, and every allowlist entry has a reason and split plan. |
 | GitHub workflow contracts | Automated | `node scripts/validate-github-workflows.mjs` passes; this proves workflow permissions, workflow inventory, and required-check list synchronization. |
+| Candidate performance profile | Automated / GitHub | Candidate preflight recomputes at least 20 current unique manifest records for the exact Linux x64, Node.js 22, GitHub-hosted, concurrency-three profile, then uses `Actions: read` to corroborate every run attempt, job, source ref, artifact API digest, downloaded ZIP, and raw timing report. It also verifies canonical manifest and aggregate digests and a fixed P95-plus-25%-headroom budget. |
 | Distribution risk | Automated | `node scripts/scan-distribution-risk.mjs` passes with no active findings. |
 | Workflow fixture contract | Automated | `node scripts/validate-workflow-fixtures.mjs` passes; this proves fixture integrity, not slash-command output quality. |
 | Windows Node/PowerShell smoke | Automated / CI | Schema, docs, frontmatter, and PowerShell agent verification pass on Windows without relying on Bash. |
@@ -35,9 +36,12 @@ A snapshot is promotable only when all required evidence exists.
 | Exact release target | Manual | `git describe --tags --exact-match HEAD` returns `v<plugin-version>`. |
 | Plugin install path | CI / isolated | `node scripts/validate-plugin-install.mjs --accept-user-scope-mutation --isolated-home` passes in CI or an isolated test-user environment. |
 | Workflow output quality | Manual | Five primary commands are evaluated and recorded, or an explicit not-applicable reason is accepted. |
-| Release publication | Manual / CI | GitHub release workflow completes for the pushed `v<plugin-version>` tag. |
+| Release publication | Manual / CI | A protected-main `repository_dispatch` run completes for the signed tag supplied only through `client_payload`; a tag push alone never triggers publication. |
 | Independent release review | Automated / GitHub | Candidate evidence contains a current approval from a reviewer distinct from the PR author and candidate actor. |
 | Recovery readiness | Manual workflow | The latest approved candidate passes `Release Recovery Drill`; absent drill evidence must be reported as not demonstrated. |
+| Candidate observation | Automated / GitHub | Promotion fetches the exact prerelease through the GitHub Releases API and verifies that server-owned `published_at` is at least 168 hours old. |
+| Tag trust boundary | Automated / GitHub | Candidate and promotion checkouts verify annotated tags with the signer list from protected `origin/main`, bind the selected commit to protected `main`, and do so in the first shell step before repository code executes. |
+| Privileged workflow source | Automated / GitHub | Candidate, stable promotion, and recovery all start through `repository_dispatch` on protected `main`; release evidence records the exact caller `github.workflow_sha`, and stable promotion also records the reusable job's `job.workflow_sha`. Candidate preflight writes `candidate-preflight/workflow-provenance.json`, recovery writes `recovery/workflow-provenance.json`, and the stable promotion handoff writes both caller/called identities, refs, and the run URL to `handoff/workflow-provenance.json`. |
 
 If any required manual gate is missing, describe the target as an unreleased
 development snapshot, not a stable release.
@@ -61,6 +65,24 @@ node scripts/generate-release-checksums.mjs
 git diff --check
 ```
 
+Candidate publication additionally requires this fail-closed check:
+
+```bash
+"$NODE_BIN" scripts/validate-performance-budget.mjs \
+  --check-profile linux-x64-node22-github-hosted-3-fresh-process-full-uncached \
+  --sample-manifest governance/evidence/validation-performance-samples.json \
+  --verify-github
+```
+
+The checked-in manifest currently contains zero accepted samples, so this
+command intentionally returns non-zero and candidate publication remains
+blocked. The policy has no budget until 20 schema-valid, current samples exist;
+after that threshold the validator requires the policy budget to equal the
+manifest's recomputed nearest-rank P95 plus 25% headroom, rounded to 1,000ms.
+Run it with `GH_TOKEN` or `GITHUB_TOKEN` authorized for `Actions: read`.
+Editing a summary count or budget cannot satisfy the gate, and even 20
+shape-valid repository records remain blocked without external corroboration.
+
 Install the locked development-only validation dependencies with
 `npm ci --ignore-scripts`. Maintainers can then use the wrapper for default
 validation, generated registry drift, and whitespace checks. Run coverage separately until
@@ -70,7 +92,7 @@ maintainers decide to fold coverage into the maintainer gate:
 npm run validate:maintainer
 ```
 
-The tag release workflow uploads raw validation and live-install inputs, then
+The candidate release workflow uploads raw validation and live-install inputs, then
 `scripts/generate-release-evidence.mjs` creates `release-evidence.json` and
 derived Markdown from one source. The canonical `release-evidence` artifact
 includes coverage, timings, exact-tag install inventory, tree digests, and the
@@ -96,8 +118,8 @@ and validates this exact allow/deny policy instead of treating `dontAsk` as
 sufficient by itself.
 The headless gate also appends a canonical system-level output contract and
 records its contract ID, prompt SHA-256, and maximum turn count in release
-evidence. The supporting contract preserves the same heading and seven-field
-boundary. When validation fails, logs contain only output length, digest, field
+evidence. The supporting contract preserves the same heading and the eight-field boundary.
+When validation fails, logs contain only output length, digest, field
 presence, and namespaced-command count; they do not contain the model response.
 The route evidence compares the complete temporary worktree inventory, including
 file content hashes, symlinks, and directories outside `.git`, before and after
@@ -150,6 +172,7 @@ command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
 "$NODE_BIN" scripts/validate-workflow-fixtures.mjs </dev/null
 bash -n nova-plugin/hooks/scripts/pre-write-check.sh
 bash -n nova-plugin/hooks/scripts/pre-bash-check.sh
+bash -n nova-plugin/hooks/scripts/trusted-node-hook.sh
 bash -n nova-plugin/hooks/scripts/post-audit-log.sh
 ```
 
@@ -158,17 +181,19 @@ use CI/Linux or CI/Windows Bash evidence before promotion.
 
 ## Version And Generated Output Check
 
-Confirm that the maintainer-visible version fields agree:
+Confirm that each maintainer-visible version domain is internally consistent:
 
 ```bash
 NODE_BIN="${NODE_BIN:-node}"
 command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
-"$NODE_BIN" -e "const fs=require('fs'); const p=JSON.parse(fs.readFileSync('nova-plugin/.claude-plugin/plugin.json','utf8')); const m=JSON.parse(fs.readFileSync('.claude-plugin/marketplace.json','utf8')); const meta=JSON.parse(fs.readFileSync('.claude-plugin/marketplace.metadata.json','utf8')); console.log({plugin:p.version, marketplace:m.plugins[0].version, metadata:meta.plugins[0].version, lastUpdated:meta.plugins[0]['last-updated']});" </dev/null
+"$NODE_BIN" -e "const fs=require('fs'); const pkg=JSON.parse(fs.readFileSync('package.json','utf8')); const p=JSON.parse(fs.readFileSync('nova-plugin/.claude-plugin/plugin.json','utf8')); const channels=JSON.parse(fs.readFileSync('governance/release-channels.json','utf8')); const m=JSON.parse(fs.readFileSync('.claude-plugin/marketplace.json','utf8')); const meta=JSON.parse(fs.readFileSync('.claude-plugin/marketplace.metadata.json','utf8')); console.log({package:pkg.version, plugin:p.version, stableChannel:channels.stable.version, marketplace:m.plugins[0].version, metadata:meta.plugins[0].version, lastUpdated:meta.plugins[0]['last-updated']});" </dev/null
 ```
 
 Required result:
 
-- `plugin`, `marketplace`, and `metadata` versions are identical.
+- `package` and `plugin` versions are identical.
+- `marketplace` and `metadata` versions match `stableChannel`. They may lag the
+  unreleased `package`/`plugin` version.
 - `lastUpdated` matches the release date recorded in `CHANGELOG.md`.
 - `docs/marketplace/catalog.md` was generated from registry source, not hand
   edited.
@@ -190,39 +215,80 @@ git describe --tags --exact-match HEAD
 git tag --list "v${PLUGIN_VERSION}"
 ```
 
-If the exact tag is missing and the maintainer approves release publication,
-create the repository release tag:
+Create and locally verify the signed annotated candidate tag first, after the
+maintainer approves candidate publication:
 
 ```bash
 NODE_BIN="${NODE_BIN:-node}"
 command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
 PLUGIN_VERSION="$("$NODE_BIN" -p 'require("./nova-plugin/.claude-plugin/plugin.json").version' </dev/null)"
 PLUGIN_VERSION="${PLUGIN_VERSION%$'\r'}"
-git tag -a "v${PLUGIN_VERSION}" -m "nova-plugin v${PLUGIN_VERSION}"
-git describe --tags --exact-match HEAD
+CANDIDATE_TAG="v${PLUGIN_VERSION}-rc.1"
+SOURCE_COMMIT="$(git rev-parse HEAD)"
+git tag -s -m "nova-plugin ${CANDIDATE_TAG}" \
+  "${CANDIDATE_TAG}" "${SOURCE_COMMIT}"
+git verify-tag "${CANDIDATE_TAG}"
+git push origin "${CANDIDATE_TAG}"
+gh api --method POST repos/lliangcol/llm-plugins-fusion/dispatches \
+  -f event_type=release-candidate \
+  -F "client_payload[candidate_tag]=${CANDIDATE_TAG}"
 ```
 
-Push only after the local tag, changelog, generated marketplace outputs, and
-validation evidence are correct:
+The dispatching identity must have `Contents: write`. Record the resulting run
+URL and exact `github.workflow_sha`; pushing the candidate tag alone does not
+start publication.
+
+After the candidate has passed every gate and the GitHub Releases API
+`published_at` observation window has reached 168 hours, create, verify, and
+push the stable tag at the same commit, then dispatch promotion:
 
 ```bash
+SOURCE_COMMIT="$(git rev-list -n 1 "${CANDIDATE_TAG}")"
+git tag -s -m "nova-plugin v${PLUGIN_VERSION}" \
+  "v${PLUGIN_VERSION}" "${SOURCE_COMMIT}"
+git verify-tag "v${PLUGIN_VERSION}"
+test "$(git rev-list -n 1 "${CANDIDATE_TAG}")" = \
+  "$(git rev-list -n 1 "v${PLUGIN_VERSION}")"
 git push origin "v${PLUGIN_VERSION}"
+gh api --method POST repos/lliangcol/llm-plugins-fusion/dispatches \
+  -f event_type=promote-release \
+  -F "client_payload[stable_tag]=v${PLUGIN_VERSION}" \
+  -F "client_payload[candidate_tag]=${CANDIDATE_TAG}"
 ```
 
-The candidate workflow listens for `v*.*.*-rc.*` tags. The RC tag base must
-match the stable plugin manifest version. It builds artifacts once, binds them
-to `release-candidate.json`, performs isolated exact-tag install and route
+Create and push either tag only after the local tag identity, changelog,
+generated marketplace outputs, and validation evidence are correct.
+
+Candidate, stable promotion, and recovery have exactly one privileged entry
+model: `repository_dispatch` evaluated from protected `main`. Candidate and
+stable tags are only `client_payload` inputs. Neither candidate nor stable tag
+pushes trigger a release workflow. Record the run URL and exact caller
+`github.workflow_sha` for every operation, plus `job.workflow_sha` for the
+stable promotion reusable job. Stable publication uses both the signed stable tag and the exact candidate tag supplied above.
+
+```bash
+# Recovery reuses the existing signed candidate tag. Verify it locally first.
+git verify-tag "${CANDIDATE_TAG}"
+gh api --method POST repos/lliangcol/llm-plugins-fusion/dispatches \
+  -f event_type=release-recovery-drill \
+  -F "client_payload[stable_tag]=v${PLUGIN_VERSION}" \
+  -F "client_payload[candidate_tag]=${CANDIDATE_TAG}"
+```
+
+The candidate workflow builds artifacts once, binds them to
+`release-candidate.json`, performs isolated exact-tag install and route
 validation, then reconciles a draft GitHub prerelease and publishes it only
-after an exact asset download verifies the draft. Stable
-publication is then started manually through `.github/workflows/release.yml`
-with both the signed stable tag and the exact candidate tag. The delegated
-promotion workflow verifies both tags and republishes the identical candidate
-artifacts; pushing a stable tag alone does not publish a release.
+after an exact asset download verifies the draft. The delegated promotion
+workflow verifies both tags and republishes the identical candidate artifacts.
+Promotion also verifies the exact GitHub Release id, candidate tag, published-prerelease
+state, and server-owned `published_at`; a candidate younger than 168 hours is
+rejected before a publication handoff is created.
 Do not use `claude plugin tag` for this repository release
 unless the release policy changes, because that CLI creates plugin-scoped tags
-that do not match the current GitHub release trigger.
+that do not satisfy the signed repository tag and protected-main dispatch
+contract.
 
-After pushing, record:
+After pushing and dispatching, record:
 
 - Tag name.
 - Commit SHA.
@@ -243,6 +309,14 @@ Preview the planned steps without mutation:
 node scripts/validate-plugin-install.mjs --dry-run
 ```
 
+`--marketplace-source` accepts only a local marketplace manifest file or a
+local repository root containing `.claude-plugin/marketplace.json`. Remote
+`owner/repository@ref` marketplace arguments are rejected because this verifier
+does not fetch and independently digest remote marketplace manifests. A local
+manifest may still select a remote plugin only when its source binds an HTTPS
+URL, exact ref, and commit SHA; the resulting evidence records
+`local-manifest-remote-exact-ref`.
+
 Recommended setup for manual fallback or the dedicated smoke workflow:
 
 1. Use GitHub Actions, a disposable OS user, a VM, or a container-like test
@@ -261,8 +335,9 @@ command -v "$NODE_BIN" >/dev/null 2>&1 || NODE_BIN=node.exe
 
 Expected script behavior:
 
-- Runs `claude plugin validate .`.
-- Runs `claude plugin validate nova-plugin`.
+- Validates the selected local marketplace manifest.
+- Verifies the installed tree digest, then validates the physically contained
+  installed plugin source.
 - Adds the local marketplace source.
 - Installs `nova-plugin@llm-plugins-fusion` with `--scope user`.
 - Updates the installed plugin.
@@ -285,6 +360,17 @@ the signed candidate tag, original candidate signer workflow attestation,
 candidate envelope, promotion intent, actual control-bundle bytes and file
 inventory, and every required evidence record. It must publish the downloaded
 candidate bytes and must not substitute a rebuild.
+
+GitHub attestation identifies the builder as
+`.github/workflows/release-candidate.yml@refs/heads/main` and binds the exact
+workflow revision recorded in `candidate.workflowSourceCommit`. This workflow
+provenance does not replace source identity: the candidate and stable source
+commit is proved independently by local and in-workflow verification of the
+signed immutable tags. Promotion and recovery must verify the downloaded bundle
+generically against that signer workflow, `refs/heads/main`, and the hosted-runner
+boundary before extraction. After safe extraction reveals the bound workflow
+commit, they repeat attestation verification with exact source and signer
+digests.
 
 The scheduled `Claude Latest Drift` job intentionally fails its validation step
 when the latest CLI inventory changes, but it must still write
@@ -359,8 +445,8 @@ Create or update a release evidence record from
 [release-evidence-template.md](../../templates/evidence/release.md). The record must
 include:
 
-- Release target, commit, exact tag, plugin version, registry `last-updated`,
-  operator, and date.
+- Release target, commit, exact tag, development package/plugin version, stable
+  channel version, registry `last-updated`, operator, and date.
 - Environment summary from `node scripts/validate-all.mjs`.
 - Outputs or summaries for all required checks.
 - Coverage summary path or CI artifact name.

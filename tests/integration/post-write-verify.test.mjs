@@ -100,14 +100,65 @@ test('post-write verifier revalidates only exact protected hooks configuration',
   assert.equal(allowed.ok, true, allowed.stderr);
 });
 
-test('post-write verifier reports shell control-path mutation', async (t) => {
+test('post-write verifier reports agent control-path mutation', async (t) => {
   const { workspace } = await fixture(t);
   await mkdir(join(workspace, '.nova'));
   const policy = join(workspace, '.nova/shell-policy.json');
   await writeFile(policy, '{"schemaVersion":1,"allowCommands":[]}\n');
   const blocked = await runVerifier(workspace, policy);
   assert.equal(blocked.code, 2);
-  assert.match(blocked.stderr, /Shell policy control path was modified/u);
+  assert.match(blocked.stderr, /Agent control path was modified/u);
+
+  await mkdir(join(workspace, '.git'));
+  const gitConfig = join(workspace, '.git/config');
+  await writeFile(gitConfig, '[diff]\n\texternal = ./agent-controlled-helper\n');
+  const gitBlocked = await runVerifier(workspace, gitConfig);
+  assert.equal(gitBlocked.code, 2);
+  assert.match(gitBlocked.stderr, /Agent control path was modified/u);
+
+  const foldedGitBlocked = await runVerifier(workspace, join(workspace, '.GIT/config'));
+  assert.equal(foldedGitBlocked.code, 2);
+  assert.match(foldedGitBlocked.stderr, /Agent control path was modified/u);
+});
+
+test('post-write verifier rejects linked-worktree and commonDir control paths', async (t) => {
+  const { temp, workspace } = await fixture(t);
+  const commonGitDir = join(temp, 'git-metadata');
+  const worktreeGitDir = join(commonGitDir, 'worktrees/workspace');
+  await mkdir(worktreeGitDir, { recursive: true });
+  await writeFile(join(workspace, '.git'), 'gitdir: ../git-metadata/worktrees/workspace\n');
+  await writeFile(join(worktreeGitDir, 'commondir'), '../..\n');
+  const commonConfig = join(commonGitDir, 'config');
+  const worktreeConfig = join(worktreeGitDir, 'config.worktree');
+  await writeFile(commonConfig, '[core]\n\trepositoryformatversion = 0\n');
+  await writeFile(worktreeConfig, '[core]\n\tbare = false\n');
+
+  for (const target of [commonConfig, worktreeConfig]) {
+    const result = await runVerifier(workspace, target);
+    assert.equal(result.code, 2, result.stderr);
+    assert.match(result.stderr, /Agent control path was modified/u);
+  }
+  const overlappingArtifact = await runVerifier(workspace, commonConfig, {
+    env: { NOVA_EXPLICIT_ARTIFACT_ROOT: commonGitDir },
+  });
+  assert.equal(overlappingArtifact.code, 2, overlappingArtifact.stderr);
+  assert.match(overlappingArtifact.stderr, /artifact root.*Git control directory/u);
+});
+
+test('post-write verifier rejects actual targets inside a bare repository', async (t) => {
+  const bare = await mkdtemp(join(tmpdir(), 'nova-post-write-bare-git-'));
+  t.after(() => rm(bare, { recursive: true, force: true }));
+  await Promise.all([
+    mkdir(join(bare, 'objects')),
+    mkdir(join(bare, 'refs')),
+  ]);
+  const config = join(bare, 'config');
+  await writeFile(join(bare, 'HEAD'), 'ref: refs/heads/main\n');
+  await writeFile(config, '[core]\n\tbare = true\n');
+
+  const result = await runVerifier(bare, config);
+  assert.equal(result.code, 2, result.stderr);
+  assert.match(result.stderr, /Agent control path was modified/u);
 });
 
 test('post-write verifier rejects malformed payloads and missing actual targets', async (t) => {

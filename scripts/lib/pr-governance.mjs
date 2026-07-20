@@ -1,3 +1,5 @@
+import { normalizeCommitIdentity, normalizeGithubLogin } from './github-identity.mjs';
+
 export const LARGE_CHANGE_LIMITS = Object.freeze({
   changedFiles: 50,
   changedLines: 1_000,
@@ -9,6 +11,35 @@ export const REQUIRED_SECTIONS = Object.freeze([
   'Maintainer Owner',
   'Risk',
   'Validation Results',
+]);
+
+// Top-level entrypoints that can create, validate, extract, replay, or publish
+// governed release evidence. Helpers below scripts/lib/ are covered as one
+// directory boundary; these entrypoints must remain explicit in both
+// CODEOWNERS and the independent-release reviewer policy.
+export const RELEASE_TRUST_PATHS = Object.freeze([
+  'scripts/lib/',
+  'scripts/build-candidate-bundle.mjs',
+  'scripts/build-release-artifacts.mjs',
+  'scripts/build-release-control-bundle.mjs',
+  'scripts/extract-release-bundle.mjs',
+  'scripts/generate-release-candidate.mjs',
+  'scripts/generate-release-checksums.mjs',
+  'scripts/generate-release-evidence.mjs',
+  'scripts/prepare-release.mjs',
+  'scripts/reconcile-github-release.mjs',
+  'scripts/release-orchestrator.mjs',
+  'scripts/validate-community-governance.mjs',
+  'scripts/validate-github-workflows.mjs',
+  'scripts/validate-performance-budget.mjs',
+  'scripts/validate-plugin-install.mjs',
+  'scripts/validate-plugin-route-live.mjs',
+  'scripts/validate-pr-governance.mjs',
+  'scripts/validate-release-operational-readiness.mjs',
+  'scripts/validate-release-readiness.mjs',
+  'scripts/verify-independent-release-review.mjs',
+  'scripts/verify-release-promotion.mjs',
+  'scripts/verify-stable-install.mjs',
 ]);
 
 /** @param {unknown} value */
@@ -40,10 +71,6 @@ export function stripHtmlComments(value) {
   }
 
   return output.trim();
-}
-
-function normalizedLogin(value) {
-  return String(value ?? '').trim().replace(/^@/u, '').toLowerCase();
 }
 
 function sectionIsPlaceholder(value) {
@@ -100,6 +127,53 @@ export function isSensitivePath(path, sensitivePaths = []) {
   ));
 }
 
+export function sensitiveChangedFilePaths(file, sensitivePaths = []) {
+  const paths = typeof file === 'string'
+    ? [file]
+    : [file?.filename, file?.previous_filename];
+  return [...new Set(paths.filter((path) => typeof path === 'string' && path.length > 0 && isSensitivePath(path, sensitivePaths)))];
+}
+
+export function assertCompleteChangedFiles(files, expectedChangedFiles, label = 'GitHub pull request files response') {
+  if (!Number.isInteger(expectedChangedFiles) || expectedChangedFiles < 0) {
+    throw new Error(`${label} requires a non-negative integer changed_files count`);
+  }
+  if (!Array.isArray(files)) throw new Error(`${label} must be an array`);
+  const filenames = files.map((file) => file?.filename);
+  if (files.length !== expectedChangedFiles
+    || filenames.some((filename) => typeof filename !== 'string' || filename.length === 0)
+    || new Set(filenames).size !== filenames.length) {
+    throw new Error(`${label} is incomplete or ambiguous: received ${files.length} records for changed_files=${expectedChangedFiles}`);
+  }
+  return files;
+}
+
+export function assertCompleteReviewRecords(reviews, label = 'GitHub pull request reviews response') {
+  if (!Array.isArray(reviews)) throw new Error(`${label} must be an array`);
+  const reviewIds = new Set();
+  for (const [index, review] of reviews.entries()) {
+    if (!review || typeof review !== 'object' || Array.isArray(review)) {
+      throw new Error(`${label} record ${index} must be an object`);
+    }
+    if (!Number.isInteger(review.id) || review.id <= 0 || reviewIds.has(review.id)) {
+      throw new Error(`${label} contains a missing, invalid, or duplicate review id`);
+    }
+    reviewIds.add(review.id);
+    if (!['APPROVED', 'CHANGES_REQUESTED', 'DISMISSED', 'COMMENTED'].includes(review.state)) {
+      throw new Error(`${label} record ${review.id} has an invalid review state`);
+    }
+    normalizeGithubLogin(review.user?.login, `${label} record ${review.id} reviewer`);
+    if (!['User', 'Bot'].includes(review.user?.type)) {
+      throw new Error(`${label} record ${review.id} has an invalid reviewer type`);
+    }
+    normalizeCommitIdentity(review.commit_id, `${label} record ${review.id} commit`, { fullSha: true });
+    if (typeof review.author_association !== 'string' || review.author_association.length === 0) {
+      throw new Error(`${label} record ${review.id} is missing author_association`);
+    }
+  }
+  return reviews;
+}
+
 /** @param {Array<Record<string, any>>} [reviews] */
 export function latestReviewsByAuthor(reviews = []) {
   const latest = new Map();
@@ -108,7 +182,7 @@ export function latestReviewsByAuthor(reviews = []) {
   ));
   for (const review of sorted) {
     if (!['APPROVED', 'CHANGES_REQUESTED', 'DISMISSED'].includes(review.state)) continue;
-    const login = normalizedLogin(review.user?.login);
+    const login = normalizeGithubLogin(review.user?.login, 'pull request reviewer');
     if (login) latest.set(login, review);
   }
   return latest;
@@ -177,19 +251,19 @@ export function evaluatePrGovernance({
   }
 
   const sensitiveFiles = files
-    .map((file) => typeof file === 'string' ? file : file?.filename)
-    .filter((file) => file && isSensitivePath(file, sensitivePaths));
+    .flatMap((file) => sensitiveChangedFilePaths(file, sensitivePaths));
   if (sensitiveFiles.length > 0) {
-    const authorLogin = normalizedLogin(author);
-    const currentHead = String(headSha ?? '').toLowerCase();
+    const authorLogin = normalizeGithubLogin(author, 'pull request author');
+    const currentHead = normalizeCommitIdentity(headSha, 'pull request head', { fullSha: true });
+    assertCompleteReviewRecords(reviews);
     const independentApproval = [...latestReviewsByAuthor(reviews).values()].some((review) => {
-      const reviewer = normalizedLogin(review.user?.login);
+      const reviewer = normalizeGithubLogin(review.user?.login, 'pull request reviewer');
       return review.state === 'APPROVED'
         && reviewer
         && reviewer !== authorLogin
-        && review.user?.type !== 'Bot'
+        && review.user?.type === 'User'
         && ['OWNER', 'MEMBER', 'COLLABORATOR'].includes(review.author_association)
-        && String(review.commit_id ?? '').toLowerCase() === currentHead;
+        && normalizeCommitIdentity(review.commit_id, 'pull request review commit', { fullSha: true }) === currentHead;
     });
     if (!independentApproval) {
       errors.push(`sensitive paths require a current-head approval from an eligible human repository reviewer other than the PR author (${sensitiveFiles.join(', ')})`);

@@ -24,18 +24,18 @@
 
 | Parameter | Required | Description | Example |
 | --- | --- | --- | --- |
+| `REVIEW_SCOPE` | Yes | Git diff or repository scope to review | `Current branch diff against main` |
 | `BASE` | No | Base branch | `main` |
 | `REVIEW_MODE` | No | `branch` / `staged` / `full` | `staged` |
-| `OUTPUT_DIR` | No | Review artifact directory | `.codex/codex-review-fix/custom` |
 
 ## Examples
 
 ```text
-/nova-plugin:codex-review-only BASE=main
+/nova-plugin:codex-review-only REVIEW_SCOPE="current branch diff against main" BASE=main
 ```
 
 ```text
-/nova-plugin:codex-review-only REVIEW_MODE=full
+/nova-plugin:codex-review-only REVIEW_SCOPE="entire current workspace" REVIEW_MODE=full
 ```
 
 When invoked through the plugin, scripts should be called through `${CLAUDE_PLUGIN_ROOT}` instead of assuming the current repository contains `nova-plugin/`.

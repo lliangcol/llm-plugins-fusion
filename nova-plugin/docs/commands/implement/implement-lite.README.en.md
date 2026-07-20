@@ -22,17 +22,21 @@
 
 ## Parameters
 
-| Parameter   | Required | Description                          | Example              |
-| ----------- | -------- | ------------------------------------ | -------------------- |
-| `ARGUMENTS` | No       | Implementation goal and constraints. | `Bugfix description` |
+| Parameter     | Required | Description                         | Example              |
+| ------------- | -------- | ----------------------------------- | -------------------- |
+| `REQUEST`     | Yes      | Goal and acceptance criteria.       | `Fix masking and test it` |
+| `CONSTRAINTS` | No       | Scope and compatibility boundaries. | `Do not change the public API` |
 
 ## Output
 
-- No fixed output structure specified; focus on fast implementation.
+- The fixed order is `implemented changes`, `Changes Summary`, `Validation`, and `Adjustments`.
 - Example output structure:
 
 ```text
-(No fixed output structure specified)
+1. implemented changes
+2. Changes Summary
+3. Validation
+4. Adjustments (or None)
 ```
 
 ## Full Examples

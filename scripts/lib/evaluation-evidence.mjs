@@ -1,5 +1,4 @@
 import { createHash } from 'node:crypto';
-import { posix, win32 } from 'node:path';
 import { hasSensitiveText } from '../../nova-plugin/runtime/secret-rules.mjs';
 
 const forbiddenKeys = new Set([
@@ -79,19 +78,40 @@ export function normalizeClaudeLoadSignals(debugText, pluginId = 'nova-plugin') 
 export function normalizeCodexToolLifecycle(events) {
   const items = new Map();
   for (const [index, event] of events.entries()) {
-    if (!String(event?.type ?? '').startsWith('item.') || !event.item || typeof event.item.type !== 'string') continue;
+    if (!String(event?.type ?? '').startsWith('item.')) continue;
+    if (!event.item || typeof event.item !== 'object' || Array.isArray(event.item)) {
+      throw new Error(`Codex lifecycle event ${index + 1} is missing its item object`);
+    }
+    if (typeof event.item.type !== 'string' || event.item.type.length === 0) {
+      throw new Error(`Codex lifecycle event ${index + 1} is missing item.type`);
+    }
     const rawId = typeof event.item.id === 'string' && event.item.id.length > 0 ? event.item.id : null;
     const key = rawId === null ? `missing:${index}` : `id:${rawId}`;
     const prior = items.get(key);
     const nextStatus = rawId === null ? 'unknown' : normalizeLifecycleStatus(event);
+    const toolType = publicIdentifier(event.item.type) ?? 'unknown-item-type';
+    const server = publicIdentifier(event.item.server);
+    const tool = publicIdentifier(event.item.tool);
+    if (prior && prior.toolType !== toolType) {
+      throw new Error(`Codex lifecycle item ${prior.itemIdSha256} changed tool type`);
+    }
+    if (prior?.server && server && prior.server !== server) {
+      throw new Error(`Codex lifecycle item ${prior.itemIdSha256} changed MCP server identity`);
+    }
+    if (prior?.tool && tool && prior.tool !== tool) {
+      throw new Error(`Codex lifecycle item ${prior.itemIdSha256} changed MCP tool identity`);
+    }
     const priorTerminal = terminalStatuses.has(prior?.status);
+    if (priorTerminal && prior.status !== nextStatus) {
+      throw new Error(`Codex lifecycle item ${prior.itemIdSha256} changed terminal status from ${prior.status} to ${nextStatus}`);
+    }
     const shouldUpdateStatus = !prior || terminalStatuses.has(nextStatus) || (!priorTerminal && nextStatus !== 'unknown');
     items.set(key, {
-      toolType: prior?.toolType ?? publicIdentifier(event.item.type) ?? 'unknown-item-type',
+      toolType,
       status: shouldUpdateStatus ? nextStatus : prior.status,
       ...(rawId === null ? {} : { itemIdSha256: sha256(rawId) }),
-      ...(publicIdentifier(event.item.server) || prior?.server ? { server: publicIdentifier(event.item.server) ?? prior.server } : {}),
-      ...(publicIdentifier(event.item.tool) || prior?.tool ? { tool: publicIdentifier(event.item.tool) ?? prior.tool } : {}),
+      ...(server || prior?.server ? { server: server ?? prior.server } : {}),
+      ...(tool || prior?.tool ? { tool: tool ?? prior.tool } : {}),
     });
   }
   return [...items.values()].filter((entry) => !CODEX_PASSIVE_ITEMS.has(entry.toolType));
@@ -144,7 +164,7 @@ export function classifyToolEvidence({ assistant, condition, permissionDenials =
   };
 }
 
-export function deriveAdapterEvidence({ assistant, condition, adapterStaged, toolEvidence, events = [], claudeLoadSignals = [] }) {
+export function deriveAdapterEvidence({ assistant, condition, adapterStaged, events = [], claudeLoadSignals = [] }) {
   if (condition === 'plugin-disabled') return { adapterStaged: false, adapterLoadObserved: 'not-applicable', adapterLoadReasonCode: 'plugin-disabled', adapterLoadSignals: [] };
   if (!adapterStaged) return { adapterStaged: false, adapterLoadObserved: 'unavailable', adapterLoadReasonCode: 'adapter-not-staged', adapterLoadSignals: [] };
   if (assistant === 'claude-code') {
@@ -182,9 +202,63 @@ export function normalizeUsage(values) {
   return { usageStatus: reported ? 'reported' : 'unavailable', usageReasonCode: reported ? 'cli-reported-usage' : 'cli-usage-unavailable', ...usage };
 }
 
-function containsAbsolutePath(value) {
-  if (win32.isAbsolute(value) || posix.isAbsolute(value)) return true;
-  return /(?:^|[\s"'=(])(?:[A-Za-z]:[\\/]|\\\\[^\\\s]+[\\/]|\/(?:home|Users|tmp|var|private|opt|mnt|workspace|root)\/)/u.test(value);
+export function nullableMetricDelta(left, right) {
+  return typeof left === 'number' && typeof right === 'number' ? left - right : null;
+}
+
+const CONTROLLED_NOVA_ROUTE = /^\/nova-plugin:[a-z0-9]+(?:-[a-z0-9]+)*$/u;
+const CONTROL_CHARACTERS = /[\u0000-\u001f\u007f-\u009f]/u;
+
+function containsAbsolutePath(value, { allowStandaloneRoute = true } = {}) {
+  const text = String(value).normalize('NFKC');
+  if (/\bfile:(?:\/{1,3}|[A-Za-z]:[\\/])/iu.test(text)) return true;
+  const withoutWebUrls = text.replace(/\b(?:https?|wss?):\/\/[^\s"'`<>]+/giu, '');
+  const embeddedBoundary = '[^A-Za-z0-9_.]';
+  if (new RegExp(`(?:^|${embeddedBoundary})(?:[A-Za-z]:[\\\\/]|\\\\\\\\[^\\\\/\\s"'\`<>]+[\\\\/][^\\s"'\`<>]*)`, 'u').test(withoutWebUrls)) return true;
+  if (new RegExp(`(?:^|${embeddedBoundary})//[^/\\s"'\`<>]+/[^\\s"'\`<>]+`, 'u').test(withoutWebUrls)) return true;
+  const posixTokens = withoutWebUrls.matchAll(new RegExp(`(?:^|${embeddedBoundary})(/(?!/)[^\\s"'\`<>()\\[\\]{},;]*)`, 'gu'));
+  for (const match of posixTokens) {
+    const token = match[1].replace(/[.!?]+$/u, '');
+    if (allowStandaloneRoute && CONTROLLED_NOVA_ROUTE.test(token)) continue;
+    return true;
+  }
+  return false;
+}
+
+export function normalizePublicAssistantVersion(value) {
+  const text = String(value ?? '').trim();
+  const conservative = text.length > 0
+    && text.length <= 256
+    && /^[A-Za-z0-9][A-Za-z0-9 ._+@():=-]*$/u.test(text)
+    && !CONTROL_CHARACTERS.test(text)
+    && !containsAbsolutePath(text)
+    && !hasSensitiveText(text);
+  return conservative ? text : `sha256:${sha256(text)}`;
+}
+
+const PUBLIC_MODEL_IDENTIFIER = /^(?:[A-Za-z0-9][A-Za-z0-9._:+@=-]{0,127}|sha256:[a-f0-9]{64})$/u;
+
+function normalizePublicModelIdentifier(value) {
+  const text = String(value);
+  return PUBLIC_MODEL_IDENTIFIER.test(text)
+    && !CONTROL_CHARACTERS.test(text)
+    && !hasSensitiveText(text)
+    ? text
+    : `sha256:${sha256(text)}`;
+}
+
+export function normalizePublicModelValue(value) {
+  if (typeof value === 'string') return normalizePublicModelIdentifier(value);
+  if (Array.isArray(value)) return value.map((entry) => normalizePublicModelValue(entry));
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, entry]) => [
+      normalizePublicModelIdentifier(key),
+      normalizePublicModelValue(entry),
+    ]));
+  }
+  if (value === null || typeof value === 'boolean') return value;
+  if (typeof value === 'number' && Number.isFinite(value)) return value;
+  return `sha256:${sha256(String(value))}`;
 }
 
 export function publicEvidenceViolations(value) {
@@ -196,12 +270,21 @@ export function publicEvidenceViolations(value) {
     }
     if (current && typeof current === 'object') {
       for (const [key, entry] of Object.entries(current)) {
+        const absoluteKey = containsAbsolutePath(key, { allowStandaloneRoute: false });
+        const controlKey = CONTROL_CHARACTERS.test(key);
+        const sensitiveKey = hasSensitiveText(key);
+        const childPath = absoluteKey || controlKey || sensitiveKey ? `${path}.[unsafe-key]` : `${path}.${key}`;
         if (forbiddenKeys.has(key)) violations.push(`${path}.${key}: forbidden evidence field`);
-        visit(entry, `${path}.${key}`);
+        if (absoluteKey) violations.push(`${path}.[key]: local absolute path key`);
+        if (controlKey) violations.push(`${path}.[key]: control character key`);
+        visit(entry, childPath);
       }
       return;
     }
-    if (typeof current === 'string' && containsAbsolutePath(current)) violations.push(`${path}: local absolute path`);
+    if (typeof current === 'string') {
+      if (CONTROL_CHARACTERS.test(current)) violations.push(`${path}: control character`);
+      if (containsAbsolutePath(current)) violations.push(`${path}: local absolute path`);
+    }
   };
   visit(value, '$');
   if (hasSensitiveText(JSON.stringify(value))) violations.push('$: credential or secret pattern');

@@ -24,18 +24,18 @@
 
 | 参数 | 必填 | 说明 | 示例 |
 | --- | --- | --- | --- |
+| `REVIEW_SCOPE` | Yes | 要审查的 Git diff 或仓库范围 | `当前分支相对 main 的 diff` |
 | `BASE` | No | 基线分支 | `main` |
 | `REVIEW_MODE` | No | `branch` / `staged` / `full` | `staged` |
-| `OUTPUT_DIR` | No | review artifact 输出目录 | `.codex/codex-review-fix/custom` |
 
 ## 示例
 
 ```text
-/nova-plugin:codex-review-only BASE=main
+/nova-plugin:codex-review-only REVIEW_SCOPE="当前分支相对 main 的 diff" BASE=main
 ```
 
 ```text
-/nova-plugin:codex-review-only REVIEW_MODE=full
+/nova-plugin:codex-review-only REVIEW_SCOPE="整个当前工作区" REVIEW_MODE=full
 ```
 
 通过插件运行时，内部脚本应优先经 `${CLAUDE_PLUGIN_ROOT}` 调用，而不是假设当前仓库存在 `nova-plugin/` 目录。

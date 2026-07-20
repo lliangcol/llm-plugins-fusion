@@ -68,7 +68,7 @@ npm run demo:review
 
 <table>
 <tr>
-<td><strong>插件版本</strong></td>
+<td><strong>稳定插件版本</strong></td>
 <td>4.0.0</td>
 </tr>
 <tr>

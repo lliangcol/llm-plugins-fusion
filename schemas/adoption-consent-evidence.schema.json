@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lliangcol/llm-plugins-fusion/main/schemas/adoption-consent-evidence.schema.json",
+  "title": "Public-safe adoption consent attestation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "schemaVersion",
+    "evidenceType",
+    "recordId",
+    "recordBindingSha256",
+    "validationEvidenceSha256",
+    "consentGranted",
+    "approvedPurpose",
+    "publicFieldsApproved",
+    "withdrawalMechanismAcknowledged",
+    "privacyReview",
+    "consentedAt",
+    "expiresAt"
+  ],
+  "properties": {
+    "$schema": { "type": "string", "minLength": 1 },
+    "schemaVersion": { "const": 1 },
+    "evidenceType": { "const": "adoption-consent" },
+    "recordId": { "type": "string", "pattern": "^[A-Z0-9-]+$" },
+    "recordBindingSha256": { "$ref": "#/$defs/sha256" },
+    "validationEvidenceSha256": { "$ref": "#/$defs/sha256" },
+    "consentGranted": { "const": true },
+    "approvedPurpose": { "const": "public-adoption-evidence" },
+    "publicFieldsApproved": { "const": true },
+    "withdrawalMechanismAcknowledged": { "const": true },
+    "privacyReview": { "const": "passed" },
+    "consentedAt": { "type": "string", "format": "date-time" },
+    "expiresAt": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" }
+  }
+}

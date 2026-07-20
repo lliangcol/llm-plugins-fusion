@@ -26,16 +26,18 @@
 | ----------------- | ---- | ----------------------------- | ----------------------- |
 | `PLAN_INPUT_PATH` | Yes  | 已批准计划的路径。            | `docs/plans/feature.md` |
 | `PLAN_APPROVED`   | Yes  | 必须为 `true`（区分大小写）。 | `true`                  |
+| `EXECUTION_PROFILE` | No | 可选执行变体。                | `standard`              |
 
 ## 输出说明
 
-- 聊天输出包含变更清单、简短实现总结与偏离说明（或明确无偏离）。
+- 固定顺序为 `implemented changes`、`plan-step trace`、`validation`、`deviations`。
 - 示例输出结构：
 
 ```text
-1. Implemented code changes
-2. Short implementation summary
-3. Deviation notes (or "No deviations from the approved plan")
+1. implemented changes
+2. plan-step trace
+3. validation
+4. deviations (or None)
 ```
 
 ## 完整示例

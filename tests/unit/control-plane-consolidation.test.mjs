@@ -25,6 +25,8 @@ const removedEntrypoints = {
   'validate:command-docs': { replacement: null, command: 'node scripts/generate-command-docs.mjs' },
   'validate:doc-governance': { replacement: null, command: 'node scripts/generate-doc-governance.mjs' },
   'validate:doc-migrations': { replacement: null, command: 'node scripts/migrate-documentation-layout.mjs' },
+  'validate:facts': { replacement: null, command: 'node scripts/generate-fact-graph.mjs' },
+  'validate:hook-truth': { replacement: null, command: 'node scripts/validate-hooks.mjs' },
   'check:truth': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['check', 'full'] },
   'check:runtime': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['check', 'full'] },
   'check:compatibility': { replacement: 'llmf', command: 'node packages/cli/bin/llmf.mjs', profile: ['check', 'full'] },
@@ -172,5 +174,5 @@ test('write variants remain explicitly mutating while validation replacements re
     }
   }
 
-  assert.equal(Object.keys(packageJson.scripts).length, 80);
+  assert.equal(Object.keys(packageJson.scripts).length, 78);
 });

@@ -19,6 +19,8 @@ const compatibilityHelpers = [
   'nova-plugin/hooks/scripts/pre-bash-check.mjs',
   'nova-plugin/hooks/scripts/post-write-verify.mjs',
   'nova-plugin/hooks/scripts/post-audit-log.mjs',
+  'nova-plugin/hooks/scripts/config-change-guard.mjs',
+  'nova-plugin/hooks/scripts/trusted-node-hook.sh',
   'nova-plugin/runtime/shell-command-policy.json',
   '.nova/shell-policy.json',
 ];
@@ -40,6 +42,7 @@ for (const [event, expectedMatchers] of /** @type {Array<[string, string[]]>} */
   ['PostToolUse', ['Write|Edit', 'Write|Edit|NotebookEdit|Bash']],
   ['PostToolUseFailure', ['Write|Edit|NotebookEdit|Bash']],
   ['PermissionDenied', ['Write|Edit|NotebookEdit|Bash']],
+  ['ConfigChange', ['project_settings|local_settings']],
   ['SessionEnd', ['*']],
 ])) {
   const entries = config?.hooks?.[event];
