@@ -68,7 +68,7 @@ jobs:
           git merge-base --is-ancestor "${source_commit}" origin/main
           git checkout --detach "${source_commit}"
           printf 'candidate-tag=%s\nsource-commit=%s\n' "${CANDIDATE_TAG}" "${source_commit}" >> "${GITHUB_OUTPUT}"
-      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v6
         with:
           node-version: '22'
           cache: npm
