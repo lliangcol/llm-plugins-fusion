@@ -96,7 +96,7 @@
     "@types/node": "22.20.1",
     "ajv": "8.20.0",
     "ajv-formats": "3.0.1",
-    "spdx-expression-parse": "4.0.0",
+    "spdx-expression-parse": "5.0.0",
     "typescript": "7.0.2",
     "yaml": "2.9.0"
   }
