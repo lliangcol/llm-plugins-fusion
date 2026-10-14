@@ -29,7 +29,7 @@ jobs:
       source-commit: ${{ steps.identity.outputs.source-commit }}
       workflow-source-commit: ${{ steps.identity.outputs.workflow-source-commit }}
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ github.workflow_sha }}
           fetch-depth: 0
@@ -133,7 +133,7 @@ jobs:
             --independent-review-evidence .metrics/candidate-preflight/independent-review.json \
             > .metrics/candidate-preflight/release-readiness.json
           git archive --format=tar.gz --output=.metrics/candidate-preflight/candidate-source.tar.gz "${SOURCE_COMMIT}"
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: candidate-preflight
           path: .metrics/candidate-preflight/
@@ -144,7 +144,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ needs.preflight.outputs.source-commit }}
           fetch-depth: 0
@@ -173,7 +173,7 @@ jobs:
           cp .metrics/release-checksums/SHA256SUMS.txt .metrics/candidate-validation/SHA256SUMS.txt
           cp .metrics/coverage/metadata.json .metrics/candidate-validation/coverage-metadata.json
           cp .metrics/validation-timings.json .metrics/candidate-validation/validation-timings.json
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: candidate-validation
           path: .metrics/candidate-validation/
@@ -200,7 +200,7 @@ jobs:
           node -e 'const fs=require("fs"); const p=JSON.parse(fs.readFileSync(".metrics/claude-package/pack.json"))[0]; if(p.version!==process.env.CLAUDE_VERSION||p.integrity!==process.env.CLAUDE_INTEGRITY) process.exit(1); fs.renameSync(p.filename,".metrics/claude-package/claude-code.tgz")'
           tar -tzf .metrics/claude-package/claude-code.tgz | LC_ALL=C sort > .metrics/claude-package/inventory.txt
           test -s .metrics/claude-package/inventory.txt
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: verified-claude-package
           path: .metrics/claude-package/
@@ -212,11 +212,11 @@ jobs:
     timeout-minutes: 20
     environment: release
     steps:
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: candidate-preflight
           path: source
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: verified-claude-package
           path: cli
@@ -243,7 +243,7 @@ jobs:
             --marketplace-source . --expected-ref "${CANDIDATE_TAG}" --expected-commit "${SOURCE_COMMIT}" \
             --evidence-source "lliangcol/llm-plugins-fusion@${CANDIDATE_TAG}" \
             --inventory-out .metrics/candidate-live/inventory.json --route-smoke-out .metrics/candidate-live/route-smoke.json
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: candidate-live
           path: candidate-source/.metrics/candidate-live/
@@ -254,7 +254,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ needs.preflight.outputs.source-commit }}
           fetch-depth: 0
@@ -264,11 +264,11 @@ jobs:
           node-version: '22'
           cache: npm
       - run: npm ci --ignore-scripts
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with: { name: candidate-validation, path: .metrics/aggregate/validation }
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with: { name: candidate-live, path: .metrics/aggregate/live }
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with: { name: candidate-preflight, path: .metrics/aggregate/preflight }
       - name: Build bound candidate bundle
         env:
@@ -299,7 +299,7 @@ jobs:
             --evidence .metrics/candidate-bundle/evidence/workflow-provenance.json
           test -f .metrics/candidate-bundle/promotion-intent.json
           node scripts/build-candidate-bundle.mjs --bundle-root .metrics/candidate-bundle --out ".metrics/nova-plugin-${CANDIDATE_TAG#v}-evidence-bundle.tar.gz"
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: candidate-bundle
           path: |
@@ -319,7 +319,7 @@ jobs:
       id-token: write
       attestations: write
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           ref: ${{ needs.preflight.outputs.source-commit }}
           fetch-depth: 0
@@ -327,7 +327,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with: { name: candidate-bundle, path: .metrics }
       - name: Prepare candidate notes and exact artifact paths
         id: files
@@ -349,11 +349,11 @@ jobs:
             printf 'sbom=%s\n' '.metrics/candidate-bundle/artifacts/build-sbom.cdx.json'
             printf 'bundle=%s\n' "${bundle}"
           } >> "${GITHUB_OUTPUT}"
-      - uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-path: ${{ steps.files.outputs.archive }}
           sbom-path: ${{ steps.files.outputs.sbom }}
-      - uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-path: ${{ steps.files.outputs.bundle }}
       - name: Reconcile three public candidate assets and publish immutable prerelease
