@@ -26,7 +26,7 @@ jobs:
       id-token: write
       attestations: write
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -186,15 +186,15 @@ jobs:
             printf 'bundle=%s\n' "${bundles[0]}"
           } >> "${GITHUB_OUTPUT}"
       - name: Attest promoted archive and build SBOM
-        uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-path: ${{ steps.release-files.outputs.archive }}
           sbom-path: ${{ steps.release-files.outputs.sbom }}
       - name: Attest promoted evidence bundle
-        uses: actions/attest@a1948c3f048ba23858d222213b7c278aabede763 # v4
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4
         with:
           subject-path: ${{ steps.release-files.outputs.bundle }}
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: verified-promotion-handoff-${{ inputs.release-tag }}
           path: .metrics/promotion/handoff/
@@ -213,7 +213,7 @@ jobs:
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: '22'
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8
         with:
           name: verified-promotion-handoff-${{ inputs.release-tag }}
           path: handoff
@@ -238,7 +238,7 @@ jobs:
             --stable-tag "${STABLE_TAG}" --candidate-tag "${CANDIDATE_TAG}" --source-commit "${source_commit}" \
             --promotion-intent promotion-intent.json --control-bundle release-control-bundle.manifest.json \
             --event-dir events --run-id "${GITHUB_RUN_ID}"
-      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         if: always()
         with:
           name: release-state-events-${{ inputs.release-tag }}
